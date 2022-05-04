@@ -12,7 +12,7 @@ import {
   DEVNET_SERUM3_PROGRAM_ID,
 } from '@blockworks-foundation/mango-v4'
 import EmptyWallet from '../utils/wallet'
-import { Order } from '@blockworks-foundation/mango-v4/node_modules/@project-serum/serum/lib/market'
+import { Order } from '@project-serum/serum/lib/market'
 
 const connection = new Connection('https://api.devnet.solana.com', 'processed')
 const options = Provider.defaultOptions() // use Provider instead of Provider
