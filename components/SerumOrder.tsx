@@ -4,7 +4,7 @@ import {
   Serum3SelfTradeBehavior,
   Serum3Side,
 } from '@blockworks-foundation/mango-v4/dist/accounts/serum3'
-import { Order } from '@blockworks-foundation/mango-v4/node_modules/@project-serum/serum/lib/market'
+import { Order } from '@project-serum/serum/lib/market'
 import { useState } from 'react'
 import mangoStore from '../store/state'
 import Button from './shared/Button'
