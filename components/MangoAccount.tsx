@@ -1,3 +1,4 @@
+import { TokenAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../store/state'
 import ExplorerLink from './shared/ExplorerLink'
 
@@ -8,7 +9,7 @@ const MangoAccount = () => {
   if (!mangoAccount) return null
 
   const activeTokens = mangoAccount
-    ? mangoAccount.tokens.filter((ta) => ta.isActive())
+    ? mangoAccount.tokens.filter((ta: TokenAccount) => ta.isActive())
     : []
 
   const banks = group?.banksMap
