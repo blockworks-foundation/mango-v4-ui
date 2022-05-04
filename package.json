@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@blockworks-foundation/mango-v4": "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git",
+    "@blockworks-foundation/mango-v4": "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#main",
     "@headlessui/react": "^1.5.0",
     "@heroicons/react": "^1.0.6",
     "@solana/wallet-adapter-base": "^0.9.5",
