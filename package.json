@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@blockworks-foundation/mango-v4": "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#main",
+    "@blockworks-foundation/mango-v4": "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#ts/orca-margin-trade",
     "@headlessui/react": "^1.5.0",
     "@heroicons/react": "^1.0.6",
     "@solana/wallet-adapter-base": "^0.9.5",

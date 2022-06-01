@@ -30,7 +30,7 @@ function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
       false
     )
     console.log('tx: ', tx)
-    await actions.reloadAccount()
+    actions.reloadAccount()
     setSubmitting(false)
     onClose()
   }
@@ -56,6 +56,7 @@ function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
             >
               <option>USDC</option>
               <option>BTC</option>
+              <option>SOL</option>
             </select>
           </div>
           <input

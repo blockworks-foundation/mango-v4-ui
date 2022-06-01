@@ -1,11 +1,10 @@
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import produce from 'immer'
-import { Provider, Wallet } from '@project-serum/anchor'
+import { AnchorProvider, Wallet } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import {
   MangoClient,
-  DEVNET_GROUP,
   Group,
   MangoAccount,
   Serum3Market,
@@ -14,16 +13,22 @@ import {
 import EmptyWallet from '../utils/wallet'
 import { Order } from '@project-serum/serum/lib/market'
 
-const connection = new Connection('https://api.devnet.solana.com', 'processed')
-const options = Provider.defaultOptions() // use Provider instead of Provider
-const provider = new Provider(
+const DEVNET_GROUP = new PublicKey(
+  'DxXvt6KHYN5oN19kY5LYj53aJXuGubgGGx1BaBMZJMj1'
+)
+
+const connection = new Connection(
+  'https://mango.devnet.rpcpool.com',
+  'processed'
+)
+const options = AnchorProvider.defaultOptions() // use Provider instead of Provider
+const provider = new AnchorProvider(
   connection,
   new EmptyWallet(Keypair.generate()),
   options
 )
 
 export type MangoStore = {
-  connected: boolean
   group: Group | undefined
   client: MangoClient
   mangoAccount: MangoAccount | undefined
@@ -32,16 +37,16 @@ export type MangoStore = {
   set: (x: (x: MangoStore) => void) => void
   actions: {
     fetchGroup: () => Promise<void>
-    connectWallet: (wallet: Wallet) => Promise<void>
-    reloadAccount: () => Promise<void>
+    fetchMangoAccount: (wallet: Wallet) => Promise<void>
     loadSerumMarket: () => Promise<void>
+    reloadAccount: () => Promise<void>
+    reloadGroup: () => Promise<void>
   }
 }
 
 const mangoStore = create<MangoStore>(
   subscribeWithSelector((set, get) => {
     return {
-      connected: false,
       group: undefined,
       client: MangoClient.connect(provider, true),
       mangoAccount: undefined,
@@ -52,28 +57,28 @@ const mangoStore = create<MangoStore>(
         fetchGroup: async () => {
           try {
             const client = get().client
-            const group = await client.getGroup(new PublicKey(DEVNET_GROUP))
-            const markets = await client.serum3GetMarket(
-              group,
-              group.banksMap.get('BTC')?.tokenIndex,
-              group.banksMap.get('USDC')?.tokenIndex
-            )
+            const group = await client.getGroup(DEVNET_GROUP)
+            // const markets = await client.serum3GetMarket(
+            //   group,
+            //   group.banksMap.get('BTC')?.tokenIndex,
+            //   group.banksMap.get('USDC')?.tokenIndex
+            // )
 
             set((state) => {
-              state.connected = true
               state.group = group
-              state.markets = markets
+              // state.markets = markets
             })
           } catch (e) {
             console.error('Error fetching group', e)
           }
         },
-        connectWallet: async (wallet) => {
+        fetchMangoAccount: async (wallet) => {
           try {
+            console.log('connecting wallet', wallet.publicKey.toString())
             const group = get().group
-            if (!group) return
+            if (!group) throw new Error('Group not loaded')
 
-            const provider = new Provider(connection, wallet, options)
+            const provider = new AnchorProvider(connection, wallet, options)
             const client = await MangoClient.connect(provider, true)
 
             const mangoAccount = await client.getOrCreateMangoAccount(
@@ -83,19 +88,31 @@ const mangoStore = create<MangoStore>(
               'Account'
             )
 
-            let orders = await client.getSerum3Orders(
-              group,
-              DEVNET_SERUM3_PROGRAM_ID,
-              'BTC/USDC'
-            )
+            // let orders = await client.getSerum3Orders(
+            //   group,
+            //   DEVNET_SERUM3_PROGRAM_ID,
+            //   'BTC/USDC'
+            // )
 
             set((state) => {
               state.client = client
               state.mangoAccount = mangoAccount
-              state.serumOrders = orders
+              // state.serumOrders = orders
             })
           } catch (e) {
             console.error('Error fetching mango acct', e)
+          }
+        },
+        reloadGroup: async () => {
+          try {
+            const client = get().client
+            const group = await client.getGroup(DEVNET_GROUP)
+
+            set((state) => {
+              state.group = group
+            })
+          } catch (e) {
+            console.error('Error fetching group', e)
           }
         },
         reloadAccount: async () => {

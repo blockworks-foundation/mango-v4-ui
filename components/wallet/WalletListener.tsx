@@ -1,23 +1,34 @@
 import { useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '../../store/state'
-import { Wallet as AnchorWallet, Wallet } from '@project-serum/anchor'
+import { Wallet } from '@project-serum/anchor'
 
 const WalletListener = () => {
-  const actions = mangoStore((s) => s.actions)
-  const { wallet, publicKey } = useWallet()
+  const group = mangoStore((s) => s.group)
+  const { wallet, connected, disconnecting } = useWallet()
 
   useEffect(() => {
+    const actions = mangoStore.getState().actions
+
     const onConnect = async () => {
       if (!wallet) return
-      console.log('onConnect pk:', publicKey)
-      actions.connectWallet(wallet.adapter as unknown as Wallet)
+      actions.fetchMangoAccount(wallet.adapter as unknown as Wallet)
     }
 
-    if (publicKey) {
+    if (connected && group) {
       onConnect()
     }
-  }, [wallet?.adapter, publicKey])
+  }, [wallet, connected, group])
+
+  useEffect(() => {
+    const setStore = mangoStore.getState().set
+
+    if (disconnecting) {
+      setStore((state) => {
+        state.mangoAccount = undefined
+      })
+    }
+  }, [disconnecting])
 
   return null
 }

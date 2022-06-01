@@ -15,6 +15,10 @@ const nextConfig = {
         util: false,
         assert: false,
         stream: false,
+        http: false,
+        https: false,
+        querystring: false,
+        events: false,
       }
     }
 

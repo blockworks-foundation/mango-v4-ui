@@ -16,8 +16,6 @@ const SerumOrder = () => {
   const actions = mangoStore.getState().actions
   const mangoAccount = mangoStore.getState().mangoAccount
 
-  console.log('mangoAccount', mangoAccount)
-
   const [tradeForm, setTradeForm] = useState({ side: '', size: '', price: '' })
 
   const handlePlaceOrder = async () => {
@@ -76,7 +74,7 @@ const SerumOrder = () => {
   }
 
   return (
-    <div className="rounded border p-4">
+    <div className="w-full rounded border-8 p-4">
       Serum 3
       <div className="rounded border p-2">
         {markets?.map((m) => {

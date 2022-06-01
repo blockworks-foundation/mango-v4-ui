@@ -5,47 +5,23 @@ import {
   WalletDisconnectButton,
   WalletMultiButton,
 } from '@solana/wallet-adapter-react-ui'
-import { useState } from 'react'
-import Button from './shared/Button'
-import DepositModal from './DepositModal'
-import WithdrawModal from './WithdrawModal'
+import MenuItem from './shared/MenuItem'
 
 const TopBar = () => {
-  const [showDepositModal, setShowDepositModal] = useState(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
   const { connected } = useWallet()
 
   return (
     <>
-      <div className="flex w-full p-2">
-        <div className="ml-auto">
-          <div className="flex space-x-2">
-            {connected ? (
-              <>
-                <Button onClick={() => setShowDepositModal(true)}>
-                  Deposit
-                </Button>
-                <Button onClick={() => setShowWithdrawModal(true)}>
-                  Withdraw
-                </Button>
-              </>
-            ) : null}
-            {connected ? <WalletDisconnectButton /> : <WalletMultiButton />}
-          </div>
+      <div className="flex w-full justify-between p-2">
+        <div className="ml-4 flex space-x-4">
+          <MenuItem href="/">Home</MenuItem>
+          {/* <MenuItem href="/swap">Swap</MenuItem> */}
+        </div>
+
+        <div className="flex">
+          {connected ? <WalletDisconnectButton /> : <WalletMultiButton />}
         </div>
       </div>
-      {showDepositModal ? (
-        <DepositModal
-          isOpen={showDepositModal}
-          onClose={() => setShowDepositModal(false)}
-        />
-      ) : null}
-      {showWithdrawModal ? (
-        <WithdrawModal
-          isOpen={showWithdrawModal}
-          onClose={() => setShowWithdrawModal(false)}
-        />
-      ) : null}
     </>
   )
 }

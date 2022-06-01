@@ -20,19 +20,26 @@ function DepositModal({ isOpen, onClose }: DepositModalProps) {
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount
+    console.log('hi', mangoAccount, group)
+
     if (!mangoAccount || !group) return
-    console.log(1)
-    setSubmitting(true)
-    const tx = await client.deposit(
-      group,
-      mangoAccount,
-      selectedToken,
-      parseFloat(inputAmount)
-    )
-    console.log(2, tx)
-    await actions.reloadAccount()
-    setSubmitting(false)
-    console.log(3)
+
+    try {
+      setSubmitting(true)
+      const tx = await client.deposit(
+        group,
+        mangoAccount,
+        selectedToken,
+        parseFloat(inputAmount)
+      )
+      console.log('Success depositing:', tx)
+
+      await actions.reloadAccount()
+      setSubmitting(false)
+    } catch (e) {
+      console.log('Error depositing:', e)
+    }
+
     onClose()
   }
 
@@ -57,6 +64,7 @@ function DepositModal({ isOpen, onClose }: DepositModalProps) {
             >
               <option>USDC</option>
               <option>BTC</option>
+              <option>SOL</option>
             </select>
           </div>
           <input
