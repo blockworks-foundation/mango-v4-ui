@@ -1,7 +1,5 @@
-import { MANGO_V4_ID } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
 
-import ExplorerLink from '../components/shared/ExplorerLink'
 import MangoAccount from '../components/MangoAccount'
 import Swap from './Swap'
 

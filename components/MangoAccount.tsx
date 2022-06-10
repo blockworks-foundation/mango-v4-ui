@@ -7,7 +7,6 @@ import ExplorerLink from './shared/ExplorerLink'
 import Button from './shared/Button'
 import DepositModal from './DepositModal'
 import WithdrawModal from './WithdrawModal'
-import Loading from './shared/Loading'
 
 const MangoAccount = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)
