@@ -22,7 +22,7 @@ function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
     const actions = mangoStore.getState().actions
     if (!mangoAccount || !group) return
     setSubmitting(true)
-    const tx = await client.withdraw(
+    const tx = await client.tokenWithdraw(
       group,
       mangoAccount,
       selectedToken,

@@ -6,7 +6,8 @@
     "dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@blockworks-foundation/mango-v4": "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#dev",
