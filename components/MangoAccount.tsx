@@ -26,33 +26,17 @@ const MangoAccount = () => {
     : []
 
   return (
-    <div className="rounded border-8 p-4">
+    <div className="rounded-xl bg-mango-600 p-8">
       {mangoAccount ? (
         <div className="">
           Mango Account:{' '}
           <ExplorerLink address={mangoAccount?.publicKey.toString()} />
-          {activeTokens.map((ta, idx) => {
-            return (
-              <div key={idx} className="mt-2 rounded border p-2">
-                <div>Token Index {ta.tokenIndex}</div>
-                <div>Indexed Value {ta.indexedValue.toNumber()}</div>
-                <div>In Use Count {ta.inUseCount}</div>
-              </div>
-            )
-          })}
-          <div className="mt-2 space-y-2 rounded border p-2">
+          <div className="mt-2 space-y-2 rounded border border-mango-500 p-2">
             {banks.map((bank) => {
               return (
                 <div key={bank.key}>
                   <div>{bank.value.name}</div>
-                  <div>
-                    Deposits:{' '}
-                    {mangoAccount.getNativeDeposit(bank.value).toNumber()}
-                  </div>
-                  <div>
-                    Borrows:{' '}
-                    {mangoAccount.getNativeBorrow(bank.value).toNumber()}
-                  </div>
+                  <div>Balance: {mangoAccount.getUi(bank.value)}</div>
                 </div>
               )
             })}

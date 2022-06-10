@@ -1,9 +1,9 @@
-import { DEVNET_SERUM3_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
 import {
+  DEVNET_SERUM3_PROGRAM_ID,
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
-} from '@blockworks-foundation/mango-v4/dist/accounts/serum3'
+} from '@blockworks-foundation/mango-v4'
 import { Order } from '@project-serum/serum/lib/market'
 import { useState } from 'react'
 import mangoStore from '../store/state'
@@ -74,55 +74,57 @@ const SerumOrder = () => {
   }
 
   return (
-    <div className="w-full rounded border-8 p-4">
+    <div className="rounded-xl bg-mango-600 p-8">
       Serum 3
-      <div className="rounded border p-2">
-        {markets?.map((m) => {
-          return (
-            <div key={m.name}>
-              <div>
-                {m.name}: <ExplorerLink address={m.publicKey.toString()} />
-              </div>
-              <div>Market Index: {m.marketIndex}</div>
-              <div>
-                {serumOrders?.map((o) => {
-                  const ooAddress = o.openOrdersAddress
-                  const myOrder = mangoAccount?.serum3
-                    .map((s) => s.openOrders.toString())
-                    .includes(ooAddress.toString())
+      {markets?.length ? (
+        <div className="rounded border border-mango-500 p-4">
+          {markets?.map((m) => {
+            return (
+              <div key={m.name}>
+                <div>
+                  {m.name}: <ExplorerLink address={m.publicKey.toString()} />
+                </div>
+                <div>Market Index: {m.marketIndex}</div>
+                <div>
+                  {serumOrders?.map((o) => {
+                    const ooAddress = o.openOrdersAddress
+                    const myOrder = mangoAccount?.serum3
+                      .map((s) => s.openOrders.toString())
+                      .includes(ooAddress.toString())
 
-                  return (
-                    <div
-                      key={`${o.side}${o.size}${o.price}`}
-                      className="my-1 rounded border p-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div>Side: {o.side}</div>
-                          <div>Size: {o.size}</div>
-                          <div>Price: {o.price}</div>
-                        </div>
-                        {myOrder ? (
+                    return (
+                      <div
+                        key={`${o.side}${o.size}${o.price}`}
+                        className="my-1 rounded border p-2"
+                      >
+                        <div className="flex items-center justify-between">
                           <div>
-                            <Button onClick={() => cancelOrder(o)}>
-                              Cancel
-                            </Button>
+                            <div>Side: {o.side}</div>
+                            <div>Size: {o.size}</div>
+                            <div>Price: {o.price}</div>
                           </div>
-                        ) : null}
+                          {myOrder ? (
+                            <div>
+                              <Button onClick={() => cancelOrder(o)}>
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      ) : null}
       <form className="mt-4">
-        <div>
+        <div className="mt-2">
           <label
             htmlFor="side"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-mango-300"
           >
             Side
           </label>
@@ -131,7 +133,7 @@ const SerumOrder = () => {
               type="text"
               name="side"
               id="side"
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-none bg-mango-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="buy"
               value={tradeForm.side}
               onChange={(e) =>
@@ -143,10 +145,10 @@ const SerumOrder = () => {
             />
           </div>
         </div>
-        <div>
+        <div className="mt-2">
           <label
             htmlFor="size"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-mango-300"
           >
             Size
           </label>
@@ -155,7 +157,7 @@ const SerumOrder = () => {
               type="number"
               name="size"
               id="size"
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-none bg-mango-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="0.00"
               value={tradeForm.size}
               onChange={(e) =>
@@ -167,10 +169,10 @@ const SerumOrder = () => {
             />
           </div>
         </div>
-        <div>
+        <div className="mt-2">
           <label
             htmlFor="price"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-mango-300"
           >
             Price
           </label>
@@ -179,7 +181,7 @@ const SerumOrder = () => {
               type="number"
               name="price"
               id="price"
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-none bg-mango-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="0.00"
               value={tradeForm.price}
               onChange={(e) =>

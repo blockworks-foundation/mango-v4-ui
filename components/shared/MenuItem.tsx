@@ -14,7 +14,7 @@ const MenuItem = ({ href, children, newWindow = false }: MenuItemProps) => {
   return (
     <Link href={href} shallow={true}>
       <a
-        className={`border-th-bkg-4 text-th-fgd-1 hover:text-th-primary flex h-full items-center justify-between border-b p-3 font-bold md:border-none md:py-0
+        className={`border-th-bkg-4 flex h-full items-center justify-between border-b p-3 font-bold text-mango-200 hover:text-yellow-400 md:border-none md:py-0
           ${asPath === href ? `text-th-primary` : `border-transparent`}
         `}
         target={newWindow ? '_blank' : ''}

@@ -9,7 +9,7 @@ const ExplorerLink = ({ address }: ExplorerLinkProps) => {
       href={
         'https://explorer.solana.com/address/' + address + '?cluster=' + cluster
       }
-      className="ml-1 text-blue-400 hover:underline"
+      className="ml-1 text-yellow-400 hover:underline"
       target="_blank"
       rel="noreferrer"
     >

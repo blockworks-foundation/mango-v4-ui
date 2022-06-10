@@ -17,7 +17,7 @@ const DEVNET_GROUP = new PublicKey(
   'DxXvt6KHYN5oN19kY5LYj53aJXuGubgGGx1BaBMZJMj1'
 )
 
-const connection = new Connection(
+export const connection = new Connection(
   'https://mango.devnet.rpcpool.com',
   'processed'
 )
