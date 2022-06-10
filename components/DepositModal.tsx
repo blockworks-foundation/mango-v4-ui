@@ -26,7 +26,7 @@ function DepositModal({ isOpen, onClose }: DepositModalProps) {
 
     try {
       setSubmitting(true)
-      const tx = await client.deposit(
+      const tx = await client.tokenDeposit(
         group,
         mangoAccount,
         selectedToken,
