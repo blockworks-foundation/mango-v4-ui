@@ -1,17 +1,11 @@
-// import { TokenAccount } from '@blockworks-foundation/mango-v4'
 import Image from 'next/image'
 
 import mangoStore from '../store/state'
-import ExplorerLink from './shared/ExplorerLink'
 import ContentBox from './shared/ContentBox'
 
 const MangoAccount = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const group = mangoStore((s) => s.group)
-
-  // const activeTokens = mangoAccount
-  //   ? mangoAccount.tokens.filter((ta: TokenAccount) => ta.isActive())
-  //   : []
 
   const banks = group?.banksMap
     ? Array.from(group?.banksMap, ([key, value]) => ({ key, value }))
@@ -21,9 +15,6 @@ const MangoAccount = () => {
     <ContentBox>
       <div className="">
         <div className="text-2xl font-bold">Tokens</div>
-        {mangoAccount ? mangoAccount.name : null}
-        {/* Mango Account:{' '}
-          <ExplorerLink address={mangoAccount?.publicKey.toString()} /> */}
         <table className="mt-4 min-w-full">
           <thead>
             <tr>
