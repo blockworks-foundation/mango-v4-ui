@@ -6,6 +6,8 @@ import TopBar from '../components/TopBar'
 import ExplorerLink from '../components/shared/ExplorerLink'
 import SerumOrder from '../components/SerumOrder'
 import { MANGO_V4_ID } from '@blockworks-foundation/mango-v4'
+import ContentBox from '../components/shared/ContentBox'
+import Container from '../components/shared/Container'
 
 const Index: NextPage = () => {
   const group = mangoStore((s) => s.group)
@@ -16,7 +18,7 @@ const Index: NextPage = () => {
     : []
 
   return (
-    <div className="bg-mango-800 text-mango-100">
+    <Container>
       <TopBar />
       <div className="mt-8 flex justify-center">
         <div className="flex">
@@ -27,7 +29,7 @@ const Index: NextPage = () => {
       </div>
       <div className="flex justify-center">
         <div className="mt-8 flex space-x-8">
-          <div className="rounded-xl bg-mango-600 p-6">
+          <ContentBox>
             Group:{' '}
             {group ? (
               <ExplorerLink address={group?.publicKey.toString()} />
@@ -66,7 +68,7 @@ const Index: NextPage = () => {
                 </div>
               )
             })}
-          </div>
+          </ContentBox>
           {connected ? (
             <div className="w-96">
               <SerumOrder />{' '}
@@ -74,7 +76,7 @@ const Index: NextPage = () => {
           ) : null}
         </div>
       </div>
-    </div>
+    </Container>
   )
 }
 

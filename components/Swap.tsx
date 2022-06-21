@@ -6,6 +6,7 @@ import debounce from 'lodash.debounce'
 import mangoStore, { connection } from '../store/state'
 import Button from './shared/Button'
 import Loading from './shared/Loading'
+import ContentBox from './shared/ContentBox'
 
 const Swap = () => {
   const [amountIn, setAmountIn] = useState('')
@@ -56,18 +57,18 @@ const Swap = () => {
   }
 
   return (
-    <div className="rounded-xl bg-mango-600 p-8">
-      <div className="">
-        <div className="relative mt-1 rounded-md shadow-sm">
-          <div className="absolute inset-y-0 left-0 flex items-center">
-            <label htmlFor="token" className="sr-only">
+    <ContentBox>
+      <div className="max-w-sm">
+        <div className="mt-1 flex justify-between rounded-md bg-mango-600 py-2 px-6 drop-shadow-md">
+          <div className="flex items-center">
+            <label htmlFor="tokenIn" className="sr-only">
               Token
             </label>
             <select
-              id="token"
-              name="token"
+              id="tokenIn"
+              name="tokenIn"
               autoComplete="token"
-              className="h-full rounded-md border-transparent bg-transparent py-0 pl-3 pr-7 text-mango-200 focus:ring-0 sm:text-sm"
+              className="h-full rounded-md border-transparent bg-transparent pr-8 text-lg font-bold text-mango-200 focus:ring-0"
               // onChange={handleTokenSelect}
             >
               <option>SOL</option>
@@ -77,22 +78,22 @@ const Swap = () => {
             type="text"
             name="amountIn"
             id="amountIn"
-            className="block w-full rounded-lg border-none bg-mango-700 py-4 pl-24 text-mango-200 focus:ring-0 sm:text-sm"
+            className="rounded-lg border-none bg-transparent text-right text-2xl text-mango-200 focus:ring-0"
             placeholder="0.00"
             value={amountIn}
             onChange={handleAmountInChange}
           />
         </div>
-        <div className="relative mt-4 rounded-md shadow-sm">
-          <div className="absolute inset-y-0 left-0 flex items-center">
-            <label htmlFor="token" className="sr-only">
+        <div className="mt-4 flex justify-between rounded-md bg-mango-600 py-2 px-6 drop-shadow-md">
+          <div className="flex items-center">
+            <label htmlFor="tokenOut" className="sr-only">
               Token
             </label>
             <select
-              id="token"
-              name="token"
+              id="tokenOut"
+              name="tokenOut"
               autoComplete="token"
-              className="h-full rounded-md border-transparent bg-transparent py-0 pl-3 pr-7 text-mango-200 focus:ring-0 sm:text-sm"
+              className="h-full rounded-md border-transparent bg-transparent pr-8 text-lg font-bold text-mango-200 focus:ring-0"
               // onChange={handleTokenSelect}
             >
               <option>ORCA</option>
@@ -102,7 +103,7 @@ const Swap = () => {
             type="text"
             name="amountOut"
             id="amountOut"
-            className="block w-full rounded-lg border-none bg-mango-700 py-4 pl-24 text-mango-200 focus:ring-0 sm:text-sm"
+            className="rounded-lg border-none bg-transparent text-right text-2xl text-mango-200 focus:ring-0"
             disabled
           />
         </div>
@@ -133,7 +134,7 @@ const Swap = () => {
           {submitting ? <Loading className="mr-2 h-5 w-5" /> : null} Swap
         </Button>
       </div>
-    </div>
+    </ContentBox>
   )
 }
 

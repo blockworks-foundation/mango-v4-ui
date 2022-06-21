@@ -1,15 +1,16 @@
 import type { NextPage } from 'next'
 
 import Home from '../components/Home'
+import Container from '../components/shared/Container'
 import TopBar from '../components/TopBar'
 
 const Index: NextPage = () => {
   return (
-    <div className="min-h-screen bg-mango-800 text-mango-100 ">
+    <Container>
       <TopBar />
 
       <Home />
-    </div>
+    </Container>
   )
 }
 

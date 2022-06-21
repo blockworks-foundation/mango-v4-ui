@@ -8,6 +8,7 @@ import { Order } from '@project-serum/serum/lib/market'
 import { useState } from 'react'
 import mangoStore from '../store/state'
 import Button from './shared/Button'
+import ContentBox from './shared/ContentBox'
 import ExplorerLink from './shared/ExplorerLink'
 
 const SerumOrder = () => {
@@ -74,7 +75,7 @@ const SerumOrder = () => {
   }
 
   return (
-    <div className="rounded-xl bg-mango-600 p-8">
+    <ContentBox>
       Serum 3
       {markets?.length ? (
         <div className="rounded border border-mango-500 p-4">
@@ -133,7 +134,7 @@ const SerumOrder = () => {
               type="text"
               name="side"
               id="side"
-              className="block w-full rounded-md border-none bg-mango-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-none bg-mango-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="buy"
               value={tradeForm.side}
               onChange={(e) =>
@@ -157,7 +158,7 @@ const SerumOrder = () => {
               type="number"
               name="size"
               id="size"
-              className="block w-full rounded-md border-none bg-mango-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-none bg-mango-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="0.00"
               value={tradeForm.size}
               onChange={(e) =>
@@ -181,7 +182,7 @@ const SerumOrder = () => {
               type="number"
               name="price"
               id="price"
-              className="block w-full rounded-md border-none bg-mango-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-none bg-mango-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="0.00"
               value={tradeForm.price}
               onChange={(e) =>
@@ -197,7 +198,7 @@ const SerumOrder = () => {
       <div className="mt-4 flex justify-center">
         <Button onClick={handlePlaceOrder}>Place Order</Button>
       </div>
-    </div>
+    </ContentBox>
   )
 }
 

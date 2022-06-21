@@ -1,69 +1,88 @@
-import { TokenAccount } from '@blockworks-foundation/mango-v4'
-import { useWallet } from '@solana/wallet-adapter-react'
-import { useState } from 'react'
+// import { TokenAccount } from '@blockworks-foundation/mango-v4'
+import Image from 'next/image'
 
 import mangoStore from '../store/state'
 import ExplorerLink from './shared/ExplorerLink'
-import Button from './shared/Button'
-import DepositModal from './DepositModal'
-import WithdrawModal from './WithdrawModal'
+import ContentBox from './shared/ContentBox'
 
 const MangoAccount = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const group = mangoStore((s) => s.group)
-  const { connected } = useWallet()
 
-  const [showDepositModal, setShowDepositModal] = useState(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
-
-  const activeTokens = mangoAccount
-    ? mangoAccount.tokens.filter((ta: TokenAccount) => ta.isActive())
-    : []
+  // const activeTokens = mangoAccount
+  //   ? mangoAccount.tokens.filter((ta: TokenAccount) => ta.isActive())
+  //   : []
 
   const banks = group?.banksMap
     ? Array.from(group?.banksMap, ([key, value]) => ({ key, value }))
     : []
 
   return (
-    <div className="rounded-xl bg-mango-600 p-8">
-      {mangoAccount ? (
-        <div className="">
-          Mango Account:{' '}
-          <ExplorerLink address={mangoAccount?.publicKey.toString()} />
-          <div className="mt-2 space-y-2 rounded border border-mango-500 p-2">
+    <ContentBox>
+      <div className="">
+        <div className="text-2xl font-bold">Tokens</div>
+        {mangoAccount ? mangoAccount.name : null}
+        {/* Mango Account:{' '}
+          <ExplorerLink address={mangoAccount?.publicKey.toString()} /> */}
+        <table className="mt-4 min-w-full">
+          <thead>
+            <tr>
+              <th className="pr-12 text-left text-sm">Asset</th>
+              <th className="pr-12 text-left text-sm">Deposits/Lend</th>
+              <th className="pr-12 text-left text-sm">Borrows</th>
+              <th className="pr-12 text-left text-sm">Balance</th>
+            </tr>
+          </thead>
+          <tbody>
             {banks.map((bank) => {
               return (
-                <div key={bank.key}>
-                  <div>{bank.value.name}</div>
-                  <div>Balance: {mangoAccount.getUi(bank.value)}</div>
-                </div>
+                <tr key={bank.key}>
+                  <td className="pr-12 pt-4">
+                    <div className="flex items-center">
+                      <div className="mr-4 flex min-w-[30px] items-center">
+                        <Image
+                          alt=""
+                          width="30"
+                          height="30"
+                          src={`/icons/${bank.value.name.toLowerCase()}.svg`}
+                        />
+                      </div>
+                      <div>
+                        <div>{bank.value.name}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="pr-12 pt-4">
+                    <div className="flex flex-col">
+                      <div>{bank.value.uiDeposits().toFixed(6)}</div>
+                      <div className="text-green-500">
+                        {bank.value.getDepositRate().toFixed(4)}%
+                      </div>
+                    </div>
+                  </td>
+                  <td className="pr-12 pt-4">
+                    <div className="flex flex-col">
+                      <div>{bank.value.uiBorrows().toFixed(6)}</div>
+                      <div className="text-red-500">
+                        {bank.value.getBorrowRate().toFixed(4)}%
+                      </div>
+                    </div>
+                  </td>
+                  <td className="pr-12 pt-4">
+                    <div className="px-2">
+                      {mangoAccount
+                        ? mangoAccount.getUi(bank.value).toFixed(4)
+                        : '-'}
+                    </div>
+                  </td>
+                </tr>
               )
             })}
-          </div>
-        </div>
-      ) : null}
-      <div className="mt-2 flex justify-center space-x-4">
-        {connected ? (
-          <>
-            <Button onClick={() => setShowDepositModal(true)}>Deposit</Button>
-            <Button onClick={() => setShowWithdrawModal(true)}>Withdraw</Button>
-          </>
-        ) : null}
+          </tbody>
+        </table>
+        <div className="mt-2 space-y-2 p-2"></div>
       </div>
-
-      {showDepositModal ? (
-        <DepositModal
-          isOpen={showDepositModal}
-          onClose={() => setShowDepositModal(false)}
-        />
-      ) : null}
-      {showWithdrawModal ? (
-        <WithdrawModal
-          isOpen={showWithdrawModal}
-          onClose={() => setShowWithdrawModal(false)}
-        />
-      ) : null}
-    </div>
+    </ContentBox>
   )
 }
 

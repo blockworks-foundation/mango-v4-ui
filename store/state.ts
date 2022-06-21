@@ -8,13 +8,13 @@ import {
   Group,
   MangoAccount,
   Serum3Market,
-  DEVNET_SERUM3_PROGRAM_ID,
+  MANGO_V4_ID,
 } from '@blockworks-foundation/mango-v4'
 import EmptyWallet from '../utils/wallet'
 import { Order } from '@project-serum/serum/lib/market'
 
 const DEVNET_GROUP = new PublicKey(
-  'DxXvt6KHYN5oN19kY5LYj53aJXuGubgGGx1BaBMZJMj1'
+  'CxJ8SewGzm2HW4pH7rCjgVnEAU4JaUDHE188vW7UKksD'
 )
 
 export const connection = new Connection(
@@ -48,7 +48,12 @@ const mangoStore = create<MangoStore>(
   subscribeWithSelector((set, get) => {
     return {
       group: undefined,
-      client: MangoClient.connect(provider, true),
+      client: MangoClient.connect(
+        provider,
+        'devnet',
+        MANGO_V4_ID['devnet'],
+        false
+      ),
       mangoAccount: undefined,
       markets: undefined,
       serumOrders: undefined,
@@ -56,6 +61,7 @@ const mangoStore = create<MangoStore>(
       actions: {
         fetchGroup: async () => {
           try {
+            const set = get().set
             const client = get().client
             const group = await client.getGroup(DEVNET_GROUP)
             // const markets = await client.serum3GetMarket(
@@ -75,11 +81,17 @@ const mangoStore = create<MangoStore>(
         fetchMangoAccount: async (wallet) => {
           try {
             console.log('connecting wallet', wallet.publicKey.toString())
+            const set = get().set
             const group = get().group
             if (!group) throw new Error('Group not loaded')
 
             const provider = new AnchorProvider(connection, wallet, options)
-            const client = await MangoClient.connect(provider, true)
+            const client = await MangoClient.connect(
+              provider,
+              'devnet',
+              MANGO_V4_ID['devnet'],
+              false
+            )
 
             const mangoAccount = await client.getOrCreateMangoAccount(
               group,
@@ -90,7 +102,7 @@ const mangoStore = create<MangoStore>(
 
             // let orders = await client.getSerum3Orders(
             //   group,
-            //   DEVNET_SERUM3_PROGRAM_ID,
+            //   SERUM3_PROGRAM_ID['devnet'],
             //   'BTC/USDC'
             // )
 
@@ -105,6 +117,7 @@ const mangoStore = create<MangoStore>(
         },
         reloadGroup: async () => {
           try {
+            const set = get().set
             const client = get().client
             const group = await client.getGroup(DEVNET_GROUP)
 
@@ -116,6 +129,7 @@ const mangoStore = create<MangoStore>(
           }
         },
         reloadAccount: async () => {
+          const set = get().set
           const client = get().client
           const mangoAccount = get().mangoAccount
 
@@ -132,21 +146,18 @@ const mangoStore = create<MangoStore>(
           }
         },
         loadSerumMarket: async () => {
+          const set = get().set
           const client = get().client
           const group = get().group
           if (!group) return
 
-          const markets = await client.serum3GetMarket(
+          const markets = await client.serum3GetMarkets(
             group,
             group.banksMap.get('BTC')?.tokenIndex,
             group.banksMap.get('USDC')?.tokenIndex
           )
 
-          let orders = await client.getSerum3Orders(
-            group,
-            DEVNET_SERUM3_PROGRAM_ID,
-            'BTC/USDC'
-          )
+          let orders = await client.getSerum3Orders(group, 'BTC/USDC')
 
           set((state) => {
             state.markets = markets
