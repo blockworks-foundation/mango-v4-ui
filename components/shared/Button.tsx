@@ -19,7 +19,7 @@ const Button: FunctionComponent<ButtonProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`whitespace-nowrap rounded-full bg-mango-500 px-6 py-2 font-bold text-mango-200 hover:brightness-[1.1] focus:outline-none 
+      className={`whitespace-nowrap rounded-full bg-mango-500 px-8 py-2 font-bold text-mango-200 hover:brightness-[1.1] focus:outline-none 
       disabled:cursor-not-allowed disabled:hover:brightness-100 ${className}`}
       {...props}
     >

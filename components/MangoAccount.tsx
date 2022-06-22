@@ -19,6 +19,7 @@ const MangoAccount = () => {
           <thead>
             <tr>
               <th className="pr-12 text-left text-sm">Asset</th>
+              <th className="pr-12 text-left text-sm">Price</th>
               <th className="pr-12 text-left text-sm">Deposits/Lend</th>
               <th className="pr-12 text-left text-sm">Borrows</th>
               <th className="pr-12 text-left text-sm">Balance</th>
@@ -42,6 +43,9 @@ const MangoAccount = () => {
                         <div>{bank.value.name}</div>
                       </div>
                     </div>
+                  </td>
+                  <td className="pr-12 pt-4 text-right">
+                    <div className="">${bank.value.price?.toFixed(2)}</div>
                   </td>
                   <td className="pr-12 pt-4">
                     <div className="flex flex-col">

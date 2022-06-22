@@ -29,6 +29,7 @@ const provider = new AnchorProvider(
 )
 
 export type MangoStore = {
+  connection: Connection
   group: Group | undefined
   client: MangoClient
   mangoAccount: MangoAccount | undefined
@@ -47,6 +48,7 @@ export type MangoStore = {
 const mangoStore = create<MangoStore>(
   subscribeWithSelector((set, get) => {
     return {
+      connection,
       group: undefined,
       client: MangoClient.connect(
         provider,
@@ -64,15 +66,15 @@ const mangoStore = create<MangoStore>(
             const set = get().set
             const client = get().client
             const group = await client.getGroup(DEVNET_GROUP)
-            // const markets = await client.serum3GetMarket(
-            //   group,
-            //   group.banksMap.get('BTC')?.tokenIndex,
-            //   group.banksMap.get('USDC')?.tokenIndex
-            // )
+            const markets = await client.serum3GetMarkets(
+              group,
+              group.banksMap.get('BTC')?.tokenIndex,
+              group.banksMap.get('USDC')?.tokenIndex
+            )
 
             set((state) => {
               state.group = group
-              // state.markets = markets
+              state.markets = markets
             })
           } catch (e) {
             console.error('Error fetching group', e)
