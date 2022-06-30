@@ -1,5 +1,4 @@
 import {
-  DEVNET_SERUM3_PROGRAM_ID,
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
@@ -32,7 +31,6 @@ const SerumOrder = () => {
       const tx = await client.serum3PlaceOrder(
         group,
         mangoAccount,
-        DEVNET_SERUM3_PROGRAM_ID,
         'BTC/USDC',
         side,
         parseFloat(tradeForm.price),
@@ -61,7 +59,6 @@ const SerumOrder = () => {
       const tx = await client.serum3CancelOrder(
         group,
         mangoAccount,
-        DEVNET_SERUM3_PROGRAM_ID,
         'BTC/USDC',
         order.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
         order.orderId
