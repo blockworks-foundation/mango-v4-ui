@@ -14,11 +14,11 @@ import EmptyWallet from '../utils/wallet'
 import { Order } from '@project-serum/serum/lib/market'
 
 const DEVNET_GROUP = new PublicKey(
-  'CxJ8SewGzm2HW4pH7rCjgVnEAU4JaUDHE188vW7UKksD'
+  'A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb'
 )
 
 export const connection = new Connection(
-  'https://mango.devnet.rpcpool.com',
+  'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
   'processed'
 )
 const options = AnchorProvider.defaultOptions() // use Provider instead of Provider
@@ -52,9 +52,8 @@ const mangoStore = create<MangoStore>(
       group: undefined,
       client: MangoClient.connect(
         provider,
-        'devnet',
-        MANGO_V4_ID['devnet'],
-        false
+        'mainnet-beta',
+        MANGO_V4_ID['mainnet-beta']
       ),
       mangoAccount: undefined,
       markets: undefined,
@@ -90,9 +89,8 @@ const mangoStore = create<MangoStore>(
             const provider = new AnchorProvider(connection, wallet, options)
             const client = await MangoClient.connect(
               provider,
-              'devnet',
-              MANGO_V4_ID['devnet'],
-              false
+              'mainnet-beta',
+              MANGO_V4_ID['mainnet-beta']
             )
 
             const mangoAccount = await client.getOrCreateMangoAccount(

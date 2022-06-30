@@ -23,15 +23,19 @@ const hydrateStore = async () => {
   actions.fetchGroup()
 }
 
-function MyApp({ Component, pageProps }: AppProps) {
+const HydrateStore = () => {
   useInterval(() => {
-    const actions = mangoStore.getState().actions
-    actions.reloadGroup()
+    hydrateStore()
   }, 10000)
 
   useEffect(() => {
     hydrateStore()
   }, [])
+
+  return null
+}
+
+function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Devnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
   const wallets = useMemo(
@@ -44,14 +48,17 @@ function MyApp({ Component, pageProps }: AppProps) {
   )
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          <WalletListener />
-          <Component {...pageProps} />
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+    <>
+      <HydrateStore />
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>
+            <WalletListener />
+            <Component {...pageProps} />
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    </>
   )
 }
 

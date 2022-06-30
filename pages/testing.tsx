@@ -42,7 +42,9 @@ const Index: NextPage = () => {
                   key={bank.key}
                   className="mt-2 rounded border border-mango-500 p-4"
                 >
-                  <div>{bank.key}</div>
+                  <div>
+                    {bank.key} {bank.value.publicKey.toString()}
+                  </div>
                   <div className="flex">
                     Mint: <ExplorerLink address={bank.value.mint.toString()} />
                   </div>
@@ -63,6 +65,7 @@ const Index: NextPage = () => {
                     Indexed Total Borrows:{' '}
                     {bank.value.indexedTotalDeposits.toString()}
                   </div>
+                  <div>Mint Decimals: {bank.value.mintDecimals.toString()}</div>
                   <div>Deposit Index: {bank.value.depositIndex.toString()}</div>
                   <div>Borrow Index: {bank.value.borrowIndex.toString()}</div>
                 </div>

@@ -4,7 +4,6 @@ import mangoStore from '../../store/state'
 import { Wallet } from '@project-serum/anchor'
 
 const WalletListener = () => {
-  const group = mangoStore((s) => s.group)
   const { wallet, connected, disconnecting } = useWallet()
 
   useEffect(() => {
@@ -14,11 +13,12 @@ const WalletListener = () => {
       if (!wallet) return
       actions.fetchMangoAccount(wallet.adapter as unknown as Wallet)
     }
+    console.log('connected', connected)
 
-    if (connected && group) {
+    if (connected) {
       onConnect()
     }
-  }, [wallet, connected, group])
+  }, [wallet, connected])
 
   useEffect(() => {
     const setStore = mangoStore.getState().set

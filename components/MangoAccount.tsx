@@ -66,7 +66,12 @@ const MangoAccount = () => {
                   <td className="pr-12 pt-4">
                     <div className="px-2">
                       {mangoAccount
-                        ? mangoAccount.getUi(bank.value).toFixed(4)
+                        ? mangoAccount.deposits(bank.value).toFixed(4)
+                        : '-'}
+                    </div>
+                    <div className="px-2">
+                      {mangoAccount
+                        ? mangoAccount.borrows(bank.value).toFixed(4)
                         : '-'}
                     </div>
                   </td>
