@@ -1,7 +1,7 @@
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import produce from 'immer'
-import { AnchorProvider, Wallet } from '@project-serum/anchor'
+import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import {
   MangoClient,
@@ -17,11 +17,12 @@ const DEVNET_GROUP = new PublicKey(
   'A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb'
 )
 
-export const connection = new Connection(
+export const connection = new web3.Connection(
   'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
   'processed'
 )
-const options = AnchorProvider.defaultOptions() // use Provider instead of Provider
+const options = AnchorProvider.defaultOptions()
+
 const provider = new AnchorProvider(
   connection,
   new EmptyWallet(Keypair.generate()),
