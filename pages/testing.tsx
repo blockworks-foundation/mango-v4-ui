@@ -64,11 +64,11 @@ const Index: NextPage = () => {
                   </div>
                   <div>
                     Indexed Total Deposits:{' '}
-                    {bank.value.indexedTotalDeposits.toString()}
+                    {bank.value.cachedIndexedTotalDeposits.toString()}
                   </div>
                   <div>
                     Indexed Total Borrows:{' '}
-                    {bank.value.indexedTotalDeposits.toString()}
+                    {bank.value.cachedIndexedTotalBorrows.toString()}
                   </div>
                   <div>Mint Decimals: {bank.value.mintDecimals.toString()}</div>
                   <div>Deposit Index: {bank.value.depositIndex.toString()}</div>

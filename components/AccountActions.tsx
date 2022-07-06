@@ -17,9 +17,10 @@ const AccountActions = () => {
   const handleCloseMangoAccount = async () => {
     const client = mangoStore.getState().client
     const mangoAccount = mangoStore.getState().mangoAccount
-    if (!mangoAccount) return
+    const group = mangoStore.getState().group
+    if (!mangoAccount || !group) return
     try {
-      const tx = await client.closeMangoAccount(mangoAccount)
+      const tx = await client.closeMangoAccount(group, mangoAccount)
       console.log('success:', tx)
     } catch (e) {
       console.log(e)
