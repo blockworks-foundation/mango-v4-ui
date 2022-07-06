@@ -20,7 +20,7 @@ function Modal({ title = '', children, isOpen, onClose }: ModalProps) {
         <span className="inline-block h-screen align-middle" aria-hidden="true">
           &#8203;
         </span>
-        <div className="my-8 inline-block w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+        <div className="my-8 inline-block w-full max-w-md transform overflow-hidden rounded-2xl bg-th-bkg-2 p-6 text-left align-middle shadow-xl transition-all">
           <Dialog.Title>{title}</Dialog.Title>
 
           {children}

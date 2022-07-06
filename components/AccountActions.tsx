@@ -5,12 +5,26 @@ import Button from './shared/Button'
 import DepositModal from './DepositModal'
 import WithdrawModal from './WithdrawModal'
 import ContentBox from './shared/ContentBox'
+import mangoStore from '../store/state'
 
 const AccountActions = () => {
   const { connected } = useWallet()
+  const mangoAccount = mangoStore((s) => s.mangoAccount)
 
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+
+  const handleCloseMangoAccount = async () => {
+    const client = mangoStore.getState().client
+    const mangoAccount = mangoStore.getState().mangoAccount
+    if (!mangoAccount) return
+    try {
+      const tx = await client.closeMangoAccount(mangoAccount)
+      console.log('success:', tx)
+    } catch (e) {
+      console.log(e)
+    }
+  }
 
   return (
     <ContentBox>
@@ -19,6 +33,7 @@ const AccountActions = () => {
           <>
             <Button onClick={() => setShowDepositModal(true)}>Deposit</Button>
             <Button onClick={() => setShowWithdrawModal(true)}>Withdraw</Button>
+            <Button onClick={handleCloseMangoAccount}>Close</Button>
           </>
         ) : null}
       </div>

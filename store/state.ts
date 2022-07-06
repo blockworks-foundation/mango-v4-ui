@@ -12,6 +12,11 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import EmptyWallet from '../utils/wallet'
 import { Order } from '@project-serum/serum/lib/market'
+import { Notification } from '../utils/notifications'
+import {
+  getTokenAccountsByOwnerWithWrappedSol,
+  TokenAccount,
+} from '../utils/tokens'
 
 const DEVNET_GROUP = new PublicKey(
   'A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb'
@@ -22,21 +27,30 @@ export const connection = new web3.Connection(
   'processed'
 )
 const options = AnchorProvider.defaultOptions()
-
+export const CLUSTER = 'mainnet-beta'
+export const CLIENT_TX_TIMEOUT = 90000
 const provider = new AnchorProvider(
   connection,
   new EmptyWallet(Keypair.generate()),
   options
 )
+provider.opts.skipPreflight = true
 
 export type MangoStore = {
+  connected: boolean
   connection: Connection
   group: Group | undefined
   client: MangoClient
+  jupiterTokens: any[]
   mangoAccount: MangoAccount | undefined
   markets: Serum3Market[] | undefined
+  notificationIdCounter: number
+  notifications: Array<Notification>
   serumOrders: Order[] | undefined
   set: (x: (x: MangoStore) => void) => void
+  wallet: {
+    tokens: TokenAccount[]
+  }
   actions: {
     fetchGroup: () => Promise<void>
     fetchMangoAccount: (wallet: Wallet) => Promise<void>
@@ -49,17 +63,20 @@ export type MangoStore = {
 const mangoStore = create<MangoStore>(
   subscribeWithSelector((set, get) => {
     return {
+      connected: false,
       connection,
       group: undefined,
-      client: MangoClient.connect(
-        provider,
-        'mainnet-beta',
-        MANGO_V4_ID['mainnet-beta']
-      ),
+      client: MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER]),
+      jupiterTokens: [],
       mangoAccount: undefined,
       markets: undefined,
+      notificationIdCounter: 0,
+      notifications: [],
       serumOrders: undefined,
       set: (fn) => set(produce(fn)),
+      wallet: {
+        tokens: [],
+      },
       actions: {
         fetchGroup: async () => {
           try {
@@ -82,16 +99,16 @@ const mangoStore = create<MangoStore>(
         },
         fetchMangoAccount: async (wallet) => {
           try {
-            console.log('connecting wallet', wallet.publicKey.toString())
             const set = get().set
             const group = get().group
             if (!group) throw new Error('Group not loaded')
 
             const provider = new AnchorProvider(connection, wallet, options)
+            provider.opts.skipPreflight = true
             const client = await MangoClient.connect(
               provider,
-              'mainnet-beta',
-              MANGO_V4_ID['mainnet-beta']
+              CLUSTER,
+              MANGO_V4_ID[CLUSTER]
             )
 
             const mangoAccount = await client.getOrCreateMangoAccount(
@@ -110,10 +127,30 @@ const mangoStore = create<MangoStore>(
             set((state) => {
               state.client = client
               state.mangoAccount = mangoAccount
+              state.connected = true
               // state.serumOrders = orders
             })
           } catch (e) {
             console.error('Error fetching mango acct', e)
+          }
+        },
+        fetchWalletTokens: async (wallet: Wallet) => {
+          const set = get().set
+          const connection = get().connection
+
+          if (wallet.publicKey) {
+            const token = await getTokenAccountsByOwnerWithWrappedSol(
+              connection,
+              wallet.publicKey
+            )
+
+            set((state) => {
+              state.wallet.tokens = token
+            })
+          } else {
+            set((state) => {
+              state.wallet.tokens = []
+            })
           }
         },
         reloadGroup: async () => {

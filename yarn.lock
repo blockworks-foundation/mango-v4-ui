@@ -24,9 +24,9 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@blockworks-foundation/mango-v4@git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#ts/deps":
+"@blockworks-foundation/mango-v4@git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#ts/deps":
   version "0.0.1"
-  resolved "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#18a9877e5a6d3ab20f0091e36f3044c1bd58a348"
+  resolved "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#9789ec00d650271180f708c6f17f897fd0bbfb5c"
   dependencies:
     "@project-serum/anchor" "^0.24.2"
     "@project-serum/serum" "^0.13.65"
@@ -3198,6 +3198,11 @@ natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
+
+next-themes@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/next-themes/-/next-themes-0.1.1.tgz#122113a458bf1d1be5ffed66778ab924c106f82a"
+  integrity sha512-Iqxt6rhS/KfK/iHJ0tfFjTcdLEAI0AgwFuAFrMwLOPK5e+MI3I+fzyvBoS+VaOS+NldUiazurhgwYhrfV0VXsQ==
 
 next@12.1.5:
   version "12.1.5"

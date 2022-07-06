@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import mangoStore from '../store/state'
+import { notify } from '../utils/notifications'
 import Button from './shared/Button'
 import Loading from './shared/Loading'
 import Modal from './shared/Modal'
@@ -32,11 +33,21 @@ function DepositModal({ isOpen, onClose }: DepositModalProps) {
         selectedToken,
         parseFloat(inputAmount)
       )
-      console.log('Success depositing:', tx)
+      notify({
+        title: 'Transaction confirmed',
+        type: 'success',
+        txid: tx,
+      })
 
       await actions.reloadAccount()
       setSubmitting(false)
-    } catch (e) {
+    } catch (e: any) {
+      notify({
+        title: 'Transaction failed',
+        description: e.message,
+        txid: e?.txid,
+        type: 'error',
+      })
       console.log('Error depositing:', e)
     }
 

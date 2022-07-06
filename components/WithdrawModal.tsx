@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import mangoStore from '../store/state'
+import { notify } from '../utils/notifications'
 import Button from './shared/Button'
 import Loading from './shared/Loading'
 import Modal from './shared/Modal'
@@ -22,17 +23,31 @@ function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
     const actions = mangoStore.getState().actions
     if (!mangoAccount || !group) return
     setSubmitting(true)
-    const tx = await client.tokenWithdraw(
-      group,
-      mangoAccount,
-      selectedToken,
-      parseFloat(inputAmount),
-      false
-    )
-    console.log('tx: ', tx)
-    actions.reloadAccount()
-    setSubmitting(false)
-    onClose()
+    try {
+      const tx = await client.tokenWithdraw(
+        group,
+        mangoAccount,
+        selectedToken,
+        parseFloat(inputAmount),
+        false
+      )
+      notify({
+        title: 'Transaction confirmed',
+        type: 'success',
+        txid: tx,
+      })
+      actions.reloadAccount()
+    } catch (e: any) {
+      notify({
+        title: 'Transaction failed',
+        description: e.message,
+        txid: e?.txid,
+        type: 'error',
+      })
+    } finally {
+      setSubmitting(false)
+      onClose()
+    }
   }
 
   const handleTokenSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {

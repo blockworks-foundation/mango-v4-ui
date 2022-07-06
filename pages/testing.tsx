@@ -11,6 +11,7 @@ import Container from '../components/shared/Container'
 
 const Index: NextPage = () => {
   const group = mangoStore((s) => s.group)
+  const mangoAccount = mangoStore((s) => s.mangoAccount)
   const { connected } = useWallet()
 
   const banks = group?.banksMap
@@ -22,25 +23,29 @@ const Index: NextPage = () => {
       <TopBar />
       <div className="mt-8 flex justify-center">
         <div className="flex">
-          <div className="mx-auto rounded-xl bg-mango-600 p-6">
-            Program: <ExplorerLink address={MANGO_V4_ID.toString()} />
+          <div className="mx-auto rounded-xl bg-th-bkg-2 p-6">
+            Program:{' '}
+            <ExplorerLink address={MANGO_V4_ID['mainnet-beta'].toString()} />
           </div>
         </div>
       </div>
       <div className="flex justify-center">
         <div className="mt-8 flex space-x-8">
           <ContentBox>
-            Group:{' '}
-            {group ? (
-              <ExplorerLink address={group?.publicKey.toString()} />
-            ) : (
-              'Loading...'
-            )}
+            <div>
+              Group:{' '}
+              {group ? (
+                <ExplorerLink address={group?.publicKey.toString()} />
+              ) : (
+                'Loading...'
+              )}
+            </div>
+            <div>MangoAccount: {mangoAccount?.publicKey.toString()}</div>
             {banks.map((bank) => {
               return (
                 <div
                   key={bank.key}
-                  className="mt-2 rounded border border-mango-500 p-4"
+                  className="border-mango-500 mt-2 rounded border p-4"
                 >
                   <div>
                     {bank.key} {bank.value.publicKey.toString()}

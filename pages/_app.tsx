@@ -1,5 +1,6 @@
-import '../styles/globals.css'
 import type { AppProps } from 'next/app'
+import { useEffect, useMemo } from 'react'
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import {
   ConnectionProvider,
   WalletProvider,
@@ -12,15 +13,29 @@ import {
 } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
 
+import '../styles/globals.css'
 import WalletListener from '../components/wallet/WalletListener'
-import { useEffect, useMemo } from 'react'
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
-import mangoStore from '../store/state'
+import mangoStore, { CLUSTER } from '../store/state'
 import useInterval from '../components/shared/useInterval'
+import Notifications from '../components/shared/Notification'
+import { ThemeProvider } from 'next-themes'
+import { TOKEN_LIST_URL } from '@jup-ag/core'
 
 const hydrateStore = async () => {
   const actions = mangoStore.getState().actions
   actions.fetchGroup()
+}
+
+const loadJupTokens = async () => {
+  const set = mangoStore.getState().set
+
+  fetch(TOKEN_LIST_URL[CLUSTER])
+    .then((response) => response.json())
+    .then((result) => {
+      set((s) => {
+        s.jupiterTokens = result
+      })
+    })
 }
 
 const HydrateStore = () => {
@@ -30,6 +45,7 @@ const HydrateStore = () => {
 
   useEffect(() => {
     hydrateStore()
+    loadJupTokens()
   }, [])
 
   return null
@@ -51,10 +67,13 @@ function MyApp({ Component, pageProps }: AppProps) {
     <>
       <HydrateStore />
       <ConnectionProvider endpoint={endpoint}>
-        <WalletProvider wallets={wallets} autoConnect>
+        <WalletProvider wallets={wallets}>
           <WalletModalProvider>
             <WalletListener />
-            <Component {...pageProps} />
+            <ThemeProvider defaultTheme="Mango">
+              <Component {...pageProps} />
+              <Notifications />
+            </ThemeProvider>
           </WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>

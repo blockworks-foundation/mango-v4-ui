@@ -1,6 +1,7 @@
 import Image from 'next/image'
 
 import mangoStore from '../store/state'
+import { formatDecimal } from '../utils/numbers'
 import ContentBox from './shared/ContentBox'
 
 const MangoAccount = () => {
@@ -18,11 +19,11 @@ const MangoAccount = () => {
         <table className="mt-4 min-w-full">
           <thead>
             <tr>
-              <th className="pr-12 text-left text-sm">Asset</th>
-              <th className="pr-12 text-left text-sm">Price</th>
-              <th className="pr-12 text-left text-sm">Deposits/Lend</th>
-              <th className="pr-12 text-left text-sm">Borrows</th>
-              <th className="pr-12 text-left text-sm">Balance</th>
+              <th className="pr-12 text-sm">Asset</th>
+              <th className="pr-12 text-sm">Price</th>
+              <th className="pr-12 text-sm">Deposits/Lend</th>
+              <th className="pr-12 text-sm">Borrows</th>
+              <th className="pr-12 text-sm">Balance</th>
             </tr>
           </thead>
           <tbody>
@@ -48,30 +49,54 @@ const MangoAccount = () => {
                     <div className="">${bank.value.price?.toFixed(2)}</div>
                   </td>
                   <td className="pr-12 pt-4">
-                    <div className="flex flex-col">
-                      <div>{bank.value.uiDeposits().toFixed(6)}</div>
+                    <div className="flex flex-col text-right">
+                      <div>
+                        {formatDecimal(
+                          bank.value.uiDeposits(),
+                          bank.value.mintDecimals
+                        )}
+                      </div>
                       <div className="text-green-500">
-                        {bank.value.getDepositRate().toFixed(4)}%
+                        {formatDecimal(
+                          bank.value.getDepositRate().toNumber(),
+                          2
+                        )}
+                        %
                       </div>
                     </div>
                   </td>
                   <td className="pr-12 pt-4">
-                    <div className="flex flex-col">
-                      <div>{bank.value.uiBorrows().toFixed(6)}</div>
+                    <div className="flex flex-col text-right">
+                      <div>
+                        {formatDecimal(
+                          bank.value.uiBorrows(),
+                          bank.value.mintDecimals
+                        )}
+                      </div>
                       <div className="text-red-500">
-                        {bank.value.getBorrowRate().toFixed(4)}%
+                        {formatDecimal(
+                          bank.value.getBorrowRate().toNumber(),
+                          2
+                        )}
+                        %
                       </div>
                     </div>
                   </td>
-                  <td className="pr-12 pt-4">
+                  <td className="pr-12 pt-4 text-right">
                     <div className="px-2">
                       {mangoAccount
-                        ? mangoAccount.deposits(bank.value).toFixed(4)
+                        ? formatDecimal(
+                            mangoAccount.deposits(bank.value),
+                            bank.value.mintDecimals
+                          )
                         : '-'}
                     </div>
                     <div className="px-2">
                       {mangoAccount
-                        ? mangoAccount.borrows(bank.value).toFixed(4)
+                        ? formatDecimal(
+                            mangoAccount.borrows(bank.value),
+                            bank.value.mintDecimals
+                          )
                         : '-'}
                     </div>
                   </td>
