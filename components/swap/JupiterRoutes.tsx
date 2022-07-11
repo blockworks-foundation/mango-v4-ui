@@ -21,11 +21,6 @@ type JupiterRoutesProps = {
   setAmountOut: (x?: number) => void
 }
 
-type Routes = {
-  routesInfos: RouteInfo[]
-  cached: boolean
-}
-
 const parseJupiterRoute = async (
   jupiter: Jupiter,
   selectedRoute: RouteInfo,
@@ -49,16 +44,7 @@ const parseJupiterRoute = async (
 }
 
 const getBestRoute = (routesInfos: RouteInfo[]) => {
-  const routesInfosWithoutRaydium = routesInfos.filter((r) => {
-    if (r.marketInfos.length > 1) {
-      for (const mkt of r.marketInfos) {
-        if (mkt.amm.label === 'Raydium' || mkt.amm.label === 'Serum')
-          return false
-      }
-    }
-    return true
-  })
-  return routesInfosWithoutRaydium[0]
+  return routesInfos[0]
 }
 
 const JupiterRoutes = ({
@@ -71,7 +57,7 @@ const JupiterRoutes = ({
   setAmountOut,
 }: JupiterRoutesProps) => {
   const [jupiter, setJupiter] = useState<Jupiter>()
-  const [routes, setRoutes] = useState<Routes>()
+  const [routes, setRoutes] = useState<RouteInfo[]>()
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
   const [showRoutesModal, setShowRoutesModal] = useState(false)
   const [outputTokenInfo, setOutputTokenInfo] = useState<TokenInfo>()
@@ -121,18 +107,28 @@ const JupiterRoutes = ({
           inputAmount: amountIn * 10 ** inputBank.mintDecimals, // raw input amount of tokens
           slippage, // The slippage in % terms
           filterTopNResult: 10,
+          onlyDirectRoutes: true,
         })
-
-        setRoutes(computedRoutes)
-        const bestRoute = getBestRoute(computedRoutes!.routesInfos)
-        setSelectedRoute(bestRoute)
-
         const tokenOut = tokens.find(
-          // @ts-ignore
-          (t) => t.address === outputBank.mint.toString()
+          (t: any) => t.address === outputBank.mint.toString()
         )
         setOutputTokenInfo(tokenOut)
-        setAmountOut(toUiDecimals(bestRoute.outAmount, tokenOut.decimals))
+        const routesInfosWithoutRaydium = computedRoutes?.routesInfos.filter(
+          (r) => {
+            if (r.marketInfos.length > 1) {
+              for (const mkt of r.marketInfos) {
+                if (mkt.amm.label === 'Raydium') return false
+              }
+            }
+            return true
+          }
+        )
+        if (routesInfosWithoutRaydium?.length) {
+          setRoutes(routesInfosWithoutRaydium)
+          const bestRoute = getBestRoute(computedRoutes!.routesInfos)
+          setSelectedRoute(bestRoute)
+          setAmountOut(toUiDecimals(bestRoute.outAmount, tokenOut.decimals))
+        }
       }
     }
 
@@ -150,7 +146,7 @@ const JupiterRoutes = ({
           {submitting ? <Loading className="mr-2 h-5 w-5" /> : null} Swap
         </Button>
       </div>
-      {routes?.routesInfos.length && selectedRoute && outputTokenInfo ? (
+      {routes?.length && selectedRoute && outputTokenInfo ? (
         <>
           <div
             role="button"
@@ -160,7 +156,7 @@ const JupiterRoutes = ({
             }}
           >
             <SelectedRoute
-              routes={routes.routesInfos}
+              routes={routes}
               selectedRoute={selectedRoute}
               inputTokenSymbol={inputToken}
             />
@@ -180,8 +176,9 @@ const JupiterRoutes = ({
             <RoutesModal
               show={showRoutesModal}
               onClose={() => setShowRoutesModal(false)}
+              setSelectedRoute={setSelectedRoute}
               selectedRoute={selectedRoute}
-              routes={routes.routesInfos}
+              routes={routes}
               inputTokenSymbol={inputToken}
               outputTokenInfo={outputTokenInfo}
             />

@@ -1,5 +1,6 @@
-import { useState, ChangeEvent, SelectHTMLAttributes } from 'react'
+import { useState, ChangeEvent } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
+import { ArrowDownIcon, SwitchVerticalIcon } from '@heroicons/react/solid'
 
 import mangoStore from '../../store/state'
 import ContentBox from '../shared/ContentBox'
@@ -7,10 +8,7 @@ import { notify } from '../../utils/notifications'
 import JupiterRoutes from './JupiterRoutes'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
-
-const numberFormat = new Intl.NumberFormat('en', {
-  maximumSignificantDigits: 7,
-})
+import { numberFormat } from '../../utils/numbers'
 
 const Swap = () => {
   const [amountIn, setAmountIn] = useState('')
@@ -20,17 +18,32 @@ const Swap = () => {
   const [submitting, setSubmitting] = useState(false)
   const [slippage, setSlippage] = useState(0.1)
   const debouncedAmountIn = useDebounce(amountIn, 300)
+  const set = mangoStore.getState().set
+  const tokens = mangoStore((s) => s.jupiterTokens)
 
   const handleAmountInChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAmountIn(e.target.value)
   }
 
   const handleTokenInSelect = (e: ChangeEvent<HTMLSelectElement>) => {
+    const inputTokenInfo = tokens.find((t: any) => t.symbol === e.target.value)
+    set((s) => {
+      s.inputTokenInfo = inputTokenInfo
+    })
     setInputToken(e.target.value)
   }
 
   const handleTokenOutSelect = (e: ChangeEvent<HTMLSelectElement>) => {
+    const outputTokenInfo = tokens.find((t: any) => t.symbol === e.target.value)
+    set((s) => {
+      s.outputTokenInfo = outputTokenInfo
+    })
     setOutputToken(e.target.value)
+  }
+
+  const handleSwitchTokens = () => {
+    setInputToken(outputToken)
+    setOutputToken(inputToken)
   }
 
   const handleSwap = async (
@@ -49,20 +62,19 @@ const Swap = () => {
         mangoAccount,
         inputToken,
         amountIn: parseFloat(amountIn),
-        outputToken: 'USDC',
+        outputToken,
         userDefinedInstructions,
       })
       console.log('Success swapping:', tx)
-      // notify({
-      //   title: 'Transaction confirmed',
-      //   type: 'success',
-      //   txid: tx,
-      // })
+      notify({
+        title: 'Transaction confirmed',
+        type: 'success',
+        txid: tx,
+      })
 
       await actions.reloadAccount()
     } catch (e: any) {
       console.log('Error swapping:', e)
-
       notify({
         title: 'Transaction failed',
         description: e.message,
@@ -77,19 +89,38 @@ const Swap = () => {
   return (
     <ContentBox className="max-w-md">
       <div className="">
-        <div className="mt-1 flex justify-between rounded-md bg-th-bkg-1 py-2 px-6">
-          <TokenSelect token={inputToken} onChange={handleTokenInSelect} />
-          <div>
-            <input
-              type="text"
-              name="amountIn"
-              id="amountIn"
-              className="tex-th-fgd-2 w-full rounded-lg border-none bg-transparent text-right text-2xl focus:ring-0"
-              placeholder="0.00"
-              value={amountIn}
-              onChange={handleAmountInChange}
-            />
+        <div className="mt-1 flex-col rounded-md bg-th-bkg-1 py-2 px-6">
+          <div className="flex justify-between">
+            <TokenSelect token={inputToken} onChange={handleTokenInSelect} />
+            <div>
+              <input
+                type="text"
+                name="amountIn"
+                id="amountIn"
+                className="tex-th-fgd-2 w-full rounded-lg border-none bg-transparent text-right text-2xl focus:ring-0"
+                placeholder="0.00"
+                value={amountIn}
+                onChange={handleAmountInChange}
+              />
+            </div>
           </div>
+          <div>
+            <label
+              htmlFor="default-range"
+              className="block text-sm font-medium text-gray-900 dark:text-gray-300"
+            ></label>
+            <input
+              id="default-range"
+              type="range"
+              className="mb-6 h-1 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-3"
+            ></input>
+          </div>
+        </div>
+        <div className="-my-5 flex justify-center">
+          <button onClick={handleSwitchTokens}>
+            <ArrowDownIcon className="h-10 w-10 rounded-full border-4 border-th-bkg-1 bg-th-bkg-2 p-1.5 text-th-fgd-3 md:hover:text-th-primary" />
+            {/* <SwitchVerticalIcon className="default-transition h-10 w-10 rounded-full border-4 border-th-bkg-1 bg-th-bkg-2 p-1.5 text-th-fgd-3 md:hover:text-th-primary" /> */}
+          </button>
         </div>
         <div className="mt-4 flex items-center justify-between rounded-md py-2 px-6">
           <TokenSelect token={outputToken} onChange={handleTokenOutSelect} />

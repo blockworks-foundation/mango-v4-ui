@@ -1,11 +1,13 @@
 import { RouteInfo } from '@jup-ag/core'
+import { Dispatch, SetStateAction } from 'react'
 import mangoStore from '../../store/state'
 import { TokenInfo } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
 import Modal from '../shared/Modal'
 
 type RoutesModalProps = {
-  onClose: (x: boolean) => void
+  onClose: () => void
+  setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined>>
   show: boolean
   routes: RouteInfo[]
   selectedRoute: RouteInfo
@@ -18,12 +20,19 @@ const RoutesModal = ({
   show,
   routes,
   selectedRoute,
+  setSelectedRoute,
   inputTokenSymbol,
   outputTokenInfo,
 }: RoutesModalProps) => {
   const tokens = mangoStore.getState().jupiterTokens
+
+  const handleSelectRoute = (route: RouteInfo) => {
+    setSelectedRoute(route)
+    onClose()
+  }
+
   return (
-    <Modal isOpen={show} onClose={() => onClose(false)}>
+    <Modal isOpen={show} onClose={() => onClose()}>
       <div className="mb-4 text-center text-lg font-bold text-th-fgd-1">
         {routes?.length} routes found
       </div>
@@ -41,7 +50,7 @@ const RoutesModal = ({
             >
               <button
                 className="w-full p-4"
-                // onClick={() => handleSelectRoute(route)}
+                onClick={() => handleSelectRoute(route)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col text-left">

@@ -35,6 +35,12 @@ const loadJupTokens = async () => {
       set((s) => {
         s.jupiterTokens = result
       })
+      const inputTokenInfo = result.find((t: any) => t.symbol === 'SOL')
+      const outputTokenInfo = result.find((t: any) => t.symbol === 'USDC')
+      set((s) => {
+        s.inputTokenInfo = inputTokenInfo
+        s.outputTokenInfo = outputTokenInfo
+      })
     })
 }
 

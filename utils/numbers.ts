@@ -13,3 +13,7 @@ export const formatDecimal = (
   if (decimals === 6) return digits6.format(value)
   if (decimals === 9) return digits9.format(value)
 }
+
+export const numberFormat = new Intl.NumberFormat('en', {
+  maximumSignificantDigits: 7,
+})

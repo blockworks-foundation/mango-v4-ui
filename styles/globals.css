@@ -70,3 +70,31 @@
 body {
   @apply font-body tracking-wider;
 }
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 100%;
+  background: var(--primary);
+  cursor: pointer;
+  margin-top: -1px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+}
+
+/* All the same stuff for Firefox */
+input[type=range]::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 100%;
+  background: var(--primary);
+  cursor: pointer;
+}
+
+/* All the same stuff for IE */
+input[type=range]::-ms-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 100%;
+  background: var(--primary);
+  cursor: pointer;
+}
