@@ -48,7 +48,7 @@ const NotificationList = () => {
 
   return (
     <div
-      className={`text-th-fgd-1 pointer-events-none fixed inset-0 z-50 flex items-end px-4 py-6 sm:p-6`}
+      className={`pointer-events-none fixed bottom-0 left-0 z-50 flex w-full items-end px-4 py-6 text-th-fgd-1 sm:p-6`}
     >
       <div className={`flex w-full flex-col`}>
         {reversedNotifications.map((n) => (
@@ -127,31 +127,31 @@ const Notification = ({ notification }: { notification: Notification }) => {
       leaveTo="-translate-y-2 sm:translate-y-0 sm:-translate-x-48"
     >
       <div
-        className={`border-th-bkg-4 bg-th-bkg-3 pointer-events-auto mt-2 w-full max-w-sm overflow-hidden rounded-md border shadow-lg ring-1 ring-black ring-opacity-5`}
+        className={`pointer-events-auto mt-2 w-full max-w-sm overflow-hidden rounded-md border border-th-bkg-4 bg-th-bkg-3 shadow-lg ring-1 ring-black ring-opacity-5`}
       >
         <div className={`relative flex items-center px-2 py-2.5`}>
           <div className={`flex-shrink-0`}>
             {type === 'success' ? (
-              <CheckCircleIcon className={`text-th-green mr-1 h-7 w-7`} />
+              <CheckCircleIcon className={`mr-1 h-7 w-7 text-th-green`} />
             ) : null}
             {type === 'info' && (
               <InformationCircleIcon
-                className={`text-th-primary mr-1 h-7 w-7`}
+                className={`mr-1 h-7 w-7 text-th-primary`}
               />
             )}
             {type === 'error' && (
-              <XCircleIcon className={`text-th-red mr-1 h-7 w-7`} />
+              <XCircleIcon className={`mr-1 h-7 w-7 text-th-red`} />
             )}
             {type === 'confirm' && (
-              <Loading className="text-th-fgd-3 mr-1 h-7 w-7" />
+              <Loading className="mr-1 h-7 w-7 text-th-fgd-3" />
             )}
           </div>
           <div className={`ml-2 flex-1`}>
-            <div className={`text-normal text-th-fgd-1 font-bold`}>
+            <div className={`text-normal font-bold text-th-fgd-1`}>
               {parsedTitle || title}
             </div>
             {description ? (
-              <p className={`text-th-fgd-3 mb-0 mt-0.5 leading-tight`}>
+              <p className={`mb-0 mt-0.5 leading-tight text-th-fgd-3`}>
                 {description}
               </p>
             ) : null}
@@ -179,7 +179,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
           <div className={`absolute right-2 top-2 flex-shrink-0`}>
             <button
               onClick={hideNotification}
-              className={`text-th-fgd-4 md:hover:text-th-primary focus:outline-none`}
+              className={`text-th-fgd-4 focus:outline-none md:hover:text-th-primary`}
             >
               <span className={`sr-only`}>Close</span>
               <svg

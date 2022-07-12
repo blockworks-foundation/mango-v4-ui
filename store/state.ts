@@ -17,6 +17,7 @@ import {
   getTokenAccountsByOwnerWithWrappedSol,
   TokenAccount,
 } from '../utils/tokens'
+import { Token } from '../types/jupiter'
 
 const DEVNET_GROUP = new PublicKey(
   'A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb'
@@ -41,7 +42,7 @@ export type MangoStore = {
   connection: Connection
   group: Group | undefined
   client: MangoClient
-  jupiterTokens: any[]
+  jupiterTokens: Token[]
   mangoAccount: MangoAccount | undefined
   markets: Serum3Market[] | undefined
   notificationIdCounter: number

@@ -25,23 +25,29 @@ const Swap = () => {
     setAmountIn(e.target.value)
   }
 
-  const handleTokenInSelect = (e: ChangeEvent<HTMLSelectElement>) => {
-    const inputTokenInfo = tokens.find((t: any) => t.symbol === e.target.value)
+  const handleTokenInSelect = (symbol: string) => {
+    const inputTokenInfo = tokens.find((t: any) => t.symbol === symbol)
     set((s) => {
       s.inputTokenInfo = inputTokenInfo
     })
-    setInputToken(e.target.value)
+    setInputToken(symbol)
   }
 
-  const handleTokenOutSelect = (e: ChangeEvent<HTMLSelectElement>) => {
-    const outputTokenInfo = tokens.find((t: any) => t.symbol === e.target.value)
+  const handleTokenOutSelect = (symbol: string) => {
+    const outputTokenInfo = tokens.find((t: any) => t.symbol === symbol)
     set((s) => {
       s.outputTokenInfo = outputTokenInfo
     })
-    setOutputToken(e.target.value)
+    setOutputToken(symbol)
   }
 
   const handleSwitchTokens = () => {
+    const inputTokenInfo = tokens.find((t: any) => t.symbol === inputToken)
+    const outputTokenInfo = tokens.find((t: any) => t.symbol === outputToken)
+    set((s) => {
+      s.inputTokenInfo = outputTokenInfo
+      s.outputTokenInfo = inputTokenInfo
+    })
     setInputToken(outputToken)
     setOutputToken(inputToken)
   }
@@ -90,21 +96,21 @@ const Swap = () => {
     <ContentBox className="max-w-md">
       <div className="">
         <div className="mt-1 flex-col rounded-md bg-th-bkg-1 py-2 px-6">
-          <div className="flex justify-between">
+          <div className="flex items-center justify-between">
             <TokenSelect token={inputToken} onChange={handleTokenInSelect} />
             <div>
               <input
                 type="text"
                 name="amountIn"
                 id="amountIn"
-                className="tex-th-fgd-2 w-full rounded-lg border-none bg-transparent text-right text-2xl focus:ring-0"
+                className="w-full rounded-lg border-none bg-transparent text-right text-2xl text-th-fgd-3 focus:outline-none"
                 placeholder="0.00"
                 value={amountIn}
                 onChange={handleAmountInChange}
               />
             </div>
           </div>
-          <div>
+          <div className="mb-1">
             <label
               htmlFor="default-range"
               className="block text-sm font-medium text-gray-900 dark:text-gray-300"
@@ -122,9 +128,9 @@ const Swap = () => {
             {/* <SwitchVerticalIcon className="default-transition h-10 w-10 rounded-full border-4 border-th-bkg-1 bg-th-bkg-2 p-1.5 text-th-fgd-3 md:hover:text-th-primary" /> */}
           </button>
         </div>
-        <div className="mt-4 flex items-center justify-between rounded-md py-2 px-6">
+        <div className="mt-4 flex items-center justify-between py-2 px-6">
           <TokenSelect token={outputToken} onChange={handleTokenOutSelect} />
-          <div className="tex-th-fgd-2 w-full text-right text-2xl">
+          <div className="w-full cursor-context-menu text-right text-2xl text-th-fgd-3">
             {amountOut ? numberFormat.format(amountOut) : null}
           </div>
         </div>

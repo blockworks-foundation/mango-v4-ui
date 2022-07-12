@@ -1,9 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
   env: {
     BROWSER: true,
   },
+  images: {
+    domains: ['raw.githubusercontent.com'],
+  },
+  reactStrictMode: true,
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // don't resolve 'fs' module on the client to prevent this error on build --> Error: Can't resolve 'fs'

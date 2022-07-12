@@ -97,40 +97,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
     setChartData(formattedData.filter((d: any) => d.price))
   }
 
-  // Alternative chart data. Needs a timestamp tolerance to get data points for each asset
-
-  //   const getChartData = async () => {
-  //     const now = Date.now() / 1000
-  //     const inputResponse = await fetch(
-  //       `https://api.coingecko.com/api/v3/coins/${inputTokenId}/market_chart/range?vs_currency=usd&from=${
-  //         now - 1 * 86400
-  //       }&to=${now}`
-  //     )
-
-  //     const outputResponse = await fetch(
-  //       `https://api.coingecko.com/api/v3/coins/${outputTokenId}/market_chart/range?vs_currency=usd&from=${
-  //         now - 1 * 86400
-  //       }&to=${now}`
-  //     )
-  //     const inputData = await inputResponse.json()
-  //     const outputData = await outputResponse.json()
-
-  //     const data = inputData?.prices.concat(outputData?.prices)
-
-  //     const formattedData = data.reduce((a, c) => {
-  //       const found = a.find(
-  //         (price) => c[0] >= price.time - 120000 && c[0] <= price.time + 120000
-  //       )
-  //       if (found) {
-  //         found.price = found.inputPrice / c[1]
-  //       } else {
-  //         a.push({ time: c[0], inputPrice: c[1] })
-  //       }
-  //       return a
-  //     }, [])
-  //     setChartData(formattedData.filter((d) => d.price))
-  //   }
-
   const getInputTokenInfo = async () => {
     const response = await fetch(
       `https://api.coingecko.com/api/v3/coins/${inputTokenId}?localization=false&tickers=false&developer_data=false&sparkline=false
@@ -247,7 +213,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
             </div>
           </div>
           {!hideChart ? (
-            <div className="mt-6 h-36 w-full" ref={observe}>
+            <div className="mt-6 h-36" ref={observe}>
               <AreaChart
                 width={width}
                 height={height}
