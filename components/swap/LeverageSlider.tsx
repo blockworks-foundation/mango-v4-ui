@@ -1,24 +1,34 @@
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { ChangeEvent, ChangeEventHandler, useMemo } from 'react'
 import mangoStore from '../../store/state'
 import { formatDecimal } from '../../utils/numbers'
 
 type LeverageSliderProps = {
   inputToken: string
+  outputToken: string
   onChange: (x: string) => void
 }
 
-const LeverageSlider = ({ inputToken, onChange }: LeverageSliderProps) => {
+const LeverageSlider = ({
+  inputToken,
+  outputToken,
+  onChange,
+}: LeverageSliderProps) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const group = mangoStore((s) => s.group)
 
   const leverageMax = useMemo(() => {
     if (!mangoAccount || !group) return '100'
 
-    const bank = group.banksMap.get(inputToken)
-    if (!bank) return '100'
+    const max = toUiDecimals(
+      mangoAccount
+        .getMaxSourceForTokenSwap(group, inputToken, outputToken, 1)
+        .toNumber()
+    )
+    console.log(inputToken, outputToken, max)
 
-    return formatDecimal(mangoAccount.getUi(bank))
-  }, [mangoAccount, inputToken, group])
+    return formatDecimal(max)
+  }, [mangoAccount, inputToken, outputToken, group])
 
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value)

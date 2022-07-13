@@ -54,7 +54,7 @@ const RoutesModal = ({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col text-left">
-                    <div className="overflow-ellipsis whitespace-nowrap">
+                    <div className="overflow-ellipsis whitespace-nowrap font-bold">
                       {route.marketInfos.map((info, index) => {
                         let includeSeparator = false
                         if (
@@ -70,7 +70,7 @@ const RoutesModal = ({
                         )
                       })}
                     </div>
-                    <div className="text-xs font-normal text-th-fgd-4">
+                    <div className="text-xs text-th-fgd-4">
                       {inputTokenSymbol} →{' '}
                       {route.marketInfos.map((r, index) => {
                         const showArrow =

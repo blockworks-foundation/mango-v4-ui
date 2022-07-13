@@ -127,7 +127,7 @@ const JupiterRoutes = ({
           setRoutes(routesInfosWithoutRaydium)
           const bestRoute = getBestRoute(computedRoutes!.routesInfos)
           setSelectedRoute(bestRoute)
-          setAmountOut(toUiDecimals(bestRoute.outAmount, tokenOut.decimals))
+          setAmountOut(toUiDecimals(bestRoute.outAmount, tokenOut?.decimals))
         }
       }
     }

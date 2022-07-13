@@ -17,12 +17,15 @@ const TopBar = () => {
         <div className="flex w-full justify-start">
           <div className={`flex items-center justify-between`}>
             <Image src="/icons/logo.svg" alt="next" height="40" width="40" />
+            <div className="ml-2 text-2xl font-medium text-th-fgd-2">Mango</div>
           </div>
         </div>
-        <div className="flex w-full justify-center">
+        <div className="flex w-full justify-center text-th-fgd-3">
           <div className="ml-4 flex space-x-4">
             <MenuItem href="/">Home</MenuItem>
-            <MenuItem href="/testing">Testing</MenuItem>
+            <MenuItem href="/testing">Portfolio</MenuItem>
+            <MenuItem href="/testing">Spot</MenuItem>
+            <MenuItem href="/testing">Futures</MenuItem>
           </div>
         </div>
         <div className="flex w-full justify-end">

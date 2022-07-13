@@ -45,7 +45,7 @@ const RouteFeeInfo = ({
   }, [selectedRoute, connected])
 
   return (
-    <div className="mt-4 space-y-2 px-3 text-xs text-th-fgd-4">
+    <div className="mt-4 space-y-2 px-1 text-xs text-th-fgd-4">
       <div className="mb-4 flex items-center justify-between">
         <div className="text-sm font-bold text-th-fgd-1">Swap Details</div>
       </div>

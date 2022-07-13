@@ -1,8 +1,14 @@
 import { FunctionComponent, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
-import useDimensions from 'react-cool-dimensions'
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts'
 import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
 
@@ -35,7 +41,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   const [outputTokenInfo, setOutputTokenInfo] = useState<any>(null)
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState(1)
-  const { observe, width, height } = useDimensions()
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -213,41 +218,46 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
             </div>
           </div>
           {!hideChart ? (
-            <div className="mt-6 h-36" ref={observe}>
-              <AreaChart
-                width={width}
-                height={height}
-                data={chartData}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-              >
-                <Tooltip
-                  cursor={{
-                    strokeOpacity: 0,
-                  }}
-                  content={<></>}
-                />
-                {/* <defs>
+            <div className="-mx-5 -mb-6 h-40">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={chartData}
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <Tooltip
+                    cursor={{
+                      strokeOpacity: 0.09,
+                    }}
+                    content={<></>}
+                  />
+                  {/* <defs>
                   <linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#ffba24" stopOpacity={0.9} />
                     <stop offset="90%" stopColor="#ffba24" stopOpacity={0} />
                   </linearGradient>
                 </defs> */}
-                <Area
-                  isAnimationActive={true}
-                  type="monotone"
-                  dataKey="price"
-                  stroke="#ffba24"
-                  fill="url(#gradientArea)"
-                />
-                <XAxis dataKey="time" hide />
-                <YAxis
-                  dataKey="price"
-                  type="number"
-                  domain={['dataMin', 'dataMax']}
-                  hide
-                />
-              </AreaChart>
+                  <Area
+                    isAnimationActive={true}
+                    type="monotone"
+                    dataKey="price"
+                    stroke="#ffba24"
+                    fill="url(#gradientArea)"
+                  />
+                  <XAxis
+                    dataKey="time"
+                    hide
+                    padding={{ left: 20, right: 20 }}
+                  />
+                  <YAxis
+                    dataKey="price"
+                    type="number"
+                    domain={['dataMin', 'dataMax']}
+                    hide
+                    padding={{ top: 20, bottom: 20 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           ) : null}
         </div>

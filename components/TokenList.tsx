@@ -62,7 +62,7 @@ const TokenList = () => {
                   </td>
                   <td className="pt-4">
                     <div className="flex flex-col text-right">
-                      <div className="text-green-500">
+                      <div className="text-th-green">
                         {formatDecimal(
                           bank.value.getDepositRate().toNumber(),
                           2
@@ -83,7 +83,7 @@ const TokenList = () => {
                   </td>
                   <td className="pt-4">
                     <div className="flex flex-col text-right">
-                      <div className="text-red-500">
+                      <div className="text-th-red">
                         {formatDecimal(
                           bank.value.getBorrowRate().toNumber(),
                           2

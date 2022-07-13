@@ -16,7 +16,7 @@ const SelectedRoute = ({
 
   return (
     <div className="rounded-md p-px hover:bg-gradient-to-tl hover:from-gradient-start hover:via-gradient-mid hover:to-gradient-end">
-      <div className="relative rounded-md border border-th-bkg-4 bg-th-bkg-3 px-3 pb-4 pt-4 hover:cursor-pointer">
+      <div className="relative rounded-md border border-th-bkg-4 bg-th-bkg-2 px-3 pb-4 pt-4 hover:cursor-pointer">
         {selectedRoute === routes[0] ? (
           <div className="absolute -top-2 rounded-sm bg-th-primary px-1 text-xs font-bold text-th-bkg-1">
             Best Swap
@@ -40,7 +40,7 @@ const SelectedRoute = ({
                 )
               })}
             </span>
-            <div className="mr-2 mt-0.5 text-xs font-normal text-th-fgd-3">
+            <div className="mr-2 mt-0.5 text-xs text-th-fgd-3">
               {inputTokenSymbol} →{' '}
               {selectedRoute?.marketInfos.map((r, index) => {
                 const showArrow =

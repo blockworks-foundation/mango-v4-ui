@@ -28,13 +28,27 @@ const AccountActions = () => {
   return (
     <>
       <div className="mt-2 flex justify-center space-x-4">
-        {connected ? (
-          <>
-            <Button onClick={() => setShowDepositModal(true)}>Deposit</Button>
-            <Button onClick={() => setShowWithdrawModal(true)}>Withdraw</Button>
-            <Button onClick={handleCloseMangoAccount}>Close</Button>
-          </>
-        ) : null}
+        <Button
+          disabled={!connected}
+          className="w-full"
+          onClick={() => setShowDepositModal(true)}
+        >
+          Deposit
+        </Button>
+        <Button
+          disabled={!connected}
+          className="w-full"
+          onClick={() => setShowWithdrawModal(true)}
+        >
+          Withdraw
+        </Button>
+        <Button
+          disabled={!connected}
+          className="w-full"
+          onClick={handleCloseMangoAccount}
+        >
+          Close
+        </Button>
       </div>
 
       {showDepositModal ? (

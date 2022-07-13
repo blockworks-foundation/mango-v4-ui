@@ -13,8 +13,8 @@ const Home = () => {
 
   return (
     <div className="mt-8">
-      <div className="flex-col space-y-4">
-        <div className="mx-auto flex max-w-7xl justify-center space-x-4">
+      <div className="">
+        <div className="mx-auto flex max-w-7xl justify-center space-x-6">
           <div className="flex-grow space-y-6">
             <SwapTokenChart
               inputTokenId={inputTokenInfo?.extensions?.coingeckoId}
@@ -24,7 +24,7 @@ const Home = () => {
           </div>
           <div className="space-y-6">
             <Swap />
-            {connected ? <MangoAccount /> : null}
+            <MangoAccount />
           </div>
         </div>
       </div>

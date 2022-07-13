@@ -117,6 +117,7 @@ const Swap = () => {
           <div className="mb-1">
             <LeverageSlider
               inputToken={inputToken}
+              outputToken={outputToken}
               onChange={(x) => setAmountIn(x)}
             />
           </div>
