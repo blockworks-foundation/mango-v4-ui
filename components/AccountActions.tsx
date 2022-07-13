@@ -4,12 +4,10 @@ import { useState } from 'react'
 import Button from './shared/Button'
 import DepositModal from './DepositModal'
 import WithdrawModal from './WithdrawModal'
-import ContentBox from './shared/ContentBox'
 import mangoStore from '../store/state'
 
 const AccountActions = () => {
   const { connected } = useWallet()
-  const mangoAccount = mangoStore((s) => s.mangoAccount)
 
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
@@ -28,7 +26,7 @@ const AccountActions = () => {
   }
 
   return (
-    <ContentBox>
+    <>
       <div className="mt-2 flex justify-center space-x-4">
         {connected ? (
           <>
@@ -51,7 +49,7 @@ const AccountActions = () => {
           onClose={() => setShowWithdrawModal(false)}
         />
       ) : null}
-    </ContentBox>
+    </>
   )
 }
 

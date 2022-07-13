@@ -1,6 +1,6 @@
-import { useState, ChangeEvent } from 'react'
+import { useState, ChangeEvent, useCallback } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
-import { ArrowDownIcon, SwitchVerticalIcon } from '@heroicons/react/solid'
+import { ArrowDownIcon } from '@heroicons/react/solid'
 
 import mangoStore from '../../store/state'
 import ContentBox from '../shared/ContentBox'
@@ -9,6 +9,7 @@ import JupiterRoutes from './JupiterRoutes'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
 import { numberFormat } from '../../utils/numbers'
+import LeverageSlider from './LeverageSlider'
 
 const Swap = () => {
   const [amountIn, setAmountIn] = useState('')
@@ -17,13 +18,16 @@ const Swap = () => {
   const [outputToken, setOutputToken] = useState('USDC')
   const [submitting, setSubmitting] = useState(false)
   const [slippage, setSlippage] = useState(0.1)
-  const debouncedAmountIn = useDebounce(amountIn, 300)
+  const debouncedAmountIn = useDebounce(amountIn, 400)
   const set = mangoStore.getState().set
   const tokens = mangoStore((s) => s.jupiterTokens)
 
-  const handleAmountInChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setAmountIn(e.target.value)
-  }
+  const handleAmountInChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setAmountIn(e.target.value)
+    },
+    []
+  )
 
   const handleTokenInSelect = (symbol: string) => {
     const inputTokenInfo = tokens.find((t: any) => t.symbol === symbol)
@@ -111,15 +115,10 @@ const Swap = () => {
             </div>
           </div>
           <div className="mb-1">
-            <label
-              htmlFor="default-range"
-              className="block text-sm font-medium text-gray-900 dark:text-gray-300"
-            ></label>
-            <input
-              id="default-range"
-              type="range"
-              className="mb-6 h-1 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-3"
-            ></input>
+            <LeverageSlider
+              inputToken={inputToken}
+              onChange={(x) => setAmountIn(x)}
+            />
           </div>
         </div>
         <div className="-my-5 flex justify-center">

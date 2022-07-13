@@ -1,10 +1,10 @@
 import { useWallet } from '@solana/wallet-adapter-react'
 
 import TokenList from './TokenList'
-import AccountActions from './AccountActions'
 import Swap from './swap/Swap'
 import SwapTokenChart from './swap/SwapTokenChart'
 import mangoStore from '../store/state'
+import MangoAccount from './MangoAccount'
 
 const Home = () => {
   const { connected } = useWallet()
@@ -24,7 +24,7 @@ const Home = () => {
           </div>
           <div className="space-y-6">
             <Swap />
-            {connected ? <AccountActions /> : null}
+            {connected ? <MangoAccount /> : null}
           </div>
         </div>
       </div>

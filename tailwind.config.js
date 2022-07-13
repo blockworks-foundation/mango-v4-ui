@@ -17,6 +17,9 @@ module.exports = {
         help: 'help',
       },
       colors: {
+        'gradient-start': '#AFD803',
+        'gradient-mid': '#F2C94C',
+        'gradient-end': '#E54033',
         'light-theme': {
           orange: {
             DEFAULT: '#FF9C24',

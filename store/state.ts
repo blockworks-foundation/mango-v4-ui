@@ -30,12 +30,17 @@ export const connection = new web3.Connection(
 const options = AnchorProvider.defaultOptions()
 export const CLUSTER = 'mainnet-beta'
 export const CLIENT_TX_TIMEOUT = 90000
-const provider = new AnchorProvider(
+const DEFAULT_PROVIDER = new AnchorProvider(
   connection,
   new EmptyWallet(Keypair.generate()),
   options
 )
-provider.opts.skipPreflight = true
+DEFAULT_PROVIDER.opts.skipPreflight = true
+const DEFAULT_CLIENT = MangoClient.connect(
+  DEFAULT_PROVIDER,
+  CLUSTER,
+  MANGO_V4_ID[CLUSTER]
+)
 
 export type MangoStore = {
   connected: boolean
@@ -69,7 +74,7 @@ const mangoStore = create<MangoStore>(
       connected: false,
       connection,
       group: undefined,
-      client: MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER]),
+      client: DEFAULT_CLIENT,
       inputTokenInfo: undefined,
       jupiterTokens: [],
       mangoAccount: undefined,
@@ -129,12 +134,14 @@ const mangoStore = create<MangoStore>(
             //   'BTC/USDC'
             // )
 
+            await mangoAccount.reloadAccountData(client, group)
             set((state) => {
               state.client = client
               state.mangoAccount = mangoAccount
               state.connected = true
               // state.serumOrders = orders
             })
+            console.log('mango', mangoAccount)
           } catch (e) {
             console.error('Error fetching mango acct', e)
           }

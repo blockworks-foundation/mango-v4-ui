@@ -3,12 +3,9 @@ const nextConfig = {
   env: {
     BROWSER: true,
   },
-  images: {
-    domains: ['raw.githubusercontent.com'],
-  },
   reactStrictMode: true,
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
+  webpack: (config, opts) => {
+    if (!opts.isServer) {
       // don't resolve 'fs' module on the client to prevent this error on build --> Error: Can't resolve 'fs'
       config.resolve.fallback = {
         fs: false,
@@ -16,12 +13,11 @@ const nextConfig = {
         path: false,
         process: false,
         util: false,
-        assert: false,
+        assert: require.resolve('assert'),
         stream: false,
         http: false,
         https: false,
         querystring: false,
-        events: false,
       }
     }
 
