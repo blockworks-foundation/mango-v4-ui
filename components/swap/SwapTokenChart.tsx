@@ -142,19 +142,21 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
     : 0
 
   return (
-    <ContentBox>
+    <ContentBox hideBorder hidePadding className="p-4">
       {chartData.length && baseTokenId && quoteTokenId ? (
         <div className="">
           <div className="flex items-start justify-between">
             <div>
               {inputTokenInfo && outputTokenInfo ? (
-                <div className="text-sm text-th-fgd-3">
-                  {`${outputTokenInfo?.symbol?.toUpperCase()}/${inputTokenInfo?.symbol?.toUpperCase()}`}
+                <div className="text-th-fgd-3">
+                  {['usd-coin', 'tether'].includes(inputTokenId || '')
+                    ? `${outputTokenInfo?.symbol?.toUpperCase()}/${inputTokenInfo?.symbol?.toUpperCase()}`
+                    : `${inputTokenInfo?.symbol?.toUpperCase()}/${outputTokenInfo?.symbol?.toUpperCase()}`}
                 </div>
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="text-lg font-bold text-th-fgd-1">
+                  <div className="text-3xl font-bold text-th-fgd-1">
                     {numberFormatter.format(mouseData['price'])}
                     <span
                       className={`ml-2 text-xs ${
@@ -170,7 +172,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 </>
               ) : (
                 <>
-                  <div className="text-lg font-bold text-th-fgd-1">
+                  <div className="text-3xl font-bold text-th-fgd-1">
                     {numberFormatter.format(
                       chartData[chartData.length - 1]['price']
                     )}
@@ -231,12 +233,18 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     }}
                     content={<></>}
                   />
-                  {/* <defs>
-                  <linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ffba24" stopOpacity={0.9} />
-                    <stop offset="90%" stopColor="#ffba24" stopOpacity={0} />
-                  </linearGradient>
-                </defs> */}
+                  <defs>
+                    <linearGradient
+                      id="gradientArea"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#ffba24" stopOpacity={0.3} />
+                      <stop offset="80%" stopColor="#ffba24" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <Area
                     isAnimationActive={true}
                     type="monotone"

@@ -182,11 +182,13 @@ const mangoStore = create<MangoStore>(
           const set = get().set
           const client = get().client
           const mangoAccount = get().mangoAccount
+          const group = get().group
 
-          if (!mangoAccount) return
+          if (!mangoAccount || !group) return
 
           try {
             const newMangoAccount = await client.getMangoAccount(mangoAccount)
+            await newMangoAccount.reloadAccountData(client, group)
 
             set((state) => {
               state.mangoAccount = newMangoAccount
