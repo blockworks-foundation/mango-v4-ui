@@ -11,7 +11,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 }
 
 const Index: NextPage = () => {
-  return <div>Portfolio goes here...</div>
+  return <Home />
 }
 
 export default Index

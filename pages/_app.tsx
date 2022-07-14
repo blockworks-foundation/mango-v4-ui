@@ -20,6 +20,8 @@ import useInterval from '../components/shared/useInterval'
 import Notifications from '../components/shared/Notification'
 import { ThemeProvider } from 'next-themes'
 import { TOKEN_LIST_URL } from '@jup-ag/core'
+import { appWithTranslation } from 'next-i18next'
+import Layout from '../components/shared/Layout'
 
 const hydrateStore = async () => {
   const actions = mangoStore.getState().actions
@@ -77,7 +79,9 @@ function MyApp({ Component, pageProps }: AppProps) {
           <WalletModalProvider>
             <WalletListener />
             <ThemeProvider defaultTheme="Mango">
-              <Component {...pageProps} />
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
               <Notifications />
             </ThemeProvider>
           </WalletModalProvider>
@@ -87,4 +91,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   )
 }
 
-export default MyApp
+export default appWithTranslation(MyApp)

@@ -48,4 +48,26 @@ export const IconButton: FunctionComponent<ButtonProps> = ({
   )
 }
 
+export const LinkButton: FunctionComponent<ButtonProps> = ({
+  children,
+  onClick,
+  disabled = false,
+  className,
+  primary,
+  ...props
+}) => {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`border-0 font-bold ${
+        primary ? 'text-th-primary' : 'text-th-fgd-2'
+      } underline focus:outline-none disabled:cursor-not-allowed disabled:underline disabled:opacity-60 md:hover:no-underline  ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  )
+}
+
 export default Button
