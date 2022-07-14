@@ -8,7 +8,7 @@ const MangoAccount = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)
 
   return (
-    <ContentBox>
+    <ContentBox showBackground>
       <div className="flex-col space-y-2">
         <div className="flex items-center justify-between">
           <div className="text-th-fgd-4">Account Value</div>

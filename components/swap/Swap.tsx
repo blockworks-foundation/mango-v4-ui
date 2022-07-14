@@ -97,7 +97,7 @@ const Swap = () => {
   }
 
   return (
-    <ContentBox className="max-w-md">
+    <ContentBox className="max-w-md" showBackground>
       <div className="">
         <div className="mt-1 flex-col rounded-md bg-th-bkg-1 py-2 px-6">
           <div className="flex items-center justify-between">

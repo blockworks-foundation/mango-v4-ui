@@ -12,7 +12,7 @@ const Home = () => {
   const outputTokenInfo = mangoStore((s) => s.outputTokenInfo)
 
   return (
-    <div className="mt-8">
+    <div className="mt-12">
       <div className="">
         <div className="mx-auto flex max-w-7xl justify-center space-x-6">
           <div className="flex-grow space-y-6">
