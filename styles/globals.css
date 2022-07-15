@@ -143,6 +143,14 @@ body {
   @apply font-body text-sm tracking-wider;
 }
 
+button {
+  @apply tracking-wider transition-all duration-500 ease-out;
+}
+
+svg {
+  @apply transition-all duration-500 ease-out;
+}
+
 /* Type */
 
 h1,
@@ -161,6 +169,10 @@ h2 {
 
 h3 {
   @apply text-lg;
+}
+
+p {
+  @apply text-th-fgd-2;
 }
 
 /* Slider */

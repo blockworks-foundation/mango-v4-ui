@@ -166,7 +166,7 @@ const MenuItem = ({
     <Link href={pagePath} shallow={true}>
       <div className="cursor-pointer">
         <a
-          className={`default-transition flex w-full items-center hover:brightness-[1.1] ${
+          className={`flex w-full items-center hover:brightness-[1.1] ${
             active ? 'text-th-primary' : 'text-th-fgd-1'
           }`}
         >
@@ -198,7 +198,7 @@ const MenuItem = ({
   ) : (
     <a
       href={pagePath}
-      className={`default-transition flex items-center justify-between hover:brightness-[1.1] ${
+      className={`flex items-center justify-between hover:brightness-[1.1] ${
         active ? 'text-th-primary' : 'text-th-fgd-1'
       }`}
       target="_blank"
@@ -283,7 +283,7 @@ const ExpandableMenuItem = ({
                 : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
             } ${
               alignBottom
-                ? 'default-transition flex h-14 w-14 items-center justify-center hover:bg-th-bkg-2'
+                ? 'flex h-14 w-14 items-center justify-center hover:bg-th-bkg-2'
                 : ''
             }`}
           >
@@ -318,9 +318,7 @@ const ExpandableMenuItem = ({
       <div
         onClick={() => setShowMenu(!showMenu)}
         role="button"
-        className={`default-transition w-full ${
-          alignBottom ? 'h-14 px-3 hover:bg-th-bkg-2' : ''
-        }`}
+        className={`w-full ${alignBottom ? 'h-14 px-3 hover:bg-th-bkg-2' : ''}`}
       >
         <Disclosure.Button
           className={`flex h-full w-full items-center justify-between rounded-none hover:text-th-primary`}
@@ -352,7 +350,7 @@ const ExpandableMenuItem = ({
           <ChevronDownIcon
             className={`${
               showMenu ? 'rotate-180 transform' : 'rotate-360 transform'
-            } default-transition h-5 w-5 flex-shrink-0`}
+            } h-5 w-5 flex-shrink-0`}
           />
         </Disclosure.Button>
       </div>

@@ -1,7 +1,11 @@
 require('@solana/wallet-adapter-react-ui/styles.css')
 import SideNav from './SideNav'
-import { ReactNode, useEffect, useState } from 'react'
-import { ArrowRightIcon, ChevronRightIcon } from '@heroicons/react/solid'
+import { Fragment, ReactNode, useEffect, useState } from 'react'
+import {
+  ArrowRightIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+} from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useViewport } from '../../hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
@@ -10,8 +14,14 @@ import {
   WalletMultiButton,
 } from '@solana/wallet-adapter-react-ui'
 import { useTranslation } from 'next-i18next'
+import { Disclosure, Transition } from '@headlessui/react'
+import MangoAccountSummary from '../MangoAccountSummary'
+import { HealthType, MangoAccount } from '@blockworks-foundation/mango-v4'
+import mangoStore from '../../store/state'
+import HealthHeart from '../HealthHeart'
 
 const Layout = ({ children }: { children: ReactNode }) => {
+  const mangoAccount = mangoStore((s) => s.mangoAccount)
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -57,10 +67,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <div className="flex h-14 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6">
             <div className="flex items-center text-th-fgd-3">
               <span className="mb-0 mr-2">
-                {connected ? (
-                  <span>
-                    🟢<span className="ml-2">Mango Account Name</span>
-                  </span>
+                {mangoAccount ? (
+                  <MangoAccountSummaryDropdown mangoAccount={mangoAccount} />
                 ) : (
                   <span className="flex items-center">
                     🔗<span className="ml-2">{t('connect-helper')}</span>
@@ -81,3 +89,47 @@ const Layout = ({ children }: { children: ReactNode }) => {
 }
 
 export default Layout
+
+const MangoAccountSummaryDropdown = ({
+  mangoAccount,
+}: {
+  mangoAccount: MangoAccount
+}) => {
+  return (
+    <Disclosure>
+      {({ open }) => (
+        <>
+          <Disclosure.Button className="flex w-full items-center justify-between rounded-none text-th-fgd-1 hover:text-th-primary">
+            <div className="flex items-center">
+              <HealthHeart
+                health={mangoAccount.getHealthRatio(HealthType.init).toNumber()}
+                size={20}
+              />
+              <span className="ml-1 mr-0.5 font-bold">{mangoAccount.name}</span>
+            </div>
+            <ChevronDownIcon
+              className={`${
+                open ? 'rotate-180 transform' : 'rotate-360 transform'
+              } mt-0.5 h-5 w-5 flex-shrink-0`}
+            />
+          </Disclosure.Button>
+          <Transition
+            appear={true}
+            show={open}
+            as={Fragment}
+            enter="transition-all ease-in duration-200"
+            enterFrom="opacity-0 transform scale-75"
+            enterTo="opacity-100 transform scale-100"
+            leave="transition ease-out duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <Disclosure.Panel className="absolute top-12 z-10 w-56 rounded-md border border-th-bkg-4 bg-th-bkg-2 p-4">
+              <MangoAccountSummary />
+            </Disclosure.Panel>
+          </Transition>
+        </>
+      )}
+    </Disclosure>
+  )
+}
