@@ -23,7 +23,7 @@ const Button: FunctionComponent<ButtonProps> = ({
       className={`whitespace-nowrap rounded-md ${
         secondary ? 'border border-th-bkg-button' : 'bg-th-bkg-button'
       } px-6 py-2 font-bold drop-shadow-md 
-      focus:outline-none disabled:cursor-not-allowed disabled:hover:brightness-100 md:hover:brightness-[1.1] ${className}`}
+      focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 md:hover:brightness-[1.1] ${className}`}
       {...props}
     >
       {children}
@@ -65,7 +65,7 @@ export const LinkButton: FunctionComponent<ButtonProps> = ({
       disabled={disabled}
       className={`border-0 font-bold ${
         secondary ? 'text-th-primary' : 'text-th-fgd-2'
-      } underline focus:outline-none disabled:cursor-not-allowed disabled:underline disabled:opacity-60 md:hover:no-underline  ${className}`}
+      } underline focus:outline-none disabled:cursor-not-allowed disabled:underline disabled:opacity-50 md:hover:no-underline  ${className}`}
       {...props}
     >
       {children}

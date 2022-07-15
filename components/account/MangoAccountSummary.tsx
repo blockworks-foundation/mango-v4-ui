@@ -1,13 +1,21 @@
 import mangoStore from '../../store/state'
 import { toUiDecimals, HealthType } from '@blockworks-foundation/mango-v4'
 import { formatDecimal } from '../../utils/numbers'
+import Button from '../shared/Button'
+import { useState } from 'react'
+import DepositModal from '../modals/DepositModal'
+import WithdrawModal from '../modals/WithdrawModal'
+import { useTranslation } from 'next-i18next'
 
 const MangoAccountSummary = () => {
+  const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount)
+  const [showDepositModal, setShowDepositModal] = useState(false)
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
 
   return (
     <>
-      <div className="space-y-1.5">
+      <div className="mb-3 space-y-1.5">
         <div className="flex items-center justify-between">
           <p className="text-th-fgd-3">Account Value</p>
           <p className="font-bold text-th-fgd-1">
@@ -42,6 +50,33 @@ const MangoAccountSummary = () => {
           </p>
         </div>
       </div>
+      <div className="flex items-center space-x-2">
+        <Button
+          className="w-1/2 pl-3 pr-3"
+          onClick={() => setShowDepositModal(true)}
+        >
+          {t('deposit')}
+        </Button>
+        <Button
+          className="w-1/2 pl-3 pr-3"
+          onClick={() => setShowWithdrawModal(true)}
+          secondary
+        >
+          {t('withdraw')}
+        </Button>
+      </div>
+      {showDepositModal ? (
+        <DepositModal
+          isOpen={showDepositModal}
+          onClose={() => setShowDepositModal(false)}
+        />
+      ) : null}
+      {showWithdrawModal ? (
+        <WithdrawModal
+          isOpen={showWithdrawModal}
+          onClose={() => setShowWithdrawModal(false)}
+        />
+      ) : null}
     </>
   )
 }

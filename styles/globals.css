@@ -237,11 +237,15 @@ table tr {
   @apply border-y border-th-bkg-3 p-2;
 }
 
+thead tr {
+  @apply border-0;
+}
+
 table th,
 table td {
   @apply p-4;
 }
 
 table th {
-  @apply text-xs font-normal uppercase text-th-fgd-3;
+  @apply text-xs font-normal text-th-fgd-3;
 }

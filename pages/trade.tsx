@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import Home from '../components/Home'
+import TradeSimplePage from '../components/TradeSimplePage'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -11,7 +11,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 }
 
 const Index: NextPage = () => {
-  return <Home />
+  return <TradeSimplePage />
 }
 
 export default Index

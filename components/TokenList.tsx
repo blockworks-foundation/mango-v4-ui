@@ -13,9 +13,9 @@ const TokenList = () => {
     : []
 
   return (
-    <div>
-      <h2>Your Tokens</h2>
-      <table className="mt-4 min-w-full">
+    <ContentBox hideBorder hidePadding>
+      <h2>Tokens</h2>
+      <table className="min-w-full">
         <thead>
           <tr>
             <th className="text-left">Asset</th>
@@ -23,7 +23,7 @@ const TokenList = () => {
             <th className="text-right">APR</th>
             <th className="text-right">Borrows</th>
             <th className="text-right">APR</th>
-            <th className="text-right">Balance</th>
+            <th className="text-right">Your Balance</th>
           </tr>
         </thead>
         <tbody>
@@ -31,75 +31,74 @@ const TokenList = () => {
             const oraclePrice = bank.value.price
             return (
               <tr key={bank.key}>
-                <td className="pt-4">
+                <td>
                   <div className="flex items-center">
-                    <div className="mr-4 flex min-w-[30px] items-center">
+                    <div className="mr-2.5 flex flex-shrink-0 items-center">
                       <Image
                         alt=""
-                        width="30"
-                        height="30"
+                        width="24"
+                        height="24"
                         src={`/icons/${bank.value.name.toLowerCase()}.svg`}
                       />
                     </div>
                     <div className="flex flex-col">
-                      <div>{bank.value.name}</div>
-                      <div className="text-sm text-th-fgd-4">
+                      <p className="font-bold">{bank.value.name}</p>
+                      <p className="text-xs text-th-fgd-4">
                         ${formatDecimal(oraclePrice.toNumber(), 2)}
-                      </div>
+                      </p>
                     </div>
                   </div>
                 </td>
-                <td className="pt-4">
+                <td>
                   <div className="flex flex-col text-right">
-                    <div>
+                    <p>
                       {formatDecimal(
                         bank.value.uiDeposits(),
                         bank.value.mintDecimals
                       )}
-                    </div>
+                    </p>
                   </div>
                 </td>
-                <td className="pt-4">
+                <td>
                   <div className="flex flex-col text-right">
-                    <div className="text-th-green">
+                    <p className="text-th-green">
                       {formatDecimal(bank.value.getDepositRate().toNumber(), 2)}
                       %
-                    </div>
+                    </p>
                   </div>
                 </td>
-                <td className="pt-4">
+                <td>
                   <div className="flex flex-col text-right">
-                    <div>
+                    <p>
                       {formatDecimal(
                         bank.value.uiBorrows(),
                         bank.value.mintDecimals
                       )}
-                    </div>
+                    </p>
                   </div>
                 </td>
-                <td className="pt-4">
+                <td>
                   <div className="flex flex-col text-right">
-                    <div className="text-th-red">
+                    <p className="text-th-red">
                       {formatDecimal(bank.value.getBorrowRate().toNumber(), 2)}%
-                    </div>
+                    </p>
                   </div>
                 </td>
                 <td className="pt-4 text-right">
-                  <div className="px-2">
+                  <p className="px-2">
                     {mangoAccount
                       ? formatDecimal(mangoAccount.getUi(bank.value))
                       : '-'}
-                  </div>
-                  <div className="px-2 text-sm text-th-fgd-4">
-                    $
+                  </p>
+                  <p className="px-2 text-xs text-th-fgd-4">
                     {mangoAccount
-                      ? formatDecimal(
+                      ? `$${formatDecimal(
                           mangoAccount.getUi(bank.value) *
                             oraclePrice.toNumber(),
                           2
-                        )
+                        )}`
                       : '-'}
-                  </div>
+                  </p>
                 </td>
               </tr>
             )
@@ -107,7 +106,7 @@ const TokenList = () => {
         </tbody>
       </table>
       <div className="mt-2 space-y-2 p-2"></div>
-    </div>
+    </ContentBox>
   )
 }
 
