@@ -100,7 +100,7 @@ const Swap = () => {
   }
 
   return (
-    <ContentBox showBackground>
+    <ContentBox showBackground className="drop-shadow-xl">
       <p className="mb-2 text-th-fgd-3">{t('short')}</p>
       <div className="mb-3 grid grid-cols-2">
         <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1 px-4">

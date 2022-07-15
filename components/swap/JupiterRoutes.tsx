@@ -4,7 +4,6 @@ import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { Jupiter, RouteInfo } from '@jup-ag/core'
 
 import mangoStore, { CLUSTER } from '../../store/state'
-import SelectedRoute from './SelectedRoute'
 import RoutesModal from './RoutesModal'
 import RouteFeeInfo from './RouteFeeInfo'
 import { TokenInfo } from '../../types/jupiter'
@@ -149,20 +148,6 @@ const JupiterRoutes = ({
       </div>
       {routes?.length && selectedRoute && outputTokenInfo ? (
         <>
-          <div
-            role="button"
-            className="mt-8 w-full"
-            onClick={() => {
-              setShowRoutesModal(true)
-            }}
-          >
-            <SelectedRoute
-              routes={routes}
-              selectedRoute={selectedRoute}
-              inputTokenSymbol={inputToken}
-            />
-          </div>
-
           <RouteFeeInfo
             selectedRoute={selectedRoute}
             amountIn={amountIn}
@@ -172,6 +157,7 @@ const JupiterRoutes = ({
             )}
             inputTokenSymbol={inputToken}
             outputTokenInfo={outputTokenInfo}
+            showRoutesModal={() => setShowRoutesModal(true)}
           />
           {showRoutesModal ? (
             <RoutesModal

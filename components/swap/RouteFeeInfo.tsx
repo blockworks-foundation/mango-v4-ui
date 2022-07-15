@@ -1,4 +1,6 @@
 import {
+  ArrowSmRightIcon,
+  ChevronRightIcon,
   CogIcon,
   InformationCircleIcon,
   RefreshIcon,
@@ -16,6 +18,7 @@ type RouteFeeInfoProps = {
   amountOut: number
   outputTokenInfo: TokenInfo
   inputTokenSymbol: string
+  showRoutesModal: () => void
 }
 
 const RouteFeeInfo = ({
@@ -24,6 +27,7 @@ const RouteFeeInfo = ({
   amountOut,
   outputTokenInfo,
   inputTokenSymbol,
+  showRoutesModal,
 }: RouteFeeInfoProps) => {
   const tokens = mangoStore.getState().jupiterTokens
   const connected = mangoStore((s) => s.connected)
@@ -45,9 +49,35 @@ const RouteFeeInfo = ({
   }, [selectedRoute, connected])
 
   return (
-    <div className="mt-4 space-y-2 px-1 text-xs text-th-fgd-4">
+    <div className="mt-6 space-y-2 px-1 text-xs text-th-fgd-4">
       <div className="mb-4 flex items-center justify-between">
         <div className="text-sm font-bold text-th-fgd-1">Swap Details</div>
+      </div>
+      <div className="flex items-center justify-between">
+        <span>Swap Route</span>
+        <div
+          className="flex items-center rounded border border-th-bkg-4 p-1 pl-2 hover:cursor-pointer hover:border-th-fgd-4"
+          role="button"
+          onClick={showRoutesModal}
+        >
+          <span className="overflow-ellipsis whitespace-nowrap text-th-fgd-1">
+            {selectedRoute?.marketInfos.map((info, index) => {
+              let includeSeparator = false
+              if (
+                selectedRoute?.marketInfos.length > 1 &&
+                index !== selectedRoute?.marketInfos.length - 1
+              ) {
+                includeSeparator = true
+              }
+              return (
+                <span key={index}>{`${info.amm.label} ${
+                  includeSeparator ? 'x ' : ''
+                }`}</span>
+              )
+            })}
+          </span>
+          <ChevronRightIcon className="ml-2 h-3 w-3" />
+        </div>
       </div>
       {amountOut && amountIn ? (
         <div className="flex justify-between">
