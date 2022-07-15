@@ -137,9 +137,33 @@ th {
   --bkg-button: theme('colors.mango-theme.bkg-button');
 }
 
+/* Base */
+
 body {
   @apply font-body text-sm tracking-wider;
 }
+
+/* Type */
+
+h1,
+h2,
+h3 {
+  @apply font-bold;
+}
+
+h1 {
+  @apply text-2xl;
+}
+
+h2 {
+  @apply text-xl;
+}
+
+h3 {
+  @apply text-lg;
+}
+
+/* Slider */
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -185,4 +209,27 @@ input[type='range']::-ms-thumb {
 
 .sideways-bounce {
   animation: sideways-bounce 1s infinite;
+}
+
+/* Table */
+
+table {
+  @apply m-0 w-full table-fixed p-0;
+}
+
+table caption {
+  @apply my-2;
+}
+
+table tr {
+  @apply border-y border-th-bkg-3 p-2;
+}
+
+table th,
+table td {
+  @apply p-4;
+}
+
+table th {
+  @apply text-xs font-normal uppercase text-th-fgd-3;
 }
