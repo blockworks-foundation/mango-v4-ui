@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useState } from 'react'
 import { ArrowRightIcon, ChevronRightIcon } from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useViewport } from '../../hooks/useViewport'
-import { breakpoints } from '../../utils/layout'
+import { breakpoints } from '../../utils/theme'
 import {
   WalletDisconnectButton,
   WalletMultiButton,

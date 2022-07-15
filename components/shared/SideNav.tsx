@@ -1,16 +1,12 @@
 import Link from 'next/link'
-// import { DEFAULT_MARKET_KEY, initialMarket } from './SettingsModal'
-import { BtcMonoIcon, TradeIcon, TrophyIcon } from '../icons/icons'
+import BtcMonoIcon from '../icons/BtcMonoIcon'
+import TradeIcon from '../icons/TradeIcon'
 import {
   CashIcon,
   ChartBarIcon,
-  CurrencyDollarIcon,
   DotsHorizontalIcon,
-  SwitchHorizontalIcon,
-  CalculatorIcon,
   LibraryIcon,
   LightBulbIcon,
-  UserAddIcon,
   ExternalLinkIcon,
   ChevronDownIcon,
   ReceiptTaxIcon,
