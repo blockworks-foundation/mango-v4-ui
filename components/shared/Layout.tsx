@@ -42,11 +42,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className={`flex-grow bg-th-bkg-1 text-th-fgd-1 transition-all`}>
       <div className="flex">
-        <div
-          className={
-            isCollapsed ? 'mr-14' : 'mr-[220px] lg:mr-[250px] xl:mr-[280px]'
-          }
-        >
+        <div>
           <div className={`fixed z-20 h-screen`}>
             <button
               className="absolute -right-4 top-1/2 z-20 h-10 w-4 -translate-y-1/2 transform rounded-none rounded-r bg-th-bkg-4 focus:outline-none"
@@ -63,7 +59,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
             </div>
           </div>
         </div>
-        <div className="w-full overflow-hidden">
+        <div
+          className={`w-full overflow-hidden transition-all duration-500 ease-in-out ${
+            isCollapsed ? 'pl-20' : 'pl-44 lg:pl-56'
+          }`}
+        >
           <div className="flex h-14 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6">
             <div className="flex items-center text-th-fgd-3">
               <span className="mb-0 mr-2">

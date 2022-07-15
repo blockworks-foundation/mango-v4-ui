@@ -143,7 +143,8 @@ const JupiterRoutes = ({
           className="flex w-full justify-center py-3"
           disabled={!connected}
         >
-          {submitting ? <Loading className="mr-2 h-5 w-5" /> : null} Swap
+          {submitting ? <Loading className="mr-2 h-5 w-5" /> : null}
+          {connected ? 'Swap' : 'Connect wallet'}
         </Button>
       </div>
       {routes?.length && selectedRoute && outputTokenInfo ? (
