@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import mangoStore from '../store/state'
-import { notify } from '../utils/notifications'
-import Button from './shared/Button'
-import Loading from './shared/Loading'
-import Modal from './shared/Modal'
+import mangoStore from '../../store/state'
+import { notify } from '../../utils/notifications'
+import Button from '../shared/Button'
+import Loading from '../shared/Loading'
+import Modal from '../shared/Modal'
 
 type WithdrawModalProps = {
   isOpen: boolean

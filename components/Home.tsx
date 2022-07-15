@@ -1,10 +1,9 @@
-import { useWallet } from '@solana/wallet-adapter-react'
-
+// import { useWallet } from '@solana/wallet-adapter-react'
 import TokenList from './TokenList'
 import Swap from './swap/Swap'
 import SwapTokenChart from './swap/SwapTokenChart'
 import mangoStore from '../store/state'
-import MangoAccount from './MangoAccount'
+import MangoAccount from './account/MangoAccount'
 
 const Home = () => {
   // const { connected } = useWallet()

@@ -1,8 +1,8 @@
-import ContentBox from './shared/ContentBox'
-import mangoStore from '../store/state'
+import ContentBox from '../shared/ContentBox'
+import mangoStore from '../../store/state'
 import AccountActions from './AccountActions'
 import { toUiDecimals, HealthType } from '@blockworks-foundation/mango-v4'
-import { formatDecimal } from '../utils/numbers'
+import { formatDecimal } from '../../utils/numbers'
 
 const MangoAccount = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)

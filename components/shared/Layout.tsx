@@ -15,10 +15,10 @@ import {
 } from '@solana/wallet-adapter-react-ui'
 import { useTranslation } from 'next-i18next'
 import { Disclosure, Transition } from '@headlessui/react'
-import MangoAccountSummary from '../MangoAccountSummary'
+import MangoAccountSummary from '../account/MangoAccountSummary'
 import { HealthType, MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../../store/state'
-import HealthHeart from '../HealthHeart'
+import HealthHeart from '../account/HealthHeart'
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)

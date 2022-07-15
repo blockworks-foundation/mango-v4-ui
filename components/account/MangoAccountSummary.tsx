@@ -1,6 +1,6 @@
-import mangoStore from '../store/state'
+import mangoStore from '../../store/state'
 import { toUiDecimals, HealthType } from '@blockworks-foundation/mango-v4'
-import { formatDecimal } from '../utils/numbers'
+import { formatDecimal } from '../../utils/numbers'
 
 const MangoAccountSummary = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)

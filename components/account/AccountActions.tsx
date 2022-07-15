@@ -1,10 +1,10 @@
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useState } from 'react'
 
-import Button from './shared/Button'
-import DepositModal from './DepositModal'
-import WithdrawModal from './WithdrawModal'
-import mangoStore from '../store/state'
+import Button from '../shared/Button'
+import DepositModal from '../modals/DepositModal'
+import WithdrawModal from '../modals/WithdrawModal'
+import mangoStore from '../../store/state'
 
 const AccountActions = () => {
   const { connected } = useWallet()

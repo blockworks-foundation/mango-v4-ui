@@ -4,7 +4,7 @@ interface ButtonProps {
   onClick?: (e?: React.MouseEvent) => void
   disabled?: boolean
   className?: string
-  primary?: boolean
+  secondary?: boolean
   children?: ReactNode
 }
 
@@ -13,13 +13,16 @@ const Button: FunctionComponent<ButtonProps> = ({
   onClick,
   disabled = false,
   className,
+  secondary,
   ...props
 }) => {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`whitespace-nowrap rounded-2xl bg-th-bkg-button px-6 py-2 font-bold drop-shadow-md 
+      className={`whitespace-nowrap rounded-md ${
+        secondary ? 'border border-th-bkg-button' : 'bg-th-bkg-button'
+      } px-6 py-2 font-bold drop-shadow-md 
       focus:outline-none disabled:cursor-not-allowed disabled:hover:brightness-100 md:hover:brightness-[1.1] ${className}`}
       {...props}
     >
@@ -53,7 +56,7 @@ export const LinkButton: FunctionComponent<ButtonProps> = ({
   onClick,
   disabled = false,
   className,
-  primary,
+  secondary,
   ...props
 }) => {
   return (
@@ -61,7 +64,7 @@ export const LinkButton: FunctionComponent<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={`border-0 font-bold ${
-        primary ? 'text-th-primary' : 'text-th-fgd-2'
+        secondary ? 'text-th-primary' : 'text-th-fgd-2'
       } underline focus:outline-none disabled:cursor-not-allowed disabled:underline disabled:opacity-60 md:hover:no-underline  ${className}`}
       {...props}
     >
