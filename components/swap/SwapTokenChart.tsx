@@ -142,7 +142,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
     : 0
 
   return (
-    <ContentBox hideBorder hidePadding className="p-4">
+    <ContentBox hideBorder hidePadding>
       {chartData.length && baseTokenId && quoteTokenId ? (
         <div className="">
           <div className="flex items-start justify-between">
