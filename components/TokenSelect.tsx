@@ -24,18 +24,21 @@ const TokenSelect = ({ token, onChange }: TokenSelectProps) => {
     <>
       <div
         onClick={() => setShowTokenSelectModal(true)}
-        className="-ml-3 flex h-full items-center rounded-full py-2 px-4 hover:cursor-pointer hover:shadow-lg hover:drop-shadow-lg hover:backdrop-brightness-125"
+        className="flex h-full items-center py-2 text-th-fgd-2 hover:cursor-pointer hover:text-th-fgd-1"
+        role="button"
       >
         <div className="mr-3 flex min-w-[24px] items-center">
           <Image
             alt=""
-            width="30"
-            height="30"
+            width="24"
+            height="24"
             src={`/icons/${token.toLowerCase()}.svg`}
           />
         </div>
-        <div className="text-xl text-th-fgd-2">{token}</div>
-        <ChevronDownIcon className="ml-1.5 h-5 w-5 text-th-fgd-3" />
+        <div className="flex w-full items-center justify-between">
+          <div className="text-xl font-bold">{token}</div>
+          <ChevronDownIcon className="h-6 w-6" />
+        </div>
       </div>
       {showTokenSelectModal ? (
         <SelectTokenModal

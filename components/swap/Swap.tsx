@@ -10,8 +10,11 @@ import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
 import { numberFormat } from '../../utils/numbers'
 import LeverageSlider from './LeverageSlider'
+import Input from '../forms/Input'
+import { useTranslation } from 'next-i18next'
 
 const Swap = () => {
+  const { t } = useTranslation('common')
   const [amountIn, setAmountIn] = useState('')
   const [amountOut, setAmountOut] = useState<number>()
   const [inputToken, setInputToken] = useState('SOL')
@@ -97,45 +100,50 @@ const Swap = () => {
   }
 
   return (
-    <ContentBox className="max-w-md" showBackground>
-      <div className="">
-        <div className="mt-1 flex-col rounded-md bg-th-bkg-1 py-2 px-6">
-          <div className="flex items-center justify-between">
-            <TokenSelect token={inputToken} onChange={handleTokenInSelect} />
-            <div>
-              <input
-                type="text"
-                name="amountIn"
-                id="amountIn"
-                className="w-full rounded-lg border-none bg-transparent text-right text-2xl text-th-fgd-3 focus:outline-none"
-                placeholder="0.00"
-                value={amountIn}
-                onChange={handleAmountInChange}
-              />
-            </div>
-          </div>
-          <div className="mb-1">
-            <LeverageSlider
-              inputToken={inputToken}
-              outputToken={outputToken}
-              onChange={(x) => setAmountIn(x)}
-            />
-          </div>
+    <ContentBox showBackground>
+      <p className="mb-2 text-th-fgd-3">{t('short')}</p>
+      <div className="mb-3 grid grid-cols-2">
+        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1 px-4">
+          <TokenSelect token={inputToken} onChange={handleTokenInSelect} />
         </div>
-        <div className="-my-5 flex justify-center">
-          <button onClick={handleSwitchTokens}>
-            <ArrowDownIcon className="h-10 w-10 rounded-full border-4 border-th-bkg-1 bg-th-bkg-2 p-1.5 text-th-fgd-3 md:hover:text-th-primary" />
-            {/* <SwitchVerticalIcon className="default-transition h-10 w-10 rounded-full border-4 border-th-bkg-1 bg-th-bkg-2 p-1.5 text-th-fgd-3 md:hover:text-th-primary" /> */}
-          </button>
-        </div>
-        <div className="mt-4 flex items-center justify-between py-2 px-6">
-          <TokenSelect token={outputToken} onChange={handleTokenOutSelect} />
-          <div className="w-full cursor-context-menu text-right text-2xl text-th-fgd-3">
-            {amountOut ? numberFormat.format(amountOut) : null}
-          </div>
+        <div className="col-span-1">
+          <Input
+            type="text"
+            name="amountIn"
+            id="amountIn"
+            className="w-full rounded-lg rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-3 px-4 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+            placeholder="0.00"
+            value={amountIn}
+            onChange={handleAmountInChange}
+          />
         </div>
       </div>
-
+      <div className="flex justify-center">
+        <button
+          className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 md:hover:text-th-primary"
+          onClick={handleSwitchTokens}
+        >
+          <ArrowDownIcon className="h-5 w-5" />
+        </button>
+      </div>
+      <p className="mb-2 text-th-fgd-3">{t('long')}</p>
+      <div className="mb-3 grid grid-cols-2">
+        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1 px-4">
+          <TokenSelect token={outputToken} onChange={handleTokenOutSelect} />
+        </div>
+        <div className="w-full rounded-lg rounded-l-none border border-th-bkg-3 bg-th-bkg-3 py-3 px-4 text-right text-xl font-bold tracking-wider text-th-fgd-3">
+          {amountOut ? numberFormat.format(amountOut) : 0}
+        </div>
+      </div>
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-th-fgd-3">{t('leverage')}</p>
+        <p className="font-bold text-th-fgd-1">0.00x</p>
+      </div>
+      <LeverageSlider
+        inputToken={inputToken}
+        outputToken={outputToken}
+        onChange={(x) => setAmountIn(x)}
+      />
       <JupiterRoutes
         inputToken={inputToken}
         outputToken={outputToken}

@@ -148,47 +148,47 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
           <div className="flex items-start justify-between">
             <div>
               {inputTokenInfo && outputTokenInfo ? (
-                <div className="text-th-fgd-3">
+                <p className="mb-0.5 text-base text-th-fgd-3">
                   {['usd-coin', 'tether'].includes(inputTokenId || '')
                     ? `${outputTokenInfo?.symbol?.toUpperCase()}/${inputTokenInfo?.symbol?.toUpperCase()}`
                     : `${inputTokenInfo?.symbol?.toUpperCase()}/${outputTokenInfo?.symbol?.toUpperCase()}`}
-                </div>
+                </p>
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="text-3xl font-bold text-th-fgd-1">
+                  <div className="mb-0.5 text-4xl font-bold text-th-fgd-1">
                     {numberFormatter.format(mouseData['price'])}
                     <span
-                      className={`ml-2 text-xs ${
+                      className={`ml-2 text-sm ${
                         chartChange >= 0 ? 'text-th-green' : 'text-th-red'
                       }`}
                     >
                       {chartChange.toFixed(2)}%
                     </span>
                   </div>
-                  <div className="text-xs font-normal text-th-fgd-3">
+                  <p className="text-th-fgd-4">
                     {dayjs(mouseData['time']).format('DD MMM YY, h:mma')}
-                  </div>
+                  </p>
                 </>
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-th-fgd-1">
+                  <div className="mb-0.5 text-4xl font-bold text-th-fgd-1">
                     {numberFormatter.format(
                       chartData[chartData.length - 1]['price']
                     )}
                     <span
-                      className={`ml-2 text-xs ${
+                      className={`ml-2 text-sm ${
                         chartChange >= 0 ? 'text-th-green' : 'text-th-red'
                       }`}
                     >
                       {chartChange.toFixed(2)}%
                     </span>
                   </div>
-                  <div className="text-xs font-normal text-th-fgd-3">
+                  <p className="text-th-fgd-4">
                     {dayjs(chartData[chartData.length - 1]['time']).format(
                       'DD MMM YY, h:mma'
                     )}
-                  </div>
+                  </p>
                 </>
               )}
             </div>
