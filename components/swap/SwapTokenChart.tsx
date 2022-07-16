@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
+import { GREEN, RED } from '../../styles/colors'
 
 dayjs.extend(relativeTime)
 
@@ -241,15 +242,23 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="0%" stopColor="#ffba24" stopOpacity={0.3} />
-                      <stop offset="80%" stopColor="#ffba24" stopOpacity={0} />
+                      <stop
+                        offset="0%"
+                        stopColor={chartChange >= 0 ? GREEN : RED}
+                        stopOpacity={0.15}
+                      />
+                      <stop
+                        offset="99%"
+                        stopColor={chartChange >= 0 ? GREEN : RED}
+                        stopOpacity={0}
+                      />
                     </linearGradient>
                   </defs>
                   <Area
                     isAnimationActive={true}
                     type="monotone"
                     dataKey="price"
-                    stroke="#ffba24"
+                    stroke={chartChange >= 0 ? GREEN : RED}
                     fill="url(#gradientArea)"
                   />
                   <XAxis
