@@ -151,6 +151,10 @@ svg {
   @apply transition-all duration-500 ease-out;
 }
 
+.default-transition {
+  @apply transition-all duration-500 ease-out;
+}
+
 /* Type */
 
 h1,

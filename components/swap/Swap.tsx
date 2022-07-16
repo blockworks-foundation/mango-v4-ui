@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useCallback } from 'react'
+import { useState, ChangeEvent, useCallback, Fragment } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
 import { ArrowDownIcon } from '@heroicons/react/solid'
 
@@ -12,6 +12,8 @@ import { numberFormat } from '../../utils/numbers'
 import LeverageSlider from './LeverageSlider'
 import Input from '../forms/Input'
 import { useTranslation } from 'next-i18next'
+import SelectToken from './SelectToken'
+import { Transition } from '@headlessui/react'
 
 const Swap = () => {
   const { t } = useTranslation('common')
@@ -20,6 +22,7 @@ const Swap = () => {
   const [inputToken, setInputToken] = useState('SOL')
   const [outputToken, setOutputToken] = useState('USDC')
   const [submitting, setSubmitting] = useState(false)
+  const [showTokenSelect, setShowTokenSelect] = useState('')
   const [slippage, setSlippage] = useState(0.1)
   const debouncedAmountIn = useDebounce(amountIn, 400)
   const set = mangoStore.getState().set
@@ -38,6 +41,7 @@ const Swap = () => {
       s.inputTokenInfo = inputTokenInfo
     })
     setInputToken(symbol)
+    setShowTokenSelect('')
   }
 
   const handleTokenOutSelect = (symbol: string) => {
@@ -46,6 +50,7 @@ const Swap = () => {
       s.outputTokenInfo = outputTokenInfo
     })
     setOutputToken(symbol)
+    setShowTokenSelect('')
   }
 
   const handleSwitchTokens = () => {
@@ -100,18 +105,43 @@ const Swap = () => {
   }
 
   return (
-    <ContentBox showBackground>
+    <ContentBox showBackground className="relative">
+      <Transition
+        appear={true}
+        className="thin-scroll absolute bottom-0 left-0 z-20 h-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+        show={!!showTokenSelect}
+        enter="transition-all ease-in duration-500"
+        enterFrom="max-h-0"
+        enterTo="max-h-full"
+        leave="transition-all ease-out duration-500"
+        leaveFrom="max-h-full"
+        leaveTo="max-h-0"
+      >
+        <SelectToken
+          onClose={() => setShowTokenSelect('')}
+          onTokenSelect={
+            showTokenSelect === 'input'
+              ? handleTokenInSelect
+              : handleTokenOutSelect
+          }
+          type={showTokenSelect}
+        />
+      </Transition>
       <p className="mb-2 text-th-fgd-3">{t('short')}</p>
       <div className="mb-3 grid grid-cols-2">
-        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1 px-4">
-          <TokenSelect token={inputToken} onChange={handleTokenInSelect} />
+        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1">
+          <TokenSelect
+            token={inputToken}
+            showTokenList={setShowTokenSelect}
+            type="input"
+          />
         </div>
         <div className="col-span-1">
           <Input
             type="text"
             name="amountIn"
             id="amountIn"
-            className="w-full rounded-lg rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-3 px-4 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+            className="w-full rounded-lg rounded-l-none border border-th-bkg-3 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
             placeholder="0.00"
             value={amountIn}
             onChange={handleAmountInChange}
@@ -128,10 +158,14 @@ const Swap = () => {
       </div>
       <p className="mb-2 text-th-fgd-3">{t('long')}</p>
       <div className="mb-3 grid grid-cols-2">
-        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1 px-4">
-          <TokenSelect token={outputToken} onChange={handleTokenOutSelect} />
+        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1">
+          <TokenSelect
+            token={outputToken}
+            showTokenList={setShowTokenSelect}
+            type="output"
+          />
         </div>
-        <div className="w-full rounded-lg rounded-l-none border border-th-bkg-3 bg-th-bkg-3 py-3 px-4 text-right text-xl font-bold tracking-wider text-th-fgd-3">
+        <div className="w-full rounded-lg rounded-l-none border border-th-bkg-3 bg-th-bkg-3 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
           {amountOut ? numberFormat.format(amountOut) : 0}
         </div>
       </div>

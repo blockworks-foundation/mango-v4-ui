@@ -44,7 +44,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
               ? 'cursor-not-allowed bg-th-bkg-3 text-th-fgd-3 hover:border-th-fgd-4'
               : ''
           }
-          ${prefix ? 'pl-7' : ''}
+          ${prefix ? 'pl-8' : ''}
           ${suffix ? 'pr-11' : ''}`}
         disabled={disabled}
         ref={ref}

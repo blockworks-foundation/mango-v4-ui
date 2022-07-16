@@ -1,33 +1,26 @@
 import { ChevronDownIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
-import { useState } from 'react'
 import mangoStore from '../store/state'
-import SelectTokenModal from './swap/SelectTokenModal'
 
 type TokenSelectProps = {
   token: string
-  onChange: (x: string) => void
+  showTokenList: (x: any) => void
+  type: 'input' | 'output'
 }
 
-const TokenSelect = ({ token, onChange }: TokenSelectProps) => {
-  const [showTokenSelectModal, setShowTokenSelectModal] = useState(false)
+const TokenSelect = ({ token, showTokenList, type }: TokenSelectProps) => {
   const group = mangoStore((s) => s.group)
-
-  const handleTokenSelect = (sym: string) => {
-    setShowTokenSelectModal(false)
-    onChange(sym)
-  }
 
   if (!group) return null
 
   return (
     <>
       <div
-        onClick={() => setShowTokenSelectModal(true)}
-        className="flex h-full items-center py-2 text-th-fgd-2 hover:cursor-pointer hover:text-th-fgd-1"
+        onClick={() => showTokenList(type)}
+        className="default-transition flex h-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
         role="button"
       >
-        <div className="mr-3 flex min-w-[24px] items-center">
+        <div className="mr-2.5 flex min-w-[24px] items-center">
           <Image
             alt=""
             width="24"
@@ -40,13 +33,6 @@ const TokenSelect = ({ token, onChange }: TokenSelectProps) => {
           <ChevronDownIcon className="h-6 w-6" />
         </div>
       </div>
-      {showTokenSelectModal ? (
-        <SelectTokenModal
-          isOpen={showTokenSelectModal}
-          onClose={() => setShowTokenSelectModal(false)}
-          onTokenSelect={handleTokenSelect}
-        />
-      ) : null}
     </>
   )
 }
