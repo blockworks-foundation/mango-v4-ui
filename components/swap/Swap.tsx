@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useCallback, Fragment } from 'react'
+import { useState, ChangeEvent, useCallback, Fragment, useEffect } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
 import { ArrowDownIcon } from '@heroicons/react/solid'
 
@@ -22,6 +22,7 @@ const Swap = () => {
   const [inputToken, setInputToken] = useState('SOL')
   const [outputToken, setOutputToken] = useState('USDC')
   const [submitting, setSubmitting] = useState(false)
+  const [animateSwtichArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [slippage, setSlippage] = useState(0.1)
   const debouncedAmountIn = useDebounce(amountIn, 400)
@@ -62,6 +63,8 @@ const Swap = () => {
     })
     setInputToken(outputToken)
     setOutputToken(inputToken)
+
+    setAnimateSwitchArrow(animateSwtichArrow + 1)
   }
 
   const handleSwap = async (
@@ -153,7 +156,14 @@ const Swap = () => {
           className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 md:hover:text-th-primary"
           onClick={handleSwitchTokens}
         >
-          <ArrowDownIcon className="h-5 w-5" />
+          <ArrowDownIcon
+            className="h-5 w-5"
+            style={
+              animateSwtichArrow % 2 == 0
+                ? { transform: 'rotate(0deg)' }
+                : { transform: 'rotate(360deg)' }
+            }
+          />
         </button>
       </div>
       <p className="mb-2 text-th-fgd-3">{t('long')}</p>

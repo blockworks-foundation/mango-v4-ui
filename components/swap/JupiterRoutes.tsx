@@ -139,7 +139,7 @@ const JupiterRoutes = ({
       <div className="flex justify-center">
         <Button
           onClick={onSwap}
-          className="flex w-full justify-center py-3"
+          className="flex w-full justify-center py-3 text-lg"
           disabled={!connected}
         >
           {submitting ? <Loading className="mr-2 h-5 w-5" /> : null}

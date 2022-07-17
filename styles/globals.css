@@ -140,11 +140,11 @@ th {
 /* Base */
 
 body {
-  @apply font-body text-sm tracking-wider;
+  @apply font-body text-sm tracking-wide;
 }
 
 button {
-  @apply tracking-wider transition-all duration-500 ease-out focus:outline-none focus:brightness-[1.5] focus:filter;
+  @apply tracking-wide transition-all duration-500 ease-out focus:outline-none focus:brightness-[1.5] focus:filter;
 }
 
 svg {
