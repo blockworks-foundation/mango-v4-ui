@@ -135,7 +135,7 @@ const JupiterRoutes = ({
   }, [inputToken, outputToken, jupiter, slippage, amountIn])
 
   return (
-    <div className="mt-4">
+    <div className="mt-6">
       <div className="flex justify-center">
         <Button
           onClick={onSwap}

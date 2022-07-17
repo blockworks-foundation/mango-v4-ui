@@ -1,7 +1,6 @@
 import { useState, ChangeEvent, useCallback, Fragment, useEffect } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
 import { ArrowDownIcon } from '@heroicons/react/solid'
-
 import mangoStore from '../../store/state'
 import ContentBox from '../shared/ContentBox'
 import { notify } from '../../utils/notifications'
@@ -14,6 +13,9 @@ import Input from '../forms/Input'
 import { useTranslation } from 'next-i18next'
 import SelectToken from './SelectToken'
 import { Transition } from '@headlessui/react'
+import Switch from '../forms/Switch'
+import { LinkButton } from '../shared/Button'
+import ButtonGroup from '../forms/ButtonGroup'
 
 const Swap = () => {
   const { t } = useTranslation('common')
@@ -24,6 +26,8 @@ const Swap = () => {
   const [submitting, setSubmitting] = useState(false)
   const [animateSwtichArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
+  const [useMargin, setUseMargin] = useState(true)
+  const [sizePercentage, setSizePercentage] = useState('')
   const [slippage, setSlippage] = useState(0.1)
   const debouncedAmountIn = useDebounce(amountIn, 400)
   const set = mangoStore.getState().set
@@ -65,6 +69,15 @@ const Swap = () => {
     setOutputToken(inputToken)
 
     setAnimateSwitchArrow(animateSwtichArrow + 1)
+  }
+
+  const handleSizePercentage = (percentage: string) => {
+    setSizePercentage(percentage)
+
+    // TODO: calc max
+    const max = 100
+    const amount = (Number(percentage) / 100) * max
+    setAmountIn(amount.toFixed())
   }
 
   const handleSwap = async (
@@ -130,7 +143,26 @@ const Swap = () => {
           type={showTokenSelect}
         />
       </Transition>
-      <p className="mb-2 text-th-fgd-3">{t('short')}</p>
+      <div className="mb-4 flex items-center justify-between">
+        <h3>{t('trade')}</h3>
+        <Switch
+          className="text-th-fgd-3"
+          checked={useMargin}
+          onChange={() => setUseMargin(!useMargin)}
+        >
+          {t('margin')}
+        </Switch>
+      </div>
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-th-fgd-3">{t('sell')}</p>
+        <LinkButton
+          className="no-underline"
+          onClick={() => console.log('Set max input amount')}
+        >
+          <span className="mr-1 font-normal text-th-fgd-3">{t('max')}</span>
+          <span className="text-th-fgd-1">0</span>
+        </LinkButton>
+      </div>
       <div className="mb-3 grid grid-cols-2">
         <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1">
           <TokenSelect
@@ -150,6 +182,16 @@ const Swap = () => {
             onChange={handleAmountInChange}
           />
         </div>
+        {!useMargin ? (
+          <div className="col-span-2 mt-2">
+            <ButtonGroup
+              activeValue={sizePercentage}
+              onChange={(p) => handleSizePercentage(p)}
+              values={['0', '25', '50', '75', '100']}
+              unit="%"
+            />
+          </div>
+        ) : null}
       </div>
       <div className="flex justify-center">
         <button
@@ -166,7 +208,7 @@ const Swap = () => {
           />
         </button>
       </div>
-      <p className="mb-2 text-th-fgd-3">{t('long')}</p>
+      <p className="mb-2 text-th-fgd-3">{t('buy')}</p>
       <div className="mb-3 grid grid-cols-2">
         <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1">
           <TokenSelect
@@ -179,15 +221,19 @@ const Swap = () => {
           {amountOut ? numberFormat.format(amountOut) : 0}
         </div>
       </div>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-th-fgd-3">{t('leverage')}</p>
-        <p className="font-bold text-th-fgd-1">0.00x</p>
-      </div>
-      <LeverageSlider
-        inputToken={inputToken}
-        outputToken={outputToken}
-        onChange={(x) => setAmountIn(x)}
-      />
+      {useMargin ? (
+        <>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-th-fgd-3">{t('leverage')}</p>
+            <p className="font-bold text-th-fgd-1">0.00x</p>
+          </div>
+          <LeverageSlider
+            inputToken={inputToken}
+            outputToken={outputToken}
+            onChange={(x) => setAmountIn(x)}
+          />
+        </>
+      ) : null}
       <JupiterRoutes
         inputToken={inputToken}
         outputToken={outputToken}

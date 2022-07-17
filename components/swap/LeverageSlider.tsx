@@ -43,7 +43,7 @@ const LeverageSlider = ({
         min="0"
         max={leverageMax}
         step={0.0001}
-        className="mb-6 h-1 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-4 hover:bg-gradient-to-r hover:from-gradient-start hover:via-gradient-mid hover:to-gradient-end"
+        className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-4 hover:bg-gradient-to-r hover:from-gradient-start hover:via-gradient-mid hover:to-gradient-end"
         onChange={handleSliderChange}
       ></input>
     </>
