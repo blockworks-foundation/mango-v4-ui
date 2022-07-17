@@ -6,6 +6,7 @@ import mangoStore from '../../store/state'
 import Input from '../forms/Input'
 import { IconButton } from '../shared/Button'
 import { XIcon } from '@heroicons/react/solid'
+import { useTranslation } from 'next-i18next'
 
 const generateSearchTerm = (item: Token, searchValue: string) => {
   const normalizedSearchValue = searchValue.toLowerCase()
@@ -74,6 +75,7 @@ const SelectToken = ({
   onTokenSelect: (x: string) => void
   type: string
 }) => {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const tokens = mangoStore.getState().jupiterTokens
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -131,7 +133,7 @@ const SelectToken = ({
 
   return (
     <>
-      <p className="mb-3">{type === 'input' ? 'Short' : 'Long'}</p>
+      <p className="mb-3">{type === 'input' ? t('sell') : t('buy')}</p>
       <IconButton className="absolute top-2 right-2" onClick={() => onClose()}>
         <XIcon className="h-5 w-5" />
       </IconButton>
