@@ -7,8 +7,9 @@ import mangoStore, { CLUSTER } from '../../store/state'
 import RoutesModal from './RoutesModal'
 import RouteFeeInfo from './RouteFeeInfo'
 import { TokenInfo } from '../../types/jupiter'
-import Button from '../shared/Button'
+import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
+import { XIcon } from '@heroicons/react/solid'
 
 type JupiterRoutesProps = {
   inputToken: string
@@ -18,6 +19,7 @@ type JupiterRoutesProps = {
   submitting: boolean
   handleSwap: (x: TransactionInstruction[]) => void
   setAmountOut: (x?: number) => void
+  onClose: () => void
 }
 
 const parseJupiterRoute = async (
@@ -54,6 +56,7 @@ const JupiterRoutes = ({
   handleSwap,
   submitting,
   setAmountOut,
+  onClose,
 }: JupiterRoutesProps) => {
   const [jupiter, setJupiter] = useState<Jupiter>()
   const [routes, setRoutes] = useState<RouteInfo[]>()
@@ -61,7 +64,6 @@ const JupiterRoutes = ({
   const [showRoutesModal, setShowRoutesModal] = useState(false)
   const [outputTokenInfo, setOutputTokenInfo] = useState<TokenInfo>()
   const mangoAccount = mangoStore((s) => s.mangoAccount)
-  const connected = mangoStore((s) => s.connected)
 
   const onSwap = async () => {
     if (!jupiter || !selectedRoute) return
@@ -134,45 +136,47 @@ const JupiterRoutes = ({
     loadRoutes()
   }, [inputToken, outputToken, jupiter, slippage, amountIn])
 
-  return (
-    <div className="mt-6">
-      <div className="flex justify-center">
+  return routes?.length && selectedRoute && outputTokenInfo ? (
+    <div>
+      <>
+        <IconButton className="absolute top-2 left-2" onClick={onClose}>
+          <XIcon className="h-5 w-5" />
+        </IconButton>
+        <RouteFeeInfo
+          selectedRoute={selectedRoute}
+          amountIn={amountIn}
+          amountOut={toUiDecimals(
+            selectedRoute.outAmount,
+            outputTokenInfo.decimals
+          )}
+          inputTokenSymbol={inputToken}
+          outputTokenInfo={outputTokenInfo}
+          showRoutesModal={() => setShowRoutesModal(true)}
+        />
+        {showRoutesModal ? (
+          <RoutesModal
+            show={showRoutesModal}
+            onClose={() => setShowRoutesModal(false)}
+            setSelectedRoute={setSelectedRoute}
+            selectedRoute={selectedRoute}
+            routes={routes}
+            inputTokenSymbol={inputToken}
+            outputTokenInfo={outputTokenInfo}
+          />
+        ) : null}
+      </>
+      <div className="mt-6 flex justify-center">
         <Button
           onClick={onSwap}
           className="flex w-full justify-center py-3 text-lg"
-          disabled={!connected}
         >
           {submitting ? <Loading className="mr-2 h-5 w-5" /> : null}
-          {connected ? 'Swap' : 'Connect wallet'}
+          Confirm Trade
         </Button>
       </div>
-      {routes?.length && selectedRoute && outputTokenInfo ? (
-        <>
-          <RouteFeeInfo
-            selectedRoute={selectedRoute}
-            amountIn={amountIn}
-            amountOut={toUiDecimals(
-              selectedRoute.outAmount,
-              outputTokenInfo.decimals
-            )}
-            inputTokenSymbol={inputToken}
-            outputTokenInfo={outputTokenInfo}
-            showRoutesModal={() => setShowRoutesModal(true)}
-          />
-          {showRoutesModal ? (
-            <RoutesModal
-              show={showRoutesModal}
-              onClose={() => setShowRoutesModal(false)}
-              setSelectedRoute={setSelectedRoute}
-              selectedRoute={selectedRoute}
-              routes={routes}
-              inputTokenSymbol={inputToken}
-              outputTokenInfo={outputTokenInfo}
-            />
-          ) : null}
-        </>
-      ) : null}
     </div>
+  ) : (
+    <Loading />
   )
 }
 

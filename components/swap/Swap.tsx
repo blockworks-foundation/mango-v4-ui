@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, useCallback, Fragment, useEffect } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
-import { ArrowDownIcon } from '@heroicons/react/solid'
+import { ArrowDownIcon, XIcon } from '@heroicons/react/solid'
 import mangoStore from '../../store/state'
 import ContentBox from '../shared/ContentBox'
 import { notify } from '../../utils/notifications'
@@ -14,7 +14,7 @@ import { useTranslation } from 'next-i18next'
 import SelectToken from './SelectToken'
 import { Transition } from '@headlessui/react'
 import Switch from '../forms/Switch'
-import { LinkButton } from '../shared/Button'
+import Button, { IconButton, LinkButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 
 const Swap = () => {
@@ -28,10 +28,12 @@ const Swap = () => {
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [useMargin, setUseMargin] = useState(true)
   const [sizePercentage, setSizePercentage] = useState('')
+  const [showConfirm, setShowConfirm] = useState(false)
   const [slippage, setSlippage] = useState(0.1)
   const debouncedAmountIn = useDebounce(amountIn, 400)
   const set = mangoStore.getState().set
   const tokens = mangoStore((s) => s.jupiterTokens)
+  const connected = mangoStore((s) => s.connected)
 
   const handleAmountInChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -121,7 +123,29 @@ const Swap = () => {
   }
 
   return (
-    <ContentBox showBackground className="relative">
+    <ContentBox showBackground className="relative overflow-hidden">
+      <Transition
+        appear={true}
+        className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+        show={showConfirm}
+        enter="transition-all ease-in duration-500"
+        enterFrom="transform translate-x-full"
+        enterTo="transform translate-x-0"
+        leave="transition-all ease-out duration-500"
+        leaveFrom="transform translate-x-0"
+        leaveTo="transform translate-x-full"
+      >
+        <JupiterRoutes
+          inputToken={inputToken}
+          onClose={() => setShowConfirm(false)}
+          outputToken={outputToken}
+          amountIn={parseFloat(debouncedAmountIn)}
+          slippage={slippage}
+          handleSwap={handleSwap}
+          submitting={submitting}
+          setAmountOut={setAmountOut}
+        />
+      </Transition>
       <Transition
         appear={true}
         className="thin-scroll absolute bottom-0 left-0 z-20 h-full overflow-auto bg-th-bkg-2 p-6 pb-0"
@@ -234,15 +258,13 @@ const Swap = () => {
           />
         </>
       ) : null}
-      <JupiterRoutes
-        inputToken={inputToken}
-        outputToken={outputToken}
-        amountIn={parseFloat(debouncedAmountIn)}
-        slippage={slippage}
-        handleSwap={handleSwap}
-        submitting={submitting}
-        setAmountOut={setAmountOut}
-      />
+      <Button
+        onClick={() => setShowConfirm(true)}
+        className="mt-6 flex w-full justify-center py-3 text-lg"
+        disabled={!connected}
+      >
+        {connected ? 'Review Trade' : 'Connect wallet'}
+      </Button>
     </ContentBox>
   )
 }
