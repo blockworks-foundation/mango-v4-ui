@@ -64,7 +64,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             isCollapsed ? 'pl-20' : 'pl-44 lg:pl-56'
           }`}
         >
-          <div className="flex h-14 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6">
+          <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6">
             <div className="flex items-center text-th-fgd-3">
               <span className="mb-0 mr-2">
                 {mangoAccount ? (

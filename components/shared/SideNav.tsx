@@ -27,7 +27,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   return (
     <div
       className={`flex flex-col justify-between transition-all duration-500 ease-in-out ${
-        collapsed ? 'w-20' : 'w-44 lg:w-56'
+        collapsed ? 'w-[72px]' : 'w-44 lg:w-56'
       } min-h-screen border-r border-th-bkg-3 bg-th-bkg-1`}
     >
       <div className="my-2">
@@ -35,11 +35,11 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           <div
             className={`h-14 items-center transition-all duration-500 ease-in-out ${
               collapsed ? 'justify-center' : 'justify-start'
-            } px-5 py-2`}
+            } px-4 py-1`}
           >
             <div className={`flex flex-shrink-0 cursor-pointer items-center`}>
               <img
-                className={`h-9 w-auto`}
+                className={`ml-0.5 h-9 w-auto`}
                 src="/logos/logo-mark.svg"
                 alt="next"
               />
@@ -60,7 +60,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             </div>
           </div>
         </Link>
-        <div className={`mt-3 flex flex-col items-start`}>
+        <div className="flex flex-col items-start">
           <MenuItem
             active={pathname === '/'}
             collapsed={collapsed}
@@ -91,14 +91,14 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             <MenuItem
               active={pathname === '/fees'}
               collapsed={false}
-              icon={<ReceiptTaxIcon className="h-4 w-4" />}
+              icon={<ReceiptTaxIcon className="h-5 w-5" />}
               title={t('fees')}
               pagePath="/fees"
               hideIconBg
             />
             <MenuItem
               collapsed={false}
-              icon={<LightBulbIcon className="h-4 w-4" />}
+              icon={<LightBulbIcon className="h-5 w-5" />}
               title={t('learn')}
               pagePath="https://docs.mango.markets"
               hideIconBg
@@ -106,7 +106,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             />
             <MenuItem
               collapsed={false}
-              icon={<LibraryIcon className="h-4 w-4" />}
+              icon={<LibraryIcon className="h-5 w-5" />}
               title={t('governance')}
               pagePath="https://dao.mango.markets"
               hideIconBg
@@ -118,7 +118,9 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
       <div className="border-t border-th-bkg-3">
         <ExpandableMenuItem
           collapsed={collapsed}
-          icon={<ChatIcon className="h-6 w-6" />}
+          icon={
+            <ChatIcon className={`h-7 w-7 ${!collapsed ? 'ml-1.5' : ''}`} />
+          }
           title="Trollbox"
           alignBottom
           hideIconBg
@@ -152,9 +154,9 @@ const MenuItem = ({
   return (
     <Link href={pagePath} shallow={true}>
       <a
-        className={`flex cursor-pointer px-5 py-2 hover:brightness-[1.1] ${
+        className={`flex cursor-pointer px-4 hover:brightness-[1.1] ${
           active ? 'text-th-primary' : 'text-th-fgd-1'
-        }`}
+        } ${hideIconBg ? 'py-1' : 'py-2'}`}
       >
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center">
@@ -234,7 +236,7 @@ const ExpandableMenuItem = ({
         onMouseLeave={
           !alignBottom ? () => onHoverMenu(showMenu, 'onMouseLeave') : undefined
         }
-        className="relative z-30 px-5 py-2"
+        className={`relative z-30 ${alignBottom ? '' : 'px-4 py-2'}`}
         onClick={() => toggleMenu()}
         role="button"
       >
@@ -249,7 +251,7 @@ const ExpandableMenuItem = ({
                 : 'flex h-10 w-10 items-center justify-center rounded-full bg-th-bkg-3'
             } ${
               alignBottom
-                ? 'flex h-14 w-14 items-center justify-center hover:bg-th-bkg-2'
+                ? 'flex h-[72px] w-[72px] items-center justify-center hover:bg-th-bkg-2'
                 : ''
             }`}
           >
@@ -267,10 +269,10 @@ const ExpandableMenuItem = ({
           leaveTo="opacity-0"
         >
           <Popover.Panel
-            className={`absolute z-20 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 px-5 py-2 ${
+            className={`absolute z-20 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
               alignBottom
-                ? 'bottom-0 left-[55px] w-72 rounded-b-none p-0'
-                : 'top-1/2 left-[43px] w-56 -translate-y-1/2 transform'
+                ? 'bottom-0 left-[71px] w-72 rounded-b-none p-0'
+                : 'top-1/2 left-[71px] w-56 -translate-y-1/2 transform'
             }`}
           >
             {children}
@@ -283,8 +285,8 @@ const ExpandableMenuItem = ({
       <div
         onClick={() => setShowMenu(!showMenu)}
         role="button"
-        className={`w-full px-5 py-2 ${
-          alignBottom ? 'h-14 px-3 hover:bg-th-bkg-2' : ''
+        className={`w-full px-4 py-2 ${
+          alignBottom ? 'h-[72px] hover:bg-th-bkg-2' : ''
         }`}
       >
         <Disclosure.Button
@@ -333,7 +335,7 @@ const ExpandableMenuItem = ({
         leaveTo="opacity-0 max-h-0"
       >
         <Disclosure.Panel className="w-full overflow-hidden">
-          <div className={`${!alignBottom ? 'ml-4' : ''}`}>{children}</div>
+          <div className={`${!alignBottom ? 'ml-2' : ''}`}>{children}</div>
         </Disclosure.Panel>
       </Transition>
     </Disclosure>
