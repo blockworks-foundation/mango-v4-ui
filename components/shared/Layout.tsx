@@ -19,6 +19,7 @@ import MangoAccountSummary from '../account/MangoAccountSummary'
 import { HealthType, MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../../store/state'
 import HealthHeart from '../account/HealthHeart'
+import BottomBar from '../mobile/BottomBar'
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)
@@ -26,9 +27,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const { connected } = useWallet()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
 
   useEffect(() => {
-    const collapsed = width ? width < breakpoints.lg : false
+    const collapsed = width ? width < breakpoints.xl : false
     setIsCollapsed(collapsed)
   }, [])
 
@@ -39,29 +41,39 @@ const Layout = ({ children }: { children: ReactNode }) => {
     }, 100)
   }
 
+  console.log(width)
+
   return (
     <div className={`flex-grow bg-th-bkg-1 text-th-fgd-1 transition-all`}>
       <div className="flex">
-        <div>
-          <div className={`fixed z-20 h-screen`}>
-            <button
-              className="absolute -right-4 top-1/2 z-20 h-10 w-4 -translate-y-1/2 transform rounded-none rounded-r bg-th-bkg-4 focus:outline-none"
-              onClick={handleToggleSidebar}
-            >
-              <ChevronRightIcon
-                className={`default-transition h-full w-full ${
-                  !isCollapsed ? 'rotate-180' : 'rotate-360'
-                }`}
-              />
-            </button>
-            <div className={`h-full ${!isCollapsed ? 'overflow-y-auto' : ''}`}>
-              <SideNav collapsed={isCollapsed} />
+        {isMobile ? (
+          <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
+            <BottomBar />
+          </div>
+        ) : (
+          <div>
+            <div className={`fixed z-20 h-screen`}>
+              <button
+                className="absolute -right-4 top-1/2 z-20 h-10 w-4 -translate-y-1/2 transform rounded-none rounded-r bg-th-bkg-4 focus:outline-none"
+                onClick={handleToggleSidebar}
+              >
+                <ChevronRightIcon
+                  className={`default-transition h-full w-full ${
+                    !isCollapsed ? 'rotate-180' : 'rotate-360'
+                  }`}
+                />
+              </button>
+              <div
+                className={`h-full ${!isCollapsed ? 'overflow-y-auto' : ''}`}
+              >
+                <SideNav collapsed={isCollapsed} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
         <div
           className={`w-full overflow-hidden transition-all duration-500 ease-in-out ${
-            isCollapsed ? 'pl-20' : 'pl-44 lg:pl-56'
+            isMobile ? '' : isCollapsed ? 'pl-[72px]' : 'pl-44 lg:pl-56'
           }`}
         >
           <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6">
