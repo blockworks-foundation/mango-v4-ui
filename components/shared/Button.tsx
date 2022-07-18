@@ -31,18 +31,27 @@ const Button: FunctionComponent<ButtonProps> = ({
   )
 }
 
-export const IconButton: FunctionComponent<ButtonProps> = ({
+interface IconButtonProps {
+  hideBg?: boolean
+}
+
+type IconButtonCombinedProps = ButtonProps & IconButtonProps
+
+export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
   children,
   onClick,
   disabled = false,
   className,
+  hideBg,
   ...props
 }) => {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${className} flex h-7 w-7 items-center justify-center rounded-full bg-th-bkg-4 text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:bg-th-bkg-4 
+      className={`${className} flex h-7 w-7 items-center justify-center rounded-full ${
+        hideBg ? '' : 'bg-th-bkg-4'
+      } text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:bg-th-bkg-4 
       disabled:text-th-fgd-4 md:hover:text-th-primary md:disabled:hover:text-th-fgd-4`}
       {...props}
     >

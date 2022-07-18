@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useState } from 'react'
 import { TransactionInstruction, PublicKey } from '@solana/web3.js'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { Jupiter, RouteInfo } from '@jup-ag/core'
 
-import mangoStore, { CLUSTER } from '../../store/state'
+import mangoStore from '../../store/state'
 import RoutesModal from './RoutesModal'
 import RouteFeeInfo from './RouteFeeInfo'
 import { TokenInfo } from '../../types/jupiter'
 import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
-import { XIcon } from '@heroicons/react/solid'
+import { ArrowRightIcon, XIcon } from '@heroicons/react/solid'
+import { useTranslation } from 'next-i18next'
 
 type JupiterRoutesProps = {
   inputToken: string
@@ -20,6 +21,11 @@ type JupiterRoutesProps = {
   handleSwap: (x: TransactionInstruction[]) => void
   setAmountOut: (x?: number) => void
   onClose: () => void
+  jupiter: Jupiter | undefined
+  routes: RouteInfo[] | undefined
+  outputTokenInfo: TokenInfo | undefined
+  selectedRoute: RouteInfo | undefined
+  setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined>>
 }
 
 const parseJupiterRoute = async (
@@ -44,25 +50,20 @@ const parseJupiterRoute = async (
   return instructions
 }
 
-const getBestRoute = (routesInfos: RouteInfo[]) => {
-  return routesInfos[0]
-}
-
 const JupiterRoutes = ({
   inputToken,
-  outputToken,
   amountIn,
-  slippage,
   handleSwap,
   submitting,
-  setAmountOut,
   onClose,
+  jupiter,
+  routes,
+  outputTokenInfo,
+  selectedRoute,
+  setSelectedRoute,
 }: JupiterRoutesProps) => {
-  const [jupiter, setJupiter] = useState<Jupiter>()
-  const [routes, setRoutes] = useState<RouteInfo[]>()
-  const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
+  const { t } = useTranslation('trade')
   const [showRoutesModal, setShowRoutesModal] = useState(false)
-  const [outputTokenInfo, setOutputTokenInfo] = useState<TokenInfo>()
   const mangoAccount = mangoStore((s) => s.mangoAccount)
 
   const onSwap = async () => {
@@ -75,72 +76,15 @@ const JupiterRoutes = ({
     handleSwap(ixs)
   }
 
-  useEffect(() => {
-    const connection = mangoStore.getState().connection
-    const loadJupiter = async () => {
-      const jupiter = await Jupiter.load({
-        connection,
-        cluster: CLUSTER,
-        // platformFeeAndAccounts:  NO_PLATFORM_FEE,
-        routeCacheDuration: 5_000, // Will not refetch data on computeRoutes for up to 10 seconds
-      })
-      setJupiter(jupiter)
-    }
-    loadJupiter()
-  }, [])
-
-  useEffect(() => {
-    const group = mangoStore.getState().group
-    if (!group) return
-    const tokens = mangoStore.getState().jupiterTokens
-
-    const loadRoutes = async () => {
-      const inputBank = group!.banksMap.get(inputToken)
-      const outputBank = group!.banksMap.get(outputToken)
-      if (!inputBank || !outputBank) return
-      if (!amountIn) {
-        setAmountOut()
-        setSelectedRoute(undefined)
-      } else {
-        const computedRoutes = await jupiter?.computeRoutes({
-          inputMint: inputBank.mint, // Mint address of the input token
-          outputMint: outputBank.mint, // Mint address of the output token
-          inputAmount: amountIn * 10 ** inputBank.mintDecimals, // raw input amount of tokens
-          slippage, // The slippage in % terms
-          filterTopNResult: 10,
-          onlyDirectRoutes: true,
-        })
-        const tokenOut = tokens.find(
-          (t: any) => t.address === outputBank.mint.toString()
-        )
-        setOutputTokenInfo(tokenOut)
-        const routesInfosWithoutRaydium = computedRoutes?.routesInfos.filter(
-          (r) => {
-            if (r.marketInfos.length > 1) {
-              for (const mkt of r.marketInfos) {
-                if (mkt.amm.label === 'Raydium') return false
-              }
-            }
-            return true
-          }
-        )
-        if (routesInfosWithoutRaydium?.length) {
-          setRoutes(routesInfosWithoutRaydium)
-          const bestRoute = getBestRoute(computedRoutes!.routesInfos)
-          setSelectedRoute(bestRoute)
-          setAmountOut(toUiDecimals(bestRoute.outAmount, tokenOut?.decimals))
-        }
-      }
-    }
-
-    loadRoutes()
-  }, [inputToken, outputToken, jupiter, slippage, amountIn])
-
   return routes?.length && selectedRoute && outputTokenInfo ? (
     <div>
       <>
-        <IconButton className="absolute top-2 left-2" onClick={onClose}>
-          <XIcon className="h-5 w-5" />
+        <IconButton
+          className="absolute top-2 right-2 text-th-fgd-3"
+          onClick={onClose}
+          hideBg
+        >
+          <ArrowRightIcon className="h-5 w-5" />
         </IconButton>
         <RouteFeeInfo
           selectedRoute={selectedRoute}
@@ -171,13 +115,11 @@ const JupiterRoutes = ({
           className="flex w-full justify-center py-3 text-lg"
         >
           {submitting ? <Loading className="mr-2 h-5 w-5" /> : null}
-          Confirm Trade
+          {t('trade:confirm-trade')}
         </Button>
       </div>
     </div>
-  ) : (
-    <Loading />
-  )
+  ) : null
 }
 
 export default JupiterRoutes

@@ -1,16 +1,11 @@
-import {
-  ArrowSmRightIcon,
-  ChevronRightIcon,
-  CogIcon,
-  InformationCircleIcon,
-  RefreshIcon,
-  SwitchHorizontalIcon,
-} from '@heroicons/react/solid'
+import { SwitchHorizontalIcon } from '@heroicons/react/solid'
 import { RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
+import { useTranslation } from 'next-i18next'
 import { useEffect, useState } from 'react'
 import mangoStore from '../../store/state'
 import { TokenInfo } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
+import Button from '../shared/Button'
 
 type RouteFeeInfoProps = {
   selectedRoute: RouteInfo
@@ -29,6 +24,7 @@ const RouteFeeInfo = ({
   inputTokenSymbol,
   showRoutesModal,
 }: RouteFeeInfoProps) => {
+  const { t } = useTranslation(['common', 'trade'])
   const tokens = mangoStore.getState().jupiterTokens
   const connected = mangoStore((s) => s.connected)
 
@@ -49,18 +45,18 @@ const RouteFeeInfo = ({
   }, [selectedRoute, connected])
 
   return (
-    <div className="space-y-2 px-1 text-xs text-th-fgd-4">
+    <div className="space-y-4 px-1">
       <div className="mb-4 flex items-center justify-between">
-        <div className="text-sm font-bold text-th-fgd-1">Swap Details</div>
+        <h3>{t('trade:review-trade')}</h3>
       </div>
       <div className="flex items-center justify-between">
-        <span>Swap Route</span>
-        <div
-          className="flex items-center rounded border border-th-bkg-4 p-1 pl-2 hover:cursor-pointer hover:border-th-fgd-4"
-          role="button"
+        <p className="text-th-fgd-3">{t('liquidity')}</p>
+        <Button
+          className="pt-1 pb-1 pl-3 pr-3"
           onClick={showRoutesModal}
+          secondary
         >
-          <span className="overflow-ellipsis whitespace-nowrap text-th-fgd-1">
+          <p className="overflow-ellipsis whitespace-nowrap text-th-fgd-1">
             {selectedRoute?.marketInfos.map((info, index) => {
               let includeSeparator = false
               if (
@@ -70,21 +66,20 @@ const RouteFeeInfo = ({
                 includeSeparator = true
               }
               return (
-                <span key={index}>{`${info.amm.label} ${
+                <p key={index}>{`${info.amm.label} ${
                   includeSeparator ? 'x ' : ''
-                }`}</span>
+                }`}</p>
               )
             })}
-          </span>
-          <ChevronRightIcon className="ml-2 h-3 w-3" />
-        </div>
+          </p>
+        </Button>
       </div>
       {amountOut && amountIn ? (
         <div className="flex justify-between">
-          <span>Rate</span>
+          <p className="text-th-fgd-3">{t('trade:rate')}</p>
           <div>
             <div className="flex items-center justify-end">
-              <div className="text-right text-th-fgd-1">
+              <p className="text-right font-bold text-th-fgd-1">
                 {swapRate ? (
                   <>
                     1 {inputTokenSymbol} ≈{' '}
@@ -97,7 +92,7 @@ const RouteFeeInfo = ({
                     {formatDecimal(amountIn / amountOut, 6)} {inputTokenSymbol}
                   </>
                 )}
-              </div>
+              </p>
               <SwitchHorizontalIcon
                 className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-3 hover:text-th-fgd-2"
                 onClick={() => setSwapRate(!swapRate)}
@@ -140,33 +135,41 @@ const RouteFeeInfo = ({
         </div>
       ) : null}
       <div className="flex justify-between">
-        <span>Price Impact</span>
-        <div className="text-right text-th-fgd-1">
-          {selectedRoute?.priceImpactPct * 100 < 0.1
-            ? '< 0.1%'
-            : `~ ${(selectedRoute?.priceImpactPct * 100).toFixed(4)}%`}
-        </div>
-      </div>
-      <div className="flex justify-between">
-        <span>Minimum Received</span>
+        <p className="text-th-fgd-3">{t('trade:minimum-received')}</p>
         {outputTokenInfo?.decimals ? (
-          <div className="text-right text-th-fgd-1">
+          <p className="text-right font-bold text-th-fgd-1">
             {formatDecimal(
               selectedRoute?.outAmountWithSlippage /
                 10 ** outputTokenInfo.decimals || 1,
               6
             )}{' '}
             {outputTokenInfo?.symbol}
-          </div>
+          </p>
         ) : null}
+      </div>
+      <div className="flex justify-between">
+        <p className="text-th-fgd-3">{t('trade:health-impact')}</p>
+        <p className="text-right font-bold text-th-fgd-1">0%</p>
+      </div>
+      <div className="flex justify-between">
+        <p className="text-th-fgd-3">{t('trade:est-liq-price')}</p>
+        <p className="text-right font-bold text-th-fgd-1">N/A</p>
+      </div>
+      <div className="flex justify-between">
+        <p className="text-th-fgd-3">{t('trade:slippage')}</p>
+        <p className="text-right font-bold text-th-fgd-1">
+          {selectedRoute?.priceImpactPct * 100 < 0.1
+            ? '< 0.1%'
+            : `~ ${(selectedRoute?.priceImpactPct * 100).toFixed(4)}%`}
+        </p>
       </div>
       {typeof feeValue === 'number' ? (
         <div className="flex justify-between">
-          <span>Swap fee</span>
+          <p className="text-th-fgd-3">{t('fee')}</p>
           <div className="flex items-center">
-            <div className="text-right text-th-fgd-1">
+            <p className="text-right font-bold text-th-fgd-1">
               ≈ ${feeValue?.toFixed(2)}
-            </div>
+            </p>
           </div>
         </div>
       ) : (
@@ -176,14 +179,18 @@ const RouteFeeInfo = ({
           )
           return (
             <div className="flex justify-between" key={index}>
-              <span>Fees paid to {info?.amm?.label}</span>
+              <p className="text-th-fgd-3">
+                {t('trade:fees-paid-to', {
+                  route: info?.amm?.label,
+                })}
+              </p>
               {feeToken?.decimals && (
-                <div className="text-right text-th-fgd-1">
+                <p className="text-right font-bold text-th-fgd-1">
                   {(
                     info.lpFee?.amount / Math.pow(10, feeToken.decimals)
                   ).toFixed(6)}{' '}
                   {feeToken?.symbol} ({info.lpFee?.pct * 100}%)
-                </div>
+                </p>
               )}
             </div>
           )

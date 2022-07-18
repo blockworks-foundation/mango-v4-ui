@@ -1,7 +1,9 @@
 import { useState, ChangeEvent, useCallback, Fragment, useEffect } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
 import { ArrowDownIcon, XIcon } from '@heroicons/react/solid'
-import mangoStore from '../../store/state'
+import mangoStore, { CLUSTER } from '../../store/state'
+import { Jupiter, RouteInfo } from '@jup-ag/core'
+import { TokenInfo } from '../../types/jupiter'
 import ContentBox from '../shared/ContentBox'
 import { notify } from '../../utils/notifications'
 import JupiterRoutes from './JupiterRoutes'
@@ -16,9 +18,19 @@ import { Transition } from '@headlessui/react'
 import Switch from '../forms/Switch'
 import Button, { IconButton, LinkButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import Loading from '../shared/Loading'
+
+const getBestRoute = (routesInfos: RouteInfo[]) => {
+  return routesInfos[0]
+}
 
 const Swap = () => {
   const { t } = useTranslation('common')
+  const [jupiter, setJupiter] = useState<Jupiter>()
+  const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
+  const [outputTokenInfo, setOutputTokenInfo] = useState<TokenInfo>()
+  const [routes, setRoutes] = useState<RouteInfo[]>()
   const [amountIn, setAmountIn] = useState('')
   const [amountOut, setAmountOut] = useState<number>()
   const [inputToken, setInputToken] = useState('SOL')
@@ -34,6 +46,67 @@ const Swap = () => {
   const set = mangoStore.getState().set
   const tokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
+
+  useEffect(() => {
+    const connection = mangoStore.getState().connection
+    const loadJupiter = async () => {
+      const jupiter = await Jupiter.load({
+        connection,
+        cluster: CLUSTER,
+        // platformFeeAndAccounts:  NO_PLATFORM_FEE,
+        routeCacheDuration: 5_000, // Will not refetch data on computeRoutes for up to 10 seconds
+      })
+      setJupiter(jupiter)
+    }
+    loadJupiter()
+  }, [])
+
+  useEffect(() => {
+    const group = mangoStore.getState().group
+    if (!group) return
+    const tokens = mangoStore.getState().jupiterTokens
+
+    const loadRoutes = async () => {
+      const inputBank = group!.banksMap.get(inputToken)
+      const outputBank = group!.banksMap.get(outputToken)
+      if (!inputBank || !outputBank) return
+      if (!amountIn) {
+        setAmountOut(undefined)
+        setSelectedRoute(undefined)
+      } else {
+        const computedRoutes = await jupiter?.computeRoutes({
+          inputMint: inputBank.mint, // Mint address of the input token
+          outputMint: outputBank.mint, // Mint address of the output token
+          inputAmount: Number(amountIn) * 10 ** inputBank.mintDecimals, // raw input amount of tokens
+          slippage, // The slippage in % terms
+          filterTopNResult: 10,
+          onlyDirectRoutes: true,
+        })
+        const tokenOut = tokens.find(
+          (t: any) => t.address === outputBank.mint.toString()
+        )
+        setOutputTokenInfo(tokenOut)
+        const routesInfosWithoutRaydium = computedRoutes?.routesInfos.filter(
+          (r) => {
+            if (r.marketInfos.length > 1) {
+              for (const mkt of r.marketInfos) {
+                if (mkt.amm.label === 'Raydium') return false
+              }
+            }
+            return true
+          }
+        )
+        if (routesInfosWithoutRaydium?.length) {
+          setRoutes(routesInfosWithoutRaydium)
+          const bestRoute = getBestRoute(computedRoutes!.routesInfos)
+          setSelectedRoute(bestRoute)
+          setAmountOut(toUiDecimals(bestRoute.outAmount, tokenOut?.decimals))
+        }
+      }
+    }
+
+    loadRoutes()
+  }, [inputToken, outputToken, jupiter, slippage, amountIn])
 
   const handleAmountInChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -122,6 +195,11 @@ const Swap = () => {
     }
   }
 
+  const isLoadingTradeDetails =
+    amountIn &&
+    connected &&
+    (!routes?.length || !selectedRoute || !outputTokenInfo)
+
   return (
     <ContentBox showBackground className="relative overflow-hidden">
       <Transition
@@ -144,6 +222,11 @@ const Swap = () => {
           handleSwap={handleSwap}
           submitting={submitting}
           setAmountOut={setAmountOut}
+          outputTokenInfo={outputTokenInfo}
+          jupiter={jupiter}
+          routes={routes}
+          selectedRoute={selectedRoute}
+          setSelectedRoute={setSelectedRoute}
         />
       </Transition>
       <Transition
@@ -261,9 +344,19 @@ const Swap = () => {
       <Button
         onClick={() => setShowConfirm(true)}
         className="mt-6 flex w-full justify-center py-3 text-lg"
-        disabled={!connected}
+        disabled={
+          !connected || !routes?.length || !selectedRoute || !outputTokenInfo
+        }
       >
-        {connected ? 'Review Trade' : 'Connect wallet'}
+        {connected ? (
+          isLoadingTradeDetails ? (
+            <Loading />
+          ) : (
+            t('trade:review-trade')
+          )
+        ) : (
+          t('connect')
+        )}
       </Button>
     </ContentBox>
   )

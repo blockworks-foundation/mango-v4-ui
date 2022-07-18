@@ -134,7 +134,11 @@ const SelectToken = ({
   return (
     <>
       <p className="mb-3">{type === 'input' ? t('sell') : t('buy')}</p>
-      <IconButton className="absolute top-2 right-2" onClick={() => onClose()}>
+      <IconButton
+        className="absolute top-2 right-2"
+        onClick={() => onClose()}
+        hideBg
+      >
         <XIcon className="h-5 w-5" />
       </IconButton>
       <div className="flex items-center text-th-fgd-4">
