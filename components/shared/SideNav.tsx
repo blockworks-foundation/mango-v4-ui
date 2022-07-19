@@ -12,6 +12,7 @@ import {
   ReceiptTaxIcon,
   ChatIcon,
   HomeIcon,
+  CogIcon,
 } from '@heroicons/react/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -81,6 +82,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             icon={<ChartBarIcon className="h-6 w-6" />}
             title={t('stats')}
             pagePath="/stats"
+          />
+          <MenuItem
+            active={pathname === '/settings'}
+            collapsed={collapsed}
+            icon={<CogIcon className="h-6 w-6" />}
+            title={t('settings')}
+            pagePath="/settings"
           />
           <ExpandableMenuItem
             collapsed={collapsed}

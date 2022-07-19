@@ -245,7 +245,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       <stop
                         offset="0%"
                         stopColor={chartChange >= 0 ? GREEN : RED}
-                        stopOpacity={0.15}
+                        stopOpacity={0.4}
                       />
                       <stop
                         offset="99%"
@@ -259,6 +259,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     type="monotone"
                     dataKey="price"
                     stroke={chartChange >= 0 ? GREEN : RED}
+                    strokeWidth={1.5}
                     fill="url(#gradientArea)"
                   />
                   <XAxis

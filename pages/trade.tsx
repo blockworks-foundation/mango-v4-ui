@@ -10,8 +10,8 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
-const Index: NextPage = () => {
+const Trade: NextPage = () => {
   return <TradeSimplePage />
 }
 
-export default Index
+export default Trade
