@@ -10,16 +10,18 @@ const TradeSimplePage = () => {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <div className="order-2 col-span-12 space-y-12 md:order-1 md:col-span-6 lg:col-span-8">
+      <div className="col-span-12 space-y-12 md:col-span-6 lg:col-span-8">
         <SwapTokenChart
           inputTokenId={inputTokenInfo?.extensions?.coingeckoId}
           outputTokenId={outputTokenInfo?.extensions?.coingeckoId}
         />
-        <TokenList />
       </div>
-      <div className="order-1 col-span-12 space-y-6 md:order-2 md:col-span-6 lg:col-span-4">
+      <div className="col-span-12 space-y-6 md:col-span-6 lg:col-span-4">
         <Swap />
         {/* <MangoAccount /> */}
+      </div>
+      <div className="col-span-12">
+        <TokenList />
       </div>
     </div>
   )

@@ -221,7 +221,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
             </div>
           </div>
           {!hideChart ? (
-            <div className="-mx-5 -mb-6 h-56">
+            <div className="-mx-5 -mb-6 h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={chartData}

@@ -41,8 +41,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
     }, 100)
   }
 
-  console.log(width)
-
   return (
     <div className={`flex-grow bg-th-bkg-1 text-th-fgd-1 transition-all`}>
       <div className="flex">

@@ -230,7 +230,7 @@ input[type='range']::-ms-thumb {
 /* Table */
 
 table {
-  @apply m-0 w-full table-fixed p-0;
+  @apply m-0 w-full p-0;
 }
 
 table caption {
