@@ -136,11 +136,25 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
     }
   }, [baseTokenId, quoteTokenId])
 
-  const chartChange = chartData.length
-    ? ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
-        chartData[0]['price']) *
-      100
-    : 0
+  const calculateChartChange = () => {
+    if (chartData.length) {
+      if (mouseData) {
+        const index = chartData.findIndex((d: any) => d.time === mouseData.time)
+        return (
+          ((chartData[chartData.length - 1]['price'] -
+            chartData[index]['price']) /
+            chartData[0]['price']) *
+          100
+        )
+      } else
+        return (
+          ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
+            chartData[0]['price']) *
+          100
+        )
+    }
+    return 0
+  }
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -160,12 +174,20 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                   <div className="mb-0.5 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     {numberFormatter.format(mouseData['price'])}
                     <span
-                      className={`ml-0 mt-2 flex items-center text-sm md:ml-2 md:mt-0 ${
-                        chartChange >= 0 ? 'text-th-green' : 'text-th-red'
+                      className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0 ${
+                        calculateChartChange() >= 0
+                          ? 'text-th-green'
+                          : 'text-th-red'
                       }`}
                     >
-                      {chartChange >= 0 ? <UpTriangle /> : <DownTriangle />}
-                      <span className="ml-1">{chartChange.toFixed(2)}%</span>
+                      {calculateChartChange() >= 0 ? (
+                        <UpTriangle />
+                      ) : (
+                        <DownTriangle />
+                      )}
+                      <span className="ml-1">
+                        {calculateChartChange().toFixed(2)}%
+                      </span>
                     </span>
                   </div>
                   <p className="text-th-fgd-4">
@@ -179,12 +201,20 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       chartData[chartData.length - 1]['price']
                     )}
                     <span
-                      className={`ml-0 mt-2 flex items-center text-sm md:ml-2 md:mt-0 ${
-                        chartChange >= 0 ? 'text-th-green' : 'text-th-red'
+                      className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0 ${
+                        calculateChartChange() >= 0
+                          ? 'text-th-green'
+                          : 'text-th-red'
                       }`}
                     >
-                      {chartChange >= 0 ? <UpTriangle /> : <DownTriangle />}
-                      <span className="ml-1">{chartChange.toFixed(2)}%</span>
+                      {calculateChartChange() >= 0 ? (
+                        <UpTriangle />
+                      ) : (
+                        <DownTriangle />
+                      )}
+                      <span className="ml-1">
+                        {calculateChartChange().toFixed(2)}%
+                      </span>
                     </span>
                   </div>
                   <p className="text-th-fgd-4">
@@ -246,12 +276,12 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     >
                       <stop
                         offset="0%"
-                        stopColor={chartChange >= 0 ? GREEN : RED}
+                        stopColor={calculateChartChange() >= 0 ? GREEN : RED}
                         stopOpacity={0.25}
                       />
                       <stop
                         offset="99%"
-                        stopColor={chartChange >= 0 ? GREEN : RED}
+                        stopColor={calculateChartChange() >= 0 ? GREEN : RED}
                         stopOpacity={0}
                       />
                     </linearGradient>
@@ -260,7 +290,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     isAnimationActive={true}
                     type="monotone"
                     dataKey="price"
-                    stroke={chartChange >= 0 ? GREEN : RED}
+                    stroke={calculateChartChange() >= 0 ? GREEN : RED}
                     strokeWidth={1.5}
                     fill="url(#gradientArea)"
                   />
