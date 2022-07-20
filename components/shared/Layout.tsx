@@ -93,7 +93,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
               {connected ? <WalletDisconnectButton /> : <WalletMultiButton />}
             </div>
           </div>
-          <div className="min-h-screen p-8">{children}</div>
+          <div className={`min-h-screen p-8 ${isMobile ? 'pb-20' : ''}`}>
+            {children}
+          </div>
         </div>
       </div>
     </div>
