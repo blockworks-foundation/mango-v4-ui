@@ -34,6 +34,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
     setIsCollapsed(collapsed)
   }, [])
 
+  useEffect(() => {
+    if (width < breakpoints.lg) {
+      setIsCollapsed(true)
+    }
+  }, [width])
+
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
     setTimeout(() => {
@@ -49,23 +55,19 @@ const Layout = ({ children }: { children: ReactNode }) => {
             <BottomBar />
           </div>
         ) : (
-          <div>
-            <div className={`fixed z-20 h-screen`}>
-              <button
-                className="absolute -right-4 top-1/2 z-20 h-10 w-4 -translate-y-1/2 transform rounded-none rounded-r bg-th-bkg-4 focus:outline-none"
-                onClick={handleToggleSidebar}
-              >
-                <ChevronRightIcon
-                  className={`default-transition h-full w-full ${
-                    !isCollapsed ? 'rotate-180' : 'rotate-360'
-                  }`}
-                />
-              </button>
-              <div
-                className={`h-full ${!isCollapsed ? 'overflow-y-auto' : ''}`}
-              >
-                <SideNav collapsed={isCollapsed} />
-              </div>
+          <div className={`fixed z-20 h-screen`}>
+            <button
+              className="absolute -right-4 top-1/2 z-20 hidden h-10 w-4 -translate-y-1/2 transform rounded-none rounded-r bg-th-bkg-4 focus:outline-none lg:block"
+              onClick={handleToggleSidebar}
+            >
+              <ChevronRightIcon
+                className={`default-transition h-full w-full ${
+                  !isCollapsed ? 'rotate-180' : 'rotate-360'
+                }`}
+              />
+            </button>
+            <div className={`h-full ${!isCollapsed ? 'overflow-y-auto' : ''}`}>
+              <SideNav collapsed={isCollapsed} />
             </div>
           </div>
         )}

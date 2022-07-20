@@ -12,6 +12,7 @@ import {
 import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
 import { GREEN, RED } from '../../styles/colors'
+import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 
 dayjs.extend(relativeTime)
 
@@ -35,7 +36,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   outputTokenId,
 }) => {
   const [chartData, setChartData] = useState([])
-  const [hideChart, setHideChart] = useState(false)
   const [baseTokenId, setBaseTokenId] = useState('')
   const [quoteTokenId, setQuoteTokenId] = useState('')
   const [inputTokenInfo, setInputTokenInfo] = useState<any>(null)
@@ -145,7 +145,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   return (
     <ContentBox hideBorder hidePadding>
       {chartData.length && baseTokenId && quoteTokenId ? (
-        <div className="">
+        <div className="relative flex justify-between md:block">
           <div className="flex items-start justify-between">
             <div>
               {inputTokenInfo && outputTokenInfo ? (
@@ -157,14 +157,15 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="mb-0.5 text-4xl font-bold text-th-fgd-1">
+                  <div className="mb-0.5 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     {numberFormatter.format(mouseData['price'])}
                     <span
-                      className={`ml-2 text-sm ${
+                      className={`ml-0 mt-2 flex items-center text-sm md:ml-2 md:mt-0 ${
                         chartChange >= 0 ? 'text-th-green' : 'text-th-red'
                       }`}
                     >
-                      {chartChange.toFixed(2)}%
+                      {chartChange >= 0 ? <UpTriangle /> : <DownTriangle />}
+                      <span className="ml-1">{chartChange.toFixed(2)}%</span>
                     </span>
                   </div>
                   <p className="text-th-fgd-4">
@@ -173,16 +174,17 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 </>
               ) : (
                 <>
-                  <div className="mb-0.5 text-4xl font-bold text-th-fgd-1">
+                  <div className="mb-0.5 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     {numberFormatter.format(
                       chartData[chartData.length - 1]['price']
                     )}
                     <span
-                      className={`ml-2 text-sm ${
+                      className={`ml-0 mt-2 flex items-center text-sm md:ml-2 md:mt-0 ${
                         chartChange >= 0 ? 'text-th-green' : 'text-th-red'
                       }`}
                     >
-                      {chartChange.toFixed(2)}%
+                      {chartChange >= 0 ? <UpTriangle /> : <DownTriangle />}
+                      <span className="ml-1">{chartChange.toFixed(2)}%</span>
                     </span>
                   </div>
                   <p className="text-th-fgd-4">
@@ -193,9 +195,11 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 </>
               )}
             </div>
-            <div className="flex justify-end">
+          </div>
+          <div className="-mt-1 h-28 w-1/2 md:h-72 md:w-auto">
+            <div className="-mb-2 flex justify-end md:absolute md:-top-1 md:right-0 md:mb-0 md:mb-12">
               <button
-                className={`px-3 py-2 text-xs font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
+                className={`px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
                   daysToShow === 1 && 'text-th-primary'
                 }`}
                 onClick={() => setDaysToShow(1)}
@@ -203,7 +207,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 24H
               </button>
               <button
-                className={`px-3 py-2 text-xs font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
+                className={`px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
                   daysToShow === 7 && 'text-th-primary'
                 }`}
                 onClick={() => setDaysToShow(7)}
@@ -211,7 +215,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 7D
               </button>
               <button
-                className={`px-3 py-2 text-xs font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
+                className={`px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
                   daysToShow === 30 && 'text-th-primary'
                 }`}
                 onClick={() => setDaysToShow(30)}
@@ -219,9 +223,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 30D
               </button>
             </div>
-          </div>
-          {!hideChart ? (
-            <div className="-mx-5 -mb-6 h-64">
+            <div className="-mx-6 h-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={chartData}
@@ -245,7 +247,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       <stop
                         offset="0%"
                         stopColor={chartChange >= 0 ? GREEN : RED}
-                        stopOpacity={0.4}
+                        stopOpacity={0.25}
                       />
                       <stop
                         offset="99%"
@@ -277,7 +279,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          ) : null}
+          </div>
         </div>
       ) : (
         <div className="mt-4 rounded-md bg-th-bkg-3 p-4 text-center text-th-fgd-3 md:mt-0">
