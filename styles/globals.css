@@ -144,7 +144,7 @@ body {
 }
 
 button {
-  @apply tracking-wide transition-all duration-500 ease-out focus:outline-none focus:brightness-[1.5] focus:filter;
+  @apply tracking-wide transition-all duration-500 ease-out focus:outline-none focus:ring-1 focus:ring-inset focus:ring-th-fgd-4;
 }
 
 svg {
