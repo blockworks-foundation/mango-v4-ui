@@ -229,7 +229,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
           <div className="-mt-1 h-28 w-1/2 md:h-72 md:w-auto">
             <div className="-mb-2 flex justify-end md:absolute md:-top-1 md:right-0 md:mb-0 md:mb-12">
               <button
-                className={`px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
+                className={`rounded-md px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
                   daysToShow === 1 && 'text-th-primary'
                 }`}
                 onClick={() => setDaysToShow(1)}
@@ -237,7 +237,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 24H
               </button>
               <button
-                className={`px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
+                className={`rounded-md px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
                   daysToShow === 7 && 'text-th-primary'
                 }`}
                 onClick={() => setDaysToShow(7)}
@@ -245,7 +245,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 7D
               </button>
               <button
-                className={`px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
+                className={`rounded-md px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
                   daysToShow === 30 && 'text-th-primary'
                 }`}
                 onClick={() => setDaysToShow(30)}

@@ -110,10 +110,7 @@ const JupiterRoutes = ({
         ) : null}
       </>
       <div className="mt-6 flex justify-center">
-        <Button
-          onClick={onSwap}
-          className="flex w-full justify-center py-3 text-lg"
-        >
+        <Button onClick={onSwap} className="w-full text-base" size="large">
           {submitting ? <Loading className="mr-2 h-5 w-5" /> : null}
           {t('trade:confirm-trade')}
         </Button>

@@ -1,4 +1,4 @@
-import { ChangeEvent, forwardRef, ReactNode } from 'react'
+import { ChangeEvent, forwardRef } from 'react'
 
 interface InputProps {
   type: string
@@ -34,14 +34,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         </div>
       ) : null}
       <input
-        className={`${className} h-10 w-full flex-1 rounded-md border bg-th-bkg-1 px-2 pb-px
+        className={`${className} h-12 w-full flex-1 rounded-md border bg-th-bkg-1 px-3 text-base
           text-th-fgd-1 ${
-            error ? 'border-th-red' : 'border-th-bkg-4'
-          } default-transition hover:border-th-fgd-4 
-          focus:border-th-fgd-4 focus:outline-none 
+            error ? 'border-th-red' : 'border-th-fgd-4'
+          } default-transition hover:border-th-fgd-3 
+          focus:border-th-fgd-3 focus:outline-none 
           ${
             disabled
-              ? 'cursor-not-allowed bg-th-bkg-3 text-th-fgd-3 hover:border-th-fgd-4'
+              ? 'cursor-not-allowed bg-th-bkg-3 text-th-fgd-3 hover:border-th-fgd-3'
               : ''
           }
           ${prefix ? 'pl-8' : ''}
@@ -63,14 +63,3 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 })
 
 export default Input
-
-interface LabelProps {
-  children: ReactNode
-  className?: string
-}
-
-export const Label = ({ children, className }: LabelProps) => (
-  <label className={`mb-1.5 block text-th-fgd-2 ${className}`}>
-    {children}
-  </label>
-)

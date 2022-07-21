@@ -343,10 +343,11 @@ const Swap = () => {
       ) : null}
       <Button
         onClick={() => setShowConfirm(true)}
-        className="mt-6 flex w-full justify-center py-3 text-lg"
+        className="mt-6 w-full text-base"
         disabled={
           !connected || !routes?.length || !selectedRoute || !outputTokenInfo
         }
+        size="large"
       >
         {connected ? (
           isLoadingTradeDetails ? (

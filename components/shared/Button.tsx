@@ -1,6 +1,6 @@
 import { FunctionComponent, ReactNode } from 'react'
 
-interface ButtonProps {
+interface AllButtonProps {
   onClick?: (e?: React.MouseEvent) => void
   disabled?: boolean
   className?: string
@@ -8,21 +8,34 @@ interface ButtonProps {
   children?: ReactNode
 }
 
-const Button: FunctionComponent<ButtonProps> = ({
+interface ButtonProps {
+  size?: 'large' | 'medium' | 'small'
+}
+
+type ButtonCombinedProps = AllButtonProps & ButtonProps
+
+const Button: FunctionComponent<ButtonCombinedProps> = ({
   children,
   onClick,
   disabled = false,
   className,
   secondary,
+  size = 'medium',
   ...props
 }) => {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`whitespace-nowrap rounded-md ${
+      className={`whitespace-nowrap rounded-md text-th-fgd-1 ${
         secondary ? 'border border-th-bkg-button' : 'bg-th-bkg-button'
-      } px-6 py-2 font-bold drop-shadow-md 
+      } ${
+        size === 'medium'
+          ? 'h-10 px-4'
+          : size === 'large'
+          ? 'h-12 px-6'
+          : 'h-8 px-3'
+      } font-bold drop-shadow-md 
       focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 md:hover:brightness-[1.1] ${className}`}
       {...props}
     >
@@ -35,7 +48,7 @@ interface IconButtonProps {
   hideBg?: boolean
 }
 
-type IconButtonCombinedProps = ButtonProps & IconButtonProps
+type IconButtonCombinedProps = AllButtonProps & IconButtonProps
 
 export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
   children,
@@ -60,7 +73,7 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
   )
 }
 
-export const LinkButton: FunctionComponent<ButtonProps> = ({
+export const LinkButton: FunctionComponent<AllButtonProps> = ({
   children,
   onClick,
   disabled = false,

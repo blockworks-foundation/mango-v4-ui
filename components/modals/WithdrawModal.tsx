@@ -1,17 +1,13 @@
 import { useState } from 'react'
 
 import mangoStore from '../../store/state'
+import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
 import Button from '../shared/Button'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 
-type WithdrawModalProps = {
-  isOpen: boolean
-  onClose: () => void
-}
-
-function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
+function WithdrawModal({ isOpen, onClose }: ModalProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState('USDC')

@@ -30,13 +30,18 @@ const AccountActions = () => {
   return (
     <>
       <div className="flex space-x-3">
-        <Button disabled={!connected} onClick={() => setShowDepositModal(true)}>
+        <Button
+          disabled={!connected}
+          onClick={() => setShowDepositModal(true)}
+          size="large"
+        >
           {t('deposit')}
         </Button>
         <Button
           disabled={!connected}
           onClick={() => setShowWithdrawModal(true)}
           secondary
+          size="large"
         >
           {t('withdraw')}
         </Button>

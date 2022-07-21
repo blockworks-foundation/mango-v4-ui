@@ -49,7 +49,7 @@ const RouteFeeInfo = ({
       <div className="mb-4 flex items-center justify-between">
         <h3>{t('trade:review-trade')}</h3>
       </div>
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <p className="text-th-fgd-3">{t('liquidity')}</p>
         <Button
           className="pt-1 pb-1 pl-3 pr-3"
@@ -73,7 +73,7 @@ const RouteFeeInfo = ({
             })}
           </p>
         </Button>
-      </div>
+      </div> */}
       {amountOut && amountIn ? (
         <div className="flex justify-between">
           <p className="text-th-fgd-3">{t('trade:rate')}</p>
