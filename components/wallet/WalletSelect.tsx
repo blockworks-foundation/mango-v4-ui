@@ -33,6 +33,7 @@ const WalletSelect = () => {
     <div className="space-y-2">
       {wallets?.map((w) => (
         <button
+          key={w.adapter.name}
           className={`flex w-full items-center justify-between rounded-md border ${
             wallet?.adapter.name === w.adapter.name
               ? 'border-th-primary md:hover:border-th-primary'

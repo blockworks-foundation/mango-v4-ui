@@ -107,8 +107,9 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         >
           <h2 className="mb-1">Welcome.</h2>
           <p className="mb-4">
-            You're seconds away from trading the most liquid dex markets on
-            Solana.
+            {
+              "You're seconds away from trading the most liquid dex markets on Solana."
+            }
           </p>
           <div className="mb-6 space-y-2 border-y border-th-bkg-4 py-4">
             <div className="flex items-center space-x-2">
@@ -137,7 +138,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
             </div>
           </div>
           <Button className="w-full" onClick={handleNextStep} size="large">
-            Let's Go
+            {"Let's Go"}
           </Button>
         </Transition>
         <Transition
@@ -292,7 +293,10 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               </div>
               <div className="space-y-2 pb-6">
                 {banks.map((bank) => (
-                  <button className="grid w-full grid-cols-3 rounded-md border border-th-bkg-4 px-4 py-3 md:hover:border-th-fgd-4">
+                  <button
+                    key={bank.key}
+                    className="grid w-full grid-cols-3 rounded-md border border-th-bkg-4 px-4 py-3 md:hover:border-th-fgd-4"
+                  >
                     <div className="col-span-1 flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         <Image
