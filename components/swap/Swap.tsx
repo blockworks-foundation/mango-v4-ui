@@ -46,7 +46,7 @@ const Swap = () => {
   const set = mangoStore.getState().set
   const tokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
-  const debouncedAmountIn = useDebounce(amountIn, 500)
+  const debouncedAmountIn = useDebounce(amountIn, 400)
 
   useEffect(() => {
     const connection = mangoStore.getState().connection
@@ -71,14 +71,14 @@ const Swap = () => {
       const inputBank = group!.banksMap.get(inputToken)
       const outputBank = group!.banksMap.get(outputToken)
       if (!inputBank || !outputBank) return
-      if (!amountIn) {
+      if (!debouncedAmountIn) {
         setAmountOut(undefined)
         setSelectedRoute(undefined)
       } else {
         const computedRoutes = await jupiter?.computeRoutes({
           inputMint: inputBank.mint, // Mint address of the input token
           outputMint: outputBank.mint, // Mint address of the output token
-          inputAmount: Number(amountIn) * 10 ** inputBank.mintDecimals, // raw input amount of tokens
+          inputAmount: Number(debouncedAmountIn) * 10 ** inputBank.mintDecimals, // raw input amount of tokens
           slippage, // The slippage in % terms
           filterTopNResult: 10,
           onlyDirectRoutes: true,
@@ -107,7 +107,7 @@ const Swap = () => {
     }
 
     loadRoutes()
-  }, [inputToken, outputToken, jupiter, slippage, amountIn])
+  }, [inputToken, outputToken, jupiter, slippage, debouncedAmountIn])
 
   const handleAmountInChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -333,7 +333,7 @@ const Swap = () => {
         <>
           <div className="mb-2 flex items-center justify-between">
             <p className="text-th-fgd-3">{t('leverage')}</p>
-            <p className="font-bold text-th-fgd-1">0.00x</p>
+            <p className="text-th-fgd-3">0.00x</p>
           </div>
           <LeverageSlider
             inputToken={inputToken}
