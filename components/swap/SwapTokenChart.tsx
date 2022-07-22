@@ -21,6 +21,7 @@ import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
 import { GREEN, RED } from '../../styles/colors'
 import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
+import { formatFixedDecimals } from '../../utils/numbers'
 
 dayjs.extend(relativeTime)
 
@@ -28,16 +29,6 @@ interface SwapTokenChartProps {
   inputTokenId?: string
   outputTokenId?: string
 }
-
-export const numberFormatter = Intl.NumberFormat('en', {
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 5,
-})
-
-export const numberCompacter = Intl.NumberFormat('en', {
-  notation: 'compact',
-  maximumFractionDigits: 2,
-})
 
 const fetchChartData = async (
   baseTokenId: string,
@@ -195,7 +186,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       play
                       delay={0.025}
                       duration={1}
-                      numbers={numberFormatter.format(mouseData['price'])}
+                      numbers={formatFixedDecimals(mouseData['price'])}
                     />
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0 ${
@@ -225,7 +216,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       height={36}
                       width={24}
                       play
-                      numbers={numberFormatter.format(
+                      numbers={formatFixedDecimals(
                         chartData[chartData.length - 1]['price']
                       )}
                     />
