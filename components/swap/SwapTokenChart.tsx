@@ -1,4 +1,10 @@
-import { FunctionComponent, useEffect, useMemo, useState } from 'react'
+import {
+  FunctionComponent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -33,6 +39,54 @@ export const numberCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 2,
 })
 
+const fetchChartData = async (
+  baseTokenId: string,
+  quoteTokenId: string,
+  daysToShow: number
+) => {
+  const inputResponse = await fetch(
+    `https://api.coingecko.com/api/v3/coins/${baseTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`
+  )
+  const outputResponse = await fetch(
+    `https://api.coingecko.com/api/v3/coins/${quoteTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`
+  )
+  const inputData = await inputResponse.json()
+  const outputData = await outputResponse.json()
+
+  let data: any[] = []
+  if (Array.isArray(inputData)) {
+    data = data.concat(inputData)
+  }
+  if (Array.isArray(outputData)) {
+    data = data.concat(outputData)
+  }
+
+  const formattedData = data.reduce((a, c) => {
+    const found = a.find((price: any) => price.time === c[0])
+    if (found) {
+      if (['usd-coin', 'tether'].includes(quoteTokenId)) {
+        found.price = found.inputPrice / c[4]
+      } else {
+        found.price = c[4] / found.inputPrice
+      }
+    } else {
+      a.push({ time: c[0], inputPrice: c[4] })
+    }
+    return a
+  }, [])
+  formattedData[formattedData.length - 1].time = Date.now()
+  return formattedData.filter((d: any) => d.price)
+}
+
+const fetchTokenInfo = async (tokenId: string) => {
+  const response = await fetch(
+    `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=false&developer_data=false&sparkline=false
+    `
+  )
+  const data = await response.json()
+  return data
+}
+
 const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   inputTokenId,
   outputTokenId,
@@ -56,9 +110,8 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }
 
   useEffect(() => {
-    if (!inputTokenId || !outputTokenId) {
-      return
-    }
+    if (!inputTokenId || !outputTokenId) return
+
     if (['usd-coin', 'tether'].includes(inputTokenId)) {
       setBaseTokenId(outputTokenId)
       setQuoteTokenId(inputTokenId)
@@ -69,74 +122,36 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }, [inputTokenId, outputTokenId])
 
   // Use ohlc data
-
-  const getChartData = async () => {
-    const inputResponse = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${baseTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`
+  const getChartData = useCallback(async () => {
+    if (!baseTokenId || !quoteTokenId) return
+    const chartData = await fetchChartData(
+      baseTokenId,
+      quoteTokenId,
+      daysToShow
     )
-    const outputResponse = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${quoteTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`
-    )
-    const inputData = await inputResponse.json()
-    const outputData = await outputResponse.json()
+    setChartData(chartData)
+  }, [baseTokenId, quoteTokenId, daysToShow])
 
-    let data: any[] = []
-    if (Array.isArray(inputData)) {
-      data = data.concat(inputData)
-    }
-    if (Array.isArray(outputData)) {
-      data = data.concat(outputData)
-    }
+  const getInputTokenInfo = useCallback(async () => {
+    if (!inputTokenId) return
+    const response = await fetchTokenInfo(inputTokenId)
+    setInputTokenInfo(response)
+  }, [inputTokenId])
 
-    const formattedData = data.reduce((a, c) => {
-      const found = a.find((price: any) => price.time === c[0])
-      if (found) {
-        if (['usd-coin', 'tether'].includes(quoteTokenId)) {
-          found.price = found.inputPrice / c[4]
-        } else {
-          found.price = c[4] / found.inputPrice
-        }
-      } else {
-        a.push({ time: c[0], inputPrice: c[4] })
-      }
-      return a
-    }, [])
-    formattedData[formattedData.length - 1].time = Date.now()
-    setChartData(formattedData.filter((d: any) => d.price))
-  }
+  const getOutputTokenInfo = useCallback(async () => {
+    if (!outputTokenId) return
+    const response = await fetchTokenInfo(outputTokenId)
+    setOutputTokenInfo(response)
+  }, [outputTokenId])
 
-  const getInputTokenInfo = async () => {
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${inputTokenId}?localization=false&tickers=false&developer_data=false&sparkline=false
-      `
-    )
-    const data = await response.json()
-    setInputTokenInfo(data)
-  }
+  useEffect(() => {
+    getChartData()
+  }, [getChartData])
 
-  const getOutputTokenInfo = async () => {
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${outputTokenId}?localization=false&tickers=false&developer_data=false&sparkline=false
-      `
-    )
-    const data = await response.json()
-    setOutputTokenInfo(data)
-  }
-
-  useMemo(() => {
-    if (baseTokenId && quoteTokenId) {
-      getChartData()
-    }
-  }, [daysToShow, baseTokenId, quoteTokenId])
-
-  useMemo(() => {
-    if (baseTokenId) {
-      getInputTokenInfo()
-    }
-    if (quoteTokenId) {
-      getOutputTokenInfo()
-    }
-  }, [baseTokenId, quoteTokenId])
+  useEffect(() => {
+    getInputTokenInfo()
+    getOutputTokenInfo()
+  }, [getInputTokenInfo, getOutputTokenInfo])
 
   const calculateChartChange = () => {
     if (chartData.length) {
@@ -241,7 +256,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
             </div>
           </div>
           <div className="-mt-1 h-28 w-1/2 md:h-72 md:w-auto">
-            <div className="-mb-2 flex justify-end md:absolute md:-top-1 md:right-0 md:mb-0 md:mb-12">
+            <div className="-mb-2 flex justify-end md:absolute md:-top-1 md:right-0">
               <button
                 className={`rounded-md px-3 py-2 font-bold text-th-fgd-4 focus:outline-none md:hover:text-th-primary ${
                   daysToShow === 1 && 'text-th-primary'

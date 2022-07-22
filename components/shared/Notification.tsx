@@ -11,6 +11,8 @@ import Loading from './Loading'
 import { Transition } from '@headlessui/react'
 import { TokenInstructions } from '@project-serum/serum'
 
+const setMangoStore = mangoStore.getState().set
+
 const NotificationList = () => {
   const notifications = mangoStore((s) => s.notifications)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -60,7 +62,6 @@ const NotificationList = () => {
 }
 
 const Notification = ({ notification }: { notification: Notification }) => {
-  const setMangoStore = mangoStore((s) => s.set)
   const { type, title, description, txid, show, id } = notification
 
   // overwrite the title if of the error message if it is a time out error

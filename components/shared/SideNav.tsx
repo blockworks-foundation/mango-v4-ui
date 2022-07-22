@@ -32,7 +32,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
       } min-h-screen border-r border-th-bkg-3 bg-th-bkg-1`}
     >
       <div className="my-2">
-        <Link href={'/'} shallow={true}>
+        <Link href={'/'} shallow={true} passHref>
           <div
             className={`h-14 items-center transition-all duration-500 ease-in-out ${
               collapsed ? 'justify-center' : 'justify-start'

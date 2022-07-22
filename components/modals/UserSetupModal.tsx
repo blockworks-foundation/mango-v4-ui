@@ -78,7 +78,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     if (connected && !mangoAccount) {
       setShowSetupStep(2)
     }
-  }, [mangoAccount, connected])
+  }, [mangoAccount, connected, onClose])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} hideClose>
