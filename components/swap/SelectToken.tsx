@@ -173,7 +173,11 @@ const SelectToken = ({
       <div className="my-2 border-t border-th-bkg-4"></div>
       <div className="overflow-auto">
         {sortedTokens.map((token) => (
-          <TokenItem token={token} onSubmit={onTokenSelect} />
+          <TokenItem
+            key={token.address}
+            token={token}
+            onSubmit={onTokenSelect}
+          />
         ))}
       </div>
     </>

@@ -36,9 +36,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
       <input
         className={`${className} h-12 w-full flex-1 rounded-md border bg-th-bkg-1 px-3 text-base
           text-th-fgd-1 ${
-            error ? 'border-th-red' : 'border-th-fgd-4'
-          } default-transition hover:border-th-fgd-3 
-          focus:border-th-fgd-3 focus:outline-none 
+            error ? 'border-th-red' : 'border-th-bkg-4'
+          } hover:border-th-fgd-4 
+          focus:outline-none 
           ${
             disabled
               ? 'cursor-not-allowed bg-th-bkg-3 text-th-fgd-3 hover:border-th-fgd-3'
@@ -62,4 +62,5 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   )
 })
 
+Input.displayName = 'Input'
 export default Input

@@ -36,16 +36,17 @@ const Swap = () => {
   const [inputToken, setInputToken] = useState('SOL')
   const [outputToken, setOutputToken] = useState('USDC')
   const [submitting, setSubmitting] = useState(false)
-  const [animateSwtichArrow, setAnimateSwitchArrow] = useState(0)
+  const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [useMargin, setUseMargin] = useState(true)
   const [sizePercentage, setSizePercentage] = useState('')
   const [showConfirm, setShowConfirm] = useState(false)
   const [slippage, setSlippage] = useState(0.1)
-  const debouncedAmountIn = useDebounce(amountIn, 400)
+
   const set = mangoStore.getState().set
   const tokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
+  const debouncedAmountIn = useDebounce(amountIn, 500)
 
   useEffect(() => {
     const connection = mangoStore.getState().connection
@@ -54,7 +55,7 @@ const Swap = () => {
         connection,
         cluster: CLUSTER,
         // platformFeeAndAccounts:  NO_PLATFORM_FEE,
-        routeCacheDuration: 5_000, // Will not refetch data on computeRoutes for up to 10 seconds
+        routeCacheDuration: 10_000, // Will not refetch data on computeRoutes for up to 10 seconds
       })
       setJupiter(jupiter)
     }
@@ -143,7 +144,7 @@ const Swap = () => {
     setInputToken(outputToken)
     setOutputToken(inputToken)
 
-    setAnimateSwitchArrow(animateSwtichArrow + 1)
+    setAnimateSwitchArrow(animateSwitchArrow + 1)
   }
 
   const handleSizePercentage = (percentage: string) => {
@@ -203,13 +204,12 @@ const Swap = () => {
   return (
     <ContentBox showBackground className="relative overflow-hidden">
       <Transition
-        appear={true}
         className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
         show={showConfirm}
-        enter="transition-all ease-in duration-500"
+        enter="transition-all ease-in duration-400"
         enterFrom="transform translate-x-full"
         enterTo="transform translate-x-0"
-        leave="transition-all ease-out duration-500"
+        leave="transition-all ease-out duration-400"
         leaveFrom="transform translate-x-0"
         leaveTo="transform translate-x-full"
       >
@@ -230,13 +230,12 @@ const Swap = () => {
         />
       </Transition>
       <Transition
-        appear={true}
         className="thin-scroll absolute bottom-0 left-0 z-20 h-full overflow-auto bg-th-bkg-2 p-6 pb-0"
         show={!!showTokenSelect}
-        enter="transition-all ease-in duration-500"
+        enter="transition-all ease-in duration-400"
         enterFrom="max-h-0"
         enterTo="max-h-full"
-        leave="transition-all ease-out duration-500"
+        leave="transition-all ease-out duration-400"
         leaveFrom="max-h-full"
         leaveTo="max-h-0"
       >
@@ -266,8 +265,10 @@ const Swap = () => {
           className="no-underline"
           onClick={() => console.log('Set max input amount')}
         >
-          <span className="mr-1 font-normal text-th-fgd-3">{t('max')}</span>
-          <span className="text-th-fgd-1">0</span>
+          <span className="mr-1 font-normal text-th-fgd-4">
+            {t('balance')}:
+          </span>
+          <span className="text-th-fgd-3 underline">0</span>
         </LinkButton>
       </div>
       <div className="mb-3 grid grid-cols-2">
@@ -308,7 +309,7 @@ const Swap = () => {
           <ArrowDownIcon
             className="h-5 w-5"
             style={
-              animateSwtichArrow % 2 == 0
+              animateSwitchArrow % 2 == 0
                 ? { transform: 'rotate(0deg)' }
                 : { transform: 'rotate(360deg)' }
             }
