@@ -20,6 +20,11 @@ import { HealthType, MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../../store/state'
 import HealthHeart from '../account/HealthHeart'
 import BottomBar from '../mobile/BottomBar'
+import useLocalStorageState from '../../hooks/useLocalStorageState'
+import Button from './Button'
+import UserSetupModal from '../modals/UserSetupModal'
+
+export const IS_ONBOARDED_KEY = 'isOnboarded'
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)
@@ -28,6 +33,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
+  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [showUserSetupModal, setShowUserSetupModal] = useState(false)
 
   useEffect(() => {
     const collapsed = width ? width < breakpoints.xl : false
@@ -90,7 +97,20 @@ const Layout = ({ children }: { children: ReactNode }) => {
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              {connected ? <WalletDisconnectButton /> : <WalletMultiButton />}
+              {isOnboarded ? (
+                connected ? (
+                  <WalletDisconnectButton />
+                ) : (
+                  <WalletMultiButton />
+                )
+              ) : (
+                <Button
+                  highlightButton
+                  onClick={() => setShowUserSetupModal(true)}
+                >
+                  Join Mango
+                </Button>
+              )}
             </div>
           </div>
           <div className={`min-h-screen p-8 ${isMobile ? 'pb-20' : ''}`}>
@@ -98,6 +118,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
           </div>
         </div>
       </div>
+      {showUserSetupModal ? (
+        <UserSetupModal
+          isOpen={showUserSetupModal}
+          onClose={() => setShowUserSetupModal(false)}
+        />
+      ) : null}
     </div>
   )
 }

@@ -144,7 +144,7 @@ body {
 }
 
 button {
-  @apply tracking-wide transition-all duration-500 ease-out focus:outline-none focus:ring-1 focus:ring-inset focus:ring-th-fgd-4;
+  @apply tracking-wide text-th-fgd-1 duration-500 ease-out hover:transition-all focus:outline-none;
 }
 
 svg {
@@ -172,11 +172,15 @@ h2 {
 }
 
 h3 {
-  @apply text-xl;
+  @apply text-lg;
 }
 
 p {
   @apply text-base text-th-fgd-3;
+}
+
+li {
+  @apply text-sm text-th-fgd-3;
 }
 
 /* Slider */
@@ -252,6 +256,10 @@ table td {
 
 table th {
   @apply text-xs font-normal text-th-fgd-3;
+}
+
+table p {
+  @apply text-th-fgd-1;
 }
 
 /* Scrollbars */

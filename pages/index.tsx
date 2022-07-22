@@ -3,17 +3,17 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import type { NextPage } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import AccountActions from '../components/account/AccountActions'
 import DepositModal from '../components/modals/DepositModal'
-import UserSetupModal, {
-  SKIP_ACCOUNT_SETUP_KEY,
-} from '../components/modals/UserSetupModal'
+// import UserSetupModal, {
+//   SKIP_ACCOUNT_SETUP_KEY,
+// } from '../components/modals/UserSetupModal'
 import WithdrawModal from '../components/modals/WithdrawModal'
 import TokenList from '../components/TokenList'
 import mangoStore from '../store/state'
 import { formatDecimal } from '../utils/numbers'
-import useLocalStorageState from '../hooks/useLocalStorageState'
+// import useLocalStorageState from '../hooks/useLocalStorageState'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -25,18 +25,18 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Index: NextPage = () => {
   const { t } = useTranslation('common')
-  const { connected } = useWallet()
+  // const { connected } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
-  const [showFirstAccountModal, setShowFirstAccountModal] = useState(false)
-  const [skipAccountSetup] = useLocalStorageState(SKIP_ACCOUNT_SETUP_KEY)
+  // const [showFirstAccountModal, setShowFirstAccountModal] = useState(false)
+  // const [skipAccountSetup] = useLocalStorageState(SKIP_ACCOUNT_SETUP_KEY)
 
-  useEffect(() => {
-    if (connected && !mangoAccount && !skipAccountSetup) {
-      setShowFirstAccountModal(true)
-    }
-  }, [connected])
+  // useEffect(() => {
+  //   if (connected && !mangoAccount && !skipAccountSetup) {
+  //     setShowFirstAccountModal(true)
+  //   }
+  // }, [connected, mangoAccount])
 
   return (
     <>
@@ -66,12 +66,6 @@ const Index: NextPage = () => {
         <WithdrawModal
           isOpen={showWithdrawModal}
           onClose={() => setShowWithdrawModal(false)}
-        />
-      ) : null}
-      {showFirstAccountModal ? (
-        <UserSetupModal
-          isOpen={showFirstAccountModal}
-          onClose={() => setShowFirstAccountModal(false)}
         />
       ) : null}
     </>

@@ -10,6 +10,7 @@ interface AllButtonProps {
 
 interface ButtonProps {
   size?: 'large' | 'medium' | 'small'
+  highlightButton?: boolean
 }
 
 type ButtonCombinedProps = AllButtonProps & ButtonProps
@@ -21,14 +22,19 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
   className,
   secondary,
   size = 'medium',
+  highlightButton,
   ...props
 }) => {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`whitespace-nowrap rounded-md text-th-fgd-1 ${
-        secondary ? 'border border-th-bkg-button' : 'bg-th-bkg-button'
+      className={`whitespace-nowrap rounded-md ${
+        secondary
+          ? 'border border-th-bkg-button'
+          : highlightButton
+          ? 'bg-th-primary text-th-bkg-1'
+          : 'bg-th-bkg-button'
       } ${
         size === 'medium'
           ? 'h-10 px-4'
