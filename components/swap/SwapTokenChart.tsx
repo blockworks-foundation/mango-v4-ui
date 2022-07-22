@@ -9,6 +9,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import FlipNumbers from 'react-flip-numbers'
+
 import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
 import { GREEN, RED } from '../../styles/colors'
@@ -138,20 +140,20 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
 
   const calculateChartChange = () => {
     if (chartData.length) {
-      if (mouseData) {
-        const index = chartData.findIndex((d: any) => d.time === mouseData.time)
-        return (
-          ((chartData[chartData.length - 1]['price'] -
-            chartData[index]['price']) /
-            chartData[0]['price']) *
-          100
-        )
-      } else
-        return (
-          ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
-            chartData[0]['price']) *
-          100
-        )
+      // if (mouseData) {
+      //   const index = chartData.findIndex((d: any) => d.time === mouseData.time)
+      //   return (
+      //     ((chartData[chartData.length - 1]['price'] -
+      //       chartData[index]['price']) /
+      //       chartData[0]['price']) *
+      //     100
+      //   )
+      // } else
+      return (
+        ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
+          chartData[0]['price']) *
+        100
+      )
     }
     return 0
   }
@@ -172,7 +174,14 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
               {mouseData ? (
                 <>
                   <div className="mb-0.5 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
-                    {numberFormatter.format(mouseData['price'])}
+                    <FlipNumbers
+                      height={36}
+                      width={24}
+                      play
+                      delay={0.025}
+                      duration={1}
+                      numbers={numberFormatter.format(mouseData['price'])}
+                    />
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0 ${
                         calculateChartChange() >= 0
@@ -197,9 +206,14 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
               ) : (
                 <>
                   <div className="mb-0.5 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
-                    {numberFormatter.format(
-                      chartData[chartData.length - 1]['price']
-                    )}
+                    <FlipNumbers
+                      height={36}
+                      width={24}
+                      play
+                      numbers={numberFormatter.format(
+                        chartData[chartData.length - 1]['price']
+                      )}
+                    />
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0 ${
                         calculateChartChange() >= 0
@@ -312,9 +326,11 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
           </div>
         </div>
       ) : (
-        <div className="mt-4 rounded-md bg-th-bkg-3 p-4 text-center text-th-fgd-3 md:mt-0">
-          <LineChartIcon className="mx-auto h-6 w-6 text-th-primary" />
-          Chart not available
+        <div className="mt-4 flex h-96 items-center justify-center rounded-lg bg-th-bkg-2 p-4 text-th-fgd-3 md:mt-0">
+          <div className="">
+            <LineChartIcon className="mx-auto h-12 w-12 text-th-primary" />
+            <span className="text-lg">Chart not available</span>
+          </div>
         </div>
       )}
     </ContentBox>
