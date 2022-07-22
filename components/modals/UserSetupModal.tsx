@@ -82,10 +82,21 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} hideClose>
-      <div className="h-96">
+      <div className="flex h-1 flex-grow rounded bg-th-bkg-4">
+        <div
+          style={{
+            width: `${(showSetupStep / 4) * 100}%`,
+          }}
+          className="default-transition flex rounded bg-th-fgd-4"
+        ></div>
+      </div>
+      <p className="mt-1.5 flex justify-end text-xs">
+        Step {showSetupStep + 1}/5
+      </p>
+      <div className="h-[392px]">
         <Transition
           appear={true}
-          className="absolute top-0 left-0 z-20 h-full w-full bg-th-bkg-1 p-6"
+          className="absolute top-14 left-0 z-20 h-full w-full bg-th-bkg-1 p-6 pt-0"
           show={showSetupStep === 0}
           enter="transition-all ease-in duration-500"
           enterFrom="opacity-0"
@@ -131,7 +142,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         </Transition>
         <Transition
           appear={true}
-          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full bg-th-bkg-1 p-6"
+          className="absolute top-14 left-0 z-20 w-full bg-th-bkg-1 p-6 pt-0"
           show={showSetupStep === 1}
           enter="transition-all ease-in duration-500"
           enterFrom="transform translate-x-full"
@@ -139,6 +150,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           leave="transition-all ease-out duration-500"
           leaveFrom="transform translate-x-0"
           leaveTo="transform -translate-x-full"
+          style={{ height: 'calc(100% - 64px)' }}
         >
           <div className="flex h-full flex-col justify-between">
             <div>
@@ -154,7 +166,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         </Transition>
         <Transition
           appear={true}
-          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full bg-th-bkg-1 p-6"
+          className="absolute top-14 left-0 z-20 w-full bg-th-bkg-1 p-6 pt-0"
           show={showSetupStep === 2}
           enter="transition-all ease-in duration-500"
           enterFrom="transform translate-x-full"
@@ -162,6 +174,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           leave="transition-all ease-out duration-500"
           leaveFrom="transform translate-x-0"
           leaveTo="transform -translate-x-full"
+          style={{ height: 'calc(100% - 64px)' }}
         >
           <div className="flex h-full flex-col justify-between">
             <div>
@@ -196,7 +209,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
             </div>
             <div className="flex flex-col items-center">
               <Button
-                className="mb-3 w-full"
+                className="mb-4 w-full"
                 onClick={handleSaveProfile}
                 size="large"
               >
@@ -208,7 +221,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         </Transition>
         <Transition
           appear={true}
-          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full bg-th-bkg-1 p-6"
+          className="absolute top-14 left-0 z-20 w-full bg-th-bkg-1 p-6 pt-0"
           show={showSetupStep === 3}
           enter="transition-all ease-in duration-500"
           enterFrom="transform translate-x-full"
@@ -216,6 +229,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           leave="transition-all ease-out duration-500"
           leaveFrom="transform translate-x-0"
           leaveTo="transform -translate-x-full"
+          style={{ height: 'calc(100% - 64px)' }}
         >
           <div className="flex h-full flex-col justify-between">
             <div>
@@ -250,7 +264,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         </Transition>
         <Transition
           appear={true}
-          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full bg-th-bkg-1 p-6"
+          className="absolute top-14 left-0 z-20 w-full bg-th-bkg-1 p-6 pt-0"
           show={showSetupStep === 4}
           enter="transition-all ease-in duration-500"
           enterFrom="transform translate-x-full"
@@ -258,15 +272,12 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           leave="transition-all ease-out duration-500"
           leaveFrom="transform translate-x-0"
           leaveTo="transform -translate-x-full"
+          style={{ height: 'calc(100% - 64px)' }}
         >
           <div className="flex h-full flex-col justify-between">
             <div>
               <div className="pb-4">
-                <h2 className="mb-1">Fund Account</h2>
-                <p>
-                  Make a deposit to start earning interest and use your funds as
-                  collateral to trade or borrow
-                </p>
+                <h2 className="mb-1">Fund Your Account</h2>
               </div>
               <div className="grid grid-cols-3 px-4 pb-2">
                 <div className="col-span-1">
@@ -314,7 +325,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
             <div className="flex flex-col items-center">
               <Button
                 onClick={handleDeposit}
-                className="mb-3 w-full"
+                className="mb-4 w-full"
                 size="large"
               >
                 Deposit
