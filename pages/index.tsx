@@ -35,7 +35,7 @@ const Index: NextPage = () => {
             <FlipNumbers
               height={48}
               width={32}
-              play
+              play={mangoAccount}
               delay={0.05}
               duration={1}
               numbers={
