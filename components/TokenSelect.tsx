@@ -14,26 +14,24 @@ const TokenSelect = ({ token, showTokenList, type }: TokenSelectProps) => {
   if (!group) return null
 
   return (
-    <>
-      <div
-        onClick={() => showTokenList(type)}
-        className="default-transition flex h-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
-        role="button"
-      >
-        <div className="mr-2.5 flex min-w-[24px] items-center">
-          <Image
-            alt=""
-            width="24"
-            height="24"
-            src={`/icons/${token.toLowerCase()}.svg`}
-          />
-        </div>
-        <div className="flex w-full items-center justify-between">
-          <div className="text-xl font-bold">{token}</div>
-          <ChevronDownIcon className="h-6 w-6" />
-        </div>
+    <div
+      onClick={() => showTokenList(type)}
+      className="default-transition flex h-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
+      role="button"
+    >
+      <div className="mr-2.5 flex min-w-[24px] items-center">
+        <Image
+          alt=""
+          width="24"
+          height="24"
+          src={`/icons/${token.toLowerCase()}.svg`}
+        />
       </div>
-    </>
+      <div className="flex w-full items-center justify-between">
+        <div className="text-xl font-bold">{token}</div>
+        <ChevronDownIcon className="h-6 w-6" />
+      </div>
+    </div>
   )
 }
 

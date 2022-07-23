@@ -10,20 +10,17 @@ import Button, { LinkButton } from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import Modal from '../shared/Modal'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
-import Checkbox from '../forms/Checkbox'
 import { CheckCircleIcon } from '@heroicons/react/solid'
 import WalletSelect from '../wallet/WalletSelect'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { handleWalletConnect } from '../../utils/wallet'
 import mangoStore from '../../store/state'
-import Image from 'next/image'
-import { formatDecimal } from '../../utils/numbers'
 import { IS_ONBOARDED_KEY } from '../shared/Layout'
+import DepositTokenList from '../shared/DepositTokenList'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
   const { connected, wallet } = useWallet()
-  const group = mangoStore((s) => s.group)
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const [profileName, setProfileName] = useState('')
   const [accountName, setAccountName] = useState('')
@@ -32,10 +29,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [acceptRisks, setAcceptRisks] = useState(false)
   const [depositToken, setDepositToken] = useState('')
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
-
-  const banks = group?.banksMap
-    ? Array.from(group?.banksMap, ([key, value]) => ({ key, value }))
-    : []
 
   const handleNextStep = () => {
     setShowSetupStep(showSetupStep + 1)
@@ -279,48 +272,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               <div className="pb-4">
                 <h2 className="mb-1">Fund Your Account</h2>
               </div>
-              <div className="grid grid-cols-3 px-4 pb-2">
-                <div className="col-span-1">
-                  <p className="text-xs">Token</p>
-                </div>
-                <div className="col-span-1 flex justify-end">
-                  <p className="text-xs">Deposit Rate (APR)</p>
-                </div>
-                <div className="col-span-1 flex justify-end">
-                  <p className="text-xs">Collateral Weight</p>
-                </div>
-              </div>
-              <div className="space-y-2 pb-6">
-                {banks.map((bank) => (
-                  <button className="grid w-full grid-cols-3 rounded-md border border-th-bkg-4 px-4 py-3 md:hover:border-th-fgd-4">
-                    <div className="col-span-1 flex items-center">
-                      <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        <Image
-                          alt=""
-                          width="24"
-                          height="24"
-                          src={`/icons/${bank.value.name.toLowerCase()}.svg`}
-                        />
-                      </div>
-                      <p className="font-bold text-th-fgd-1">
-                        {bank.value.name}
-                      </p>
-                    </div>
-                    <div className="col-span-1 flex justify-end">
-                      <p className="text-th-green">
-                        {formatDecimal(
-                          bank.value.getDepositRate().toNumber(),
-                          2
-                        )}
-                        %
-                      </p>
-                    </div>
-                    <div className="col-span-1 flex justify-end">
-                      <p className="text-th-fgd-1">100%</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              <DepositTokenList onSelect={setDepositToken} />
             </div>
             <div className="flex flex-col items-center">
               <Button
