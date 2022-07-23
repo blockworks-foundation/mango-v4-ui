@@ -153,6 +153,7 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
         <Button
           onClick={handleDeposit}
           className="flex w-full items-center justify-center"
+          disabled={!inputAmount}
           size="large"
         >
           {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('deposit')}
