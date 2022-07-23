@@ -17,3 +17,28 @@ export const formatDecimal = (
 export const numberFormat = new Intl.NumberFormat('en', {
   maximumSignificantDigits: 7,
 })
+
+const numberFormatter2 = Intl.NumberFormat('en', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
+const numberFormatter4 = Intl.NumberFormat('en', {
+  minimumFractionDigits: 4,
+  maximumFractionDigits: 4,
+})
+
+const numberFormatter6 = Intl.NumberFormat('en', {
+  minimumFractionDigits: 6,
+  maximumFractionDigits: 6,
+})
+
+export const formatFixedDecimals = (value: number) => {
+  if (value >= 100) {
+    return numberFormatter2.format(value)
+  } else if (value >= 1) {
+    return numberFormatter4.format(value)
+  } else {
+    return numberFormatter6.format(value)
+  }
+}

@@ -71,7 +71,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     if (connected && !mangoAccount) {
       setShowSetupStep(2)
     }
-  }, [mangoAccount, connected])
+  }, [mangoAccount, connected, onClose])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} hideClose>
@@ -100,8 +100,9 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         >
           <h2 className="mb-1">Welcome.</h2>
           <p className="mb-4">
-            You're seconds away from trading the most liquid dex markets on
-            Solana.
+            {
+              "You're seconds away from trading the most liquid dex markets on Solana."
+            }
           </p>
           <div className="mb-6 space-y-2 border-y border-th-bkg-4 py-4">
             <div className="flex items-center space-x-2">
@@ -130,7 +131,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
             </div>
           </div>
           <Button className="w-full" onClick={handleNextStep} size="large">
-            Let's Go
+            {"Let's Go"}
           </Button>
         </Transition>
         <Transition

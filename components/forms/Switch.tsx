@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode } from 'react'
+import { FunctionComponent, ReactNode, memo } from 'react'
 
 interface SwitchProps {
   checked: boolean
@@ -44,4 +44,4 @@ const Switch: FunctionComponent<SwitchProps> = ({
   )
 }
 
-export default Switch
+export default memo(Switch)

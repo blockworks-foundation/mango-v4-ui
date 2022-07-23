@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from 'react'
+import React, { Dispatch, SetStateAction, useState } from 'react'
 import { TransactionInstruction, PublicKey } from '@solana/web3.js'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { Jupiter, RouteInfo } from '@jup-ag/core'
@@ -119,4 +119,4 @@ const JupiterRoutes = ({
   ) : null
 }
 
-export default JupiterRoutes
+export default React.memo(JupiterRoutes)

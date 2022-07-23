@@ -1,6 +1,6 @@
 require('@solana/wallet-adapter-react-ui/styles.css')
 import SideNav from './SideNav'
-import { Fragment, ReactNode, useEffect, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
 import {
   ArrowRightIcon,
   ChevronDownIcon,
@@ -39,13 +39,21 @@ const Layout = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const collapsed = width ? width < breakpoints.xl : false
     setIsCollapsed(collapsed)
-  }, [])
+  }, [width])
 
   useEffect(() => {
     if (width < breakpoints.lg) {
       setIsCollapsed(true)
     }
   }, [width])
+
+  const handleCloseModal = useCallback(() => {
+    setShowUserSetupModal(false)
+  }, [])
+
+  const handleShowModal = useCallback(() => {
+    setShowUserSetupModal(true)
+  }, [])
 
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
@@ -104,10 +112,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
                   <WalletMultiButton />
                 )
               ) : (
-                <Button
-                  highlightButton
-                  onClick={() => setShowUserSetupModal(true)}
-                >
+                <Button highlightButton onClick={handleShowModal}>
                   Join Mango
                 </Button>
               )}
@@ -121,7 +126,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
       {showUserSetupModal ? (
         <UserSetupModal
           isOpen={showUserSetupModal}
-          onClose={() => setShowUserSetupModal(false)}
+          onClose={handleCloseModal}
         />
       ) : null}
     </div>

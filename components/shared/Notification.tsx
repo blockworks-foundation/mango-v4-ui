@@ -5,15 +5,17 @@ import {
   InformationCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/outline'
-import useMangoStore, { CLIENT_TX_TIMEOUT, CLUSTER } from '../../store/state'
+import mangoStore, { CLIENT_TX_TIMEOUT, CLUSTER } from '../../store/state'
 import { Notification, notify } from '../../utils/notifications'
 import Loading from './Loading'
 import { Transition } from '@headlessui/react'
 import { TokenInstructions } from '@project-serum/serum'
 
+const setMangoStore = mangoStore.getState().set
+
 const NotificationList = () => {
-  const notifications = useMangoStore((s) => s.notifications)
-  const walletTokens = useMangoStore((s) => s.wallet.tokens)
+  const notifications = mangoStore((s) => s.notifications)
+  const walletTokens = mangoStore((s) => s.wallet.tokens)
   const notEnoughSoLMessage = 'Not enough SOL'
 
   // if a notification is shown with {"InstructionError":[0,{"Custom":1}]} then
@@ -60,7 +62,6 @@ const NotificationList = () => {
 }
 
 const Notification = ({ notification }: { notification: Notification }) => {
-  const setMangoStore = useMangoStore((s) => s.set)
   const { type, title, description, txid, show, id } = notification
 
   // overwrite the title if of the error message if it is a time out error

@@ -137,7 +137,10 @@ const TokenList = () => {
           {banks.map((bank) => {
             const oraclePrice = bank.value.price
             return (
-              <div className="rounded-md border border-th-bkg-4 p-4">
+              <div
+                key={bank.key}
+                className="rounded-md border border-th-bkg-4 p-4"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
