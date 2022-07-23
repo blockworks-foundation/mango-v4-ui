@@ -27,7 +27,7 @@ function Modal({
         <span className="inline-block h-screen align-middle" aria-hidden="true">
           &#8203;
         </span>
-        <div className="my-8 inline-block w-full max-w-md transform overflow-x-hidden rounded-xl border border-th-bkg-3 bg-th-bkg-1 p-6 text-left align-middle shadow-xl transition-all">
+        <div className="my-8 inline-block w-full max-w-md transform overflow-x-hidden rounded-lg border border-th-bkg-3 bg-th-bkg-1 p-6 text-left align-middle shadow-xl transition-all">
           {!hideClose ? (
             <button
               onClick={onClose}

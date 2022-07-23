@@ -17,6 +17,7 @@ import { handleWalletConnect } from '../../utils/wallet'
 import mangoStore from '../../store/state'
 import { IS_ONBOARDED_KEY } from '../shared/Layout'
 import DepositTokenList from '../shared/DepositTokenList'
+import { EnterRightExitLeft } from '../shared/Transitions'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -75,21 +76,18 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} hideClose>
-      <div className="flex h-1 flex-grow rounded bg-th-bkg-4">
+      <div className="absolute top-0 left-0 flex h-0.5 w-full flex-grow bg-th-bkg-4">
         <div
           style={{
             width: `${(showSetupStep / 4) * 100}%`,
           }}
-          className="default-transition flex rounded bg-th-fgd-4"
+          className="default-transition flex rounded bg-th-primary"
         ></div>
       </div>
-      <p className="mt-1.5 flex justify-end text-xs">
-        Step {showSetupStep + 1}/5
-      </p>
       <div className="h-[392px]">
         <Transition
           appear={true}
-          className="absolute top-14 left-0 z-20 h-full w-full bg-th-bkg-1 p-6 pt-0"
+          className="absolute top-0.5 left-0 z-20 h-full w-full bg-th-bkg-1 p-6"
           show={showSetupStep === 0}
           enter="transition-all ease-in duration-500"
           enterFrom="opacity-0"
@@ -134,17 +132,10 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
             {"Let's Go"}
           </Button>
         </Transition>
-        <Transition
-          appear={true}
-          className="absolute top-14 left-0 z-20 w-full bg-th-bkg-1 p-6 pt-0"
+        <EnterRightExitLeft
+          className="absolute top-0.5 left-0 z-20 w-full bg-th-bkg-1 p-6"
           show={showSetupStep === 1}
-          enter="transition-all ease-in duration-500"
-          enterFrom="transform translate-x-full"
-          enterTo="transform translate-x-0"
-          leave="transition-all ease-out duration-500"
-          leaveFrom="transform translate-x-0"
-          leaveTo="transform -translate-x-full"
-          style={{ height: 'calc(100% - 64px)' }}
+          style={{ height: 'calc(100% - 12px)' }}
         >
           <div className="flex h-full flex-col justify-between">
             <div>
@@ -157,18 +148,11 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               Connect
             </Button>
           </div>
-        </Transition>
-        <Transition
-          appear={true}
-          className="absolute top-14 left-0 z-20 w-full bg-th-bkg-1 p-6 pt-0"
+        </EnterRightExitLeft>
+        <EnterRightExitLeft
+          className="absolute top-0.5 left-0 z-20 w-full bg-th-bkg-1 p-6"
           show={showSetupStep === 2}
-          enter="transition-all ease-in duration-500"
-          enterFrom="transform translate-x-full"
-          enterTo="transform translate-x-0"
-          leave="transition-all ease-out duration-500"
-          leaveFrom="transform translate-x-0"
-          leaveTo="transform -translate-x-full"
-          style={{ height: 'calc(100% - 64px)' }}
+          style={{ height: 'calc(100% - 12px)' }}
         >
           <div className="flex h-full flex-col justify-between">
             <div>
@@ -212,18 +196,11 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               <LinkButton onClick={handleNextStep}>Skip for now</LinkButton>
             </div>
           </div>
-        </Transition>
-        <Transition
-          appear={true}
-          className="absolute top-14 left-0 z-20 w-full bg-th-bkg-1 p-6 pt-0"
+        </EnterRightExitLeft>
+        <EnterRightExitLeft
+          className="absolute top-0.5 left-0 z-20 w-full bg-th-bkg-1 p-6"
           show={showSetupStep === 3}
-          enter="transition-all ease-in duration-500"
-          enterFrom="transform translate-x-full"
-          enterTo="transform translate-x-0"
-          leave="transition-all ease-out duration-500"
-          leaveFrom="transform translate-x-0"
-          leaveTo="transform -translate-x-full"
-          style={{ height: 'calc(100% - 64px)' }}
+          style={{ height: 'calc(100% - 12px)' }}
         >
           <div className="flex h-full flex-col justify-between">
             <div>
@@ -255,18 +232,11 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               </Button>
             </div>
           </div>
-        </Transition>
-        <Transition
-          appear={true}
-          className="absolute top-14 left-0 z-20 w-full bg-th-bkg-1 p-6 pt-0"
+        </EnterRightExitLeft>
+        <EnterRightExitLeft
+          className="absolute top-0.5 left-0 z-20 w-full bg-th-bkg-1 p-6"
           show={showSetupStep === 4}
-          enter="transition-all ease-in duration-500"
-          enterFrom="transform translate-x-full"
-          enterTo="transform translate-x-0"
-          leave="transition-all ease-out duration-500"
-          leaveFrom="transform translate-x-0"
-          leaveTo="transform -translate-x-full"
-          style={{ height: 'calc(100% - 64px)' }}
+          style={{ height: 'calc(100% - 12px)' }}
         >
           <div className="flex h-full flex-col justify-between">
             <div>
@@ -288,7 +258,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               </LinkButton>
             </div>
           </div>
-        </Transition>
+        </EnterRightExitLeft>
       </div>
     </Modal>
   )

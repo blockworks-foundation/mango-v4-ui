@@ -1,4 +1,3 @@
-import { Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -12,6 +11,7 @@ import Button, { LinkButton } from '../shared/Button'
 import DepositTokenList from '../shared/DepositTokenList'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
+import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 
 function DepositModal({ isOpen, onClose }: ModalProps) {
   const { t } = useTranslation('common')
@@ -69,27 +69,16 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <Transition
-        appear={true}
+      <EnterBottomExitBottom
         className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
         show={showTokenList}
-        enter="transition-all ease-in duration-500"
-        enterFrom="max-h-0"
-        enterTo="max-h-full"
-        leave="transition-all ease-out duration-500"
-        leaveFrom="max-h-full"
-        leaveTo="max-h-0"
       >
         <h2 className="mb-4 text-center">Select Token</h2>
         <DepositTokenList onSelect={handleSelectToken} />
-      </Transition>
-      <Transition
-        appear={true}
+      </EnterBottomExitBottom>
+      <FadeInFadeOut
         className="flex h-80 flex-col justify-between"
         show={isOpen}
-        enter="transition-all ease-in duration-500"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
       >
         <div>
           <h2 className="mb-4 text-center">{t('deposit')}</h2>
@@ -158,7 +147,7 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
         >
           {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('deposit')}
         </Button>
-      </Transition>
+      </FadeInFadeOut>
     </Modal>
   )
 }
