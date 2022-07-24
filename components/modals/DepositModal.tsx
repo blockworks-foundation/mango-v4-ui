@@ -9,6 +9,7 @@ import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import DepositTokenList from '../shared/DepositTokenList'
+import InfoTooltip from '../shared/InfoTooltip'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
@@ -77,12 +78,12 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
         <DepositTokenList onSelect={handleSelectToken} />
       </EnterBottomExitBottom>
       <FadeInFadeOut
-        className="flex h-80 flex-col justify-between"
+        className="flex h-96 flex-col justify-between"
         show={isOpen}
       >
         <div>
           <h2 className="mb-4 text-center">{t('deposit')}</h2>
-          <div className="mb-3 grid grid-cols-2">
+          <div className="mb-4 grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
               <LinkButton
@@ -95,7 +96,7 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
                 <span className="text-th-fgd-1">0</span>
               </LinkButton>
             </div>
-            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1">
+            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
               <button
                 onClick={() => setShowTokenList(true)}
                 className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
@@ -119,7 +120,7 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
                 type="text"
                 name="deposit"
                 id="deposit"
-                className="w-full rounded-lg rounded-l-none border border-th-bkg-3 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+                className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
                 placeholder="0.00"
                 value={inputAmount}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -128,14 +129,25 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
               />
             </div>
           </div>
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2 border-y border-th-bkg-3 py-4">
             <div className="flex justify-between">
               <p>{t('health-impact')}</p>
-              <p className="font-bold text-th-green">+X%</p>
+              <p className="font-bold text-th-green">+12%</p>
+            </div>
+            <div className="flex justify-between">
+              <p>{t('deposit-value')}</p>
+              <p className="font-bold text-th-fgd-1">$1,000.00</p>
+            </div>
+            <div className="flex justify-between">
+              <div className="flex items-center">
+                <p>{t('collateral-multiplier', { token: selectedToken })}</p>
+                <InfoTooltip content={t('collateral-multiplier-desc')} />
+              </div>
+              <p className="font-bold text-th-fgd-1">0.8x</p>
             </div>
             <div className="flex justify-between">
               <p>{t('collateral-value')}</p>
-              <p className="font-bold text-th-fgd-1">$X,XXX.xx</p>
+              <p className="font-bold text-th-fgd-1">$800.00</p>
             </div>
           </div>
         </div>

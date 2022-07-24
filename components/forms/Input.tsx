@@ -41,7 +41,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           focus:outline-none 
           ${
             disabled
-              ? 'cursor-not-allowed bg-th-bkg-3 text-th-fgd-3 hover:border-th-fgd-3'
+              ? 'cursor-not-allowed bg-th-bkg-3 text-th-fgd-3 hover:border-th-fgd-4'
               : ''
           }
           ${prefix ? 'pl-8' : ''}

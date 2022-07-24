@@ -1,8 +1,8 @@
 import { Transition } from '@headlessui/react'
 import { CSSProperties, ReactNode } from 'react'
 
-const transitionEnterStyle = 'transition-all ease-in duration-500'
-const transitionExitStyle = 'transition-all ease-out duration-500'
+const transitionEnterStyle = 'transition-all ease-in duration-300'
+const transitionExitStyle = 'transition-all ease-out duration-300'
 
 export const EnterRightExitLeft = ({
   children,

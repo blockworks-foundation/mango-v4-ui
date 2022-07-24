@@ -20,6 +20,7 @@ import Button, { IconButton, LinkButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import Loading from '../shared/Loading'
+import { EnterBottomExitBottom } from '../shared/Transitions'
 
 const getBestRoute = (routesInfos: RouteInfo[]) => {
   return routesInfos[0]
@@ -203,15 +204,9 @@ const Swap = () => {
 
   return (
     <ContentBox showBackground className="relative overflow-hidden">
-      <Transition
+      <EnterBottomExitBottom
         className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
         show={showConfirm}
-        enter="transition-all ease-in duration-400"
-        enterFrom="transform translate-x-full"
-        enterTo="transform translate-x-0"
-        leave="transition-all ease-out duration-400"
-        leaveFrom="transform translate-x-0"
-        leaveTo="transform translate-x-full"
       >
         <JupiterRoutes
           inputToken={inputToken}
@@ -228,16 +223,10 @@ const Swap = () => {
           selectedRoute={selectedRoute}
           setSelectedRoute={setSelectedRoute}
         />
-      </Transition>
-      <Transition
+      </EnterBottomExitBottom>
+      <EnterBottomExitBottom
         className="thin-scroll absolute bottom-0 left-0 z-20 h-full overflow-auto bg-th-bkg-2 p-6 pb-0"
         show={!!showTokenSelect}
-        enter="transition-all ease-in duration-400"
-        enterFrom="max-h-0"
-        enterTo="max-h-full"
-        leave="transition-all ease-out duration-400"
-        leaveFrom="max-h-full"
-        leaveTo="max-h-0"
       >
         <SelectToken
           onClose={() => setShowTokenSelect('')}
@@ -248,7 +237,7 @@ const Swap = () => {
           }
           type={showTokenSelect}
         />
-      </Transition>
+      </EnterBottomExitBottom>
       <div className="mb-4 flex items-center justify-between">
         <h3>{t('trade')}</h3>
         <Switch
@@ -272,7 +261,7 @@ const Swap = () => {
         </LinkButton>
       </div>
       <div className="mb-3 grid grid-cols-2">
-        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1">
+        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
           <TokenSelect
             token={inputToken}
             showTokenList={setShowTokenSelect}
@@ -284,7 +273,7 @@ const Swap = () => {
             type="text"
             name="amountIn"
             id="amountIn"
-            className="w-full rounded-lg rounded-l-none border border-th-bkg-3 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+            className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
             placeholder="0.00"
             value={amountIn}
             onChange={handleAmountInChange}
@@ -318,14 +307,14 @@ const Swap = () => {
       </div>
       <p className="mb-2 text-th-fgd-3">{t('buy')}</p>
       <div className="mb-3 grid grid-cols-2">
-        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-3 bg-th-bkg-1">
+        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
           <TokenSelect
             token={outputToken}
             showTokenList={setShowTokenSelect}
             type="output"
           />
         </div>
-        <div className="w-full rounded-lg rounded-l-none border border-th-bkg-3 bg-th-bkg-3 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
+        <div className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-3 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
           {amountOut ? numberFormat.format(amountOut) : 0}
         </div>
       </div>
