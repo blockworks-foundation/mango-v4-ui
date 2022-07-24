@@ -165,7 +165,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
     <ContentBox hideBorder hidePadding>
       {loadChartData ? (
         <SheenLoader>
-          <div className="h-96 rounded-lg bg-th-bkg-2" />
+          <div className="h-[448px] rounded-lg bg-th-bkg-2" />
         </SheenLoader>
       ) : chartData.length && baseTokenId && quoteTokenId ? (
         <div className="relative flex justify-between md:block">

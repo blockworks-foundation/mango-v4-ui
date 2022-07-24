@@ -1,21 +1,26 @@
 import { Transition } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon, DotsHorizontalIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 import { Fragment, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '../store/state'
 import { formatDecimal, numberFormat } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
-import Button, { IconButton } from './shared/Button'
+import Button, { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
+import { UpTriangle } from './shared/DirectionTriangles'
+import IconDropMenu from './shared/IconDropMenu'
 
 const TokenList = () => {
   const { t } = useTranslation('common')
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const group = mangoStore((s) => s.group)
+  const router = useRouter()
+  const { asPath } = router
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
@@ -29,18 +34,18 @@ const TokenList = () => {
 
   return (
     <ContentBox hideBorder hidePadding>
-      <h2>Tokens</h2>
+      <h2>{t('tokens')}</h2>
       {showTableView ? (
         <table className="min-w-full">
           <thead>
             <tr>
-              <th className="w-[12.5%] text-left">Token</th>
-              <th className="w-[12.5%] text-right">Price</th>
-              <th className="w-[12.5%] text-right">{t('rolling-change')}</th>
-              <th className="w-[12.5%] text-right">{t('daily-volume')}</th>
-              <th className="w-[12.5%] text-right">Rates (APR)</th>
+              <th className="w-[12.5%] text-left">{t('token')}</th>
+              <th className="w-[12.5%] text-right">{t('price')}</th>
+              {/* <th className="w-[12.5%] text-right">{t('rolling-change')}</th>
+              <th className="w-[12.5%] text-right">{t('daily-volume')}</th> */}
+              <th className="w-[12.5%] text-right">{t('rates')}</th>
               <th className="w-[12.5%] text-right">{t('liquidity')}</th>
-              <th className="w-[12.5%] text-right">Available Balance</th>
+              <th className="w-[12.5%] text-right">{t('available-balance')}</th>
             </tr>
           </thead>
           <tbody>
@@ -58,24 +63,28 @@ const TokenList = () => {
                           src={`/icons/${bank.value.name.toLowerCase()}.svg`}
                         />
                       </div>
-                      <p className="font-bold">{bank.value.name}</p>
+                      <p>{bank.value.name}</p>
                     </div>
                   </td>
                   <td className="w-[12.5%]">
                     <div className="flex flex-col text-right">
                       <p>${formatDecimal(oraclePrice.toNumber(), 2)}</p>
+                      <div className="flex items-center justify-end">
+                        <UpTriangle />
+                        <p className="ml-1 text-sm text-th-green">0%</p>
+                      </div>
                     </div>
                   </td>
-                  <td className="w-[12.5%]">
+                  {/* <td className="w-[12.5%]">
                     <div className="flex flex-col text-right">
                       <p className="text-th-green">0%</p>
                     </div>
-                  </td>
-                  <td className="w-[12.5%]">
+                  </td> */}
+                  {/* <td className="w-[12.5%]">
                     <div className="flex flex-col text-right">
                       <p>1000</p>
                     </div>
-                  </td>
+                  </td> */}
                   <td className="w-[12.5%]">
                     <div className="flex justify-end space-x-2 text-right">
                       <p className="text-th-green">
@@ -111,7 +120,7 @@ const TokenList = () => {
                         ? formatDecimal(mangoAccount.getUi(bank.value))
                         : 0}
                     </p>
-                    <p className="px-2 text-xs text-th-fgd-4">
+                    <p className="px-2 text-sm text-th-fgd-4">
                       {mangoAccount
                         ? `$${formatDecimal(
                             mangoAccount.getUi(bank.value) *
@@ -123,8 +132,48 @@ const TokenList = () => {
                   </td>
                   <td className="w-[12.5%]">
                     <div className="flex justify-end space-x-2">
-                      <Button>Buy</Button>
-                      <Button secondary>Sell</Button>
+                      <IconDropMenu
+                        icon={<DotsHorizontalIcon className="h-5 w-5" />}
+                      >
+                        <LinkButton
+                          className="w-full text-left"
+                          disabled={!mangoAccount}
+                          // onClick={}
+                        >
+                          {t('deposit')}
+                        </LinkButton>
+                        {mangoAccount && mangoAccount.getUi(bank.value) > 0 ? (
+                          <LinkButton
+                            className="w-full text-left"
+                            disabled={!mangoAccount}
+                            // onClick={}
+                          >
+                            {t('withdraw')}
+                          </LinkButton>
+                        ) : (
+                          <LinkButton
+                            className="w-full text-left"
+                            disabled={!mangoAccount}
+                            // onClick={}
+                          >
+                            {t('borrow')}
+                          </LinkButton>
+                        )}
+                        <LinkButton
+                          className="w-full text-left"
+                          disabled={!mangoAccount}
+                          // onClick={}
+                        >
+                          {t('buy')}
+                        </LinkButton>
+                        <LinkButton
+                          className="w-full text-left"
+                          disabled={!mangoAccount}
+                          // onClick={}
+                        >
+                          {t('sell')}
+                        </LinkButton>
+                      </IconDropMenu>
                     </div>
                   </td>
                 </tr>
@@ -152,9 +201,11 @@ const TokenList = () => {
                       />
                     </div>
                     <div>
-                      <p className="font-bold">{bank.value.name}</p>
-                      <p>
-                        <span className="mr-1 text-th-fgd-4">Available:</span>
+                      <p>{bank.value.name}</p>
+                      <p className="text-sm">
+                        <span className="mr-1 text-th-fgd-4">
+                          {t('available')}:
+                        </span>
                         {mangoAccount
                           ? formatDecimal(mangoAccount.getUi(bank.value))
                           : 0}
@@ -163,8 +214,8 @@ const TokenList = () => {
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="flex space-x-2">
-                      <Button>Buy</Button>
-                      <Button secondary>Sell</Button>
+                      <Button>{t('buy')}</Button>
+                      <Button secondary>{t('sell')}</Button>
                     </div>
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.value.name)}
@@ -201,16 +252,19 @@ const TokenList = () => {
                       <p className="text-xs text-th-fgd-3">
                         {t('rolling-change')}
                       </p>
-                      <p className="font-bold text-th-green">0%</p>
+                      <div className="flex items-center">
+                        <UpTriangle />
+                        <p className="ml-1 font-bold text-th-green">0%</p>
+                      </div>
                     </div>
-                    <div className="col-span-1">
+                    {/* <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">
                         {t('daily-volume')}
                       </p>
                       <p className="font-bold">$1000</p>
-                    </div>
+                    </div> */}
                     <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">Rates (APR)</p>
+                      <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                       <p className="space-x-2 font-bold">
                         <span className="text-th-green">
                           {formatDecimal(

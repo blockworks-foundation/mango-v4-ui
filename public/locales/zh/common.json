@@ -34,6 +34,7 @@
     "settings": "Settings",
     "stats": "Stats",
     "token": "Token",
+    "tokens": "Tokens",
     "token-collateral-multiplier": "{{token}} Collateral Multiplier",
     "trade": "Trade",
     "wallet-balance": "Wallet Balance",
