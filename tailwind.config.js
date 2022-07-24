@@ -107,6 +107,11 @@ module.exports = {
             transform: 'rotate(-6deg)',
           },
         },
+        shimmer: {
+          '100%': {
+            transform: 'translateX(100%)',
+          },
+        },
       },
       backgroundImage: {
         'long-loss': "url('/share_images/bg-long-loss.png')",

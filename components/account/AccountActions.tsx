@@ -75,7 +75,7 @@ const AccountActions = () => {
                     onClick={handleCloseMangoAccount}
                   >
                     <TrashIcon className="mr-2 h-5 w-5" />
-                    {t('close-account:close-account')}
+                    {t('close-account')}
                   </LinkButton>
                 </Popover.Panel>
               </Transition>

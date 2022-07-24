@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react'
 import mangoStore from '../../store/state'
 import { TokenInfo } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
-import Button from '../shared/Button'
 
 type RouteFeeInfoProps = {
   selectedRoute: RouteInfo

@@ -16,6 +16,7 @@ import ContentBox from '../shared/ContentBox'
 import { GREEN, RED } from '../../styles/colors'
 import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 import { formatFixedDecimals } from '../../utils/numbers'
+import SheenLoader from '../shared/SheenLoader'
 
 dayjs.extend(relativeTime)
 
@@ -77,6 +78,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   outputTokenId,
 }) => {
   const [chartData, setChartData] = useState([])
+  const [loadChartData, setLoadChartData] = useState(true)
   const [baseTokenId, setBaseTokenId] = useState('')
   const [quoteTokenId, setQuoteTokenId] = useState('')
   const [inputTokenInfo, setInputTokenInfo] = useState<any>(null)
@@ -115,6 +117,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
       daysToShow
     )
     setChartData(chartData)
+    setTimeout(() => setLoadChartData(false), 1500)
   }, [baseTokenId, quoteTokenId, daysToShow])
 
   const getInputTokenInfo = useCallback(async () => {
@@ -160,7 +163,11 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
 
   return (
     <ContentBox hideBorder hidePadding>
-      {chartData.length && baseTokenId && quoteTokenId ? (
+      {loadChartData ? (
+        <SheenLoader>
+          <div className="h-96 rounded-lg bg-th-bkg-2" />
+        </SheenLoader>
+      ) : chartData.length && baseTokenId && quoteTokenId ? (
         <div className="relative flex justify-between md:block">
           <div className="flex items-start justify-between">
             <div>
@@ -328,8 +335,8 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
       ) : (
         <div className="mt-4 flex h-96 items-center justify-center rounded-lg bg-th-bkg-2 p-4 text-th-fgd-3 md:mt-0">
           <div className="">
-            <LineChartIcon className="mx-auto h-12 w-12 text-th-primary" />
-            <span className="text-lg">Chart not available</span>
+            <LineChartIcon className="mx-auto h-10 w-10 text-th-fgd-4" />
+            <p className="text-th-fgd-4">Chart not available</p>
           </div>
         </div>
       )}

@@ -77,8 +77,8 @@ const JupiterRoutes = ({
   }
 
   return routes?.length && selectedRoute && outputTokenInfo ? (
-    <div>
-      <>
+    <div className="flex h-full flex-col justify-between">
+      <div>
         <IconButton
           className="absolute top-2 right-2 text-th-fgd-3"
           onClick={onClose}
@@ -108,11 +108,14 @@ const JupiterRoutes = ({
             outputTokenInfo={outputTokenInfo}
           />
         ) : null}
-      </>
-      <div className="mt-6 flex justify-center">
+      </div>
+      <div className="flex items-center justify-center pb-6">
         <Button onClick={onSwap} className="w-full text-base" size="large">
-          {submitting ? <Loading className="mr-2 h-5 w-5" /> : null}
-          {t('trade:confirm-trade')}
+          {submitting ? (
+            <Loading className="mr-2 h-5 w-5" />
+          ) : (
+            t('trade:confirm-trade')
+          )}
         </Button>
       </div>
     </div>
