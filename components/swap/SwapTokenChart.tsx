@@ -182,8 +182,8 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 <>
                   <div className="mb-0.5 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
-                      height={36}
-                      width={24}
+                      height={40}
+                      width={26}
                       play
                       delay={0.025}
                       duration={1}
@@ -214,8 +214,8 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 <>
                   <div className="mb-0.5 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
-                      height={36}
-                      width={24}
+                      height={40}
+                      width={26}
                       play
                       numbers={formatFixedDecimals(
                         chartData[chartData.length - 1]['price']

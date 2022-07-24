@@ -1,10 +1,11 @@
 {
     "account-value": "Account Value",
+    "available-balance": "Available Balance",
     "balance": "Balance",
     "borrow": "Borrow",
     "buy": "Buy",
     "close-account": "Close Account",
-    "collateral-multiplier": "{{token}} Collateral Multiplier",
+    "collateral-multiplier": "Collateral Multiplier",
     "collateral-multiplier-desc": "Each token on Mango has a multiplier used to calculate the collateral value of that token. The higher the multiplier, the more collateral you get.",
     "collateral-value": "Collateral Value",
     "connect": "Connect",
@@ -25,14 +26,18 @@
     "more": "More",
     "portfolio": "Portfolio",
     "price": "Price",
+    "rate": "Rate (APR)",
     "rates": "Rates (APR)",
     "rolling-change": "24h Change",
+    "select-token": "Select Token",
     "sell": "Sell",
     "settings": "Settings",
     "stats": "Stats",
     "token": "Token",
+    "token-collateral-multiplier": "{{token}} Collateral Multiplier",
     "trade": "Trade",
     "wallet-balance": "Wallet Balance",
-    "withdraw": "Withdraw"
- }
- 
+    "withdraw": "Withdraw",
+    "withdrawal-value": "Withdrawal Value"
+  }
+  

@@ -74,7 +74,7 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
         className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
         show={showTokenList}
       >
-        <h2 className="mb-4 text-center">Select Token</h2>
+        <h2 className="mb-4 text-center">{t('select-token')}</h2>
         <DepositTokenList onSelect={handleSelectToken} />
       </EnterBottomExitBottom>
       <FadeInFadeOut
@@ -83,7 +83,7 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
       >
         <div>
           <h2 className="mb-4 text-center">{t('deposit')}</h2>
-          <div className="mb-4 grid grid-cols-2">
+          <div className="grid grid-cols-2 pb-6">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
               <LinkButton
@@ -132,22 +132,24 @@ function DepositModal({ isOpen, onClose }: ModalProps) {
           <div className="space-y-2 border-y border-th-bkg-3 py-4">
             <div className="flex justify-between">
               <p>{t('health-impact')}</p>
-              <p className="font-bold text-th-green">+12%</p>
+              <p className="text-th-green">+12%</p>
             </div>
             <div className="flex justify-between">
               <p>{t('deposit-value')}</p>
-              <p className="font-bold text-th-fgd-1">$1,000.00</p>
+              <p className="text-th-fgd-1">$1,000.00</p>
             </div>
             <div className="flex justify-between">
               <div className="flex items-center">
-                <p>{t('collateral-multiplier', { token: selectedToken })}</p>
+                <p>
+                  {t('token-collateral-multiplier', { token: selectedToken })}
+                </p>
                 <InfoTooltip content={t('collateral-multiplier-desc')} />
               </div>
-              <p className="font-bold text-th-fgd-1">0.8x</p>
+              <p className="text-th-fgd-1">0.8x</p>
             </div>
             <div className="flex justify-between">
               <p>{t('collateral-value')}</p>
-              <p className="font-bold text-th-fgd-1">$800.00</p>
+              <p className="text-th-fgd-1">$800.00</p>
             </div>
           </div>
         </div>

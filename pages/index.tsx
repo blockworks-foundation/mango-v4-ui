@@ -32,21 +32,21 @@ const Index: NextPage = () => {
           <p className="mb-1">{t('account-value')}</p>
           <div className="flex items-center text-5xl font-bold text-th-fgd-1">
             $
-            <FlipNumbers
-              height={48}
-              width={32}
-              play={mangoAccount}
-              delay={0.05}
-              duration={1}
-              numbers={
-                mangoAccount
-                  ? formatDecimal(
-                      toUiDecimals(mangoAccount.getEquity().toNumber()),
-                      2
-                    )
-                  : (0).toFixed(2)
-              }
-            />
+            {mangoAccount ? (
+              <FlipNumbers
+                height={48}
+                width={32}
+                play
+                delay={0.05}
+                duration={1}
+                numbers={formatDecimal(
+                  toUiDecimals(mangoAccount.getEquity().toNumber()),
+                  2
+                )}
+              />
+            ) : (
+              (0).toFixed(2)
+            )}
           </div>
           {/* <div className="text-5xl font-bold text-th-fgd-1">
             $
