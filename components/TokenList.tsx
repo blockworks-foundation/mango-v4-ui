@@ -134,6 +134,8 @@ const TokenList = () => {
                     <div className="flex justify-end space-x-2">
                       <IconDropMenu
                         icon={<DotsHorizontalIcon className="h-5 w-5" />}
+                        postion="leftBottom"
+                        disabled={!mangoAccount}
                       >
                         <LinkButton
                           className="w-full text-left"

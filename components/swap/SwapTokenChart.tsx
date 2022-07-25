@@ -180,7 +180,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="mb-0.5 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
                       height={40}
                       width={26}
@@ -206,13 +206,13 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       </span>
                     </span>
                   </div>
-                  <p className="text-th-fgd-4">
+                  <p className="text-sm text-th-fgd-4">
                     {dayjs(mouseData['time']).format('DD MMM YY, h:mma')}
                   </p>
                 </>
               ) : (
                 <>
-                  <div className="mb-0.5 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
                       height={40}
                       width={26}
@@ -238,7 +238,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       </span>
                     </span>
                   </div>
-                  <p className="text-th-fgd-4">
+                  <p className="text-sm text-th-fgd-4">
                     {dayjs(chartData[chartData.length - 1]['time']).format(
                       'DD MMM YY, h:mma'
                     )}
