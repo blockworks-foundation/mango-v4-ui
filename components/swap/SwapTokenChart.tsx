@@ -298,7 +298,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       <stop
                         offset="0%"
                         stopColor={calculateChartChange() >= 0 ? GREEN : RED}
-                        stopOpacity={0.25}
+                        stopOpacity={0.15}
                       />
                       <stop
                         offset="99%"
