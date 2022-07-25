@@ -185,8 +185,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       height={40}
                       width={26}
                       play
-                      delay={0.025}
-                      duration={1}
                       numbers={formatFixedDecimals(mouseData['price'])}
                     />
                     <span
