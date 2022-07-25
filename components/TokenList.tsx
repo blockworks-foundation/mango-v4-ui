@@ -1,3 +1,4 @@
+import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import { ChevronDownIcon, DotsHorizontalIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
@@ -19,10 +20,6 @@ import IconDropMenu from './shared/IconDropMenu'
 const TokenList = () => {
   const { t } = useTranslation('common')
   const [showTokenDetails, setShowTokenDetails] = useState('')
-  const [showDepositModal, setShowDepositModal] = useState(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
-  const [showBorrowModal, setShowBorrowModal] = useState(false)
-  const [selectedToken, setSelectedToken] = useState('')
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const group = mangoStore((s) => s.group)
   const { width } = useViewport()
@@ -34,18 +31,6 @@ const TokenList = () => {
 
   const handleShowTokenDetails = (name: string) => {
     showTokenDetails ? setShowTokenDetails('') : setShowTokenDetails(name)
-  }
-
-  const handleShowActionModals = (
-    token: string,
-    action: 'borrow' | 'deposit' | 'withdraw'
-  ) => {
-    setSelectedToken(token)
-    action === 'borrow'
-      ? setShowBorrowModal(true)
-      : action === 'deposit'
-      ? setShowDepositModal(true)
-      : setShowWithdrawModal(true)
   }
 
   return (
@@ -74,8 +59,8 @@ const TokenList = () => {
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         <Image
                           alt=""
-                          width="24"
-                          height="24"
+                          width="32"
+                          height="32"
                           src={`/icons/${bank.value.name.toLowerCase()}.svg`}
                         />
                       </div>
@@ -148,69 +133,10 @@ const TokenList = () => {
                   </td>
                   <td className="w-[12.5%]">
                     <div className="flex justify-end space-x-2">
-                      <IconDropMenu
-                        icon={<DotsHorizontalIcon className="h-5 w-5" />}
-                        postion="leftBottom"
-                      >
-                        <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
-                          <div className="mr-2 flex flex-shrink-0 items-center">
-                            <Image
-                              alt=""
-                              width="20"
-                              height="20"
-                              src={`/icons/${bank.value.name.toLowerCase()}.svg`}
-                            />
-                          </div>
-                          <p>{bank.value.name}</p>
-                        </div>
-                        <LinkButton
-                          className="w-full text-left"
-                          disabled={!mangoAccount}
-                          onClick={() =>
-                            handleShowActionModals(bank.value.name, 'deposit')
-                          }
-                        >
-                          {t('deposit')}
-                        </LinkButton>
-                        {mangoAccount && mangoAccount.getUi(bank.value) > 0 ? (
-                          <LinkButton
-                            className="w-full text-left"
-                            disabled={!mangoAccount}
-                            onClick={() =>
-                              handleShowActionModals(
-                                bank.value.name,
-                                'withdraw'
-                              )
-                            }
-                          >
-                            {t('withdraw')}
-                          </LinkButton>
-                        ) : (
-                          <LinkButton
-                            className="w-full text-left"
-                            disabled={!mangoAccount}
-                            onClick={() =>
-                              handleShowActionModals(bank.value.name, 'borrow')
-                            }
-                          >
-                            {t('borrow')}
-                          </LinkButton>
-                        )}
-                        <LinkButton
-                          className="w-full text-left"
-                          disabled={!mangoAccount}
-                          // onClick={}
-                        >
-                          {t('buy')}
-                        </LinkButton>
-                        <LinkButton
-                          className="w-full text-left"
-                          disabled={!mangoAccount}
-                          // onClick={}
-                        >
-                          {t('sell')}
-                        </LinkButton>
-                      </IconDropMenu>
+                      <ActionsMenu
+                        bank={bank.value}
+                        mangoAccount={mangoAccount}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -249,20 +175,22 @@ const TokenList = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="flex space-x-2">
-                      <Button>{t('buy')}</Button>
-                      <Button secondary>{t('sell')}</Button>
-                    </div>
+                  <div className="flex items-center space-x-2">
+                    <ActionsMenu
+                      bank={bank.value}
+                      mangoAccount={mangoAccount}
+                    />
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.value.name)}
+                      className="h-10 w-10"
+                      hideBg
                     >
                       <ChevronDownIcon
                         className={`${
                           showTokenDetails === bank.value.name
                             ? 'rotate-180 transform'
                             : 'rotate-360 transform'
-                        } default-transition h-5 w-5 flex-shrink-0 text-th-fgd-1`}
+                        } default-transition h-6 w-6 flex-shrink-0 text-th-fgd-1`}
                       />
                     </IconButton>
                   </div>
@@ -336,6 +264,93 @@ const TokenList = () => {
           })}
         </div>
       )}
+    </ContentBox>
+  )
+}
+
+export default TokenList
+
+const ActionsMenu = ({
+  bank,
+  mangoAccount,
+}: {
+  bank: Bank
+  mangoAccount: MangoAccount | undefined
+}) => {
+  const { t } = useTranslation('common')
+  const [showDepositModal, setShowDepositModal] = useState(false)
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+  const [showBorrowModal, setShowBorrowModal] = useState(false)
+  const [selectedToken, setSelectedToken] = useState('')
+
+  const handleShowActionModals = (
+    token: string,
+    action: 'borrow' | 'deposit' | 'withdraw'
+  ) => {
+    setSelectedToken(token)
+    action === 'borrow'
+      ? setShowBorrowModal(true)
+      : action === 'deposit'
+      ? setShowDepositModal(true)
+      : setShowWithdrawModal(true)
+  }
+
+  return (
+    <>
+      <IconDropMenu
+        icon={<DotsHorizontalIcon className="h-5 w-5" />}
+        postion="leftBottom"
+      >
+        <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
+          <div className="mr-2 flex flex-shrink-0 items-center">
+            <Image
+              alt=""
+              width="20"
+              height="20"
+              src={`/icons/${bank.name.toLowerCase()}.svg`}
+            />
+          </div>
+          <p>{bank.name}</p>
+        </div>
+        <LinkButton
+          className="w-full text-left"
+          disabled={!mangoAccount}
+          onClick={() => handleShowActionModals(bank.name, 'deposit')}
+        >
+          {t('deposit')}
+        </LinkButton>
+        {mangoAccount && mangoAccount.getUi(bank) > 0 ? (
+          <LinkButton
+            className="w-full text-left"
+            disabled={!mangoAccount}
+            onClick={() => handleShowActionModals(bank.name, 'withdraw')}
+          >
+            {t('withdraw')}
+          </LinkButton>
+        ) : (
+          <LinkButton
+            className="w-full text-left"
+            disabled={!mangoAccount}
+            onClick={() => handleShowActionModals(bank.name, 'borrow')}
+          >
+            {t('borrow')}
+          </LinkButton>
+        )}
+        <LinkButton
+          className="w-full text-left"
+          disabled={!mangoAccount}
+          // onClick={}
+        >
+          {t('buy')}
+        </LinkButton>
+        <LinkButton
+          className="w-full text-left"
+          disabled={!mangoAccount}
+          // onClick={}
+        >
+          {t('sell')}
+        </LinkButton>
+      </IconDropMenu>
       {showDepositModal ? (
         <DepositModal
           isOpen={showDepositModal}
@@ -357,8 +372,6 @@ const TokenList = () => {
           token={selectedToken}
         />
       ) : null}
-    </ContentBox>
+    </>
   )
 }
-
-export default TokenList

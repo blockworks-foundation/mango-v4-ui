@@ -35,7 +35,7 @@ const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
         ) : null}
         {values.map((v, i) => (
           <button
-            className={`${className} default-transition relative w-1/2 cursor-pointer rounded-md px-2 text-center ${
+            className={`${className} default-transition relative w-1/2 cursor-pointer rounded-md px-3 text-center ${
               large ? 'h-12 text-sm' : 'h-10 text-xs'
             } font-normal
               ${

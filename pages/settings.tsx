@@ -63,7 +63,7 @@ const Settings: NextPage = () => {
         </div>
         <div className="flex flex-col border-t border-th-bkg-3 p-4 md:flex-row md:items-center md:justify-between">
           <p className="mb-2 lg:mb-0">{t('language')}</p>
-          <div className="w-full min-w-[300px] md:w-auto">
+          <div className="w-full min-w-[330px] md:w-auto">
             <ButtonGroup
               activeValue={savedLanguage}
               onChange={(l) => handleLangChange(l)}
