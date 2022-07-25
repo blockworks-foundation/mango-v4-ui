@@ -4,8 +4,8 @@ import mangoStore from '../../store/state'
 import { formatDecimal } from '../../utils/numbers'
 
 type LeverageSliderProps = {
-  inputToken: string
-  outputToken: string
+  inputToken?: string
+  outputToken?: string
   onChange: (x: string) => void
 }
 
@@ -20,11 +20,17 @@ const LeverageSlider = ({
   const leverageMax = useMemo(() => {
     if (!mangoAccount || !group) return '100'
 
-    const max = toUiDecimals(
-      mangoAccount
-        .getMaxSourceForTokenSwap(group, inputToken, outputToken, 1)
-        .toNumber()
-    )
+    let max
+    if (inputToken && outputToken) {
+      max = toUiDecimals(
+        mangoAccount
+          .getMaxSourceForTokenSwap(group, inputToken, outputToken, 1)
+          .toNumber()
+      )
+    } else {
+      // needs to be calculated
+      max = 100
+    }
     console.log(inputToken, outputToken, max)
 
     return formatDecimal(max)
@@ -43,7 +49,7 @@ const LeverageSlider = ({
         min="0"
         max={leverageMax}
         step={0.0001}
-        className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-4 hover:bg-gradient-to-r hover:from-gradient-start hover:via-gradient-mid hover:to-gradient-end"
+        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-4 hover:bg-gradient-to-r hover:from-gradient-start hover:via-gradient-mid hover:to-gradient-end"
         onChange={handleSliderChange}
       ></input>
     </>

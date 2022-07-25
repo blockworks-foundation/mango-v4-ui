@@ -4,6 +4,7 @@ import Image from 'next/image'
 import React, { ChangeEvent, useState } from 'react'
 // import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
+import ButtonGroup from '../forms/ButtonGroup'
 // import { notify } from '../../utils/notifications'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
@@ -12,6 +13,7 @@ import DepositTokenList from '../shared/DepositTokenList'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
+import LeverageSlider from '../swap/LeverageSlider'
 
 interface BorrowModalProps {
   token?: string
@@ -25,6 +27,16 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(token || 'USDC')
   const [showTokenList, setShowTokenList] = useState(false)
+  const [sizePercentage, setSizePercentage] = useState('')
+
+  const handleSizePercentage = (percentage: string) => {
+    setSizePercentage(percentage)
+
+    // TODO: calc max
+    const max = 100
+    const amount = (Number(percentage) / 100) * max
+    setInputAmount(amount.toFixed())
+  }
 
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
@@ -41,7 +53,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         <DepositTokenList onSelect={handleSelectToken} />
       </EnterBottomExitBottom>
       <FadeInFadeOut
-        className="flex h-96 flex-col justify-between"
+        className="flex h-[440px] flex-col justify-between"
         show={isOpen}
       >
         <div>
@@ -90,6 +102,21 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   setInputAmount(e.target.value)
                 }
               />
+            </div>
+            <div className="col-span-2 mt-2">
+              <ButtonGroup
+                activeValue={sizePercentage}
+                onChange={(p) => handleSizePercentage(p)}
+                values={['10', '25', '50', '75', '100']}
+                unit="%"
+              />
+            </div>
+            <div className="col-span-2 mt-4">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-th-fgd-3">{t('leverage')}</p>
+                <p className="text-th-fgd-3">0.00x</p>
+              </div>
+              <LeverageSlider onChange={(x) => setInputAmount(x)} />
             </div>
           </div>
           <div className="space-y-2 border-y border-th-bkg-3 py-4">

@@ -5,6 +5,7 @@ import React, { ChangeEvent, useState } from 'react'
 import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
+import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
@@ -26,6 +27,16 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(token || 'USDC')
   const [showTokenList, setShowTokenList] = useState(false)
+  const [sizePercentage, setSizePercentage] = useState('')
+
+  const handleSizePercentage = (percentage: string) => {
+    setSizePercentage(percentage)
+
+    // TODO: calc max
+    const max = 100
+    const amount = (Number(percentage) / 100) * max
+    setInputAmount(amount.toFixed())
+  }
 
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
@@ -80,7 +91,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         <DepositTokenList onSelect={handleSelectToken} />
       </EnterBottomExitBottom>
       <FadeInFadeOut
-        className="flex h-96 flex-col justify-between"
+        className="flex h-[430px] flex-col justify-between"
         show={isOpen}
       >
         <div>
@@ -128,6 +139,14 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setInputAmount(e.target.value)
                 }
+              />
+            </div>
+            <div className="col-span-2 mt-2">
+              <ButtonGroup
+                activeValue={sizePercentage}
+                onChange={(p) => handleSizePercentage(p)}
+                values={['10', '25', '50', '75', '100']}
+                unit="%"
               />
             </div>
           </div>
