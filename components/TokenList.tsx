@@ -2,13 +2,15 @@ import { Transition } from '@headlessui/react'
 import { ChevronDownIcon, DotsHorizontalIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 import { Fragment, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '../store/state'
 import { formatDecimal, numberFormat } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
+import BorrowModal from './modals/BorrowModal'
+import DepositModal from './modals/DepositModal'
+import WithdrawModal from './modals/WithdrawModal'
 import Button, { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import { UpTriangle } from './shared/DirectionTriangles'
@@ -17,10 +19,12 @@ import IconDropMenu from './shared/IconDropMenu'
 const TokenList = () => {
   const { t } = useTranslation('common')
   const [showTokenDetails, setShowTokenDetails] = useState('')
+  const [showDepositModal, setShowDepositModal] = useState(false)
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+  const [showBorrowModal, setShowBorrowModal] = useState(false)
+  const [selectedToken, setSelectedToken] = useState('')
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const group = mangoStore((s) => s.group)
-  const router = useRouter()
-  const { asPath } = router
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
@@ -30,6 +34,18 @@ const TokenList = () => {
 
   const handleShowTokenDetails = (name: string) => {
     showTokenDetails ? setShowTokenDetails('') : setShowTokenDetails(name)
+  }
+
+  const handleShowActionModals = (
+    token: string,
+    action: 'borrow' | 'deposit' | 'withdraw'
+  ) => {
+    setSelectedToken(token)
+    action === 'borrow'
+      ? setShowBorrowModal(true)
+      : action === 'deposit'
+      ? setShowDepositModal(true)
+      : setShowWithdrawModal(true)
   }
 
   return (
@@ -150,7 +166,9 @@ const TokenList = () => {
                         <LinkButton
                           className="w-full text-left"
                           disabled={!mangoAccount}
-                          // onClick={}
+                          onClick={() =>
+                            handleShowActionModals(bank.value.name, 'deposit')
+                          }
                         >
                           {t('deposit')}
                         </LinkButton>
@@ -158,7 +176,12 @@ const TokenList = () => {
                           <LinkButton
                             className="w-full text-left"
                             disabled={!mangoAccount}
-                            // onClick={}
+                            onClick={() =>
+                              handleShowActionModals(
+                                bank.value.name,
+                                'withdraw'
+                              )
+                            }
                           >
                             {t('withdraw')}
                           </LinkButton>
@@ -166,7 +189,9 @@ const TokenList = () => {
                           <LinkButton
                             className="w-full text-left"
                             disabled={!mangoAccount}
-                            // onClick={}
+                            onClick={() =>
+                              handleShowActionModals(bank.value.name, 'borrow')
+                            }
                           >
                             {t('borrow')}
                           </LinkButton>
@@ -311,6 +336,27 @@ const TokenList = () => {
           })}
         </div>
       )}
+      {showDepositModal ? (
+        <DepositModal
+          isOpen={showDepositModal}
+          onClose={() => setShowDepositModal(false)}
+          token={selectedToken}
+        />
+      ) : null}
+      {showWithdrawModal ? (
+        <WithdrawModal
+          isOpen={showWithdrawModal}
+          onClose={() => setShowWithdrawModal(false)}
+          token={selectedToken}
+        />
+      ) : null}
+      {showBorrowModal ? (
+        <BorrowModal
+          isOpen={showBorrowModal}
+          onClose={() => setShowBorrowModal(false)}
+          token={selectedToken}
+        />
+      ) : null}
     </ContentBox>
   )
 }

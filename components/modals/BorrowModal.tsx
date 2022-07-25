@@ -2,25 +2,24 @@ import { ChevronDownIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useState } from 'react'
-import mangoStore from '../../store/state'
+// import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
-import { notify } from '../../utils/notifications'
+// import { notify } from '../../utils/notifications'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import DepositTokenList from '../shared/DepositTokenList'
-import InfoTooltip from '../shared/InfoTooltip'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 
-interface DepositModalProps {
+interface BorrowModalProps {
   token?: string
 }
 
-type ModalCombinedProps = DepositModalProps & ModalProps
+type ModalCombinedProps = BorrowModalProps & ModalProps
 
-function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
+function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation('common')
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -30,44 +29,6 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
     setShowTokenList(false)
-  }
-
-  const handleDeposit = async () => {
-    const client = mangoStore.getState().client
-    const group = mangoStore.getState().group
-    const actions = mangoStore.getState().actions
-    const mangoAccount = mangoStore.getState().mangoAccount
-    console.log('hi', mangoAccount, group)
-
-    if (!mangoAccount || !group) return
-
-    try {
-      setSubmitting(true)
-      const tx = await client.tokenDeposit(
-        group,
-        mangoAccount,
-        selectedToken,
-        parseFloat(inputAmount)
-      )
-      notify({
-        title: 'Transaction confirmed',
-        type: 'success',
-        txid: tx,
-      })
-
-      await actions.reloadAccount()
-      setSubmitting(false)
-    } catch (e: any) {
-      notify({
-        title: 'Transaction failed',
-        description: e.message,
-        txid: e?.txid,
-        type: 'error',
-      })
-      console.log('Error depositing:', e)
-    }
-
-    onClose()
   }
 
   return (
@@ -84,7 +45,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         show={isOpen}
       >
         <div>
-          <h2 className="mb-4 text-center">{t('deposit')}</h2>
+          <h2 className="mb-4 text-center">{t('borrow')}</h2>
           <div className="grid grid-cols-2 pb-6">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
@@ -93,7 +54,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 onClick={() => console.log('Set max input amount')}
               >
                 <span className="mr-1 font-normal text-th-fgd-3">
-                  {t('wallet-balance')}
+                  {t('max')}
                 </span>
                 <span className="text-th-fgd-1">0</span>
               </LinkButton>
@@ -120,8 +81,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="col-span-1">
               <Input
                 type="text"
-                name="deposit"
-                id="deposit"
+                name="borrow"
+                id="borrow"
                 className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
                 placeholder="0.00"
                 value={inputAmount}
@@ -134,38 +95,25 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           <div className="space-y-2 border-y border-th-bkg-3 py-4">
             <div className="flex justify-between">
               <p>{t('health-impact')}</p>
-              <p className="text-th-green">+12%</p>
+              <p className="text-th-red">-12%</p>
             </div>
             <div className="flex justify-between">
-              <p>{t('deposit-value')}</p>
+              <p>{t('borrow-value')}</p>
               <p className="text-th-fgd-1">$1,000.00</p>
-            </div>
-            <div className="flex justify-between">
-              <div className="flex items-center">
-                <p>
-                  {t('token-collateral-multiplier', { token: selectedToken })}
-                </p>
-                <InfoTooltip content={t('collateral-multiplier-desc')} />
-              </div>
-              <p className="text-th-fgd-1">0.8x</p>
-            </div>
-            <div className="flex justify-between">
-              <p>{t('collateral-value')}</p>
-              <p className="text-th-fgd-1">$800.00</p>
             </div>
           </div>
         </div>
         <Button
-          onClick={handleDeposit}
+          onClick={() => console.log('hanlde borrow')}
           className="flex w-full items-center justify-center"
           disabled={!inputAmount}
           size="large"
         >
-          {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('deposit')}
+          {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('borrow')}
         </Button>
       </FadeInFadeOut>
     </Modal>
   )
 }
 
-export default DepositModal
+export default BorrowModal
