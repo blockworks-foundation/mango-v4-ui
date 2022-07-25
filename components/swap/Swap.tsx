@@ -290,7 +290,7 @@ const Swap = () => {
             <ButtonGroup
               activeValue={sizePercentage}
               onChange={(p) => handleSizePercentage(p)}
-              values={['0', '25', '50', '75', '100']}
+              values={['10', '25', '50', '75', '100']}
               unit="%"
             />
           </div>

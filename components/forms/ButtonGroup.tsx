@@ -7,6 +7,7 @@ interface ButtonGroupProps {
   unit?: string
   values: Array<any>
   names?: Array<string>
+  large?: boolean
 }
 
 const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
@@ -16,6 +17,7 @@ const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
   values,
   onChange,
   names,
+  large,
 }) => {
   return (
     <div className="rounded-md bg-th-bkg-3">
@@ -33,7 +35,9 @@ const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
         ) : null}
         {values.map((v, i) => (
           <button
-            className={`${className} default-transition relative w-1/2 cursor-pointer rounded-md px-2 py-1.5 text-center text-xs font-normal
+            className={`${className} default-transition relative w-1/2 cursor-pointer rounded-md px-2 text-center ${
+              large ? 'h-12 text-sm' : 'h-10 text-xs'
+            } font-normal
               ${
                 v === activeValue
                   ? `text-th-primary`

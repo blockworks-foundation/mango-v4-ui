@@ -57,17 +57,19 @@ const Settings: NextPage = () => {
               activeValue={theme}
               onChange={(t) => setTheme(t)}
               values={THEMES}
+              large
             />
           </div>
         </div>
         <div className="flex flex-col border-t border-th-bkg-3 p-4 md:flex-row md:items-center md:justify-between">
           <p className="mb-2 lg:mb-0">{t('language')}</p>
-          <div className="w-full min-w-[280px] md:w-auto">
+          <div className="w-full min-w-[300px] md:w-auto">
             <ButtonGroup
               activeValue={savedLanguage}
               onChange={(l) => handleLangChange(l)}
               values={LANGS.map((val) => val.locale)}
               names={LANGS.map((val) => t(val.name))}
+              large
             />
           </div>
         </div>
