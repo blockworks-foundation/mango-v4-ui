@@ -135,8 +135,18 @@ const TokenList = () => {
                       <IconDropMenu
                         icon={<DotsHorizontalIcon className="h-5 w-5" />}
                         postion="leftBottom"
-                        disabled={!mangoAccount}
                       >
+                        <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
+                          <div className="mr-2 flex flex-shrink-0 items-center">
+                            <Image
+                              alt=""
+                              width="20"
+                              height="20"
+                              src={`/icons/${bank.value.name.toLowerCase()}.svg`}
+                            />
+                          </div>
+                          <p>{bank.value.name}</p>
+                        </div>
                         <LinkButton
                           className="w-full text-left"
                           disabled={!mangoAccount}
