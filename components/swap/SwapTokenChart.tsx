@@ -143,20 +143,20 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
 
   const calculateChartChange = () => {
     if (chartData.length) {
-      // if (mouseData) {
-      //   const index = chartData.findIndex((d: any) => d.time === mouseData.time)
-      //   return (
-      //     ((chartData[chartData.length - 1]['price'] -
-      //       chartData[index]['price']) /
-      //       chartData[0]['price']) *
-      //     100
-      //   )
-      // } else
-      return (
-        ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
-          chartData[0]['price']) *
-        100
-      )
+      if (mouseData) {
+        const index = chartData.findIndex((d: any) => d.time === mouseData.time)
+        return (
+          ((chartData[chartData.length - 1]['price'] -
+            chartData[index]['price']) /
+            chartData[0]['price']) *
+          100
+        )
+      } else
+        return (
+          ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
+            chartData[0]['price']) *
+          100
+        )
     }
     return 0
   }

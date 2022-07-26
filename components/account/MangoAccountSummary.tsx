@@ -15,7 +15,7 @@ const MangoAccountSummary = () => {
 
   return (
     <>
-      <div className="mb-3 space-y-1.5">
+      <div className="mb-4 space-y-1.5">
         <div className="flex items-center justify-between">
           <p className="text-th-fgd-3">Account Value</p>
           <p className="font-bold text-th-fgd-1">

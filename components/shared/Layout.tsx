@@ -14,7 +14,7 @@ import {
   WalletMultiButton,
 } from '@solana/wallet-adapter-react-ui'
 import { useTranslation } from 'next-i18next'
-import { Disclosure, Transition } from '@headlessui/react'
+import { Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from '../account/MangoAccountSummary'
 import { HealthType, MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../../store/state'
@@ -141,10 +141,10 @@ const MangoAccountSummaryDropdown = ({
   mangoAccount: MangoAccount
 }) => {
   return (
-    <Disclosure>
+    <Popover>
       {({ open }) => (
         <>
-          <Disclosure.Button className="flex w-full items-center justify-between rounded-none text-th-fgd-1 hover:text-th-primary">
+          <Popover.Button className="flex w-full items-center justify-between rounded-none text-th-fgd-1 hover:text-th-primary">
             <div className="flex items-center">
               <HealthHeart
                 health={mangoAccount.getHealthRatio(HealthType.init).toNumber()}
@@ -157,7 +157,7 @@ const MangoAccountSummaryDropdown = ({
                 open ? 'rotate-180 transform' : 'rotate-360 transform'
               } mt-0.5 h-5 w-5 flex-shrink-0`}
             />
-          </Disclosure.Button>
+          </Popover.Button>
           <Transition
             appear={true}
             show={open}
@@ -169,12 +169,12 @@ const MangoAccountSummaryDropdown = ({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Disclosure.Panel className="absolute top-12 z-10 w-56 rounded-md border border-th-bkg-4 bg-th-bkg-2 p-4">
+            <Popover.Panel className="absolute top-[63px] z-10 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-3 bg-th-bkg-1 p-4">
               <MangoAccountSummary />
-            </Disclosure.Panel>
+            </Popover.Panel>
           </Transition>
         </>
       )}
-    </Disclosure>
+    </Popover>
   )
 }

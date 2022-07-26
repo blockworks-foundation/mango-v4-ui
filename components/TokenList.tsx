@@ -402,14 +402,14 @@ const ActionsMenu = ({
         </LinkButton>
         <LinkButton
           className="w-full text-left"
-          disabled={!mangoAccount || inputToken === bank.name}
+          disabled={!mangoAccount}
           onClick={() => handleBuy()}
         >
           {t('buy')}
         </LinkButton>
         <LinkButton
           className="w-full text-left"
-          disabled={!mangoAccount || outputToken === bank.name}
+          disabled={!mangoAccount}
           onClick={() => handleSell()}
         >
           {t('sell')}
