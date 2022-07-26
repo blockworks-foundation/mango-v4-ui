@@ -9,7 +9,7 @@ const TradeSimplePage = () => {
   const outputTokenInfo = mangoStore((s) => s.outputTokenInfo)
 
   return (
-    <div className="grid grid-cols-12 gap-6">
+    <div className="grid grid-cols-12 gap-x-6 gap-y-8">
       <div className="col-span-12 space-y-12 md:col-span-6 lg:col-span-8">
         <SwapTokenChart
           inputTokenId={inputTokenInfo?.extensions?.coingeckoId}

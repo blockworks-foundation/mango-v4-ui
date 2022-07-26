@@ -5,6 +5,7 @@ interface SwitchProps {
   className?: string
   onChange: (x: boolean) => void
   children: ReactNode
+  disabled?: boolean
 }
 
 const Switch: FunctionComponent<SwitchProps> = ({
@@ -12,6 +13,7 @@ const Switch: FunctionComponent<SwitchProps> = ({
   className = '',
   children,
   onChange,
+  disabled,
 }) => {
   const handleClick = () => {
     onChange(!checked)
@@ -26,10 +28,11 @@ const Switch: FunctionComponent<SwitchProps> = ({
           checked ? 'bg-th-primary' : 'bg-th-bkg-button'
         } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full 
         border-2 border-transparent transition-colors duration-200 ease-in-out 
-        focus:outline-none`}
+        focus:outline-none ${disabled ? 'opacity-60' : ''}`}
         role="switch"
         aria-checked={checked}
         onClick={handleClick}
+        disabled={disabled}
       >
         <span className="sr-only">{children}</span>
         <span

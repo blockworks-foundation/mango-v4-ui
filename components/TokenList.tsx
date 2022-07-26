@@ -1,33 +1,66 @@
 import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import { ChevronDownIcon, DotsHorizontalIcon } from '@heroicons/react/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '../store/state'
 import { formatDecimal, numberFormat } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
+import Switch from './forms/Switch'
 import BorrowModal from './modals/BorrowModal'
 import DepositModal from './modals/DepositModal'
 import WithdrawModal from './modals/WithdrawModal'
-import Button, { IconButton, LinkButton } from './shared/Button'
+import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import { UpTriangle } from './shared/DirectionTriangles'
 import IconDropMenu from './shared/IconDropMenu'
 
 const TokenList = () => {
   const { t } = useTranslation('common')
+  const { connected } = useWallet()
   const [showTokenDetails, setShowTokenDetails] = useState('')
+  const [showZeroBalances, setShowZeroBalances] = useState(true)
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const group = mangoStore((s) => s.group)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
-  const banks = group?.banksMap
-    ? Array.from(group?.banksMap, ([key, value]) => ({ key, value }))
-    : []
+  const banks = useMemo(() => {
+    if (group?.banksMap) {
+      const rawBanks = Array.from(group?.banksMap, ([key, value]) => ({
+        key,
+        value,
+      }))
+      return mangoAccount
+        ? showZeroBalances
+          ? rawBanks.sort(
+              (a, b) =>
+                Math.abs(mangoAccount?.getUi(b.value) * Number(b.value.price)) -
+                Math.abs(mangoAccount?.getUi(a.value) * Number(a.value.price))
+            )
+          : rawBanks
+              .filter((b) => mangoAccount?.getUi(b.value) !== 0)
+              .sort(
+                (a, b) =>
+                  Math.abs(
+                    mangoAccount?.getUi(b.value) * Number(b.value.price)
+                  ) -
+                  Math.abs(mangoAccount?.getUi(a.value) * Number(a.value.price))
+              )
+        : rawBanks
+    }
+    return []
+  }, [showZeroBalances, group, mangoAccount])
+
+  useEffect(() => {
+    if (!connected) {
+      setShowZeroBalances(true)
+    }
+  }, [connected])
 
   const handleShowTokenDetails = (name: string) => {
     showTokenDetails ? setShowTokenDetails('') : setShowTokenDetails(name)
@@ -35,7 +68,17 @@ const TokenList = () => {
 
   return (
     <ContentBox hideBorder hidePadding>
-      <h2>{t('tokens')}</h2>
+      <div className="flex items-center justify-between">
+        <h2>{t('tokens')}</h2>
+        <Switch
+          className="text-th-fgd-3"
+          checked={showZeroBalances}
+          disabled={!mangoAccount}
+          onChange={() => setShowZeroBalances(!showZeroBalances)}
+        >
+          {t('show-zero-balances')}
+        </Switch>
+      </div>
       {showTableView ? (
         <table className="min-w-full">
           <thead>
@@ -319,23 +362,20 @@ const ActionsMenu = ({
         >
           {t('deposit')}
         </LinkButton>
-        {mangoAccount && mangoAccount.getUi(bank) > 0 ? (
-          <LinkButton
-            className="w-full text-left"
-            disabled={!mangoAccount}
-            onClick={() => handleShowActionModals(bank.name, 'withdraw')}
-          >
-            {t('withdraw')}
-          </LinkButton>
-        ) : (
-          <LinkButton
-            className="w-full text-left"
-            disabled={!mangoAccount}
-            onClick={() => handleShowActionModals(bank.name, 'borrow')}
-          >
-            {t('borrow')}
-          </LinkButton>
-        )}
+        <LinkButton
+          className="w-full text-left"
+          disabled={!mangoAccount}
+          onClick={() => handleShowActionModals(bank.name, 'withdraw')}
+        >
+          {t('withdraw')}
+        </LinkButton>
+        <LinkButton
+          className="w-full text-left"
+          disabled={!mangoAccount}
+          onClick={() => handleShowActionModals(bank.name, 'borrow')}
+        >
+          {t('borrow')}
+        </LinkButton>
         <LinkButton
           className="w-full text-left"
           disabled={!mangoAccount}
