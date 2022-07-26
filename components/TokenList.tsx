@@ -4,6 +4,7 @@ import { ChevronDownIcon, DotsHorizontalIcon } from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 
@@ -325,6 +326,11 @@ const ActionsMenu = ({
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [selectedToken, setSelectedToken] = useState('')
+  const set = mangoStore.getState().set
+  const inputToken = mangoStore((s) => s.swap.inputToken)
+  const outputToken = mangoStore((s) => s.swap.outputToken)
+  const router = useRouter()
+  const { asPath } = router
 
   const handleShowActionModals = (
     token: string,
@@ -336,6 +342,24 @@ const ActionsMenu = ({
       : action === 'deposit'
       ? setShowDepositModal(true)
       : setShowWithdrawModal(true)
+  }
+
+  const handleBuy = () => {
+    set((s) => {
+      s.swap.outputToken = bank.name
+    })
+    if (asPath === '/') {
+      router.push('/trade', undefined, { shallow: true })
+    }
+  }
+
+  const handleSell = () => {
+    set((s) => {
+      s.swap.inputToken = bank.name
+    })
+    if (asPath === '/') {
+      router.push('/trade', undefined, { shallow: true })
+    }
   }
 
   return (
@@ -378,15 +402,15 @@ const ActionsMenu = ({
         </LinkButton>
         <LinkButton
           className="w-full text-left"
-          disabled={!mangoAccount}
-          // onClick={}
+          disabled={!mangoAccount || inputToken === bank.name}
+          onClick={() => handleBuy()}
         >
           {t('buy')}
         </LinkButton>
         <LinkButton
           className="w-full text-left"
-          disabled={!mangoAccount}
-          // onClick={}
+          disabled={!mangoAccount || outputToken === bank.name}
+          onClick={() => handleSell()}
         >
           {t('sell')}
         </LinkButton>

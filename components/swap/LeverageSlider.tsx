@@ -28,7 +28,7 @@ const LeverageSlider = ({
           .toNumber()
       )
     } else {
-      // needs to be calculated
+      // needs to be calculated if we want to use this same component for borrowing
       max = 100
     }
     console.log(inputToken, outputToken, max)

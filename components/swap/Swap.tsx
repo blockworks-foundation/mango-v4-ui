@@ -34,8 +34,6 @@ const Swap = () => {
   const [routes, setRoutes] = useState<RouteInfo[]>()
   const [amountIn, setAmountIn] = useState('')
   const [amountOut, setAmountOut] = useState<number>()
-  const [inputToken, setInputToken] = useState('SOL')
-  const [outputToken, setOutputToken] = useState('USDC')
   const [submitting, setSubmitting] = useState(false)
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
@@ -45,6 +43,8 @@ const Swap = () => {
   const [slippage, setSlippage] = useState(0.1)
 
   const set = mangoStore.getState().set
+  const inputToken = mangoStore((s) => s.swap.inputToken)
+  const outputToken = mangoStore((s) => s.swap.outputToken)
   const tokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
   const debouncedAmountIn = useDebounce(amountIn, 400)
@@ -120,18 +120,18 @@ const Swap = () => {
   const handleTokenInSelect = (symbol: string) => {
     const inputTokenInfo = tokens.find((t: any) => t.symbol === symbol)
     set((s) => {
-      s.inputTokenInfo = inputTokenInfo
+      s.swap.inputToken = symbol
+      s.swap.inputTokenInfo = inputTokenInfo
     })
-    setInputToken(symbol)
     setShowTokenSelect('')
   }
 
   const handleTokenOutSelect = (symbol: string) => {
     const outputTokenInfo = tokens.find((t: any) => t.symbol === symbol)
     set((s) => {
-      s.outputTokenInfo = outputTokenInfo
+      s.swap.outputToken = symbol
+      s.swap.outputTokenInfo = outputTokenInfo
     })
-    setOutputToken(symbol)
     setShowTokenSelect('')
   }
 
@@ -139,11 +139,11 @@ const Swap = () => {
     const inputTokenInfo = tokens.find((t: any) => t.symbol === inputToken)
     const outputTokenInfo = tokens.find((t: any) => t.symbol === outputToken)
     set((s) => {
-      s.inputTokenInfo = outputTokenInfo
-      s.outputTokenInfo = inputTokenInfo
+      s.swap.inputToken = outputToken
+      s.swap.outputToken = inputToken
+      s.swap.inputTokenInfo = outputTokenInfo
+      s.swap.outputTokenInfo = inputTokenInfo
     })
-    setInputToken(outputToken)
-    setOutputToken(inputToken)
 
     setAnimateSwitchArrow(animateSwitchArrow + 1)
   }

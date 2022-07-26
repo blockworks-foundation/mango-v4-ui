@@ -53,8 +53,12 @@ export type MangoStore = {
   notificationIdCounter: number
   notifications: Array<Notification>
   serumOrders: Order[] | undefined
-  inputTokenInfo: any
-  outputTokenInfo: any
+  swap: {
+    inputToken: string
+    outputToken: string
+    inputTokenInfo: any
+    outputTokenInfo: any
+  }
   set: (x: (x: MangoStore) => void) => void
   wallet: {
     tokens: TokenAccount[]
@@ -75,15 +79,19 @@ const mangoStore = create<MangoStore>(
       connection,
       group: undefined,
       client: DEFAULT_CLIENT,
-      inputTokenInfo: undefined,
       jupiterTokens: [],
       mangoAccount: undefined,
       markets: undefined,
       notificationIdCounter: 0,
       notifications: [],
-      outputTokenInfo: undefined,
       serumOrders: undefined,
       set: (fn) => set(produce(fn)),
+      swap: {
+        inputToken: 'SOL',
+        outputToken: 'USDC',
+        inputTokenInfo: undefined,
+        outputTokenInfo: undefined,
+      },
       wallet: {
         tokens: [],
       },

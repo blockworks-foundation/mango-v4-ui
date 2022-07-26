@@ -2,11 +2,10 @@ import TokenList from './TokenList'
 import Swap from './swap/Swap'
 import SwapTokenChart from './swap/SwapTokenChart'
 import mangoStore from '../store/state'
-// import MangoAccount from './account/MangoAccount'
 
 const TradeSimplePage = () => {
-  const inputTokenInfo = mangoStore((s) => s.inputTokenInfo)
-  const outputTokenInfo = mangoStore((s) => s.outputTokenInfo)
+  const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
+  const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
 
   return (
     <div className="grid grid-cols-12 gap-x-6 gap-y-8">
@@ -18,7 +17,6 @@ const TradeSimplePage = () => {
       </div>
       <div className="col-span-12 space-y-6 md:col-span-6 lg:col-span-4">
         <Swap />
-        {/* <MangoAccount /> */}
       </div>
       <div className="col-span-12">
         <TokenList />

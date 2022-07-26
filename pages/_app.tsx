@@ -41,8 +41,8 @@ const loadJupTokens = async () => {
       const inputTokenInfo = result.find((t: any) => t.symbol === 'SOL')
       const outputTokenInfo = result.find((t: any) => t.symbol === 'USDC')
       set((s) => {
-        s.inputTokenInfo = inputTokenInfo
-        s.outputTokenInfo = outputTokenInfo
+        s.swap.inputTokenInfo = inputTokenInfo
+        s.swap.outputTokenInfo = outputTokenInfo
       })
     })
 }
