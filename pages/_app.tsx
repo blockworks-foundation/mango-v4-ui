@@ -5,7 +5,6 @@ import {
   ConnectionProvider,
   WalletProvider,
 } from '@solana/wallet-adapter-react'
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import {
   GlowWalletAdapter,
   PhantomWalletAdapter,
@@ -77,17 +76,15 @@ function MyApp({ Component, pageProps }: AppProps) {
       <HydrateStore />
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets}>
-          <WalletModalProvider>
-            <WalletListener />
-            <ThemeProvider defaultTheme="Mango">
-              <ViewportProvider>
-                <Layout>
-                  <Component {...pageProps} />
-                </Layout>
-              </ViewportProvider>
-              <Notifications />
-            </ThemeProvider>
-          </WalletModalProvider>
+          <WalletListener />
+          <ThemeProvider defaultTheme="Mango">
+            <ViewportProvider>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </ViewportProvider>
+            <Notifications />
+          </ThemeProvider>
         </WalletProvider>
       </ConnectionProvider>
     </>

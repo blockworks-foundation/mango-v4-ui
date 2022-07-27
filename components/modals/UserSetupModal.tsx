@@ -27,7 +27,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [accountName, setAccountName] = useState('')
   const [profileCategory, setProfileCategory] = useState('')
   const [showSetupStep, setShowSetupStep] = useState(0)
-  const [acceptRisks, setAcceptRisks] = useState(false)
+  // const [acceptRisks, setAcceptRisks] = useState(false)
   const [depositToken, setDepositToken] = useState('')
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
@@ -68,11 +68,12 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   useEffect(() => {
     if (connected && mangoAccount) {
       onClose()
+      setIsOnboarded(true)
     }
     if (connected && !mangoAccount) {
       setShowSetupStep(2)
     }
-  }, [mangoAccount, connected, onClose])
+  }, [mangoAccount, connected, onClose, setIsOnboarded])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} hideClose>

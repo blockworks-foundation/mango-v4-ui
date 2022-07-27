@@ -1,4 +1,3 @@
-require('@solana/wallet-adapter-react-ui/styles.css')
 import SideNav from './SideNav'
 import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
 import {
@@ -9,10 +8,6 @@ import {
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useViewport } from '../../hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
-import {
-  WalletDisconnectButton,
-  WalletMultiButton,
-} from '@solana/wallet-adapter-react-ui'
 import { useTranslation } from 'next-i18next'
 import { Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from '../account/MangoAccountSummary'
@@ -29,7 +24,7 @@ export const IS_ONBOARDED_KEY = 'isOnboarded'
 const Layout = ({ children }: { children: ReactNode }) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const { t } = useTranslation('common')
-  const { connected } = useWallet()
+  const { connected, disconnect, connect } = useWallet()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
@@ -105,16 +100,18 @@ const Layout = ({ children }: { children: ReactNode }) => {
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              {isOnboarded ? (
-                connected ? (
-                  <WalletDisconnectButton />
-                ) : (
-                  <WalletMultiButton />
-                )
-              ) : (
+              {!isOnboarded ? (
                 <Button highlightButton onClick={handleShowModal}>
                   Join Mango
                 </Button>
+              ) : connected ? (
+                <div className="border" onClick={disconnect}>
+                  Disconnect
+                </div>
+              ) : (
+                <div className="border" onClick={connect}>
+                  Connect Wallet
+                </div>
               )}
             </div>
           </div>
