@@ -151,7 +151,7 @@ export const ConnectWalletButton: React.FC = () => {
         </Menu>
       ) : (
         <div className="relative">
-          <div className="relative flex h-16 w-44 divide-x divide-th-bkg-3 bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100">
+          <div className="relative flex h-16 w-44 bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100">
             <button
               onClick={handleConnect}
               // disabled={!mangoGroup}

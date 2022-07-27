@@ -21,7 +21,7 @@ import { EnterRightExitLeft } from '../shared/Transitions'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
-  const { connected, wallet } = useWallet()
+  const { connected, select, wallet, wallets } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const [profileName, setProfileName] = useState('')
   const [accountName, setAccountName] = useState('')
@@ -141,8 +141,32 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           <div className="flex h-full flex-col justify-between">
             <div>
               <h2 className="mb-4">Choose Wallet</h2>
-              <div className="thin-scroll max-h-56 overflow-y-auto">
-                <WalletSelect />
+              <div className="thin-scroll max-h-56 space-y-2 overflow-y-auto">
+                {wallets?.map((w) => (
+                  <button
+                    className={`flex w-full flex-row items-center justify-between rounded-md border py-3 px-4 text-base font-normal focus:outline-none md:hover:cursor-pointer md:hover:border-th-fgd-4 ${
+                      w.adapter.name === wallet?.adapter.name
+                        ? 'border-th-primary md:hover:border-th-primary'
+                        : 'border-th-bkg-4'
+                    }`}
+                    onClick={() => {
+                      select(w.adapter.name)
+                    }}
+                    key={w.adapter.name}
+                  >
+                    <div className="flex items-center">
+                      <img
+                        src={w.adapter.icon}
+                        className="mr-2 h-5 w-5"
+                        alt={`${w.adapter.name} icon`}
+                      />
+                      {w.adapter.name}
+                    </div>
+                    {w.adapter.name === wallet?.adapter.name ? (
+                      <CheckCircleIcon className="h-5 w-5 text-th-primary" />
+                    ) : null}
+                  </button>
+                ))}
               </div>
             </div>
             <Button className="w-full" onClick={connectWallet} size="large">

@@ -37,7 +37,7 @@ const ProfileImage = ({
       }
       getProfilePic()
     }
-  }, [publicKey])
+  }, [publicKey, connection])
 
   const isLoading =
     (connected && !publicKey) ||
