@@ -19,6 +19,7 @@
     "@solana/wallet-adapter-base": "^0.9.5",
     "@solana/wallet-adapter-react": "^0.15.8",
     "@solana/wallet-adapter-wallets": "^0.16.0",
+    "@solflare-wallet/pfp": "^0.0.6",
     "@tippyjs/react": "^4.2.6",
     "assert": "^2.0.0",
     "dayjs": "^1.11.3",

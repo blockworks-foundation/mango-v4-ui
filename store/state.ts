@@ -18,6 +18,7 @@ import {
   TokenAccount,
 } from '../utils/tokens'
 import { Token } from '../types/jupiter'
+import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
 
 const DEVNET_GROUP = new PublicKey(
   'A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb'
@@ -61,11 +62,14 @@ export type MangoStore = {
   }
   set: (x: (x: MangoStore) => void) => void
   wallet: {
+    loadProfilePic: boolean
+    profilePic: ProfilePicture | undefined
     tokens: TokenAccount[]
   }
   actions: {
     fetchGroup: () => Promise<void>
     fetchMangoAccount: (wallet: Wallet) => Promise<void>
+    fetchProfilePicture: (wallet: Wallet) => void
     loadSerumMarket: () => Promise<void>
     reloadAccount: () => Promise<void>
     reloadGroup: () => Promise<void>
@@ -93,6 +97,8 @@ const mangoStore = create<MangoStore>(
         outputTokenInfo: undefined,
       },
       wallet: {
+        loadProfilePic: true,
+        profilePic: undefined,
         tokens: [],
       },
       actions: {
@@ -223,6 +229,27 @@ const mangoStore = create<MangoStore>(
             state.markets = markets
             state.serumOrders = orders
           })
+        },
+        async fetchProfilePicture(wallet: Wallet) {
+          const set = get().set
+          const walletPk = wallet?.publicKey
+          const connection = get().connection
+
+          if (!walletPk) return
+
+          try {
+            const result = await getProfilePicture(connection, walletPk)
+
+            set((state) => {
+              state.wallet.profilePic = result
+              state.wallet.loadProfilePic = false
+            })
+          } catch (e) {
+            console.log('Could not get profile picture', e)
+            set((state) => {
+              state.wallet.loadProfilePic = false
+            })
+          }
         },
       },
     }

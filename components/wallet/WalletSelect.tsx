@@ -1,34 +1,10 @@
 import React, { Fragment } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-// import { WalletReadyState } from '@solana/wallet-adapter-base'
-// import uniqBy from 'lodash/uniqBy'
-import { CheckCircleIcon, ChevronDownIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon } from '@heroicons/react/solid'
 import { Menu, Transition } from '@headlessui/react'
 
 const WalletSelect = () => {
-  const { wallet, wallets, select } = useWallet()
-
-  // const installedWallets = useMemo(() => {
-  //   const installed: Wallet[] = []
-
-  //   for (const wallet of wallets) {
-  //     if (wallet.readyState === WalletReadyState.Installed) {
-  //       installed.push(wallet)
-  //     }
-  //   }
-
-  //   return installed?.length ? installed : wallets
-  // }, [wallets])
-
-  // const displayedWallets = useMemo(() => {
-  //   return uniqBy([...installedWallets, ...wallets], (w) => {
-  //     return w.adapter.name
-  //   })
-  // }, [wallets, installedWallets])
-
-  // if (!wallets?.length) {
-  //   return null
-  // }
+  const { wallets, select } = useWallet()
 
   return (
     <Menu>
@@ -54,7 +30,7 @@ const WalletSelect = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Menu.Items className="absolute top-[68px] right-0 z-20 w-44 rounded-md border border-th-bkg-3 bg-th-bkg-1 px-4 py-2.5 outline-none">
+            <Menu.Items className="absolute top-16 right-0 z-20 w-44 rounded-md rounded-t-none border border-t-0 border-th-bkg-3 bg-th-bkg-1 px-4 py-2.5 outline-none">
               {wallets?.map((wallet, index) => (
                 <Menu.Item key={index}>
                   <button

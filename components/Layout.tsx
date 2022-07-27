@@ -1,4 +1,3 @@
-require('@solana/wallet-adapter-react-ui/styles.css')
 import SideNav from './shared/SideNav'
 import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
 import {
@@ -19,6 +18,8 @@ import BottomBar from './mobile/BottomBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import UserSetupModal from './modals/UserSetupModal'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
+import ConnectedMenu from './wallet/ConnectedMenu'
+import Button from './shared/Button'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded'
 
@@ -101,18 +102,17 @@ const Layout = ({ children }: { children: ReactNode }) => {
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              {/* {isOnboarded ? (
+              {isOnboarded ? (
                 connected ? (
-                  <WalletDisconnectButton />
+                  <ConnectedMenu />
                 ) : (
-                  <WalletMultiButton />
+                  <ConnectWalletButton />
                 )
               ) : (
                 <Button highlightButton onClick={handleShowModal}>
                   Join Mango
                 </Button>
-              )} */}
-              <ConnectWalletButton />
+              )}
             </div>
           </div>
           <div className={`min-h-screen p-8 ${isMobile ? 'pb-20' : ''}`}>
