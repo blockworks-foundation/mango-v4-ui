@@ -15,7 +15,7 @@ import WalletSelect from '../wallet/WalletSelect'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { handleWalletConnect } from '../../utils/wallet'
 import mangoStore from '../../store/state'
-import { IS_ONBOARDED_KEY } from '../shared/Layout'
+import { IS_ONBOARDED_KEY } from '../Layout'
 import DepositTokenList from '../shared/DepositTokenList'
 import { EnterRightExitLeft } from '../shared/Transitions'
 

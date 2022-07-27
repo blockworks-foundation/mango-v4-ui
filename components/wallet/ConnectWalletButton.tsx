@@ -21,6 +21,7 @@ import { useRouter } from 'next/router'
 import mangoStore from '../../store/state'
 import { notify } from '../../utils/notifications'
 import { abbreviateAddress } from '../../utils/formatting'
+import WalletSelect from './WalletSelect'
 
 export const handleWalletConnect = (wallet: Wallet) => {
   if (!wallet) {
@@ -149,28 +150,44 @@ export const ConnectWalletButton: React.FC = () => {
           )}
         </Menu>
       ) : (
-        <div className="flex divide-x divide-th-bkg-3" id="connect-wallet-tip">
-          <button
-            onClick={handleConnect}
-            disabled={!group}
-            className="rounded-xl bg-th-primary-dark p-2 text-th-bkg-1 focus:outline-none disabled:cursor-wait disabled:text-th-bkg-2"
-          >
-            <div className="flex flex-row items-center justify-center px-3">
-              {/* <WalletIcon className="mr-2 h-4 w-4 fill-current" /> */}
-              <div className="text-left">
-                <div className="mb-1 whitespace-nowrap font-bold leading-none">
-                  Connect Wallet
+        <div className="relative">
+          <div className="relative flex h-16 w-44 divide-x divide-th-bkg-3 bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100">
+            <button
+              onClick={handleConnect}
+              // disabled={!mangoGroup}
+              className="bg-transparent text-white focus:outline-none disabled:cursor-wait disabled:text-th-bkg-2"
+            >
+              <div className="default-transition flex h-full flex-row items-center justify-center space-x-3 px-4">
+                <div
+                  className={`flex h-[28px] w-[28px] items-center justify-center rounded-full ${
+                    wallet?.adapter.name === 'Solflare' ? 'bg-black' : ''
+                  }`}
+                >
+                  <img
+                    src={wallet?.adapter.icon}
+                    className={
+                      wallet?.adapter.name === 'Solflare'
+                        ? 'h-auto w-[20px]'
+                        : 'h-auto w-[28px]'
+                    }
+                    alt={`${wallet?.adapter.name} icon`}
+                  />
                 </div>
-                {wallet?.adapter?.name && (
-                  <div className="text-xxs font-normal leading-3 tracking-wider text-th-bkg-2">
-                    {wallet.adapter.name}
+                <div className="text-left">
+                  <div className="mb-1.5 text-base font-bold leading-none">
+                    {t('connect')}
                   </div>
-                )}
+                  {wallet?.adapter?.name && (
+                    <div className="text-xxs font-normal leading-3 tracking-wider text-white">
+                      {wallet.adapter.name}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </button>
-          <div className="relative">
-            {/* <WalletSelect wallets={displayedWallets} /> */}
+            </button>
+          </div>
+          <div className="absolute top-1/2 right-0 z-10 h-full -translate-y-1/2">
+            <WalletSelect />
           </div>
         </div>
       )}

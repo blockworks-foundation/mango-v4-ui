@@ -17,7 +17,7 @@ import Notifications from '../components/shared/Notification'
 import { ThemeProvider } from 'next-themes'
 import { TOKEN_LIST_URL } from '@jup-ag/core'
 import { appWithTranslation } from 'next-i18next'
-import Layout from '../components/shared/Layout'
+import Layout from '../components/Layout'
 import { ViewportProvider } from '../hooks/useViewport'
 import { WalletProvider } from '../components/wallet/WalletProvider'
 
