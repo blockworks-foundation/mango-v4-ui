@@ -1,10 +1,7 @@
 import type { AppProps } from 'next/app'
 import { useEffect, useMemo } from 'react'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
-import {
-  ConnectionProvider,
-  WalletProvider,
-} from '@solana/wallet-adapter-react'
+import { ConnectionProvider } from '@solana/wallet-adapter-react'
 import {
   GlowWalletAdapter,
   PhantomWalletAdapter,
@@ -22,6 +19,7 @@ import { TOKEN_LIST_URL } from '@jup-ag/core'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/shared/Layout'
 import { ViewportProvider } from '../hooks/useViewport'
+import { WalletProvider } from '../components/WalletProvider'
 
 const hydrateStore = async () => {
   const actions = mangoStore.getState().actions

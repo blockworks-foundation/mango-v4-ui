@@ -18,18 +18,20 @@ import BottomBar from '../mobile/BottomBar'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
 import Button from './Button'
 import UserSetupModal from '../modals/UserSetupModal'
+import { handleWalletConnect } from '../../utils/wallet'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded'
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  const mangoAccount = mangoStore((s) => s.mangoAccount)
   const { t } = useTranslation('common')
-  const { connected, disconnect, connect } = useWallet()
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
-  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetupModal, setShowUserSetupModal] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const mangoAccount = mangoStore((s) => s.mangoAccount)
+
+  const { width } = useViewport()
+  const { connected, disconnect, wallet } = useWallet()
+  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const isMobile = width ? width < breakpoints.md : false
 
   useEffect(() => {
     const collapsed = width ? width < breakpoints.xl : false
@@ -55,6 +57,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'))
     }, 100)
+  }
+
+  const onConnectWallet = () => {
+    if (wallet) {
+      handleWalletConnect(wallet)
+    } else {
+      alert('wallet select dropdown not implemented')
+    }
   }
 
   return (
@@ -109,7 +119,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
                   Disconnect
                 </div>
               ) : (
-                <div className="border" onClick={connect}>
+                <div className="border" onClick={onConnectWallet}>
                   Connect Wallet
                 </div>
               )}
