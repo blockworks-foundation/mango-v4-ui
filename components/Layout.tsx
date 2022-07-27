@@ -19,7 +19,6 @@ import useLocalStorageState from '../hooks/useLocalStorageState'
 import UserSetupModal from './modals/UserSetupModal'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import ConnectedMenu from './wallet/ConnectedMenu'
-import Button from './shared/Button'
 import WalletIcon from './icons/WalletIcon'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded'
