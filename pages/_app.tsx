@@ -19,7 +19,7 @@ import { TOKEN_LIST_URL } from '@jup-ag/core'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/shared/Layout'
 import { ViewportProvider } from '../hooks/useViewport'
-import { WalletProvider } from '../components/WalletProvider'
+import { WalletProvider } from '../components/wallet/WalletProvider'
 
 const hydrateStore = async () => {
   const actions = mangoStore.getState().actions

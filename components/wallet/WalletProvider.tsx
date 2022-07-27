@@ -17,7 +17,7 @@ import React, {
   useState,
 } from 'react'
 import { Wallet, WalletContext } from '@solana/wallet-adapter-react'
-import { useLocalStorageStringState } from '../hooks/useLocalStorageState'
+import { useLocalStorageStringState } from '../../hooks/useLocalStorageState'
 
 export interface WalletProviderProps {
   children: ReactNode

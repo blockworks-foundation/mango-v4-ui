@@ -19,6 +19,7 @@ import useLocalStorageState from '../../hooks/useLocalStorageState'
 import Button from './Button'
 import UserSetupModal from '../modals/UserSetupModal'
 import { handleWalletConnect } from '../../utils/wallet'
+import { ConnectWalletButton } from '../wallet/ConnectWalletButton'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded'
 
@@ -119,9 +120,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
                   Disconnect
                 </div>
               ) : (
-                <div className="border" onClick={onConnectWallet}>
-                  Connect Wallet
-                </div>
+                <ConnectWalletButton />
               )}
             </div>
           </div>
