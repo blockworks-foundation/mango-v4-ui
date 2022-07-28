@@ -14,7 +14,7 @@ const LeverageSlider = ({
   outputToken,
   onChange,
 }: LeverageSliderProps) => {
-  const mangoAccount = mangoStore((s) => s.mangoAccount)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const group = mangoStore((s) => s.group)
 
   const leverageMax = useMemo(() => {

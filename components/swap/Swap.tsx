@@ -163,7 +163,7 @@ const Swap = () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
-    const mangoAccount = mangoStore.getState().mangoAccount
+    const mangoAccount = mangoStore.getState().mangoAccount.current
     if (!mangoAccount || !group) return
 
     try {

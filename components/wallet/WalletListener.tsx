@@ -26,7 +26,7 @@ const WalletListener = () => {
 
     if (disconnecting) {
       setStore((state) => {
-        state.mangoAccount = undefined
+        state.mangoAccount.current = undefined
       })
     }
   }, [disconnecting])

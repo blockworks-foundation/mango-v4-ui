@@ -49,7 +49,10 @@ export type MangoStore = {
   group: Group | undefined
   client: MangoClient
   jupiterTokens: Token[]
-  mangoAccount: MangoAccount | undefined
+  mangoAccount: {
+    current: MangoAccount | undefined
+    loading: boolean
+  }
   markets: Serum3Market[] | undefined
   notificationIdCounter: number
   notifications: Array<Notification>
@@ -84,7 +87,10 @@ const mangoStore = create<MangoStore>(
       group: undefined,
       client: DEFAULT_CLIENT,
       jupiterTokens: [],
-      mangoAccount: undefined,
+      mangoAccount: {
+        current: undefined,
+        loading: false,
+      },
       markets: undefined,
       notificationIdCounter: 0,
       notifications: [],
@@ -135,11 +141,15 @@ const mangoStore = create<MangoStore>(
               MANGO_V4_ID[CLUSTER]
             )
 
+            set((state) => {
+              state.mangoAccount.loading = true
+            })
+
             const mangoAccount = await client.getOrCreateMangoAccount(
               group,
               wallet.publicKey,
               0,
-              'Account'
+              'Main Account'
             )
 
             // let orders = await client.getSerum3Orders(
@@ -151,12 +161,16 @@ const mangoStore = create<MangoStore>(
             await mangoAccount.reloadAccountData(client, group)
             set((state) => {
               state.client = client
-              state.mangoAccount = mangoAccount
+              state.mangoAccount.current = mangoAccount
+              state.mangoAccount.loading = false
               state.connected = true
               // state.serumOrders = orders
             })
             console.log('mango', mangoAccount)
           } catch (e) {
+            set((state) => {
+              state.mangoAccount.loading = false
+            })
             console.error('Error fetching mango acct', e)
           }
         },
@@ -195,7 +209,7 @@ const mangoStore = create<MangoStore>(
         reloadAccount: async () => {
           const set = get().set
           const client = get().client
-          const mangoAccount = get().mangoAccount
+          const mangoAccount = get().mangoAccount.current
           const group = get().group
 
           if (!mangoAccount || !group) return
@@ -205,7 +219,7 @@ const mangoStore = create<MangoStore>(
             await newMangoAccount.reloadAccountData(client, group)
 
             set((state) => {
-              state.mangoAccount = newMangoAccount
+              state.mangoAccount.current = newMangoAccount
             })
           } catch {
             console.error('Error reloading mango account')

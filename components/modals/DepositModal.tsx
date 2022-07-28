@@ -47,7 +47,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
-    const mangoAccount = mangoStore.getState().mangoAccount
+    const mangoAccount = mangoStore.getState().mangoAccount.current
     console.log('hi', mangoAccount, group)
 
     if (!mangoAccount || !group) return

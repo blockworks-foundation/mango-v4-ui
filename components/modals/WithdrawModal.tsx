@@ -41,7 +41,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const handleWithdraw = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
-    const mangoAccount = mangoStore.getState().mangoAccount
+    const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
     if (!mangoAccount || !group) return
     setSubmitting(true)

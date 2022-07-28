@@ -20,7 +20,7 @@ const ConnectedMenu = () => {
   const handleDisconnect = useCallback(() => {
     wallet?.adapter?.disconnect()
     set((state) => {
-      state.mangoAccount = undefined
+      state.mangoAccount.current = undefined
     })
     notify({
       type: 'info',

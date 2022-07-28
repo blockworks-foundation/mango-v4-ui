@@ -5,7 +5,7 @@ import { toUiDecimals, HealthType } from '@blockworks-foundation/mango-v4'
 import { formatDecimal } from '../../utils/numbers'
 
 const MangoAccount = () => {
-  const mangoAccount = mangoStore((s) => s.mangoAccount)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   return (
     <ContentBox showBackground>

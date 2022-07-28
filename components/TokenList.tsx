@@ -25,7 +25,7 @@ const TokenList = () => {
   const { connected } = useWallet()
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const [showZeroBalances, setShowZeroBalances] = useState(true)
-  const mangoAccount = mangoStore((s) => s.mangoAccount)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const group = mangoStore((s) => s.group)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -327,8 +327,6 @@ const ActionsMenu = ({
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [selectedToken, setSelectedToken] = useState('')
   const set = mangoStore.getState().set
-  const inputToken = mangoStore((s) => s.swap.inputToken)
-  const outputToken = mangoStore((s) => s.swap.outputToken)
   const router = useRouter()
   const { asPath } = router
 

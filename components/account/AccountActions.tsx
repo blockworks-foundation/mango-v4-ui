@@ -17,7 +17,7 @@ const AccountActions = () => {
 
   const handleCloseMangoAccount = async () => {
     const client = mangoStore.getState().client
-    const mangoAccount = mangoStore.getState().mangoAccount
+    const mangoAccount = mangoStore.getState().mangoAccount.current
     const group = mangoStore.getState().group
     if (!mangoAccount || !group) return
     try {

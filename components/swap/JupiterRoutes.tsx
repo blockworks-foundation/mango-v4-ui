@@ -64,7 +64,7 @@ const JupiterRoutes = ({
 }: JupiterRoutesProps) => {
   const { t } = useTranslation('trade')
   const [showRoutesModal, setShowRoutesModal] = useState(false)
-  const mangoAccount = mangoStore((s) => s.mangoAccount)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   const onSwap = async () => {
     if (!jupiter || !selectedRoute) return
