@@ -46,7 +46,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           <div className="flex h-full flex-col justify-between">
             <div className="pb-6">
               <h2 className="mb-1">{t('close-account')}</h2>
-              <p>Are you sure? Closing your account is irreversible.</p>
+              <p>{t('close-account-desc')}</p>
             </div>
             <Button
               className="w-full"

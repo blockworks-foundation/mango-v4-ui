@@ -4,16 +4,23 @@ import Button, { LinkButton } from '../shared/Button'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore from '../../store/state'
-import { DotsHorizontalIcon, TrashIcon, XIcon } from '@heroicons/react/solid'
+import {
+  DotsHorizontalIcon,
+  PencilIcon,
+  TrashIcon,
+  XIcon,
+} from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import IconDropMenu from '../shared/IconDropMenu'
 import CloseAccountModal from '../modals/CloseAccountModal'
+import AccountNameModal from '../modals/AccountNameModal'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
   const { connected } = useWallet()
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showDepositModal, setShowDepositModal] = useState(false)
+  const [showEditAccountModal, setShowEditAccountModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
 
   const handleCloseMangoAccount = async () => {
@@ -51,6 +58,14 @@ const AccountActions = () => {
           <LinkButton
             className="flex items-center whitespace-nowrap"
             disabled={!connected}
+            onClick={() => setShowEditAccountModal(true)}
+          >
+            <PencilIcon className="mr-2 h-5 w-5" />
+            {t('edit-account')}
+          </LinkButton>
+          <LinkButton
+            className="flex items-center whitespace-nowrap"
+            disabled={!connected}
             onClick={() => setShowCloseAccountModal(true)}
           >
             <TrashIcon className="mr-2 h-5 w-5" />
@@ -68,6 +83,12 @@ const AccountActions = () => {
         <DepositModal
           isOpen={showDepositModal}
           onClose={() => setShowDepositModal(false)}
+        />
+      ) : null}
+      {showEditAccountModal ? (
+        <AccountNameModal
+          isOpen={showEditAccountModal}
+          onClose={() => setShowEditAccountModal(false)}
         />
       ) : null}
       {showWithdrawModal ? (

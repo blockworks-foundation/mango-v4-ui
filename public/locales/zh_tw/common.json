@@ -10,6 +10,7 @@
   "chinese": "简体中文",
   "chinese-traditional": "繁體中文",
   "close-account": "Close Account",
+  "close-account-desc": "Are you sure? Closing your account is irreversible.",
   "closing-account": "Closing your account...",
   "collateral-multiplier": "Collateral Multiplier",
   "collateral-multiplier-desc": "Each token on Mango has a multiplier used to calculate the collateral value of that token. The higher the multiplier, the more collateral you get.",
