@@ -1,17 +1,18 @@
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore from '../../store/state'
-import { Popover, Transition } from '@headlessui/react'
 import { DotsHorizontalIcon, TrashIcon, XIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import IconDropMenu from '../shared/IconDropMenu'
+import CloseAccountModal from '../modals/CloseAccountModal'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
   const { connected } = useWallet()
+  const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
 
@@ -50,14 +51,19 @@ const AccountActions = () => {
           <LinkButton
             className="flex items-center whitespace-nowrap"
             disabled={!connected}
-            onClick={handleCloseMangoAccount}
+            onClick={() => setShowCloseAccountModal(true)}
           >
             <TrashIcon className="mr-2 h-5 w-5" />
             {t('close-account')}
           </LinkButton>
         </IconDropMenu>
       </div>
-
+      {showCloseAccountModal ? (
+        <CloseAccountModal
+          isOpen={showCloseAccountModal}
+          onClose={() => setShowCloseAccountModal(false)}
+        />
+      ) : null}
       {showDepositModal ? (
         <DepositModal
           isOpen={showDepositModal}

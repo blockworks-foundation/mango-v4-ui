@@ -149,7 +149,7 @@ const mangoStore = create<MangoStore>(
               group,
               wallet.publicKey,
               0,
-              'Main Account'
+              'Account'
             )
 
             // let orders = await client.getSerum3Orders(

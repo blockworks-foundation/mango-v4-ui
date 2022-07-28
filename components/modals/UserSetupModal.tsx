@@ -18,6 +18,7 @@ import { IS_ONBOARDED_KEY } from '../Layout'
 import DepositTokenList from '../shared/DepositTokenList'
 import { EnterRightExitLeft } from '../shared/Transitions'
 import Image from 'next/image'
+import BounceLoader from '../shared/BounceLoader'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -130,12 +131,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         >
           {mangoAccountLoading ? (
             <div className="flex h-full items-center justify-center">
-              <div className="flex flex-col items-center">
-                <div className="animate-bounce">
-                  <Image src="/icons/mngo.svg" alt="" width="32" height="32" />
-                </div>
-                <p className="text-center">Loading message...</p>
-              </div>
+              <BounceLoader />
             </div>
           ) : (
             <div className="flex h-full flex-col justify-between">

@@ -1,4 +1,5 @@
 {
+  "account-closed": "Account Closed 👋",
   "account-value": "Account Value",
   "available": "Available",
   "available-balance": "Available Balance",
@@ -9,6 +10,7 @@
   "chinese": "简体中文",
   "chinese-traditional": "繁體中文",
   "close-account": "Close Account",
+  "closing-account": "Closing your account...",
   "collateral-multiplier": "Collateral Multiplier",
   "collateral-multiplier-desc": "Each token on Mango has a multiplier used to calculate the collateral value of that token. The higher the multiplier, the more collateral you get.",
   "collateral-value": "Collateral Value",
