@@ -19,6 +19,7 @@ import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import { UpTriangle } from './shared/DirectionTriangles'
 import IconDropMenu from './shared/IconDropMenu'
+import { FadeInList } from './shared/Transitions'
 
 const TokenList = () => {
   const { t } = useTranslation('common')
@@ -94,10 +95,10 @@ const TokenList = () => {
             </tr>
           </thead>
           <tbody>
-            {banks.map((bank) => {
+            {banks.map((bank, index) => {
               const oraclePrice = bank.value.price
               return (
-                <tr key={bank.key}>
+                <FadeInList as="tr" index={index} key={bank.key}>
                   <td className="w-[12.5%]">
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -183,7 +184,7 @@ const TokenList = () => {
                       />
                     </div>
                   </td>
-                </tr>
+                </FadeInList>
               )
             })}
           </tbody>

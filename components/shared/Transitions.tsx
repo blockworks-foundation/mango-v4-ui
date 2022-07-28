@@ -78,3 +78,25 @@ export const FadeInFadeOut = ({
     {children}
   </Transition>
 )
+
+export const FadeInList = ({
+  as = 'div',
+  children,
+  index,
+}: {
+  as?: any
+  children: ReactNode
+  index: number
+}) => (
+  <Transition
+    appear={true}
+    as={as}
+    show={true}
+    enter={`transition-all ease-in duration-300`}
+    enterFrom="opacity-0"
+    enterTo="opacity-100"
+    style={{ transitionDelay: `${index * 300}ms` }}
+  >
+    {children}
+  </Transition>
+)
