@@ -1,6 +1,7 @@
 import { useTranslation } from 'next-i18next'
 import mangoStore from '../../store/state'
 import DepositTokenItem from './DepositTokenItem'
+import { FadeInList } from './Transitions'
 
 const DepositTokenList = ({ onSelect }: { onSelect: (x: any) => void }) => {
   const { t } = useTranslation('common')
@@ -24,12 +25,10 @@ const DepositTokenList = ({ onSelect }: { onSelect: (x: any) => void }) => {
         </div>
       </div>
       <div className="space-y-2">
-        {banks.map((bank) => (
-          <DepositTokenItem
-            bank={bank.value}
-            key={bank.value.name}
-            onSelect={onSelect}
-          />
+        {banks.map((bank, index) => (
+          <FadeInList index={index} key={bank.value.name}>
+            <DepositTokenItem bank={bank.value} onSelect={onSelect} />
+          </FadeInList>
         ))}
       </div>
     </>

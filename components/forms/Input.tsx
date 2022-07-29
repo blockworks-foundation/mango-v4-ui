@@ -34,7 +34,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         </div>
       ) : null}
       <input
-        className={`${className} h-12 w-full flex-1 rounded-md border bg-th-bkg-1 px-3 text-base
+        className={`${className} default-transition h-12 w-full flex-1 rounded-md border bg-th-bkg-1 px-3 text-base
           text-th-fgd-1 ${
             error ? 'border-th-red' : 'border-th-bkg-4'
           } hover:border-th-fgd-4 

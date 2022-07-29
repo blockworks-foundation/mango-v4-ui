@@ -10,15 +10,16 @@ import Button, { LinkButton } from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import Modal from '../shared/Modal'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
-import { CheckCircleIcon } from '@heroicons/react/solid'
+import { CheckCircleIcon, PencilIcon } from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { handleWalletConnect } from '../../utils/wallet'
 import mangoStore from '../../store/state'
 import { IS_ONBOARDED_KEY } from '../Layout'
 import DepositTokenList from '../shared/DepositTokenList'
-import { EnterRightExitLeft } from '../shared/Transitions'
+import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
 import Image from 'next/image'
 import BounceLoader from '../shared/BounceLoader'
+import { notify } from '../../utils/notifications'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -30,7 +31,9 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [showSetupStep, setShowSetupStep] = useState(0)
   // const [acceptRisks, setAcceptRisks] = useState(false)
   const [depositToken, setDepositToken] = useState('')
-  const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [depositAmount, setDepositAmount] = useState('')
+  const [submitDeposit, setSubmitDeposit] = useState(false)
+  const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const handleNextStep = () => {
     setShowSetupStep(showSetupStep + 1)
@@ -40,13 +43,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     // save profile details to db then:
 
     setShowSetupStep(2)
-  }
-
-  const handleDeposit = () => {
-    // deposit funds then:
-
-    setIsOnboarded(true)
-    onClose()
   }
 
   const handleEndOnboarding = () => {
@@ -65,6 +61,44 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       setShowSetupStep(3)
     }
   }, [mangoAccount])
+
+  const handleDeposit = async () => {
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    const actions = mangoStore.getState().actions
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+
+    if (!mangoAccount || !group) return
+
+    try {
+      setSubmitDeposit(true)
+      const tx = await client.tokenDeposit(
+        group,
+        mangoAccount,
+        depositToken,
+        parseFloat(depositAmount)
+      )
+      notify({
+        title: 'Transaction confirmed',
+        type: 'success',
+        txid: tx,
+      })
+
+      await actions.reloadAccount()
+      setIsOnboarded(true)
+      onClose()
+      setSubmitDeposit(false)
+    } catch (e: any) {
+      notify({
+        title: 'Transaction failed',
+        description: e.message,
+        txid: e?.txid,
+        type: 'error',
+      })
+      setSubmitDeposit(false)
+      console.log('Error depositing:', e)
+    }
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} hideClose>
@@ -235,26 +269,70 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           show={showSetupStep === 3}
           style={{ height: 'calc(100% - 12px)' }}
         >
-          <div className="flex h-full flex-col justify-between">
-            <div>
-              <div className="pb-4">
-                <h2 className="mb-1">Fund Your Account</h2>
+          {submitDeposit ? (
+            <div className="flex h-full items-center justify-center">
+              <BounceLoader />
+            </div>
+          ) : (
+            <div className="flex h-full flex-col justify-between">
+              <div>
+                <h2 className="mb-4">Fund Your Account</h2>
+                <FadeInFadeOut className="relative" show={!!depositToken}>
+                  <Label text="Amount" />
+                  <div className="grid grid-cols-2">
+                    <button
+                      className="col-span-1 flex items-center rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1 px-4 hover:bg-th-bkg-2"
+                      onClick={() => setDepositToken('')}
+                    >
+                      <div className="ml-1.5 flex w-full items-center justify-between">
+                        <div className="flex items-center">
+                          <Image
+                            alt=""
+                            width="20"
+                            height="20"
+                            src={`/icons/${depositToken.toLowerCase()}.svg`}
+                          />
+                          <p className="ml-1.5 text-xl font-bold text-th-fgd-1">
+                            {depositToken}
+                          </p>
+                        </div>
+                        <PencilIcon className="ml-2 h-5 w-5 text-th-fgd-3" />
+                      </div>
+                    </button>
+                    <Input
+                      className="col-span-1 w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+                      type="text"
+                      name="deposit"
+                      id="deposit"
+                      placeholder="0.00"
+                      value={depositAmount}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setDepositAmount(e.target.value)
+                      }
+                    />
+                  </div>
+                </FadeInFadeOut>
+                {!depositToken ? (
+                  <div className="absolute top-16 mt-2">
+                    <DepositTokenList onSelect={setDepositToken} />
+                  </div>
+                ) : null}
               </div>
-              <DepositTokenList onSelect={setDepositToken} />
+              <div className="flex flex-col items-center">
+                <Button
+                  className="mb-4 w-full"
+                  disabled={!depositAmount || !depositToken}
+                  onClick={handleDeposit}
+                  size="large"
+                >
+                  Deposit
+                </Button>
+                <LinkButton onClick={handleEndOnboarding}>
+                  Skip for now
+                </LinkButton>
+              </div>
             </div>
-            <div className="flex flex-col items-center">
-              <Button
-                onClick={handleDeposit}
-                className="mb-4 w-full"
-                size="large"
-              >
-                Deposit
-              </Button>
-              <LinkButton onClick={handleEndOnboarding}>
-                Skip for now
-              </LinkButton>
-            </div>
-          </div>
+          )}
         </EnterRightExitLeft>
       </div>
     </Modal>

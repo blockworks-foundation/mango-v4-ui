@@ -92,9 +92,12 @@ export const FadeInList = ({
     appear={true}
     as={as}
     show={true}
-    enter={`transition-all ease-in duration-300`}
+    enter={transitionEnterStyle}
     enterFrom="opacity-0"
     enterTo="opacity-100"
+    leave={transitionExitStyle}
+    leaveFrom="opacity-100"
+    leaveTo="opacity-0"
     style={{ transitionDelay: `${index * 300}ms` }}
   >
     {children}
