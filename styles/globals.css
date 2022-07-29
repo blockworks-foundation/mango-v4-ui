@@ -144,7 +144,7 @@ body {
 }
 
 button {
-  @apply tracking-wide text-th-fgd-1 duration-500 ease-out hover:transition-all focus:outline-none;
+  @apply tracking-wide text-th-fgd-1 focus:outline-none;
 }
 
 svg {
