@@ -146,8 +146,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
       if (mouseData) {
         const index = chartData.findIndex((d: any) => d.time === mouseData.time)
         return (
-          ((chartData[chartData.length - 1]['price'] -
-            chartData[index]['price']) /
+          ((chartData[index]['price'] - chartData[0]['price']) /
             chartData[0]['price']) *
           100
         )
