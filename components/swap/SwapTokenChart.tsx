@@ -111,13 +111,14 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   // Use ohlc data
   const getChartData = useCallback(async () => {
     if (!baseTokenId || !quoteTokenId) return
+
     const chartData = await fetchChartData(
       baseTokenId,
       quoteTokenId,
       daysToShow
     )
     setChartData(chartData)
-    setTimeout(() => setLoadChartData(false), 1500)
+    setLoadChartData(false)
   }, [baseTokenId, quoteTokenId, daysToShow])
 
   const getInputTokenInfo = useCallback(async () => {
@@ -305,7 +306,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     </linearGradient>
                   </defs>
                   <Area
-                    isAnimationActive={true}
+                    isAnimationActive={false}
                     type="monotone"
                     dataKey="price"
                     stroke={calculateChartChange() >= 0 ? GREEN : RED}

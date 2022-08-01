@@ -75,7 +75,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets}>
           <WalletListener />
-          <ThemeProvider defaultTheme="Mango">
+          <ThemeProvider defaultTheme="Dark">
             <ViewportProvider>
               <Layout>
                 <Component {...pageProps} />
