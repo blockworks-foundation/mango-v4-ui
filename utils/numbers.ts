@@ -34,7 +34,9 @@ const numberFormatter6 = Intl.NumberFormat('en', {
 })
 
 export const formatFixedDecimals = (value: number) => {
-  if (value >= 100) {
+  if (value === 0) {
+    return 0
+  } else if (value >= 100) {
     return numberFormatter2.format(value)
   } else if (value >= 1) {
     return numberFormatter4.format(value)

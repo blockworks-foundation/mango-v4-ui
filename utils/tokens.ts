@@ -13,10 +13,11 @@ export class TokenAccount {
   owner!: PublicKey
   amount!: number
   decimals!: number
-  uiAmount?: number
+  uiAmount: number
 
   constructor(publicKey: PublicKey, decoded: any) {
     this.publicKey = publicKey
+    this.uiAmount = 0
     Object.assign(this, decoded)
   }
 }
