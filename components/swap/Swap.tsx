@@ -60,7 +60,11 @@ const Swap = () => {
       })
       setJupiter(jupiter)
     }
-    loadJupiter()
+    try {
+      loadJupiter()
+    } catch (e) {
+      console.warn(e)
+    }
   }, [])
 
   useEffect(() => {
@@ -76,33 +80,43 @@ const Swap = () => {
         setAmountOut(undefined)
         setSelectedRoute(undefined)
       } else {
-        const computedRoutes = await jupiter?.computeRoutes({
-          inputMint: inputBank.mint, // Mint address of the input token
-          outputMint: outputBank.mint, // Mint address of the output token
-          inputAmount: Number(debouncedAmountIn) * 10 ** inputBank.mintDecimals, // raw input amount of tokens
-          slippage, // The slippage in % terms
-          filterTopNResult: 10,
-          onlyDirectRoutes: true,
-        })
-        const tokenOut = tokens.find(
-          (t: any) => t.address === outputBank.mint.toString()
-        )
-        setOutputTokenInfo(tokenOut)
-        const routesInfosWithoutRaydium = computedRoutes?.routesInfos.filter(
-          (r) => {
-            if (r.marketInfos.length > 1) {
-              for (const mkt of r.marketInfos) {
-                if (mkt.amm.label === 'Raydium') return false
+        try {
+          const computedRoutes = await jupiter
+            ?.computeRoutes({
+              inputMint: inputBank.mint, // Mint address of the input token
+              outputMint: outputBank.mint, // Mint address of the output token
+              inputAmount:
+                Number(debouncedAmountIn) * 10 ** inputBank.mintDecimals, // raw input amount of tokens
+              slippage, // The slippage in % terms
+              filterTopNResult: 10,
+              onlyDirectRoutes: true,
+            })
+            .catch((e) => {
+              console.log('Error loading Jupiter:', e)
+              return
+            })
+          const tokenOut = tokens.find(
+            (t: any) => t.address === outputBank.mint.toString()
+          )
+          setOutputTokenInfo(tokenOut)
+          const routesInfosWithoutRaydium = computedRoutes?.routesInfos.filter(
+            (r) => {
+              if (r.marketInfos.length > 1) {
+                for (const mkt of r.marketInfos) {
+                  if (mkt.amm.label === 'Raydium') return false
+                }
               }
+              return true
             }
-            return true
+          )
+          if (routesInfosWithoutRaydium?.length) {
+            setRoutes(routesInfosWithoutRaydium)
+            const bestRoute = getBestRoute(computedRoutes!.routesInfos)
+            setSelectedRoute(bestRoute)
+            setAmountOut(toUiDecimals(bestRoute.outAmount, tokenOut?.decimals))
           }
-        )
-        if (routesInfosWithoutRaydium?.length) {
-          setRoutes(routesInfosWithoutRaydium)
-          const bestRoute = getBestRoute(computedRoutes!.routesInfos)
-          setSelectedRoute(bestRoute)
-          setAmountOut(toUiDecimals(bestRoute.outAmount, tokenOut?.decimals))
+        } catch (e) {
+          console.warn(e)
         }
       }
     }
