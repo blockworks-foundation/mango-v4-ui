@@ -20,6 +20,7 @@ import {
 } from '../utils/tokens'
 import { Token } from '../types/jupiter'
 import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
+import { TOKEN_LIST_URL } from '@jup-ag/core'
 
 const DEVNET_GROUP = new PublicKey(
   'A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb'
@@ -86,9 +87,11 @@ export type MangoStore = {
     fetchMangoAccounts: (wallet: Wallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchProfilePicture: (wallet: Wallet) => void
-    loadSerumMarket: () => Promise<void>
+    fetchJupiterTokens: () => Promise<void>
+    fetchWalletTokens: (wallet: Wallet) => Promise<void>
     reloadAccount: () => Promise<void>
     reloadGroup: () => Promise<void>
+    loadSerumMarket: () => Promise<void>
   }
 }
 
@@ -257,6 +260,25 @@ const mangoStore = create<MangoStore>(
               state.wallet.tokens = []
             })
           }
+        },
+        fetchJupiterTokens: async () => {
+          const set = mangoStore.getState().set
+
+          fetch(TOKEN_LIST_URL[CLUSTER])
+            .then((response) => response.json())
+            .then((result) => {
+              set((s) => {
+                s.jupiterTokens = result
+              })
+              const inputTokenInfo = result.find((t: any) => t.symbol === 'SOL')
+              const outputTokenInfo = result.find(
+                (t: any) => t.symbol === 'USDC'
+              )
+              set((s) => {
+                s.swap.inputTokenInfo = inputTokenInfo
+                s.swap.outputTokenInfo = outputTokenInfo
+              })
+            })
         },
         reloadGroup: async () => {
           try {

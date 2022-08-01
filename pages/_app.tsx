@@ -11,11 +11,10 @@ import { clusterApiUrl } from '@solana/web3.js'
 
 import '../styles/globals.css'
 import WalletListener from '../components/wallet/WalletListener'
-import mangoStore, { CLUSTER } from '../store/state'
+import mangoStore from '../store/state'
 import useInterval from '../components/shared/useInterval'
 import Notifications from '../components/shared/Notification'
 import { ThemeProvider } from 'next-themes'
-import { TOKEN_LIST_URL } from '@jup-ag/core'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/Layout'
 import { ViewportProvider } from '../hooks/useViewport'
@@ -23,25 +22,9 @@ import { WalletProvider } from '../components/wallet/WalletProvider'
 
 const hydrateStore = async () => {
   const actions = mangoStore.getState().actions
-  actions.fetchGroup()
-}
-
-const loadJupTokens = async () => {
-  const set = mangoStore.getState().set
-
-  fetch(TOKEN_LIST_URL[CLUSTER])
-    .then((response) => response.json())
-    .then((result) => {
-      set((s) => {
-        s.jupiterTokens = result
-      })
-      const inputTokenInfo = result.find((t: any) => t.symbol === 'SOL')
-      const outputTokenInfo = result.find((t: any) => t.symbol === 'USDC')
-      set((s) => {
-        s.swap.inputTokenInfo = inputTokenInfo
-        s.swap.outputTokenInfo = outputTokenInfo
-      })
-    })
+  actions.fetchGroup().then(() => {
+    actions.fetchJupiterTokens()
+  })
 }
 
 const HydrateStore = () => {
@@ -51,7 +34,6 @@ const HydrateStore = () => {
 
   useEffect(() => {
     hydrateStore()
-    loadJupTokens()
   }, [])
 
   return null
