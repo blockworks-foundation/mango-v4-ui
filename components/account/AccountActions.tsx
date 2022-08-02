@@ -55,20 +55,20 @@ const AccountActions = () => {
         </Button>
         <IconDropMenu icon={<DotsHorizontalIcon className="h-5 w-5" />} large>
           <LinkButton
-            className="flex items-center whitespace-nowrap"
+            className="whitespace-nowrap"
             disabled={!connected}
-            icon={<PencilIcon className="h-5 w-5" />}
             onClick={() => setShowEditAccountModal(true)}
           >
-            {t('edit-account')}
+            <PencilIcon className="h-5 w-5" />
+            <span className="ml-2">{t('edit-account')}</span>
           </LinkButton>
           <LinkButton
-            className="flex items-center whitespace-nowrap"
+            className="whitespace-nowrap"
             disabled={!connected}
-            icon={<TrashIcon className="h-5 w-5" />}
             onClick={() => setShowCloseAccountModal(true)}
           >
-            {t('close-account')}
+            <TrashIcon className="h-5 w-5" />
+            <span className="ml-2">{t('close-account')}</span>
           </LinkButton>
         </IconDropMenu>
       </div>

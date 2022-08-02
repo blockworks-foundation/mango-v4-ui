@@ -26,6 +26,40 @@ const getBestRoute = (routesInfos: RouteInfo[]) => {
   return routesInfos[0]
 }
 
+const MaxWalletBalance = ({
+  inputToken,
+  setAmountIn,
+}: {
+  inputToken: string
+  setAmountIn: (x: any) => void
+}) => {
+  const { t } = useTranslation('common')
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+
+  const tokenInMax = useMemo(() => {
+    const group = mangoStore.getState().group
+    const bank = group?.banksMap.get(inputToken)
+
+    if (!group || !bank || !mangoAccount) return 0
+    const balance = mangoAccount.getUi(bank)
+
+    return balance
+  }, [inputToken, mangoAccount])
+
+  const setMaxInputAmount = () => {
+    setAmountIn(tokenInMax.toString())
+  }
+
+  return (
+    <LinkButton className="no-underline" onClick={setMaxInputAmount}>
+      <span className="mr-1 font-normal text-th-fgd-4">{t('balance')}:</span>
+      <span className="text-th-fgd-3 underline">
+        {formatFixedDecimals(tokenInMax)}
+      </span>
+    </LinkButton>
+  )
+}
+
 const Swap = () => {
   const { t } = useTranslation('common')
   const [jupiter, setJupiter] = useState<Jupiter>()
@@ -147,21 +181,6 @@ const Swap = () => {
       s.swap.outputTokenInfo = outputTokenInfo
     })
     setShowTokenSelect('')
-  }
-
-  const tokenInMax = useMemo(() => {
-    const group = mangoStore.getState().group
-    const bank = group?.banksMap.get(inputToken)
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-
-    if (!group || !bank || !mangoAccount) return 0
-    const balance = mangoAccount.getUi(bank)
-
-    return balance
-  }, [inputToken])
-
-  const setMaxInputAmount = () => {
-    setAmountIn(tokenInMax.toString())
   }
 
   const handleSwitchTokens = () => {
@@ -289,14 +308,7 @@ const Swap = () => {
       </div>
       <div className="mb-2 flex items-center justify-between">
         <p className="text-th-fgd-3">{t('sell')}</p>
-        <LinkButton className="no-underline" onClick={setMaxInputAmount}>
-          <span className="mr-1 font-normal text-th-fgd-4">
-            {t('balance')}:
-          </span>
-          <span className="text-th-fgd-3 underline">
-            {formatFixedDecimals(tokenInMax)}
-          </span>
-        </LinkButton>
+        <MaxWalletBalance inputToken={inputToken} setAmountIn={setAmountIn} />
       </div>
       <div className="mb-3 grid grid-cols-2">
         <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">

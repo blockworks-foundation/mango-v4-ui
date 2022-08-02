@@ -207,10 +207,10 @@ const MangoAccountsList = ({
                       </button>
                       <LinkButton
                         className="w-full justify-center"
-                        icon={<PlusCircleIcon className="h-5 w-5" />}
                         onClick={() => setShowNewAccountModal(true)}
                       >
-                        New Account
+                        <PlusCircleIcon className="h-5 w-5" />
+                        <span className="ml-2">New Account</span>
                       </LinkButton>
                     </div>
                   ))

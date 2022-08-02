@@ -52,15 +52,15 @@ const IconDropMenu = ({
             appear={true}
             show={open}
             as={Fragment}
-            enter="transition-all ease-in duration-200"
+            enter="transition-all ease-in duration-100"
             enterFrom="opacity-0 transform scale-90"
             enterTo="opacity-100 transform scale-100"
-            leave="transition ease-out duration-200"
+            leave="transition ease-out duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
             <Popover.Panel
-              className={`absolute ${panelPosition[postion]} z-20 w-48 space-y-2 rounded-md border border-th-bkg-3 bg-th-bkg-1 p-4`}
+              className={`absolute ${panelPosition[postion]} z-20 w-48 space-y-3 rounded-md border border-th-bkg-3 bg-th-bkg-2 p-4`}
             >
               {children}
             </Popover.Panel>

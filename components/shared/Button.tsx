@@ -95,7 +95,6 @@ export const LinkButton: FunctionComponent<LinkButtonCombinedProps> = ({
   disabled = false,
   className,
   secondary,
-  icon,
   ...props
 }) => {
   return (
@@ -107,8 +106,7 @@ export const LinkButton: FunctionComponent<LinkButtonCombinedProps> = ({
       } underline focus:outline-none disabled:cursor-not-allowed disabled:underline disabled:opacity-50 md:hover:no-underline  ${className}`}
       {...props}
     >
-      {icon}
-      <span className={icon ? 'ml-2' : ''}>{children}</span>
+      {children}
     </button>
   )
 }
