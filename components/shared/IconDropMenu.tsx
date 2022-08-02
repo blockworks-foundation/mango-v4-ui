@@ -52,10 +52,10 @@ const IconDropMenu = ({
             appear={true}
             show={open}
             as={Fragment}
-            enter="transition-all ease-in duration-300"
+            enter="transition-all ease-in duration-200"
             enterFrom="opacity-0 transform scale-90"
             enterTo="opacity-100 transform scale-100"
-            leave="transition ease-out duration-300"
+            leave="transition ease-out duration-200"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >

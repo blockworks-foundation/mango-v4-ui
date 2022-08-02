@@ -1,15 +1,15 @@
-import { useState, ChangeEvent, useCallback, Fragment, useEffect } from 'react'
+import { useState, ChangeEvent, useCallback, useEffect, useMemo } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
-import { ArrowDownIcon, XIcon } from '@heroicons/react/solid'
+import { ArrowDownIcon } from '@heroicons/react/solid'
 import mangoStore, { CLUSTER } from '../../store/state'
 import { Jupiter, RouteInfo } from '@jup-ag/core'
-import { TokenInfo } from '../../types/jupiter'
+import { Token } from '../../types/jupiter'
 import ContentBox from '../shared/ContentBox'
 import { notify } from '../../utils/notifications'
 import JupiterRoutes from './JupiterRoutes'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
-import { numberFormat } from '../../utils/numbers'
+import { formatFixedDecimals, numberFormat } from '../../utils/numbers'
 import LeverageSlider from './LeverageSlider'
 import Input from '../forms/Input'
 import { useTranslation } from 'next-i18next'
@@ -30,7 +30,7 @@ const Swap = () => {
   const { t } = useTranslation('common')
   const [jupiter, setJupiter] = useState<Jupiter>()
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
-  const [outputTokenInfo, setOutputTokenInfo] = useState<TokenInfo>()
+  const [outputTokenInfo, setOutputTokenInfo] = useState<Token>()
   const [routes, setRoutes] = useState<RouteInfo[]>()
   const [amountIn, setAmountIn] = useState('')
   const [amountOut, setAmountOut] = useState<number>()
@@ -45,7 +45,7 @@ const Swap = () => {
   const set = mangoStore.getState().set
   const inputToken = mangoStore((s) => s.swap.inputToken)
   const outputToken = mangoStore((s) => s.swap.outputToken)
-  const tokens = mangoStore((s) => s.jupiterTokens)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
   const debouncedAmountIn = useDebounce(amountIn, 400)
 
@@ -132,7 +132,7 @@ const Swap = () => {
   )
 
   const handleTokenInSelect = (symbol: string) => {
-    const inputTokenInfo = tokens.find((t: any) => t.symbol === symbol)
+    const inputTokenInfo = jupiterTokens.find((t: any) => t.symbol === symbol)
     set((s) => {
       s.swap.inputToken = symbol
       s.swap.inputTokenInfo = inputTokenInfo
@@ -141,7 +141,7 @@ const Swap = () => {
   }
 
   const handleTokenOutSelect = (symbol: string) => {
-    const outputTokenInfo = tokens.find((t: any) => t.symbol === symbol)
+    const outputTokenInfo = jupiterTokens.find((t: any) => t.symbol === symbol)
     set((s) => {
       s.swap.outputToken = symbol
       s.swap.outputTokenInfo = outputTokenInfo
@@ -149,9 +149,28 @@ const Swap = () => {
     setShowTokenSelect('')
   }
 
+  const tokenInMax = useMemo(() => {
+    const group = mangoStore.getState().group
+    const bank = group?.banksMap.get(inputToken)
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+
+    if (!group || !bank || !mangoAccount) return 0
+    const balance = mangoAccount.getUi(bank)
+
+    return balance
+  }, [inputToken])
+
+  const setMaxInputAmount = () => {
+    setAmountIn(tokenInMax.toString())
+  }
+
   const handleSwitchTokens = () => {
-    const inputTokenInfo = tokens.find((t: any) => t.symbol === inputToken)
-    const outputTokenInfo = tokens.find((t: any) => t.symbol === outputToken)
+    const inputTokenInfo = jupiterTokens.find(
+      (t: any) => t.symbol === inputToken
+    )
+    const outputTokenInfo = jupiterTokens.find(
+      (t: any) => t.symbol === outputToken
+    )
     set((s) => {
       s.swap.inputToken = outputToken
       s.swap.outputToken = inputToken
@@ -245,7 +264,7 @@ const Swap = () => {
         />
       </Transition>
       <EnterBottomExitBottom
-        className="thin-scroll absolute bottom-0 left-0 z-20 h-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+        className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
         show={!!showTokenSelect}
       >
         <SelectToken
@@ -270,14 +289,13 @@ const Swap = () => {
       </div>
       <div className="mb-2 flex items-center justify-between">
         <p className="text-th-fgd-3">{t('sell')}</p>
-        <LinkButton
-          className="no-underline"
-          onClick={() => console.log('Set max input amount')}
-        >
+        <LinkButton className="no-underline" onClick={setMaxInputAmount}>
           <span className="mr-1 font-normal text-th-fgd-4">
             {t('balance')}:
           </span>
-          <span className="text-th-fgd-3 underline">0</span>
+          <span className="text-th-fgd-3 underline">
+            {formatFixedDecimals(tokenInMax)}
+          </span>
         </LinkButton>
       </div>
       <div className="mb-3 grid grid-cols-2">

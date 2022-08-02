@@ -99,7 +99,7 @@ const SelectToken = ({
   useEffect(() => {
     function onEscape(e: any) {
       if (e.keyCode === 27) {
-        onClose?.()
+        onClose()
       }
     }
     window.addEventListener('keydown', onEscape)
@@ -134,11 +134,7 @@ const SelectToken = ({
   return (
     <>
       <p className="mb-3">{type === 'input' ? t('sell') : t('buy')}</p>
-      <IconButton
-        className="absolute top-2 right-2"
-        onClick={() => onClose()}
-        hideBg
-      >
+      <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
         <XIcon className="h-5 w-5" />
       </IconButton>
       <div className="flex items-center text-th-fgd-4">
@@ -151,7 +147,7 @@ const SelectToken = ({
           onChange={handleUpdateSearch}
         />
       </div>
-      {popularTokens.length && onTokenSelect ? (
+      {popularTokens.length ? (
         <div className="mt-4 flex flex-wrap">
           {popularTokens.map((token) => (
             <button

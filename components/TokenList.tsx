@@ -115,10 +115,10 @@ const TokenList = () => {
                   <td className="w-[12.5%]">
                     <div className="flex flex-col text-right">
                       <p>${formatDecimal(oraclePrice.toNumber(), 2)}</p>
-                      <div className="flex items-center justify-end">
+                      {/* <div className="flex items-center justify-end">
                         <UpTriangle />
                         <p className="ml-1 text-sm text-th-green">0%</p>
-                      </div>
+                      </div> */}
                     </div>
                   </td>
                   {/* <td className="w-[12.5%]">
@@ -345,6 +345,7 @@ const ActionsMenu = ({
 
   const handleBuy = () => {
     set((s) => {
+      s.swap.inputToken = 'USDC'
       s.swap.outputToken = bank.name
     })
     if (asPath === '/') {
@@ -355,6 +356,7 @@ const ActionsMenu = ({
   const handleSell = () => {
     set((s) => {
       s.swap.inputToken = bank.name
+      s.swap.outputToken = 'USDC'
     })
     if (asPath === '/') {
       router.push('/trade', undefined, { shallow: true })

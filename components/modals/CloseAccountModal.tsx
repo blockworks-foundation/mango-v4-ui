@@ -33,7 +33,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
       }
     } catch (e) {
       setLoading(false)
-      console.log(e)
+      console.error(e)
     }
   }
 

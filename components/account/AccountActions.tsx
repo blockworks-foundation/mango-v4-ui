@@ -30,9 +30,8 @@ const AccountActions = () => {
     if (!mangoAccount || !group) return
     try {
       const tx = await client.closeMangoAccount(group, mangoAccount)
-      console.log('success:', tx)
     } catch (e) {
-      console.log(e)
+      console.error(e)
     }
   }
 

@@ -6,11 +6,11 @@ import { Jupiter, RouteInfo } from '@jup-ag/core'
 import mangoStore from '../../store/state'
 import RoutesModal from './RoutesModal'
 import RouteFeeInfo from './RouteFeeInfo'
-import { TokenInfo } from '../../types/jupiter'
 import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
 import { ArrowRightIcon, XIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
+import { Token } from '../../types/jupiter'
 
 type JupiterRoutesProps = {
   inputToken: string
@@ -23,7 +23,7 @@ type JupiterRoutesProps = {
   onClose: () => void
   jupiter: Jupiter | undefined
   routes: RouteInfo[] | undefined
-  outputTokenInfo: TokenInfo | undefined
+  outputTokenInfo: Token | undefined
   selectedRoute: RouteInfo | undefined
   setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined>>
 }

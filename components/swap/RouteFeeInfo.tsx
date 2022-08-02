@@ -3,14 +3,14 @@ import { RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useState } from 'react'
 import mangoStore from '../../store/state'
-import { TokenInfo } from '../../types/jupiter'
+import { Token } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
 
 type RouteFeeInfoProps = {
   selectedRoute: RouteInfo
   amountIn: number
   amountOut: number
-  outputTokenInfo: TokenInfo
+  outputTokenInfo: Token
   inputTokenSymbol: string
   showRoutesModal: () => void
 }

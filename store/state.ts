@@ -68,8 +68,8 @@ export type MangoStore = {
   swap: {
     inputToken: string
     outputToken: string
-    inputTokenInfo: any
-    outputTokenInfo: any
+    inputTokenInfo: Token | undefined
+    outputTokenInfo: Token | undefined
   }
   set: (x: (x: MangoStore) => void) => void
   wallet: {
@@ -187,7 +187,6 @@ const mangoStore = create<MangoStore>(
               state.connected = true
               // state.serumOrders = orders
             })
-            console.log('mango', mangoAccount)
           } catch (e) {
             set((state) => {
               state.mangoAccount.loading = false
@@ -263,20 +262,31 @@ const mangoStore = create<MangoStore>(
         },
         fetchJupiterTokens: async () => {
           const set = mangoStore.getState().set
+          const group = mangoStore.getState().group
+          if (!group) {
+            console.error(
+              'Mango group unavailable; Loading jupiter tokens failed'
+            )
+            return
+          }
+          const banks = Array.from(group.banksMap.keys())
 
           fetch(TOKEN_LIST_URL[CLUSTER])
             .then((response) => response.json())
             .then((result) => {
-              set((s) => {
-                s.jupiterTokens = result
-              })
-              const inputTokenInfo = result.find((t: any) => t.symbol === 'SOL')
-              const outputTokenInfo = result.find(
+              const groupTokens = result.filter((t: any) =>
+                banks.includes(t.symbol)
+              )
+              const inputTokenInfo = groupTokens.find(
+                (t: any) => t.symbol === 'SOL'
+              )
+              const outputTokenInfo = groupTokens.find(
                 (t: any) => t.symbol === 'USDC'
               )
               set((s) => {
                 s.swap.inputTokenInfo = inputTokenInfo
                 s.swap.outputTokenInfo = outputTokenInfo
+                s.jupiterTokens = groupTokens
               })
             })
         },
@@ -298,6 +308,7 @@ const mangoStore = create<MangoStore>(
           const client = get().client
           const mangoAccount = get().mangoAccount.current
           const group = get().group
+          const actions = get().actions
 
           if (!mangoAccount || !group) return
 

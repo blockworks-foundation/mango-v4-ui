@@ -22,9 +22,7 @@ import { WalletProvider } from '../components/wallet/WalletProvider'
 
 const hydrateStore = async () => {
   const actions = mangoStore.getState().actions
-  actions.fetchGroup().then(() => {
-    actions.fetchJupiterTokens()
-  })
+  actions.fetchGroup()
 }
 
 const HydrateStore = () => {
@@ -33,7 +31,10 @@ const HydrateStore = () => {
   }, 10000)
 
   useEffect(() => {
-    hydrateStore()
+    const actions = mangoStore.getState().actions
+    actions.fetchGroup().then(() => {
+      actions.fetchJupiterTokens()
+    })
   }, [])
 
   return null

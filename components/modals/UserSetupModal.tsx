@@ -96,7 +96,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         type: 'error',
       })
       setSubmitDeposit(false)
-      console.log('Error depositing:', e)
+      console.error(e)
     }
   }
 

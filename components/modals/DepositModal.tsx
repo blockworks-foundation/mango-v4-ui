@@ -1,10 +1,14 @@
 import { ChevronDownIcon } from '@heroicons/react/solid'
+import { Wallet } from '@project-serum/anchor'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import React, { ChangeEvent, useState } from 'react'
+import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
+import { formatFixedDecimals } from '../../utils/numbers'
+import { TokenAccount } from '../../utils/tokens'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
@@ -21,6 +25,22 @@ interface DepositModalProps {
 
 type ModalCombinedProps = DepositModalProps & ModalProps
 
+const walletBalanceForToken = (
+  walletTokens: TokenAccount[],
+  token: string
+): number => {
+  const group = mangoStore.getState().group
+  const bank = group?.banksMap.get(token)
+  if (!bank) return 0
+
+  const tokenMint = bank?.mint
+  const walletToken = tokenMint
+    ? walletTokens.find((t) => t.mint.toString() === tokenMint.toString())
+    : null
+
+  return walletToken ? walletToken.uiAmount : 0
+}
+
 function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation('common')
   const [inputAmount, setInputAmount] = useState('')
@@ -29,14 +49,27 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
 
-  const handleSizePercentage = (percentage: string) => {
-    setSizePercentage(percentage)
+  const { wallet } = useWallet()
+  const walletTokens = mangoStore((s) => s.wallet.tokens)
 
-    // TODO: calc max
-    const max = 100
-    const amount = (Number(percentage) / 100) * max
-    setInputAmount(amount.toFixed())
-  }
+  const tokenMax = useMemo(() => {
+    return walletBalanceForToken(walletTokens, selectedToken)
+  }, [walletTokens, selectedToken])
+
+  const setMax = useCallback(() => {
+    setInputAmount(tokenMax.toString())
+  }, [tokenMax])
+
+  const handleSizePercentage = useCallback(
+    (percentage: string) => {
+      setSizePercentage(percentage)
+
+      const max = tokenMax
+      const amount = (Number(percentage) / 100) * max
+      setInputAmount(amount.toString())
+    },
+    [tokenMax]
+  )
 
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
@@ -67,6 +100,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       })
 
       await actions.reloadAccount()
+      actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
       setSubmitting(false)
     } catch (e: any) {
       notify({
@@ -75,7 +109,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         txid: e?.txid,
         type: 'error',
       })
-      console.log('Error depositing:', e)
+      console.error('Error depositing:', e)
     }
 
     onClose()
@@ -99,14 +133,13 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           <div className="grid grid-cols-2 pb-6">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
-              <LinkButton
-                className="mb-2 no-underline"
-                onClick={() => console.log('Set max input amount')}
-              >
-                <span className="mr-1 font-normal text-th-fgd-3">
+              <LinkButton className="mb-2 no-underline" onClick={setMax}>
+                <span className="mr-1 text-sm font-thin text-th-fgd-4">
                   {t('wallet-balance')}
                 </span>
-                <span className="text-th-fgd-1">0</span>
+                <span className="text-th-fgd-1 underline">
+                  {formatFixedDecimals(tokenMax)}
+                </span>
               </LinkButton>
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">

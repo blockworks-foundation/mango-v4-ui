@@ -18,6 +18,10 @@ export const numberFormat = new Intl.NumberFormat('en', {
   maximumSignificantDigits: 7,
 })
 
+const floorToDecimal = (value: number, decimals: number) => {
+  return Math.floor(value * 10 ** decimals) / 10 ** decimals
+}
+
 const numberFormatter2 = Intl.NumberFormat('en', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,

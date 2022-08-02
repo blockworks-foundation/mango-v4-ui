@@ -1,7 +1,7 @@
 import { RouteInfo } from '@jup-ag/core'
 import { Dispatch, SetStateAction } from 'react'
 import mangoStore from '../../store/state'
-import { TokenInfo } from '../../types/jupiter'
+import { Token } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
 import Modal from '../shared/Modal'
 
@@ -12,7 +12,7 @@ type RoutesModalProps = {
   routes: RouteInfo[]
   selectedRoute: RouteInfo
   inputTokenSymbol: string
-  outputTokenInfo: TokenInfo
+  outputTokenInfo: Token
 }
 
 const RoutesModal = ({
