@@ -242,7 +242,7 @@ table caption {
 }
 
 table tr {
-  @apply p-2;
+  @apply border-y border-th-bkg-3 p-2;
 }
 
 thead tr {
@@ -250,7 +250,7 @@ thead tr {
 }
 
 table td {
-  @apply border-y border-th-bkg-3 p-4;
+  @apply p-4;
 }
 
 table th {

@@ -15,13 +15,13 @@ const ImgWithLoader = (props: any) => {
       {isLoading && (
         <PhotographIcon className="absolute left-1/2 top-1/2 z-10 h-1/4 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse text-th-fgd-4" />
       )}
-      <img {...props} onLoad={() => setIsLoading(false)} />
+      <img {...props} onLoad={() => setIsLoading(false)} alt="" />
     </div>
   )
 }
 
 const NftProfilePicModal = ({ isOpen, onClose }: ModalProps) => {
-  const { t } = useTranslation(['common', 'profile'])
+  const { t } = useTranslation('common')
   const connection = mangoStore((s) => s.connection)
   const { publicKey, wallet } = useWallet()
   const nfts = mangoStore((s) => s.wallet.nfts.data)
@@ -37,7 +37,7 @@ const NftProfilePicModal = ({ isOpen, onClose }: ModalProps) => {
     if (publicKey) {
       actions.fetchNfts(connection, publicKey)
     }
-  }, [publicKey])
+  }, [publicKey, actions, connection])
 
   useEffect(() => {
     if (profileImageUrl) {
@@ -62,7 +62,7 @@ const NftProfilePicModal = ({ isOpen, onClose }: ModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="mb-3 flex w-full flex-col items-center sm:mt-3 sm:flex-row sm:justify-between">
-        <h2>{t('choose-profile')}</h2>
+        <h2>{t('edit-profile-image')}</h2>
         <div className="mt-3 flex items-center space-x-4 sm:mt-0">
           <Button
             disabled={!selectedProfile}

@@ -99,7 +99,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
               isMobile ? '' : isCollapsed ? 'pl-[72px]' : 'pl-44 lg:pl-56'
             }`}
           >
-            <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6">
+            <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-8">
               <div className="flex items-center text-th-fgd-3">
                 <span className="mb-0 mr-2">
                   {mangoAccount ? (
@@ -158,10 +158,12 @@ const MangoAccountsList = ({
       <Popover>
         {({ open }) => (
           <>
-            <Popover.Button className="flex w-full min-w-[120px] items-center justify-between rounded-none text-th-fgd-1 hover:text-th-primary">
+            <Popover.Button className="flex w-full items-center justify-between rounded-none text-th-fgd-1 hover:text-th-primary">
               <div className="flex items-center">
                 <div className="mr-2 text-left">
-                  <p className="font-bold text-th-fgd-1">{mangoAccount.name}</p>
+                  <p className="mb-0.5 text-sm font-bold text-th-fgd-1">
+                    {mangoAccount.name}
+                  </p>
                   <div className="flex items-center">
                     <HealthHeart
                       health={mangoAccount
@@ -169,7 +171,7 @@ const MangoAccountsList = ({
                         .toNumber()}
                       size={16}
                     />
-                    <p className="ml-1 text-xs leading-none">
+                    <p className="ml-1 text-xs">
                       {mangoAccount.getHealthRatio(HealthType.init).toNumber()}%
                     </p>
                   </div>
