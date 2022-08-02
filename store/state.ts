@@ -12,8 +12,9 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import EmptyWallet from '../utils/wallet'
 import { Order } from '@project-serum/serum/lib/market'
-import { Notification } from '../utils/notifications'
+import { Notification, notify } from '../utils/notifications'
 import {
+  fetchNftsFromHolaplexIndexer,
   getTokenAccountsByOwnerWithWrappedSol,
   TokenAccount,
 } from '../utils/tokens'
@@ -43,6 +44,11 @@ const DEFAULT_CLIENT = MangoClient.connect(
   MANGO_V4_ID[CLUSTER]
 )
 
+interface NFT {
+  address: string
+  image: string
+}
+
 export type MangoStore = {
   connected: boolean
   connection: Connection
@@ -69,11 +75,16 @@ export type MangoStore = {
     loadProfilePic: boolean
     profilePic: ProfilePicture | undefined
     tokens: TokenAccount[]
+    nfts: {
+      data: NFT[] | []
+      loading: boolean
+    }
   }
   actions: {
     fetchGroup: () => Promise<void>
     fetchMangoAccount: (wallet: Wallet) => Promise<void>
     fetchMangoAccounts: (wallet: Wallet) => Promise<void>
+    fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchProfilePicture: (wallet: Wallet) => void
     loadSerumMarket: () => Promise<void>
     reloadAccount: () => Promise<void>
@@ -109,6 +120,10 @@ const mangoStore = create<MangoStore>(
         loadProfilePic: true,
         profilePic: undefined,
         tokens: [],
+        nfts: {
+          data: [],
+          loading: false,
+        },
       },
       actions: {
         fetchGroup: async () => {
@@ -197,6 +212,32 @@ const mangoStore = create<MangoStore>(
           } catch (e) {
             console.error('Error fetching mango accts', e)
           }
+        },
+        fetchNfts: async (connection: Connection, ownerPk: PublicKey) => {
+          const set = get().set
+          set((state) => {
+            state.wallet.nfts.loading = true
+          })
+          try {
+            const data = await fetchNftsFromHolaplexIndexer(ownerPk)
+            // for (const nft of data.nfts) {
+            //   const tokenAccount = await getTokenAccountsByMint(
+            //     connection,
+            //     nft.mintAddress
+            //   )
+            //   nft.tokenAccount = tokenAccount[0] || null
+            // }
+            set((state) => {
+              state.wallet.nfts.data = data.nfts
+              state.wallet.nfts.loading = false
+            })
+          } catch (error) {
+            notify({
+              type: 'error',
+              title: 'Unable to fetch nfts',
+            })
+          }
+          return []
         },
         fetchWalletTokens: async (wallet: Wallet) => {
           const set = get().set

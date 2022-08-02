@@ -57,3 +57,42 @@ export async function getTokenAccountsByOwnerWithWrappedSol(
   // prepend SOL account to beginning of list
   return [solAccount].concat(tokenAccounts)
 }
+
+export const fetchNftsFromHolaplexIndexer = async (owner: PublicKey) => {
+  const result = await fetch('https://graph.holaplex.com/v1', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: `
+        query nfts($owners: [PublicKey!]) {
+            nfts(
+              owners: $owners,
+               limit: 10000, offset: 0) {
+              name
+              mintAddress
+              address
+              image
+              updateAuthorityAddress
+              collection {
+                creators {
+                  verified
+                  address
+                }
+                mintAddress
+              }
+
+            }
+
+        }
+      `,
+      variables: {
+        owners: [owner.toBase58()],
+      },
+    }),
+  })
+
+  const body = await result.json()
+  return body.data
+}
