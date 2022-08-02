@@ -83,24 +83,32 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
   )
 }
 
-export const LinkButton: FunctionComponent<AllButtonProps> = ({
+interface LinkButtonProps {
+  icon?: ReactNode
+}
+
+type LinkButtonCombinedProps = AllButtonProps & LinkButtonProps
+
+export const LinkButton: FunctionComponent<LinkButtonCombinedProps> = ({
   children,
   onClick,
   disabled = false,
   className,
   secondary,
+  icon,
   ...props
 }) => {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`border-0 font-bold ${
+      className={`flex items-center border-0 font-bold ${
         secondary ? 'text-th-primary' : 'text-th-fgd-2'
       } underline focus:outline-none disabled:cursor-not-allowed disabled:underline disabled:opacity-50 md:hover:no-underline  ${className}`}
       {...props}
     >
-      {children}
+      {icon}
+      <span className="ml-2">{children}</span>
     </button>
   )
 }

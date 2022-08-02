@@ -58,17 +58,17 @@ const AccountActions = () => {
           <LinkButton
             className="flex items-center whitespace-nowrap"
             disabled={!connected}
+            icon={<PencilIcon className="h-5 w-5" />}
             onClick={() => setShowEditAccountModal(true)}
           >
-            <PencilIcon className="mr-2 h-5 w-5" />
             {t('edit-account')}
           </LinkButton>
           <LinkButton
             className="flex items-center whitespace-nowrap"
             disabled={!connected}
+            icon={<TrashIcon className="h-5 w-5" />}
             onClick={() => setShowCloseAccountModal(true)}
           >
-            <TrashIcon className="mr-2 h-5 w-5" />
             {t('close-account')}
           </LinkButton>
         </IconDropMenu>
