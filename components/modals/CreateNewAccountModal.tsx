@@ -9,25 +9,25 @@ import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 
-const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
+const CreateNewAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState(mangoAccount?.name || '')
 
   // This doesn't work yet...
-  const handleUpdateccountName = async () => {
+  const handleNewAccount = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     if (!mangoAccount || !group) return
     setLoading(true)
     try {
-      const tx = await client.editMangoAccount(group, mangoAccount, name)
+      const tx = await client.createMangoAccount(group, 0, name)
       if (tx) {
         setLoading(false)
         onClose()
         notify({
-          title: t('account-update-success'),
+          title: t('new-account-success'),
           type: 'success',
           txid: tx,
         })
@@ -35,7 +35,7 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
     } catch (e) {
       setLoading(false)
       notify({
-        title: t('account-update-failed'),
+        title: t('new-account-failed'),
         type: 'error',
       })
       console.log(e)
@@ -46,13 +46,12 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="h-64">
         {loading ? (
-          <BounceLoader loadingMessage={t('updating-account-name')} />
+          <BounceLoader loadingMessage={t('creating-account')} />
         ) : (
           <div className="flex h-full flex-col justify-between">
             <div className="pb-4">
-              <h2 className="mb-1">{t('edit-account')}</h2>
-              <p className="mb-4">{t('account-name-desc')}</p>
-              <Label text={t('account-name')} />
+              <h2 className="mb-4">{t('new-account')}</h2>
+              <Label optional text={t('account-name')} />
               <Input
                 type="text"
                 name="name"
@@ -64,12 +63,8 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
                 }
               />
             </div>
-            <Button
-              className="w-full"
-              onClick={handleUpdateccountName}
-              size="large"
-            >
-              {t('update')}
+            <Button className="w-full" onClick={handleNewAccount} size="large">
+              {t('create-account')}
             </Button>
           </div>
         )}
@@ -78,4 +73,4 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
   )
 }
 
-export default AccountNameModal
+export default CreateNewAccountModal

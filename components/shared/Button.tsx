@@ -108,7 +108,7 @@ export const LinkButton: FunctionComponent<LinkButtonCombinedProps> = ({
       {...props}
     >
       {icon}
-      <span className="ml-2">{children}</span>
+      <span className={icon ? 'ml-2' : ''}>{children}</span>
     </button>
   )
 }
