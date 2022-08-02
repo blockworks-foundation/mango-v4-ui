@@ -11,7 +11,8 @@ const WalletListener = () => {
 
     const onConnect = async () => {
       if (!wallet) return
-      actions.fetchMangoAccount(wallet.adapter as unknown as Wallet)
+      await actions.fetchMangoAccount(wallet.adapter as unknown as Wallet)
+      actions.fetchMangoAccounts(wallet.adapter as unknown as Wallet)
       actions.fetchProfilePicture(wallet.adapter as unknown as Wallet)
     }
     console.log('connected', connected)

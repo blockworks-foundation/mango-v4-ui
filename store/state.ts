@@ -53,6 +53,7 @@ export type MangoStore = {
     current: MangoAccount | undefined
     loading: boolean
   }
+  mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
   notificationIdCounter: number
   notifications: Array<Notification>
@@ -72,6 +73,7 @@ export type MangoStore = {
   actions: {
     fetchGroup: () => Promise<void>
     fetchMangoAccount: (wallet: Wallet) => Promise<void>
+    fetchMangoAccounts: (wallet: Wallet) => Promise<void>
     fetchProfilePicture: (wallet: Wallet) => void
     loadSerumMarket: () => Promise<void>
     reloadAccount: () => Promise<void>
@@ -91,6 +93,7 @@ const mangoStore = create<MangoStore>(
         current: undefined,
         loading: false,
       },
+      mangoAccounts: [],
       markets: undefined,
       notificationIdCounter: 0,
       notifications: [],
@@ -172,6 +175,27 @@ const mangoStore = create<MangoStore>(
               state.mangoAccount.loading = false
             })
             console.error('Error fetching mango acct', e)
+          }
+        },
+        fetchMangoAccounts: async (wallet) => {
+          try {
+            const set = get().set
+            const group = get().group
+            const client = get().client
+            if (!group) throw new Error('Group not loaded')
+            if (!client) throw new Error('Client not loaded')
+
+            const mangoAccounts = await client.getMangoAccountForOwner(
+              group,
+              wallet.publicKey
+            )
+            if (mangoAccounts.length) {
+              set((state) => {
+                state.mangoAccounts = mangoAccounts
+              })
+            }
+          } catch (e) {
+            console.error('Error fetching mango accts', e)
           }
         },
         fetchWalletTokens: async (wallet: Wallet) => {

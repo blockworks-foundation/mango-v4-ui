@@ -2,15 +2,14 @@ import SideNav from './shared/SideNav'
 import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
 import {
   ArrowRightIcon,
+  CheckCircleIcon,
   ChevronDownIcon,
   ChevronRightIcon,
 } from '@heroicons/react/solid'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
 import { useTranslation } from 'next-i18next'
 import { Popover, Transition } from '@headlessui/react'
-import MangoAccountSummary from './account/MangoAccountSummary'
 import { HealthType, MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../store/state'
 import HealthHeart from './account/HealthHeart'
@@ -21,6 +20,7 @@ import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import WalletIcon from './icons/WalletIcon'
 import BounceLoader from './shared/BounceLoader'
+import { LinkButton } from './shared/Button'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded'
 
@@ -101,7 +101,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
               <div className="flex items-center text-th-fgd-3">
                 <span className="mb-0 mr-2">
                   {mangoAccount ? (
-                    <MangoAccountSummaryDropdown mangoAccount={mangoAccount} />
+                    <MangoAccountsList mangoAccount={mangoAccount} />
                   ) : (
                     <span className="flex items-center">
                       🔗<span className="ml-2">{t('connect-helper')}</span>
@@ -144,29 +144,37 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
 export default Layout
 
-const MangoAccountSummaryDropdown = ({
+const MangoAccountsList = ({
   mangoAccount,
 }: {
   mangoAccount: MangoAccount
 }) => {
+  const mangoAccounts = mangoStore((s) => s.mangoAccounts)
   return (
     <Popover>
       {({ open }) => (
         <>
-          <Popover.Button className="flex w-full items-center justify-between rounded-none text-th-fgd-1 hover:text-th-primary">
+          <Popover.Button className="flex w-full min-w-[120px] items-center justify-between rounded-none text-th-fgd-1 hover:text-th-primary">
             <div className="flex items-center">
-              <HealthHeart
-                health={mangoAccount.getHealthRatio(HealthType.init).toNumber()}
-                size={20}
-              />
-              <span className="ml-1.5 mr-0.5 font-bold">
-                {mangoAccount.name}
-              </span>
+              <div className="mr-2 text-left">
+                <p className="font-bold text-th-fgd-1">{mangoAccount.name}</p>
+                <div className="flex items-center">
+                  <HealthHeart
+                    health={mangoAccount
+                      .getHealthRatio(HealthType.init)
+                      .toNumber()}
+                    size={16}
+                  />
+                  <p className="ml-1 text-xs leading-none">
+                    {mangoAccount.getHealthRatio(HealthType.init).toNumber()}%
+                  </p>
+                </div>
+              </div>
             </div>
             <ChevronDownIcon
               className={`${
                 open ? 'rotate-180 transform' : 'rotate-360 transform'
-              } mt-0.5 h-5 w-5 flex-shrink-0 text-th-fgd-3`}
+              } mt-0.5 ml-3 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
             />
           </Popover.Button>
           <Transition
@@ -181,7 +189,24 @@ const MangoAccountSummaryDropdown = ({
             leaveTo="opacity-0"
           >
             <Popover.Panel className="absolute top-[63px] z-10 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-3 bg-th-bkg-1 p-4">
-              <MangoAccountSummary />
+              {mangoAccounts.length ? (
+                mangoAccounts.map((acc) => (
+                  <div key={acc.publicKey.toString()}>
+                    <button className="mb-3 flex w-full items-center justify-between border-b border-th-bkg-3 pb-3">
+                      {acc.name}
+                      {acc.publicKey.toString() ===
+                      mangoAccount.publicKey.toString() ? (
+                        <CheckCircleIcon className="h-5 w-5 text-th-green" />
+                      ) : null}
+                    </button>
+                    <LinkButton className="w-full text-center">
+                      New Account
+                    </LinkButton>
+                  </div>
+                ))
+              ) : (
+                <p>Loading...</p>
+              )}
             </Popover.Panel>
           </Transition>
         </>
