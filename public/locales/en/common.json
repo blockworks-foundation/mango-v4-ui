@@ -1,5 +1,7 @@
 {
   "account-closed": "Account Closed 👋",
+  "account-name": "Account Name",
+  "account-name-desc": "Organize your accounts by giving them useful names",
   "account-value": "Account Value",
   "available": "Available",
   "available-balance": "Available Balance",
@@ -21,6 +23,7 @@
   "deposit": "Deposit",
   "deposit-value": "Deposit Value",
   "disconnect": "Disconnect",
+  "edit-accout": "Edit Account",
   "english": "English",
   "fee": "Fee",
   "fees": "Fees",
@@ -49,6 +52,7 @@
   "tokens": "Tokens",
   "token-collateral-multiplier": "{{token}} Collateral Multiplier",
   "trade": "Trade",
+  "update": "Update",
   "wallet-balance": "Wallet Balance",
   "withdraw": "Withdraw",
   "withdrawal-value": "Withdrawal Value"
