@@ -14,6 +14,7 @@ import EmptyWallet from '../utils/wallet'
 import { Order } from '@project-serum/serum/lib/market'
 import { Notification, notify } from '../utils/notifications'
 import {
+  COINGECKO_IDS,
   fetchNftsFromHolaplexIndexer,
   getTokenAccountsByOwnerWithWrappedSol,
   TokenAccount,
@@ -51,6 +52,10 @@ interface NFT {
 }
 
 export type MangoStore = {
+  coingeckoPrices: {
+    data: any[]
+    loading: boolean
+  }
   connected: boolean
   connection: Connection
   group: Group | undefined
@@ -82,6 +87,7 @@ export type MangoStore = {
     }
   }
   actions: {
+    fetchCoingeckoPrices: () => Promise<void>
     fetchGroup: () => Promise<void>
     fetchMangoAccount: (wallet: Wallet) => Promise<void>
     fetchMangoAccounts: (wallet: Wallet) => Promise<void>
@@ -98,6 +104,10 @@ export type MangoStore = {
 const mangoStore = create<MangoStore>(
   subscribeWithSelector((set, get) => {
     return {
+      coingeckoPrices: {
+        data: [],
+        loading: false,
+      },
       connected: false,
       connection,
       group: undefined,
@@ -129,6 +139,36 @@ const mangoStore = create<MangoStore>(
         },
       },
       actions: {
+        fetchCoingeckoPrices: async () => {
+          const set = get().set
+          set((state) => {
+            state.coingeckoPrices.loading = true
+          })
+          try {
+            const promises: any = []
+            for (const asset of COINGECKO_IDS) {
+              promises.push(
+                fetch(
+                  `https://api.coingecko.com/api/v3/coins/${asset.id}/market_chart?vs_currency=usd&days=1`
+                ).then((res) => res.json())
+              )
+            }
+
+            const data = await Promise.all(promises)
+            for (let i = 0; i < data.length; i++) {
+              data[i].symbol = COINGECKO_IDS[i].symbol
+            }
+            set((state) => {
+              state.coingeckoPrices.data = data
+              state.coingeckoPrices.loading = false
+            })
+          } catch (e) {
+            console.log('ERORR: Unable to load Coingecko prices')
+            set((state) => {
+              state.coingeckoPrices.loading = false
+            })
+          }
+        },
         fetchGroup: async () => {
           try {
             const set = get().set

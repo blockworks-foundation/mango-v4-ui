@@ -3,12 +3,14 @@ import { Transition } from '@headlessui/react'
 import { ChevronDownIcon, DotsHorizontalIcon } from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
+import { useTheme } from 'next-themes'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '../store/state'
+import { COLORS } from '../styles/colors'
 import { formatDecimal, numberFormat } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
@@ -19,6 +21,7 @@ import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import { UpTriangle } from './shared/DirectionTriangles'
 import IconDropMenu from './shared/IconDropMenu'
+import SimpleAreaChart from './shared/SimpleAreaChart'
 import { FadeInList } from './shared/Transitions'
 
 const TokenList = () => {
@@ -27,9 +30,19 @@ const TokenList = () => {
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const [showZeroBalances, setShowZeroBalances] = useState(true)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
+  const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
+  const actions = mangoStore((s) => s.actions)
   const group = mangoStore((s) => s.group)
+  const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+
+  useEffect(() => {
+    if (coingeckoPrices.length === 0) {
+      actions.fetchCoingeckoPrices()
+    }
+  }, [coingeckoPrices])
 
   const banks = useMemo(() => {
     if (group?.banksMap) {
@@ -85,21 +98,27 @@ const TokenList = () => {
         <table className="min-w-full">
           <thead>
             <tr>
-              <th className="w-[12.5%] text-left">{t('token')}</th>
-              <th className="w-[12.5%] text-right">{t('price')}</th>
-              {/* <th className="w-[12.5%] text-right">{t('rolling-change')}</th>
-              <th className="w-[12.5%] text-right">{t('daily-volume')}</th> */}
-              <th className="w-[12.5%] text-right">{t('rates')}</th>
-              <th className="w-[12.5%] text-right">{t('liquidity')}</th>
-              <th className="w-[12.5%] text-right">{t('available-balance')}</th>
+              <th className="w-[16.67%] text-left">{t('token')}</th>
+              <th className="w-[16.67%] text-right">{t('price')}</th>
+              <th className="className='hidden lg:block' w-[16.67%] text-right"></th>
+              <th className="w-[16.67%] text-right">{t('rates')}</th>
+              <th className="w-[16.67%] text-right">{t('liquidity')}</th>
+              <th className="w-[16.67%] text-right">
+                {t('available-balance')}
+              </th>
             </tr>
           </thead>
           <tbody>
             {banks.map((bank, index) => {
               const oraclePrice = bank.value.price
+
+              const coingeckoData = coingeckoPrices.find(
+                (asset) => asset.symbol === bank.key
+              )
+              const chartData = coingeckoData ? coingeckoData.prices : undefined
               return (
                 <FadeInList as="tr" index={index} key={bank.key}>
-                  <td className="w-[12.5%]">
+                  <td className="w-[16.67%]">
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         <Image
@@ -112,7 +131,7 @@ const TokenList = () => {
                       <p>{bank.value.name}</p>
                     </div>
                   </td>
-                  <td className="w-[12.5%]">
+                  <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
                       <p>${formatDecimal(oraclePrice.toNumber(), 2)}</p>
                       {/* <div className="flex items-center justify-end">
@@ -121,17 +140,37 @@ const TokenList = () => {
                       </div> */}
                     </div>
                   </td>
-                  {/* <td className="w-[12.5%]">
+                  <td className="hidden lg:block">
+                    <div>
+                      {!loadingCoingeckoPrices ? (
+                        chartData !== undefined ? (
+                          <SimpleAreaChart
+                            // update color when we have 24h change
+                            color={COLORS.GREEN[theme]}
+                            data={chartData}
+                            height={40}
+                            name={bank.key}
+                            width={104}
+                          />
+                        ) : bank.key === 'USDC' ? null : (
+                          t('unavailable')
+                        )
+                      ) : (
+                        <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+                      )}
+                    </div>
+                  </td>
+                  {/* <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
                       <p className="text-th-green">0%</p>
                     </div>
                   </td> */}
-                  {/* <td className="w-[12.5%]">
+                  {/* <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
                       <p>1000</p>
                     </div>
                   </td> */}
-                  <td className="w-[12.5%]">
+                  <td className="w-[16.67%]">
                     <div className="flex justify-end space-x-2 text-right">
                       <p className="text-th-green">
                         {formatDecimal(
@@ -150,7 +189,7 @@ const TokenList = () => {
                       </p>
                     </div>
                   </td>
-                  <td className="w-[12.5%]">
+                  <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
                       <p>
                         {formatDecimal(
@@ -160,7 +199,7 @@ const TokenList = () => {
                       </p>
                     </div>
                   </td>
-                  <td className="w-[12.5%] pt-4 text-right">
+                  <td className="w-[16.67%] pt-4 text-right">
                     <p className="px-2">
                       {mangoAccount
                         ? formatDecimal(mangoAccount.getUi(bank.value))
@@ -176,7 +215,7 @@ const TokenList = () => {
                         : '$0'}
                     </p>
                   </td>
-                  <td className="w-[12.5%]">
+                  <td className="w-[16.67%]">
                     <div className="flex justify-end space-x-2">
                       <ActionsMenu
                         bank={bank.value}

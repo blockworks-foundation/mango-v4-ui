@@ -13,10 +13,11 @@ import FlipNumbers from 'react-flip-numbers'
 
 import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
-import { GREEN, RED } from '../../styles/colors'
 import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 import { formatFixedDecimals } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
+import { COLORS } from '../../styles/colors'
+import { useTheme } from 'next-themes'
 
 dayjs.extend(relativeTime)
 
@@ -85,6 +86,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   const [outputTokenInfo, setOutputTokenInfo] = useState<any>(null)
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState(1)
+  const { theme } = useTheme()
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -295,12 +297,20 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     >
                       <stop
                         offset="0%"
-                        stopColor={calculateChartChange() >= 0 ? GREEN : RED}
+                        stopColor={
+                          calculateChartChange() >= 0
+                            ? COLORS.GREEN[theme]
+                            : COLORS.RED[theme]
+                        }
                         stopOpacity={0.15}
                       />
                       <stop
                         offset="99%"
-                        stopColor={calculateChartChange() >= 0 ? GREEN : RED}
+                        stopColor={
+                          calculateChartChange() >= 0
+                            ? COLORS.GREEN[theme]
+                            : COLORS.RED[theme]
+                        }
                         stopOpacity={0}
                       />
                     </linearGradient>
@@ -309,7 +319,11 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     isAnimationActive={false}
                     type="monotone"
                     dataKey="price"
-                    stroke={calculateChartChange() >= 0 ? GREEN : RED}
+                    stroke={
+                      calculateChartChange() >= 0
+                        ? COLORS.GREEN[theme]
+                        : COLORS.RED[theme]
+                    }
                     strokeWidth={1.5}
                     fill="url(#gradientArea)"
                   />
