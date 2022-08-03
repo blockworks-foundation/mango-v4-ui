@@ -1,4 +1,4 @@
-import SideNav from './shared/SideNav'
+import SideNav from './SideNav'
 import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
 import {
   ArrowRightIcon,

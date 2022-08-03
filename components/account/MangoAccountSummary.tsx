@@ -17,8 +17,8 @@ const MangoAccountSummary = () => {
     <>
       <div className="mb-4 space-y-1.5">
         <div className="flex items-center justify-between">
-          <p className="text-th-fgd-3">Account Value</p>
-          <p className="font-bold text-th-fgd-1">
+          <p className="text-sm text-th-fgd-3">Account Value</p>
+          <p className="text-sm font-bold text-th-fgd-1">
             $
             {mangoAccount
               ? formatDecimal(
@@ -29,8 +29,8 @@ const MangoAccountSummary = () => {
           </p>
         </div>
         <div className="flex items-center justify-between">
-          <p className="text-th-fgd-3">Free Collateral</p>
-          <p className="font-bold text-th-fgd-1">
+          <p className="text-sm text-th-fgd-3">Free Collateral</p>
+          <p className="text-sm font-bold text-th-fgd-1">
             $
             {mangoAccount
               ? formatDecimal(
@@ -41,8 +41,8 @@ const MangoAccountSummary = () => {
           </p>
         </div>
         <div className="flex items-center justify-between">
-          <p className="text-th-fgd-3">Health</p>
-          <p className="font-bold text-th-fgd-1">
+          <p className="text-sm text-th-fgd-3">Health</p>
+          <p className="text-sm font-bold text-th-fgd-1">
             {mangoAccount
               ? mangoAccount.getHealthRatio(HealthType.init).toNumber()
               : 100}

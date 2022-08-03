@@ -1,8 +1,6 @@
 import Link from 'next/link'
-import BtcMonoIcon from '../icons/BtcMonoIcon'
-import TradeIcon from '../icons/TradeIcon'
+import TradeIcon from './icons/TradeIcon'
 import {
-  CashIcon,
   ChartBarIcon,
   DotsHorizontalIcon,
   LibraryIcon,
@@ -10,7 +8,6 @@ import {
   ExternalLinkIcon,
   ChevronDownIcon,
   ReceiptTaxIcon,
-  ChatIcon,
   HomeIcon,
   CogIcon,
 } from '@heroicons/react/solid'
@@ -18,10 +15,13 @@ import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
-import Chat from '../chat/Chat'
+import MangoAccountSummary from './account/MangoAccountSummary'
+import HealthHeart from './account/HealthHeart'
+import mangoStore from '../store/state'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const router = useRouter()
   const { pathname } = router
 
@@ -93,7 +93,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           <ExpandableMenuItem
             collapsed={collapsed}
             icon={<DotsHorizontalIcon className="h-6 w-6" />}
-            pathname={pathname}
             title={t('more')}
           >
             <MenuItem
@@ -123,19 +122,28 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           </ExpandableMenuItem>
         </div>
       </div>
-      <div className="border-t border-th-bkg-3">
-        <ExpandableMenuItem
-          collapsed={collapsed}
-          icon={
-            <ChatIcon className={`h-7 w-7 ${!collapsed ? 'ml-1.5' : ''}`} />
-          }
-          title="Trollbox"
-          alignBottom
-          hideIconBg
-        >
-          <Chat />
-        </ExpandableMenuItem>
-      </div>
+      {mangoAccount ? (
+        <div className="border-t border-th-bkg-3">
+          <ExpandableMenuItem
+            collapsed={collapsed}
+            icon={<HealthHeart health={50} size={32} />}
+            title={
+              <div className="text-left">
+                <p className="whitespace-nowrap text-xs">Account Summary</p>
+                <p className="text-sm font-bold text-th-fgd-1">
+                  {mangoAccount.name}
+                </p>
+              </div>
+            }
+            alignBottom
+            hideIconBg
+          >
+            <div className="px-4 pb-4 pt-2">
+              <MangoAccountSummary />
+            </div>
+          </ExpandableMenuItem>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -203,7 +211,6 @@ const ExpandableMenuItem = ({
   collapsed,
   hideIconBg,
   icon,
-  pathname,
   title,
 }: {
   alignBottom?: boolean
@@ -211,7 +218,6 @@ const ExpandableMenuItem = ({
   collapsed: boolean
   hideIconBg?: boolean
   icon: ReactNode
-  pathname?: string
   title: string | ReactNode
 }) => {
   const [showMenu, setShowMenu] = useState(false)

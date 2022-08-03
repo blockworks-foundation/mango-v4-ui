@@ -11,15 +11,14 @@ import Label from '../forms/Label'
 
 const CreateNewAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [loading, setLoading] = useState(false)
-  const [name, setName] = useState(mangoAccount?.name || '')
+  const [name, setName] = useState('')
 
   // This doesn't work yet...
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
-    if (!mangoAccount || !group) return
+    if (!group) return
     setLoading(true)
     try {
       const tx = await client.createMangoAccount(group, 0, name)
