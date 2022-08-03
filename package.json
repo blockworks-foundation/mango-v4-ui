@@ -11,7 +11,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@blockworks-foundation/mango-v4": "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git",
+    "@blockworks-foundation/mango-v4": "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#main",
     "@headlessui/react": "^1.6.6",
     "@heroicons/react": "^1.0.6",
     "@jup-ag/core": "^1.0.0-beta.27",

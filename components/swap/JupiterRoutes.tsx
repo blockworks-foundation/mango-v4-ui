@@ -19,7 +19,6 @@ type JupiterRoutesProps = {
   slippage: number
   submitting: boolean
   handleSwap: (x: TransactionInstruction[]) => void
-  setAmountOut: (x?: number) => void
   onClose: () => void
   jupiter: Jupiter | undefined
   routes: RouteInfo[] | undefined

@@ -24,7 +24,7 @@ const LeverageSlider = ({
     if (inputToken && outputToken) {
       max = toUiDecimals(
         mangoAccount
-          .getMaxSourceForTokenSwap(group, inputToken, outputToken, 1)
+          .getMaxSourceForTokenSwap(group, inputToken, outputToken, 0.9)
           .toNumber()
       )
     } else {

@@ -31,9 +31,9 @@ const DepositTokenItem = ({
           {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
         </p>
       </div>
-      <div className="col-span-1 flex justify-end">
+      {/* <div className="col-span-1 flex justify-end">
         <p className="text-th-fgd-1">0.8x</p>
-      </div>
+      </div> */}
     </button>
   )
 }

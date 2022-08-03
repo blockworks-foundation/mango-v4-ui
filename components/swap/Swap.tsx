@@ -1,26 +1,31 @@
 import { useState, ChangeEvent, useCallback, useEffect, useMemo } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
 import { ArrowDownIcon } from '@heroicons/react/solid'
-import mangoStore, { CLUSTER } from '../../store/state'
-import { Jupiter, RouteInfo } from '@jup-ag/core'
+import mangoStore from '../../store/state'
+import { RouteInfo } from '@jup-ag/core'
 import { Token } from '../../types/jupiter'
 import ContentBox from '../shared/ContentBox'
 import { notify } from '../../utils/notifications'
 import JupiterRoutes from './JupiterRoutes'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
-import { formatFixedDecimals, numberFormat } from '../../utils/numbers'
+import {
+  floorToDecimal,
+  formatFixedDecimals,
+  numberFormat,
+} from '../../utils/numbers'
 import LeverageSlider from './LeverageSlider'
 import Input from '../forms/Input'
 import { useTranslation } from 'next-i18next'
 import SelectToken from './SelectToken'
 import { Transition } from '@headlessui/react'
 import Switch from '../forms/Switch'
-import Button, { IconButton, LinkButton } from '../shared/Button'
+import Button, { LinkButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
+import useJupiter from './useJupiter'
 
 const getBestRoute = (routesInfos: RouteInfo[]) => {
   return routesInfos[0]
@@ -40,14 +45,14 @@ const MaxWalletBalance = ({
     const group = mangoStore.getState().group
     const bank = group?.banksMap.get(inputToken)
 
-    if (!group || !bank || !mangoAccount) return 0
+    if (!group || !bank || !mangoAccount) return 0.0
     const balance = mangoAccount.getUi(bank)
 
-    return balance
+    return floorToDecimal(balance, bank.mintDecimals)
   }, [inputToken, mangoAccount])
 
   const setMaxInputAmount = () => {
-    setAmountIn(tokenInMax.toString())
+    setAmountIn(tokenInMax)
   }
 
   return (
@@ -62,12 +67,8 @@ const MaxWalletBalance = ({
 
 const Swap = () => {
   const { t } = useTranslation('common')
-  const [jupiter, setJupiter] = useState<Jupiter>()
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
-  const [outputTokenInfo, setOutputTokenInfo] = useState<Token>()
-  const [routes, setRoutes] = useState<RouteInfo[]>()
   const [amountIn, setAmountIn] = useState('')
-  const [amountOut, setAmountOut] = useState<number>()
   const [submitting, setSubmitting] = useState(false)
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
@@ -83,80 +84,17 @@ const Swap = () => {
   const connected = mangoStore((s) => s.connected)
   const debouncedAmountIn = useDebounce(amountIn, 400)
 
-  useEffect(() => {
-    const connection = mangoStore.getState().connection
-    const loadJupiter = async () => {
-      const jupiter = await Jupiter.load({
-        connection,
-        cluster: CLUSTER,
-        // platformFeeAndAccounts:  NO_PLATFORM_FEE,
-        routeCacheDuration: 10_000, // Will not refetch data on computeRoutes for up to 10 seconds
-      })
-      setJupiter(jupiter)
-    }
-    try {
-      loadJupiter()
-    } catch (e) {
-      console.warn(e)
-    }
-  }, [])
+  const { amountOut, jupiter, outputTokenInfo, routes } = useJupiter({
+    inputTokenSymbol: inputToken,
+    outputTokenSymbol: outputToken,
+    inputAmount: Number(debouncedAmountIn),
+    slippage,
+  })
 
   useEffect(() => {
-    const group = mangoStore.getState().group
-    if (!group) return
-    const tokens = mangoStore.getState().jupiterTokens
-
-    const loadRoutes = async () => {
-      const inputBank = group!.banksMap.get(inputToken)
-      const outputBank = group!.banksMap.get(outputToken)
-      if (!inputBank || !outputBank) return
-      if (!debouncedAmountIn) {
-        setAmountOut(undefined)
-        setSelectedRoute(undefined)
-      } else {
-        try {
-          const computedRoutes = await jupiter
-            ?.computeRoutes({
-              inputMint: inputBank.mint, // Mint address of the input token
-              outputMint: outputBank.mint, // Mint address of the output token
-              inputAmount:
-                Number(debouncedAmountIn) * 10 ** inputBank.mintDecimals, // raw input amount of tokens
-              slippage, // The slippage in % terms
-              filterTopNResult: 10,
-              onlyDirectRoutes: true,
-            })
-            .catch((e) => {
-              console.log('Error loading Jupiter:', e)
-              return
-            })
-          const tokenOut = tokens.find(
-            (t: any) => t.address === outputBank.mint.toString()
-          )
-          setOutputTokenInfo(tokenOut)
-          const routesInfosWithoutRaydium = computedRoutes?.routesInfos.filter(
-            (r) => {
-              if (r.marketInfos.length > 1) {
-                for (const mkt of r.marketInfos) {
-                  if (mkt.amm.label === 'Raydium') return false
-                }
-              }
-              return true
-            }
-          )
-          if (routesInfosWithoutRaydium?.length) {
-            setRoutes(routesInfosWithoutRaydium)
-            const bestRoute = getBestRoute(computedRoutes!.routesInfos)
-            setSelectedRoute(bestRoute)
-            setAmountOut(toUiDecimals(bestRoute.outAmount, tokenOut?.decimals))
-          }
-        } catch (e) {
-          console.warn(e)
-        }
-      }
-    }
-
-    loadRoutes()
-  }, [inputToken, outputToken, jupiter, slippage, debouncedAmountIn])
+    console.log('setting selected route')
+    setSelectedRoute(routes[0])
+  }, [routes])
 
   const handleAmountInChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -274,7 +212,6 @@ const Swap = () => {
           slippage={slippage}
           handleSwap={handleSwap}
           submitting={submitting}
-          setAmountOut={setAmountOut}
           outputTokenInfo={outputTokenInfo}
           jupiter={jupiter}
           routes={routes}

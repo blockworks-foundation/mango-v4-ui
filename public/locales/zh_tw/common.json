@@ -65,6 +65,7 @@
   "trade": "Trade",
   "update": "Update",
   "wallet-balance": "Wallet Balance",
+  "wallet-disconnected": "斷開錢包連結",
   "withdraw": "Withdraw",
   "withdrawal-value": "Withdrawal Value"
 }

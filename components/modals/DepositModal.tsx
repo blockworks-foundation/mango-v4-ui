@@ -7,7 +7,7 @@ import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
-import { formatFixedDecimals } from '../../utils/numbers'
+import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { TokenAccount } from '../../utils/tokens'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -28,17 +28,22 @@ type ModalCombinedProps = DepositModalProps & ModalProps
 const walletBalanceForToken = (
   walletTokens: TokenAccount[],
   token: string
-): number => {
+): { maxAmount: number; maxDecimals: number } => {
   const group = mangoStore.getState().group
   const bank = group?.banksMap.get(token)
-  if (!bank) return 0
 
-  const tokenMint = bank?.mint
-  const walletToken = tokenMint
-    ? walletTokens.find((t) => t.mint.toString() === tokenMint.toString())
-    : null
+  let walletToken
+  if (bank) {
+    const tokenMint = bank?.mint
+    walletToken = tokenMint
+      ? walletTokens.find((t) => t.mint.toString() === tokenMint.toString())
+      : null
+  }
 
-  return walletToken ? walletToken.uiAmount : 0
+  return {
+    maxAmount: walletToken ? walletToken.uiAmount : 0,
+    maxDecimals: bank?.mintDecimals || 6,
+  }
 }
 
 function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
@@ -57,15 +62,18 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   }, [walletTokens, selectedToken])
 
   const setMax = useCallback(() => {
-    setInputAmount(tokenMax.toString())
+    setInputAmount(tokenMax.maxAmount.toString())
   }, [tokenMax])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       setSizePercentage(percentage)
 
-      const max = tokenMax
-      const amount = (Number(percentage) / 100) * max
+      let amount = (Number(percentage) / 100) * tokenMax.maxAmount
+      if (percentage !== '100') {
+        amount = floorToDecimal(amount, tokenMax.maxDecimals)
+      }
+
       setInputAmount(amount.toString())
     },
     [tokenMax]
@@ -124,10 +132,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         <h2 className="mb-4 text-center">{t('select-token')}</h2>
         <DepositTokenList onSelect={handleSelectToken} />
       </EnterBottomExitBottom>
-      <FadeInFadeOut
-        className="flex h-[430px] flex-col justify-between"
-        show={isOpen}
-      >
+      <FadeInFadeOut className="flex flex-col justify-between" show={isOpen}>
         <div>
           <h2 className="mb-4 text-center">{t('deposit')}</h2>
           <div className="grid grid-cols-2 pb-6">
@@ -138,7 +143,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   {t('wallet-balance')}
                 </span>
                 <span className="text-th-fgd-1 underline">
-                  {formatFixedDecimals(tokenMax)}
+                  {formatFixedDecimals(tokenMax.maxAmount)}
                 </span>
               </LinkButton>
             </div>
@@ -183,7 +188,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
             </div>
           </div>
-          <div className="space-y-2 border-y border-th-bkg-3 py-4">
+          {/* <div className="space-y-2 border-y border-th-bkg-3 py-4">
             <div className="flex justify-between">
               <p>{t('health-impact')}</p>
               <p className="text-th-green">+12%</p>
@@ -205,7 +210,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p>{t('collateral-value')}</p>
               <p className="text-th-fgd-1">$800.00</p>
             </div>
-          </div>
+          </div> */}
         </div>
         <Button
           onClick={handleDeposit}

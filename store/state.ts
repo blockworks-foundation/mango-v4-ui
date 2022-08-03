@@ -23,9 +23,7 @@ import { Token } from '../types/jupiter'
 import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
 import { TOKEN_LIST_URL } from '@jup-ag/core'
 
-const DEVNET_GROUP = new PublicKey(
-  'A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb'
-)
+const GROUP = new PublicKey('A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb')
 
 export const connection = new web3.Connection(
   'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
@@ -173,7 +171,8 @@ const mangoStore = create<MangoStore>(
           try {
             const set = get().set
             const client = get().client
-            const group = await client.getGroup(DEVNET_GROUP)
+            const group = await client.getGroup(GROUP)
+
             const markets = await client.serum3GetMarkets(
               group,
               group.banksMap.get('BTC')?.tokenIndex,
@@ -189,8 +188,8 @@ const mangoStore = create<MangoStore>(
           }
         },
         fetchMangoAccount: async (wallet) => {
+          const set = get().set
           try {
-            const set = get().set
             const group = get().group
             if (!group) throw new Error('Group not loaded')
 
@@ -334,7 +333,7 @@ const mangoStore = create<MangoStore>(
           try {
             const set = get().set
             const client = get().client
-            const group = await client.getGroup(DEVNET_GROUP)
+            const group = await client.getGroup(GROUP)
 
             set((state) => {
               state.group = group
