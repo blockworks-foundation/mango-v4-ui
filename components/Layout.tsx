@@ -98,17 +98,24 @@ const Layout = ({ children }: { children: ReactNode }) => {
               isMobile ? '' : isCollapsed ? 'pl-[72px]' : 'pl-44 lg:pl-56'
             }`}
           >
-            <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-8">
+            <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6 md:px-8">
               <div className="flex items-center text-th-fgd-3">
+                {isMobile ? (
+                  <img
+                    className={`mr-4 h-8 w-auto`}
+                    src="/logos/logo-mark.svg"
+                    alt="next"
+                  />
+                ) : null}
                 <span className="mb-0 mr-2">
                   {mangoAccount ? (
                     <MangoAccountsList mangoAccount={mangoAccount} />
-                  ) : (
+                  ) : !isMobile ? (
                     <span className="flex items-center">
                       🔗<span className="ml-2">{t('connect-helper')}</span>
                       <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
                     </span>
-                  )}
+                  ) : null}
                 </span>
               </div>
               <div className="flex items-center space-x-4">
@@ -127,7 +134,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
                 )}
               </div>
             </div>
-            <div className={`min-h-screen p-8 ${isMobile ? 'pb-20' : ''}`}>
+            <div className={`min-h-screen ${isMobile ? 'p-6 pb-20' : 'p-8'}`}>
               {children}
             </div>
           </div>
