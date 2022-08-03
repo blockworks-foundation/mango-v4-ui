@@ -1,4 +1,4 @@
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { HealthType, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import type { NextPage } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -65,7 +65,7 @@ const Index: NextPage = () => {
 
   return !showDetailedValueChart ? (
     <>
-      <div className="mb-8 flex flex-col border-b border-th-bkg-3 pb-8 lg:flex-row lg:items-end lg:justify-between">
+      <div className="mb-8 flex flex-col md:mb-10 lg:flex-row lg:items-end lg:justify-between">
         <div className="mb-4 flex items-center space-x-6 lg:mb-0">
           <div>
             <p className="mb-1">{t('account-value')}</p>
@@ -126,6 +126,33 @@ const Index: NextPage = () => {
           </div>
         </div>
         <AccountActions />
+      </div>
+      <div className="mb-8 grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:mb-10 md:border-b-0">
+        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+          <p className="text-th-fgd-3">{t('health')}</p>
+          <p className="text-2xl font-bold text-th-fgd-1">
+            {mangoAccount
+              ? mangoAccount.getHealthRatio(HealthType.init).toNumber()
+              : 100}
+            %
+          </p>
+        </div>
+        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+          <p className="text-th-fgd-3">{t('free-collateral')}</p>
+          <p className="text-2xl font-bold text-th-fgd-1">
+            $
+            {mangoAccount
+              ? formatDecimal(
+                  toUiDecimals(mangoAccount.getCollateralValue().toNumber()),
+                  2
+                )
+              : (0).toFixed(2)}
+          </p>
+        </div>
+        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+          <p className="text-th-fgd-3">{t('leverage')}</p>
+          <p className="text-2xl font-bold text-th-fgd-1">0.0x</p>
+        </div>
       </div>
       <TokenList />
       {showDepositModal ? (
