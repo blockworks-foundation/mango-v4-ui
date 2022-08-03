@@ -123,8 +123,8 @@ const TokenList = () => {
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         <Image
                           alt=""
-                          width="32"
-                          height="32"
+                          width="24"
+                          height="24"
                           src={`/icons/${bank.value.name.toLowerCase()}.svg`}
                         />
                       </div>

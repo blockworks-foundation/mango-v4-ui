@@ -44,7 +44,7 @@ const RouteFeeInfo = ({
   }, [selectedRoute, connected])
 
   return (
-    <div className="space-y-4 px-1">
+    <div className="space-y-3 px-1">
       <div className="mb-4 flex items-center justify-between">
         <h3>{t('trade:review-trade')}</h3>
       </div>
@@ -75,10 +75,10 @@ const RouteFeeInfo = ({
       </div> */}
       {amountOut && amountIn ? (
         <div className="flex justify-between">
-          <p className="text-th-fgd-3">{t('trade:rate')}</p>
+          <p className="text-sm text-th-fgd-3">{t('trade:rate')}</p>
           <div>
             <div className="flex items-center justify-end">
-              <p className="text-right font-bold text-th-fgd-1">
+              <p className="text-right text-sm text-th-fgd-1">
                 {swapRate ? (
                   <>
                     1 {inputTokenSymbol} ≈{' '}
@@ -134,9 +134,9 @@ const RouteFeeInfo = ({
         </div>
       ) : null}
       <div className="flex justify-between">
-        <p className="text-th-fgd-3">{t('trade:minimum-received')}</p>
+        <p className="text-sm text-th-fgd-3">{t('trade:minimum-received')}</p>
         {outputTokenInfo?.decimals ? (
-          <p className="text-right font-bold text-th-fgd-1">
+          <p className="text-right text-sm text-th-fgd-1">
             {formatDecimal(
               selectedRoute?.outAmountWithSlippage /
                 10 ** outputTokenInfo.decimals || 1,
@@ -147,16 +147,16 @@ const RouteFeeInfo = ({
         ) : null}
       </div>
       <div className="flex justify-between">
-        <p className="text-th-fgd-3">{t('trade:health-impact')}</p>
-        <p className="text-right font-bold text-th-fgd-1">0%</p>
+        <p className="text-sm text-th-fgd-3">{t('trade:health-impact')}</p>
+        <p className="text-right text-sm text-th-fgd-1">0%</p>
       </div>
       <div className="flex justify-between">
-        <p className="text-th-fgd-3">{t('trade:est-liq-price')}</p>
-        <p className="text-right font-bold text-th-fgd-1">N/A</p>
+        <p className="text-sm text-th-fgd-3">{t('trade:est-liq-price')}</p>
+        <p className="text-right text-sm text-th-fgd-1">N/A</p>
       </div>
       <div className="flex justify-between">
-        <p className="text-th-fgd-3">{t('trade:slippage')}</p>
-        <p className="text-right font-bold text-th-fgd-1">
+        <p className="text-sm text-th-fgd-3">{t('trade:slippage')}</p>
+        <p className="text-right text-sm text-th-fgd-1">
           {selectedRoute?.priceImpactPct * 100 < 0.1
             ? '< 0.1%'
             : `~ ${(selectedRoute?.priceImpactPct * 100).toFixed(4)}%`}
@@ -164,9 +164,9 @@ const RouteFeeInfo = ({
       </div>
       {typeof feeValue === 'number' ? (
         <div className="flex justify-between">
-          <p className="text-th-fgd-3">{t('fee')}</p>
+          <p className="text-sm text-th-fgd-3">{t('fee')}</p>
           <div className="flex items-center">
-            <p className="text-right font-bold text-th-fgd-1">
+            <p className="text-right text-sm text-th-fgd-1">
               ≈ ${feeValue?.toFixed(2)}
             </p>
           </div>
@@ -178,13 +178,13 @@ const RouteFeeInfo = ({
           )
           return (
             <div className="flex justify-between" key={index}>
-              <p className="text-th-fgd-3">
+              <p className="text-sm text-th-fgd-3">
                 {t('trade:fees-paid-to', {
                   route: info?.amm?.label,
                 })}
               </p>
               {feeToken?.decimals && (
-                <p className="text-right font-bold text-th-fgd-1">
+                <p className="text-right text-sm text-th-fgd-1">
                   {(
                     info.lpFee?.amount / Math.pow(10, feeToken.decimals)
                   ).toFixed(6)}{' '}
