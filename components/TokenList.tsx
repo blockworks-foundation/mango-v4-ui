@@ -42,7 +42,7 @@ const TokenList = () => {
     if (coingeckoPrices.length === 0) {
       actions.fetchCoingeckoPrices()
     }
-  }, [coingeckoPrices])
+  }, [coingeckoPrices, actions])
 
   const banks = useMemo(() => {
     if (group?.banksMap) {

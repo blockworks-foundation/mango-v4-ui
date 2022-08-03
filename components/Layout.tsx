@@ -11,9 +11,8 @@ import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
 import { useTranslation } from 'next-i18next'
 import { Popover, Transition } from '@headlessui/react'
-import { HealthType, MangoAccount } from '@blockworks-foundation/mango-v4'
+import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../store/state'
-import HealthHeart from './account/HealthHeart'
 import BottomBar from './mobile/BottomBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import UserSetupModal from './modals/UserSetupModal'
@@ -159,28 +158,13 @@ const MangoAccountsList = ({
         {({ open }) => (
           <>
             <Popover.Button className="flex w-full items-center justify-between rounded-none text-th-fgd-1 hover:text-th-primary">
-              <div className="flex items-center">
-                <div className="mr-2 text-left">
-                  <p className="mb-0.5 text-sm font-bold text-th-fgd-1">
-                    {mangoAccount.name}
-                  </p>
-                  <div className="flex items-center">
-                    <HealthHeart
-                      health={mangoAccount
-                        .getHealthRatio(HealthType.init)
-                        .toNumber()}
-                      size={16}
-                    />
-                    <p className="ml-1 text-xs">
-                      {mangoAccount.getHealthRatio(HealthType.init).toNumber()}%
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <p className="mr-2 text-left text-sm font-bold text-th-fgd-1">
+                {mangoAccount.name}
+              </p>
               <ChevronDownIcon
                 className={`${
                   open ? 'rotate-180 transform' : 'rotate-360 transform'
-                } mt-0.5 ml-3 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                } mt-0.5 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
               />
             </Popover.Button>
             <Transition
