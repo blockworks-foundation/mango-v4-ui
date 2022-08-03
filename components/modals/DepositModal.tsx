@@ -134,7 +134,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
               <LinkButton className="mb-2 no-underline" onClick={setMax}>
-                <span className="mr-1 text-sm font-thin text-th-fgd-4">
+                <span className="mr-1 text-sm font-normal text-th-fgd-4">
                   {t('wallet-balance')}
                 </span>
                 <span className="text-th-fgd-1 underline">

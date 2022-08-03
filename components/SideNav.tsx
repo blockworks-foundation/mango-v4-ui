@@ -251,7 +251,6 @@ const ExpandableMenuItem = ({
           !alignBottom ? () => onHoverMenu(showMenu, 'onMouseLeave') : undefined
         }
         className={`relative z-30 ${alignBottom ? '' : 'px-4 py-2'}`}
-        onClick={() => toggleMenu()}
         role="button"
       >
         <Popover.Button
