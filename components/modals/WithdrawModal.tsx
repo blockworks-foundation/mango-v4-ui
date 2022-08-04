@@ -60,6 +60,8 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
       })
       actions.reloadAccount()
     } catch (e: any) {
+      console.log(e)
+
       notify({
         title: 'Transaction failed',
         description: e.message,
