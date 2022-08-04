@@ -241,7 +241,7 @@ const mangoStore = create<MangoStore>(
             if (!group) throw new Error('Group not loaded')
             if (!client) throw new Error('Client not loaded')
 
-            const mangoAccounts = await client.getMangoAccountForOwner(
+            const mangoAccounts = await client.getMangoAccountsForOwner(
               group,
               wallet.publicKey
             )

@@ -158,7 +158,7 @@ const Swap = () => {
 
     try {
       setSubmitting(true)
-      const tx = await client.marginTrade3({
+      const tx = await client.marginTrade({
         group,
         mangoAccount,
         inputToken,
