@@ -1,17 +1,9 @@
 import SideNav from './SideNav'
-import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
-import {
-  ArrowRightIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  PlusCircleIcon,
-} from '@heroicons/react/solid'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ArrowRightIcon, ChevronRightIcon } from '@heroicons/react/solid'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
 import { useTranslation } from 'next-i18next'
-import { Popover, Transition } from '@headlessui/react'
-import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../store/state'
 import BottomBar from './mobile/BottomBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
@@ -20,8 +12,7 @@ import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import WalletIcon from './icons/WalletIcon'
 import BounceLoader from './shared/BounceLoader'
-import { LinkButton } from './shared/Button'
-import CreateNewAccountModal from './modals/CreateNewAccountModal'
+import MangoAccountsList from './MangoAccountsList'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded'
 
@@ -151,74 +142,3 @@ const Layout = ({ children }: { children: ReactNode }) => {
 }
 
 export default Layout
-
-const MangoAccountsList = ({
-  mangoAccount,
-}: {
-  mangoAccount: MangoAccount
-}) => {
-  const mangoAccounts = mangoStore((s) => s.mangoAccounts)
-  const [showNewAccountModal, setShowNewAccountModal] = useState(false)
-  return (
-    <>
-      <Popover>
-        {({ open }) => (
-          <>
-            <Popover.Button className="flex w-full items-center justify-between rounded-none text-th-fgd-1 hover:text-th-primary">
-              <p className="mr-2 text-left text-sm font-bold text-th-fgd-1">
-                {mangoAccount.name}
-              </p>
-              <ChevronDownIcon
-                className={`${
-                  open ? 'rotate-180 transform' : 'rotate-360 transform'
-                } mt-0.5 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-              />
-            </Popover.Button>
-            <Transition
-              appear={true}
-              show={open}
-              as={Fragment}
-              enter="transition-all ease-in duration-200"
-              enterFrom="opacity-0 transform scale-75"
-              enterTo="opacity-100 transform scale-100"
-              leave="transition ease-out duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <Popover.Panel className="absolute top-[63px] z-10 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-3 bg-th-bkg-1 p-4">
-                {mangoAccounts.length ? (
-                  mangoAccounts.map((acc) => (
-                    <div key={acc.publicKey.toString()}>
-                      <button className="mb-3 flex w-full items-center justify-between border-b border-th-bkg-3 pb-3">
-                        {acc.name}
-                        {acc.publicKey.toString() ===
-                        mangoAccount.publicKey.toString() ? (
-                          <CheckCircleIcon className="h-5 w-5 text-th-green" />
-                        ) : null}
-                      </button>
-                      <LinkButton
-                        className="w-full justify-center"
-                        onClick={() => setShowNewAccountModal(true)}
-                      >
-                        <PlusCircleIcon className="h-5 w-5" />
-                        <span className="ml-2">New Account</span>
-                      </LinkButton>
-                    </div>
-                  ))
-                ) : (
-                  <p>Loading...</p>
-                )}
-              </Popover.Panel>
-            </Transition>
-          </>
-        )}
-      </Popover>
-      {showNewAccountModal ? (
-        <CreateNewAccountModal
-          isOpen={showNewAccountModal}
-          onClose={() => setShowNewAccountModal(false)}
-        />
-      ) : null}
-    </>
-  )
-}
