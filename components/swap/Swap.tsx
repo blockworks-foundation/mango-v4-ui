@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, useCallback, useEffect, useMemo } from 'react'
 import { TransactionInstruction } from '@solana/web3.js'
-import { ArrowDownIcon } from '@heroicons/react/solid'
+import { ArrowDownIcon, CogIcon } from '@heroicons/react/solid'
 import mangoStore from '../../store/state'
 import { RouteInfo } from '@jup-ag/core'
 import { Token } from '../../types/jupiter'
@@ -26,6 +26,7 @@ import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useJupiter from './useJupiter'
+import SwapSettings from './SwapSettings'
 
 const getBestRoute = (routesInfos: RouteInfo[]) => {
   return routesInfos[0]
@@ -72,6 +73,7 @@ const Swap = () => {
   const [submitting, setSubmitting] = useState(false)
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
+  const [showSettings, setShowSettings] = useState(false)
   const [useMargin, setUseMargin] = useState(true)
   const [sizePercentage, setSizePercentage] = useState('')
   const [showConfirm, setShowConfirm] = useState(false)
@@ -82,7 +84,7 @@ const Swap = () => {
   const outputToken = mangoStore((s) => s.swap.outputToken)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
-  const debouncedAmountIn = useDebounce(amountIn, 400)
+  const debouncedAmountIn = useDebounce(amountIn, 300)
 
   const { amountOut, jupiter, outputTokenInfo, routes } = useJupiter({
     inputTokenSymbol: inputToken,
@@ -235,14 +237,19 @@ const Swap = () => {
       </EnterBottomExitBottom>
       <div className="mb-4 flex items-center justify-between">
         <h3>{t('trade')}</h3>
-        <Switch
-          className="text-th-fgd-3"
-          checked={useMargin}
-          onChange={() => setUseMargin(!useMargin)}
+        <div
+          className="hover:cursor-pointer"
+          onClick={() => setShowSettings(true)}
         >
-          {t('margin')}
-        </Switch>
+          <CogIcon className="h-6 w-6" />
+        </div>
       </div>
+      <EnterBottomExitBottom
+        className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+        show={showSettings}
+      >
+        <SwapSettings onClose={() => setShowSettings(false)} />
+      </EnterBottomExitBottom>
       <div className="mb-2 flex items-center justify-between">
         <p className="text-th-fgd-3">{t('sell')}</p>
         <MaxWalletBalance inputToken={inputToken} setAmountIn={setAmountIn} />

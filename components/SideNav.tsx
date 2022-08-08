@@ -65,34 +65,34 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           <MenuItem
             active={pathname === '/'}
             collapsed={collapsed}
-            icon={<HomeIcon className="h-6 w-6" />}
+            icon={<HomeIcon className="h-5 w-5" />}
             title={t('portfolio')}
             pagePath="/"
           />
           <MenuItem
             active={pathname === '/trade'}
             collapsed={collapsed}
-            icon={<TradeIcon className="h-6 w-6" />}
+            icon={<TradeIcon className="h-5 w-5" />}
             title={t('trade')}
             pagePath="/trade"
           />
           <MenuItem
             active={pathname === '/stats'}
             collapsed={collapsed}
-            icon={<ChartBarIcon className="h-6 w-6" />}
+            icon={<ChartBarIcon className="h-5 w-5" />}
             title={t('stats')}
             pagePath="/stats"
           />
           <MenuItem
             active={pathname === '/settings'}
             collapsed={collapsed}
-            icon={<CogIcon className="h-6 w-6" />}
+            icon={<CogIcon className="h-5 w-5" />}
             title={t('settings')}
             pagePath="/settings"
           />
           <ExpandableMenuItem
             collapsed={collapsed}
-            icon={<DotsHorizontalIcon className="h-6 w-6" />}
+            icon={<DotsHorizontalIcon className="h-5 w-5" />}
             title={t('more')}
           >
             <MenuItem
@@ -180,7 +180,7 @@ const MenuItem = ({
               className={
                 hideIconBg
                   ? ''
-                  : 'flex h-10 w-10 items-center justify-center rounded-full bg-th-bkg-3'
+                  : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
               }
             >
               {icon}
@@ -261,7 +261,7 @@ const ExpandableMenuItem = ({
             className={` ${
               hideIconBg
                 ? ''
-                : 'flex h-10 w-10 items-center justify-center rounded-full bg-th-bkg-3'
+                : 'flex h-9 w-9 items-center justify-center rounded-full bg-th-bkg-3'
             } ${
               alignBottom
                 ? 'flex h-[72px] w-[72px] items-center justify-center hover:bg-th-bkg-2'
@@ -310,7 +310,7 @@ const ExpandableMenuItem = ({
               className={
                 hideIconBg
                   ? ''
-                  : 'flex h-10 w-10 items-center justify-center rounded-full bg-th-bkg-3'
+                  : 'flex h-9 w-9 items-center justify-center rounded-full bg-th-bkg-3'
               }
             >
               {icon}

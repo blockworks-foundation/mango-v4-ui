@@ -73,6 +73,8 @@ export type MangoStore = {
     outputToken: string
     inputTokenInfo: Token | undefined
     outputTokenInfo: Token | undefined
+    margin: boolean
+    slippage: number
   }
   set: (x: (x: MangoStore) => void) => void
   wallet: {
@@ -126,6 +128,8 @@ const mangoStore = create<MangoStore>(
         outputToken: 'USDC',
         inputTokenInfo: undefined,
         outputTokenInfo: undefined,
+        margin: true,
+        slippage: 0.1,
       },
       wallet: {
         loadProfilePic: true,
