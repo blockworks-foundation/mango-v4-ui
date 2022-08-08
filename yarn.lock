@@ -33,7 +33,7 @@
 
 "@blockworks-foundation/mango-v4@git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#main":
   version "0.0.1-beta.1"
-  resolved "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#4b7fa7288b8c840cf870fb6b94bd8b68fa97f079"
+  resolved "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#49538df6abfb6734225e65d2ff95f20f52c36f5d"
   dependencies:
     "@project-serum/anchor" "^0.25.0"
     "@project-serum/serum" "^0.13.65"
@@ -1181,9 +1181,9 @@
   integrity sha512-/THyiqyQAP9AfARo4pF+aCGcyiQ94tX/Is2I7HofNRqoYLgN1PBoOWu2/zTA5zMxzP5EFutMtWtGAFRKUe961Q==
 
 "@types/node@*":
-  version "18.6.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.6.4.tgz#fd26723a8a3f8f46729812a7f9b4fc2d1608ed39"
-  integrity sha512-I4BD3L+6AWiUobfxZ49DlU43gtI+FTHSv9pE2Zekg6KjMpre4ByusaljW3vYSLJrvQ1ck1hUaeVu8HVlY3vzHg==
+  version "18.6.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.6.5.tgz#06caea822caf9e59d5034b695186ee74154d2802"
+  integrity sha512-Xjt5ZGUa5WusGZJ4WJPbOT8QOqp6nDynVFRKcUt32bOgvXEoc6o085WNkYTMO7ifAj2isEfQQ2cseE+wT6jsRw==
 
 "@types/node@17.0.23":
   version "17.0.23"
