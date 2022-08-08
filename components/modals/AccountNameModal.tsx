@@ -19,19 +19,20 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
   const handleUpdateccountName = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
+    const actions = mangoStore.getState().actions
     if (!mangoAccount || !group) return
     setLoading(true)
     try {
       const tx = await client.editMangoAccount(group, mangoAccount, name)
-      if (tx) {
-        setLoading(false)
-        onClose()
-        notify({
-          title: t('account-update-success'),
-          type: 'success',
-          txid: tx,
-        })
-      }
+
+      setLoading(false)
+      onClose()
+      notify({
+        title: t('account-update-success'),
+        type: 'success',
+        txid: tx,
+      })
+      await actions.reloadAccount()
     } catch (e) {
       setLoading(false)
       notify({
@@ -57,7 +58,7 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
                 type="text"
                 name="name"
                 id="name"
-                placeholder="0.00"
+                placeholder="Mango"
                 value={name}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setName(e.target.value)

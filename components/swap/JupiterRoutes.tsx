@@ -110,8 +110,12 @@ const JupiterRoutes = ({
         ) : null}
       </div>
       <div className="flex items-center justify-center pb-6">
-        <Button onClick={onSwap} className="w-full text-base" size="large">
-          {submitting ? (
+        <Button
+          onClick={onSwap}
+          className="flex w-full items-center justify-center text-base"
+          size="large"
+        >
+          {true ? (
             <Loading className="mr-2 h-5 w-5" />
           ) : (
             t('trade:confirm-trade')

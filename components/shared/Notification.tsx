@@ -164,11 +164,11 @@ const Notification = ({ notification }: { notification: Notification }) => {
                   '?cluster=' +
                   CLUSTER
                 }
-                className="mt-1 flex items-center text-sm"
+                className="mt-1 flex items-center text-sm text-th-primary"
                 target="_blank"
                 rel="noreferrer"
               >
-                <div className="flex-1 break-all text-xs">
+                <div className="flex-1 break-all text-xs text-th-primary">
                   {type === 'error'
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}

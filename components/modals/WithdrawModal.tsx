@@ -89,7 +89,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         <WithdrawTokenList onSelect={handleSelectToken} />
       </EnterBottomExitBottom>
       <FadeInFadeOut
-        className="flex h-96 flex-col justify-between"
+        className="flex h-full flex-col justify-between"
         show={isOpen}
       >
         <div>
@@ -148,7 +148,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
             </div>
           </div>
-          <div className="space-y-2 border-y border-th-bkg-3 py-4">
+          {/* <div className="space-y-2 border-y border-th-bkg-3 py-4">
             <div className="flex justify-between">
               <p>{t('health-impact')}</p>
               <p className="text-th-red">-12%</p>
@@ -157,7 +157,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p>{t('withdrawal-value')}</p>
               <p className="text-th-fgd-1">$1,000.00</p>
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="mt-4 flex justify-center">
           <Button
