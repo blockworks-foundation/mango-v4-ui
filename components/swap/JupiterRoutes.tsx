@@ -72,7 +72,8 @@ const JupiterRoutes = ({
       selectedRoute,
       mangoAccount!.owner
     )
-    handleSwap(ixs)
+    await handleSwap(ixs)
+    onClose()
   }
 
   return routes?.length && selectedRoute && outputTokenInfo ? (

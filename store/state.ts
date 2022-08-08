@@ -129,7 +129,7 @@ const mangoStore = create<MangoStore>(
         inputTokenInfo: undefined,
         outputTokenInfo: undefined,
         margin: true,
-        slippage: 0.1,
+        slippage: 0.5,
       },
       wallet: {
         loadProfilePic: true,
