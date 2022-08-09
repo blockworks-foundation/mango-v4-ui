@@ -2,6 +2,7 @@ import React, { Dispatch, SetStateAction, useState } from 'react'
 import { TransactionInstruction, PublicKey } from '@solana/web3.js'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { Jupiter, RouteInfo } from '@jup-ag/core'
+import JSBI from 'jsbi'
 
 import mangoStore from '../../store/state'
 import RoutesModal from './RoutesModal'
@@ -36,11 +37,11 @@ const parseJupiterRoute = async (
     routeInfo: selectedRoute,
     userPublicKey,
   })
-  const { setupTransaction, swapTransaction } = transactions
+  const { swapTransaction } = transactions
   const instructions = []
   for (const ix of swapTransaction.instructions) {
     if (
-      ix.programId.toBase58() === 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
+      ix.programId.toBase58() === 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph'
     ) {
       instructions.push(ix)
     }
@@ -90,7 +91,7 @@ const JupiterRoutes = ({
           selectedRoute={selectedRoute}
           amountIn={amountIn}
           amountOut={toUiDecimals(
-            selectedRoute.outAmount,
+            JSBI.toNumber(selectedRoute.outAmount),
             outputTokenInfo.decimals
           )}
           inputTokenSymbol={inputToken}
@@ -115,7 +116,7 @@ const JupiterRoutes = ({
           className="flex w-full items-center justify-center text-base"
           size="large"
         >
-          {true ? (
+          {submitting ? (
             <Loading className="mr-2 h-5 w-5" />
           ) : (
             t('trade:confirm-trade')

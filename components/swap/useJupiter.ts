@@ -1,6 +1,8 @@
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { Jupiter, RouteInfo } from '@jup-ag/core'
 import { useEffect, useState } from 'react'
+import JSBI from 'jsbi'
+
 import mangoStore, { CLUSTER } from '../../store/state'
 import { Token } from '../../types/jupiter'
 
@@ -39,8 +41,9 @@ const useJupiter = ({
       const jupiter = await Jupiter.load({
         connection,
         cluster: CLUSTER,
+        wrapUnwrapSOL: false,
         // platformFeeAndAccounts:  NO_PLATFORM_FEE,
-        routeCacheDuration: 10_000, // Will not refetch data on computeRoutes for up to 10 seconds
+        routeCacheDuration: 30_000, // Will not refetch data on computeRoutes for up to 10 seconds
       })
       setJupiter(jupiter)
     }
@@ -68,7 +71,9 @@ const useJupiter = ({
             ?.computeRoutes({
               inputMint: inputBank.mint, // Mint address of the input token
               outputMint: outputBank.mint, // Mint address of the output token
-              inputAmount: inputAmount * 10 ** inputBank.mintDecimals, // raw input amount of tokens
+              amount: JSBI.BigInt(
+                inputAmount * 10 ** (inputBank.mintDecimals || 1)
+              ),
               slippage, // The slippage in % terms
               filterTopNResult: 10,
               onlyDirectRoutes: true,
@@ -96,7 +101,10 @@ const useJupiter = ({
             setComputedInfo({
               routes: routesInfosWithoutRaydium,
               outputTokenInfo: tokenOut,
-              amountOut: toUiDecimals(bestRoute.outAmount, tokenOut?.decimals),
+              amountOut: toUiDecimals(
+                JSBI.toNumber(bestRoute.outAmount),
+                tokenOut?.decimals
+              ),
             })
           }
         } catch (e) {

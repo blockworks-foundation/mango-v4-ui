@@ -1,5 +1,7 @@
 import { RouteInfo } from '@jup-ag/core'
 import { Dispatch, SetStateAction } from 'react'
+import JSBI from 'jsbi'
+
 import mangoStore from '../../store/state'
 import { Token } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
@@ -93,7 +95,8 @@ const RoutesModal = ({
                   </div>
                   <div className="text-lg">
                     {formatDecimal(
-                      route.outAmount / 10 ** (outputTokenInfo?.decimals || 1),
+                      JSBI.toNumber(route.outAmount) /
+                        10 ** (outputTokenInfo?.decimals || 1),
                       6
                     )}
                   </div>

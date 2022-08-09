@@ -74,12 +74,12 @@ const Swap = () => {
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [showSettings, setShowSettings] = useState(false)
-  const [useMargin, setUseMargin] = useState(true)
   const [sizePercentage, setSizePercentage] = useState('')
   const [showConfirm, setShowConfirm] = useState(false)
-  const [slippage, setSlippage] = useState(0.1)
 
   const set = mangoStore.getState().set
+  const useMargin = mangoStore((s) => s.swap.margin)
+  const slippage = mangoStore((s) => s.swap.slippage)
   const inputToken = mangoStore((s) => s.swap.inputToken)
   const outputToken = mangoStore((s) => s.swap.outputToken)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
@@ -94,7 +94,6 @@ const Swap = () => {
   })
 
   useEffect(() => {
-    console.log('setting selected route')
     setSelectedRoute(routes[0])
   }, [routes])
 

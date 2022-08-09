@@ -2,6 +2,8 @@ import { SwitchHorizontalIcon } from '@heroicons/react/solid'
 import { RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useState } from 'react'
+import JSBI from 'jsbi'
+
 import mangoStore from '../../store/state'
 import { Token } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
@@ -138,7 +140,7 @@ const RouteFeeInfo = ({
         {outputTokenInfo?.decimals ? (
           <p className="text-right text-sm text-th-fgd-1">
             {formatDecimal(
-              selectedRoute?.outAmountWithSlippage /
+              JSBI.toNumber(selectedRoute?.otherAmountThreshold) /
                 10 ** outputTokenInfo.decimals || 1,
               6
             )}{' '}
@@ -186,7 +188,8 @@ const RouteFeeInfo = ({
               {feeToken?.decimals && (
                 <p className="text-right text-sm text-th-fgd-1">
                   {(
-                    info.lpFee?.amount / Math.pow(10, feeToken.decimals)
+                    JSBI.toNumber(info.lpFee?.amount) /
+                    Math.pow(10, feeToken.decimals)
                   ).toFixed(6)}{' '}
                   {feeToken?.symbol} ({info.lpFee?.pct * 100}%)
                 </p>

@@ -113,26 +113,37 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   // Use ohlc data
   const getChartData = useCallback(async () => {
     if (!baseTokenId || !quoteTokenId) return
-
-    const chartData = await fetchChartData(
-      baseTokenId,
-      quoteTokenId,
-      daysToShow
-    )
-    setChartData(chartData)
-    setLoadChartData(false)
+    try {
+      const chartData = await fetchChartData(
+        baseTokenId,
+        quoteTokenId,
+        daysToShow
+      )
+      setChartData(chartData)
+      setLoadChartData(false)
+    } catch (e) {
+      console.log('Unable to load chart data')
+    }
   }, [baseTokenId, quoteTokenId, daysToShow])
 
   const getInputTokenInfo = useCallback(async () => {
     if (!inputTokenId) return
-    const response = await fetchTokenInfo(inputTokenId)
-    setInputTokenInfo(response)
+    try {
+      const response = await fetchTokenInfo(inputTokenId)
+      setInputTokenInfo(response)
+    } catch (e) {
+      console.error(e)
+    }
   }, [inputTokenId])
 
   const getOutputTokenInfo = useCallback(async () => {
     if (!outputTokenId) return
-    const response = await fetchTokenInfo(outputTokenId)
-    setOutputTokenInfo(response)
+    try {
+      const response = await fetchTokenInfo(outputTokenId)
+      setOutputTokenInfo(response)
+    } catch (e) {
+      console.error(e)
+    }
   }, [outputTokenId])
 
   useEffect(() => {
@@ -162,8 +173,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
     }
     return 0
   }
-
-  console.log(daysToShow)
 
   return (
     <ContentBox hideBorder hidePadding>
