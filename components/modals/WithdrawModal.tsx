@@ -1,11 +1,12 @@
 import { ChevronDownIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 
 import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
+import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
@@ -29,14 +30,27 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
 
-  const handleSizePercentage = (percentage: string) => {
-    setSizePercentage(percentage)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
-    // TODO: calc max
-    const max = 100
-    const amount = (Number(percentage) / 100) * max
-    setInputAmount(amount.toFixed())
-  }
+  const tokenMax = useMemo(() => {
+    const group = mangoStore.getState().group
+    const bank = group?.banksMap.get(selectedToken)
+    console.log(group, bank)
+
+    if (!group || !bank) return 0
+    const amount = mangoAccount?.getUi(bank)
+    return amount ? floorToDecimal(amount, bank.mintDecimals) : 0
+  }, [mangoAccount, selectedToken])
+
+  const handleSizePercentage = useCallback(
+    (percentage: string) => {
+      setSizePercentage(percentage)
+
+      const amount = (Number(percentage) / 100) * (tokenMax || 0)
+      setInputAmount(amount.toString())
+    },
+    [tokenMax]
+  )
 
   const handleWithdraw = async () => {
     const client = mangoStore.getState().client
@@ -99,12 +113,12 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <Label text={t('token')} />
               <LinkButton
                 className="mb-2 no-underline"
-                onClick={() => console.log('Set max input amount')}
+                onClick={() => handleSizePercentage('100')}
               >
                 <span className="mr-1 font-normal text-th-fgd-3">
                   {t('available-balance')}
                 </span>
-                <span className="text-th-fgd-1">0</span>
+                <span className="text-th-fgd-1 underline">{tokenMax}</span>
               </LinkButton>
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
