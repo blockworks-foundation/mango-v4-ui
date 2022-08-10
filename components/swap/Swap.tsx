@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, useCallback, useEffect, useMemo } from 'react'
-import { TransactionInstruction } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { ArrowDownIcon, CogIcon } from '@heroicons/react/solid'
 import mangoStore from '../../store/state'
 import { RouteInfo } from '@jup-ag/core'
@@ -104,19 +104,34 @@ const Swap = () => {
     []
   )
 
-  const handleTokenInSelect = (symbol: string) => {
-    const inputTokenInfo = jupiterTokens.find((t: any) => t.symbol === symbol)
+  const handleTokenInSelect = (mintAddress: string) => {
+    const inputTokenInfo = jupiterTokens.find(
+      (t: any) => t.address === mintAddress
+    )
+    const group = mangoStore.getState().group
+    if (!group) throw new Error('Mango group not loaded')
+    const banks = Array.from(group.banksMap.values())
+
+    const bank = banks.find((b) => b.mint.toString() === mintAddress)
     set((s) => {
-      s.swap.inputToken = symbol
+      s.swap.inputToken = bank!.name
       s.swap.inputTokenInfo = inputTokenInfo
     })
     setShowTokenSelect('')
   }
 
-  const handleTokenOutSelect = (symbol: string) => {
-    const outputTokenInfo = jupiterTokens.find((t: any) => t.symbol === symbol)
+  const handleTokenOutSelect = (mintAddress: string) => {
+    const outputTokenInfo = jupiterTokens.find(
+      (t: any) => t.address === mintAddress
+    )
+    const group = mangoStore.getState().group
+    if (!group) throw new Error('Mango group not loaded')
+    const banks = Array.from(group.banksMap.values())
+    console.log(mintAddress, banks)
+
+    const bank = banks.find((b) => b.mint.toString() === mintAddress)
     set((s) => {
-      s.swap.outputToken = symbol
+      s.swap.outputToken = bank!.name
       s.swap.outputTokenInfo = outputTokenInfo
     })
     setShowTokenSelect('')

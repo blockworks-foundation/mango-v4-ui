@@ -47,7 +47,7 @@ const TokenItem = ({
       <button
         key={address}
         className="flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-4"
-        onClick={() => onSubmit(symbol)}
+        onClick={() => onSubmit(address)}
       >
         <div className="flex items-center">
           <picture>
@@ -152,7 +152,7 @@ const SelectToken = ({
           {popularTokens.map((token) => (
             <button
               className="mx-1 mb-2 flex items-center rounded-md border border-th-bkg-4 py-1 px-3 hover:border-th-fgd-3 focus:border-th-fgd-2"
-              onClick={() => onTokenSelect(token.symbol)}
+              onClick={() => onTokenSelect(token.address)}
               key={token.address}
             >
               <Image
