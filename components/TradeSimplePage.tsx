@@ -1,7 +1,7 @@
-import TokenList from './TokenList'
 import Swap from './swap/Swap'
 import SwapTokenChart from './swap/SwapTokenChart'
 import mangoStore from '../store/state'
+import AccountTabs from './account/AccountTabs'
 
 const TradeSimplePage = () => {
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
@@ -19,7 +19,7 @@ const TradeSimplePage = () => {
         <Swap />
       </div>
       <div className="col-span-12">
-        <TokenList />
+        <AccountTabs />
       </div>
     </div>
   )

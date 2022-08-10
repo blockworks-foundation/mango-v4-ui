@@ -6,7 +6,6 @@ import { useState } from 'react'
 import AccountActions from '../components/account/AccountActions'
 import DepositModal from '../components/modals/DepositModal'
 import WithdrawModal from '../components/modals/WithdrawModal'
-import TokenList from '../components/TokenList'
 import mangoStore from '../store/state'
 import { formatDecimal } from '../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
@@ -18,6 +17,7 @@ import { IconButton } from '../components/shared/Button'
 import { ArrowsExpandIcon } from '@heroicons/react/solid'
 import DetailedAreaChart from '../components/shared/DetailedAreaChart'
 import { Transition } from '@headlessui/react'
+import AccountTabs from '../components/account/AccountTabs'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -154,7 +154,7 @@ const Index: NextPage = () => {
           <p className="text-2xl font-bold text-th-fgd-1">0.0x</p>
         </div>
       </div>
-      <TokenList />
+      <AccountTabs />
       {showDepositModal ? (
         <DepositModal
           isOpen={showDepositModal}

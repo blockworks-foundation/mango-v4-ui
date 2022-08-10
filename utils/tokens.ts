@@ -102,9 +102,9 @@ export const fetchNftsFromHolaplexIndexer = async (owner: PublicKey) => {
 
 export const COINGECKO_IDS = [
   { id: 'bitcoin', symbol: 'BTC' },
-  // { id: 'ethereum', symbol: 'ETH' },
+  { id: 'ethereum', symbol: 'ETH' },
   { id: 'solana', symbol: 'SOL' },
-  // { id: 'mango-markets', symbol: 'MNGO' },
+  { id: 'mango-markets', symbol: 'MNGO' },
   // { id: 'binancecoin', symbol: 'BNB' },
   // { id: 'serum', symbol: 'SRM' },
   // { id: 'raydium', symbol: 'RAY' },
@@ -113,7 +113,7 @@ export const COINGECKO_IDS = [
   // { id: 'terra-luna', symbol: 'LUNA' },
   // { id: 'cope', symbol: 'COPE' },
   // { id: 'cardano', symbol: 'ADA' },
-  // { id: 'msol', symbol: 'MSOL' },
+  { id: 'msol', symbol: 'MSOL' },
   // { id: 'tether', symbol: 'USDT' },
   // { id: 'stepn', symbol: 'GMT' },
 ]

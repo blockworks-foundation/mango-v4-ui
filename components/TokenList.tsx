@@ -11,7 +11,7 @@ import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '../store/state'
 import { COLORS } from '../styles/colors'
-import { formatDecimal, numberFormat } from '../utils/numbers'
+import { formatDecimal } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
 import BorrowModal from './modals/BorrowModal'
@@ -82,9 +82,8 @@ const TokenList = () => {
   }
 
   return (
-    <ContentBox hideBorder hidePadding>
-      <div className="flex items-center justify-between">
-        <h2>{t('tokens')}</h2>
+    <ContentBox hideBorder hidePadding className="-mt-10">
+      <div className="mb-6 flex items-center justify-end">
         <Switch
           className="text-th-fgd-3"
           checked={showZeroBalances}
@@ -115,6 +114,14 @@ const TokenList = () => {
               const coingeckoData = coingeckoPrices.find(
                 (asset) => asset.symbol === bank.key
               )
+
+              const change = coingeckoData
+                ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
+                    coingeckoData.prices[0][1]) /
+                    coingeckoData.prices[0][1]) *
+                  100
+                : 0
+
               const chartData = coingeckoData ? coingeckoData.prices : undefined
               return (
                 <FadeInList as="tr" index={index} key={bank.key}>
@@ -140,36 +147,27 @@ const TokenList = () => {
                       </div> */}
                     </div>
                   </td>
-                  <td className="hidden lg:block">
-                    <div>
-                      {!loadingCoingeckoPrices ? (
-                        chartData !== undefined ? (
-                          <SimpleAreaChart
-                            // update color when we have 24h change
-                            color={COLORS.GREEN[theme]}
-                            data={chartData}
-                            height={40}
-                            name={bank.key}
-                            width={104}
-                          />
-                        ) : bank.key === 'USDC' ? null : (
-                          t('unavailable')
-                        )
-                      ) : (
-                        <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
-                      )}
-                    </div>
+                  <td className="hidden lg:table-cell">
+                    {!loadingCoingeckoPrices ? (
+                      chartData !== undefined ? (
+                        <SimpleAreaChart
+                          color={
+                            change >= 0
+                              ? COLORS.GREEN[theme]
+                              : COLORS.RED[theme]
+                          }
+                          data={chartData}
+                          height={40}
+                          name={bank.key}
+                          width={104}
+                        />
+                      ) : bank.key === 'USDC' || bank.key === 'USDT' ? null : (
+                        <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
+                      )
+                    ) : (
+                      <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+                    )}
                   </td>
-                  {/* <td className="w-[16.67%]">
-                    <div className="flex flex-col text-right">
-                      <p className="text-th-green">0%</p>
-                    </div>
-                  </td> */}
-                  {/* <td className="w-[16.67%]">
-                    <div className="flex flex-col text-right">
-                      <p>1000</p>
-                    </div>
-                  </td> */}
                   <td className="w-[16.67%]">
                     <div className="flex justify-end space-x-2 text-right">
                       <p className="text-th-green">
@@ -259,7 +257,7 @@ const TokenList = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-3">
                     <ActionsMenu
                       bank={bank.value}
                       mangoAccount={mangoAccount}
@@ -267,7 +265,6 @@ const TokenList = () => {
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.value.name)}
                       className="h-10 w-10"
-                      hideBg
                     >
                       <ChevronDownIcon
                         className={`${

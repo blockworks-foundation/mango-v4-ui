@@ -39,12 +39,9 @@ const ProfileImage = ({
     }
   }, [publicKey, connection])
 
-  const isLoading =
-    (connected && !publicKey) ||
-    (connected && loadPfp && !publicKey) ||
-    loadUnownedPfp
+  const isLoading = (connected && loadPfp && !publicKey) || loadUnownedPfp
 
-  return (pfp?.isAvailable && !publicKey) || unownedPfp?.isAvailable ? (
+  return pfp?.isAvailable || unownedPfp?.isAvailable ? (
     <img
       alt=""
       src={publicKey ? unownedPfp?.url : pfp?.url}
