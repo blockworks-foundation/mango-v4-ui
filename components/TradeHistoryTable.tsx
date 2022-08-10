@@ -60,22 +60,22 @@ const TradeHistoryTable = ({
                   swap_in_price_usd,
                   swap_in_symbol,
                   swap_out_amount,
-                  swap_out_loan,
-                  swap_out_loan_origination_fee,
+                  loan,
+                  loan_origination_fee,
                   swap_out_price_usd,
                   swap_out_symbol,
                 } = h
                 const borrowAmount =
                   swap_in_loan > 0
                     ? `${swap_in_loan} ${swap_in_symbol}`
-                    : swap_out_loan > 0
-                    ? `${swap_out_loan} ${swap_out_symbol}`
+                    : loan > 0
+                    ? `${loan} ${swap_out_symbol}`
                     : 0
                 const borrowFee =
                   swap_in_loan_origination_fee > 0
                     ? swap_in_loan_origination_fee
-                    : swap_out_loan_origination_fee > 0
-                    ? swap_out_loan_origination_fee
+                    : loan_origination_fee > 0
+                    ? loan_origination_fee
                     : 0
                 return (
                   <FadeInList as="tr" index={index} key={signature}>
@@ -173,22 +173,22 @@ const TradeHistoryTable = ({
                 swap_in_price_usd,
                 swap_in_symbol,
                 swap_out_amount,
-                swap_out_loan,
-                swap_out_loan_origination_fee,
+                loan,
+                loan_origination_fee,
                 swap_out_price_usd,
                 swap_out_symbol,
               } = h
               const borrowAmount =
                 swap_in_loan > 0
                   ? `${swap_in_loan} ${swap_in_symbol}`
-                  : swap_out_loan > 0
-                  ? `${swap_out_loan} ${swap_out_symbol}`
+                  : loan > 0
+                  ? `${loan} ${swap_out_symbol}`
                   : 0
               const borrowFee =
                 swap_in_loan_origination_fee > 0
                   ? swap_in_loan_origination_fee
-                  : swap_out_loan_origination_fee > 0
-                  ? swap_out_loan_origination_fee
+                  : loan_origination_fee > 0
+                  ? loan_origination_fee
                   : 0
               return (
                 <div

@@ -15,8 +15,8 @@ export interface TradeHistoryItem {
   swap_in_price_usd: number
   swap_in_symbol: string
   swap_out_amount: number
-  swap_out_loan: number
-  swap_out_loan_origination_fee: number
+  loan: number
+  loan_origination_fee: number
   swap_out_price_usd: number
   swap_out_symbol: string
 }
