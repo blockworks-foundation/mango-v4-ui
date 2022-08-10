@@ -312,13 +312,15 @@ const mangoStore = create<MangoStore>(
             )
             return
           }
-          const banks = Array.from(group.banksMap.keys())
+          const bankMints = Array.from(group.banksMap.values()).map((b) =>
+            b.mint.toString()
+          )
 
           fetch(TOKEN_LIST_URL[CLUSTER])
             .then((response) => response.json())
             .then((result) => {
               const groupTokens = result.filter((t: any) =>
-                banks.includes(t.symbol)
+                bankMints.includes(t.address)
               )
               const inputTokenInfo = groupTokens.find(
                 (t: any) => t.symbol === 'SOL'
