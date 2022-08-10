@@ -76,13 +76,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             title={t('trade')}
             pagePath="/trade"
           />
-          <MenuItem
+          {/* <MenuItem
             active={pathname === '/stats'}
             collapsed={collapsed}
             icon={<ChartBarIcon className="h-5 w-5" />}
             title={t('stats')}
             pagePath="/stats"
-          />
+          /> */}
           <MenuItem
             active={pathname === '/settings'}
             collapsed={collapsed}
@@ -95,14 +95,14 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             icon={<DotsHorizontalIcon className="h-5 w-5" />}
             title={t('more')}
           >
-            <MenuItem
+            {/* <MenuItem
               active={pathname === '/fees'}
               collapsed={false}
               icon={<ReceiptTaxIcon className="h-5 w-5" />}
               title={t('fees')}
               pagePath="/fees"
               hideIconBg
-            />
+            /> */}
             <MenuItem
               collapsed={false}
               icon={<LightBulbIcon className="h-5 w-5" />}
