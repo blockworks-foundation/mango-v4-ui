@@ -1,27 +1,48 @@
+import { ChangeEvent, useState } from 'react'
+import { MangoAccount } from '@blockworks-foundation/mango-v4'
+import { useTranslation } from 'next-i18next'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import mangoStore from '../../store/state'
 import { notify } from '../../utils/notifications'
 import Button from '../shared/Button'
-import { useTranslation } from 'next-i18next'
-import { ChangeEvent, useState } from 'react'
 import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { Wallet } from '@project-serum/anchor'
+
+const getNextAccountNumber = (accounts: MangoAccount[]): number => {
+  if (accounts.length > 1) {
+    return (
+      accounts
+        .map((a) => a.accountNum)
+        .reduce((a, b) => Math.max(a, b), -Infinity) + 1
+    )
+  } else if (accounts.length === 1) {
+    return accounts[0].accountNum + 1
+  }
+  return 0
+}
 
 const CreateNewAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
+  const { wallet } = useWallet()
 
   // This doesn't work yet...
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
-    if (!group) return
+    const mangoAccounts = mangoStore.getState().mangoAccounts
+    const actions = mangoStore.getState().actions
+    if (!group || !wallet) return
     setLoading(true)
     try {
-      const tx = await client.createMangoAccount(group, 0, name)
+      const newAccountNum = getNextAccountNumber(mangoAccounts)
+      const tx = await client.createMangoAccount(group, newAccountNum, name)
+      actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
       if (tx) {
         setLoading(false)
         onClose()
@@ -56,7 +77,7 @@ const CreateNewAccountModal = ({ isOpen, onClose }: ModalProps) => {
                 type="text"
                 name="name"
                 id="name"
-                placeholder="0.00"
+                placeholder="Account 1"
                 value={name}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setName(e.target.value)
