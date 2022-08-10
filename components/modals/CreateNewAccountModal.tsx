@@ -31,10 +31,11 @@ const CreateNewAccountModal = ({ isOpen, onClose }: ModalProps) => {
           txid: tx,
         })
       }
-    } catch (e) {
+    } catch (e: any) {
       setLoading(false)
       notify({
         title: t('new-account-failed'),
+        txid: e?.signature,
         type: 'error',
       })
       console.log(e)

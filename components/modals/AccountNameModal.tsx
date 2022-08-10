@@ -33,10 +33,11 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
         txid: tx,
       })
       await actions.reloadAccount()
-    } catch (e) {
+    } catch (e: any) {
       setLoading(false)
       notify({
         title: t('account-update-failed'),
+        txid: e?.signature,
         type: 'error',
       })
       console.log(e)
