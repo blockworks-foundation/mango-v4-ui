@@ -148,7 +148,7 @@ const TradeHistoryTable = ({
                       <div className="flex flex-col text-right">
                         <a
                           className="text-th-primary"
-                          href={`https://solscan.io/tx/${signature}`}
+                          href={`https://explorer.solana.com/tx/${signature}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
