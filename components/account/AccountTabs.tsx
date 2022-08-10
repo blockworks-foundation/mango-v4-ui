@@ -33,7 +33,7 @@ const AccountTabs = () => {
         setLoading(true)
         try {
           const history = await fetch(
-            `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=7KmjgCRVPfXrDdJEqF1yeM2mUSFCTafCvTEioqZxr9wG`
+            `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccount.publicKey.toString()}`
           )
           const parsedHistory = await history.json()
           const sortedHistory = parsedHistory.length
