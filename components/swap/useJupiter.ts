@@ -87,11 +87,10 @@ const useJupiter = ({
           )
           const routesInfosWithoutRaydium = computedRoutes?.routesInfos.filter(
             (r) => {
-              if (r.marketInfos.length > 1) {
-                for (const mkt of r.marketInfos) {
-                  if (mkt.amm.label === 'Raydium') return false
-                }
+              for (const mkt of r.marketInfos) {
+                if (mkt.amm.label === 'Raydium') return false
               }
+
               return true
             }
           )
