@@ -65,7 +65,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         mangoAccount,
         selectedToken,
         parseFloat(inputAmount),
-        false
+        true
       )
       notify({
         title: 'Transaction confirmed',
