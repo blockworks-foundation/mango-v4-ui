@@ -37,16 +37,9 @@ export interface PerformanceDataItem {
   transfer_balance: number
 }
 
-interface InterestItem {
-  deposit_interest: number
-  borrow_interest: number
-  price: number
-  time: string
-}
-
-interface HourlyInterestDataItem {
-  symbol: string
-  interest: Array<InterestItem>
+interface TotalInterestDataItem {
+  borrow_interest_usd: number
+  deposit_interest_usd: number
 }
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -80,12 +73,12 @@ export const fetchHourlyPerformanceStats = async (
   return stats
 }
 
-export const fetchHourlyInterest = async (
+export const fetchTotalInterest = async (
   mangoAccountPk: string,
   range: number
 ) => {
   const response = await fetch(
-    `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-hourly?mango-account=${mangoAccountPk}&start-date=${dayjs()
+    `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-total?mango-account=${mangoAccountPk}&start-date=${dayjs()
       .subtract(range, 'day')
       .format('YYYY-MM-DD')}`
   )
@@ -94,22 +87,13 @@ export const fetchHourlyInterest = async (
     b[0].localeCompare(a[0])
   )
 
-  const totals = entries
-    .map(
-      ([key, value]: Array<{
-        key: string
-        value: any
-      }>) => {
-        const interest = Object.entries(value).map(([key, value]) => ({
-          ...value,
-          time: key,
-        }))
-        return { interest, symbol: key }
-      }
-    )
+  const stats = entries
+    .map(([key, value]: Array<{ key: string; value: number }>) => {
+      return { ...value, time: key }
+    })
     .filter((x: string) => x)
 
-  return totals
+  return stats
 }
 
 const Index: NextPage = () => {
@@ -124,8 +108,8 @@ const Index: NextPage = () => {
   const [performanceData, setPerformanceData] = useState<
     Array<PerformanceDataItem>
   >([])
-  const [hourlyInterestData, setHourlyInterestData] = useState<
-    Array<HourlyInterestDataItem>
+  const [totalInterestData, setTotalInterestData] = useState<
+    Array<TotalInterestDataItem>
   >([])
   const { theme } = useTheme()
 
@@ -137,11 +121,11 @@ const Index: NextPage = () => {
         try {
           const promises = [
             fetchHourlyPerformanceStats(pubKey, 1),
-            fetchHourlyInterest(pubKey, 10000),
+            fetchTotalInterest(pubKey, 10000),
           ]
           const data = await Promise.all(promises)
           setPerformanceData(data[0])
-          setHourlyInterestData(data[1])
+          setTotalInterestData(data[1])
           setLoadAccountData(false)
         } catch {
           notify({
@@ -182,18 +166,14 @@ const Index: NextPage = () => {
   }, [performanceData])
 
   const accountInterestTotalValue = useMemo(() => {
-    if (hourlyInterestData.length) {
-      const total = hourlyInterestData.reduce((a, c) => {
-        const tokenInterestValue = c.interest.reduce(
-          (a, c) => a + (c.borrow_interest + c.deposit_interest) * c.price,
-          0
-        )
-        return a + tokenInterestValue
-      }, 0)
-      return total
+    if (totalInterestData.length) {
+      return totalInterestData.reduce(
+        (a, c) => a + c.borrow_interest_usd + c.deposit_interest_usd,
+        0
+      )
     }
     return 0
-  }, [hourlyInterestData])
+  }, [totalInterestData])
 
   return !showDetailedValueChart ? (
     <>
@@ -299,7 +279,7 @@ const Index: NextPage = () => {
         </div>
         <AccountActions />
       </div>
-      <div className="mb-8 grid grid-cols-4 gap-x-6 border-b border-th-bkg-3 md:mb-10 md:border-b-0">
+      <div className="mb-8 grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:mb-10 md:border-b-0">
         <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
           <p className="text-th-fgd-3">{t('health')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
@@ -323,10 +303,10 @@ const Index: NextPage = () => {
               : (0).toFixed(2)}
           </p>
         </div>
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+        {/* <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
           <p className="text-th-fgd-3">{t('leverage')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">0.0x</p>
-        </div>
+        </div> */}
         <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
           <p className="text-th-fgd-3">{t('total-interest-value')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
