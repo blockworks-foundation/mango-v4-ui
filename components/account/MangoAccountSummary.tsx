@@ -1,5 +1,5 @@
 import mangoStore from '../../store/state'
-import { toUiDecimals, HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { formatDecimal } from '../../utils/numbers'
 import Button from '../shared/Button'
 import { useState } from 'react'
@@ -22,7 +22,7 @@ const MangoAccountSummary = () => {
             $
             {mangoAccount
               ? formatDecimal(
-                  toUiDecimals(mangoAccount.getEquity().toNumber()),
+                toUiDecimalsForQuote(mangoAccount.getEquity().toNumber()),
                   2
                 )
               : (0).toFixed(2)}
@@ -34,7 +34,7 @@ const MangoAccountSummary = () => {
             $
             {mangoAccount
               ? formatDecimal(
-                  toUiDecimals(mangoAccount.getCollateralValue().toNumber()),
+                toUiDecimalsForQuote(mangoAccount.getCollateralValue().toNumber()),
                   2
                 )
               : (0).toFixed(2)}

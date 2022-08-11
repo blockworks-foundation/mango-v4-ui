@@ -102,7 +102,7 @@ const useJupiter = ({
               outputTokenInfo: tokenOut,
               amountOut: toUiDecimals(
                 JSBI.toNumber(bestRoute.outAmount),
-                tokenOut?.decimals
+                tokenOut?.decimals!
               ),
             })
           }

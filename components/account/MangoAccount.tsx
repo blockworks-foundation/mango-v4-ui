@@ -1,7 +1,7 @@
 import ContentBox from '../shared/ContentBox'
 import mangoStore from '../../store/state'
 import AccountActions from './AccountActions'
-import { toUiDecimals, HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { formatDecimal } from '../../utils/numbers'
 
 const MangoAccount = () => {
@@ -16,7 +16,7 @@ const MangoAccount = () => {
             $
             {mangoAccount
               ? formatDecimal(
-                  toUiDecimals(mangoAccount.getEquity().toNumber()),
+                toUiDecimalsForQuote(mangoAccount.getEquity().toNumber()),
                   2
                 )
               : (0).toFixed(2)}
@@ -28,7 +28,7 @@ const MangoAccount = () => {
             $
             {mangoAccount
               ? formatDecimal(
-                  toUiDecimals(mangoAccount.getCollateralValue().toNumber()),
+                toUiDecimalsForQuote(mangoAccount.getCollateralValue().toNumber()),
                   2
                 )
               : (0).toFixed(2)}

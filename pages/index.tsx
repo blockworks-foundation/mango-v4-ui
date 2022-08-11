@@ -1,4 +1,4 @@
-import { HealthType, toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { HealthType, toUiDecimals, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import type { NextPage } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -207,7 +207,7 @@ const Index: NextPage = () => {
                   delay={0.05}
                   duration={1}
                   numbers={formatDecimal(
-                    toUiDecimals(mangoAccount.getEquity().toNumber()),
+                    toUiDecimalsForQuote(mangoAccount.getEquity().toNumber()),
                     2
                   )}
                 />
@@ -311,7 +311,7 @@ const Index: NextPage = () => {
             $
             {mangoAccount
               ? formatDecimal(
-                  toUiDecimals(mangoAccount.getCollateralValue().toNumber()),
+                toUiDecimalsForQuote(mangoAccount.getCollateralValue().toNumber()),
                   2
                 )
               : (0).toFixed(2)}
