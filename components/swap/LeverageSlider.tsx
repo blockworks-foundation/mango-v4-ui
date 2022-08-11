@@ -25,7 +25,7 @@ const LeverageSlider = ({
       max = toUiDecimals(
         mangoAccount
           .getMaxSourceForTokenSwap(group, inputToken, outputToken, 0.9)
-          .toNumber()
+          .toNumber(),group.banksMap.get(inputToken)?.mintDecimals!
       )
     } else {
       // needs to be calculated if we want to use this same component for borrowing
