@@ -23,6 +23,7 @@ import AccountTabs from '../components/account/AccountTabs'
 import dayjs from 'dayjs'
 import DetailedAccountValueChart from '../components/account/DetailedAccountValueChart'
 import SheenLoader from '../components/shared/SheenLoader'
+import { notify } from '../utils/notifications'
 
 export interface AccountPerformanceData {
   account_equity: number
@@ -30,6 +31,18 @@ export interface AccountPerformanceData {
   spot_value: number
   time: string
   transfer_balance: number
+}
+
+interface InterestItem {
+  deposit_interest: number
+  borrow_interest: number
+  price: number
+  time: string
+}
+
+interface HourlyAccountInterest {
+  symbol: string
+  interest: Array<InterestItem>
 }
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -45,7 +58,7 @@ export const fetchHourlyPerformanceStats = async (
   range: number
 ) => {
   const response = await fetch(
-    `https://mango-transaction-log.herokuapp.com/v3/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
+    `https://mango-transaction-log.herokuapp.com/v4/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
       .subtract(range, 'day')
       .format('YYYY-MM-DD')}`
   )
@@ -63,33 +76,78 @@ export const fetchHourlyPerformanceStats = async (
   return stats
 }
 
+export const fetchHourlyInterest = async (
+  mangoAccountPk: string,
+  range: number
+) => {
+  const response = await fetch(
+    `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-hourly?mango-account=${mangoAccountPk}&start-date=${dayjs()
+      .subtract(range, 'day')
+      .format('YYYY-MM-DD')}`
+  )
+  const parsedResponse = await response.json()
+  const entries: any = Object.entries(parsedResponse).sort((a, b) =>
+    b[0].localeCompare(a[0])
+  )
+
+  const totals = entries
+    .map(
+      ([key, value]: Array<{
+        key: string
+        value: any
+      }>) => {
+        const interest = Object.entries(value).map(([key, value]) => ({
+          ...value,
+          time: key,
+        }))
+        return { interest, symbol: key }
+      }
+    )
+    .filter((x: string) => x)
+
+  return totals
+}
+
 const Index: NextPage = () => {
   const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const [showDepositModal, setShowDepositModal] = useState(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
-  const [showDetailedValueChart, setShowDetailedValueChart] = useState(false)
-  const [showExpandChart, setShowExpandChart] = useState(false)
-  const [loadAccountPerformance, setLoadAccountPerformance] = useState(false)
+  const [showDepositModal, setShowDepositModal] = useState<boolean>(false)
+  const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false)
+  const [showDetailedValueChart, setShowDetailedValueChart] =
+    useState<boolean>(false)
+  const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
+  const [loadAccountData, setLoadAccountData] = useState<boolean>(false)
   const [accountPerformanceData, setAccountPerformanceData] = useState<
     Array<AccountPerformanceData>
+  >([])
+  const [accountInterestTotals, setAccountInterestTotals] = useState<
+    Array<HourlyAccountInterest>
   >([])
   const { theme } = useTheme()
 
   useEffect(() => {
     if (mangoAccount) {
-      setLoadAccountPerformance(true)
-      const getPerformanceData = async () => {
+      setLoadAccountData(true)
+      const getData = async () => {
         const pubKey = mangoAccount.publicKey.toString()
         try {
-          const data = await fetchHourlyPerformanceStats(pubKey, 100)
-          setAccountPerformanceData(data)
-          setLoadAccountPerformance(false)
+          const promises = [
+            fetchHourlyPerformanceStats(pubKey, 1),
+            fetchHourlyInterest(pubKey, 1),
+          ]
+          const data = await Promise.all(promises)
+          setAccountPerformanceData(data[0])
+          setAccountInterestTotals(data[1])
+          setLoadAccountData(false)
         } catch {
-          setLoadAccountPerformance(false)
+          notify({
+            title: 'Failed to load account performance data',
+            type: 'error',
+          })
+          setLoadAccountData(false)
         }
       }
-      getPerformanceData()
+      getData()
     }
   }, [mangoAccount])
 
@@ -119,6 +177,20 @@ const Index: NextPage = () => {
     }
     return 0
   }, [accountPerformanceData])
+
+  const accountInterestTotalValue = useMemo(() => {
+    if (accountInterestTotals.length) {
+      const total = accountInterestTotals.reduce((a, c) => {
+        const tokenInterestValue = c.interest.reduce(
+          (a, c) => a + (c.borrow_interest + c.deposit_interest) * c.price,
+          0
+        )
+        return a + tokenInterestValue
+      }, 0)
+      return total
+    }
+    return 0
+  }, [accountInterestTotals])
 
   return !showDetailedValueChart ? (
     <>
@@ -151,7 +223,7 @@ const Index: NextPage = () => {
                 ) : accountValueChange < 0 ? (
                   <DownTriangle />
                 ) : (
-                  '–'
+                  ''
                 )}
 
                 <p
@@ -163,12 +235,15 @@ const Index: NextPage = () => {
                       : 'text-th-fgd-4'
                   }`}
                 >
-                  {accountValueChange.toFixed(2)}%
+                  {isNaN(accountValueChange)
+                    ? '0.00'
+                    : accountValueChange.toFixed(2)}
+                  %
                 </p>
               </div>
             ) : null}
           </div>
-          {!loadAccountPerformance ? (
+          {!loadAccountData ? (
             accountPerformanceData.length ? (
               <div
                 className="relative flex items-end"
@@ -221,7 +296,7 @@ const Index: NextPage = () => {
         </div>
         <AccountActions />
       </div>
-      <div className="mb-8 grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:mb-10 md:border-b-0">
+      <div className="mb-8 grid grid-cols-4 gap-x-6 border-b border-th-bkg-3 md:mb-10 md:border-b-0">
         <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
           <p className="text-th-fgd-3">{t('health')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
@@ -246,6 +321,12 @@ const Index: NextPage = () => {
         <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
           <p className="text-th-fgd-3">{t('leverage')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">0.0x</p>
+        </div>
+        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+          <p className="text-th-fgd-3">{t('total-interest-value')}</p>
+          <p className="text-2xl font-bold text-th-fgd-1">
+            ${accountInterestTotalValue.toFixed(2)}
+          </p>
         </div>
       </div>
       <AccountTabs />

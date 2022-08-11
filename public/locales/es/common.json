@@ -64,6 +64,7 @@
   "token": "Token",
   "tokens": "Tokens",
   "token-collateral-multiplier": "{{token}} Collateral Multiplier",
+  "total-interest-value": "Total Interest Value",
   "trade": "Trade",
   "trade-history": "Trade History",
   "unavailable": "Unavailable",

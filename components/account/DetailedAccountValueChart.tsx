@@ -5,6 +5,7 @@ import {
   AccountPerformanceData,
   fetchHourlyPerformanceStats,
 } from '../../pages'
+import { notify } from '../../utils/notifications'
 import DetailedAreaChart from '../shared/DetailedAreaChart'
 
 const DetailedAccountValueChart = ({
@@ -18,18 +19,29 @@ const DetailedAccountValueChart = ({
 }) => {
   const { t } = useTranslation('common')
   const [chartData, setChartData] = useState<Array<AccountPerformanceData>>([])
-  const [daysToShow, setDaysToShow] = useState(1)
+  const [daysToShow, setDaysToShow] = useState<number>(1)
+  const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
     if (daysToShow === 1) {
       setChartData(data)
     } else {
       const fetchChartData = async () => {
-        const data = await fetchHourlyPerformanceStats(
-          mangoAccount.publicKey.toString(),
-          daysToShow
-        )
-        setChartData(data)
+        setLoading(true)
+        try {
+          const data = await fetchHourlyPerformanceStats(
+            mangoAccount.publicKey.toString(),
+            daysToShow
+          )
+          setChartData(data)
+          setLoading(false)
+        } catch {
+          notify({
+            title: 'Failed to load chart data',
+            type: 'error',
+          })
+          setLoading(false)
+        }
       }
       fetchChartData()
     }
@@ -40,6 +52,7 @@ const DetailedAccountValueChart = ({
       data={chartData}
       daysToShow={daysToShow}
       hideChart={hideChart}
+      loading={loading}
       setDaysToShow={setDaysToShow}
       tickFormat={(x) => `$${x.toFixed(2)}`}
       title={t('account-value')}
