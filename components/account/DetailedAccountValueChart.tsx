@@ -1,10 +1,7 @@
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useState } from 'react'
-import {
-  AccountPerformanceData,
-  fetchHourlyPerformanceStats,
-} from '../../pages'
+import { fetchHourlyPerformanceStats, PerformanceDataItem } from '../../pages'
 import { notify } from '../../utils/notifications'
 import DetailedAreaChart from '../shared/DetailedAreaChart'
 
@@ -13,12 +10,12 @@ const DetailedAccountValueChart = ({
   hideChart,
   mangoAccount,
 }: {
-  data: Array<AccountPerformanceData>
+  data: Array<PerformanceDataItem>
   hideChart: () => void
   mangoAccount: MangoAccount
 }) => {
   const { t } = useTranslation('common')
-  const [chartData, setChartData] = useState<Array<AccountPerformanceData>>([])
+  const [chartData, setChartData] = useState<Array<PerformanceDataItem>>([])
   const [daysToShow, setDaysToShow] = useState<number>(1)
   const [loading, setLoading] = useState<boolean>(false)
 

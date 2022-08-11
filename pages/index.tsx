@@ -25,7 +25,7 @@ import DetailedAccountValueChart from '../components/account/DetailedAccountValu
 import SheenLoader from '../components/shared/SheenLoader'
 import { notify } from '../utils/notifications'
 
-export interface AccountPerformanceData {
+export interface PerformanceDataItem {
   account_equity: number
   pnl: number
   spot_value: number
@@ -40,7 +40,7 @@ interface InterestItem {
   time: string
 }
 
-interface HourlyAccountInterest {
+interface HourlyInterestDataItem {
   symbol: string
   interest: Array<InterestItem>
 }
@@ -117,11 +117,11 @@ const Index: NextPage = () => {
     useState<boolean>(false)
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const [loadAccountData, setLoadAccountData] = useState<boolean>(false)
-  const [accountPerformanceData, setAccountPerformanceData] = useState<
-    Array<AccountPerformanceData>
+  const [performanceData, setPerformanceData] = useState<
+    Array<PerformanceDataItem>
   >([])
-  const [accountInterestTotals, setAccountInterestTotals] = useState<
-    Array<HourlyAccountInterest>
+  const [hourlyInterestData, setHourlyInterestData] = useState<
+    Array<HourlyInterestDataItem>
   >([])
   const { theme } = useTheme()
 
@@ -136,8 +136,8 @@ const Index: NextPage = () => {
             fetchHourlyInterest(pubKey, 1),
           ]
           const data = await Promise.all(promises)
-          setAccountPerformanceData(data[0])
-          setAccountInterestTotals(data[1])
+          setPerformanceData(data[0])
+          setHourlyInterestData(data[1])
           setLoadAccountData(false)
         } catch {
           notify({
@@ -166,21 +166,20 @@ const Index: NextPage = () => {
   }
 
   const accountValueChange = useMemo(() => {
-    if (accountPerformanceData.length) {
+    if (performanceData.length) {
       return (
-        ((accountPerformanceData[accountPerformanceData.length - 1]
-          .account_equity -
-          accountPerformanceData[0].account_equity) /
-          accountPerformanceData[0].account_equity) *
+        ((performanceData[performanceData.length - 1].account_equity -
+          performanceData[0].account_equity) /
+          performanceData[0].account_equity) *
         100
       )
     }
     return 0
-  }, [accountPerformanceData])
+  }, [performanceData])
 
   const accountInterestTotalValue = useMemo(() => {
-    if (accountInterestTotals.length) {
-      const total = accountInterestTotals.reduce((a, c) => {
+    if (hourlyInterestData.length) {
+      const total = hourlyInterestData.reduce((a, c) => {
         const tokenInterestValue = c.interest.reduce(
           (a, c) => a + (c.borrow_interest + c.deposit_interest) * c.price,
           0
@@ -190,7 +189,7 @@ const Index: NextPage = () => {
       return total
     }
     return 0
-  }, [accountInterestTotals])
+  }, [hourlyInterestData])
 
   return !showDetailedValueChart ? (
     <>
@@ -216,7 +215,7 @@ const Index: NextPage = () => {
                 (0).toFixed(2)
               )}
             </div>
-            {accountPerformanceData.length ? (
+            {performanceData.length ? (
               <div className="mt-1 flex items-center space-x-2">
                 {accountValueChange > 0 ? (
                   <UpTriangle />
@@ -244,7 +243,7 @@ const Index: NextPage = () => {
             ) : null}
           </div>
           {!loadAccountData ? (
-            accountPerformanceData.length ? (
+            performanceData.length ? (
               <div
                 className="relative flex items-end"
                 onMouseEnter={() =>
@@ -260,7 +259,7 @@ const Index: NextPage = () => {
                       ? COLORS.GREEN[theme]
                       : COLORS.RED[theme]
                   }
-                  data={accountPerformanceData}
+                  data={performanceData}
                   height={88}
                   name="accountValue"
                   width={180}
@@ -345,7 +344,7 @@ const Index: NextPage = () => {
     </>
   ) : (
     <DetailedAccountValueChart
-      data={accountPerformanceData}
+      data={performanceData}
       hideChart={() => setShowDetailedValueChart(false)}
       mangoAccount={mangoAccount!}
     />
