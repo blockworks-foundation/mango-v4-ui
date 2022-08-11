@@ -1,4 +1,8 @@
-import { HealthType, toUiDecimals, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
+import {
+  HealthType,
+  toUiDecimals,
+  toUiDecimalsForQuote,
+} from '@blockworks-foundation/mango-v4'
 import type { NextPage } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -300,7 +304,7 @@ const Index: NextPage = () => {
           <p className="text-th-fgd-3">{t('health')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
             {mangoAccount
-              ? mangoAccount.getHealthRatio(HealthType.init).toNumber()
+              ? mangoAccount.getHealthRatioUi(HealthType.init)
               : 100}
             %
           </p>
@@ -311,7 +315,9 @@ const Index: NextPage = () => {
             $
             {mangoAccount
               ? formatDecimal(
-                toUiDecimalsForQuote(mangoAccount.getCollateralValue().toNumber()),
+                  toUiDecimalsForQuote(
+                    mangoAccount.getCollateralValue().toNumber()
+                  ),
                   2
                 )
               : (0).toFixed(2)}
