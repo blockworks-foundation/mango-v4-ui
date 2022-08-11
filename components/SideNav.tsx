@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import TradeIcon from './icons/TradeIcon'
 import {
-  ChartBarIcon,
+  // ChartBarIcon,
   DotsHorizontalIcon,
   LibraryIcon,
   LightBulbIcon,
   ExternalLinkIcon,
   ChevronDownIcon,
-  ReceiptTaxIcon,
+  // ReceiptTaxIcon,
   HomeIcon,
   CogIcon,
 } from '@heroicons/react/solid'
@@ -28,19 +28,19 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   return (
     <div
       className={`flex flex-col justify-between transition-all duration-500 ease-in-out ${
-        collapsed ? 'w-[72px]' : 'w-44 lg:w-56'
+        collapsed ? 'w-[64px]' : 'w-44 lg:w-56'
       } min-h-screen border-r border-th-bkg-3 bg-th-bkg-1`}
     >
       <div className="my-2">
         <Link href={'/'} shallow={true} passHref>
           <div
             className={`h-14 items-center transition-all duration-500 ease-in-out ${
-              collapsed ? 'justify-center' : 'justify-start'
-            } px-4 py-1`}
+              collapsed ? '' : 'justify-start'
+            } pb-1 pt-2 pl-4`}
           >
             <div className={`flex flex-shrink-0 cursor-pointer items-center`}>
               <img
-                className={`ml-0.5 h-9 w-auto`}
+                className={`h-8 w-8 flex-shrink-0`}
                 src="/logos/logo-mark.svg"
                 alt="next"
               />
@@ -54,7 +54,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <span className="ml-4 text-lg font-bold text-th-fgd-1">
+                <span className="ml-3 text-lg font-bold text-th-fgd-1">
                   Mango
                 </span>
               </Transition>
@@ -129,7 +129,9 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             icon={<HealthHeart health={50} size={32} />}
             title={
               <div className="text-left">
-                <p className="whitespace-nowrap text-xs">Account Summary</p>
+                <p className="mb-0.5 whitespace-nowrap text-xs">
+                  Account Summary
+                </p>
                 <p className="text-sm font-bold text-th-fgd-1">
                   {mangoAccount.name}
                 </p>
@@ -261,10 +263,10 @@ const ExpandableMenuItem = ({
             className={` ${
               hideIconBg
                 ? ''
-                : 'flex h-9 w-9 items-center justify-center rounded-full bg-th-bkg-3'
+                : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
             } ${
               alignBottom
-                ? 'flex h-[72px] w-[72px] items-center justify-center hover:bg-th-bkg-2'
+                ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
                 : ''
             }`}
           >
@@ -284,8 +286,8 @@ const ExpandableMenuItem = ({
           <Popover.Panel
             className={`absolute z-20 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
               alignBottom
-                ? 'bottom-0 left-[71px] w-72 rounded-b-none p-0'
-                : 'top-1/2 left-[71px] w-56 -translate-y-1/2 transform'
+                ? 'bottom-0 left-[63px] w-72 rounded-b-none p-0'
+                : 'top-1/2 left-[63px] w-56 -translate-y-1/2 transform'
             }`}
           >
             {children}
@@ -299,7 +301,7 @@ const ExpandableMenuItem = ({
         onClick={() => setShowMenu(!showMenu)}
         role="button"
         className={`w-full px-4 py-2 ${
-          alignBottom ? 'h-[72px] hover:bg-th-bkg-2' : ''
+          alignBottom ? 'h-[64px] hover:bg-th-bkg-2' : ''
         }`}
       >
         <Disclosure.Button
@@ -310,7 +312,7 @@ const ExpandableMenuItem = ({
               className={
                 hideIconBg
                   ? ''
-                  : 'flex h-9 w-9 items-center justify-center rounded-full bg-th-bkg-3'
+                  : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
               }
             >
               {icon}
@@ -348,7 +350,7 @@ const ExpandableMenuItem = ({
         leaveTo="opacity-0 max-h-0"
       >
         <Disclosure.Panel className="w-full overflow-hidden">
-          <div className={`${!alignBottom ? 'ml-2' : ''}`}>{children}</div>
+          <div className={`${!alignBottom ? 'ml-2.5' : ''}`}>{children}</div>
         </Disclosure.Panel>
       </Transition>
     </Disclosure>

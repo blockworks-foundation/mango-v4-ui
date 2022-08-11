@@ -133,7 +133,7 @@ const Index: NextPage = () => {
         try {
           const promises = [
             fetchHourlyPerformanceStats(pubKey, 1),
-            fetchHourlyInterest(pubKey, 1),
+            fetchHourlyInterest(pubKey, 10000),
           ]
           const data = await Promise.all(promises)
           setPerformanceData(data[0])

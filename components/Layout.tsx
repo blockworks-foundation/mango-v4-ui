@@ -86,7 +86,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           )}
           <div
             className={`w-full overflow-hidden transition-all duration-500 ease-in-out ${
-              isMobile ? '' : isCollapsed ? 'pl-[72px]' : 'pl-44 lg:pl-56'
+              isMobile ? '' : isCollapsed ? 'pl-[64px]' : 'pl-44 lg:pl-56'
             }`}
           >
             <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6 md:px-8">
