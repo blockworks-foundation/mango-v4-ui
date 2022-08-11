@@ -6,12 +6,16 @@ const SimpleAreaChart = ({
   height,
   name,
   width,
+  xKey,
+  yKey,
 }: {
   color: string
   data: any[]
   height: number
   name: string
   width: number
+  xKey: string
+  yKey: string
 }) => {
   return (
     <AreaChart width={width} height={height} data={data}>
@@ -24,12 +28,12 @@ const SimpleAreaChart = ({
       <Area
         isAnimationActive={false}
         type="monotone"
-        dataKey="1"
+        dataKey={yKey}
         stroke={color}
         fill={`url(#gradientArea-${name})`}
       />
-      <XAxis dataKey="0" hide />
-      <YAxis domain={['dataMin', 'dataMax']} dataKey="1" hide />
+      <XAxis dataKey={xKey} hide />
+      <YAxis domain={['dataMin', 'dataMax']} dataKey={yKey} hide />
     </AreaChart>
   )
 }

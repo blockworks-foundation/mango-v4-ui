@@ -160,6 +160,8 @@ const TokenList = () => {
                           height={40}
                           name={bank.key}
                           width={104}
+                          xKey="0"
+                          yKey="1"
                         />
                       ) : bank.key === 'USDC' || bank.key === 'USDT' ? null : (
                         <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>

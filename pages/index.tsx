@@ -2,22 +2,35 @@ import { HealthType, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import type { NextPage } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AccountActions from '../components/account/AccountActions'
 import DepositModal from '../components/modals/DepositModal'
 import WithdrawModal from '../components/modals/WithdrawModal'
 import mangoStore from '../store/state'
 import { formatDecimal } from '../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
-import { UpTriangle } from '../components/shared/DirectionTriangles'
+import {
+  DownTriangle,
+  UpTriangle,
+} from '../components/shared/DirectionTriangles'
 import SimpleAreaChart from '../components/shared/SimpleAreaChart'
 import { COLORS } from '../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../components/shared/Button'
 import { ArrowsExpandIcon } from '@heroicons/react/solid'
-import DetailedAreaChart from '../components/shared/DetailedAreaChart'
 import { Transition } from '@headlessui/react'
 import AccountTabs from '../components/account/AccountTabs'
+import dayjs from 'dayjs'
+import DetailedAccountValueChart from '../components/account/DetailedAccountValueChart'
+import SheenLoader from '../components/shared/SheenLoader'
+
+export interface AccountPerformanceData {
+  account_equity: number
+  pnl: number
+  spot_value: number
+  time: string
+  transfer_balance: number
+}
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -27,18 +40,28 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
-const chartData = [
-  [1, 300],
-  [2, 310],
-  [3, 320],
-  [4, 330],
-  [5, 340],
-  [6, 350],
-  [7, 360],
-  [8, 370],
-  [9, 380],
-  [10, 390],
-]
+export const fetchHourlyPerformanceStats = async (
+  mangoAccountPk: string,
+  range: number
+) => {
+  const response = await fetch(
+    `https://mango-transaction-log.herokuapp.com/v3/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
+      .subtract(range, 'day')
+      .format('YYYY-MM-DD')}`
+  )
+  const parsedResponse = await response.json()
+  const entries: any = Object.entries(parsedResponse).sort((a, b) =>
+    b[0].localeCompare(a[0])
+  )
+
+  const stats = entries
+    .map(([key, value]: Array<{ key: string; value: number }>) => {
+      return { ...value, time: key }
+    })
+    .filter((x: string) => x)
+
+  return stats
+}
 
 const Index: NextPage = () => {
   const { t } = useTranslation('common')
@@ -47,7 +70,28 @@ const Index: NextPage = () => {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
   const [showDetailedValueChart, setShowDetailedValueChart] = useState(false)
   const [showExpandChart, setShowExpandChart] = useState(false)
+  const [loadAccountPerformance, setLoadAccountPerformance] = useState(false)
+  const [accountPerformanceData, setAccountPerformanceData] = useState<
+    Array<AccountPerformanceData>
+  >([])
   const { theme } = useTheme()
+
+  useEffect(() => {
+    if (mangoAccount) {
+      setLoadAccountPerformance(true)
+      const getPerformanceData = async () => {
+        const pubKey = mangoAccount.publicKey.toString()
+        try {
+          const data = await fetchHourlyPerformanceStats(pubKey, 100)
+          setAccountPerformanceData(data)
+          setLoadAccountPerformance(false)
+        } catch {
+          setLoadAccountPerformance(false)
+        }
+      }
+      getPerformanceData()
+    }
+  }, [mangoAccount])
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -62,6 +106,19 @@ const Index: NextPage = () => {
     setShowDetailedValueChart(true)
     setShowExpandChart(false)
   }
+
+  const accountValueChange = useMemo(() => {
+    if (accountPerformanceData.length) {
+      return (
+        ((accountPerformanceData[accountPerformanceData.length - 1]
+          .account_equity -
+          accountPerformanceData[0].account_equity) /
+          accountPerformanceData[0].account_equity) *
+        100
+      )
+    }
+    return 0
+  }, [accountPerformanceData])
 
   return !showDetailedValueChart ? (
     <>
@@ -87,43 +144,80 @@ const Index: NextPage = () => {
                 (0).toFixed(2)
               )}
             </div>
-            <div className="mt-1 flex items-center space-x-2">
-              <UpTriangle />
-              <p className="mb-0.5 text-th-green">2.13%</p>
-            </div>
+            {accountPerformanceData.length ? (
+              <div className="mt-1 flex items-center space-x-2">
+                {accountValueChange > 0 ? (
+                  <UpTriangle />
+                ) : accountValueChange < 0 ? (
+                  <DownTriangle />
+                ) : (
+                  '–'
+                )}
+
+                <p
+                  className={`mb-0.5 ${
+                    accountValueChange > 0
+                      ? 'text-th-green'
+                      : accountValueChange < 0
+                      ? 'text-th-red'
+                      : 'text-th-fgd-4'
+                  }`}
+                >
+                  {accountValueChange.toFixed(2)}%
+                </p>
+              </div>
+            ) : null}
           </div>
-          <div
-            className="relative flex items-end"
-            onMouseEnter={() => onHoverMenu(showExpandChart, 'onMouseEnter')}
-            onMouseLeave={() => onHoverMenu(showExpandChart, 'onMouseLeave')}
-          >
-            <SimpleAreaChart
-              color={COLORS.GREEN[theme]}
-              data={chartData}
-              height={106}
-              name="accountValue"
-              width={240}
-            />
-            <Transition
-              appear={true}
-              className="absolute right-2 bottom-2"
-              show={showExpandChart}
-              enter="transition-all ease-in duration-300"
-              enterFrom="opacity-0 transform scale-75"
-              enterTo="opacity-100 transform scale-100"
-              leave="transition ease-out duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <IconButton
-                className="text-th-fgd-3"
-                hideBg
-                onClick={() => handleShowDetailedValueChart()}
+          {!loadAccountPerformance ? (
+            accountPerformanceData.length ? (
+              <div
+                className="relative flex items-end"
+                onMouseEnter={() =>
+                  onHoverMenu(showExpandChart, 'onMouseEnter')
+                }
+                onMouseLeave={() =>
+                  onHoverMenu(showExpandChart, 'onMouseLeave')
+                }
               >
-                <ArrowsExpandIcon className="h-5 w-5" />
-              </IconButton>
-            </Transition>
-          </div>
+                <SimpleAreaChart
+                  color={
+                    accountValueChange >= 0
+                      ? COLORS.GREEN[theme]
+                      : COLORS.RED[theme]
+                  }
+                  data={accountPerformanceData}
+                  height={88}
+                  name="accountValue"
+                  width={180}
+                  xKey="time"
+                  yKey="account_equity"
+                />
+                <Transition
+                  appear={true}
+                  className="absolute right-2 bottom-2"
+                  show={showExpandChart}
+                  enter="transition-all ease-in duration-300"
+                  enterFrom="opacity-0 transform scale-75"
+                  enterTo="opacity-100 transform scale-100"
+                  leave="transition ease-out duration-200"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <IconButton
+                    className="text-th-fgd-3"
+                    hideBg
+                    onClick={() => handleShowDetailedValueChart()}
+                  >
+                    <ArrowsExpandIcon className="h-5 w-5" />
+                  </IconButton>
+                </Transition>
+              </div>
+            ) : null
+          ) : (
+            <SheenLoader>
+              <div className="h-[88px] w-[180px] rounded-md bg-th-bkg-2" />
+            </SheenLoader>
+          )}
         </div>
         <AccountActions />
       </div>
@@ -169,12 +263,10 @@ const Index: NextPage = () => {
       ) : null}
     </>
   ) : (
-    <DetailedAreaChart
-      data={chartData}
+    <DetailedAccountValueChart
+      data={accountPerformanceData}
       hideChart={() => setShowDetailedValueChart(false)}
-      title={t('account-value')}
-      xKey="0"
-      yKey="1"
+      mangoAccount={mangoAccount!}
     />
   )
 }
