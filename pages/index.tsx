@@ -1,6 +1,5 @@
 import {
   HealthType,
-  toUiDecimals,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import type { NextPage } from 'next'
@@ -24,23 +23,8 @@ import { IconButton } from '../components/shared/Button'
 import { ArrowsExpandIcon } from '@heroicons/react/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from '../components/account/AccountTabs'
-import dayjs from 'dayjs'
 import DetailedAccountValueChart from '../components/account/DetailedAccountValueChart'
 import SheenLoader from '../components/shared/SheenLoader'
-import { notify } from '../utils/notifications'
-
-export interface PerformanceDataItem {
-  account_equity: number
-  pnl: number
-  spot_value: number
-  time: string
-  transfer_balance: number
-}
-
-interface TotalInterestDataItem {
-  borrow_interest_usd: number
-  deposit_interest_usd: number
-}
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -50,94 +34,36 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
-export const fetchHourlyPerformanceStats = async (
-  mangoAccountPk: string,
-  range: number
-) => {
-  const response = await fetch(
-    `https://mango-transaction-log.herokuapp.com/v4/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
-      .subtract(range, 'day')
-      .format('YYYY-MM-DD')}`
-  )
-  const parsedResponse = await response.json()
-  const entries: any = Object.entries(parsedResponse).sort((a, b) =>
-    b[0].localeCompare(a[0])
-  )
-
-  const stats = entries
-    .map(([key, value]: Array<{ key: string; value: number }>) => {
-      return { ...value, time: key }
-    })
-    .filter((x: string) => x)
-
-  return stats
-}
-
-export const fetchTotalInterest = async (
-  mangoAccountPk: string,
-  range: number
-) => {
-  const response = await fetch(
-    `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-total?mango-account=${mangoAccountPk}&start-date=${dayjs()
-      .subtract(range, 'day')
-      .format('YYYY-MM-DD')}`
-  )
-  const parsedResponse = await response.json()
-  const entries: any = Object.entries(parsedResponse).sort((a, b) =>
-    b[0].localeCompare(a[0])
-  )
-
-  const stats = entries
-    .map(([key, value]: Array<{ key: string; value: number }>) => {
-      return { ...value, time: key }
-    })
-    .filter((x: string) => x)
-
-  return stats
-}
-
 const Index: NextPage = () => {
   const { t } = useTranslation('common')
+  const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const loadPerformanceData = mangoStore(
+    (s) => s.mangoAccount.stats.performance.loading
+  )
+  const performanceData = mangoStore(
+    (s) => s.mangoAccount.stats.performance.data
+  )
+  const totalInterestData = mangoStore(
+    (s) => s.mangoAccount.stats.interestTotals.data
+  )
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false)
   const [showDetailedValueChart, setShowDetailedValueChart] =
     useState<boolean>(false)
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
-  const [loadAccountData, setLoadAccountData] = useState<boolean>(false)
-  const [performanceData, setPerformanceData] = useState<
-    Array<PerformanceDataItem>
-  >([])
-  const [totalInterestData, setTotalInterestData] = useState<
-    Array<TotalInterestDataItem>
-  >([])
   const { theme } = useTheme()
 
   useEffect(() => {
     if (mangoAccount) {
-      setLoadAccountData(true)
       const getData = async () => {
         const pubKey = mangoAccount.publicKey.toString()
-        try {
-          const promises = [
-            fetchHourlyPerformanceStats(pubKey, 1),
-            fetchTotalInterest(pubKey, 10000),
-          ]
-          const data = await Promise.all(promises)
-          setPerformanceData(data[0])
-          setTotalInterestData(data[1])
-          setLoadAccountData(false)
-        } catch {
-          notify({
-            title: 'Failed to load account performance data',
-            type: 'error',
-          })
-          setLoadAccountData(false)
-        }
+        actions.fetchAccountPerformance(pubKey, 1)
+        actions.fetchAccountInterestTotals(pubKey, 10000)
       }
       getData()
     }
-  }, [mangoAccount])
+  }, [actions, mangoAccount])
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -156,9 +82,9 @@ const Index: NextPage = () => {
   const accountValueChange = useMemo(() => {
     if (performanceData.length) {
       return (
-        ((performanceData[performanceData.length - 1].account_equity -
-          performanceData[0].account_equity) /
-          performanceData[0].account_equity) *
+        ((performanceData[0].account_equity -
+          performanceData[performanceData.length - 1].account_equity) /
+          performanceData[performanceData.length - 1].account_equity) *
         100
       )
     }
@@ -226,7 +152,7 @@ const Index: NextPage = () => {
               </div>
             ) : null}
           </div>
-          {!loadAccountData ? (
+          {!loadPerformanceData ? (
             performanceData.length ? (
               <div
                 className="relative flex items-end"
@@ -243,7 +169,7 @@ const Index: NextPage = () => {
                       ? COLORS.GREEN[theme]
                       : COLORS.RED[theme]
                   }
-                  data={performanceData}
+                  data={performanceData.slice().reverse()}
                   height={88}
                   name="accountValue"
                   width={180}

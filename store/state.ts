@@ -22,6 +22,7 @@ import {
 import { Token } from '../types/jupiter'
 import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
 import { TOKEN_LIST_URL } from '@jup-ag/core'
+import dayjs from 'dayjs'
 
 const GROUP = new PublicKey('A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb')
 
@@ -44,6 +45,24 @@ const DEFAULT_CLIENT = MangoClient.connect(
   MANGO_V4_ID[CLUSTER]
 )
 
+interface TotalInterestDataItem {
+  borrow_interest: number
+  deposit_interest: number
+  borrow_interest_usd: number
+  deposit_interest_usd: number
+  symbol: string
+}
+
+export interface PerformanceDataItem {
+  account_equity: number
+  borrow_interest_cumulative_usd: number
+  deposit_interest_cumulative_usd: number
+  pnl: number
+  spot_value: number
+  time: string
+  transfer_balance: number
+}
+
 interface NFT {
   address: string
   image: string
@@ -62,6 +81,10 @@ export type MangoStore = {
   mangoAccount: {
     current: MangoAccount | undefined
     loading: boolean
+    stats: {
+      interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
+      performance: { data: PerformanceDataItem[]; loading: boolean }
+    }
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
@@ -87,6 +110,14 @@ export type MangoStore = {
     }
   }
   actions: {
+    fetchAccountInterestTotals: (
+      mangoAccountPk: string,
+      range: number
+    ) => Promise<void>
+    fetchAccountPerformance: (
+      mangoAccountPk: string,
+      range: number
+    ) => Promise<void>
     fetchCoingeckoPrices: () => Promise<void>
     fetchGroup: () => Promise<void>
     fetchMangoAccount: (wallet: Wallet) => Promise<void>
@@ -116,6 +147,10 @@ const mangoStore = create<MangoStore>(
       mangoAccount: {
         current: undefined,
         loading: false,
+        stats: {
+          interestTotals: { data: [], loading: false },
+          performance: { data: [], loading: false },
+        },
       },
       mangoAccounts: [],
       markets: undefined,
@@ -141,6 +176,84 @@ const mangoStore = create<MangoStore>(
         },
       },
       actions: {
+        fetchAccountInterestTotals: async (
+          mangoAccountPk: string,
+          range: number
+        ) => {
+          const set = get().set
+          set((state) => {
+            state.mangoAccount.stats.interestTotals.loading = true
+          })
+          try {
+            const response = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-total?mango-account=${mangoAccountPk}&start-date=${dayjs()
+                .subtract(range, 'day')
+                .format('YYYY-MM-DD')}`
+            )
+            const parsedResponse = await response.json()
+            const entries: any = Object.entries(parsedResponse).sort((a, b) =>
+              b[0].localeCompare(a[0])
+            )
+
+            const stats = entries
+              .map(([key, value]: Array<{ key: string; value: number }>) => {
+                return { ...value, symbol: key }
+              })
+              .filter((x: string) => x)
+
+            set((state) => {
+              state.mangoAccount.stats.interestTotals.data = stats
+              state.mangoAccount.stats.interestTotals.loading = false
+            })
+          } catch {
+            set((state) => {
+              state.mangoAccount.stats.interestTotals.loading = false
+            })
+            notify({
+              title: 'Failed to load account interest totals',
+              type: 'error',
+            })
+          }
+        },
+        fetchAccountPerformance: async (
+          mangoAccountPk: string,
+          range: number
+        ) => {
+          const set = get().set
+          set((state) => {
+            state.mangoAccount.stats.performance.loading = true
+          })
+          try {
+            const response = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
+                .subtract(range, 'day')
+                .format('YYYY-MM-DD')}`
+            )
+            const parsedResponse = await response.json()
+            const entries: any = Object.entries(parsedResponse).sort((a, b) =>
+              b[0].localeCompare(a[0])
+            )
+
+            const stats = entries
+              .map(([key, value]: Array<{ key: string; value: number }>) => {
+                return { ...value, time: key }
+              })
+              .filter((x: string) => x)
+
+            set((state) => {
+              state.mangoAccount.stats.performance.data = stats
+              state.mangoAccount.stats.performance.loading = false
+            })
+          } catch {
+            set((state) => {
+              state.mangoAccount.stats.performance.loading = false
+            })
+            notify({
+              title: 'Failed to load account performance data',
+              type: 'error',
+            })
+          }
+        },
         fetchCoingeckoPrices: async () => {
           const set = get().set
           set((state) => {
