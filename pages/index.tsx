@@ -59,7 +59,7 @@ const Index: NextPage = () => {
       const getData = async () => {
         const pubKey = mangoAccount.publicKey.toString()
         actions.fetchAccountPerformance(pubKey, 1)
-        actions.fetchAccountInterestTotals(pubKey, 10000)
+        actions.fetchAccountInterestTotals(pubKey)
       }
       getData()
     }

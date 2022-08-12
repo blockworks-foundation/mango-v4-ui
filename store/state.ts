@@ -110,10 +110,7 @@ export type MangoStore = {
     }
   }
   actions: {
-    fetchAccountInterestTotals: (
-      mangoAccountPk: string,
-      range: number
-    ) => Promise<void>
+    fetchAccountInterestTotals: (mangoAccountPk: string) => Promise<void>
     fetchAccountPerformance: (
       mangoAccountPk: string,
       range: number
@@ -176,19 +173,14 @@ const mangoStore = create<MangoStore>(
         },
       },
       actions: {
-        fetchAccountInterestTotals: async (
-          mangoAccountPk: string,
-          range: number
-        ) => {
+        fetchAccountInterestTotals: async (mangoAccountPk: string) => {
           const set = get().set
           set((state) => {
             state.mangoAccount.stats.interestTotals.loading = true
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-total?mango-account=${mangoAccountPk}&start-date=${dayjs()
-                .subtract(range, 'day')
-                .format('YYYY-MM-DD')}`
+              `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-total?mango-account=${mangoAccountPk}`
             )
             const parsedResponse = await response.json()
             const entries: any = Object.entries(parsedResponse).sort((a, b) =>
