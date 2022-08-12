@@ -11,7 +11,7 @@ import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '../store/state'
 import { COLORS } from '../styles/colors'
-import { formatDecimal } from '../utils/numbers'
+import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
 import BorrowModal from './modals/BorrowModal'
@@ -34,6 +34,7 @@ const TokenList = () => {
   const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
   const actions = mangoStore((s) => s.actions)
   const group = mangoStore((s) => s.group)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -123,28 +124,28 @@ const TokenList = () => {
                 : 0
 
               const chartData = coingeckoData ? coingeckoData.prices : undefined
+              let logoURI
+              if (jupiterTokens.length) {
+                logoURI = jupiterTokens.find(
+                  (t) => t.address === bank.value.mint.toString()
+                )!.logoURI
+              }
+
               return (
                 <FadeInList as="tr" index={index} key={bank.key}>
                   <td className="w-[16.67%]">
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        <Image
-                          alt=""
-                          width="24"
-                          height="24"
-                          src={`/icons/${bank.value.name.toLowerCase()}.svg`}
-                        />
+                        {logoURI ? (
+                          <Image alt="" width="24" height="24" src={logoURI} />
+                        ) : null}
                       </div>
                       <p>{bank.value.name}</p>
                     </div>
                   </td>
                   <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
-                      <p>${formatDecimal(oraclePrice.toNumber(), 2)}</p>
-                      {/* <div className="flex items-center justify-end">
-                        <UpTriangle />
-                        <p className="ml-1 text-sm text-th-green">0%</p>
-                      </div> */}
+                      <p>${formatFixedDecimals(oraclePrice.toNumber())}</p>
                     </div>
                   </td>
                   <td className="hidden lg:table-cell">
@@ -305,12 +306,6 @@ const TokenList = () => {
                         <p className="ml-1 font-bold text-th-green">0%</p>
                       </div>
                     </div>
-                    {/* <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">
-                        {t('daily-volume')}
-                      </p>
-                      <p className="font-bold">$1000</p>
-                    </div> */}
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                       <p className="space-x-2 font-bold">

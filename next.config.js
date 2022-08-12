@@ -6,6 +6,9 @@ const nextConfig = {
   env: {
     BROWSER: true,
   },
+  images: {
+    domains: ['raw.githubusercontent.com'],
+  },
   reactStrictMode: true,
   webpack: (config, opts) => {
     if (!opts.isServer) {
