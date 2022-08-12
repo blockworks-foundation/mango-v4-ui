@@ -204,7 +204,7 @@ const Swap = () => {
   }
 
   const isLoadingTradeDetails =
-    amountIn &&
+    Number(amountIn) &&
     connected &&
     (!routes?.length || !selectedRoute || !outputTokenInfo)
 

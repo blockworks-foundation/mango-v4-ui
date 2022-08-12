@@ -1,12 +1,13 @@
 import { SwitchHorizontalIcon } from '@heroicons/react/solid'
 import { RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import JSBI from 'jsbi'
 
 import mangoStore from '../../store/state'
 import { Token } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 
 type RouteFeeInfoProps = {
   selectedRoute: RouteInfo
@@ -28,6 +29,7 @@ const RouteFeeInfo = ({
   const { t } = useTranslation(['common', 'trade'])
   const tokens = mangoStore.getState().jupiterTokens
   const connected = mangoStore((s) => s.connected)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   const [depositAndFee, setDepositAndFee] = useState<TransactionFeeInfo>()
   const [swapRate, setSwapRate] = useState<boolean>(false)
@@ -44,6 +46,23 @@ const RouteFeeInfo = ({
       getDepositAndFee()
     }
   }, [selectedRoute, connected])
+
+  const healthImpact = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !mangoAccount) return 'Unknown'
+
+    const originalHealth = mangoAccount.getHealth(HealthType.init).toNumber()
+    const simulatedHealth = mangoAccount
+      .simHealthWithTokenPositionChanges(group, [
+        { tokenName: inputTokenSymbol, tokenAmount: amountIn * -1 },
+        { tokenName: outputTokenInfo.symbol, tokenAmount: amountOut },
+      ])
+      .toNumber()
+    const healthImpact =
+      ((originalHealth - simulatedHealth) / originalHealth) * -100
+
+    return healthImpact
+  }, [mangoAccount, inputTokenSymbol, outputTokenInfo, amountIn, amountOut])
 
   return (
     <div className="space-y-3 px-1">
@@ -150,7 +169,13 @@ const RouteFeeInfo = ({
       </div>
       <div className="flex justify-between">
         <p className="text-sm text-th-fgd-3">{t('trade:health-impact')}</p>
-        <p className="text-right text-sm text-th-fgd-1">0%</p>
+        <p
+          className={`text-right text-sm text-th-fgd-1 ${
+            healthImpact < 0 ? 'text-th-red' : 'text-th-green'
+          }`}
+        >
+          {healthImpact}
+        </p>
       </div>
       <div className="flex justify-between">
         <p className="text-sm text-th-fgd-3">{t('trade:est-liq-price')}</p>
