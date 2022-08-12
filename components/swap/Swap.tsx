@@ -14,7 +14,7 @@ import Input from '../forms/Input'
 import { useTranslation } from 'next-i18next'
 import SelectToken from './SelectToken'
 import { Transition } from '@headlessui/react'
-import Button, { LinkButton } from '../shared/Button'
+import Button, { IconButton, LinkButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
@@ -238,12 +238,12 @@ const Swap = () => {
       </EnterBottomExitBottom>
       <div className="mb-4 flex items-center justify-between">
         <h3>{t('trade')}</h3>
-        <div
-          className="hover:cursor-pointer"
+        <IconButton
+          className="h-7 w-7 text-th-fgd-3"
           onClick={() => setShowSettings(true)}
         >
-          <CogIcon className="h-6 w-6" />
-        </div>
+          <CogIcon className="h-5 w-5" />
+        </IconButton>
       </div>
       <EnterBottomExitBottom
         className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"

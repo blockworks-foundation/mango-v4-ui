@@ -9,7 +9,7 @@ import RoutesModal from './RoutesModal'
 import RouteFeeInfo from './RouteFeeInfo'
 import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
-import { ArrowRightIcon, XIcon } from '@heroicons/react/solid'
+import { ArrowLeftIcon, ArrowRightIcon, XIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import { Token } from '../../types/jupiter'
 
@@ -80,13 +80,13 @@ const JupiterRoutes = ({
   return routes?.length && selectedRoute && outputTokenInfo ? (
     <div className="flex h-full flex-col justify-between">
       <div>
-        <IconButton
-          className="absolute top-2 right-2 text-th-fgd-3"
-          onClick={onClose}
-          hideBg
-        >
-          <ArrowRightIcon className="h-5 w-5" />
-        </IconButton>
+        <div className="mb-4 flex items-center">
+          <IconButton className="mr-3 h-7 w-7 text-th-fgd-3" onClick={onClose}>
+            <ArrowLeftIcon className="h-5 w-5" />
+          </IconButton>
+
+          <h3>{t('trade:review-trade')}</h3>
+        </div>
         <RouteFeeInfo
           selectedRoute={selectedRoute}
           amountIn={amountIn}

@@ -66,9 +66,6 @@ const RouteFeeInfo = ({
 
   return (
     <div className="space-y-3 px-1">
-      <div className="mb-4 flex items-center justify-between">
-        <h3>{t('trade:review-trade')}</h3>
-      </div>
       {/* <div className="flex items-center justify-between">
         <p className="text-th-fgd-3">{t('liquidity')}</p>
         <Button
