@@ -11,18 +11,16 @@ const DepositTokenList = ({ onSelect }: { onSelect: (x: any) => void }) => {
     : []
   return (
     <>
-      <div className="grid grid-cols-3 gap-4 px-4 pb-2">
-        <div className="col-span-1">
+      <div className="flex px-4 pb-2">
+        <div className="w-1/4">
           <p className="text-xs">{t('token')}</p>
         </div>
-        <div className="col-span-1 flex justify-end">
+        <div className="w-1/4 text-right">
           <p className="text-xs">{t('rate')}</p>
         </div>
-        {/* <div className="col-span-1 flex justify-end">
-          <p className="whitespace-nowrap text-xs">
-            {t('collateral-multiplier')}
-          </p>
-        </div> */}
+        <div className="w-2/4 text-right">
+          <p className="whitespace-nowrap text-xs">{t('wallet-balance')}</p>
+        </div>
       </div>
       <div className="space-y-2">
         {banks.map((bank, index) => (
