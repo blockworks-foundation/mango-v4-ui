@@ -16,7 +16,7 @@ const DepositTokenList = ({ onSelect }: { onSelect: (x: any) => void }) => {
           <p className="text-xs">{t('token')}</p>
         </div>
         <div className="col-span-1 flex justify-end">
-          <p className="text-xs">{t('rate')}</p>
+          <p className="text-xs">{t('deposit-rate')}</p>
         </div>
         {/* <div className="col-span-1 flex justify-end">
           <p className="whitespace-nowrap text-xs">

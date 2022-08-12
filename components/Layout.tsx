@@ -13,10 +13,13 @@ import ConnectedMenu from './wallet/ConnectedMenu'
 import WalletIcon from './icons/WalletIcon'
 import BounceLoader from './shared/BounceLoader'
 import MangoAccountsList from './MangoAccountsList'
+import { useWallet } from '@solana/wallet-adapter-react'
+import CreateAccountModal from './modals/CreateAccountModal'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded'
 
 const Layout = ({ children }: { children: ReactNode }) => {
+  const { connected } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.loading)
   const { t } = useTranslation('common')
@@ -25,6 +28,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const isMobile = width ? width < breakpoints.md : false
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetupModal, setShowUserSetupModal] = useState(false)
+  const [showFirstAccountModal, setShowFirstAccountModal] = useState(false)
 
   useEffect(() => {
     const collapsed = width ? width < breakpoints.xl : false
@@ -36,6 +40,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
       setIsCollapsed(true)
     }
   }, [width])
+
+  useEffect(() => {
+    if (connected && isOnboarded && !loadingMangoAccount && !mangoAccount) {
+      setShowFirstAccountModal(true)
+    }
+  }, [connected, isOnboarded, loadingMangoAccount, mangoAccount])
 
   const handleCloseModal = useCallback(() => {
     setShowUserSetupModal(false)
@@ -54,7 +64,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   return (
     <>
-      {loadingMangoAccount && isOnboarded ? (
+      {connected && loadingMangoAccount && isOnboarded ? (
         <div className="fixed z-30 flex h-screen w-full items-center justify-center bg-[rgba(0,0,0,0.7)]">
           <BounceLoader />
         </div>
@@ -135,6 +145,13 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <UserSetupModal
           isOpen={showUserSetupModal}
           onClose={handleCloseModal}
+        />
+      ) : null}
+      {showFirstAccountModal ? (
+        <CreateAccountModal
+          isOpen={showFirstAccountModal}
+          onClose={() => setShowFirstAccountModal(false)}
+          isFirstAccount
         />
       ) : null}
     </>

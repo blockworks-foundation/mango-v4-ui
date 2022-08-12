@@ -89,7 +89,7 @@ export type MangoStore = {
   actions: {
     fetchCoingeckoPrices: () => Promise<void>
     fetchGroup: () => Promise<void>
-    fetchMangoAccount: (wallet: Wallet) => Promise<void>
+    fetchMangoAccount: (wallet: Wallet, accountNumber?: number) => Promise<void>
     fetchMangoAccounts: (wallet: Wallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchProfilePicture: (wallet: Wallet) => void
@@ -115,7 +115,7 @@ const mangoStore = create<MangoStore>(
       jupiterTokens: [],
       mangoAccount: {
         current: undefined,
-        loading: false,
+        loading: true,
       },
       mangoAccounts: [],
       markets: undefined,
@@ -191,7 +191,7 @@ const mangoStore = create<MangoStore>(
             console.error('Error fetching group', e)
           }
         },
-        fetchMangoAccount: async (wallet) => {
+        fetchMangoAccount: async (wallet, accountNumber) => {
           const set = get().set
           try {
             const group = get().group
@@ -205,15 +205,10 @@ const mangoStore = create<MangoStore>(
               MANGO_V4_ID[CLUSTER]
             )
 
-            set((state) => {
-              state.mangoAccount.loading = true
-            })
-
-            const mangoAccount = await client.getOrCreateMangoAccount(
+            const mangoAccount = await client.getMangoAccountForOwner(
               group,
               wallet.publicKey,
-              0,
-              'Account'
+              accountNumber || 0
             )
 
             // let orders = await client.getSerum3Orders(
@@ -221,8 +216,9 @@ const mangoStore = create<MangoStore>(
             //   SERUM3_PROGRAM_ID['devnet'],
             //   'BTC/USDC'
             // )
-
-            await mangoAccount.reloadAccountData(client, group)
+            if (mangoAccount) {
+              await mangoAccount.reloadAccountData(client, group)
+            }
             set((state) => {
               state.client = client
               state.mangoAccount.current = mangoAccount

@@ -10,8 +10,9 @@ import BounceLoader from '../shared/BounceLoader'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
-  const { disconnect } = useWallet()
+  const { wallet } = useWallet()
   const [loading, setLoading] = useState(false)
+  const set = mangoStore((s) => s.set)
 
   const handleCloseMangoAccount = async () => {
     const client = mangoStore.getState().client
@@ -22,7 +23,6 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     try {
       const tx = await client.closeMangoAccount(group, mangoAccount)
       if (tx) {
-        disconnect()
         setLoading(false)
         onClose()
         notify({
@@ -30,6 +30,11 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           type: 'success',
           txid: tx,
         })
+        set((state) => {
+          state.mangoAccount.loading = true
+          state.mangoAccount.current = undefined
+        })
+        setTimeout(() => wallet?.adapter?.disconnect(), 1000)
       }
     } catch (e) {
       setLoading(false)
