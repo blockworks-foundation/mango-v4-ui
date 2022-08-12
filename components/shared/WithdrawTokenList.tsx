@@ -1,15 +1,18 @@
+import { Bank } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
+import { useMemo } from 'react'
 import mangoStore from '../../store/state'
-import DepositTokenItem from './DepositTokenItem'
 import WithdrawTokenItem from './WithdrawTokenItem'
 
 const WithdrawTokenList = ({ onSelect }: { onSelect: (x: any) => void }) => {
   const { t } = useTranslation('common')
   const group = mangoStore((s) => s.group)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const banks = group?.banksMap
     ? Array.from(group?.banksMap, ([key, value]) => ({ key, value }))
     : []
-  return (
+
+  return mangoAccount ? (
     <>
       <div className="grid grid-cols-2 px-4 pb-2">
         <div className="col-span-1">
@@ -29,7 +32,7 @@ const WithdrawTokenList = ({ onSelect }: { onSelect: (x: any) => void }) => {
         ))}
       </div>
     </>
-  )
+  ) : null
 }
 
 export default WithdrawTokenList
