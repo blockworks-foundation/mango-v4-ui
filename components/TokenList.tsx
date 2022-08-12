@@ -141,10 +141,6 @@ const TokenList = () => {
                   <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
                       <p>${formatDecimal(oraclePrice.toNumber(), 2)}</p>
-                      {/* <div className="flex items-center justify-end">
-                        <UpTriangle />
-                        <p className="ml-1 text-sm text-th-green">0%</p>
-                      </div> */}
                     </div>
                   </td>
                   <td className="hidden lg:table-cell">
@@ -305,12 +301,6 @@ const TokenList = () => {
                         <p className="ml-1 font-bold text-th-green">0%</p>
                       </div>
                     </div>
-                    {/* <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">
-                        {t('daily-volume')}
-                      </p>
-                      <p className="font-bold">$1000</p>
-                    </div> */}
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                       <p className="space-x-2 font-bold">

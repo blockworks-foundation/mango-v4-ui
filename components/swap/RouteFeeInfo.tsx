@@ -1,4 +1,4 @@
-import { SwitchHorizontalIcon } from '@heroicons/react/solid'
+import { ChevronRightIcon, SwitchHorizontalIcon } from '@heroicons/react/solid'
 import { RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
@@ -188,6 +188,32 @@ const RouteFeeInfo = ({
             ? '< 0.1%'
             : `~ ${(selectedRoute?.priceImpactPct * 100).toFixed(4)}%`}
         </p>
+      </div>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-th-fgd-3">Swap Route</p>
+        <div
+          className="flex items-center rounded border border-th-bkg-4 p-1 pl-2 hover:cursor-pointer hover:border-th-fgd-4"
+          role="button"
+          onClick={showRoutesModal}
+        >
+          <span className="overflow-ellipsis whitespace-nowrap text-th-fgd-1">
+            {selectedRoute?.marketInfos.map((info, index) => {
+              let includeSeparator = false
+              if (
+                selectedRoute?.marketInfos.length > 1 &&
+                index !== selectedRoute?.marketInfos.length - 1
+              ) {
+                includeSeparator = true
+              }
+              return (
+                <span key={index}>{`${info.amm.label} ${
+                  includeSeparator ? 'x ' : ''
+                }`}</span>
+              )
+            })}
+          </span>
+          <ChevronRightIcon className="ml-2 h-3 w-3" />
+        </div>
       </div>
       {typeof feeValue === 'number' ? (
         <div className="flex justify-between">
