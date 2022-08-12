@@ -22,6 +22,11 @@ export const floorToDecimal = (value: number, decimals: number) => {
   return Math.floor(value * 10 ** decimals) / 10 ** decimals
 }
 
+const numberFormatter0 = Intl.NumberFormat('en', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+})
+
 const numberFormatter2 = Intl.NumberFormat('en', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
@@ -40,11 +45,11 @@ const numberFormatter6 = Intl.NumberFormat('en', {
 export const formatFixedDecimals = (value: number) => {
   if (value === 0) {
     return 0
-  } else if (value >= 100) {
-    return numberFormatter2.format(value)
+  } else if (value >= 1000) {
+    return numberFormatter0.format(value)
   } else if (value >= 1) {
-    return numberFormatter4.format(value)
+    return numberFormatter2.format(value)
   } else {
-    return numberFormatter6.format(value)
+    return numberFormatter4.format(value)
   }
 }

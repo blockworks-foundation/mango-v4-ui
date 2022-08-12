@@ -1,36 +1,25 @@
 import { useState, ChangeEvent, useCallback, useEffect, useMemo } from 'react'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { TransactionInstruction } from '@solana/web3.js'
 import { ArrowDownIcon, CogIcon } from '@heroicons/react/solid'
 import mangoStore from '../../store/state'
 import { RouteInfo } from '@jup-ag/core'
-import { Token } from '../../types/jupiter'
 import ContentBox from '../shared/ContentBox'
 import { notify } from '../../utils/notifications'
 import JupiterRoutes from './JupiterRoutes'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
-import {
-  floorToDecimal,
-  formatFixedDecimals,
-  numberFormat,
-} from '../../utils/numbers'
+import { floorToDecimal, numberFormat } from '../../utils/numbers'
 import LeverageSlider from './LeverageSlider'
 import Input from '../forms/Input'
 import { useTranslation } from 'next-i18next'
 import SelectToken from './SelectToken'
 import { Transition } from '@headlessui/react'
-import Switch from '../forms/Switch'
 import Button, { LinkButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useJupiter from './useJupiter'
 import SwapSettings from './SwapSettings'
-
-const getBestRoute = (routesInfos: RouteInfo[]) => {
-  return routesInfos[0]
-}
 
 const MaxWalletBalance = ({
   inputToken,
@@ -59,9 +48,7 @@ const MaxWalletBalance = ({
   return (
     <LinkButton className="no-underline" onClick={setMaxInputAmount}>
       <span className="mr-1 font-normal text-th-fgd-4">{t('balance')}:</span>
-      <span className="text-th-fgd-3 underline">
-        {formatFixedDecimals(tokenInMax)}
-      </span>
+      <span className="text-th-fgd-3 underline">{tokenInMax}</span>
     </LinkButton>
   )
 }

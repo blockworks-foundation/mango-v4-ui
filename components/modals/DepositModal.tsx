@@ -7,7 +7,7 @@ import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
+import { floorToDecimal } from '../../utils/numbers'
 import { TokenAccount } from '../../utils/tokens'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -142,7 +142,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   {t('wallet-balance')}
                 </span>
                 <span className="text-th-fgd-1 underline">
-                  {formatFixedDecimals(tokenMax.maxAmount)}
+                  {floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals)}
                 </span>
               </LinkButton>
             </div>
