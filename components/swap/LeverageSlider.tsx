@@ -1,7 +1,6 @@
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
-import { ChangeEvent, ChangeEventHandler, useMemo } from 'react'
+import { ChangeEvent, useMemo } from 'react'
 import mangoStore from '../../store/state'
-import { formatDecimal } from '../../utils/numbers'
 
 type LeverageSliderProps = {
   inputToken?: string
@@ -18,21 +17,24 @@ const LeverageSlider = ({
   const group = mangoStore((s) => s.group)
 
   const leverageMax = useMemo(() => {
-    if (!mangoAccount || !group) return '100'
+    if (!mangoAccount || !group || !inputToken || !outputToken) return '100'
+
+    const bank = group.banksMap.get(inputToken)!
+    const availableDeposits = bank.uiDeposits() - bank.uiBorrows()
 
     let max
-    if (inputToken && outputToken) {
+    if (outputToken) {
       max = toUiDecimals(
         mangoAccount
           .getMaxSourceForTokenSwap(group, inputToken, outputToken, 0.9)
-          .toNumber(),group.banksMap.get(inputToken)?.mintDecimals!
+          .toNumber(),
+        bank?.mintDecimals!
       )
     } else {
-      // needs to be calculated if we want to use this same component for borrowing
-      max = 100
+      max = availableDeposits
     }
 
-    return formatDecimal(max)
+    return Math.min(availableDeposits, max)
   }, [mangoAccount, inputToken, outputToken, group])
 
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +49,7 @@ const LeverageSlider = ({
         type="range"
         min="0"
         max={leverageMax}
-        step={0.0001}
+        step={0.000001}
         className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-4 hover:bg-gradient-to-r hover:from-gradient-start hover:via-gradient-mid hover:to-gradient-end"
         onChange={handleSliderChange}
       ></input>
