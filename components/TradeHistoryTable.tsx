@@ -15,8 +15,8 @@ import { useViewport } from '../hooks/useViewport'
 import { IconButton } from './shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from './shared/SheenLoader'
-import { TradeHistoryItem } from './account/AccountTabs'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { TradeHistoryItem } from '../store/state'
 
 const TradeHistoryTable = ({
   tradeHistory,

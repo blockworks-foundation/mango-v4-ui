@@ -56,12 +56,9 @@ const Index: NextPage = () => {
 
   useEffect(() => {
     if (mangoAccount) {
-      const getData = async () => {
-        const pubKey = mangoAccount.publicKey.toString()
-        actions.fetchAccountPerformance(pubKey, 1)
-        actions.fetchAccountInterestTotals(pubKey)
-      }
-      getData()
+      const pubKey = mangoAccount.publicKey.toString()
+      actions.fetchAccountPerformance(pubKey, 1)
+      actions.fetchAccountInterestTotals(pubKey)
     }
   }, [actions, mangoAccount])
 
