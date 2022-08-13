@@ -24,7 +24,7 @@ import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
 import { TOKEN_LIST_URL } from '@jup-ag/core'
 import dayjs from 'dayjs'
 
-const GROUP = new PublicKey('A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb')
+const GROUP = new PublicKey('FdynL6q7CNJMMiTZpfnYVkqQRYaoiBWgWkFYvvpx9uA8')
 
 export const connection = new web3.Connection(
   'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
