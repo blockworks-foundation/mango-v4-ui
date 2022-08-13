@@ -307,7 +307,18 @@ const mangoStore = create<MangoStore>(
             const client = await MangoClient.connect(
               provider,
               CLUSTER,
-              MANGO_V4_ID[CLUSTER]
+              MANGO_V4_ID[CLUSTER],
+              {
+                prioritizationFee: 2,
+                postSendTxCallback: ({ txid }: { txid: string }) => {
+                  notify({
+                    title: 'Transaction sent',
+                    description: 'Waiting for confirmation',
+                    type: 'confirm',
+                    txid: txid,
+                  })
+                },
+              }
             )
 
             set((state) => {

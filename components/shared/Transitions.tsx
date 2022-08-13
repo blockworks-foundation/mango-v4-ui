@@ -98,7 +98,7 @@ export const FadeInList = ({
     leave={transitionExitStyle}
     leaveFrom="opacity-100"
     leaveTo="opacity-0"
-    style={{ transitionDelay: `${index * 150}ms` }}
+    style={{ transitionDelay: `${index * 25}ms` }}
   >
     {children}
   </Transition>

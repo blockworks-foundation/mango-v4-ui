@@ -51,17 +51,15 @@ const RouteFeeInfo = ({
     const group = mangoStore.getState().group
     if (!group || !mangoAccount) return 'Unknown'
 
-    const originalHealth = mangoAccount.getHealth(HealthType.init).toNumber()
-    const simulatedHealth = mangoAccount
-      .simHealthWithTokenPositionChanges(group, [
+    const simulatedHealthRatio = mangoAccount
+      .simHealthRatioWithTokenPositionChanges(group, [
         { tokenName: inputTokenSymbol, tokenAmount: amountIn * -1 },
         { tokenName: outputTokenInfo.symbol, tokenAmount: amountOut },
       ])
       .toNumber()
-    const healthImpact =
-      ((originalHealth - simulatedHealth) / originalHealth) * -100
+    // console.log('simulatedHealthRatio', simulatedHealthRatio)
 
-    return healthImpact
+    return simulatedHealthRatio
   }, [mangoAccount, inputTokenSymbol, outputTokenInfo, amountIn, amountOut])
 
   return (
