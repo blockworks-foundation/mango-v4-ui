@@ -37,7 +37,6 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Index: NextPage = () => {
   const { t } = useTranslation('common')
-  const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const loadPerformanceData = mangoStore(
     (s) => s.mangoAccount.stats.performance.loading
@@ -56,14 +55,6 @@ const Index: NextPage = () => {
   >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
-
-  useEffect(() => {
-    if (mangoAccount) {
-      const pubKey = mangoAccount.publicKey.toString()
-      actions.fetchAccountPerformance(pubKey, 1)
-      actions.fetchAccountInterestTotals(pubKey)
-    }
-  }, [actions, mangoAccount])
 
   useEffect(() => {
     if (!oneDayPerformanceData.length && performanceData.length) {

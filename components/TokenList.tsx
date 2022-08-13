@@ -35,6 +35,9 @@ const TokenList = () => {
   const actions = mangoStore((s) => s.actions)
   const group = mangoStore((s) => s.group)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const totalInterestData = mangoStore(
+    (s) => s.mangoAccount.stats.interestTotals.data
+  )
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -102,7 +105,7 @@ const TokenList = () => {
               <th className="w-[16.67%] text-right">{t('price')}</th>
               <th className="className='hidden lg:block' w-[16.67%] text-right"></th>
               <th className="w-[16.67%] text-right">{t('rates')}</th>
-              <th className="w-[16.67%] text-right">{t('liquidity')}</th>
+              <th className="w-[16.67%] text-right">{t('interest-earned')}</th>
               <th className="w-[16.67%] text-right">
                 {t('available-balance')}
               </th>
@@ -124,12 +127,22 @@ const TokenList = () => {
                 : 0
 
               const chartData = coingeckoData ? coingeckoData.prices : undefined
+
               let logoURI
               if (jupiterTokens.length) {
                 logoURI = jupiterTokens.find(
                   (t) => t.address === bank.value.mint.toString()
                 )!.logoURI
               }
+
+              const hasInterestEarned = totalInterestData.find(
+                (d) => d.symbol === bank.value.name
+              )
+
+              const interestAmount = hasInterestEarned
+                ? hasInterestEarned.borrow_interest +
+                  hasInterestEarned.deposit_interest
+                : 0.0
 
               return (
                 <FadeInList as="tr" index={index} key={bank.key}>
@@ -192,12 +205,8 @@ const TokenList = () => {
                   </td>
                   <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
-                      <p>
-                        {formatDecimal(
-                          bank.value.uiDeposits() - bank.value.uiBorrows(),
-                          bank.value.mintDecimals
-                        )}
-                      </p>
+                      <p>{formatDecimal(interestAmount)}</p>
+                      <p className="text-sm text-th-fgd-4">{bank.value.name}</p>
                     </div>
                   </td>
                   <td className="w-[16.67%] pt-4 text-right">

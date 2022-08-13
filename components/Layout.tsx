@@ -17,6 +17,7 @@ import MangoAccountsList from './MangoAccountsList'
 export const IS_ONBOARDED_KEY = 'isOnboarded'
 
 const Layout = ({ children }: { children: ReactNode }) => {
+  const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.loading)
   const { t } = useTranslation('common')
@@ -25,6 +26,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const isMobile = width ? width < breakpoints.md : false
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetupModal, setShowUserSetupModal] = useState(false)
+
+  useEffect(() => {
+    if (mangoAccount) {
+      const pubKey = mangoAccount.publicKey.toString()
+      actions.fetchAccountPerformance(pubKey, 1)
+      actions.fetchAccountInterestTotals(pubKey)
+    }
+  }, [actions, mangoAccount])
 
   useEffect(() => {
     const collapsed = width ? width < breakpoints.xl : false
