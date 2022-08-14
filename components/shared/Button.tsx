@@ -1,3 +1,4 @@
+import { useTheme } from 'next-themes'
 import { FunctionComponent, ReactNode } from 'react'
 
 interface AllButtonProps {
@@ -10,7 +11,6 @@ interface AllButtonProps {
 
 interface ButtonProps {
   size?: 'large' | 'medium' | 'small'
-  highlightButton?: boolean
 }
 
 type ButtonCombinedProps = AllButtonProps & ButtonProps
@@ -22,27 +22,28 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
   className,
   secondary,
   size = 'medium',
-  highlightButton,
   ...props
 }) => {
+  const { theme } = useTheme()
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={`whitespace-nowrap rounded-md ${
         secondary
-          ? 'border border-th-bkg-button'
-          : highlightButton
-          ? 'bg-th-primary text-th-bkg-1'
-          : 'bg-th-bkg-button'
+          ? `border border-th-bkg-button ${
+              theme === 'Light' ? 'text-th-bkg-button' : 'text-th-fgd-1'
+            }`
+          : `bg-th-bkg-button ${
+              theme === 'Light' ? 'text-th-bkg-1' : 'text-th-fgd-1'
+            }`
       } ${
         size === 'medium'
           ? 'h-10 px-4'
           : size === 'large'
           ? 'h-12 px-6'
           : 'h-8 px-3'
-      } font-bold drop-shadow-md 
-      focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 md:hover:brightness-[1.1] ${className}`}
+      } font-bold focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 md:hover:brightness-[1.1] ${className}`}
       {...props}
     >
       {children}

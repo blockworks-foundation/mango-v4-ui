@@ -35,7 +35,7 @@ module.exports = {
           'fgd-2': '#0C3F45',
           'fgd-3': '#446065',
           'fgd-4': '#B0B0B0',
-          'bkg-button': '#E6DBCF',
+          'bkg-button': '#7261BD',
         },
         'dark-theme': {
           yellow: {
@@ -53,7 +53,7 @@ module.exports = {
           'fgd-2': '#C8C8C8',
           'fgd-3': '#B3B3B3',
           'fgd-4': '#878787',
-          'bkg-button': '#43377C',
+          'bkg-button': '#5B48AD',
         },
         'mango-theme': {
           yellow: {
@@ -71,7 +71,7 @@ module.exports = {
           'fgd-2': '#D2CEDE',
           'fgd-3': '#C1BED3',
           'fgd-4': '#7E7A90',
-          'bkg-button': '#464063',
+          'bkg-button': '#5B48AD',
         },
         'th-bkg-1': 'var(--bkg-1)',
         'th-bkg-2': 'var(--bkg-2)',
