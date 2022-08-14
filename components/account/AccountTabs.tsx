@@ -15,7 +15,7 @@ const AccountTabs = () => {
     if (mangoAccount) {
       actions.fetchTradeHistory(mangoAccount.publicKey.toString())
     }
-  }, [mangoAccount])
+  }, [actions, mangoAccount])
 
   return (
     <>

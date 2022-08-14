@@ -142,6 +142,11 @@ const TokenList = () => {
               const interestAmount = hasInterestEarned
                 ? hasInterestEarned.borrow_interest +
                   hasInterestEarned.deposit_interest
+                : 0
+
+              const interestValue = hasInterestEarned
+                ? hasInterestEarned.borrow_interest_usd +
+                  hasInterestEarned.deposit_interest_usd
                 : 0.0
 
               return (
@@ -158,7 +163,7 @@ const TokenList = () => {
                   </td>
                   <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
-                      <p>${formatFixedDecimals(oraclePrice.toNumber())}</p>
+                      <p>{formatFixedDecimals(oraclePrice.toNumber(), true)}</p>
                     </div>
                   </td>
                   <td className="hidden lg:table-cell">
@@ -206,7 +211,9 @@ const TokenList = () => {
                   <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
                       <p>{formatDecimal(interestAmount)}</p>
-                      <p className="text-sm text-th-fgd-4">{bank.value.name}</p>
+                      <p className="text-sm text-th-fgd-4">
+                        {formatFixedDecimals(interestValue, true)}
+                      </p>
                     </div>
                   </td>
                   <td className="w-[16.67%] pt-4 text-right">
@@ -217,12 +224,12 @@ const TokenList = () => {
                     </p>
                     <p className="px-2 text-sm text-th-fgd-4">
                       {mangoAccount
-                        ? `$${formatDecimal(
+                        ? `${formatFixedDecimals(
                             mangoAccount.getUi(bank.value) *
                               oraclePrice.toNumber(),
-                            2
+                            true
                           )}`
-                        : '$0'}
+                        : '$0.00'}
                     </p>
                   </td>
                   <td className="w-[16.67%]">

@@ -22,6 +22,27 @@ export const floorToDecimal = (value: number, decimals: number) => {
   return Math.floor(value * 10 ** decimals) / 10 ** decimals
 }
 
+const usdFormatter0 = Intl.NumberFormat('en', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+  style: 'currency',
+  currency: 'USD',
+})
+
+const usdFormatter2 = Intl.NumberFormat('en', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  style: 'currency',
+  currency: 'USD',
+})
+
+const usdFormatter4 = Intl.NumberFormat('en', {
+  minimumFractionDigits: 4,
+  maximumFractionDigits: 4,
+  style: 'currency',
+  currency: 'USD',
+})
+
 const numberFormatter0 = Intl.NumberFormat('en', {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
@@ -42,14 +63,20 @@ const numberFormatter6 = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
 })
 
-export const formatFixedDecimals = (value: number) => {
+export const formatFixedDecimals = (value: number, isCurrency?: boolean) => {
   if (value === 0) {
-    return 0
+    return isCurrency ? '$0.00' : 0
   } else if (value >= 1000) {
-    return numberFormatter0.format(value)
+    return isCurrency
+      ? usdFormatter0.format(value)
+      : numberFormatter0.format(value)
   } else if (value >= 1) {
-    return numberFormatter2.format(value)
+    return isCurrency
+      ? usdFormatter2.format(value)
+      : numberFormatter2.format(value)
   } else {
-    return numberFormatter4.format(value)
+    return isCurrency
+      ? usdFormatter4.format(value)
+      : numberFormatter4.format(value)
   }
 }

@@ -60,7 +60,9 @@ const Index: NextPage = () => {
     if (!oneDayPerformanceData.length && performanceData.length) {
       setOneDayPerformanceData(performanceData)
     }
-  }, [oneDayPerformanceData.length, performanceData.length])
+  }, [oneDayPerformanceData, performanceData])
+
+  console.log(oneDayPerformanceData)
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
