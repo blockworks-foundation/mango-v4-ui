@@ -243,7 +243,6 @@ const TradeHistoryTable = ({
                     </div>
                     <IconButton
                       onClick={() => handleShowTradeDetails(signature)}
-                      className="h-10 w-10"
                     >
                       <ChevronDownIcon
                         className={`${

@@ -283,7 +283,6 @@ const TokenList = () => {
                     />
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.value.name)}
-                      className="h-10 w-10"
                     >
                       <ChevronDownIcon
                         className={`${

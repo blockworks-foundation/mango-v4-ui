@@ -248,10 +248,7 @@ const Index: NextPage = () => {
             </p>
           </div>
           {interestTotalValue > 1 || interestTotalValue < -1 ? (
-            <IconButton
-              className="h-7 w-7"
-              onClick={() => setChartToShow('interest')}
-            >
+            <IconButton onClick={() => setChartToShow('interest')} size="small">
               <ChevronRightIcon className="h-5 w-5" />
             </IconButton>
           ) : null}

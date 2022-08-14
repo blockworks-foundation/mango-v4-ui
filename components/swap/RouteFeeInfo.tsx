@@ -1,4 +1,4 @@
-import { ChevronRightIcon, SwitchHorizontalIcon } from '@heroicons/react/solid'
+import { PencilIcon } from '@heroicons/react/solid'
 import { RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
@@ -30,9 +30,7 @@ const RouteFeeInfo = ({
   const tokens = mangoStore.getState().jupiterTokens
   const connected = mangoStore((s) => s.connected)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-
   const [depositAndFee, setDepositAndFee] = useState<TransactionFeeInfo>()
-  const [swapRate, setSwapRate] = useState<boolean>(false)
   const [feeValue, setFeeValue] = useState<number | null>(null)
 
   useEffect(() => {
@@ -63,7 +61,7 @@ const RouteFeeInfo = ({
   }, [mangoAccount, inputTokenSymbol, outputTokenInfo, amountIn, amountOut])
 
   return (
-    <div className="space-y-3 px-1">
+    <div className="space-y-2 px-1">
       {/* <div className="flex items-center justify-between">
         <p className="text-th-fgd-3">{t('liquidity')}</p>
         <Button
@@ -89,31 +87,7 @@ const RouteFeeInfo = ({
           </p>
         </Button>
       </div> */}
-      {amountOut && amountIn ? (
-        <div className="flex justify-between">
-          <p className="text-sm text-th-fgd-3">{t('trade:rate')}</p>
-          <div>
-            <div className="flex items-center justify-end">
-              <p className="text-right text-sm text-th-fgd-1">
-                {swapRate ? (
-                  <>
-                    1 {inputTokenSymbol} ≈{' '}
-                    {formatDecimal(amountOut / amountIn, 6)}{' '}
-                    {outputTokenInfo?.symbol}
-                  </>
-                ) : (
-                  <>
-                    1 {outputTokenInfo?.symbol} ≈{' '}
-                    {formatDecimal(amountIn / amountOut, 6)} {inputTokenSymbol}
-                  </>
-                )}
-              </p>
-              <SwitchHorizontalIcon
-                className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-3 hover:text-th-fgd-2"
-                onClick={() => setSwapRate(!swapRate)}
-              />
-            </div>
-            {/* {tokenPrices?.outputTokenPrice && tokenPrices?.inputTokenPrice ? (
+      {/* {tokenPrices?.outputTokenPrice && tokenPrices?.inputTokenPrice ? (
               <div
                 className={`text-right ${
                   ((amountIn / amountOut -
@@ -146,9 +120,6 @@ const RouteFeeInfo = ({
                 } CoinGecko`}</span>
               </div>
             ) : null} */}
-          </div>
-        </div>
-      ) : null}
       <div className="flex justify-between">
         <p className="text-sm text-th-fgd-3">{t('trade:minimum-received')}</p>
         {outputTokenInfo?.decimals ? (
@@ -187,11 +158,11 @@ const RouteFeeInfo = ({
       <div className="flex items-center justify-between">
         <p className="text-sm text-th-fgd-3">Swap Route</p>
         <div
-          className="flex items-center rounded border border-th-bkg-4 p-1 pl-2 hover:cursor-pointer hover:border-th-fgd-4"
+          className="flex items-center text-th-fgd-1 md:hover:cursor-pointer md:hover:text-th-fgd-3"
           role="button"
           onClick={showRoutesModal}
         >
-          <span className="overflow-ellipsis whitespace-nowrap text-th-fgd-1">
+          <span className="overflow-ellipsis whitespace-nowrap">
             {selectedRoute?.marketInfos.map((info, index) => {
               let includeSeparator = false
               if (
@@ -207,7 +178,7 @@ const RouteFeeInfo = ({
               )
             })}
           </span>
-          <ChevronRightIcon className="ml-2 h-3 w-3" />
+          <PencilIcon className="ml-2 h-4 w-4" />
         </div>
       </div>
       {typeof feeValue === 'number' ? (

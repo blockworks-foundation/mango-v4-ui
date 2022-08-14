@@ -53,7 +53,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
 
 interface IconButtonProps {
   hideBg?: boolean
-  large?: boolean
+  size?: 'small' | 'medium' | 'large'
 }
 
 type IconButtonCombinedProps = AllButtonProps & IconButtonProps
@@ -64,19 +64,23 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
   disabled = false,
   className,
   hideBg,
-  large,
+  size = 'medium',
   ...props
 }) => {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${className} flex ${
-        large ? 'h-12 w-12' : 'h-10 w-10'
+      className={`flex ${
+        size === 'large'
+          ? 'h-12 w-12'
+          : size === 'small'
+          ? 'h-7 w-7'
+          : 'h-10 w-10'
       } items-center justify-center rounded-full ${
         hideBg ? '' : 'bg-th-bkg-4'
       } text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:bg-th-bkg-4 
-      disabled:text-th-fgd-4 md:hover:text-th-primary md:disabled:hover:text-th-fgd-4`}
+      disabled:text-th-fgd-4 md:hover:text-th-primary md:disabled:hover:text-th-fgd-4 ${className}`}
       {...props}
     >
       {children}

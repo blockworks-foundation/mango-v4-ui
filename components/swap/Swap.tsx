@@ -239,8 +239,9 @@ const Swap = () => {
       <div className="mb-4 flex items-center justify-between">
         <h3>{t('trade')}</h3>
         <IconButton
-          className="h-7 w-7 text-th-fgd-3"
+          className="text-th-fgd-3"
           onClick={() => setShowSettings(true)}
+          size="small"
         >
           <CogIcon className="h-5 w-5" />
         </IconButton>
