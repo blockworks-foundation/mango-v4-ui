@@ -104,7 +104,7 @@ const TokenList = () => {
               <th className="w-[16.67%] text-left">{t('token')}</th>
               <th className="w-[16.67%] text-right">{t('price')}</th>
               <th className="className='hidden lg:block' w-[16.67%] text-right"></th>
-              <th className="w-[16.67%] text-right">{t('rates')}</th>
+              <th className="w-[16.67%] text-center">{t('rates')}</th>
               <th className="w-[16.67%] text-right">{t('interest-earned')}</th>
               <th className="w-[16.67%] text-right">
                 {t('available-balance')}
@@ -190,11 +190,12 @@ const TokenList = () => {
                     )}
                   </td>
                   <td className="w-[16.67%]">
-                    <div className="flex justify-end space-x-2 text-right">
+                    <div className="flex justify-center space-x-2">
                       <p className="text-th-green">
                         {formatDecimal(
                           bank.value.getDepositRate().toNumber(),
-                          2
+                          2,
+                          { fixed: true }
                         )}
                         %
                       </p>
@@ -202,7 +203,8 @@ const TokenList = () => {
                       <p className="text-th-red">
                         {formatDecimal(
                           bank.value.getBorrowRate().toNumber(),
-                          2
+                          2,
+                          { fixed: true }
                         )}
                         %
                       </p>
