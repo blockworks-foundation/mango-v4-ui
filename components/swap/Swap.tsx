@@ -9,7 +9,7 @@ import JupiterRoutes from './JupiterRoutes'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
 import { floorToDecimal, numberFormat } from '../../utils/numbers'
-import LeverageSlider from './LeverageSlider'
+import { SwapLeverageSlider } from './LeverageSlider'
 import Input from '../forms/Input'
 import { useTranslation } from 'next-i18next'
 import SelectToken from './SelectToken'
@@ -284,7 +284,7 @@ const Swap = () => {
             <p className="text-th-fgd-3">{t('leverage')}</p>
             <p className="text-th-fgd-3">0.00x</p>
           </div>
-          <LeverageSlider
+          <SwapLeverageSlider
             inputToken={inputToken}
             outputToken={outputToken}
             onChange={(x) => setAmountIn(x)}

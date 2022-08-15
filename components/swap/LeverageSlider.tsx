@@ -9,6 +9,33 @@ type LeverageSliderProps = {
 }
 
 const LeverageSlider = ({
+  leverageMax,
+  onChange,
+}: {
+  leverageMax: number
+  onChange: (x: any) => any
+}) => {
+  const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value)
+  }
+
+  return (
+    <>
+      <label htmlFor="default-range" className="block text-sm"></label>
+      <input
+        id="default-range"
+        type="range"
+        min="0"
+        max={leverageMax}
+        step={0.000001}
+        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-4 hover:bg-gradient-to-r hover:from-gradient-start hover:via-gradient-mid hover:to-gradient-end"
+        onChange={handleSliderChange}
+      ></input>
+    </>
+  )
+}
+
+export const SwapLeverageSlider = ({
   inputToken,
   outputToken,
   onChange,
@@ -17,7 +44,7 @@ const LeverageSlider = ({
   const group = mangoStore((s) => s.group)
 
   const leverageMax = useMemo(() => {
-    if (!mangoAccount || !group || !inputToken || !outputToken) return '100'
+    if (!mangoAccount || !group || !inputToken || !outputToken) return 100
 
     const bank = group.banksMap.get(inputToken)!
     const availableDeposits = bank.uiDeposits() - bank.uiBorrows()
@@ -37,22 +64,23 @@ const LeverageSlider = ({
     return Math.min(availableDeposits, max)
   }, [mangoAccount, inputToken, outputToken, group])
 
-  const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value)
-  }
-
   return (
     <>
-      <label htmlFor="default-range" className="block text-sm"></label>
-      <input
-        id="default-range"
-        type="range"
-        min="0"
-        max={leverageMax}
-        step={0.000001}
-        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-4 hover:bg-gradient-to-r hover:from-gradient-start hover:via-gradient-mid hover:to-gradient-end"
-        onChange={handleSliderChange}
-      ></input>
+      <LeverageSlider leverageMax={leverageMax} onChange={onChange} />
+    </>
+  )
+}
+
+export const BorrowLeverageSlider = ({
+  tokenMax,
+  onChange,
+}: {
+  tokenMax: number
+  onChange: (x: any) => any
+}) => {
+  return (
+    <>
+      <LeverageSlider leverageMax={tokenMax} onChange={onChange} />
     </>
   )
 }

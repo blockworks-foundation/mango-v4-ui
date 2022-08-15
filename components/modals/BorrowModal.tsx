@@ -1,9 +1,12 @@
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import React, { ChangeEvent, useState } from 'react'
-// import mangoStore from '../../store/state'
+import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
+import { notify } from '../../utils/notifications'
+import { formatFixedDecimals } from '../../utils/numbers'
 import ButtonGroup from '../forms/ButtonGroup'
 // import { notify } from '../../utils/notifications'
 import Input from '../forms/Input'
@@ -13,7 +16,7 @@ import DepositTokenList from '../shared/DepositTokenList'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
-import LeverageSlider from '../swap/LeverageSlider'
+import { BorrowLeverageSlider } from '../swap/LeverageSlider'
 
 interface BorrowModalProps {
   token?: string
@@ -29,18 +32,85 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
 
-  const handleSizePercentage = (percentage: string) => {
-    setSizePercentage(percentage)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
-    // TODO: calc max
-    const max = 100
-    const amount = (Number(percentage) / 100) * max
-    setInputAmount(amount.toFixed())
-  }
+  const bank = useMemo(() => {
+    const group = mangoStore.getState().group
+    return group?.banksMap.get(selectedToken)
+  }, [selectedToken])
+
+  const healthImpact = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !bank || !mangoAccount) return 0
+
+    return mangoAccount
+      .simHealthRatioWithTokenPositionChanges(group, [
+        { tokenName: bank.name, tokenAmount: parseFloat(inputAmount) * -1 },
+      ])
+      .toNumber()
+  }, [mangoAccount, bank, inputAmount])
+
+  const tokenMax = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !bank) return 0
+    const amount = mangoAccount
+      ?.getMaxWithdrawWithBorrowForToken(group, selectedToken)
+      .toNumber()
+    return amount ? toUiDecimals(amount, bank.mintDecimals) : 0
+  }, [mangoAccount, bank, selectedToken])
+
+  const setMax = useCallback(() => {
+    setInputAmount(tokenMax.toString())
+  }, [tokenMax])
+
+  const handleSizePercentage = useCallback(
+    (percentage: string) => {
+      setSizePercentage(percentage)
+      const amount = (Number(percentage) / 100) * (tokenMax || 0)
+      setInputAmount(amount.toString())
+    },
+    [tokenMax]
+  )
 
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
     setShowTokenList(false)
+  }
+
+  const handleWithdraw = async () => {
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const actions = mangoStore.getState().actions
+    if (!mangoAccount || !group) return
+    setSubmitting(true)
+    try {
+      const tx = await client.tokenWithdraw(
+        group,
+        mangoAccount,
+        selectedToken,
+        parseFloat(inputAmount),
+        true
+      )
+      notify({
+        title: 'Transaction confirmed',
+        type: 'success',
+        txid: tx,
+      })
+      actions.reloadAccount()
+    } catch (e: any) {
+      console.log(e)
+
+      notify({
+        title: 'Transaction failed',
+        description: e.message,
+        txid: e?.txid,
+        type: 'error',
+      })
+    } finally {
+      setSubmitting(false)
+      onClose()
+    }
   }
 
   return (
@@ -61,14 +131,13 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
           <div className="grid grid-cols-2 pb-6">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
-              <LinkButton
-                className="mb-2 no-underline"
-                onClick={() => console.log('Set max input amount')}
-              >
+              <LinkButton className="mb-2 no-underline" onClick={setMax}>
                 <span className="mr-1 font-normal text-th-fgd-3">
                   {t('max')}
                 </span>
-                <span className="text-th-fgd-1">0</span>
+                <span className="text-th-fgd-1 underline">
+                  {formatFixedDecimals(tokenMax)}
+                </span>
               </LinkButton>
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
@@ -116,22 +185,25 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 <p className="text-th-fgd-3">{t('leverage')}</p>
                 <p className="text-th-fgd-3">0.00x</p>
               </div>
-              <LeverageSlider onChange={(x) => setInputAmount(x)} />
+              <BorrowLeverageSlider
+                tokenMax={tokenMax}
+                onChange={(x) => setInputAmount(x)}
+              />
             </div>
           </div>
           <div className="space-y-2 border-y border-th-bkg-3 py-4">
             <div className="flex justify-between">
               <p>{t('health-impact')}</p>
-              <p className="text-th-red">-12%</p>
+              <p className="text-th-red">{healthImpact}</p>
             </div>
-            <div className="flex justify-between">
+            {/* <div className="flex justify-between">
               <p>{t('borrow-value')}</p>
               <p className="text-th-fgd-1">$1,000.00</p>
-            </div>
+            </div> */}
           </div>
         </div>
         <Button
-          onClick={() => console.log('hanlde borrow')}
+          onClick={handleWithdraw}
           className="flex w-full items-center justify-center"
           disabled={!inputAmount}
           size="large"

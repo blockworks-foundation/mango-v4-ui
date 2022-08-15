@@ -220,7 +220,7 @@ const Index: NextPage = () => {
           <p className="text-th-fgd-3">{t('health')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
             {mangoAccount
-              ? mangoAccount.getHealthRatioUi(HealthType.init)
+              ? mangoAccount.getHealthRatioUi(HealthType.maint)
               : 100}
             %
           </p>

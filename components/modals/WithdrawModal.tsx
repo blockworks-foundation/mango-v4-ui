@@ -32,20 +32,30 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
-  const tokenMax = useMemo(() => {
+  const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    const bank = group?.banksMap.get(selectedToken)
-    console.log(group, bank)
+    return group?.banksMap.get(selectedToken)
+  }, [selectedToken])
 
-    if (!group || !bank) return 0
+  const tokenMax = useMemo(() => {
+    if (!bank) return 0
     const amount = mangoAccount?.getUi(bank)
     return amount ? floorToDecimal(amount, bank.mintDecimals) : 0
-  }, [mangoAccount, selectedToken])
+  }, [mangoAccount, bank])
+
+  const healthImpact = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !bank || !mangoAccount) return 0
+    return mangoAccount
+      .simHealthRatioWithTokenPositionChanges(group, [
+        { tokenName: bank.name, tokenAmount: parseFloat(inputAmount) * -1 },
+      ])
+      .toNumber()
+  }, [mangoAccount, bank, inputAmount])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       setSizePercentage(percentage)
-
       const amount = (Number(percentage) / 100) * (tokenMax || 0)
       setInputAmount(amount.toString())
     },
@@ -65,7 +75,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         mangoAccount,
         selectedToken,
         parseFloat(inputAmount),
-        true
+        false
       )
       notify({
         title: 'Transaction confirmed',
@@ -163,16 +173,16 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 />
               </div>
             </div>
-            {/* <div className="space-y-2 border-y border-th-bkg-3 py-4">
-            <div className="flex justify-between">
-              <p>{t('health-impact')}</p>
-              <p className="text-th-red">-12%</p>
-            </div>
-            <div className="flex justify-between">
+            <div className="space-y-2 border-y border-th-bkg-3 py-4">
+              <div className="flex justify-between">
+                <p>{t('health-impact')}</p>
+                <p className="text-th-red">{healthImpact}</p>
+              </div>
+              {/* <div className="flex justify-between">
               <p>{t('withdrawal-value')}</p>
               <p className="text-th-fgd-1">$1,000.00</p>
+            </div> */}
             </div>
-          </div> */}
           </div>
           <div className="mt-4 flex justify-center">
             <Button
