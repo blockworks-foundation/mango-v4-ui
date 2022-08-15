@@ -4,7 +4,7 @@ import { useState } from 'react'
 import mangoStore, { PerformanceDataItem } from '../../store/state'
 import DetailedAreaChart from '../shared/DetailedAreaChart'
 
-const AccountValueChart = ({
+const PnlChart = ({
   data,
   hideChart,
   mangoAccount,
@@ -31,11 +31,11 @@ const AccountValueChart = ({
       loading={loading}
       setDaysToShow={handleDaysToShow}
       tickFormat={(x) => `$${x.toFixed(2)}`}
-      title={t('account-value')}
+      title={t('pnl')}
       xKey="time"
-      yKey="account_equity"
+      yKey="pnl"
     />
   )
 }
 
-export default AccountValueChart
+export default PnlChart
