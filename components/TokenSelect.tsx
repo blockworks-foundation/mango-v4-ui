@@ -16,7 +16,7 @@ const TokenSelect = ({ token, showTokenList, type }: TokenSelectProps) => {
   return (
     <div
       onClick={() => showTokenList(type)}
-      className="default-transition flex h-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
+      className="default-transition flex h-full items-center rounded-lg rounded-r-none p-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
       role="button"
     >
       <div className="mr-2.5 flex min-w-[24px] items-center">

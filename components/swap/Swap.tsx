@@ -20,6 +20,7 @@ import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useJupiter from './useJupiter'
 import SwapSettings from './SwapSettings'
+import SheenLoader from '../shared/SheenLoader'
 
 const MaxWalletBalance = ({
   inputToken,
@@ -310,8 +311,18 @@ const Swap = () => {
             type="output"
           />
         </div>
-        <div className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-3 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
-          {amountOut ? numberFormat.format(amountOut) : 0}
+        <div className="flex w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
+          {isLoadingTradeDetails ? (
+            <div className="w-full">
+              <SheenLoader className="rounded-l-none">
+                <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-3" />
+              </SheenLoader>
+            </div>
+          ) : (
+            <span className="p-3">
+              {amountOut ? numberFormat.format(amountOut) : 0}
+            </span>
+          )}
         </div>
       </div>
       {useMargin ? (
