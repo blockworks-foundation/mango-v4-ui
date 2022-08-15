@@ -31,10 +31,10 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       disabled={disabled}
       className={`whitespace-nowrap rounded-md ${
         secondary
-          ? `border border-th-bkg-button ${
-              theme === 'Light' ? 'text-th-bkg-button' : 'text-th-fgd-1'
+          ? `border border-th-button md:hover:border-th-button-hover ${
+              theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
             }`
-          : `bg-th-bkg-button ${
+          : `bg-th-button md:hover:bg-th-button-hover ${
               theme === 'Light' ? 'text-th-bkg-1' : 'text-th-fgd-1'
             }`
       } ${
@@ -43,7 +43,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
           : size === 'large'
           ? 'h-12 px-6'
           : 'h-8 px-3'
-      } font-bold focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 md:hover:brightness-[1.1] ${className}`}
+      } default-transition font-bold focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
       {...props}
     >
       {children}

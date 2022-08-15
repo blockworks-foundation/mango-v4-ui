@@ -110,16 +110,10 @@ const JupiterRoutes = ({
         <div className="mb-6 -mt-4 flex justify-center">
           <div className="flex flex-col items-center">
             <div className="relative mb-2 w-[72px]">
-              <Image
-                className="rounded-full"
-                alt=""
-                width="40"
-                height="40"
-                src={inputTokenIconUri}
-              />
+              <Image alt="" width="40" height="40" src={inputTokenIconUri} />
               <div className="absolute right-0 top-0">
                 <Image
-                  className="rounded-full drop-shadow-md"
+                  className="drop-shadow-md"
                   alt=""
                   width="40"
                   height="40"

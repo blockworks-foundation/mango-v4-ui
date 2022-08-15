@@ -92,7 +92,8 @@ th {
   --fgd-2: theme('colors.light-theme.fgd-2');
   --fgd-3: theme('colors.light-theme.fgd-3');
   --fgd-4: theme('colors.light-theme.fgd-4');
-  --bkg-button: theme('colors.light-theme.bkg-button');
+  --button: theme('colors.light-theme.button');
+  --button-hover: theme('colors.light-theme.button-hover');
 }
 
 [data-theme='Dark'] {
@@ -113,7 +114,8 @@ th {
   --fgd-2: theme('colors.dark-theme.fgd-2');
   --fgd-3: theme('colors.dark-theme.fgd-3');
   --fgd-4: theme('colors.dark-theme.fgd-4');
-  --bkg-button: theme('colors.dark-theme.bkg-button');
+  --button: theme('colors.dark-theme.button');
+  --button-hover: theme('colors.dark-theme.button-hover');
 }
 
 [data-theme='Mango'] {
@@ -134,7 +136,8 @@ th {
   --fgd-2: theme('colors.mango-theme.fgd-2');
   --fgd-3: theme('colors.mango-theme.fgd-3');
   --fgd-4: theme('colors.mango-theme.fgd-4');
-  --bkg-button: theme('colors.mango-theme.bkg-button');
+  --button: theme('colors.mango-theme.button');
+  --button-hover: theme('colors.mango-theme.button-hover');
 }
 
 /* Base */

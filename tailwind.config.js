@@ -35,7 +35,8 @@ module.exports = {
           'fgd-2': '#0C3F45',
           'fgd-3': '#446065',
           'fgd-4': '#B0B0B0',
-          'bkg-button': '#7261BD',
+          button: '#7261BD',
+          'button-hover': '#5B48AD',
         },
         'dark-theme': {
           yellow: {
@@ -53,7 +54,8 @@ module.exports = {
           'fgd-2': '#C8C8C8',
           'fgd-3': '#B3B3B3',
           'fgd-4': '#878787',
-          'bkg-button': '#5B48AD',
+          button: '#5B48AD',
+          'button-hover': '#443681',
         },
         'mango-theme': {
           yellow: {
@@ -71,7 +73,8 @@ module.exports = {
           'fgd-2': '#D2CEDE',
           'fgd-3': '#C1BED3',
           'fgd-4': '#7E7A90',
-          'bkg-button': '#5B48AD',
+          button: '#5B48AD',
+          'button-hover': '#443681',
         },
         'th-bkg-1': 'var(--bkg-1)',
         'th-bkg-2': 'var(--bkg-2)',
@@ -90,7 +93,8 @@ module.exports = {
         'th-green-dark': 'var(--green-dark)',
         'th-green-muted': 'var(--green-muted)',
         'th-orange': 'var(--orange)',
-        'th-bkg-button': 'var(--bkg-button)',
+        'th-button': 'var(--button)',
+        'th-button-hover': 'var(--button-hover)',
       },
       fontSize: {
         xxs: '.65rem',
