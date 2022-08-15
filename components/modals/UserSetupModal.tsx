@@ -20,12 +20,15 @@ import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
 import Image from 'next/image'
 import BounceLoader from '../shared/BounceLoader'
 import { notify } from '../../utils/notifications'
+import { Wallet } from '@project-serum/anchor'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
-  const { select, wallet, wallets } = useWallet()
+  const { connected, select, wallet, wallets } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.loading)
+  const [accountName, setAccountName] = useState('')
+  const [loadingAccount, setLoadingAccount] = useState(false)
   const [profileName, setProfileName] = useState('')
   const [profileCategory, setProfileCategory] = useState('')
   const [showSetupStep, setShowSetupStep] = useState(0)
@@ -56,11 +59,39 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     }
   }
 
-  useEffect(() => {
-    if (mangoAccount) {
-      setShowSetupStep(3)
+  const handleCreateAccount = async () => {
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    const actions = mangoStore.getState().actions
+    if (!group || !wallet) return
+    setLoadingAccount(true)
+    try {
+      const tx = await client.createMangoAccount(
+        group,
+        0,
+        accountName || 'Account 1'
+      )
+      actions.fetchMangoAccount(wallet!.adapter as unknown as Wallet)
+      // actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
+      if (tx) {
+        setLoadingAccount(false)
+        setShowSetupStep(4)
+        notify({
+          title: t('new-account-success'),
+          type: 'success',
+          txid: tx,
+        })
+      }
+    } catch (e: any) {
+      setLoadingAccount(false)
+      notify({
+        title: t('new-account-failed'),
+        txid: e?.signature,
+        type: 'error',
+      })
+      console.log(e)
     }
-  }, [mangoAccount])
+  }
 
   const handleDeposit = async () => {
     const client = mangoStore.getState().client
@@ -100,12 +131,25 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     }
   }
 
+  useEffect(() => {
+    if (mangoAccount && showSetupStep === 1) {
+      setIsOnboarded(true)
+      onClose()
+    }
+  }, [mangoAccount, showSetupStep])
+
+  useEffect(() => {
+    if (connected && !mangoAccountLoading) {
+      setShowSetupStep(2)
+    }
+  }, [connected, mangoAccountLoading])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} hideClose>
       <div className="absolute top-0 left-0 flex h-0.5 w-full flex-grow bg-th-bkg-4">
         <div
           style={{
-            width: `${(showSetupStep / 3) * 100}%`,
+            width: `${(showSetupStep / 4) * 100}%`,
           }}
           className="default-transition flex rounded bg-th-primary"
         ></div>
@@ -163,7 +207,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           show={showSetupStep === 1}
           style={{ height: 'calc(100% - 12px)' }}
         >
-          {mangoAccountLoading ? (
+          {connected && mangoAccountLoading ? (
             <div className="flex h-full items-center justify-center">
               <BounceLoader />
             </div>
@@ -172,10 +216,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               <div>
                 <div className="mb-4">
                   <h2 className="mb-1">Connect Wallet</h2>
-                  <p>
-                    If you don&apos;t have a Mango Account yet, we&apos;ll
-                    create one for you.
-                  </p>
                 </div>
                 <p className="mb-2 font-bold">Choose Wallet</p>
                 <div className="thin-scroll grid max-h-56 grid-flow-row grid-cols-3 gap-2 overflow-y-auto">
@@ -203,16 +243,9 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                   ))}
                 </div>
               </div>
-              <div>
-                <InlineNotification type="info" desc={t('insufficient-sol')} />
-                <Button
-                  className="mt-4 w-full"
-                  onClick={connectWallet}
-                  size="large"
-                >
-                  Connect Wallet
-                </Button>
-              </div>
+              <Button className="w-full" onClick={connectWallet} size="large">
+                Connect Wallet
+              </Button>
             </div>
           )}
         </EnterRightExitLeft>
@@ -269,15 +302,58 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           show={showSetupStep === 3}
           style={{ height: 'calc(100% - 12px)' }}
         >
-          {submitDeposit ? (
+          {loadingAccount ? (
             <div className="flex h-full items-center justify-center">
-              <BounceLoader />
+              <BounceLoader loadingMessage="Creating Account..." />
             </div>
           ) : (
             <div className="flex h-full flex-col justify-between">
               <div>
+                <div className="pb-4">
+                  <h2 className="mb-1">Create Account</h2>
+                  <p>You need a Mango Account to get started.</p>
+                </div>
+                <div className="pb-4">
+                  <Label text="Account Name" optional />
+                  <Input
+                    type="text"
+                    name="name"
+                    id="name"
+                    placeholder="Account"
+                    value={accountName}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setAccountName(e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+              <div className="space-y-6">
+                <InlineNotification type="info" desc={t('insufficient-sol')} />
+                <Button
+                  className="mb-4 w-full"
+                  onClick={() => handleCreateAccount()}
+                  size="large"
+                >
+                  Create Account
+                </Button>
+              </div>
+            </div>
+          )}
+        </EnterRightExitLeft>
+        <EnterRightExitLeft
+          className="absolute top-0.5 left-0 z-20 w-full bg-th-bkg-1 p-6"
+          show={showSetupStep === 4}
+          style={{ height: 'calc(100% - 12px)' }}
+        >
+          {submitDeposit ? (
+            <div className="flex h-full items-center justify-center">
+              <BounceLoader loadingMessage="Funding your account..." />
+            </div>
+          ) : (
+            <div className="flex h-full flex-col justify-between">
+              <div className="relative">
                 <h2 className="mb-4">Fund Your Account</h2>
-                <FadeInFadeOut className="relative" show={!!depositToken}>
+                <FadeInFadeOut show={!!depositToken}>
                   <Label text="Amount" />
                   <div className="grid grid-cols-2">
                     <button
@@ -313,7 +389,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                   </div>
                 </FadeInFadeOut>
                 {!depositToken ? (
-                  <div className="absolute top-16 mt-2">
+                  <div className="absolute top-10 mt-2 h-56 w-full overflow-auto">
                     <DepositTokenList onSelect={setDepositToken} />
                   </div>
                 ) : null}

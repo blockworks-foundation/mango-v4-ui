@@ -8,7 +8,7 @@ import { Popover, Transition } from '@headlessui/react'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../store/state'
 import { LinkButton } from './shared/Button'
-import CreateNewAccountModal from './modals/CreateNewAccountModal'
+import CreateAccountModal from './modals/CreateAccountModal'
 
 const handleSelectMangoAccount = async (acc: MangoAccount) => {
   const set = mangoStore.getState().set
@@ -91,7 +91,7 @@ const MangoAccountsList = ({
         )}
       </Popover>
       {showNewAccountModal ? (
-        <CreateNewAccountModal
+        <CreateAccountModal
           isOpen={showNewAccountModal}
           onClose={() => setShowNewAccountModal(false)}
         />

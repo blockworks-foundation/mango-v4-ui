@@ -16,7 +16,7 @@ const DepositTokenList = ({ onSelect }: { onSelect: (x: any) => void }) => {
           <p className="text-xs">{t('token')}</p>
         </div>
         <div className="w-1/4 text-right">
-          <p className="text-xs">{t('rate')}</p>
+          <p className="text-xs">{t('deposit-rate')}</p>
         </div>
         <div className="w-2/4 text-right">
           <p className="whitespace-nowrap text-xs">{t('wallet-balance')}</p>

@@ -21,10 +21,11 @@ const ConnectedMenu = () => {
   const isMobile = width ? width < breakpoints.sm : false
 
   const handleDisconnect = useCallback(() => {
-    wallet?.adapter?.disconnect()
     set((state) => {
+      state.mangoAccount.loading = true
       state.mangoAccount.current = undefined
     })
+    setTimeout(() => wallet?.adapter?.disconnect(), 500)
     notify({
       type: 'info',
       title: t('wallet-disconnected'),
