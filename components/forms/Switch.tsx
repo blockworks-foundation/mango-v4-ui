@@ -4,7 +4,7 @@ interface SwitchProps {
   checked: boolean
   className?: string
   onChange: (x: boolean) => void
-  children: ReactNode
+  children?: ReactNode
   disabled?: boolean
 }
 
