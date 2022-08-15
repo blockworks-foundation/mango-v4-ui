@@ -172,7 +172,7 @@ const MenuItem = ({
   return (
     <Link href={pagePath} shallow={true}>
       <a
-        className={`flex cursor-pointer px-4 hover:brightness-[1.1] ${
+        className={`default-transition flex cursor-pointer px-4 md:hover:text-th-primary ${
           active ? 'text-th-primary' : 'text-th-fgd-1'
         } ${hideIconBg ? 'py-1' : 'py-2'}`}
       >
@@ -256,7 +256,7 @@ const ExpandableMenuItem = ({
         role="button"
       >
         <Popover.Button
-          className="hover:text-th-primary"
+          className="default-transition md:hover:text-th-primary"
           onClick={() => toggleMenu()}
         >
           <div
@@ -305,7 +305,7 @@ const ExpandableMenuItem = ({
         }`}
       >
         <Disclosure.Button
-          className={`flex h-full w-full items-center justify-between rounded-none hover:text-th-primary`}
+          className={`default-transition flex h-full w-full items-center justify-between rounded-none md:hover:text-th-primary`}
         >
           <div className="flex items-center">
             <div
