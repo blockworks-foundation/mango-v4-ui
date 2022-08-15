@@ -26,6 +26,7 @@ dayjs.extend(relativeTime)
 interface DetailedAreaChartProps {
   data: any[]
   daysToShow: number
+  hideChange?: boolean
   hideChart?: () => void
   loading?: boolean
   setDaysToShow: (x: number) => void
@@ -38,6 +39,7 @@ interface DetailedAreaChartProps {
 const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   data,
   daysToShow = 1,
+  hideChange,
   hideChart,
   loading,
   setDaysToShow,
@@ -108,22 +110,24 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           play
                           numbers={mouseData[yKey].toFixed(2)}
                         />
-                        <span
-                          className={`ml-3 flex items-center text-sm ${
-                            calculateChartChange() >= 0
-                              ? 'text-th-green'
-                              : 'text-th-red'
-                          }`}
-                        >
-                          {calculateChartChange() >= 0 ? (
-                            <UpTriangle />
-                          ) : (
-                            <DownTriangle />
-                          )}
-                          <span className="ml-1">
-                            {calculateChartChange().toFixed(2)}%
+                        {!hideChange ? (
+                          <span
+                            className={`ml-3 flex items-center text-sm ${
+                              calculateChartChange() >= 0
+                                ? 'text-th-green'
+                                : 'text-th-red'
+                            }`}
+                          >
+                            {calculateChartChange() >= 0 ? (
+                              <UpTriangle />
+                            ) : (
+                              <DownTriangle />
+                            )}
+                            <span className="ml-1">
+                              {calculateChartChange().toFixed(2)}%
+                            </span>
                           </span>
-                        </span>
+                        ) : null}
                       </div>
                       <p className="text-sm text-th-fgd-4">
                         {dayjs(mouseData[xKey]).format('DD MMM YY, h:mma')}
@@ -139,22 +143,24 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           play
                           numbers={data[data.length - 1][yKey].toFixed(2)}
                         />
-                        <span
-                          className={`ml-3 mt-0 flex items-center text-sm ${
-                            calculateChartChange() >= 0
-                              ? 'text-th-green'
-                              : 'text-th-red'
-                          }`}
-                        >
-                          {calculateChartChange() >= 0 ? (
-                            <UpTriangle />
-                          ) : (
-                            <DownTriangle />
-                          )}
-                          <span className="ml-1">
-                            {calculateChartChange().toFixed(2)}%
+                        {!hideChange ? (
+                          <span
+                            className={`ml-3 mt-0 flex items-center text-sm ${
+                              calculateChartChange() >= 0
+                                ? 'text-th-green'
+                                : 'text-th-red'
+                            }`}
+                          >
+                            {calculateChartChange() >= 0 ? (
+                              <UpTriangle />
+                            ) : (
+                              <DownTriangle />
+                            )}
+                            <span className="ml-1">
+                              {calculateChartChange().toFixed(2)}%
+                            </span>
                           </span>
-                        </span>
+                        ) : null}
                       </div>
                       <p className="text-sm text-th-fgd-4">
                         {dayjs(data[data.length - 1][xKey]).format(

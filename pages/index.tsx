@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react'
 import AccountActions from '../components/account/AccountActions'
 import DepositModal from '../components/modals/DepositModal'
 import WithdrawModal from '../components/modals/WithdrawModal'
-import mangoStore from '../store/state'
+import mangoStore, { PerformanceDataItem } from '../store/state'
 import { formatDecimal } from '../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import {
@@ -20,11 +20,13 @@ import SimpleAreaChart from '../components/shared/SimpleAreaChart'
 import { COLORS } from '../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../components/shared/Button'
-import { ArrowsExpandIcon } from '@heroicons/react/solid'
+import { ArrowsExpandIcon, ChevronRightIcon } from '@heroicons/react/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from '../components/account/AccountTabs'
-import DetailedAccountValueChart from '../components/account/DetailedAccountValueChart'
+import AccountValueChart from '../components/account/AccountValueChart'
 import SheenLoader from '../components/shared/SheenLoader'
+import TotalInterestValueChart from '../components/account/TotalInterestValueChart'
+import PnlChart from '../components/account/PnlChart'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -36,7 +38,6 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Index: NextPage = () => {
   const { t } = useTranslation('common')
-  const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const loadPerformanceData = mangoStore(
     (s) => s.mangoAccount.stats.performance.loading
@@ -49,21 +50,20 @@ const Index: NextPage = () => {
   )
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false)
-  const [showDetailedValueChart, setShowDetailedValueChart] =
-    useState<boolean>(false)
+  const [chartToShow, setChartToShow] = useState<
+    'value' | 'interest' | 'pnl' | ''
+  >('')
+  const [oneDayPerformanceData, setOneDayPerformanceData] = useState<
+    PerformanceDataItem[]
+  >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
 
   useEffect(() => {
-    if (mangoAccount) {
-      const getData = async () => {
-        const pubKey = mangoAccount.publicKey.toString()
-        actions.fetchAccountPerformance(pubKey, 1)
-        actions.fetchAccountInterestTotals(pubKey, 10000)
-      }
-      getData()
+    if (!oneDayPerformanceData.length && performanceData.length) {
+      setOneDayPerformanceData(performanceData)
     }
-  }, [actions, mangoAccount])
+  }, [oneDayPerformanceData, performanceData])
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -74,24 +74,34 @@ const Index: NextPage = () => {
     }
   }
 
-  const handleShowDetailedValueChart = () => {
-    setShowDetailedValueChart(true)
+  const handleShowAccountValueChart = () => {
+    setChartToShow('value')
     setShowExpandChart(false)
   }
 
-  const accountValueChange = useMemo(() => {
+  const handleHideChart = () => {
+    const set = mangoStore.getState().set
+    set((s) => {
+      s.mangoAccount.stats.performance.data = oneDayPerformanceData
+    })
+    setChartToShow('')
+  }
+
+  const { accountPnl, accountValueChange } = useMemo(() => {
     if (performanceData.length) {
-      return (
-        ((performanceData[0].account_equity -
-          performanceData[performanceData.length - 1].account_equity) /
-          performanceData[performanceData.length - 1].account_equity) *
-        100
-      )
+      return {
+        accountPnl: performanceData[0].pnl,
+        accountValueChange:
+          ((performanceData[0].account_equity -
+            performanceData[performanceData.length - 1].account_equity) /
+            performanceData[performanceData.length - 1].account_equity) *
+          100,
+      }
     }
-    return 0
+    return { accountPnl: 0, accountValueChange: 0 }
   }, [performanceData])
 
-  const accountInterestTotalValue = useMemo(() => {
+  const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
       return totalInterestData.reduce(
         (a, c) => a + c.borrow_interest_usd + c.deposit_interest_usd,
@@ -101,7 +111,7 @@ const Index: NextPage = () => {
     return 0
   }, [totalInterestData])
 
-  return !showDetailedValueChart ? (
+  return !chartToShow ? (
     <>
       <div className="mb-8 flex flex-col md:mb-10 lg:flex-row lg:items-end lg:justify-between">
         <div className="mb-4 flex items-center space-x-6 lg:mb-0">
@@ -190,7 +200,7 @@ const Index: NextPage = () => {
                   <IconButton
                     className="text-th-fgd-3"
                     hideBg
-                    onClick={() => handleShowDetailedValueChart()}
+                    onClick={() => handleShowAccountValueChart()}
                   >
                     <ArrowsExpandIcon className="h-5 w-5" />
                   </IconButton>
@@ -205,7 +215,7 @@ const Index: NextPage = () => {
         </div>
         <AccountActions />
       </div>
-      <div className="mb-8 grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:mb-10 md:border-b-0">
+      <div className="mb-8 grid grid-cols-4 gap-x-6 border-b border-th-bkg-3 md:mb-10 md:border-b-0">
         <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
           <p className="text-th-fgd-3">{t('health')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
@@ -229,15 +239,35 @@ const Index: NextPage = () => {
               : (0).toFixed(2)}
           </p>
         </div>
+        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+          <div>
+            <p className="text-th-fgd-3">{t('pnl')}</p>
+            <p className="text-2xl font-bold text-th-fgd-1">
+              ${accountPnl.toFixed(2)}
+            </p>
+          </div>
+          {performanceData.length > 4 ? (
+            <IconButton onClick={() => setChartToShow('pnl')} size="small">
+              <ChevronRightIcon className="h-5 w-5" />
+            </IconButton>
+          ) : null}
+        </div>
         {/* <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
           <p className="text-th-fgd-3">{t('leverage')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">0.0x</p>
         </div> */}
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
-          <p className="text-th-fgd-3">{t('total-interest-value')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">
-            ${accountInterestTotalValue.toFixed(2)}
-          </p>
+        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+          <div>
+            <p className="text-th-fgd-3">{t('total-interest-value')}</p>
+            <p className="text-2xl font-bold text-th-fgd-1">
+              ${interestTotalValue.toFixed(2)}
+            </p>
+          </div>
+          {interestTotalValue > 1 || interestTotalValue < -1 ? (
+            <IconButton onClick={() => setChartToShow('interest')} size="small">
+              <ChevronRightIcon className="h-5 w-5" />
+            </IconButton>
+          ) : null}
         </div>
       </div>
       <AccountTabs />
@@ -254,10 +284,22 @@ const Index: NextPage = () => {
         />
       ) : null}
     </>
-  ) : (
-    <DetailedAccountValueChart
+  ) : chartToShow === 'value' ? (
+    <AccountValueChart
       data={performanceData}
-      hideChart={() => setShowDetailedValueChart(false)}
+      hideChart={handleHideChart}
+      mangoAccount={mangoAccount!}
+    />
+  ) : chartToShow === 'interest' ? (
+    <TotalInterestValueChart
+      data={performanceData}
+      hideChart={handleHideChart}
+      mangoAccount={mangoAccount!}
+    />
+  ) : (
+    <PnlChart
+      data={performanceData}
+      hideChart={handleHideChart}
       mangoAccount={mangoAccount!}
     />
   )

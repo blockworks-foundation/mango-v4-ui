@@ -14,44 +14,13 @@ import Input from '../forms/Input'
 import { useTranslation } from 'next-i18next'
 import SelectToken from './SelectToken'
 import { Transition } from '@headlessui/react'
-import Button, { LinkButton } from '../shared/Button'
+import Button, { IconButton, LinkButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useJupiter from './useJupiter'
 import SwapSettings from './SwapSettings'
-
-const MaxWalletBalance = ({
-  inputToken,
-  setAmountIn,
-}: {
-  inputToken: string
-  setAmountIn: (x: any) => void
-}) => {
-  const { t } = useTranslation('common')
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-
-  const tokenInMax = useMemo(() => {
-    const group = mangoStore.getState().group
-    const bank = group?.banksMap.get(inputToken)
-
-    if (!group || !bank || !mangoAccount) return 0.0
-    const balance = mangoAccount.getUi(bank)
-
-    return floorToDecimal(balance, bank.mintDecimals)
-  }, [inputToken, mangoAccount])
-
-  const setMaxInputAmount = () => {
-    setAmountIn(tokenInMax)
-  }
-
-  return (
-    <LinkButton className="no-underline" onClick={setMaxInputAmount}>
-      <span className="mr-1 font-normal text-th-fgd-4">{t('balance')}:</span>
-      <span className="text-th-fgd-3 underline">{tokenInMax}</span>
-    </LinkButton>
-  )
-}
+import SheenLoader from '../shared/SheenLoader'
 
 const Swap = () => {
   const { t } = useTranslation('common')
@@ -61,7 +30,6 @@ const Swap = () => {
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [showSettings, setShowSettings] = useState(false)
-  const [sizePercentage, setSizePercentage] = useState('')
   const [showConfirm, setShowConfirm] = useState(false)
 
   const set = mangoStore.getState().set
@@ -114,7 +82,6 @@ const Swap = () => {
     const group = mangoStore.getState().group
     if (!group) throw new Error('Mango group not loaded')
     const banks = Array.from(group.banksMap.values())
-    console.log(mintAddress, banks)
 
     const bank = banks.find((b) => b.mint.toString() === mintAddress)
     set((s) => {
@@ -139,15 +106,6 @@ const Swap = () => {
     })
 
     setAnimateSwitchArrow(animateSwitchArrow + 1)
-  }
-
-  const handleSizePercentage = (percentage: string) => {
-    setSizePercentage(percentage)
-
-    // TODO: calc max
-    const max = 100
-    const amount = (Number(percentage) / 100) * max
-    setAmountIn(amount.toFixed())
   }
 
   const handleSwap = async (
@@ -238,12 +196,13 @@ const Swap = () => {
       </EnterBottomExitBottom>
       <div className="mb-4 flex items-center justify-between">
         <h3>{t('trade')}</h3>
-        <div
-          className="hover:cursor-pointer"
+        <IconButton
+          className="text-th-fgd-3"
           onClick={() => setShowSettings(true)}
+          size="small"
         >
-          <CogIcon className="h-6 w-6" />
-        </div>
+          <CogIcon className="h-5 w-5" />
+        </IconButton>
       </div>
       <EnterBottomExitBottom
         className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
@@ -275,14 +234,10 @@ const Swap = () => {
           />
         </div>
         {!useMargin ? (
-          <div className="col-span-2 mt-2">
-            <ButtonGroup
-              activeValue={sizePercentage}
-              onChange={(p) => handleSizePercentage(p)}
-              values={['10', '25', '50', '75', '100']}
-              unit="%"
-            />
-          </div>
+          <PercentageSelectButtons
+            setAmountIn={setAmountIn}
+            inputToken={inputToken}
+          />
         ) : null}
       </div>
       <div className="flex justify-center">
@@ -309,8 +264,18 @@ const Swap = () => {
             type="output"
           />
         </div>
-        <div className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-3 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
-          {amountOut ? numberFormat.format(amountOut) : 0}
+        <div className="flex w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
+          {isLoadingTradeDetails ? (
+            <div className="w-full">
+              <SheenLoader className="rounded-l-none">
+                <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-3" />
+              </SheenLoader>
+            </div>
+          ) : (
+            <span className="p-3">
+              {amountOut ? numberFormat.format(amountOut) : 0}
+            </span>
+          )}
         </div>
       </div>
       {useMargin ? (
@@ -349,3 +314,72 @@ const Swap = () => {
 }
 
 export default Swap
+
+const useTokenMax = (inputToken: string) => {
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+
+  const tokenInMax = useMemo(() => {
+    const group = mangoStore.getState().group
+    const bank = group?.banksMap.get(inputToken)
+
+    if (!group || !bank || !mangoAccount) return 0.0
+    const balance = mangoAccount.getUi(bank)
+
+    return floorToDecimal(balance, bank.mintDecimals)
+  }, [inputToken, mangoAccount])
+
+  return tokenInMax
+}
+
+const MaxWalletBalance = ({
+  inputToken,
+  setAmountIn,
+}: {
+  inputToken: string
+  setAmountIn: (x: any) => void
+}) => {
+  const { t } = useTranslation('common')
+  const tokenMax = useTokenMax(inputToken)
+
+  const setMaxInputAmount = () => {
+    setAmountIn(tokenMax)
+  }
+
+  return (
+    <LinkButton className="no-underline" onClick={setMaxInputAmount}>
+      <span className="mr-1 font-normal text-th-fgd-4">{t('balance')}:</span>
+      <span className="text-th-fgd-3 underline">{tokenMax}</span>
+    </LinkButton>
+  )
+}
+
+const PercentageSelectButtons = ({
+  inputToken,
+  setAmountIn,
+}: {
+  inputToken: string
+  setAmountIn: (x: any) => void
+}) => {
+  const [sizePercentage, setSizePercentage] = useState('')
+  const tokenMax = useTokenMax(inputToken)
+
+  const handleSizePercentage = (percentage: string) => {
+    setSizePercentage(percentage)
+    if (tokenMax > 0) {
+      const amount = (Number(percentage) / tokenMax) * tokenMax
+      setAmountIn(amount)
+    }
+    setAmountIn(0)
+  }
+
+  return (
+    <div className="col-span-2 mt-2">
+      <ButtonGroup
+        activeValue={sizePercentage}
+        onChange={(p) => handleSizePercentage(p)}
+        values={['10', '25', '50', '75', '100']}
+        unit="%"
+      />
+    </div>
+  )
+}

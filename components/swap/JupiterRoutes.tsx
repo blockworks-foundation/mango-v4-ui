@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react'
+import React, { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { TransactionInstruction, PublicKey } from '@solana/web3.js'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { Jupiter, RouteInfo } from '@jup-ag/core'
@@ -9,9 +9,11 @@ import RoutesModal from './RoutesModal'
 import RouteFeeInfo from './RouteFeeInfo'
 import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
-import { ArrowRightIcon, XIcon } from '@heroicons/react/solid'
+import { ArrowLeftIcon, SwitchHorizontalIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import { Token } from '../../types/jupiter'
+import Image from 'next/image'
+import { formatDecimal } from '../../utils/numbers'
 
 type JupiterRoutesProps = {
   inputToken: string
@@ -64,7 +66,9 @@ const JupiterRoutes = ({
 }: JupiterRoutesProps) => {
   const { t } = useTranslation('trade')
   const [showRoutesModal, setShowRoutesModal] = useState(false)
+  const [swapRate, setSwapRate] = useState<boolean>(false)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const onSwap = async () => {
     if (!jupiter || !selectedRoute) return
@@ -77,16 +81,68 @@ const JupiterRoutes = ({
     onClose()
   }
 
-  return routes?.length && selectedRoute && outputTokenInfo ? (
+  const inputTokenIconUri = useMemo(() => {
+    if (jupiterTokens.length) {
+      const found = jupiterTokens.find((t) => t.symbol === inputToken)
+      return found ? found.logoURI : ''
+    }
+    return ''
+  }, [inputToken, jupiterTokens])
+
+  const amountOut = useMemo(() => {
+    if (!selectedRoute || !outputTokenInfo) return
+    return toUiDecimals(
+      JSBI.toNumber(selectedRoute.outAmount),
+      outputTokenInfo.decimals
+    )
+  }, [selectedRoute, outputTokenInfo])
+
+  return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (
     <div className="flex h-full flex-col justify-between">
       <div>
         <IconButton
-          className="absolute top-2 right-2 text-th-fgd-3"
+          className="mr-3 text-th-fgd-3"
           onClick={onClose}
-          hideBg
+          size="small"
         >
-          <ArrowRightIcon className="h-5 w-5" />
+          <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
+        <div className="mb-6 -mt-4 flex justify-center">
+          <div className="flex flex-col items-center">
+            <div className="relative mb-2 w-[72px]">
+              <Image alt="" width="40" height="40" src={inputTokenIconUri} />
+              <div className="absolute right-0 top-0">
+                <Image
+                  className="drop-shadow-md"
+                  alt=""
+                  width="40"
+                  height="40"
+                  src={outputTokenInfo.logoURI}
+                />
+              </div>
+            </div>
+            <p className="mb-0.5 text-lg font-bold text-th-fgd-1">{`${amountIn} ${inputToken} for ${amountOut} ${outputTokenInfo.symbol}`}</p>
+            <div className="flex items-center justify-end">
+              <p className="text-right text-sm">
+                {swapRate ? (
+                  <>
+                    1 {inputToken} ≈ {formatDecimal(amountOut / amountIn, 6)}{' '}
+                    {outputTokenInfo?.symbol}
+                  </>
+                ) : (
+                  <>
+                    1 {outputTokenInfo?.symbol} ≈{' '}
+                    {formatDecimal(amountIn / amountOut, 6)} {inputToken}
+                  </>
+                )}
+              </p>
+              <SwitchHorizontalIcon
+                className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-3 hover:text-th-fgd-2"
+                onClick={() => setSwapRate(!swapRate)}
+              />
+            </div>
+          </div>
+        </div>
         <RouteFeeInfo
           selectedRoute={selectedRoute}
           amountIn={amountIn}

@@ -1,3 +1,4 @@
+import { useTheme } from 'next-themes'
 import { FunctionComponent, ReactNode } from 'react'
 
 interface AllButtonProps {
@@ -10,7 +11,6 @@ interface AllButtonProps {
 
 interface ButtonProps {
   size?: 'large' | 'medium' | 'small'
-  highlightButton?: boolean
 }
 
 type ButtonCombinedProps = AllButtonProps & ButtonProps
@@ -22,27 +22,28 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
   className,
   secondary,
   size = 'medium',
-  highlightButton,
   ...props
 }) => {
+  const { theme } = useTheme()
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={`whitespace-nowrap rounded-md ${
         secondary
-          ? 'border border-th-bkg-button'
-          : highlightButton
-          ? 'bg-th-primary text-th-bkg-1'
-          : 'bg-th-bkg-button'
+          ? `border border-th-button md:hover:border-th-button-hover ${
+              theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
+            }`
+          : `bg-th-button md:hover:bg-th-button-hover ${
+              theme === 'Light' ? 'text-th-bkg-1' : 'text-th-fgd-1'
+            }`
       } ${
         size === 'medium'
           ? 'h-10 px-4'
           : size === 'large'
           ? 'h-12 px-6'
           : 'h-8 px-3'
-      } font-bold drop-shadow-md 
-      focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 md:hover:brightness-[1.1] ${className}`}
+      } default-transition font-bold focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
       {...props}
     >
       {children}
@@ -52,7 +53,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
 
 interface IconButtonProps {
   hideBg?: boolean
-  large?: boolean
+  size?: 'small' | 'medium' | 'large'
 }
 
 type IconButtonCombinedProps = AllButtonProps & IconButtonProps
@@ -63,19 +64,23 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
   disabled = false,
   className,
   hideBg,
-  large,
+  size = 'medium',
   ...props
 }) => {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${className} flex ${
-        large ? 'h-12 w-12' : 'h-10 w-10'
+      className={`flex ${
+        size === 'large'
+          ? 'h-12 w-12'
+          : size === 'small'
+          ? 'h-7 w-7'
+          : 'h-10 w-10'
       } items-center justify-center rounded-full ${
         hideBg ? '' : 'bg-th-bkg-4'
       } text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:bg-th-bkg-4 
-      disabled:text-th-fgd-4 md:hover:text-th-primary md:disabled:hover:text-th-fgd-4`}
+      disabled:text-th-fgd-4 md:hover:text-th-primary md:disabled:hover:text-th-fgd-4 ${className}`}
       {...props}
     >
       {children}

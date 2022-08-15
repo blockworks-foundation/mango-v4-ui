@@ -25,7 +25,7 @@ const ConnectedMenu = () => {
       state.mangoAccount.loading = true
       state.mangoAccount.current = undefined
     })
-    setTimeout(() => wallet?.adapter?.disconnect(), 1000)
+    setTimeout(() => wallet?.adapter?.disconnect(), 500)
     notify({
       type: 'info',
       title: t('wallet-disconnected'),

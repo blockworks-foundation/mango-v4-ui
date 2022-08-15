@@ -24,7 +24,7 @@ import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
 import { TOKEN_LIST_URL } from '@jup-ag/core'
 import dayjs from 'dayjs'
 
-const GROUP = new PublicKey('A9XhGqUUjV992cD36qWDY8wDiZnGuCaUWtSE3NGXjDCb')
+const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
 export const connection = new web3.Connection(
   'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
@@ -63,6 +63,22 @@ export interface PerformanceDataItem {
   transfer_balance: number
 }
 
+export interface TradeHistoryItem {
+  block_datetime: string
+  mango_account: string
+  signature: string
+  swap_in_amount: number
+  swap_in_loan: number
+  swap_in_loan_origination_fee: number
+  swap_in_price_usd: number
+  swap_in_symbol: string
+  swap_out_amount: number
+  loan: number
+  loan_origination_fee: number
+  swap_out_price_usd: number
+  swap_out_symbol: string
+}
+
 interface NFT {
   address: string
   image: string
@@ -84,6 +100,7 @@ export type MangoStore = {
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
       performance: { data: PerformanceDataItem[]; loading: boolean }
+      tradeHistory: { data: TradeHistoryItem[]; loading: boolean }
     }
   }
   mangoAccounts: MangoAccount[]
@@ -110,10 +127,7 @@ export type MangoStore = {
     }
   }
   actions: {
-    fetchAccountInterestTotals: (
-      mangoAccountPk: string,
-      range: number
-    ) => Promise<void>
+    fetchAccountInterestTotals: (mangoAccountPk: string) => Promise<void>
     fetchAccountPerformance: (
       mangoAccountPk: string,
       range: number
@@ -125,6 +139,7 @@ export type MangoStore = {
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchProfilePicture: (wallet: Wallet) => void
     fetchJupiterTokens: () => Promise<void>
+    fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
     reloadAccount: () => Promise<void>
     reloadGroup: () => Promise<void>
@@ -150,6 +165,7 @@ const mangoStore = create<MangoStore>(
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
+          tradeHistory: { data: [], loading: false },
         },
       },
       mangoAccounts: [],
@@ -176,19 +192,14 @@ const mangoStore = create<MangoStore>(
         },
       },
       actions: {
-        fetchAccountInterestTotals: async (
-          mangoAccountPk: string,
-          range: number
-        ) => {
+        fetchAccountInterestTotals: async (mangoAccountPk: string) => {
           const set = get().set
           set((state) => {
             state.mangoAccount.stats.interestTotals.loading = true
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-total?mango-account=${mangoAccountPk}&start-date=${dayjs()
-                .subtract(range, 'day')
-                .format('YYYY-MM-DD')}`
+              `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-total?mango-account=${mangoAccountPk}`
             )
             const parsedResponse = await response.json()
             const entries: any = Object.entries(parsedResponse).sort((a, b) =>
@@ -315,7 +326,18 @@ const mangoStore = create<MangoStore>(
             const client = await MangoClient.connect(
               provider,
               CLUSTER,
-              MANGO_V4_ID[CLUSTER]
+              MANGO_V4_ID[CLUSTER],
+              {
+                prioritizationFee: 2,
+                postSendTxCallback: ({ txid }: { txid: string }) => {
+                  notify({
+                    title: 'Transaction sent',
+                    description: 'Waiting for confirmation',
+                    type: 'confirm',
+                    txid: txid,
+                  })
+                },
+              }
             )
 
             const mangoAccount = await client.getMangoAccountForOwner(
@@ -374,13 +396,6 @@ const mangoStore = create<MangoStore>(
           })
           try {
             const data = await fetchNftsFromHolaplexIndexer(ownerPk)
-            // for (const nft of data.nfts) {
-            //   const tokenAccount = await getTokenAccountsByMint(
-            //     connection,
-            //     nft.mintAddress
-            //   )
-            //   nft.tokenAccount = tokenAccount[0] || null
-            // }
             set((state) => {
               state.wallet.nfts.data = data.nfts
               state.wallet.nfts.loading = false
@@ -392,6 +407,39 @@ const mangoStore = create<MangoStore>(
             })
           }
           return []
+        },
+        fetchTradeHistory: async (mangoAccountPk: string) => {
+          const set = get().set
+          set((state) => {
+            state.mangoAccount.stats.tradeHistory.loading = true
+          })
+          try {
+            const history = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}`
+            )
+            const parsedHistory = await history.json()
+            const sortedHistory =
+              parsedHistory && parsedHistory.length
+                ? parsedHistory.sort(
+                    (a: TradeHistoryItem, b: TradeHistoryItem) =>
+                      dayjs(b.block_datetime).unix() -
+                      dayjs(a.block_datetime).unix()
+                  )
+                : []
+
+            set((state) => {
+              state.mangoAccount.stats.tradeHistory.data = sortedHistory
+              state.mangoAccount.stats.tradeHistory.loading = false
+            })
+          } catch {
+            set((state) => {
+              state.mangoAccount.stats.tradeHistory.loading = false
+            })
+            notify({
+              title: 'Failed to load account performance data',
+              type: 'error',
+            })
+          }
         },
         fetchWalletTokens: async (wallet: Wallet) => {
           const set = get().set

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import mangoStore, { PerformanceDataItem } from '../../store/state'
 import DetailedAreaChart from '../shared/DetailedAreaChart'
 
-const DetailedAccountValueChart = ({
+const AccountValueChart = ({
   data,
   hideChart,
   mangoAccount,
@@ -38,4 +38,4 @@ const DetailedAccountValueChart = ({
   )
 }
 
-export default DetailedAccountValueChart
+export default AccountValueChart
