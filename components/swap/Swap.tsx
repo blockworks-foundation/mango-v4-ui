@@ -358,7 +358,7 @@ const PercentageSelectButtons = ({
   setAmountIn,
 }: {
   inputToken: string
-  setAmountIn: (x: any) => void
+  setAmountIn: (x: any) => any
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
   const tokenMax = useTokenMax(inputToken)
@@ -366,10 +366,11 @@ const PercentageSelectButtons = ({
   const handleSizePercentage = (percentage: string) => {
     setSizePercentage(percentage)
     if (tokenMax > 0) {
-      const amount = (Number(percentage) / tokenMax) * tokenMax
+      const amount = (Number(percentage) / 100) * tokenMax
       setAmountIn(amount)
+    } else {
+      setAmountIn('0')
     }
-    setAmountIn(0)
   }
 
   return (
