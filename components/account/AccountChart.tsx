@@ -1,17 +1,21 @@
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
-import mangoStore, { PerformanceDataItem } from '../../store/state'
+import mangoStore from '../../store/state'
 import DetailedAreaChart from '../shared/DetailedAreaChart'
 
-const AccountValueChart = ({
+const AccountChart = ({
+  chartToShow,
   data,
   hideChart,
   mangoAccount,
+  yKey,
 }: {
-  data: Array<PerformanceDataItem>
+  chartToShow: string
+  data: Array<any>
   hideChart: () => void
   mangoAccount: MangoAccount
+  yKey: string
 }) => {
   const { t } = useTranslation('common')
   const actions = mangoStore((s) => s.actions)
@@ -25,17 +29,17 @@ const AccountValueChart = ({
 
   return (
     <DetailedAreaChart
-      data={data.slice().reverse()}
+      data={data}
       daysToShow={daysToShow}
       hideChart={hideChart}
       loading={loading}
       setDaysToShow={handleDaysToShow}
       tickFormat={(x) => `$${x.toFixed(2)}`}
-      title={t('account-value')}
+      title={t(chartToShow)}
       xKey="time"
-      yKey="account_equity"
+      yKey={yKey}
     />
   )
 }
 
-export default AccountValueChart
+export default AccountChart

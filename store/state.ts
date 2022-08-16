@@ -252,7 +252,7 @@ const mangoStore = create<MangoStore>(
               .filter((x: string) => x)
 
             set((state) => {
-              state.mangoAccount.stats.performance.data = stats
+              state.mangoAccount.stats.performance.data = stats.reverse()
               state.mangoAccount.stats.performance.loading = false
             })
           } catch {

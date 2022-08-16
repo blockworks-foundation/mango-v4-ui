@@ -23,10 +23,8 @@ import { IconButton } from '../components/shared/Button'
 import { ArrowsExpandIcon, ChevronRightIcon } from '@heroicons/react/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from '../components/account/AccountTabs'
-import AccountValueChart from '../components/account/AccountValueChart'
 import SheenLoader from '../components/shared/SheenLoader'
-import TotalInterestValueChart from '../components/account/TotalInterestValueChart'
-import PnlChart from '../components/account/PnlChart'
+import AccountChart from '../components/account/AccountChart'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -51,7 +49,7 @@ const Index: NextPage = () => {
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false)
   const [chartToShow, setChartToShow] = useState<
-    'value' | 'interest' | 'pnl' | ''
+    'account-value' | 'cumulative-interest-value' | 'pnl' | ''
   >('')
   const [oneDayPerformanceData, setOneDayPerformanceData] = useState<
     PerformanceDataItem[]
@@ -75,7 +73,7 @@ const Index: NextPage = () => {
   }
 
   const handleShowAccountValueChart = () => {
-    setChartToShow('value')
+    setChartToShow('account-value')
     setShowExpandChart(false)
   }
 
@@ -90,11 +88,11 @@ const Index: NextPage = () => {
   const { accountPnl, accountValueChange } = useMemo(() => {
     if (performanceData.length) {
       return {
-        accountPnl: performanceData[0].pnl,
+        accountPnl: performanceData[performanceData.length - 1].pnl,
         accountValueChange:
-          ((performanceData[0].account_equity -
-            performanceData[performanceData.length - 1].account_equity) /
-            performanceData[performanceData.length - 1].account_equity) *
+          ((performanceData[performanceData.length - 1].account_equity -
+            performanceData[0].account_equity) /
+            performanceData[0].account_equity) *
           100,
       }
     }
@@ -179,7 +177,7 @@ const Index: NextPage = () => {
                       ? COLORS.GREEN[theme]
                       : COLORS.RED[theme]
                   }
-                  data={performanceData.slice().reverse()}
+                  data={performanceData}
                   height={88}
                   name="accountValue"
                   width={180}
@@ -264,7 +262,10 @@ const Index: NextPage = () => {
             </p>
           </div>
           {interestTotalValue > 1 || interestTotalValue < -1 ? (
-            <IconButton onClick={() => setChartToShow('interest')} size="small">
+            <IconButton
+              onClick={() => setChartToShow('cumulative-interest-value')}
+              size="small"
+            >
               <ChevronRightIcon className="h-5 w-5" />
             </IconButton>
           ) : null}
@@ -284,23 +285,33 @@ const Index: NextPage = () => {
         />
       ) : null}
     </>
-  ) : chartToShow === 'value' ? (
-    <AccountValueChart
+  ) : chartToShow === 'account-value' ? (
+    <AccountChart
+      chartToShow="account-value"
       data={performanceData}
       hideChart={handleHideChart}
       mangoAccount={mangoAccount!}
+      yKey="account_equity"
     />
-  ) : chartToShow === 'interest' ? (
-    <TotalInterestValueChart
+  ) : chartToShow === 'pnl' ? (
+    <AccountChart
+      chartToShow="pnl"
       data={performanceData}
       hideChart={handleHideChart}
       mangoAccount={mangoAccount!}
+      yKey="pnl"
     />
   ) : (
-    <PnlChart
-      data={performanceData}
+    <AccountChart
+      chartToShow="cumulative-interest-value"
+      data={performanceData.map((d) => ({
+        interest_value:
+          d.borrow_interest_cumulative_usd + d.deposit_interest_cumulative_usd,
+        time: d.time,
+      }))}
       hideChart={handleHideChart}
       mangoAccount={mangoAccount!}
+      yKey="interest_value"
     />
   )
 }
