@@ -102,7 +102,7 @@ const TokenList = () => {
         </Switch>
       </div>
       {showTableView ? (
-        <table className="min-w-full">
+        <table className="-mt-1 min-w-full">
           <thead>
             <tr>
               <th className="w-[16.67%] text-left">{t('token')}</th>
@@ -154,7 +154,7 @@ const TokenList = () => {
                 : 0.0
 
               return (
-                <FadeInList as="tr" index={index} key={bank.key}>
+                <tr key={bank.key}>
                   <td className="w-[16.67%]">
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -248,7 +248,7 @@ const TokenList = () => {
                       />
                     </div>
                   </td>
-                </FadeInList>
+                </tr>
               )
             })}
           </tbody>

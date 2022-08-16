@@ -78,7 +78,7 @@ const TradeHistoryTable = ({
                     ? loan_origination_fee
                     : 0
                 return (
-                  <FadeInList as="tr" index={index} key={signature}>
+                  <tr key={signature}>
                     <td>
                       <p>{dayjs(block_datetime).format('ddd D MMM')}</p>
                       <p className="text-xs text-th-fgd-3">
@@ -156,7 +156,7 @@ const TradeHistoryTable = ({
                         </a>
                       </div>
                     </td>
-                  </FadeInList>
+                  </tr>
                 )
               })}
             </tbody>
