@@ -23,6 +23,7 @@
     "@tippyjs/react": "^4.2.6",
     "assert": "^2.0.0",
     "dayjs": "^1.11.3",
+    "decimal.js": "^10.4.0",
     "immer": "^9.0.12",
     "jsbi": "^4.3.0",
     "lodash.debounce": "^4.0.8",

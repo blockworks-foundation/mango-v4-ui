@@ -2,6 +2,7 @@ import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { Jupiter, RouteInfo } from '@jup-ag/core'
 import { useEffect, useState } from 'react'
 import JSBI from 'jsbi'
+import Decimal from 'decimal.js'
 
 import mangoStore, { CLUSTER } from '../../store/state'
 import { Token } from '../../types/jupiter'
@@ -72,7 +73,11 @@ const useJupiter = ({
               inputMint: inputBank.mint, // Mint address of the input token
               outputMint: outputBank.mint, // Mint address of the output token
               amount: JSBI.BigInt(
-                inputAmount * 10 ** (inputBank.mintDecimals || 1)
+                new Decimal(inputAmount)
+                  .mul(10 ** inputBank.mintDecimals)
+                  .mul(10 ** inputBank.mintDecimals)
+                  .floor()
+                  .div(10 ** inputBank.mintDecimals)
               ),
               slippage, // The slippage in % terms
               filterTopNResult: 10,

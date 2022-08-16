@@ -322,10 +322,13 @@ const useTokenMax = (inputToken: string) => {
     const group = mangoStore.getState().group
     const bank = group?.banksMap.get(inputToken)
 
-    if (!group || !bank || !mangoAccount) return 0.0
+    if (!group || !bank || !mangoAccount) return { amount: 0.0, decimals: 6 }
     const balance = mangoAccount.getUi(bank)
 
-    return floorToDecimal(balance, bank.mintDecimals)
+    return {
+      amount: floorToDecimal(balance, bank.mintDecimals),
+      decimals: bank.mintDecimals,
+    }
   }, [inputToken, mangoAccount])
 
   return tokenInMax
@@ -339,7 +342,7 @@ const MaxWalletBalance = ({
   setAmountIn: (x: any) => void
 }) => {
   const { t } = useTranslation('common')
-  const tokenMax = useTokenMax(inputToken)
+  const { amount: tokenMax } = useTokenMax(inputToken)
 
   const setMaxInputAmount = () => {
     setAmountIn(tokenMax)
@@ -361,13 +364,16 @@ const PercentageSelectButtons = ({
   setAmountIn: (x: any) => any
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
-  const tokenMax = useTokenMax(inputToken)
+  const { amount: tokenMax, decimals } = useTokenMax(inputToken)
 
   const handleSizePercentage = (percentage: string) => {
     setSizePercentage(percentage)
     if (tokenMax > 0) {
-      const amount = (Number(percentage) / 100) * tokenMax
-      setAmountIn(amount)
+      let amount = (Number(percentage) / 100) * tokenMax
+      if (percentage !== '100') {
+        amount = floorToDecimal(amount, decimals)
+      }
+      setAmountIn(amount.toString())
     } else {
       setAmountIn('0')
     }
