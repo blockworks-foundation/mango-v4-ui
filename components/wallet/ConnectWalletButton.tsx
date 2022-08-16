@@ -6,6 +6,7 @@ import { useTranslation } from 'next-i18next'
 import uniqBy from 'lodash/uniqBy'
 import { notify } from '../../utils/notifications'
 import WalletSelect from './WalletSelect'
+import mangoStore from '../../store/state'
 
 export const handleWalletConnect = (wallet: Wallet) => {
   if (!wallet) {
@@ -47,7 +48,11 @@ export const ConnectWalletButton: React.FC = () => {
   }, [wallets, installedWallets])
 
   const handleConnect = useCallback(() => {
+    const set = mangoStore.getState().set
     if (wallet) {
+      set((state) => {
+        state.mangoAccount.loading = true
+      })
       handleWalletConnect(wallet)
     }
   }, [wallet])

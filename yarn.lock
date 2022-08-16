@@ -33,7 +33,7 @@
 
 "@blockworks-foundation/mango-v4@git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#main":
   version "0.0.1-beta.1"
-  resolved "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#a9c4f549171395bb8d32659e2c6803e43f1664d5"
+  resolved "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#3c06b718c6faaee861fdbc734399aa72547e8a5c"
   dependencies:
     "@project-serum/anchor" "^0.25.0"
     "@project-serum/serum" "^0.13.65"

@@ -29,8 +29,8 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.loading)
   const [accountName, setAccountName] = useState('')
   const [loadingAccount, setLoadingAccount] = useState(false)
-  const [profileName, setProfileName] = useState('')
-  const [profileCategory, setProfileCategory] = useState('')
+  // const [profileName, setProfileName] = useState('')
+  // const [profileCategory, setProfileCategory] = useState('')
   const [showSetupStep, setShowSetupStep] = useState(0)
   // const [acceptRisks, setAcceptRisks] = useState(false)
   const [depositToken, setDepositToken] = useState('')
@@ -44,7 +44,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
 
   const handleSaveProfile = () => {
     // save profile details to db then:
-
     setShowSetupStep(2)
   }
 
@@ -75,7 +74,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       // actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
       if (tx) {
         setLoadingAccount(false)
-        setShowSetupStep(4)
+        setShowSetupStep(3)
         notify({
           title: t('new-account-success'),
           type: 'success',
@@ -231,7 +230,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       }}
                       key={w.adapter.name}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center text-th-fgd-4">
                         <img
                           src={w.adapter.icon}
                           className="mr-2 h-5 w-5"
@@ -249,7 +248,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
             </div>
           )}
         </EnterRightExitLeft>
-        <EnterRightExitLeft
+        {/* <EnterRightExitLeft
           className="absolute top-0.5 left-0 z-20 w-full bg-th-bkg-1 p-6"
           show={showSetupStep === 2}
           style={{ height: 'calc(100% - 12px)' }}
@@ -296,10 +295,10 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               <LinkButton onClick={handleNextStep}>Skip for now</LinkButton>
             </div>
           </div>
-        </EnterRightExitLeft>
+        </EnterRightExitLeft> */}
         <EnterRightExitLeft
           className="absolute top-0.5 left-0 z-20 w-full bg-th-bkg-1 p-6"
-          show={showSetupStep === 3}
+          show={showSetupStep === 2}
           style={{ height: 'calc(100% - 12px)' }}
         >
           {loadingAccount ? (
@@ -342,7 +341,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         </EnterRightExitLeft>
         <EnterRightExitLeft
           className="absolute top-0.5 left-0 z-20 w-full bg-th-bkg-1 p-6"
-          show={showSetupStep === 4}
+          show={showSetupStep === 3}
           style={{ height: 'calc(100% - 12px)' }}
         >
           {submitDeposit ? (

@@ -31,10 +31,8 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           txid: tx,
         })
         set((state) => {
-          state.mangoAccount.loading = true
           state.mangoAccount.current = undefined
         })
-        setTimeout(() => wallet?.adapter?.disconnect(), 1000)
       }
     } catch (e) {
       setLoading(false)

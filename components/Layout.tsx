@@ -53,6 +53,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (connected && isOnboarded && !loadingMangoAccount && !mangoAccount) {
       setShowFirstAccountModal(true)
+    } else {
+      setShowFirstAccountModal(false)
     }
   }, [connected, isOnboarded, loadingMangoAccount, mangoAccount])
 
