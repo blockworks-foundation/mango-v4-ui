@@ -380,13 +380,14 @@ const mangoStore = create<MangoStore>(
               group,
               wallet.publicKey
             )
-            if (mangoAccounts.length) {
-              set((state) => {
-                state.mangoAccounts.accounts = mangoAccounts
-                state.mangoAccounts.loading = false
-              })
-            }
+            set((state) => {
+              state.mangoAccounts.accounts = mangoAccounts
+              state.mangoAccounts.loading = false
+            })
           } catch (e) {
+            set((state) => {
+              state.mangoAccounts.loading = false
+            })
             console.error('Error fetching mango accts', e)
           }
         },
