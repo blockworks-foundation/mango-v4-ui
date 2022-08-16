@@ -28,7 +28,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     <div className={`relative flex ${wrapperClassName}`}>
       {prefix ? (
         <div
-          className={`absolute left-2 top-1/2 -translate-y-1/2 transform ${prefixClassName}`}
+          className={`absolute left-2 top-1/2 -translate-y-1/2 ${prefixClassName}`}
         >
           {prefix}
         </div>

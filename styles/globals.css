@@ -151,11 +151,11 @@ button {
 }
 
 svg {
-  @apply transition-all duration-500 ease-out;
+  @apply transition duration-500 ease-out;
 }
 
 .default-transition {
-  @apply transition-all duration-500 ease-out;
+  @apply transition duration-300 ease-out;
 }
 
 /* Type */

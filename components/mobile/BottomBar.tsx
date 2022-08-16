@@ -30,7 +30,7 @@ const BottomBar = () => {
 
   return (
     <>
-      <div className="default-transition grid grid-cols-4 grid-rows-1 bg-th-bkg-2 py-2.5">
+      <div className="grid grid-cols-4 grid-rows-1 bg-th-bkg-2 py-2.5">
         <Link
           href={{
             pathname: '/',
@@ -39,7 +39,7 @@ const BottomBar = () => {
           <a
             className={`${
               asPath === '/' ? 'text-th-primary' : 'text-th-fgd-3'
-            } default-transition col-span-1 flex cursor-pointer flex-col items-center`}
+            } col-span-1 flex cursor-pointer flex-col items-center`}
           >
             <HomeIcon className="mb-1 h-4 w-4" />
             <StyledBarItemLabel>{t('portfolio')}</StyledBarItemLabel>
@@ -54,7 +54,7 @@ const BottomBar = () => {
           <a
             className={`${
               asPath === '/trade' ? 'text-th-primary' : 'text-th-fgd-3'
-            } default-transition col-span-1 flex cursor-pointer flex-col items-center`}
+            } col-span-1 flex cursor-pointer flex-col items-center`}
           >
             <TradeIcon className="mb-1 h-4 w-4" />
             <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
@@ -64,7 +64,7 @@ const BottomBar = () => {
           <a
             className={`${
               asPath === '/stats' ? 'text-th-primary' : 'text-th-fgd-3'
-            } default-transition col-span-1 flex cursor-pointer flex-col items-center`}
+            } col-span-1 flex cursor-pointer flex-col items-center`}
           >
             <ChartBarIcon className="mb-1 h-4 w-4" />
             <StyledBarItemLabel>{t('stats')}</StyledBarItemLabel>
@@ -73,7 +73,7 @@ const BottomBar = () => {
         <a
           className={`${
             showPanel ? 'text-th-primary' : 'text-th-fgd-3'
-          } default-transition col-span-1 flex cursor-pointer flex-col items-center`}
+          } col-span-1 flex cursor-pointer flex-col items-center`}
           onClick={() => setShowPanel(!showPanel)}
         >
           <MenuIcon className="mb-1 h-4 w-4" />
@@ -97,7 +97,7 @@ const MoreMenuPanel = ({
   const { t } = useTranslation('common')
   return (
     <div
-      className={`fixed bottom-0 z-30 h-96 w-full transform overflow-hidden bg-th-bkg-2 px-4 transition-all duration-700 ease-in-out ${
+      className={`fixed bottom-0 z-30 h-96 w-full overflow-hidden bg-th-bkg-2 px-4 transition duration-500 ease-in-out ${
         showPanel ? 'translate-y-0' : 'translate-y-full'
       }`}
     >

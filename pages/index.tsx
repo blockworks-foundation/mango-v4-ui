@@ -192,9 +192,9 @@ const Index: NextPage = () => {
                   appear={true}
                   className="absolute right-2 bottom-2"
                   show={showExpandChart}
-                  enter="transition-all ease-in duration-300"
-                  enterFrom="opacity-0 transform scale-75"
-                  enterTo="opacity-100 transform scale-100"
+                  enter="transition ease-in duration-300"
+                  enterFrom="opacity-0 scale-75"
+                  enterTo="opacity-100 scale-100"
                   leave="transition ease-out duration-200"
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"

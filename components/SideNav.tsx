@@ -47,7 +47,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               <Transition
                 show={!collapsed}
                 as={Fragment}
-                enter="transition-all ease-in duration-200"
+                enter="transition ease-in duration-200"
                 enterFrom="opacity-50"
                 enterTo="opacity-100"
                 leave="transition ease-out duration-200"
@@ -190,7 +190,7 @@ const MenuItem = ({
             <Transition
               show={!collapsed}
               as={Fragment}
-              enter="transition-all ease-in duration-300"
+              enter="transition ease-in duration-300"
               enterFrom="opacity-50"
               enterTo="opacity-100"
               leave="transition ease-out duration-300"
@@ -256,7 +256,7 @@ const ExpandableMenuItem = ({
         role="button"
       >
         <Popover.Button
-          className="default-transition md:hover:text-th-primary"
+          className="md:hover:text-th-primary"
           onClick={() => toggleMenu()}
         >
           <div
@@ -276,9 +276,9 @@ const ExpandableMenuItem = ({
         <Transition
           show={showMenu}
           as={Fragment}
-          enter="transition-all ease-in duration-300"
-          enterFrom="opacity-0 transform scale-90"
-          enterTo="opacity-100 transform scale-100"
+          enter="transition ease-in duration-300"
+          enterFrom="opacity-0 scale-90"
+          enterTo="opacity-100 scale-100"
           leave="transition ease-out duration-300"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
@@ -287,7 +287,7 @@ const ExpandableMenuItem = ({
             className={`absolute z-20 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
               alignBottom
                 ? 'bottom-0 left-[63px] w-72 rounded-b-none p-0'
-                : 'top-1/2 left-[63px] w-56 -translate-y-1/2 transform'
+                : 'top-1/2 left-[63px] w-56 -translate-y-1/2'
             }`}
           >
             {children}
@@ -305,7 +305,7 @@ const ExpandableMenuItem = ({
         }`}
       >
         <Disclosure.Button
-          className={`default-transition flex h-full w-full items-center justify-between rounded-none md:hover:text-th-primary`}
+          className={`flex h-full w-full items-center justify-between rounded-none md:hover:text-th-primary`}
         >
           <div className="flex items-center">
             <div
@@ -321,7 +321,7 @@ const ExpandableMenuItem = ({
               appear={true}
               show={!collapsed}
               as={Fragment}
-              enter="transition-all ease-in duration-300"
+              enter="transition ease-in duration-300"
               enterFrom="opacity-50"
               enterTo="opacity-100"
               leave="transition ease-out duration-300"
@@ -333,7 +333,7 @@ const ExpandableMenuItem = ({
           </div>
           <ChevronDownIcon
             className={`${
-              showMenu ? 'rotate-180 transform' : 'rotate-360 transform'
+              showMenu ? 'rotate-180' : 'rotate-360'
             } h-5 w-5 flex-shrink-0`}
           />
         </Disclosure.Button>
@@ -342,10 +342,10 @@ const ExpandableMenuItem = ({
         appear={true}
         show={showMenu}
         as={Fragment}
-        enter="transition-all ease-in duration-500"
+        enter="transition ease-in duration-500"
         enterFrom="opacity-100 max-h-0"
         enterTo="opacity-100 max-h-80"
-        leave="transition-all ease-out duration-500"
+        leave="transition ease-out duration-500"
         leaveFrom="opacity-100 max-h-80"
         leaveTo="opacity-0 max-h-0"
       >

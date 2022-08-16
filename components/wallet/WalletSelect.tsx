@@ -15,7 +15,7 @@ const WalletSelect = () => {
           >
             <ChevronDownIcon
               className={`default-transition h-6 w-6 ${
-                open ? 'rotate-180 transform' : 'rotate-360 transform'
+                open ? 'rotate-180' : 'rotate-360'
               }`}
             />
           </Menu.Button>
@@ -23,9 +23,9 @@ const WalletSelect = () => {
             appear={true}
             show={open}
             as={Fragment}
-            enter="transition-all ease-in duration-200"
-            enterFrom="opacity-0 transform scale-75"
-            enterTo="opacity-100 transform scale-100"
+            enter="transition ease-in duration-200"
+            enterFrom="opacity-0 scale-75"
+            enterTo="opacity-100 scale-100"
             leave="transition ease-out duration-200"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"

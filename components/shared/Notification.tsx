@@ -120,10 +120,10 @@ const Notification = ({ notification }: { notification: Notification }) => {
       show={show}
       as={Fragment}
       appear={true}
-      enter="transform ease-out duration-500 transition"
+      enter="ease-out duration-500 transition"
       enterFrom="translate-y-2 opacity-0 sm:translate-y-0 sm:-translate-x-48"
       enterTo="translate-y-0 opacity-100 sm:translate-x-0"
-      leave="transform ease-in duration-200 transition"
+      leave="ease-in duration-200 transition"
       leaveFrom="translate-y-0 sm:translate-x-0"
       leaveTo="-translate-y-2 sm:translate-y-0 sm:-translate-x-48"
     >

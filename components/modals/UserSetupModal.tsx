@@ -158,12 +158,12 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           appear={true}
           className="absolute top-0.5 left-0 z-20 h-full w-full bg-th-bkg-1 p-6"
           show={showSetupStep === 0}
-          enter="transition-all ease-in duration-500"
+          enter="transition ease-in duration-500"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="transition-all ease-out duration-500"
-          leaveFrom="transform translate-x-0"
-          leaveTo="transform -translate-x-full"
+          leave="transition ease-out duration-500"
+          leaveFrom="translate-x-0"
+          leaveTo="-translate-x-full"
         >
           <h2 className="mb-1">Welcome.</h2>
           <p className="mb-4">

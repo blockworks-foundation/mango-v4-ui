@@ -39,7 +39,7 @@ const Switch: FunctionComponent<SwitchProps> = ({
           aria-hidden="true"
           className={`${
             checked ? 'translate-x-5' : 'translate-x-0'
-          } pointer-events-none inline-block h-4 w-4 transform rounded-full 
+          } pointer-events-none inline-block h-4 w-4 rounded-full 
           bg-white shadow ring-0 transition duration-200 ease-in-out`}
         ></span>
       </button>

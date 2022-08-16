@@ -158,12 +158,12 @@ const Swap = () => {
       <Transition
         className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
         show={showConfirm}
-        enter="transition-all ease-in duration-300"
-        enterFrom="transform translate-x-full"
-        enterTo="transform translate-x-0"
-        leave="transition-all ease-out duration-300"
-        leaveFrom="transform translate-x-0"
-        leaveTo="transform translate-x-full"
+        enter="transition ease-in duration-300"
+        enterFrom="translate-x-full"
+        enterTo="translate-x-0"
+        leave="transition ease-out duration-300"
+        leaveFrom="translate-x-0"
+        leaveTo="translate-x-full"
       >
         <JupiterRoutes
           inputToken={inputToken}

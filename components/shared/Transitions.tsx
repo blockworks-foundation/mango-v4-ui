@@ -20,11 +20,11 @@ export const EnterRightExitLeft = ({
     className={className}
     show={show}
     enter={transitionEnterStyle}
-    enterFrom="transform translate-x-full"
-    enterTo="transform translate-x-0"
+    enterFrom="translate-x-full"
+    enterTo="translate-x-0"
     leave={transitionExitStyle}
-    leaveFrom="transform translate-x-0"
-    leaveTo="transform -translate-x-full"
+    leaveFrom="translate-x-0"
+    leaveTo="-translate-x-full"
     style={style}
   >
     {children}

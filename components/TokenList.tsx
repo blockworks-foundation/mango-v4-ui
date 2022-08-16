@@ -300,9 +300,9 @@ const TokenList = () => {
                       <ChevronDownIcon
                         className={`${
                           showTokenDetails === bank.value.name
-                            ? 'rotate-180 transform'
-                            : 'rotate-360 transform'
-                        } default-transition h-6 w-6 flex-shrink-0 text-th-fgd-1`}
+                            ? 'rotate-180'
+                            : 'rotate-360'
+                        } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
                       />
                     </IconButton>
                   </div>
@@ -311,7 +311,7 @@ const TokenList = () => {
                   appear={true}
                   show={showTokenDetails === bank.value.name}
                   as={Fragment}
-                  enter="transition-all ease-in duration-200"
+                  enter="transition ease-in duration-200"
                   enterFrom="opacity-0"
                   enterTo="opacity-100"
                   leave="transition ease-out"

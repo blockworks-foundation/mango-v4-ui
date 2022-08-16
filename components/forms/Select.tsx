@@ -39,7 +39,7 @@ const Select = ({
                 )}
                 <ChevronDownIcon
                   className={`default-transition h-5 w-5 flex-shrink-0 text-th-fgd-1 ${
-                    open ? 'rotate-180 transform' : 'rotate-360 transform'
+                    open ? 'rotate-180' : 'rotate-360'
                   }`}
                 />
               </div>

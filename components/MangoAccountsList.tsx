@@ -42,7 +42,7 @@ const MangoAccountsList = ({
               </p>
               <ChevronDownIcon
                 className={`${
-                  open ? 'rotate-180 transform' : 'rotate-360 transform'
+                  open ? 'rotate-180' : 'rotate-360'
                 } mt-0.5 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
               />
             </Popover.Button>
@@ -51,8 +51,8 @@ const MangoAccountsList = ({
               show={open}
               as={Fragment}
               enter="transition-all ease-in duration-200"
-              enterFrom="opacity-0 transform scale-75"
-              enterTo="opacity-100 transform scale-100"
+              enterFrom="opacity-0 scale-75"
+              enterTo="opacity-100 scale-100"
               leave="transition ease-out duration-200"
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
