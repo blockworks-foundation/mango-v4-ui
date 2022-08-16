@@ -25,6 +25,8 @@ import { Transition } from '@headlessui/react'
 import AccountTabs from '../components/account/AccountTabs'
 import SheenLoader from '../components/shared/SheenLoader'
 import AccountChart from '../components/account/AccountChart'
+import { useViewport } from '../hooks/useViewport'
+import { breakpoints } from '../utils/theme'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -56,6 +58,8 @@ const Index: NextPage = () => {
   >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
 
   useEffect(() => {
     if (!oneDayPerformanceData.length && performanceData.length) {
@@ -214,7 +218,7 @@ const Index: NextPage = () => {
         <AccountActions />
       </div>
       <div className="mb-8 grid grid-cols-4 gap-x-6 border-b border-th-bkg-3 md:mb-10 md:border-b-0">
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+        <div className="col-span-4 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <p className="text-th-fgd-3">{t('health')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
             {mangoAccount
@@ -223,7 +227,7 @@ const Index: NextPage = () => {
             %
           </p>
         </div>
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+        <div className="col-span-4 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <p className="text-th-fgd-3">{t('free-collateral')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
             $
@@ -237,7 +241,7 @@ const Index: NextPage = () => {
               : (0).toFixed(2)}
           </p>
         </div>
-        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
             <p className="text-th-fgd-3">{t('pnl')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">
@@ -245,7 +249,10 @@ const Index: NextPage = () => {
             </p>
           </div>
           {performanceData.length > 4 ? (
-            <IconButton onClick={() => setChartToShow('pnl')} size="small">
+            <IconButton
+              onClick={() => setChartToShow('pnl')}
+              size={!isMobile ? 'small' : 'medium'}
+            >
               <ChevronRightIcon className="h-5 w-5" />
             </IconButton>
           ) : null}
@@ -254,7 +261,7 @@ const Index: NextPage = () => {
           <p className="text-th-fgd-3">{t('leverage')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">0.0x</p>
         </div> */}
-        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">
@@ -264,7 +271,7 @@ const Index: NextPage = () => {
           {interestTotalValue > 1 || interestTotalValue < -1 ? (
             <IconButton
               onClick={() => setChartToShow('cumulative-interest-value')}
-              size="small"
+              size={!isMobile ? 'small' : 'medium'}
             >
               <ChevronRightIcon className="h-5 w-5" />
             </IconButton>

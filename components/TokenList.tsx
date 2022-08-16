@@ -1,6 +1,10 @@
 import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
-import { ChevronDownIcon, DotsHorizontalIcon } from '@heroicons/react/solid'
+import {
+  ChevronDownIcon,
+  DotsHorizontalIcon,
+  QuestionMarkCircleIcon,
+} from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
@@ -86,7 +90,7 @@ const TokenList = () => {
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="-mt-10">
+    <ContentBox hideBorder hidePadding className="mt-0 md:-mt-10">
       <div className="mb-6 flex items-center justify-end">
         <Switch
           className="text-th-fgd-3"
@@ -156,7 +160,9 @@ const TokenList = () => {
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         {logoURI ? (
                           <Image alt="" width="24" height="24" src={logoURI} />
-                        ) : null}
+                        ) : (
+                          <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                        )}
                       </div>
                       <p>{bank.value.name}</p>
                     </div>
@@ -251,6 +257,12 @@ const TokenList = () => {
         <div className="mt-4 space-y-2">
           {banks.map((bank) => {
             const oraclePrice = bank.value.price
+            let logoURI
+            if (jupiterTokens.length) {
+              logoURI = jupiterTokens.find(
+                (t) => t.address === bank.value.mint.toString()
+              )!.logoURI
+            }
             return (
               <div
                 key={bank.key}
@@ -259,12 +271,11 @@ const TokenList = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
-                      <Image
-                        alt=""
-                        width="32"
-                        height="32"
-                        src={`/icons/${bank.value.name.toLowerCase()}.svg`}
-                      />
+                      {logoURI ? (
+                        <Image alt="" width="24" height="24" src={logoURI} />
+                      ) : (
+                        <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                      )}
                     </div>
                     <div>
                       <p>{bank.value.name}</p>

@@ -8,8 +8,8 @@ import {
   ExternalLinkIcon,
   ChevronDownIcon,
   // ReceiptTaxIcon,
-  HomeIcon,
   CogIcon,
+  CurrencyDollarIcon,
 } from '@heroicons/react/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -65,7 +65,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           <MenuItem
             active={pathname === '/'}
             collapsed={collapsed}
-            icon={<HomeIcon className="h-5 w-5" />}
+            icon={<CurrencyDollarIcon className="h-5 w-5" />}
             title={t('portfolio')}
             pagePath="/"
           />

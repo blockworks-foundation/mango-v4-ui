@@ -136,7 +136,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       setIsOnboarded(true)
       onClose()
     }
-  }, [mangoAccount, showSetupStep])
+  }, [mangoAccount, showSetupStep, onClose, setIsOnboarded])
 
   useEffect(() => {
     if (connected && !mangoAccountLoading) {
