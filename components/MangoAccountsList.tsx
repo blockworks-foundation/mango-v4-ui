@@ -28,7 +28,7 @@ const MangoAccountsList = ({
 }: {
   mangoAccount: MangoAccount
 }) => {
-  const mangoAccounts = mangoStore((s) => s.mangoAccounts)
+  const mangoAccounts = mangoStore((s) => s.mangoAccounts.accounts)
   const [showNewAccountModal, setShowNewAccountModal] = useState(false)
 
   return (

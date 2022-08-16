@@ -103,7 +103,7 @@ export type MangoStore = {
       tradeHistory: { data: TradeHistoryItem[]; loading: boolean }
     }
   }
-  mangoAccounts: MangoAccount[]
+  mangoAccounts: { accounts: MangoAccount[]; loading: boolean }
   markets: Serum3Market[] | undefined
   notificationIdCounter: number
   notifications: Array<Notification>
@@ -168,7 +168,7 @@ const mangoStore = create<MangoStore>(
           tradeHistory: { data: [], loading: false },
         },
       },
-      mangoAccounts: [],
+      mangoAccounts: { accounts: [], loading: true },
       markets: undefined,
       notificationIdCounter: 0,
       notifications: [],
@@ -382,7 +382,8 @@ const mangoStore = create<MangoStore>(
             )
             if (mangoAccounts.length) {
               set((state) => {
-                state.mangoAccounts = mangoAccounts
+                state.mangoAccounts.accounts = mangoAccounts
+                state.mangoAccounts.loading = false
               })
             }
           } catch (e) {

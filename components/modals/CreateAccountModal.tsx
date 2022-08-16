@@ -45,7 +45,7 @@ const CreateAccountModal = ({
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
-    const mangoAccounts = mangoStore.getState().mangoAccounts
+    const mangoAccounts = mangoStore.getState().mangoAccounts.accounts
     const actions = mangoStore.getState().actions
     if (!group || !wallet) return
     setLoading(true)
