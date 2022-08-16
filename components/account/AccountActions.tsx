@@ -23,18 +23,6 @@ const AccountActions = () => {
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
 
-  const handleCloseMangoAccount = async () => {
-    const client = mangoStore.getState().client
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    const group = mangoStore.getState().group
-    if (!mangoAccount || !group) return
-    try {
-      const tx = await client.closeMangoAccount(group, mangoAccount)
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
   return (
     <>
       <div className="flex space-x-3">

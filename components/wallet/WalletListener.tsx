@@ -4,6 +4,7 @@ import mangoStore from '../../store/state'
 import { Wallet } from '@project-serum/anchor'
 
 const WalletListener = () => {
+  const set = mangoStore((s) => s.set)
   const { wallet, connected, disconnecting } = useWallet()
   const mangoAccounts = mangoStore((s) => s.mangoAccounts)
 
@@ -18,6 +19,10 @@ const WalletListener = () => {
           wallet.adapter as unknown as Wallet,
           mangoAccounts[0].accountNum
         )
+      } else {
+        set((state) => {
+          state.mangoAccount.loading = false
+        })
       }
       actions.fetchProfilePicture(wallet.adapter as unknown as Wallet)
       actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)

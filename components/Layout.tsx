@@ -15,6 +15,7 @@ import BounceLoader from './shared/BounceLoader'
 import MangoAccountsList from './MangoAccountsList'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from './modals/CreateAccountModal'
+import { LinkButton } from './shared/Button'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded'
 
@@ -123,15 +124,26 @@ const Layout = ({ children }: { children: ReactNode }) => {
                   {mangoAccount ? (
                     <MangoAccountsList mangoAccount={mangoAccount} />
                   ) : !isMobile ? (
-                    <span className="flex items-center">
-                      🔗<span className="ml-2">{t('connect-helper')}</span>
-                      <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
-                    </span>
+                    !connected ? (
+                      <span className="flex items-center">
+                        🔗<span className="ml-2">{t('connect-helper')}</span>
+                        <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
+                      </span>
+                    ) : (
+                      <div className="flex items-center">
+                        🥭
+                        <LinkButton
+                          onClick={() => setShowFirstAccountModal(true)}
+                        >
+                          <span className="ml-2">{t('create-account')}</span>
+                        </LinkButton>
+                      </div>
+                    )
                   ) : null}
                 </span>
               </div>
               <div className="flex items-center space-x-4">
-                {mangoAccount ? (
+                {connected ? (
                   <ConnectedMenu />
                 ) : isOnboarded ? (
                   <ConnectWalletButton />
