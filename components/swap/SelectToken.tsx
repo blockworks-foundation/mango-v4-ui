@@ -5,7 +5,7 @@ import { Token } from '../../types/jupiter'
 import mangoStore from '../../store/state'
 import Input from '../forms/Input'
 import { IconButton } from '../shared/Button'
-import { XIcon } from '@heroicons/react/solid'
+import { QuestionMarkCircleIcon, XIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 
 const generateSearchTerm = (item: Token, searchValue: string) => {
@@ -79,6 +79,7 @@ const SelectToken = ({
   const [search, setSearch] = useState('')
   const tokens = mangoStore.getState().jupiterTokens
   const walletTokens = mangoStore((s) => s.wallet.tokens)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const popularTokens = useMemo(() => {
     return walletTokens?.length
@@ -149,21 +150,28 @@ const SelectToken = ({
       </div>
       {popularTokens.length ? (
         <div className="mt-4 flex flex-wrap">
-          {popularTokens.map((token) => (
-            <button
-              className="mx-1 mb-2 flex items-center rounded-md border border-th-bkg-4 py-1 px-3 hover:border-th-fgd-3 focus:border-th-fgd-2"
-              onClick={() => onTokenSelect(token.address)}
-              key={token.address}
-            >
-              <Image
-                alt=""
-                width="16"
-                height="16"
-                src={`/icons/${token.symbol.toLowerCase()}.svg`}
-              />
-              <span className="ml-1.5 text-th-fgd-1">{token.symbol}</span>
-            </button>
-          ))}
+          {popularTokens.map((token) => {
+            let logoURI
+            if (jupiterTokens.length) {
+              logoURI = jupiterTokens.find(
+                (t) => t.address === token.address
+              )!.logoURI
+            }
+            return (
+              <button
+                className="mx-1 mb-2 flex items-center rounded-md border border-th-bkg-4 py-1 px-3 hover:border-th-fgd-3 focus:border-th-fgd-2"
+                onClick={() => onTokenSelect(token.address)}
+                key={token.address}
+              >
+                {logoURI ? (
+                  <Image alt="" width="16" height="16" src={logoURI} />
+                ) : (
+                  <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
+                )}
+                <span className="ml-1.5 text-th-fgd-1">{token.symbol}</span>
+              </button>
+            )
+          })}
         </div>
       ) : null}
       <div className="my-2 border-t border-th-bkg-4"></div>

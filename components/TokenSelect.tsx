@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
 import mangoStore from '../store/state'
 
@@ -10,8 +10,14 @@ type TokenSelectProps = {
 
 const TokenSelect = ({ token, showTokenList, type }: TokenSelectProps) => {
   const group = mangoStore((s) => s.group)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   if (!group) return null
+
+  let logoURI
+  if (jupiterTokens.length) {
+    logoURI = jupiterTokens.find((t) => t.symbol === token)!.logoURI
+  }
 
   return (
     <div
@@ -20,15 +26,14 @@ const TokenSelect = ({ token, showTokenList, type }: TokenSelectProps) => {
       role="button"
     >
       <div className="mr-2.5 flex min-w-[24px] items-center">
-        <Image
-          alt=""
-          width="24"
-          height="24"
-          src={`/icons/${token.toLowerCase()}.svg`}
-        />
+        {logoURI ? (
+          <Image alt="" width="24" height="24" src={logoURI} />
+        ) : (
+          <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+        )}
       </div>
       <div className="flex w-full items-center justify-between">
-        <div className="text-xl font-bold">{token}</div>
+        <div className="text-xl font-bold text-th-fgd-1">{token}</div>
         <ChevronDownIcon className="h-6 w-6" />
       </div>
     </div>
