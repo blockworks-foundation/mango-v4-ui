@@ -35,7 +35,7 @@ const DepositTokenItem = ({
       className="flex w-full rounded-md border border-th-bkg-4 px-4 py-3 md:hover:border-th-fgd-4"
       onClick={() => onSelect(name)}
     >
-      <div className="flex w-1/4 items-center">
+      <div className="flex w-1/5 items-center">
         <div className="mr-2.5 flex flex-shrink-0 items-center">
           <Image
             alt=""
@@ -46,12 +46,12 @@ const DepositTokenItem = ({
         </div>
         <p className="text-th-fgd-1">{name}</p>
       </div>
-      <div className="w-1/4 text-right">
+      <div className="w-2/5 text-right">
         <p className="text-th-green">
           {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
         </p>
       </div>
-      <div className="w-2/4 text-right">
+      <div className="w-2/5 text-right">
         <p className="text-th-fgd-1">
           {floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals)}
         </p>

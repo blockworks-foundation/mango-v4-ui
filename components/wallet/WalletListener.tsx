@@ -18,8 +18,6 @@ const WalletListener = () => {
           wallet.adapter as unknown as Wallet,
           mangoAccounts[0].accountNum
         )
-      } else {
-        actions.fetchMangoAccount(wallet.adapter as unknown as Wallet)
       }
       actions.fetchProfilePicture(wallet.adapter as unknown as Wallet)
       actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)

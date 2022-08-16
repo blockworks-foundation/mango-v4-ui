@@ -42,7 +42,7 @@ export const EnterBottomExitBottom = ({
 }) => (
   <Transition
     appear={true}
-    className={className}
+    className={`thin-scroll ${className}`}
     show={show}
     enter={transitionEnterStyle}
     enterFrom="max-h-0"
