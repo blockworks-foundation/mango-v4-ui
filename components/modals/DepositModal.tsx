@@ -14,6 +14,7 @@ import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import DepositTokenList from '../shared/DepositTokenList'
+import HealthImpact from '../shared/HealthImpact'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
@@ -190,6 +191,11 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 />
               </div>
             </div>
+            <HealthImpact
+              tokenName={selectedToken}
+              amount={parseFloat(inputAmount)}
+              isDeposit
+            />
             {/* <div className="space-y-2 border-y border-th-bkg-3 py-4">
             <div className="flex justify-between">
               <p>{t('health-impact')}</p>

@@ -5,11 +5,13 @@ import { useMemo } from 'react'
 import mangoStore from '../../store/state'
 
 const HealthImpact = ({
-  tokenName,
   amount,
+  isDeposit,
+  tokenName,
 }: {
-  tokenName: string
   amount: number
+  isDeposit?: boolean
+  tokenName: string
 }) => {
   const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
@@ -24,7 +26,7 @@ const HealthImpact = ({
     if (!group || !mangoAccount) return 0
     const projectedHealth = mangoAccount
       .simHealthRatioWithTokenPositionChanges(group, [
-        { tokenName: tokenName, tokenAmount: amount * -1 },
+        { tokenName: tokenName, tokenAmount: isDeposit ? amount : amount * -1 },
       ])
       .toNumber()
 
@@ -33,7 +35,7 @@ const HealthImpact = ({
       : projectedHealth < 0
       ? 0
       : projectedHealth
-  }, [mangoAccount, tokenName, amount])
+  }, [mangoAccount, tokenName, amount, isDeposit])
 
   return (
     <div className="space-y-2 border-y border-th-bkg-3 px-2 py-4">
