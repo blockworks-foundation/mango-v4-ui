@@ -22,6 +22,7 @@ const LeverageSlider = ({
     const val = parseFloat(target.value)
 
     target.style.backgroundSize = ((val - min) * 100) / (max - min) + '% 100%'
+
     onChange(e.target.value)
   }
 
@@ -36,6 +37,7 @@ const LeverageSlider = ({
         step={0.000001}
         className="w-full"
         onChange={handleSliderChange}
+        style={{ backgroundSize: '50% 100%' }}
       ></input>
     </>
   )
