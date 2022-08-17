@@ -16,6 +16,12 @@ const LeverageSlider = ({
   onChange: (x: any) => any
 }) => {
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
+    let target = e.target
+    const min = parseFloat(target.min)
+    const max = parseFloat(target.max)
+    const val = parseFloat(target.value)
+
+    target.style.backgroundSize = ((val - min) * 100) / (max - min) + '% 100%'
     onChange(e.target.value)
   }
 
@@ -28,7 +34,7 @@ const LeverageSlider = ({
         min="0"
         max={leverageMax}
         step={0.000001}
-        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-th-bkg-4 hover:bg-gradient-to-r hover:from-gradient-start hover:via-gradient-mid hover:to-gradient-end"
+        className="w-full"
         onChange={handleSliderChange}
       ></input>
     </>

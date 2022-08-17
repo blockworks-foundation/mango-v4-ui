@@ -288,3 +288,17 @@ table p {
 .thin-scroll::-webkit-scrollbar-thumb:window-inactive {
   @apply bg-th-bkg-4;
 }
+
+/* slider */
+
+input[type='range'] {
+  @apply h-2 appearance-none rounded bg-th-bkg-4 bg-gradient-to-r from-gradient-start via-gradient-mid to-gradient-end bg-[length:70%_100%] bg-no-repeat;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  @apply h-5 w-5 cursor-ew-resize appearance-none rounded-full bg-th-primary;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  @apply appearance-none border-0 bg-transparent shadow-none;
+}
