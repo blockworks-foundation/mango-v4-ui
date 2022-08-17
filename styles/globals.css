@@ -292,7 +292,7 @@ table p {
 /* slider */
 
 input[type='range'] {
-  @apply h-2 appearance-none rounded bg-th-bkg-4 bg-gradient-to-r from-gradient-start via-gradient-mid to-gradient-end bg-[length:70%_100%] bg-no-repeat;
+  @apply h-2 appearance-none rounded bg-th-bkg-4 bg-gradient-to-r from-gradient-start via-gradient-mid to-gradient-end bg-[length:50%_100%] bg-no-repeat;
 }
 
 input[type='range']::-webkit-slider-thumb {

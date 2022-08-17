@@ -1,5 +1,5 @@
+import { ChangeEvent, useEffect, useMemo, useRef } from 'react'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
-import { ChangeEvent, useMemo } from 'react'
 import mangoStore from '../../store/state'
 
 type LeverageSliderProps = {
@@ -15,6 +15,22 @@ const LeverageSlider = ({
   leverageMax: number
   onChange: (x: any) => any
 }) => {
+  const inputEl = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (inputEl.current) {
+      const target = inputEl.current
+      const min = parseFloat(target.min)
+      const max = leverageMax
+      const val = parseFloat(target.value)
+
+      target.style.backgroundSize =
+        max - min === 0
+          ? '0% 100%'
+          : ((val - min) * 100) / (max - min) + '% 100%'
+    }
+  }, [leverageMax])
+
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
     let target = e.target
     const min = parseFloat(target.min)
@@ -30,6 +46,7 @@ const LeverageSlider = ({
     <>
       <label htmlFor="default-range" className="block text-sm"></label>
       <input
+        ref={inputEl}
         id="default-range"
         type="range"
         min="0"
@@ -37,7 +54,6 @@ const LeverageSlider = ({
         step={0.000001}
         className="w-full"
         onChange={handleSliderChange}
-        style={{ backgroundSize: '50% 100%' }}
       ></input>
     </>
   )
