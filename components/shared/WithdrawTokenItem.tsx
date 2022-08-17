@@ -5,14 +5,15 @@ import mangoStore from '../../store/state'
 import { formatDecimal } from '../../utils/numbers'
 
 const WithdrawTokenItem = ({
+  accountBalance,
   bank,
   onSelect,
 }: {
+  accountBalance: number
   bank: Bank
   onSelect: (x: any) => void
 }) => {
   const { mint, name } = bank
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const logoUri = useMemo(() => {
@@ -27,8 +28,9 @@ const WithdrawTokenItem = ({
 
   return (
     <button
-      className="grid w-full grid-cols-2 rounded-md border border-th-bkg-4 px-4 py-3 md:hover:border-th-fgd-4"
+      className="default-transition grid w-full grid-cols-2 rounded-md border border-th-bkg-4 px-4 py-3 disabled:cursor-not-allowed disabled:opacity-60 md:hover:border-th-fgd-4 md:disabled:hover:border-th-bkg-4"
       onClick={() => onSelect(name)}
+      disabled={accountBalance <= 0}
     >
       <div className="col-span-1 flex items-center">
         <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -42,11 +44,7 @@ const WithdrawTokenItem = ({
         <p className="text-th-fgd-1">{name}</p>
       </div>
       <div className="col-span-1 flex justify-end">
-        <p className="text-th-fgd-1">
-          {mangoAccount && mangoAccount.getUi(bank) > 0
-            ? formatDecimal(mangoAccount.getUi(bank))
-            : 0}
-        </p>
+        <p className="text-th-fgd-1">{formatDecimal(accountBalance)}</p>
       </div>
     </button>
   )

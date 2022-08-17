@@ -123,7 +123,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="h-80">
+      <div className="h-96">
         <EnterBottomExitBottom
           className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6"
           show={showTokenList}

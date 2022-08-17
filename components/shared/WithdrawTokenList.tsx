@@ -1,4 +1,3 @@
-import { Bank } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import mangoStore from '../../store/state'
@@ -8,9 +7,22 @@ const WithdrawTokenList = ({ onSelect }: { onSelect: (x: any) => void }) => {
   const { t } = useTranslation('common')
   const group = mangoStore((s) => s.group)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const banks = group?.banksMap
-    ? Array.from(group?.banksMap, ([key, value]) => ({ key, value }))
-    : []
+
+  const banks = useMemo(() => {
+    if (mangoAccount) {
+      return group?.banksMap
+        ? Array.from(group?.banksMap, ([key, value]) => {
+            const accountBalance = mangoAccount?.getUi(value)
+            return {
+              key,
+              value,
+              accountBalance: accountBalance ? accountBalance : 0,
+            }
+          })
+        : []
+    }
+    return []
+  }, [mangoAccount, group?.banksMap])
 
   return mangoAccount ? (
     <>
@@ -23,13 +35,16 @@ const WithdrawTokenList = ({ onSelect }: { onSelect: (x: any) => void }) => {
         </div>
       </div>
       <div className="space-y-2">
-        {banks.map((bank) => (
-          <WithdrawTokenItem
-            bank={bank.value}
-            key={bank.value.name}
-            onSelect={onSelect}
-          />
-        ))}
+        {banks
+          .sort((a, b) => b.accountBalance - a.accountBalance)
+          .map((bank) => (
+            <WithdrawTokenItem
+              accountBalance={bank.accountBalance}
+              bank={bank.value}
+              key={bank.value.name}
+              onSelect={onSelect}
+            />
+          ))}
       </div>
     </>
   ) : null
