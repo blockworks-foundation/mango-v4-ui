@@ -11,6 +11,7 @@ import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
+import HealthImpact from '../shared/HealthImpact'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
@@ -42,16 +43,6 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     const amount = mangoAccount?.getUi(bank)
     return amount ? floorToDecimal(amount, bank.mintDecimals) : 0
   }, [mangoAccount, bank])
-
-  const healthImpact = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !bank || !mangoAccount) return 0
-    return mangoAccount
-      .simHealthRatioWithTokenPositionChanges(group, [
-        { tokenName: bank.name, tokenAmount: parseFloat(inputAmount) * -1 },
-      ])
-      .toNumber()
-  }, [mangoAccount, bank, inputAmount])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -173,16 +164,10 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 />
               </div>
             </div>
-            <div className="space-y-2 border-y border-th-bkg-3 py-4">
-              <div className="flex justify-between">
-                <p>{t('health-impact')}</p>
-                <p className="text-th-red">{healthImpact}</p>
-              </div>
-              {/* <div className="flex justify-between">
-              <p>{t('withdrawal-value')}</p>
-              <p className="text-th-fgd-1">$1,000.00</p>
-            </div> */}
-            </div>
+            <HealthImpact
+              tokenName={selectedToken}
+              amount={parseFloat(inputAmount)}
+            />
           </div>
           <div className="mt-4 flex justify-center">
             <Button
