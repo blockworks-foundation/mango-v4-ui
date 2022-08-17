@@ -10,7 +10,7 @@ import { Token } from '../../types/jupiter'
 type useJupiterPropTypes = {
   inputTokenSymbol: string
   outputTokenSymbol: string
-  inputAmount: number
+  inputAmount: string
   slippage: number
 }
 
@@ -78,6 +78,7 @@ const useJupiter = ({
                   .mul(10 ** inputBank.mintDecimals)
                   .floor()
                   .div(10 ** inputBank.mintDecimals)
+                  .floor()
               ),
               slippage, // The slippage in % terms
               filterTopNResult: 10,

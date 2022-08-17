@@ -5,7 +5,7 @@ import mangoStore from '../../store/state'
 import { RouteInfo } from '@jup-ag/core'
 import ContentBox from '../shared/ContentBox'
 import { notify } from '../../utils/notifications'
-import JupiterRoutes from './JupiterRoutes'
+import JupiterRouteInfo from './JupiterRouteInfo'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
 import { floorToDecimal, numberFormat } from '../../utils/numbers'
@@ -39,12 +39,12 @@ const Swap = () => {
   const outputToken = mangoStore((s) => s.swap.outputToken)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
-  const debouncedAmountIn = useDebounce(amountIn, 300)
+  const debouncedAmountIn: string = useDebounce(amountIn, 300)
 
   const { amountOut, jupiter, outputTokenInfo, routes } = useJupiter({
     inputTokenSymbol: inputToken,
     outputTokenSymbol: outputToken,
-    inputAmount: Number(debouncedAmountIn),
+    inputAmount: debouncedAmountIn,
     slippage,
   })
 
@@ -64,14 +64,15 @@ const Swap = () => {
       (t: any) => t.address === mintAddress
     )
     const group = mangoStore.getState().group
-    if (!group) throw new Error('Mango group not loaded')
-    const banks = Array.from(group.banksMap.values())
+    if (group) {
+      const banks = Array.from(group.banksMap.values())
 
-    const bank = banks.find((b) => b.mint.toString() === mintAddress)
-    set((s) => {
-      s.swap.inputToken = bank!.name
-      s.swap.inputTokenInfo = inputTokenInfo
-    })
+      const bank = banks.find((b) => b.mint.toString() === mintAddress)
+      set((s) => {
+        s.swap.inputToken = bank!.name
+        s.swap.inputTokenInfo = inputTokenInfo
+      })
+    }
     setShowTokenSelect('')
   }
 
@@ -80,14 +81,15 @@ const Swap = () => {
       (t: any) => t.address === mintAddress
     )
     const group = mangoStore.getState().group
-    if (!group) throw new Error('Mango group not loaded')
-    const banks = Array.from(group.banksMap.values())
+    if (group) {
+      const banks = Array.from(group.banksMap.values())
 
-    const bank = banks.find((b) => b.mint.toString() === mintAddress)
-    set((s) => {
-      s.swap.outputToken = bank!.name
-      s.swap.outputTokenInfo = outputTokenInfo
-    })
+      const bank = banks.find((b) => b.mint.toString() === mintAddress)
+      set((s) => {
+        s.swap.outputToken = bank!.name
+        s.swap.outputTokenInfo = outputTokenInfo
+      })
+    }
     setShowTokenSelect('')
   }
 
@@ -165,11 +167,11 @@ const Swap = () => {
         leaveFrom="translate-x-0"
         leaveTo="translate-x-full"
       >
-        <JupiterRoutes
+        <JupiterRouteInfo
           inputToken={inputToken}
           onClose={() => setShowConfirm(false)}
           outputToken={outputToken}
-          amountIn={parseFloat(debouncedAmountIn)}
+          amountIn={Number(debouncedAmountIn)}
           slippage={slippage}
           handleSwap={handleSwap}
           submitting={submitting}
