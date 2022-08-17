@@ -177,9 +177,20 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   return (
     <ContentBox hideBorder hidePadding>
       {loadChartData ? (
-        <SheenLoader>
-          <div className="h-[448px] rounded-lg bg-th-bkg-2" />
-        </SheenLoader>
+        <>
+          <SheenLoader className="w-[148px] rounded-md">
+            <div className="h-[18px] bg-th-bkg-2" />
+          </SheenLoader>
+          <SheenLoader className="mt-2 w-[148px] rounded-md">
+            <div className="h-[48px] bg-th-bkg-2" />
+          </SheenLoader>
+          <SheenLoader className="mt-2 w-[148px] rounded-md">
+            <div className="h-[18px] bg-th-bkg-2" />
+          </SheenLoader>
+          <SheenLoader className="mt-4 w-full rounded-md">
+            <div className="h-[300px] bg-th-bkg-2" />
+          </SheenLoader>
+        </>
       ) : chartData.length && baseTokenId && quoteTokenId ? (
         <div className="relative flex justify-between md:block">
           <div className="flex items-start justify-between">

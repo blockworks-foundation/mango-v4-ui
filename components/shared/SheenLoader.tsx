@@ -10,13 +10,11 @@ const SheenLoader = ({
   className?: string
 }) => {
   return (
-    <div className="flex items-center justify-center">
-      <div className="w-full">
-        <div
-          className={`relative overflow-hidden rounded-lg before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent ${className}`}
-        >
-          {children}
-        </div>
+    <div className="flex items-center">
+      <div
+        className={`relative ${className} overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_4s_infinite] before:bg-gradient-to-r before:from-transparent before:via-th-bkg-3 before:to-transparent`}
+      >
+        {children}
       </div>
     </div>
   )
