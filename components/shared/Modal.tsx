@@ -4,6 +4,7 @@ import { XIcon } from '@heroicons/react/solid'
 type ModalProps = {
   title?: string
   children: React.ReactNode
+  disableOutsideClose?: boolean
   isOpen: boolean
   onClose: () => void
   hideClose?: boolean
@@ -12,6 +13,7 @@ type ModalProps = {
 function Modal({
   title = '',
   children,
+  disableOutsideClose = false,
   isOpen,
   onClose,
   hideClose,
@@ -23,7 +25,11 @@ function Modal({
       className="fixed inset-0 z-30 overflow-y-auto"
     >
       <div className="min-h-screen px-4 text-center">
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-50" />
+        <Dialog.Overlay
+          className={`fixed inset-0 bg-black opacity-50 ${
+            disableOutsideClose ? 'pointer-events-none' : ''
+          }`}
+        />
         <span className="inline-block h-screen align-middle" aria-hidden="true">
           &#8203;
         </span>

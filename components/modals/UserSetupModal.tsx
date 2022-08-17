@@ -144,7 +144,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   }, [connected, mangoAccountLoading])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} hideClose>
+    <Modal isOpen={isOpen} onClose={onClose} disableOutsideClose hideClose>
       <div className="absolute top-0 left-0 flex h-0.5 w-full flex-grow bg-th-bkg-4">
         <div
           style={{
