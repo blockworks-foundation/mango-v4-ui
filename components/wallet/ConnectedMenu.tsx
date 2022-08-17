@@ -74,7 +74,7 @@ const ConnectedMenu = () => {
                       <div className="pl-2 text-left">{t('accounts')}</div>
                     </button>
                   </Menu.Item> */}
-                <Menu.Item>
+                {/* <Menu.Item>
                   <button
                     className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer hover:text-th-primary focus:outline-none"
                     onClick={() => setShowProfileImageModal(true)}
@@ -84,7 +84,7 @@ const ConnectedMenu = () => {
                       {t('edit-profile-image')}
                     </div>
                   </button>
-                </Menu.Item>
+                </Menu.Item> */}
                 <Menu.Item>
                   <button
                     className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer focus:outline-none md:hover:text-th-primary"
