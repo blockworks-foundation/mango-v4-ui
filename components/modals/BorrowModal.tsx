@@ -1,5 +1,6 @@
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon } from '@heroicons/react/solid'
+import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
@@ -176,6 +177,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 <p className="text-th-fgd-3">0.00x</p>
               </div>
               <BorrowLeverageSlider
+                amount={new Decimal(inputAmount)}
                 tokenMax={tokenMax}
                 onChange={(x) => setInputAmount(x)}
               />

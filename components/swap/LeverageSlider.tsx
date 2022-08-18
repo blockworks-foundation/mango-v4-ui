@@ -1,9 +1,10 @@
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../../store/state'
+import Decimal from 'decimal.js'
 
 type LeverageSliderProps = {
-  amount?: number
+  amount: Decimal
   inputToken?: string
   outputToken?: string
   onChange: (x: string) => void
@@ -14,11 +15,11 @@ const LeverageSlider = ({
   leverageMax,
   onChange,
 }: {
-  amount?: number
+  amount: Decimal
   leverageMax: number
   onChange: (x: any) => any
 }) => {
-  const [value, setValue] = useState(0)
+  const [value, setValue] = useState<Decimal>(new Decimal(0))
   const inputEl = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -30,16 +31,14 @@ const LeverageSlider = ({
       target.style.backgroundSize =
         max - min === 0
           ? '0% 100%'
-          : ((value - min) * 100) / (max - min) + '% 100%'
+          : ((value.toNumber() - min) * 100) / (max - min) + '% 100%'
     }
   }, [leverageMax, value])
 
   useEffect(() => {
-    if (amount) {
-      onChange(amount)
-      setValue(amount)
-    }
-  }, [amount])
+    onChange(amount.toString())
+    setValue(amount)
+  }, [amount, onChange])
 
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
     let target = e.target
@@ -50,7 +49,7 @@ const LeverageSlider = ({
     target.style.backgroundSize = ((val - min) * 100) / (max - min) + '% 100%'
 
     onChange(e.target.value)
-    setValue(parseFloat(e.target.value))
+    setValue(new Decimal(e.target.value))
   }
 
   return (
@@ -65,7 +64,7 @@ const LeverageSlider = ({
         step={0.000001}
         className="w-full"
         onChange={handleSliderChange}
-        value={value}
+        value={value.toNumber()}
       ></input>
     </>
   )
@@ -113,15 +112,21 @@ export const SwapLeverageSlider = ({
 }
 
 export const BorrowLeverageSlider = ({
+  amount,
   tokenMax,
   onChange,
 }: {
+  amount: Decimal
   tokenMax: number
   onChange: (x: any) => any
 }) => {
   return (
     <>
-      <LeverageSlider leverageMax={tokenMax} onChange={onChange} />
+      <LeverageSlider
+        amount={amount}
+        leverageMax={tokenMax}
+        onChange={onChange}
+      />
     </>
   )
 }

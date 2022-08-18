@@ -123,7 +123,7 @@ const Swap = () => {
       s.swap.inputTokenInfo = outputTokenInfo
       s.swap.outputTokenInfo = inputTokenInfo
     })
-
+    setAmountInformValue('')
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
     )
@@ -320,7 +320,7 @@ const Swap = () => {
             <p className="text-th-fgd-1">0.00x</p>
           </div>
           <SwapLeverageSlider
-            amount={amountIn.toNumber()}
+            amount={amountIn}
             inputToken={inputToken}
             outputToken={outputToken}
             onChange={(x) => setAmountInformValue(x)}
