@@ -177,7 +177,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 <p className="text-th-fgd-3">0.00x</p>
               </div>
               <BorrowLeverageSlider
-                amount={new Decimal(inputAmount)}
+                amount={inputAmount}
                 tokenMax={tokenMax}
                 onChange={(x) => setInputAmount(x)}
               />

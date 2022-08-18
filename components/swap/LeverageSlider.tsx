@@ -4,7 +4,7 @@ import mangoStore from '../../store/state'
 import Decimal from 'decimal.js'
 
 type LeverageSliderProps = {
-  amount: Decimal
+  amount: string
   inputToken?: string
   outputToken?: string
   onChange: (x: string) => void
@@ -15,11 +15,11 @@ const LeverageSlider = ({
   leverageMax,
   onChange,
 }: {
-  amount: Decimal
+  amount: string
   leverageMax: number
   onChange: (x: any) => any
 }) => {
-  const [value, setValue] = useState<Decimal>(new Decimal(0))
+  const [value, setValue] = useState('')
   const inputEl = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const LeverageSlider = ({
       target.style.backgroundSize =
         max - min === 0
           ? '0% 100%'
-          : ((value.toNumber() - min) * 100) / (max - min) + '% 100%'
+          : ((parseFloat(value) - min) * 100) / (max - min) + '% 100%'
     }
   }, [leverageMax, value])
 
@@ -49,7 +49,7 @@ const LeverageSlider = ({
     target.style.backgroundSize = ((val - min) * 100) / (max - min) + '% 100%'
 
     onChange(e.target.value)
-    setValue(new Decimal(e.target.value))
+    setValue(e.target.value)
   }
 
   return (
@@ -64,7 +64,7 @@ const LeverageSlider = ({
         step={0.000001}
         className="w-full"
         onChange={handleSliderChange}
-        value={value.toNumber()}
+        value={value}
       ></input>
     </>
   )
@@ -116,7 +116,7 @@ export const BorrowLeverageSlider = ({
   tokenMax,
   onChange,
 }: {
-  amount: Decimal
+  amount: string
   tokenMax: number
   onChange: (x: any) => any
 }) => {
