@@ -287,6 +287,7 @@ const Swap = () => {
             <p className="text-th-fgd-1">0.00x</p>
           </div>
           <SwapLeverageSlider
+            amount={parseFloat(amountIn)}
             inputToken={inputToken}
             outputToken={outputToken}
             onChange={(x) => setAmountIn(x)}

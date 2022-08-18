@@ -1,20 +1,24 @@
-import { ChangeEvent, useEffect, useMemo, useRef } from 'react'
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../../store/state'
 
 type LeverageSliderProps = {
+  amount?: number
   inputToken?: string
   outputToken?: string
   onChange: (x: string) => void
 }
 
 const LeverageSlider = ({
+  amount,
   leverageMax,
   onChange,
 }: {
+  amount?: number
   leverageMax: number
   onChange: (x: any) => any
 }) => {
+  const [value, setValue] = useState(0)
   const inputEl = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -22,14 +26,20 @@ const LeverageSlider = ({
       const target = inputEl.current
       const min = parseFloat(target.min)
       const max = leverageMax
-      const val = parseFloat(target.value)
 
       target.style.backgroundSize =
         max - min === 0
           ? '0% 100%'
-          : ((val - min) * 100) / (max - min) + '% 100%'
+          : ((value - min) * 100) / (max - min) + '% 100%'
     }
-  }, [leverageMax])
+  }, [leverageMax, value])
+
+  useEffect(() => {
+    if (amount) {
+      onChange(amount)
+      setValue(amount)
+    }
+  }, [amount])
 
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
     let target = e.target
@@ -40,6 +50,7 @@ const LeverageSlider = ({
     target.style.backgroundSize = ((val - min) * 100) / (max - min) + '% 100%'
 
     onChange(e.target.value)
+    setValue(parseFloat(e.target.value))
   }
 
   return (
@@ -54,12 +65,14 @@ const LeverageSlider = ({
         step={0.000001}
         className="w-full"
         onChange={handleSliderChange}
+        value={value}
       ></input>
     </>
   )
 }
 
 export const SwapLeverageSlider = ({
+  amount,
   inputToken,
   outputToken,
   onChange,
@@ -90,7 +103,11 @@ export const SwapLeverageSlider = ({
 
   return (
     <>
-      <LeverageSlider leverageMax={leverageMax} onChange={onChange} />
+      <LeverageSlider
+        amount={amount}
+        leverageMax={leverageMax}
+        onChange={onChange}
+      />
     </>
   )
 }
