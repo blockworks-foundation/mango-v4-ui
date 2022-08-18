@@ -1,5 +1,14 @@
+import { Bank } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../../store/state'
 import ActionTokenItem from './ActionTokenItem'
+
+type BankParams = {
+  key: string
+  value: Bank[]
+  walletBalance?: number
+  maxAmount?: number
+  accountBalance?: number
+}
 
 const ActionTokenList = ({
   banks,
@@ -8,9 +17,9 @@ const ActionTokenList = ({
   showBorrowRates,
   showDepositRates,
 }: {
-  banks: any
+  banks: BankParams[]
   onSelect: (x: string) => void
-  sortByKey: string
+  sortByKey: 'maxAmount' | 'walletBalance' | 'accountBalance'
   showBorrowRates?: boolean
   showDepositRates?: boolean
 }) => {
@@ -19,18 +28,21 @@ const ActionTokenList = ({
   return mangoAccount ? (
     <>
       <div className="space-y-2">
-        {banks
-          .sort((a: any, b: any) => b[sortByKey] - a[sortByKey])
-          .map((bank: any) => (
-            <ActionTokenItem
-              bank={bank.value}
-              customValue={bank[sortByKey]}
-              key={bank.value.name}
-              onSelect={onSelect}
-              showBorrowRates={showBorrowRates}
-              showDepositRates={showDepositRates}
-            />
-          ))}
+        {banks?.length
+          ? banks
+              .filter((b: BankParams) => !!b)
+              .sort((a: any, b: any) => b[sortByKey] - a[sortByKey])
+              .map((bank: any) => (
+                <ActionTokenItem
+                  bank={bank.value[0]}
+                  customValue={bank[sortByKey]}
+                  key={bank.value[0].name}
+                  onSelect={onSelect}
+                  showBorrowRates={showBorrowRates}
+                  showDepositRates={showDepositRates}
+                />
+              ))
+          : null}
       </div>
     </>
   ) : null

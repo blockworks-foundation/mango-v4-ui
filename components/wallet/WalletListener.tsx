@@ -4,45 +4,41 @@ import mangoStore from '../../store/state'
 import { Wallet as AnchorWallet } from '@project-serum/anchor'
 import { notify } from '../../utils/notifications'
 
-export const handleWalletConnect = (wallet: Wallet) => {
+export const handleWalletConnect = async (wallet: Wallet) => {
   if (!wallet) {
     return
   }
   const actions = mangoStore.getState().actions
 
-  wallet?.adapter
-    ?.connect()
-    .then(async () => {
-      await actions.connectMangoClientWithWallet(wallet)
-      onConnectFetchWalletData(wallet)
-    })
-    .catch((e) => {
-      if (e.name.includes('WalletLoadError')) {
-        notify({
-          title: `${wallet.adapter.name} Error`,
-          type: 'error',
-          description: `Please install ${wallet.adapter.name} and then reload this page.`,
-        })
-      }
-    })
+  try {
+    await wallet?.adapter?.connect()
+    await actions.connectMangoClientWithWallet(wallet)
+    await onConnectFetchWalletData(wallet)
+  } catch (e: any) {
+    console.log('WALLET CONNECT ERROR:', e)
+
+    if (e.name.includes('WalletLoadError')) {
+      notify({
+        title: `${wallet.adapter.name} Error`,
+        type: 'error',
+        description: `Please install ${wallet.adapter.name} and then reload this page.`,
+      })
+    }
+  }
 }
 
 const onConnectFetchWalletData = async (wallet: Wallet) => {
   if (!wallet) return
   const actions = mangoStore.getState().actions
-  const set = mangoStore.getState().set
-  const mangoAccounts = mangoStore.getState().mangoAccounts.accounts
+
   await actions.fetchMangoAccounts(wallet.adapter as unknown as AnchorWallet)
+  const mangoAccounts = mangoStore.getState().mangoAccounts.accounts
 
   if (mangoAccounts.length) {
     actions.fetchMangoAccount(
       wallet.adapter as unknown as AnchorWallet,
       mangoAccounts[0].accountNum
     )
-  } else {
-    set((s) => {
-      s.mangoAccount.loading = false
-    })
   }
 
   actions.fetchProfilePicture(wallet.adapter as unknown as AnchorWallet)

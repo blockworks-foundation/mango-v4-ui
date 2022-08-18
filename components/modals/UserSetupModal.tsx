@@ -52,13 +52,13 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   }
 
   const handleEndOnboarding = () => {
-    setIsOnboarded(true)
     onClose()
   }
 
   const connectWallet = async () => {
     if (wallet) {
       handleWalletConnect(wallet)
+      setIsOnboarded(true)
     }
   }
 

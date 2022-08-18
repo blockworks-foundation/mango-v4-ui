@@ -112,7 +112,7 @@ export type MangoStore = {
       tradeHistory: { data: TradeHistoryItem[]; loading: boolean }
     }
   }
-  mangoAccounts: { accounts: MangoAccount[]; loading: boolean }
+  mangoAccounts: { accounts: MangoAccount[] }
   markets: Serum3Market[] | undefined
   notificationIdCounter: number
   notifications: Array<Notification>
@@ -180,7 +180,7 @@ const mangoStore = create<MangoStore>(
           tradeHistory: { data: [], loading: false },
         },
       },
-      mangoAccounts: { accounts: [], loading: true },
+      mangoAccounts: { accounts: [] },
       markets: undefined,
       notificationIdCounter: 0,
       notifications: [],
@@ -366,12 +366,8 @@ const mangoStore = create<MangoStore>(
             )
             set((state) => {
               state.mangoAccounts.accounts = mangoAccounts
-              state.mangoAccounts.loading = false
             })
           } catch (e) {
-            set((state) => {
-              state.mangoAccounts.loading = false
-            })
             console.error('Error fetching mango accts', e)
           }
         },
