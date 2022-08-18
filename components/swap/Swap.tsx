@@ -339,7 +339,11 @@ const Swap = () => {
         onClick={() => setShowConfirm(true)}
         className="mt-6 flex w-full items-center justify-center text-base"
         disabled={
-          !connected || !routes?.length || !selectedRoute || !outputTokenInfo
+          !amountIn.toNumber() ||
+          !connected ||
+          !routes?.length ||
+          !selectedRoute ||
+          !outputTokenInfo
         }
         size="large"
       >

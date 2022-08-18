@@ -69,7 +69,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       )!.logoURI
     }
     return logoURI
-  }, [selectedToken, jupiterTokens])
+  }, [bank?.mint, jupiterTokens])
 
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -153,7 +153,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           }
         })
       : []
-  }, [group?.banksMap])
+  }, [group?.banksMap, walletTokens])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

@@ -46,7 +46,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
       )!.logoURI
     }
     return logoURI
-  }, [selectedToken, jupiterTokens])
+  }, [bank?.mint, jupiterTokens])
 
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 

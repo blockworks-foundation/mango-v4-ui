@@ -47,7 +47,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
       )!.logoURI
     }
     return logoURI
-  }, [selectedToken, jupiterTokens, bank])
+  }, [jupiterTokens, bank])
 
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
@@ -133,7 +133,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         : []
     }
     return []
-  }, [mangoAccount, group?.banksMap])
+  }, [mangoAccount, group])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

@@ -161,7 +161,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           }
         })
       : []
-  }, [group?.banksMap])
+  }, [group?.banksMap, walletTokens])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} disableOutsideClose hideClose>
