@@ -46,7 +46,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     const amount = mangoAccount
       ?.getMaxWithdrawWithBorrowForToken(group, selectedToken)
       .toNumber()
-    return amount ? toUiDecimals(amount, bank.mintDecimals) : 0
+    return amount && amount > 0 ? toUiDecimals(amount, bank.mintDecimals) : 0
   }, [mangoAccount, bank, selectedToken])
 
   const setMax = useCallback(() => {
@@ -123,9 +123,9 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <Label text={t('token')} />
               <LinkButton className="mb-2 no-underline" onClick={setMax}>
                 <span className="mr-1 font-normal text-th-fgd-3">
-                  {t('max')}
+                  {t('max')}:
                 </span>
-                <span className="text-th-fgd-1 underline">
+                <span className="mx-1 text-th-fgd-1 underline">
                   {formatFixedDecimals(tokenMax)}
                 </span>
               </LinkButton>
