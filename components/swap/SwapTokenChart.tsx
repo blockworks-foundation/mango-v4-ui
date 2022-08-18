@@ -18,6 +18,7 @@ import { formatFixedDecimals } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
+import { SwitchHorizontalIcon } from '@heroicons/react/solid'
 
 dayjs.extend(relativeTime)
 
@@ -101,14 +102,20 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   useEffect(() => {
     if (!inputTokenId || !outputTokenId) return
 
-    if (['usd-coin', 'tether'].includes(inputTokenId)) {
-      setBaseTokenId(outputTokenId)
-      setQuoteTokenId(inputTokenId)
-    } else {
+    if (['usd-coin', 'tether'].includes(outputTokenId)) {
       setBaseTokenId(inputTokenId)
       setQuoteTokenId(outputTokenId)
+    } else {
+      setBaseTokenId(outputTokenId)
+      setQuoteTokenId(inputTokenId)
     }
   }, [inputTokenId, outputTokenId])
+
+  const handleFlipChart = useCallback(() => {
+    if (!baseTokenId || !quoteTokenId) return
+    setBaseTokenId(quoteTokenId)
+    setQuoteTokenId(baseTokenId)
+  }, [baseTokenId, quoteTokenId])
 
   // Use ohlc data
   const getChartData = useCallback(async () => {
@@ -196,11 +203,19 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
           <div className="flex items-start justify-between">
             <div>
               {inputTokenInfo && outputTokenInfo ? (
-                <p className="mb-0.5 text-base text-th-fgd-3">
-                  {['usd-coin', 'tether'].includes(inputTokenId || '')
-                    ? `${outputTokenInfo?.symbol?.toUpperCase()}/${inputTokenInfo?.symbol?.toUpperCase()}`
-                    : `${inputTokenInfo?.symbol?.toUpperCase()}/${outputTokenInfo?.symbol?.toUpperCase()}`}
-                </p>
+                <div className="mb-0.5 flex items-center">
+                  <p className="text-base text-th-fgd-3">
+                    {['usd-coin', 'tether'].includes(inputTokenId || '')
+                      ? `${outputTokenInfo?.symbol?.toUpperCase()}/${inputTokenInfo?.symbol?.toUpperCase()}`
+                      : `${inputTokenInfo?.symbol?.toUpperCase()}/${outputTokenInfo?.symbol?.toUpperCase()}`}
+                  </p>
+                  {/* <div
+                    className="px-2 hover:cursor-pointer hover:text-th-primary"
+                    onClick={handleFlipChart}
+                  >
+                    <SwitchHorizontalIcon className="h-4 w-4" />
+                  </div> */}
+                </div>
               ) : null}
               {mouseData ? (
                 <>
@@ -208,6 +223,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     <FlipNumbers
                       height={40}
                       width={26}
+                      duration={1.5}
                       play
                       numbers={formatFixedDecimals(mouseData['price'])}
                     />

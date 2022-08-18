@@ -82,7 +82,6 @@ const Swap = () => {
       const group = mangoStore.getState().group
       if (group) {
         const banks = Array.from(group.banksMap.values())
-
         const bank = banks.find((b) => b.mint.toString() === mintAddress)
         set((s) => {
           s.swap.inputToken = bank!.name
@@ -102,7 +101,6 @@ const Swap = () => {
       const group = mangoStore.getState().group
       if (group) {
         const banks = Array.from(group.banksMap.values())
-
         const bank = banks.find((b) => b.mint.toString() === mintAddress)
         set((s) => {
           s.swap.outputToken = bank!.name
