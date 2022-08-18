@@ -9,11 +9,11 @@ import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
 import { floorToDecimal } from '../../utils/numbers'
 import { TokenAccount } from '../../utils/tokens'
+import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
-import DepositTokenList from '../shared/DepositTokenList'
 import HealthImpact from '../shared/HealthImpact'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
@@ -48,11 +48,28 @@ export const walletBalanceForToken = (
 
 function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation('common')
+  const group = mangoStore((s) => s.group)
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(token || 'USDC')
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+
+  const bank = useMemo(() => {
+    const group = mangoStore.getState().group
+    return group?.banksMap.get(selectedToken)
+  }, [selectedToken])
+
+  const logoUri = useMemo(() => {
+    let logoURI
+    if (jupiterTokens.length) {
+      logoURI = jupiterTokens.find(
+        (t) => t.address === bank?.mint.toString()
+      )!.logoURI
+    }
+    return logoURI
+  }, [selectedToken, jupiterTokens])
 
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -122,6 +139,22 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     onClose()
   }
 
+  const banks = useMemo(() => {
+    return group?.banksMap
+      ? Array.from(group?.banksMap, ([key, value]) => {
+          const walletBalance = walletBalanceForToken(walletTokens, key)
+          return {
+            key,
+            value,
+            walletBalance: floorToDecimal(
+              walletBalance.maxAmount,
+              walletBalance.maxDecimals
+            ),
+          }
+        })
+      : []
+  }, [group?.banksMap])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="h-96">
@@ -130,7 +163,23 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           show={showTokenList}
         >
           <h2 className="mb-4 text-center">{t('select-token')}</h2>
-          <DepositTokenList onSelect={handleSelectToken} />
+          <div className="flex px-4 pb-2">
+            <div className="w-1/5">
+              <p className="text-xs">{t('token')}</p>
+            </div>
+            <div className="w-2/5 text-right">
+              <p className="text-xs">{t('deposit-rate')}</p>
+            </div>
+            <div className="w-2/5 text-right">
+              <p className="whitespace-nowrap text-xs">{t('wallet-balance')}</p>
+            </div>
+          </div>
+          <ActionTokenList
+            banks={banks}
+            onSelect={handleSelectToken}
+            showDepositRates
+            sortByKey="walletBalance"
+          />
         </EnterBottomExitBottom>
         <FadeInFadeOut
           className="flex h-full flex-col justify-between"
@@ -143,7 +192,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 <Label text={t('token')} />
                 <LinkButton className="mb-2 no-underline" onClick={setMax}>
                   <span className="mr-1 text-sm font-normal text-th-fgd-4">
-                    {t('wallet-balance')}
+                    {t('wallet-balance')}:
                   </span>
                   <span className="text-th-fgd-1 underline">
                     {floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals)}
@@ -160,7 +209,9 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                       alt=""
                       width="24"
                       height="24"
-                      src={`/icons/${selectedToken.toLowerCase()}.svg`}
+                      src={
+                        logoUri || `/icons/${selectedToken.toLowerCase()}.svg`
+                      }
                     />
                   </div>
                   <div className="flex w-full items-center justify-between">

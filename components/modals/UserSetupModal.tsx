@@ -1,6 +1,6 @@
 import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useMemo, useState } from 'react'
 import { ModalProps } from '../../types/modal'
 // import { PROFILE_CATEGORIES } from '../../utils/profile'
 import Input from '../forms/Input'
@@ -15,15 +15,18 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { handleWalletConnect } from '../../utils/wallet'
 import mangoStore from '../../store/state'
 import { IS_ONBOARDED_KEY } from '../Layout'
-import DepositTokenList from '../shared/DepositTokenList'
 import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
 import Image from 'next/image'
 import BounceLoader from '../shared/BounceLoader'
 import { notify } from '../../utils/notifications'
 import { Wallet } from '@project-serum/anchor'
+import ActionTokenList from '../account/ActionTokenList'
+import { walletBalanceForToken } from './DepositModal'
+import { floorToDecimal } from '../../utils/numbers'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
+  const group = mangoStore((s) => s.group)
   const { connected, select, wallet, wallets } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.loading)
@@ -37,6 +40,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const handleNextStep = () => {
     setShowSetupStep(showSetupStep + 1)
@@ -142,6 +146,22 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       setShowSetupStep(2)
     }
   }, [connected, mangoAccountLoading])
+
+  const banks = useMemo(() => {
+    return group?.banksMap
+      ? Array.from(group?.banksMap, ([key, value]) => {
+          const walletBalance = walletBalanceForToken(walletTokens, key)
+          return {
+            key,
+            value,
+            walletBalance: floorToDecimal(
+              walletBalance.maxAmount,
+              walletBalance.maxDecimals
+            ),
+          }
+        })
+      : []
+  }, [group?.banksMap])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} disableOutsideClose hideClose>
@@ -389,7 +409,25 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                 </FadeInFadeOut>
                 {!depositToken ? (
                   <div className="absolute top-10 mt-2 h-56 w-full overflow-auto">
-                    <DepositTokenList onSelect={setDepositToken} />
+                    <div className="flex px-4 pb-2">
+                      <div className="w-1/5">
+                        <p className="text-xs">{t('token')}</p>
+                      </div>
+                      <div className="w-2/5 text-right">
+                        <p className="text-xs">{t('deposit-rate')}</p>
+                      </div>
+                      <div className="w-2/5 text-right">
+                        <p className="whitespace-nowrap text-xs">
+                          {t('wallet-balance')}
+                        </p>
+                      </div>
+                    </div>
+                    <ActionTokenList
+                      banks={banks}
+                      onSelect={setDepositToken}
+                      showDepositRates
+                      sortByKey="walletBalance"
+                    />
                   </div>
                 ) : null}
               </div>

@@ -1,6 +1,5 @@
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon } from '@heroicons/react/solid'
-import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
@@ -8,12 +7,11 @@ import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
 import { formatFixedDecimals } from '../../utils/numbers'
+import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
-// import { notify } from '../../utils/notifications'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
-import DepositTokenList from '../shared/DepositTokenList'
 import HealthImpact from '../shared/HealthImpact'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
@@ -28,18 +26,30 @@ type ModalCombinedProps = BorrowModalProps & ModalProps
 
 function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation('common')
+  const group = mangoStore((s) => s.group)
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(token || 'USDC')
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
     return group?.banksMap.get(selectedToken)
   }, [selectedToken])
+
+  const logoUri = useMemo(() => {
+    let logoURI
+    if (jupiterTokens.length) {
+      logoURI = jupiterTokens.find(
+        (t) => t.address === bank?.mint.toString()
+      )!.logoURI
+    }
+    return logoURI
+  }, [selectedToken, jupiterTokens, bank])
+
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   const tokenMax = useMemo(() => {
     const group = mangoStore.getState().group
@@ -104,14 +114,51 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     }
   }
 
+  const banks = useMemo(() => {
+    if (mangoAccount) {
+      return group?.banksMap
+        ? Array.from(group?.banksMap, ([key, value]) => {
+            const amount = mangoAccount
+              ?.getMaxWithdrawWithBorrowForToken(group, key)
+              .toNumber()
+            return {
+              key,
+              value,
+              maxAmount:
+                amount && amount > 0
+                  ? toUiDecimals(amount, value.mintDecimals)
+                  : 0,
+            }
+          })
+        : []
+    }
+    return []
+  }, [mangoAccount, group?.banksMap])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <EnterBottomExitBottom
-        className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
+        className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6"
         show={showTokenList}
       >
         <h2 className="mb-4 text-center">{t('select-token')}</h2>
-        <DepositTokenList onSelect={handleSelectToken} />
+        <div className="flex px-4 pb-2">
+          <div className="w-1/5">
+            <p className="text-xs">{t('token')}</p>
+          </div>
+          <div className="w-2/5 text-right">
+            <p className="text-xs">{t('borrow-rate')}</p>
+          </div>
+          <div className="w-2/5 text-right">
+            <p className="whitespace-nowrap text-xs">{t('max-borrow')}</p>
+          </div>
+        </div>
+        <ActionTokenList
+          banks={banks}
+          onSelect={handleSelectToken}
+          showBorrowRates
+          sortByKey="maxAmount"
+        />
       </EnterBottomExitBottom>
       <FadeInFadeOut
         className="flex h-[440px] flex-col justify-between"
@@ -141,7 +188,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                     alt=""
                     width="24"
                     height="24"
-                    src={`/icons/${selectedToken.toLowerCase()}.svg`}
+                    src={logoUri || `/icons/${selectedToken.toLowerCase()}.svg`}
                   />
                 </div>
                 <div className="flex w-full items-center justify-between">
@@ -177,7 +224,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 <p className="text-th-fgd-3">0.00x</p>
               </div>
               <BorrowLeverageSlider
-                amount={parseFloat(inputAmount)}
+                amount={parseFloat(inputAmount) || 0}
                 tokenMax={tokenMax}
                 onChange={(x) => setInputAmount(x)}
               />

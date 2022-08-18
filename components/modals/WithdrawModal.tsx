@@ -7,6 +7,7 @@ import mangoStore from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
 import { floorToDecimal } from '../../utils/numbers'
+import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
@@ -15,7 +16,6 @@ import HealthImpact from '../shared/HealthImpact'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
-import WithdrawTokenList from '../shared/WithdrawTokenList'
 
 interface WithdrawModalProps {
   token?: string
@@ -25,18 +25,30 @@ type ModalCombinedProps = WithdrawModalProps & ModalProps
 
 function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation('common')
+  const group = mangoStore((s) => s.group)
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(token || 'USDC')
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
     return group?.banksMap.get(selectedToken)
   }, [selectedToken])
+
+  const logoUri = useMemo(() => {
+    let logoURI
+    if (jupiterTokens.length) {
+      logoURI = jupiterTokens.find(
+        (t) => t.address === bank?.mint.toString()
+      )!.logoURI
+    }
+    return logoURI
+  }, [selectedToken, jupiterTokens])
+
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   const tokenMax = useMemo(() => {
     if (!bank) return 0
@@ -94,6 +106,22 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     setShowTokenList(false)
   }
 
+  const banks = useMemo(() => {
+    if (mangoAccount) {
+      return group?.banksMap
+        ? Array.from(group?.banksMap, ([key, value]) => {
+            const accountBalance = mangoAccount?.getUi(value)
+            return {
+              key,
+              value,
+              accountBalance: accountBalance ? accountBalance : 0,
+            }
+          })
+        : []
+    }
+    return []
+  }, [mangoAccount, group?.banksMap])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="h-96">
@@ -102,7 +130,19 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
           show={showTokenList}
         >
           <h2 className="mb-4 text-center">{t('select-token')}</h2>
-          <WithdrawTokenList onSelect={handleSelectToken} />
+          <div className="grid grid-cols-2 px-4 pb-2">
+            <div className="col-span-1">
+              <p className="text-xs">{t('token')}</p>
+            </div>
+            <div className="col-span-1 flex justify-end">
+              <p className="text-xs">{t('available-balance')}</p>
+            </div>
+          </div>
+          <ActionTokenList
+            banks={banks}
+            onSelect={handleSelectToken}
+            sortByKey="accountBalance"
+          />
         </EnterBottomExitBottom>
         <FadeInFadeOut
           className="flex h-full flex-col justify-between"
@@ -133,7 +173,9 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                       alt=""
                       width="24"
                       height="24"
-                      src={`/icons/${selectedToken.toLowerCase()}.svg`}
+                      src={
+                        logoUri || `/icons/${selectedToken.toLowerCase()}.svg`
+                      }
                     />
                   </div>
                   <div className="flex w-full items-center justify-between">
