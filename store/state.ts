@@ -153,7 +153,7 @@ export type MangoStore = {
     fetchJupiterTokens: () => Promise<void>
     fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
     fetchWalletTokens: (wallet: AnchorWallet) => Promise<void>
-    handleWalletConnect: (wallet: Wallet) => Promise<void>
+    connectMangoClientWithWallet: (wallet: Wallet) => Promise<void>
     reloadAccount: () => Promise<void>
     reloadGroup: () => Promise<void>
   }
@@ -478,17 +478,11 @@ const mangoStore = create<MangoStore>(
               })
             })
         },
-        handleWalletConnect: async (wallet: Wallet) => {
-          if (!wallet) {
-            return
-          }
-
+        connectMangoClientWithWallet: async (wallet: Wallet) => {
           try {
-            await wallet?.adapter?.connect()
-
             const provider = new AnchorProvider(
               connection,
-              wallet as unknown as AnchorWallet,
+              wallet.adapter as unknown as AnchorWallet,
               options
             )
             provider.opts.skipPreflight = true

@@ -1,39 +1,56 @@
 import { useEffect } from 'react'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { useWallet, Wallet } from '@solana/wallet-adapter-react'
 import mangoStore from '../../store/state'
-import { Wallet } from '@project-serum/anchor'
+import { Wallet as AnchorWallet } from '@project-serum/anchor'
+import { notify } from '../../utils/notifications'
 
-const WalletListener = () => {
-  const { wallet, connected, disconnecting } = useWallet()
+export const handleWalletConnect = (wallet: Wallet) => {
+  if (!wallet) {
+    return
+  }
+  const actions = mangoStore.getState().actions
 
-  useEffect(() => {
-    const actions = mangoStore.getState().actions
-    const set = mangoStore.getState().set
-    const mangoAccounts = mangoStore.getState().mangoAccounts.accounts
-    const loadingMangoAccounts = mangoStore.getState().mangoAccounts.loading
-
-    const onConnect = async () => {
-      if (!wallet) return
-      await actions.fetchMangoAccounts(wallet.adapter as unknown as Wallet)
-      if (mangoAccounts.length) {
-        actions.fetchMangoAccount(
-          wallet.adapter as unknown as Wallet,
-          mangoAccounts[0].accountNum
-        )
-      } else {
-        set((s) => {
-          s.mangoAccount.loading = false
+  wallet?.adapter
+    ?.connect()
+    .then(async () => {
+      await actions.connectMangoClientWithWallet(wallet)
+      onConnectFetchWalletData(wallet)
+    })
+    .catch((e) => {
+      if (e.name.includes('WalletLoadError')) {
+        notify({
+          title: `${wallet.adapter.name} Error`,
+          type: 'error',
+          description: `Please install ${wallet.adapter.name} and then reload this page.`,
         })
       }
-      actions.fetchProfilePicture(wallet.adapter as unknown as Wallet)
-      actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)
-    }
-    console.log('connected', connected)
+    })
+}
 
-    if (connected) {
-      onConnect()
-    }
-  }, [wallet, connected])
+const onConnectFetchWalletData = async (wallet: Wallet) => {
+  if (!wallet) return
+  const actions = mangoStore.getState().actions
+  const set = mangoStore.getState().set
+  const mangoAccounts = mangoStore.getState().mangoAccounts.accounts
+  await actions.fetchMangoAccounts(wallet.adapter as unknown as AnchorWallet)
+
+  if (mangoAccounts.length) {
+    actions.fetchMangoAccount(
+      wallet.adapter as unknown as AnchorWallet,
+      mangoAccounts[0].accountNum
+    )
+  } else {
+    set((s) => {
+      s.mangoAccount.loading = false
+    })
+  }
+
+  actions.fetchProfilePicture(wallet.adapter as unknown as AnchorWallet)
+  actions.fetchWalletTokens(wallet.adapter as unknown as AnchorWallet)
+}
+
+const WalletListener = () => {
+  const { disconnecting } = useWallet()
 
   useEffect(() => {
     const setStore = mangoStore.getState().set

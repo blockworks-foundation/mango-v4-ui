@@ -22,6 +22,7 @@ import { Wallet } from '@project-serum/anchor'
 import ActionTokenList from '../account/ActionTokenList'
 import { walletBalanceForToken } from './DepositModal'
 import { floorToDecimal } from '../../utils/numbers'
+import { handleWalletConnect } from '../wallet/WalletListener'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -56,9 +57,8 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   }
 
   const connectWallet = async () => {
-    const actions = mangoStore.getState().actions
     if (wallet) {
-      actions.handleWalletConnect(wallet)
+      handleWalletConnect(wallet)
     }
   }
 
