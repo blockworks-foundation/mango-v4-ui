@@ -38,7 +38,7 @@ const LeverageSlider = ({
   useEffect(() => {
     onChange(amount.toString())
     setValue(amount)
-  }, [amount, onChange])
+  }, [amount])
 
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
     let target = e.target
