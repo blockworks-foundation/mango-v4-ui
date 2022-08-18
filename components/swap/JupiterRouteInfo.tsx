@@ -28,7 +28,7 @@ import { formatDecimal } from '../../utils/numbers'
 type JupiterRouteInfoProps = {
   inputToken: string
   outputToken: string
-  amountIn: number
+  amountIn: Decimal
   slippage: number
   submitting: boolean
   handleSwap: (x: TransactionInstruction[]) => void
@@ -123,7 +123,10 @@ const JupiterRouteInfo = ({
         {
           tokenName: inputToken,
           tokenAmount:
-            toNativeDecimals(amountIn, bank.mintDecimals).toNumber() * -1,
+            toNativeDecimals(
+              amountIn.toNumber(),
+              bank.mintDecimals
+            ).toNumber() * -1,
         },
         { tokenName: outputTokenInfo.symbol, tokenAmount: amountOut },
       ])
@@ -173,13 +176,15 @@ const JupiterRouteInfo = ({
               <p className="text-right text-sm">
                 {swapRate ? (
                   <>
-                    1 {inputToken} ≈ {formatDecimal(amountOut / amountIn, 6)}{' '}
+                    1 {inputToken} ≈{' '}
+                    {formatDecimal(amountOut / amountIn.toNumber(), 6)}{' '}
                     {outputTokenInfo?.symbol}
                   </>
                 ) : (
                   <>
                     1 {outputTokenInfo?.symbol} ≈{' '}
-                    {formatDecimal(amountIn / amountOut, 6)} {inputToken}
+                    {formatDecimal(amountIn.toNumber() / amountOut, 6)}{' '}
+                    {inputToken}
                   </>
                 )}
               </p>

@@ -73,12 +73,7 @@ const useJupiter = ({
               inputMint: inputBank.mint, // Mint address of the input token
               outputMint: outputBank.mint, // Mint address of the output token
               amount: JSBI.BigInt(
-                new Decimal(inputAmount)
-                  .mul(10 ** inputBank.mintDecimals)
-                  .mul(10 ** inputBank.mintDecimals)
-                  .floor()
-                  .div(10 ** inputBank.mintDecimals)
-                  .floor()
+                new Decimal(inputAmount).mul(10 ** inputBank.mintDecimals)
               ),
               slippage, // The slippage in % terms
               filterTopNResult: 10,

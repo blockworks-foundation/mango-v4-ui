@@ -175,8 +175,8 @@ const mangoStore = create<MangoStore>(
       serumOrders: undefined,
       set: (fn) => set(produce(fn)),
       swap: {
-        inputToken: 'SOL',
-        outputToken: 'USDC',
+        inputToken: 'USDC',
+        outputToken: 'SOL',
         inputTokenInfo: undefined,
         outputTokenInfo: undefined,
         margin: true,
