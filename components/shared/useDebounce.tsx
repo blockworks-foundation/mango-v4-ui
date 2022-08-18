@@ -18,5 +18,5 @@ export default function useDebounce(value: any, delay: number) {
     },
     [value, delay] // Only re-call effect if value or delay changes
   )
-  return debouncedValue
+  return [debouncedValue, setDebouncedValue]
 }

@@ -1,12 +1,11 @@
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import mangoStore from '../../store/state'
-import Decimal from 'decimal.js'
+import { useTokenMax } from './Swap'
 
 type LeverageSliderProps = {
-  amount: string
-  inputToken?: string
-  outputToken?: string
+  amount: number
+  inputToken: string
+  outputToken: string
   onChange: (x: string) => void
 }
 
@@ -15,12 +14,13 @@ const LeverageSlider = ({
   leverageMax,
   onChange,
 }: {
-  amount: string
+  amount: number
   leverageMax: number
   onChange: (x: any) => any
 }) => {
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState(0)
   const inputEl = useRef<HTMLInputElement>(null)
+  const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
 
   useEffect(() => {
     if (inputEl.current) {
@@ -31,7 +31,7 @@ const LeverageSlider = ({
       target.style.backgroundSize =
         max - min === 0
           ? '0% 100%'
-          : ((parseFloat(value) - min) * 100) / (max - min) + '% 100%'
+          : ((value - min) * 100) / (max - min) + '% 100%'
     }
   }, [leverageMax, value])
 
@@ -49,7 +49,7 @@ const LeverageSlider = ({
     target.style.backgroundSize = ((val - min) * 100) / (max - min) + '% 100%'
 
     onChange(e.target.value)
-    setValue(e.target.value)
+    setValue(parseFloat(e.target.value))
   }
 
   return (
@@ -61,7 +61,7 @@ const LeverageSlider = ({
         type="range"
         min="0"
         max={leverageMax}
-        step={0.000001}
+        step={inputTokenInfo ? 1 / 10 ** inputTokenInfo?.decimals : 6}
         className="w-full"
         onChange={handleSliderChange}
         value={value}
@@ -76,35 +76,13 @@ export const SwapLeverageSlider = ({
   outputToken,
   onChange,
 }: LeverageSliderProps) => {
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const group = mangoStore((s) => s.group)
-
-  const leverageMax = useMemo(() => {
-    if (!mangoAccount || !group || !inputToken || !outputToken) return 100
-
-    const bank = group.banksMap.get(inputToken)!
-    const availableDeposits = bank.uiDeposits() - bank.uiBorrows()
-
-    let max
-    if (outputToken) {
-      max = toUiDecimals(
-        mangoAccount
-          .getMaxSourceForTokenSwap(group, inputToken, outputToken, 0.9)
-          .toNumber(),
-        bank?.mintDecimals!
-      )
-    } else {
-      max = availableDeposits
-    }
-
-    return Math.min(availableDeposits, max)
-  }, [mangoAccount, inputToken, outputToken, group])
+  const { amountWithBorrow } = useTokenMax(inputToken, outputToken)
 
   return (
     <>
       <LeverageSlider
         amount={amount}
-        leverageMax={leverageMax}
+        leverageMax={amountWithBorrow}
         onChange={onChange}
       />
     </>
@@ -116,7 +94,7 @@ export const BorrowLeverageSlider = ({
   tokenMax,
   onChange,
 }: {
-  amount: string
+  amount: number
   tokenMax: number
   onChange: (x: any) => any
 }) => {
