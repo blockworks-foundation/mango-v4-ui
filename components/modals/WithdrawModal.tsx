@@ -1,4 +1,5 @@
 import { ChevronDownIcon } from '@heroicons/react/solid'
+import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { ChangeEvent, useCallback, useMemo, useState } from 'react'
@@ -23,19 +24,19 @@ interface WithdrawModalProps {
 
 type ModalCombinedProps = WithdrawModalProps & ModalProps
 
-function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
+function WithdrawModal({ isOpen, onClose }: ModalCombinedProps) {
   const { t } = useTranslation('common')
   const group = mangoStore((s) => s.group)
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [selectedToken, setSelectedToken] = useState(token || 'USDC')
+  const [selectedToken, setSelectedToken] = useState('USDC')
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return group?.banksMap.get(selectedToken)
+    return group?.banksMapByName.get(selectedToken)![0]
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
@@ -52,7 +53,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const tokenMax = useMemo(() => {
     if (!bank) return 0
-    const amount = mangoAccount?.getUi(bank)
+    const amount = mangoAccount?.getTokenBalanceUi(bank)
     return amount ? floorToDecimal(amount, bank.mintDecimals) : 0
   }, [mangoAccount, bank])
 
@@ -76,7 +77,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
       const tx = await client.tokenWithdraw(
         group,
         mangoAccount,
-        selectedToken,
+        bank!.mint,
         parseFloat(inputAmount),
         false
       )
@@ -108,9 +109,9 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const banks = useMemo(() => {
     if (mangoAccount) {
-      return group?.banksMap
-        ? Array.from(group?.banksMap, ([key, value]) => {
-            const accountBalance = mangoAccount?.getUi(value)
+      return group?.banksMapByName
+        ? Array.from(group?.banksMapByName, ([key, value]) => {
+            const accountBalance = mangoAccount?.getTokenBalanceUi(value[0])
             return {
               key,
               value,
@@ -120,7 +121,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         : []
     }
     return []
-  }, [mangoAccount, group?.banksMap])
+  }, [mangoAccount, group?.banksMapByName])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -207,7 +208,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </div>
             </div>
             <HealthImpact
-              tokenName={selectedToken}
+              tokenPk={bank!.mint}
               amount={parseFloat(inputAmount)}
             />
           </div>

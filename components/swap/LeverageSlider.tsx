@@ -1,13 +1,7 @@
+import { PublicKey } from '@solana/web3.js'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import mangoStore from '../../store/state'
 import { useTokenMax } from './Swap'
-
-type LeverageSliderProps = {
-  amount: number
-  inputToken: string
-  outputToken: string
-  onChange: (x: string) => void
-}
 
 const LeverageSlider = ({
   amount,
@@ -16,7 +10,7 @@ const LeverageSlider = ({
 }: {
   amount: number
   leverageMax: number
-  onChange: (x: any) => any
+  onChange: (x: string) => any
 }) => {
   const [value, setValue] = useState(0)
   const inputEl = useRef<HTMLInputElement>(null)
@@ -36,8 +30,10 @@ const LeverageSlider = ({
   }, [leverageMax, value])
 
   useEffect(() => {
-    onChange(amount.toString())
-    setValue(amount)
+    if (amount) {
+      onChange(amount.toString())
+      setValue(amount)
+    }
   }, [amount])
 
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -72,11 +68,12 @@ const LeverageSlider = ({
 
 export const SwapLeverageSlider = ({
   amount,
-  inputToken,
-  outputToken,
   onChange,
-}: LeverageSliderProps) => {
-  const { amountWithBorrow } = useTokenMax(inputToken, outputToken)
+}: {
+  amount: number
+  onChange: (x: string) => void
+}) => {
+  const { amountWithBorrow } = useTokenMax()
 
   return (
     <>
@@ -96,7 +93,7 @@ export const BorrowLeverageSlider = ({
 }: {
   amount: number
   tokenMax: number
-  onChange: (x: any) => any
+  onChange: (x: string) => any
 }) => {
   return (
     <>

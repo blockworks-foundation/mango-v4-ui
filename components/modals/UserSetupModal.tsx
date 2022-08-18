@@ -1,6 +1,6 @@
 import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
-import { ChangeEvent, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { ModalProps } from '../../types/modal'
 // import { PROFILE_CATEGORIES } from '../../utils/profile'
 import Input from '../forms/Input'
@@ -12,7 +12,6 @@ import Modal from '../shared/Modal'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
 import { CheckCircleIcon, PencilIcon } from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { handleWalletConnect } from '../../utils/wallet'
 import mangoStore from '../../store/state'
 import { IS_ONBOARDED_KEY } from '../Layout'
 import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
@@ -57,12 +56,13 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   }
 
   const connectWallet = async () => {
+    const actions = mangoStore.getState().actions
     if (wallet) {
-      handleWalletConnect(wallet)
+      actions.handleWalletConnect(wallet)
     }
   }
 
-  const handleCreateAccount = async () => {
+  const handleCreateAccount = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
@@ -94,22 +94,22 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       })
       console.log(e)
     }
-  }
+  }, [accountName, wallet, t])
 
-  const handleDeposit = async () => {
+  const handleDeposit = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current
 
     if (!mangoAccount || !group) return
-
+    const bank = group.banksMapByName.get(depositToken)![0]
     try {
       setSubmitDeposit(true)
       const tx = await client.tokenDeposit(
         group,
         mangoAccount,
-        depositToken,
+        bank.mint,
         parseFloat(depositAmount)
       )
       notify({
@@ -132,7 +132,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       setSubmitDeposit(false)
       console.error(e)
     }
-  }
+  }, [depositAmount, depositToken, onClose, setIsOnboarded])
 
   useEffect(() => {
     if (mangoAccount && showSetupStep === 1) {
@@ -148,8 +148,8 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   }, [connected, mangoAccountLoading])
 
   const banks = useMemo(() => {
-    return group?.banksMap
-      ? Array.from(group?.banksMap, ([key, value]) => {
+    return group?.banksMapByName
+      ? Array.from(group?.banksMapByName, ([key, value]) => {
           const walletBalance = walletBalanceForToken(walletTokens, key)
           return {
             key,
@@ -161,7 +161,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           }
         })
       : []
-  }, [group?.banksMap, walletTokens])
+  }, [group?.banksMapByName, walletTokens])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} disableOutsideClose hideClose>

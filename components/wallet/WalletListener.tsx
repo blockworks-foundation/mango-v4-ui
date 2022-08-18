@@ -5,12 +5,12 @@ import { Wallet } from '@project-serum/anchor'
 
 const WalletListener = () => {
   const { wallet, connected, disconnecting } = useWallet()
-  const loadingMangoAccounts = mangoStore((s) => s.mangoAccounts.loading)
-  const mangoAccounts = mangoStore((s) => s.mangoAccounts.accounts)
 
   useEffect(() => {
     const actions = mangoStore.getState().actions
     const set = mangoStore.getState().set
+    const mangoAccounts = mangoStore.getState().mangoAccounts.accounts
+    const loadingMangoAccounts = mangoStore.getState().mangoAccounts.loading
 
     const onConnect = async () => {
       if (!wallet) return
@@ -21,11 +21,9 @@ const WalletListener = () => {
           mangoAccounts[0].accountNum
         )
       } else {
-        if (!loadingMangoAccounts) {
-          set((s) => {
-            s.mangoAccount.loading = false
-          })
-        }
+        set((s) => {
+          s.mangoAccount.loading = false
+        })
       }
       actions.fetchProfilePicture(wallet.adapter as unknown as Wallet)
       actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)
@@ -35,7 +33,7 @@ const WalletListener = () => {
     if (connected) {
       onConnect()
     }
-  }, [wallet, connected, loadingMangoAccounts, mangoAccounts.length])
+  }, [wallet, connected])
 
   useEffect(() => {
     const setStore = mangoStore.getState().set

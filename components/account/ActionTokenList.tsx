@@ -9,7 +9,7 @@ const ActionTokenList = ({
   showDepositRates,
 }: {
   banks: any
-  onSelect: (x: any) => void
+  onSelect: (x: string) => void
   sortByKey: string
   showBorrowRates?: boolean
   showDepositRates?: boolean

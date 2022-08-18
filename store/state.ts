@@ -1,17 +1,27 @@
+import dayjs from 'dayjs'
+import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import produce from 'immer'
-import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
+import {
+  AnchorProvider,
+  Wallet as AnchorWallet,
+  web3,
+} from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
+import { TOKEN_LIST_URL } from '@jup-ag/core'
+import { Order } from '@project-serum/serum/lib/market'
+import { Wallet } from '@solana/wallet-adapter-react'
 import {
   MangoClient,
   Group,
   MangoAccount,
   Serum3Market,
   MANGO_V4_ID,
+  Bank,
 } from '@blockworks-foundation/mango-v4'
+
 import EmptyWallet from '../utils/wallet'
-import { Order } from '@project-serum/serum/lib/market'
 import { Notification, notify } from '../utils/notifications'
 import {
   COINGECKO_IDS,
@@ -20,9 +30,6 @@ import {
   TokenAccount,
 } from '../utils/tokens'
 import { Token } from '../types/jupiter'
-import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
-import { TOKEN_LIST_URL } from '@jup-ag/core'
-import dayjs from 'dayjs'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
@@ -44,6 +51,8 @@ const DEFAULT_CLIENT = MangoClient.connect(
   CLUSTER,
   MANGO_V4_ID[CLUSTER]
 )
+export const INPUT_TOKEN_DEFAULT = 'USDC'
+export const OUTPUT_TOKEN_DEFAULT = 'SOL'
 
 interface TotalInterestDataItem {
   borrow_interest: number
@@ -109,8 +118,8 @@ export type MangoStore = {
   notifications: Array<Notification>
   serumOrders: Order[] | undefined
   swap: {
-    inputToken: string
-    outputToken: string
+    inputBank: Bank | undefined
+    outputBank: Bank | undefined
     inputTokenInfo: Token | undefined
     outputTokenInfo: Token | undefined
     margin: boolean
@@ -134,16 +143,19 @@ export type MangoStore = {
     ) => Promise<void>
     fetchCoingeckoPrices: () => Promise<void>
     fetchGroup: () => Promise<void>
-    fetchMangoAccount: (wallet: Wallet, accountNumber?: number) => Promise<void>
-    fetchMangoAccounts: (wallet: Wallet) => Promise<void>
+    fetchMangoAccount: (
+      wallet: AnchorWallet,
+      accountNumber?: number
+    ) => Promise<void>
+    fetchMangoAccounts: (wallet: AnchorWallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
-    fetchProfilePicture: (wallet: Wallet) => void
+    fetchProfilePicture: (wallet: AnchorWallet) => void
     fetchJupiterTokens: () => Promise<void>
     fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
-    fetchWalletTokens: (wallet: Wallet) => Promise<void>
+    fetchWalletTokens: (wallet: AnchorWallet) => Promise<void>
+    handleWalletConnect: (wallet: Wallet) => Promise<void>
     reloadAccount: () => Promise<void>
     reloadGroup: () => Promise<void>
-    loadSerumMarket: () => Promise<void>
   }
 }
 
@@ -175,8 +187,8 @@ const mangoStore = create<MangoStore>(
       serumOrders: undefined,
       set: (fn) => set(produce(fn)),
       swap: {
-        inputToken: 'USDC',
-        outputToken: 'SOL',
+        inputBank: undefined,
+        outputBank: undefined,
         inputTokenInfo: undefined,
         outputTokenInfo: undefined,
         margin: true,
@@ -301,15 +313,8 @@ const mangoStore = create<MangoStore>(
             const client = get().client
             const group = await client.getGroup(GROUP)
 
-            const markets = await client.serum3GetMarkets(
-              group,
-              group.banksMap.get('BTC')?.tokenIndex,
-              group.banksMap.get('USDC')?.tokenIndex
-            )
-
             set((state) => {
               state.group = group
-              state.markets = markets
             })
           } catch (e) {
             console.error('Error fetching group', e)
@@ -319,26 +324,8 @@ const mangoStore = create<MangoStore>(
           const set = get().set
           try {
             const group = get().group
+            const client = get().client
             if (!group) throw new Error('Group not loaded')
-
-            const provider = new AnchorProvider(connection, wallet, options)
-            provider.opts.skipPreflight = true
-            const client = await MangoClient.connect(
-              provider,
-              CLUSTER,
-              MANGO_V4_ID[CLUSTER],
-              {
-                prioritizationFee: 2,
-                postSendTxCallback: ({ txid }: { txid: string }) => {
-                  notify({
-                    title: 'Transaction sent',
-                    description: 'Waiting for confirmation',
-                    type: 'confirm',
-                    txid: txid,
-                  })
-                },
-              }
-            )
 
             const mangoAccount = await client.getMangoAccountForOwner(
               group,
@@ -355,11 +342,8 @@ const mangoStore = create<MangoStore>(
               await mangoAccount.reloadAccountData(client, group)
             }
             set((state) => {
-              state.client = client
               state.mangoAccount.current = mangoAccount
               state.mangoAccount.loading = false
-              state.connected = true
-              // state.serumOrders = orders
             })
           } catch (e) {
             set((state) => {
@@ -443,7 +427,7 @@ const mangoStore = create<MangoStore>(
             })
           }
         },
-        fetchWalletTokens: async (wallet: Wallet) => {
+        fetchWalletTokens: async (wallet: AnchorWallet) => {
           const set = get().set
           const connection = get().connection
 
@@ -471,8 +455,8 @@ const mangoStore = create<MangoStore>(
             )
             return
           }
-          const bankMints = Array.from(group.banksMap.values()).map((b) =>
-            b.mint.toString()
+          const bankMints = Array.from(group.banksMapByName.values()).map((b) =>
+            b[0].mint.toString()
           )
 
           fetch(TOKEN_LIST_URL[CLUSTER])
@@ -482,10 +466,10 @@ const mangoStore = create<MangoStore>(
                 bankMints.includes(t.address)
               )
               const inputTokenInfo = groupTokens.find(
-                (t: any) => t.symbol === 'SOL'
+                (t: any) => t.symbol === INPUT_TOKEN_DEFAULT
               )
               const outputTokenInfo = groupTokens.find(
-                (t: any) => t.symbol === 'USDC'
+                (t: any) => t.symbol === OUTPUT_TOKEN_DEFAULT
               )
               set((s) => {
                 s.swap.inputTokenInfo = inputTokenInfo
@@ -493,6 +477,50 @@ const mangoStore = create<MangoStore>(
                 s.jupiterTokens = groupTokens
               })
             })
+        },
+        handleWalletConnect: async (wallet: Wallet) => {
+          if (!wallet) {
+            return
+          }
+
+          try {
+            await wallet?.adapter?.connect()
+
+            const provider = new AnchorProvider(
+              connection,
+              wallet as unknown as AnchorWallet,
+              options
+            )
+            provider.opts.skipPreflight = true
+            const client = await MangoClient.connect(
+              provider,
+              CLUSTER,
+              MANGO_V4_ID[CLUSTER],
+              {
+                prioritizationFee: 2,
+                postSendTxCallback: ({ txid }: { txid: string }) => {
+                  notify({
+                    title: 'Transaction sent',
+                    description: 'Waiting for confirmation',
+                    type: 'confirm',
+                    txid: txid,
+                  })
+                },
+              }
+            )
+            set((s) => {
+              s.client = client
+              s.connected = true
+            })
+          } catch (e: any) {
+            if (e.name.includes('WalletLoadError')) {
+              notify({
+                title: `${wallet.adapter.name} Error`,
+                type: 'error',
+                description: `Please install ${wallet.adapter.name} and then reload this page.`,
+              })
+            }
+          }
         },
         reloadGroup: async () => {
           try {
@@ -527,26 +555,7 @@ const mangoStore = create<MangoStore>(
             console.error('Error reloading mango account')
           }
         },
-        loadSerumMarket: async () => {
-          const set = get().set
-          const client = get().client
-          const group = get().group
-          if (!group) return
-
-          const markets = await client.serum3GetMarkets(
-            group,
-            group.banksMap.get('BTC')?.tokenIndex,
-            group.banksMap.get('USDC')?.tokenIndex
-          )
-
-          let orders = await client.getSerum3Orders(group, 'BTC/USDC')
-
-          set((state) => {
-            state.markets = markets
-            state.serumOrders = orders
-          })
-        },
-        async fetchProfilePicture(wallet: Wallet) {
+        async fetchProfilePicture(wallet: AnchorWallet) {
           const set = get().set
           const walletPk = wallet?.publicKey
           const connection = get().connection

@@ -3,12 +3,16 @@ import Image from 'next/image'
 import mangoStore from '../store/state'
 
 type TokenSelectProps = {
-  token: string
+  tokenSymbol: string | undefined
   showTokenList: (x: any) => void
   type: 'input' | 'output'
 }
 
-const TokenSelect = ({ token, showTokenList, type }: TokenSelectProps) => {
+const TokenSelect = ({
+  tokenSymbol,
+  showTokenList,
+  type,
+}: TokenSelectProps) => {
   const group = mangoStore((s) => s.group)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
@@ -16,7 +20,7 @@ const TokenSelect = ({ token, showTokenList, type }: TokenSelectProps) => {
 
   let logoURI
   if (jupiterTokens.length) {
-    logoURI = jupiterTokens.find((t) => t.symbol === token)!.logoURI
+    logoURI = jupiterTokens.find((t) => t.symbol === tokenSymbol)!.logoURI
   }
 
   return (
@@ -33,7 +37,7 @@ const TokenSelect = ({ token, showTokenList, type }: TokenSelectProps) => {
         )}
       </div>
       <div className="flex w-full items-center justify-between">
-        <div className="text-xl font-bold text-th-fgd-1">{token}</div>
+        <div className="text-xl font-bold text-th-fgd-1">{tokenSymbol}</div>
         <ChevronDownIcon className="h-6 w-6" />
       </div>
     </div>

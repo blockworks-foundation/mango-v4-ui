@@ -4,25 +4,8 @@ import { WalletReadyState } from '@solana/wallet-adapter-base'
 import { useTranslation } from 'next-i18next'
 // import AccountsModal from './AccountsModal'
 import uniqBy from 'lodash/uniqBy'
-import { notify } from '../../utils/notifications'
 import WalletSelect from './WalletSelect'
 import mangoStore from '../../store/state'
-
-export const handleWalletConnect = (wallet: Wallet) => {
-  if (!wallet) {
-    return
-  }
-
-  wallet?.adapter?.connect().catch((e) => {
-    if (e.name.includes('WalletLoadError')) {
-      notify({
-        title: `${wallet.adapter.name} Error`,
-        type: 'error',
-        description: `Please install ${wallet.adapter.name} and then reload this page.`,
-      })
-    }
-  })
-}
 
 export const ConnectWalletButton: React.FC = () => {
   const { wallet, wallets, select } = useWallet()
@@ -49,11 +32,12 @@ export const ConnectWalletButton: React.FC = () => {
 
   const handleConnect = useCallback(() => {
     const set = mangoStore.getState().set
+    const actions = mangoStore.getState().actions
     if (wallet) {
       set((state) => {
         state.mangoAccount.loading = true
       })
-      handleWalletConnect(wallet)
+      actions.handleWalletConnect(wallet)
     }
   }, [wallet])
 

@@ -30,7 +30,7 @@ export const walletBalanceForToken = (
   token: string
 ): { maxAmount: number; maxDecimals: number } => {
   const group = mangoStore.getState().group
-  const bank = group?.banksMap.get(token)
+  const bank = group?.banksMapByName.get(token)![0]
 
   let walletToken
   if (bank) {
@@ -58,7 +58,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return group?.banksMap.get(selectedToken)
+    return group?.banksMapByName.get(selectedToken)![0]
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
@@ -114,7 +114,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       const tx = await client.tokenDeposit(
         group,
         mangoAccount,
-        selectedToken,
+        bank!.mint,
         parseFloat(inputAmount)
       )
       notify({
@@ -140,8 +140,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   }
 
   const banks = useMemo(() => {
-    return group?.banksMap
-      ? Array.from(group?.banksMap, ([key, value]) => {
+    return group?.banksMapByName
+      ? Array.from(group?.banksMapByName, ([key, value]) => {
           const walletBalance = walletBalanceForToken(walletTokens, key)
           return {
             key,
@@ -153,7 +153,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           }
         })
       : []
-  }, [group?.banksMap, walletTokens])
+  }, [group?.banksMapByName, walletTokens])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -243,7 +243,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </div>
             </div>
             <HealthImpact
-              tokenName={selectedToken}
+              tokenPk={bank!.mint}
               amount={parseFloat(inputAmount)}
               isDeposit
             />

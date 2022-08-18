@@ -26,18 +26,17 @@ import Image from 'next/image'
 import { formatDecimal } from '../../utils/numbers'
 
 type JupiterRouteInfoProps = {
-  inputToken: string
-  outputToken: string
   amountIn: Decimal
-  slippage: number
-  submitting: boolean
   handleSwap: (x: TransactionInstruction[]) => void
-  onClose: () => void
+  inputTokenInfo: Token | undefined
   jupiter: Jupiter | undefined
-  routes: RouteInfo[] | undefined
+  onClose: () => void
   outputTokenInfo: Token | undefined
+  routes: RouteInfo[] | undefined
   selectedRoute: RouteInfo | undefined
   setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined>>
+  slippage: number
+  submitting: boolean
 }
 
 const parseJupiterRoute = async (
@@ -63,7 +62,7 @@ const parseJupiterRoute = async (
 }
 
 const JupiterRouteInfo = ({
-  inputToken,
+  inputTokenInfo,
   amountIn,
   handleSwap,
   submitting,
@@ -85,12 +84,8 @@ const JupiterRouteInfo = ({
   const connected = mangoStore((s) => s.connected)
 
   const inputTokenIconUri = useMemo(() => {
-    if (jupiterTokens.length) {
-      const found = jupiterTokens.find((t) => t.symbol === inputToken)
-      return found ? found.logoURI : ''
-    }
-    return ''
-  }, [inputToken, jupiterTokens])
+    return inputTokenInfo ? inputTokenInfo.logoURI : ''
+  }, [inputTokenInfo])
 
   const amountOut = useMemo(() => {
     if (!selectedRoute || !outputTokenInfo) return
@@ -114,27 +109,35 @@ const JupiterRouteInfo = ({
 
   const healthImpact = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !mangoAccount || !outputTokenInfo || !amountOut)
+    if (
+      !inputTokenInfo ||
+      !mangoAccount ||
+      !outputTokenInfo ||
+      !amountOut ||
+      !group
+    )
       return 'Unknown'
-    const bank = group.banksMap.get(inputToken)!
 
     const simulatedHealthRatio = mangoAccount
       .simHealthRatioWithTokenPositionChanges(group, [
         {
-          tokenName: inputToken,
+          mintPk: new PublicKey(inputTokenInfo.address),
           tokenAmount:
             toNativeDecimals(
               amountIn.toNumber(),
-              bank.mintDecimals
+              inputTokenInfo.decimals
             ).toNumber() * -1,
         },
-        { tokenName: outputTokenInfo.symbol, tokenAmount: amountOut },
+        {
+          mintPk: new PublicKey(outputTokenInfo.address),
+          tokenAmount: amountOut,
+        },
       ])
       .toNumber()
     // console.log('simulatedHealthRatio', simulatedHealthRatio)
 
     return simulatedHealthRatio
-  }, [mangoAccount, inputToken, outputTokenInfo, amountIn, amountOut])
+  }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
 
   const onSwap = async () => {
     if (!jupiter || !selectedRoute) return
@@ -171,12 +174,14 @@ const JupiterRouteInfo = ({
                 />
               </div>
             </div>
-            <p className="mb-0.5 text-lg font-bold text-th-fgd-1">{`${amountIn} ${inputToken} for ${amountOut} ${outputTokenInfo.symbol}`}</p>
+            <p className="mb-0.5 text-lg font-bold text-th-fgd-1">{`${amountIn} ${
+              inputTokenInfo!.name
+            } for ${amountOut} ${outputTokenInfo.symbol}`}</p>
             <div className="flex items-center justify-end">
               <p className="text-right text-sm">
                 {swapRate ? (
                   <>
-                    1 {inputToken} ≈{' '}
+                    1 {inputTokenInfo!.name} ≈{' '}
                     {formatDecimal(amountOut / amountIn.toNumber(), 6)}{' '}
                     {outputTokenInfo?.symbol}
                   </>
@@ -184,7 +189,7 @@ const JupiterRouteInfo = ({
                   <>
                     1 {outputTokenInfo?.symbol} ≈{' '}
                     {formatDecimal(amountIn.toNumber() / amountOut, 6)}{' '}
-                    {inputToken}
+                    {inputTokenInfo!.name}
                   </>
                 )}
               </p>
@@ -417,7 +422,7 @@ const JupiterRouteInfo = ({
             setSelectedRoute={setSelectedRoute}
             selectedRoute={selectedRoute}
             routes={routes}
-            inputTokenSymbol={inputToken}
+            inputTokenSymbol={inputTokenInfo!.name}
             outputTokenInfo={outputTokenInfo}
           />
         ) : null}

@@ -6,29 +6,28 @@ import Decimal from 'decimal.js'
 
 import mangoStore, { CLUSTER } from '../../store/state'
 import { Token } from '../../types/jupiter'
+import { PublicKey } from '@solana/web3.js'
 
 type useJupiterPropTypes = {
-  inputTokenSymbol: string
-  outputTokenSymbol: string
+  inputTokenInfo: Token | undefined
+  outputTokenInfo: Token | undefined
   inputAmount: string
   slippage: number
 }
 
 type RouteParams = {
   routes: RouteInfo[]
-  outputTokenInfo: Token | undefined
   amountOut: number
 }
 
 const defaultComputedInfo = {
   routes: [],
-  outputTokenInfo: undefined,
   amountOut: 0,
 }
 
 const useJupiter = ({
-  inputTokenSymbol,
-  outputTokenSymbol,
+  inputTokenInfo,
+  outputTokenInfo,
   inputAmount,
   slippage,
 }: useJupiterPropTypes) => {
@@ -61,19 +60,17 @@ const useJupiter = ({
     const tokens = mangoStore.getState().jupiterTokens
 
     const loadRoutes = async () => {
-      const inputBank = group.banksMap.get(inputTokenSymbol)
-      const outputBank = group.banksMap.get(outputTokenSymbol)
-      if (!inputBank || !outputBank) return
+      if (!outputTokenInfo || !inputTokenInfo) return
       if (!inputAmount) {
         setComputedInfo(defaultComputedInfo)
       } else {
         try {
           const computedRoutes = await jupiter
             ?.computeRoutes({
-              inputMint: inputBank.mint, // Mint address of the input token
-              outputMint: outputBank.mint, // Mint address of the output token
+              inputMint: new PublicKey(inputTokenInfo.address), // Mint address of the input token
+              outputMint: new PublicKey(outputTokenInfo.address), // Mint address of the output token
               amount: JSBI.BigInt(
-                new Decimal(inputAmount).mul(10 ** inputBank.mintDecimals)
+                new Decimal(inputAmount).mul(10 ** inputTokenInfo.decimals)
               ),
               slippage, // The slippage in % terms
               filterTopNResult: 10,
@@ -83,9 +80,7 @@ const useJupiter = ({
               console.error('Error computing Jupiter routes:', e)
               return
             })
-          const tokenOut = tokens.find(
-            (t: any) => t.address === outputBank.mint.toString()
-          )
+
           const routesInfosWithoutRaydium = computedRoutes?.routesInfos.filter(
             (r) => {
               for (const mkt of r.marketInfos) {
@@ -101,10 +96,9 @@ const useJupiter = ({
 
             setComputedInfo({
               routes: routesInfosWithoutRaydium,
-              outputTokenInfo: tokenOut,
               amountOut: toUiDecimals(
                 JSBI.toNumber(bestRoute.outAmount),
-                tokenOut?.decimals!
+                outputTokenInfo.decimals!
               ),
             })
           }
@@ -115,7 +109,7 @@ const useJupiter = ({
     }
 
     loadRoutes()
-  }, [inputTokenSymbol, outputTokenSymbol, jupiter, slippage, inputAmount])
+  }, [inputTokenInfo, outputTokenInfo, jupiter, slippage, inputAmount])
 
   return { jupiter, ...computedInfo }
 }

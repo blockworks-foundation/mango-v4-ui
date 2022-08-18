@@ -10,7 +10,7 @@ import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '../store/state'
@@ -53,8 +53,8 @@ const TokenList = () => {
   }, [coingeckoPrices, actions])
 
   const banks = useMemo(() => {
-    if (group?.banksMap) {
-      const rawBanks = Array.from(group?.banksMap, ([key, value]) => ({
+    if (group) {
+      const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
         key,
         value,
       }))
@@ -62,17 +62,27 @@ const TokenList = () => {
         ? showZeroBalances
           ? rawBanks.sort(
               (a, b) =>
-                Math.abs(mangoAccount?.getUi(b.value) * Number(b.value.price)) -
-                Math.abs(mangoAccount?.getUi(a.value) * Number(a.value.price))
+                Math.abs(
+                  mangoAccount?.getTokenBalanceUi(b.value[0]) *
+                    Number(b.value[0].price)
+                ) -
+                Math.abs(
+                  mangoAccount?.getTokenBalanceUi(a.value[0]) *
+                    Number(a.value[0].price)
+                )
             )
           : rawBanks
-              .filter((b) => mangoAccount?.getUi(b.value) !== 0)
+              .filter((b) => mangoAccount?.getTokenBalanceUi(b.value[0]) !== 0)
               .sort(
                 (a, b) =>
                   Math.abs(
-                    mangoAccount?.getUi(b.value) * Number(b.value.price)
+                    mangoAccount?.getTokenBalanceUi(b.value[0]) *
+                      Number(b.value[0].price)
                   ) -
-                  Math.abs(mangoAccount?.getUi(a.value) * Number(a.value.price))
+                  Math.abs(
+                    mangoAccount?.getTokenBalanceUi(a.value[0]) *
+                      Number(a.value[0].price)
+                  )
               )
         : rawBanks
     }
@@ -116,11 +126,12 @@ const TokenList = () => {
             </tr>
           </thead>
           <tbody>
-            {banks.map((bank, index) => {
-              const oraclePrice = bank.value.price
+            {banks.map(({ key, value }, index) => {
+              const bank = value[0]
+              const oraclePrice = bank.price
 
               const coingeckoData = coingeckoPrices.find(
-                (asset) => asset.symbol === bank.key
+                (asset) => asset.symbol === key
               )
 
               const change = coingeckoData
@@ -135,12 +146,12 @@ const TokenList = () => {
               let logoURI
               if (jupiterTokens.length) {
                 logoURI = jupiterTokens.find(
-                  (t) => t.address === bank.value.mint.toString()
+                  (t) => t.address === bank.mint.toString()
                 )!.logoURI
               }
 
               const hasInterestEarned = totalInterestData.find(
-                (d) => d.symbol === bank.value.name
+                (d) => d.symbol === bank.name
               )
 
               const interestAmount = hasInterestEarned
@@ -154,7 +165,7 @@ const TokenList = () => {
                 : 0.0
 
               return (
-                <tr key={bank.key}>
+                <tr key={key}>
                   <td className="w-[16.67%]">
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -164,7 +175,7 @@ const TokenList = () => {
                           <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
                         )}
                       </div>
-                      <p>{bank.value.name}</p>
+                      <p>{bank.name}</p>
                     </div>
                   </td>
                   <td className="w-[16.67%]">
@@ -183,12 +194,12 @@ const TokenList = () => {
                           }
                           data={chartData}
                           height={40}
-                          name={bank.key}
+                          name={key}
                           width={104}
                           xKey="0"
                           yKey="1"
                         />
-                      ) : bank.key === 'USDC' || bank.key === 'USDT' ? null : (
+                      ) : key === 'USDC' || key === 'USDT' ? null : (
                         <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
                       )
                     ) : (
@@ -198,20 +209,16 @@ const TokenList = () => {
                   <td className="w-[16.67%]">
                     <div className="flex justify-center space-x-2">
                       <p className="text-th-green">
-                        {formatDecimal(
-                          bank.value.getDepositRate().toNumber(),
-                          2,
-                          { fixed: true }
-                        )}
+                        {formatDecimal(bank.getDepositRate().toNumber(), 2, {
+                          fixed: true,
+                        })}
                         %
                       </p>
                       <span className="text-th-fgd-4">|</span>
                       <p className="text-th-red">
-                        {formatDecimal(
-                          bank.value.getBorrowRate().toNumber(),
-                          2,
-                          { fixed: true }
-                        )}
+                        {formatDecimal(bank.getBorrowRate().toNumber(), 2, {
+                          fixed: true,
+                        })}
                         %
                       </p>
                     </div>
@@ -227,13 +234,13 @@ const TokenList = () => {
                   <td className="w-[16.67%] pt-4 text-right">
                     <p className="px-2">
                       {mangoAccount
-                        ? formatDecimal(mangoAccount.getUi(bank.value))
+                        ? formatDecimal(mangoAccount.getTokenBalanceUi(bank))
                         : 0}
                     </p>
                     <p className="px-2 text-sm text-th-fgd-4">
                       {mangoAccount
                         ? `${formatFixedDecimals(
-                            mangoAccount.getUi(bank.value) *
+                            mangoAccount.getTokenBalanceUi(bank) *
                               oraclePrice.toNumber(),
                             true
                           )}`
@@ -242,10 +249,7 @@ const TokenList = () => {
                   </td>
                   <td className="w-[16.67%]">
                     <div className="flex justify-end space-x-2">
-                      <ActionsMenu
-                        bank={bank.value}
-                        mangoAccount={mangoAccount}
-                      />
+                      <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
                     </div>
                   </td>
                 </tr>
@@ -255,19 +259,17 @@ const TokenList = () => {
         </table>
       ) : (
         <div className="mt-4 space-y-2">
-          {banks.map((bank) => {
-            const oraclePrice = bank.value.price
+          {banks.map(({ key, value }) => {
+            const bank = value[0]
+            const oraclePrice = bank.price
             let logoURI
             if (jupiterTokens.length) {
               logoURI = jupiterTokens.find(
-                (t) => t.address === bank.value.mint.toString()
+                (t) => t.address === bank.mint.toString()
               )!.logoURI
             }
             return (
-              <div
-                key={bank.key}
-                className="rounded-md border border-th-bkg-4 p-4"
-              >
+              <div key={key} className="rounded-md border border-th-bkg-4 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -278,28 +280,25 @@ const TokenList = () => {
                       )}
                     </div>
                     <div>
-                      <p>{bank.value.name}</p>
+                      <p>{bank.name}</p>
                       <p className="text-sm">
                         <span className="mr-1 text-th-fgd-4">
                           {t('available')}:
                         </span>
                         {mangoAccount
-                          ? formatDecimal(mangoAccount.getUi(bank.value))
+                          ? formatDecimal(mangoAccount.getTokenBalanceUi(bank))
                           : 0}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <ActionsMenu
-                      bank={bank.value}
-                      mangoAccount={mangoAccount}
-                    />
+                    <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
                     <IconButton
-                      onClick={() => handleShowTokenDetails(bank.value.name)}
+                      onClick={() => handleShowTokenDetails(bank.name)}
                     >
                       <ChevronDownIcon
                         className={`${
-                          showTokenDetails === bank.value.name
+                          showTokenDetails === bank.name
                             ? 'rotate-180'
                             : 'rotate-360'
                         } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
@@ -309,7 +308,7 @@ const TokenList = () => {
                 </div>
                 <Transition
                   appear={true}
-                  show={showTokenDetails === bank.value.name}
+                  show={showTokenDetails === bank.name}
                   as={Fragment}
                   enter="transition ease-in duration-200"
                   enterFrom="opacity-0"
@@ -338,19 +337,11 @@ const TokenList = () => {
                       <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                       <p className="space-x-2 font-bold">
                         <span className="text-th-green">
-                          {formatDecimal(
-                            bank.value.getDepositRate().toNumber(),
-                            2
-                          )}
-                          %
+                          {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
                         </span>
                         <span className="font-normal text-th-fgd-4">|</span>
                         <span className="text-th-red">
-                          {formatDecimal(
-                            bank.value.getBorrowRate().toNumber(),
-                            2
-                          )}
-                          %
+                          {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
                         </span>
                       </p>
                     </div>
@@ -358,8 +349,8 @@ const TokenList = () => {
                       <p className="text-xs text-th-fgd-3">{t('liquidity')}</p>
                       <p className="font-bold">
                         {formatDecimal(
-                          bank.value.uiDeposits() - bank.value.uiBorrows(),
-                          bank.value.mintDecimals
+                          bank.uiDeposits() - bank.uiBorrows(),
+                          bank.mintDecimals
                         )}
                       </p>
                     </div>
@@ -392,37 +383,35 @@ const ActionsMenu = ({
   const router = useRouter()
   const { asPath } = router
 
-  const handleShowActionModals = (
-    token: string,
-    action: 'borrow' | 'deposit' | 'withdraw'
-  ) => {
-    setSelectedToken(token)
-    action === 'borrow'
-      ? setShowBorrowModal(true)
-      : action === 'deposit'
-      ? setShowDepositModal(true)
-      : setShowWithdrawModal(true)
-  }
+  const handleShowActionModals = useCallback(
+    (token: string, action: 'borrow' | 'deposit' | 'withdraw') => {
+      setSelectedToken(token)
+      action === 'borrow'
+        ? setShowBorrowModal(true)
+        : action === 'deposit'
+        ? setShowDepositModal(true)
+        : setShowWithdrawModal(true)
+    },
+    []
+  )
 
-  const handleBuy = () => {
+  const handleBuy = useCallback(() => {
     set((s) => {
-      s.swap.inputToken = 'USDC'
-      s.swap.outputToken = bank.name
+      s.swap.outputBank = bank
     })
     if (asPath === '/') {
       router.push('/trade', undefined, { shallow: true })
     }
-  }
+  }, [bank, router, asPath, set])
 
-  const handleSell = () => {
+  const handleSell = useCallback(() => {
     set((s) => {
-      s.swap.inputToken = bank.name
-      s.swap.outputToken = 'USDC'
+      s.swap.inputBank = bank
     })
     if (asPath === '/') {
       router.push('/trade', undefined, { shallow: true })
     }
-  }
+  }, [router, asPath, set, bank])
 
   return (
     <>
@@ -465,14 +454,14 @@ const ActionsMenu = ({
         <LinkButton
           className="w-full text-left"
           disabled={!mangoAccount}
-          onClick={() => handleBuy()}
+          onClick={handleBuy}
         >
           {t('buy')}
         </LinkButton>
         <LinkButton
           className="w-full text-left"
           disabled={!mangoAccount}
-          onClick={() => handleSell()}
+          onClick={handleSell}
         >
           {t('sell')}
         </LinkButton>

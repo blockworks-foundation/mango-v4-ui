@@ -1,11 +1,14 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { TransactionInstruction } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { ArrowDownIcon, CogIcon } from '@heroicons/react/solid'
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import Decimal from 'decimal.js'
 
-import mangoStore from '../../store/state'
+import mangoStore, {
+  INPUT_TOKEN_DEFAULT,
+  OUTPUT_TOKEN_DEFAULT,
+} from '../../store/state'
 import ContentBox from '../shared/ContentBox'
 import { notify } from '../../utils/notifications'
 import JupiterRouteInfo from './JupiterRouteInfo'
@@ -45,18 +48,15 @@ const Swap = () => {
   const set = mangoStore.getState().set
   const useMargin = mangoStore((s) => s.swap.margin)
   const slippage = mangoStore((s) => s.swap.slippage)
-  const inputToken = mangoStore((s) => s.swap.inputToken)
-  const outputToken = mangoStore((s) => s.swap.outputToken)
+  const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
+  const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
-  const [debouncedAmountIn, setDebouncedValue] = useDebounce(
-    amountInFormValue,
-    300
-  )
+  const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
 
-  const { amountOut, jupiter, outputTokenInfo, routes } = useJupiter({
-    inputTokenSymbol: inputToken,
-    outputTokenSymbol: outputToken,
+  const { amountOut, jupiter, routes } = useJupiter({
+    inputTokenInfo,
+    outputTokenInfo,
     inputAmount: debouncedAmountIn,
     slippage,
   })
@@ -69,11 +69,6 @@ const Swap = () => {
     setAmountInFormValue(e.value)
   }, [])
 
-  const inputBank = useMemo(() => {
-    const group = mangoStore.getState().group
-    return group?.banksMap.get(inputToken)
-  }, [inputToken])
-
   const handleTokenInSelect = useCallback(
     (mintAddress: string) => {
       const inputTokenInfo = jupiterTokens.find(
@@ -81,10 +76,9 @@ const Swap = () => {
       )
       const group = mangoStore.getState().group
       if (group) {
-        const banks = Array.from(group.banksMap.values())
-        const bank = banks.find((b) => b.mint.toString() === mintAddress)
+        const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
         set((s) => {
-          s.swap.inputToken = bank!.name
+          s.swap.inputBank = bank
           s.swap.inputTokenInfo = inputTokenInfo
         })
       }
@@ -100,10 +94,9 @@ const Swap = () => {
       )
       const group = mangoStore.getState().group
       if (group) {
-        const banks = Array.from(group.banksMap.values())
-        const bank = banks.find((b) => b.mint.toString() === mintAddress)
+        const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
         set((s) => {
-          s.swap.outputToken = bank!.name
+          s.swap.outputBank = bank
           s.swap.outputTokenInfo = outputTokenInfo
         })
       }
@@ -113,24 +106,19 @@ const Swap = () => {
   )
 
   const handleSwitchTokens = useCallback(() => {
-    const inputTokenInfo = jupiterTokens.find(
-      (t: any) => t.symbol === inputToken
-    )
-    const outputTokenInfo = jupiterTokens.find(
-      (t: any) => t.symbol === outputToken
-    )
     setAmountInFormValue(amountOut.toString())
-
+    const inputBank = mangoStore.getState().swap.inputBank
+    const outputBank = mangoStore.getState().swap.outputBank
     set((s) => {
-      s.swap.inputToken = outputToken
-      s.swap.outputToken = inputToken
+      s.swap.inputBank = outputBank
+      s.swap.outputBank = inputBank
       s.swap.inputTokenInfo = outputTokenInfo
       s.swap.outputTokenInfo = inputTokenInfo
     })
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
     )
-  }, [jupiterTokens, inputToken, outputToken, set, amountOut])
+  }, [inputTokenInfo, outputTokenInfo, set, amountOut])
 
   const handleSwap = useCallback(
     async (userDefinedInstructions: TransactionInstruction[]) => {
@@ -138,17 +126,20 @@ const Swap = () => {
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
       const mangoAccount = mangoStore.getState().mangoAccount.current
-      if (!mangoAccount || !group) return
+      const inputBank = mangoStore.getState().swap.inputBank
+      const outputBank = mangoStore.getState().swap.outputBank
+      if (!mangoAccount || !group || !inputBank || !outputBank) return
 
       try {
         setSubmitting(true)
         const tx = await client.marginTrade({
           group,
           mangoAccount,
-          inputToken,
+          inputMintPk: inputBank.mint,
           amountIn: parseFloat(debouncedAmountIn),
-          outputToken,
+          outputMintPk: outputBank.mint,
           userDefinedInstructions,
+          flashLoanType: 'swap',
         })
         console.log('Success swapping:', tx)
         notify({
@@ -170,7 +161,7 @@ const Swap = () => {
         setSubmitting(false)
       }
     },
-    [debouncedAmountIn, inputToken, outputToken]
+    [debouncedAmountIn]
   )
 
   const amountIn: Decimal | null = useMemo(() => {
@@ -198,9 +189,8 @@ const Swap = () => {
         leaveTo="translate-x-full"
       >
         <JupiterRouteInfo
-          inputToken={inputToken}
+          inputTokenInfo={inputTokenInfo}
           onClose={() => setShowConfirm(false)}
-          outputToken={outputToken}
           amountIn={amountIn}
           slippage={slippage}
           handleSwap={handleSwap}
@@ -246,15 +236,13 @@ const Swap = () => {
         <p className="text-th-fgd-3">{t('sell')}</p>
         <MaxSwapAmount
           useMargin={useMargin}
-          inputToken={inputToken}
-          outputToken={outputToken}
           setAmountIn={setAmountInFormValue}
         />
       </div>
       <div className="mb-3 grid grid-cols-2">
         <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
           <TokenSelect
-            token={inputToken}
+            tokenSymbol={inputTokenInfo?.symbol || INPUT_TOKEN_DEFAULT}
             showTokenList={setShowTokenSelect}
             type="input"
           />
@@ -263,7 +251,7 @@ const Swap = () => {
           <NumberFormat
             inputMode="decimal"
             thousandSeparator=","
-            decimalScale={inputBank?.mintDecimals || 6}
+            decimalScale={inputTokenInfo?.decimals || 6}
             name="amountIn"
             id="amountIn"
             className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
@@ -274,11 +262,7 @@ const Swap = () => {
           />
         </div>
         {!useMargin ? (
-          <PercentageSelectButtons
-            setAmountIn={setAmountInFormValue}
-            inputToken={inputToken}
-            outputToken={outputToken}
-          />
+          <PercentageSelectButtons setAmountIn={setAmountInFormValue} />
         ) : null}
       </div>
       <div className="flex justify-center">
@@ -300,7 +284,7 @@ const Swap = () => {
       <div className="mb-3 grid grid-cols-2">
         <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
           <TokenSelect
-            token={outputToken}
+            tokenSymbol={outputTokenInfo?.symbol || OUTPUT_TOKEN_DEFAULT}
             showTokenList={setShowTokenSelect}
             type="output"
           />
@@ -314,7 +298,7 @@ const Swap = () => {
             </div>
           ) : (
             <span className="p-3">
-              {amountOut ? numberFormat.format(amountOut) : 0}
+              {amountOut ? numberFormat.format(amountOut) : ''}
             </span>
           )}
         </div>
@@ -327,8 +311,6 @@ const Swap = () => {
           </div>
           <SwapLeverageSlider
             amount={amountIn.toNumber()}
-            inputToken={inputToken}
-            outputToken={outputToken}
             onChange={setAmountInFormValue}
           />
         </>
@@ -361,53 +343,47 @@ const Swap = () => {
 
 export default Swap
 
-export const useTokenMax = (inputToken: string, outputToken: string) => {
+export const useTokenMax = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const inputBank = mangoStore((s) => s.swap.inputBank)
+  const outputBank = mangoStore((s) => s.swap.outputBank)
 
   const tokenInMax = useMemo(() => {
     const group = mangoStore.getState().group
-    const bank = group?.banksMap.get(inputToken)
 
-    if (!group || !bank || !mangoAccount)
+    if (!group || !inputBank || !mangoAccount || !outputBank)
       return { amount: 0.0, decimals: 6, amountWithBorrow: 0.0 }
 
-    const amount = mangoAccount.getUi(bank)
+    const amount = mangoAccount.getTokenBalanceUi(inputBank)
     const amountWithBorrow = mangoAccount
-      ?.getMaxSourceForTokenSwap(group, inputToken, outputToken, 0.94)
+      ?.getMaxSourceForTokenSwap(group, inputBank.mint, outputBank.mint, 0.94)
       .toNumber()
 
     return {
-      amount: amount > 0 ? floorToDecimal(amount, bank.mintDecimals) : 0,
+      amount: amount > 0 ? floorToDecimal(amount, inputBank.mintDecimals) : 0,
       amountWithBorrow:
         amountWithBorrow > 0
           ? floorToDecimal(
-              toUiDecimals(amountWithBorrow, bank.mintDecimals),
-              bank.mintDecimals
+              toUiDecimals(amountWithBorrow, inputBank.mintDecimals),
+              inputBank.mintDecimals
             )
           : 0,
-      decimals: bank.mintDecimals,
+      decimals: inputBank.mintDecimals,
     }
-  }, [inputToken, mangoAccount, outputToken])
+  }, [inputBank, mangoAccount, outputBank])
 
   return tokenInMax
 }
 
 const MaxSwapAmount = ({
-  inputToken,
-  outputToken,
   setAmountIn,
   useMargin,
 }: {
-  inputToken: string
-  outputToken: string
   setAmountIn: (x: any) => void
   useMargin: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { amount: tokenMax, amountWithBorrow } = useTokenMax(
-    inputToken,
-    outputToken
-  )
+  const { amount: tokenMax, amountWithBorrow } = useTokenMax()
 
   const setMaxInputAmount = () => {
     const amountIn = useMargin ? amountWithBorrow : tokenMax
@@ -425,16 +401,12 @@ const MaxSwapAmount = ({
 }
 
 const PercentageSelectButtons = ({
-  inputToken,
-  outputToken,
   setAmountIn,
 }: {
-  inputToken: string
-  outputToken: string
   setAmountIn: (x: any) => any
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
-  const { amount: tokenMax, decimals } = useTokenMax(inputToken, outputToken)
+  const { amount: tokenMax, decimals } = useTokenMax()
 
   const handleSizePercentage = (percentage: string) => {
     setSizePercentage(percentage)

@@ -13,7 +13,7 @@ const ActionTokenItem = ({
 }: {
   bank: Bank
   customValue: number
-  onSelect: (x: any) => void
+  onSelect: (x: string) => void
   showBorrowRates?: boolean
   showDepositRates?: boolean
 }) => {

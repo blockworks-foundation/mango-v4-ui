@@ -3,7 +3,7 @@ import { ChevronDownIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
-import mangoStore from '../../store/state'
+import mangoStore, { INPUT_TOKEN_DEFAULT } from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
 import { formatFixedDecimals } from '../../utils/numbers'
@@ -29,14 +29,16 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const group = mangoStore((s) => s.group)
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [selectedToken, setSelectedToken] = useState(token || 'USDC')
+  const [selectedToken, setSelectedToken] = useState(
+    token || INPUT_TOKEN_DEFAULT
+  )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return group?.banksMap.get(selectedToken)
+    return group?.banksMapByName.get(selectedToken)![0]
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
@@ -55,7 +57,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     const group = mangoStore.getState().group
     if (!group || !bank) return 0
     const amount = mangoAccount
-      ?.getMaxWithdrawWithBorrowForToken(group, selectedToken)
+      ?.getMaxWithdrawWithBorrowForToken(group, bank.mint)
       .toNumber()
     return amount && amount > 0 ? toUiDecimals(amount, bank.mintDecimals) : 0
   }, [mangoAccount, bank, selectedToken])
@@ -89,7 +91,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
       const tx = await client.tokenWithdraw(
         group,
         mangoAccount,
-        selectedToken,
+        bank!.mint,
         parseFloat(inputAmount),
         true
       )
@@ -116,17 +118,18 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const banks = useMemo(() => {
     if (mangoAccount) {
-      return group?.banksMap
-        ? Array.from(group?.banksMap, ([key, value]) => {
+      return group?.banksMapByName
+        ? Array.from(group?.banksMapByName, ([key, value]) => {
+            const bank = value[0]
             const amount = mangoAccount
-              ?.getMaxWithdrawWithBorrowForToken(group, key)
+              ?.getMaxWithdrawWithBorrowForToken(group, bank.mint)
               .toNumber()
             return {
               key,
               value,
               maxAmount:
                 amount && amount > 0
-                  ? toUiDecimals(amount, value.mintDecimals)
+                  ? toUiDecimals(amount, bank.mintDecimals)
                   : 0,
             }
           })
@@ -230,10 +233,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
             </div>
           </div>
-          <HealthImpact
-            tokenName={selectedToken}
-            amount={parseFloat(inputAmount)}
-          />
+          <HealthImpact tokenPk={bank!.mint} amount={parseFloat(inputAmount)} />
         </div>
         <Button
           onClick={handleWithdraw}
