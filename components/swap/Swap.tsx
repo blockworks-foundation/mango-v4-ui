@@ -382,6 +382,7 @@ const MaxSwapAmount = ({
   setAmountIn: (x: any) => void
   useMargin: boolean
 }) => {
+  const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const { t } = useTranslation('common')
   const { amount: tokenMax, amountWithBorrow } = useTokenMax()
 
@@ -389,6 +390,8 @@ const MaxSwapAmount = ({
     const amountIn = useMargin ? amountWithBorrow : tokenMax
     setAmountIn(amountIn)
   }
+
+  if (mangoAccountLoading) return null
 
   return (
     <LinkButton className="no-underline" onClick={setMaxInputAmount}>
