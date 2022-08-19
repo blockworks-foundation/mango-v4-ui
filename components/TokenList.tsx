@@ -209,14 +209,14 @@ const TokenList = () => {
                   <td className="w-[16.67%]">
                     <div className="flex justify-center space-x-2">
                       <p className="text-th-green">
-                        {formatDecimal(bank.getDepositRate().toNumber(), 2, {
+                        {formatDecimal(bank.getDepositRateUi(), 2, {
                           fixed: true,
                         })}
                         %
                       </p>
                       <span className="text-th-fgd-4">|</span>
                       <p className="text-th-red">
-                        {formatDecimal(bank.getBorrowRate().toNumber(), 2, {
+                        {formatDecimal(bank.getBorrowRateUi(), 2, {
                           fixed: true,
                         })}
                         %
