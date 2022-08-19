@@ -115,14 +115,14 @@ const TokenList = () => {
         <table className="-mt-1 min-w-full">
           <thead>
             <tr>
-              <th className="w-[16.67%] text-left">{t('token')}</th>
-              <th className="w-[16.67%] text-right">{t('price')}</th>
-              <th className="className='hidden lg:block' w-[16.67%] text-right"></th>
-              <th className="w-[16.67%] text-center">{t('rates')}</th>
-              <th className="w-[16.67%] text-right">{t('interest-earned')}</th>
-              <th className="w-[16.67%] text-right">
-                {t('available-balance')}
-              </th>
+              <th className="text-left">{t('token')}</th>
+              <th className="text-right">{t('price')}</th>
+              <th className="className='hidden lg:block' text-right"></th>
+              <th className="text-right">Total Deposits</th>
+              <th className="text-right">Total Borrows</th>
+              <th className="text-center">{t('rates')}</th>
+              <th className="text-right">{t('interest-earned')}</th>
+              <th className="text-right">{t('available-balance')}</th>
             </tr>
           </thead>
           <tbody>
@@ -183,6 +183,7 @@ const TokenList = () => {
                       <p>{formatFixedDecimals(oraclePrice, true)}</p>
                     </div>
                   </td>
+
                   <td className="hidden lg:table-cell">
                     {!loadingCoingeckoPrices ? (
                       chartData !== undefined ? (
@@ -205,6 +206,16 @@ const TokenList = () => {
                     ) : (
                       <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
                     )}
+                  </td>
+                  <td className="w-[16.67%]">
+                    <div className="flex flex-col text-right">
+                      <p>{formatFixedDecimals(bank.uiDeposits())}</p>
+                    </div>
+                  </td>
+                  <td className="w-[16.67%]">
+                    <div className="flex flex-col text-right">
+                      <p>{formatFixedDecimals(bank.uiBorrows())}</p>
+                    </div>
                   </td>
                   <td className="w-[16.67%]">
                     <div className="flex justify-center space-x-2">
@@ -240,8 +251,7 @@ const TokenList = () => {
                     <p className="px-2 text-sm text-th-fgd-4">
                       {mangoAccount
                         ? `${formatFixedDecimals(
-                            mangoAccount.getTokenBalanceUi(bank) *
-                              oraclePrice,
+                            mangoAccount.getTokenBalanceUi(bank) * oraclePrice,
                             true
                           )}`
                         : '$0.00'}

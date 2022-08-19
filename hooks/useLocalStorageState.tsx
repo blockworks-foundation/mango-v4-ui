@@ -55,7 +55,7 @@ export function useLocalStorageStringState(
 
 type LocalStoreState = any[] | any
 
-export default function useLocalLocalStoreState(
+export default function useLocalStorageState(
   key: string,
   defaultState: LocalStoreState | null = null
 ): [LocalStoreState, (newState: LocalStoreState) => void] {

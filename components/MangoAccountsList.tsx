@@ -9,19 +9,8 @@ import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../store/state'
 import { LinkButton } from './shared/Button'
 import CreateAccountModal from './modals/CreateAccountModal'
-
-const handleSelectMangoAccount = async (acc: MangoAccount) => {
-  const set = mangoStore.getState().set
-  const client = mangoStore.getState().client
-  const group = mangoStore.getState().group
-  if (!group) return
-
-  await acc.reloadAccountData(client, group)
-
-  set((s) => {
-    s.mangoAccount.current = acc
-  })
-}
+import { useLocalStorageStringState } from '../hooks/useLocalStorageState'
+import { LAST_ACCOUNT_KEY } from '../utils/constants'
 
 const MangoAccountsList = ({
   mangoAccount,
@@ -30,6 +19,21 @@ const MangoAccountsList = ({
 }) => {
   const mangoAccounts = mangoStore((s) => s.mangoAccounts.accounts)
   const [showNewAccountModal, setShowNewAccountModal] = useState(false)
+  const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
+
+  const handleSelectMangoAccount = async (acc: MangoAccount) => {
+    const set = mangoStore.getState().set
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    if (!group) return
+
+    await acc.reloadAccountData(client, group)
+
+    set((s) => {
+      s.mangoAccount.current = acc
+    })
+    setLastAccountViewed(acc.publicKey.toString())
+  }
 
   return (
     <>

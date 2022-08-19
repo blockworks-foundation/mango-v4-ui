@@ -32,12 +32,8 @@ export const ConnectWalletButton: React.FC = () => {
   }, [wallets, installedWallets])
 
   const handleConnect = useCallback(async () => {
-    const set = mangoStore.getState().set
     if (wallet) {
       await handleWalletConnect(wallet)
-      set((state) => {
-        state.mangoAccount.loading = true
-      })
     }
   }, [wallet])
 

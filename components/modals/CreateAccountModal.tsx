@@ -56,10 +56,6 @@ const CreateAccountModal = ({
         newAccountNum,
         name || `Account ${newAccountNum + 1}`
       )
-      actions.fetchMangoAccount(
-        wallet!.adapter as unknown as Wallet,
-        newAccountNum
-      )
       actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
       if (tx) {
         setLoading(false)

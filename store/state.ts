@@ -30,6 +30,7 @@ import {
   TokenAccount,
 } from '../utils/tokens'
 import { Token } from '../types/jupiter'
+import { LAST_ACCOUNT_KEY } from '../utils/constants'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
@@ -105,7 +106,7 @@ export type MangoStore = {
   jupiterTokens: Token[]
   mangoAccount: {
     current: MangoAccount | undefined
-    loading: boolean
+    initialLoad: boolean
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
       performance: { data: PerformanceDataItem[]; loading: boolean }
@@ -143,7 +144,7 @@ export type MangoStore = {
     ) => Promise<void>
     fetchCoingeckoPrices: () => Promise<void>
     fetchGroup: () => Promise<void>
-    fetchMangoAccount: (
+    reloadMangoAccount: (
       wallet: AnchorWallet,
       accountNumber?: number
     ) => Promise<void>
@@ -173,7 +174,7 @@ const mangoStore = create<MangoStore>(
       jupiterTokens: [],
       mangoAccount: {
         current: undefined,
-        loading: true,
+        initialLoad: true,
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
@@ -320,36 +321,26 @@ const mangoStore = create<MangoStore>(
             console.error('Error fetching group', e)
           }
         },
-        fetchMangoAccount: async (wallet, accountNumber) => {
+        reloadMangoAccount: async () => {
           const set = get().set
           try {
             const group = get().group
             const client = get().client
+            const mangoAccount = get().mangoAccount.current
             if (!group) throw new Error('Group not loaded')
+            if (!mangoAccount)
+              throw new Error('No mango account exists for reload')
 
-            const mangoAccount = await client.getMangoAccountForOwner(
-              group,
-              wallet.publicKey,
-              accountNumber || 0
-            )
-
-            // let orders = await client.getSerum3Orders(
-            //   group,
-            //   SERUM3_PROGRAM_ID['devnet'],
-            //   'BTC/USDC'
-            // )
-            if (mangoAccount) {
-              await mangoAccount.reloadAccountData(client, group)
-            }
+            await mangoAccount.reload(client, group)
             set((state) => {
               state.mangoAccount.current = mangoAccount
-              state.mangoAccount.loading = false
             })
           } catch (e) {
+            console.error('Error reloading mango acct', e)
+          } finally {
             set((state) => {
-              state.mangoAccount.loading = false
+              state.mangoAccount.initialLoad = false
             })
-            console.error('Error fetching mango acct', e)
           }
         },
         fetchMangoAccounts: async (wallet) => {
@@ -357,6 +348,7 @@ const mangoStore = create<MangoStore>(
             const set = get().set
             const group = get().group
             const client = get().client
+            const selectedMangoAccount = get().mangoAccount.current
             if (!group) throw new Error('Group not loaded')
             if (!client) throw new Error('Client not loaded')
 
@@ -364,8 +356,29 @@ const mangoStore = create<MangoStore>(
               group,
               wallet.publicKey
             )
+            if (!mangoAccounts?.length) return
+
+            let newSelectedMangoAccount = selectedMangoAccount
+            if (!selectedMangoAccount) {
+              const lastAccount = localStorage.getItem(LAST_ACCOUNT_KEY)
+              newSelectedMangoAccount = mangoAccounts[0]
+
+              if (typeof lastAccount === 'string') {
+                const lastViewedAccount = mangoAccounts.find(
+                  (m) => m.publicKey.toString() === lastAccount
+                )
+                newSelectedMangoAccount = lastViewedAccount || mangoAccounts[0]
+              }
+            }
+
+            if (newSelectedMangoAccount) {
+              await newSelectedMangoAccount.reloadAccountData(client, group)
+            }
+
             set((state) => {
               state.mangoAccounts.accounts = mangoAccounts
+              state.mangoAccount.current = newSelectedMangoAccount
+              state.mangoAccount.initialLoad = false
             })
           } catch (e) {
             console.error('Error fetching mango accts', e)

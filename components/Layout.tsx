@@ -23,7 +23,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const { connected } = useWallet()
   const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const loadingMangoAccount = mangoStore((s) => s.mangoAccount.loading)
+  const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
   const { t } = useTranslation('common')
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { width } = useViewport()

@@ -29,7 +29,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const group = mangoStore((s) => s.group)
   const { connected, select, wallet, wallets } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const mangoAccountLoading = mangoStore((s) => s.mangoAccount.loading)
+  const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [accountName, setAccountName] = useState('')
   const [loadingAccount, setLoadingAccount] = useState(false)
   // const [profileName, setProfileName] = useState('')
@@ -74,8 +74,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         0,
         accountName || 'Account 1'
       )
-      actions.fetchMangoAccount(wallet!.adapter as unknown as Wallet)
-      // actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
+      actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
       if (tx) {
         setLoadingAccount(false)
         setShowSetupStep(3)

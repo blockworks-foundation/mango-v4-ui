@@ -22,7 +22,6 @@ const ConnectedMenu = () => {
 
   const handleDisconnect = useCallback(() => {
     set((state) => {
-      state.mangoAccount.loading = true
       state.mangoAccount.current = undefined
     })
     setTimeout(() => wallet?.adapter?.disconnect(), 500)
