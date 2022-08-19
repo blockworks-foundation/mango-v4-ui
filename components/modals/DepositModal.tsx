@@ -243,8 +243,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </div>
             </div>
             <HealthImpact
-              tokenPk={bank!.mint}
-              amount={parseFloat(inputAmount)}
+              mintPk={bank!.mint}
+              uiAmount={parseFloat(inputAmount)}
               isDeposit
             />
             {/* <div className="space-y-2 border-y border-th-bkg-3 py-4">

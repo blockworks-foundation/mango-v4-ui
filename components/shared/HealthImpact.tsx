@@ -1,4 +1,4 @@
-import { HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType, toNativeDecimals } from '@blockworks-foundation/mango-v4'
 import { ArrowRightIcon } from '@heroicons/react/solid'
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
@@ -6,13 +6,13 @@ import { useMemo } from 'react'
 import mangoStore from '../../store/state'
 
 const HealthImpact = ({
-  amount,
+  uiAmount,
   isDeposit,
-  tokenPk,
+  mintPk,
 }: {
-  amount: number
+  uiAmount: number
   isDeposit?: boolean
-  tokenPk: PublicKey
+  mintPk: PublicKey
 }) => {
   const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
@@ -25,10 +25,11 @@ const HealthImpact = ({
   const projectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !mangoAccount) return 0
+    const amount = group.toNativeDecimals(uiAmount, mintPk).toNumber();
     const projectedHealth = mangoAccount
       .simHealthRatioWithTokenPositionChanges(group, [
-        { mintPk: tokenPk, tokenAmount: isDeposit ? amount : amount * -1 },
-      ])
+        { mintPk, tokenAmount: isDeposit ? amount : amount * -1 },
+      ], HealthType.maint)
       .toNumber()
 
     return projectedHealth > 100
@@ -36,7 +37,7 @@ const HealthImpact = ({
       : projectedHealth < 0
       ? 0
       : projectedHealth
-  }, [mangoAccount, tokenPk, amount, isDeposit])
+  }, [mangoAccount, mintPk, uiAmount, isDeposit])
 
   return (
     <div className="space-y-2 border-y border-th-bkg-3 px-2 py-4">

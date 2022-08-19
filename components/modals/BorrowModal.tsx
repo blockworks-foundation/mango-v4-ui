@@ -233,7 +233,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
             </div>
           </div>
-          <HealthImpact tokenPk={bank!.mint} amount={parseFloat(inputAmount)} />
+          <HealthImpact mintPk={bank!.mint} uiAmount={parseFloat(inputAmount)} />
         </div>
         <Button
           onClick={handleWithdraw}

@@ -64,11 +64,11 @@ const TokenList = () => {
               (a, b) =>
                 Math.abs(
                   mangoAccount?.getTokenBalanceUi(b.value[0]) *
-                    Number(b.value[0].price)
+                    b.value[0].uiPrice
                 ) -
                 Math.abs(
                   mangoAccount?.getTokenBalanceUi(a.value[0]) *
-                    Number(a.value[0].price)
+                    a.value[0].uiPrice
                 )
             )
           : rawBanks
@@ -77,11 +77,11 @@ const TokenList = () => {
                 (a, b) =>
                   Math.abs(
                     mangoAccount?.getTokenBalanceUi(b.value[0]) *
-                      Number(b.value[0].price)
+                      b.value[0].uiPrice
                   ) -
                   Math.abs(
                     mangoAccount?.getTokenBalanceUi(a.value[0]) *
-                      Number(a.value[0].price)
+                      a.value[0].uiPrice
                   )
               )
         : rawBanks
@@ -128,7 +128,7 @@ const TokenList = () => {
           <tbody>
             {banks.map(({ key, value }, index) => {
               const bank = value[0]
-              const oraclePrice = bank.price
+              const oraclePrice = bank.uiPrice
 
               const coingeckoData = coingeckoPrices.find(
                 (asset) => asset.symbol === key
@@ -180,7 +180,7 @@ const TokenList = () => {
                   </td>
                   <td className="w-[16.67%]">
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(oraclePrice.toNumber(), true)}</p>
+                      <p>{formatFixedDecimals(oraclePrice, true)}</p>
                     </div>
                   </td>
                   <td className="hidden lg:table-cell">
@@ -241,7 +241,7 @@ const TokenList = () => {
                       {mangoAccount
                         ? `${formatFixedDecimals(
                             mangoAccount.getTokenBalanceUi(bank) *
-                              oraclePrice.toNumber(),
+                              oraclePrice,
                             true
                           )}`
                         : '$0.00'}
@@ -261,7 +261,7 @@ const TokenList = () => {
         <div className="mt-4 space-y-2">
           {banks.map(({ key, value }) => {
             const bank = value[0]
-            const oraclePrice = bank.price
+            const oraclePrice = bank.uiPrice
             let logoURI
             if (jupiterTokens.length) {
               logoURI = jupiterTokens.find(
@@ -321,7 +321,7 @@ const TokenList = () => {
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('price')}</p>
                       <p className="font-bold">
-                        ${formatDecimal(oraclePrice.toNumber(), 2)}
+                        ${formatDecimal(oraclePrice, 2)}
                       </p>
                     </div>
                     <div className="col-span-1">
