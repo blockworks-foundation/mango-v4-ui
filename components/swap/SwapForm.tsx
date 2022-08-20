@@ -13,7 +13,7 @@ import useDebounce from '../shared/useDebounce'
 import { floorToDecimal, numberFormat } from '../../utils/numbers'
 import { SwapLeverageSlider } from './LeverageSlider'
 import { useTranslation } from 'next-i18next'
-import SelectToken from './SelectToken'
+import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
 import Button, { IconButton, LinkButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
@@ -159,7 +159,7 @@ const SwapForm = () => {
         className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
         show={!!showTokenSelect}
       >
-        <SelectToken
+        <SwapFormTokenList
           onClose={() => setShowTokenSelect('')}
           onTokenSelect={
             showTokenSelect === 'input'

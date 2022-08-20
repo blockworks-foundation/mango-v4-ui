@@ -66,7 +66,7 @@ const TokenItem = ({
 
 const popularTokenSymbols = ['USDC', 'SOL', 'USDT', 'MNGO', 'BTC', 'ETH']
 
-const SelectToken = ({
+const SwapFormTokenList = ({
   onClose,
   onTokenSelect,
   type,
@@ -80,6 +80,8 @@ const SelectToken = ({
   const tokens = mangoStore.getState().jupiterTokens
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const inputBank = mangoStore((s) => s.swap.inputBank)
+  const outputBank = mangoStore((s) => s.swap.outputBank)
 
   const popularTokens = useMemo(() => {
     return walletTokens?.length
@@ -110,7 +112,11 @@ const SelectToken = ({
   const tokenInfos = useMemo(() => {
     if (tokens?.length) {
       const filteredTokens = tokens.filter((token) => {
-        return !token?.name || !token?.symbol ? false : true
+        if (type === 'input') {
+          return token.symbol === outputBank?.name ? false : true
+        } else {
+          return token.symbol === inputBank?.name ? false : true
+        }
       })
       if (walletTokens?.length) {
         const walletMints = walletTokens.map((tok) => tok.mint.toString())
@@ -124,7 +130,7 @@ const SelectToken = ({
     } else {
       return []
     }
-  }, [tokens, walletTokens])
+  }, [tokens, walletTokens, inputBank, outputBank])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -157,10 +163,16 @@ const SelectToken = ({
                 (t) => t.address === token.address
               )!.logoURI
             }
+            const disabled =
+              (type === 'input' && token.symbol === outputBank?.name) ||
+              (type === 'output' && token.symbol === inputBank?.name)
             return (
               <button
-                className="mx-1 mb-2 flex items-center rounded-md border border-th-bkg-4 py-1 px-3 hover:border-th-fgd-3 focus:border-th-fgd-2"
+                className={`${
+                  disabled ? 'opacity-20' : 'hover:border-th-fgd-3'
+                } mx-1 mb-2 flex items-center rounded-md border border-th-bkg-4 py-1 px-3 focus:border-th-fgd-2`}
                 onClick={() => onTokenSelect(token.address)}
+                disabled={disabled}
                 key={token.address}
               >
                 {logoURI ? (
@@ -188,4 +200,4 @@ const SelectToken = ({
   )
 }
 
-export default memo(SelectToken)
+export default memo(SwapFormTokenList)

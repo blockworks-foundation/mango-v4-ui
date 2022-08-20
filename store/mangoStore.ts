@@ -53,7 +53,9 @@ DEFAULT_PROVIDER.opts.skipPreflight = true
 const DEFAULT_CLIENT = MangoClient.connect(
   DEFAULT_PROVIDER,
   CLUSTER,
-  MANGO_V4_ID[CLUSTER]
+  MANGO_V4_ID[CLUSTER],
+  null,
+  'get-program-accounts'
 )
 
 interface TotalInterestDataItem {
