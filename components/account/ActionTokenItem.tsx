@@ -1,7 +1,7 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Image from 'next/image'
 import { useMemo } from 'react'
-import mangoStore from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import { formatDecimal } from '../../utils/numbers'
 
 const ActionTokenItem = ({

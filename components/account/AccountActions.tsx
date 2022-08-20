@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
-import mangoStore from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import {
   DotsHorizontalIcon,
   PencilIcon,

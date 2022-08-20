@@ -30,7 +30,11 @@ import {
   TokenAccount,
 } from '../utils/tokens'
 import { Token } from '../types/jupiter'
-import { LAST_ACCOUNT_KEY } from '../utils/constants'
+import {
+  INPUT_TOKEN_DEFAULT,
+  LAST_ACCOUNT_KEY,
+  OUTPUT_TOKEN_DEFAULT,
+} from '../utils/constants'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
@@ -40,7 +44,6 @@ export const connection = new web3.Connection(
 )
 const options = AnchorProvider.defaultOptions()
 export const CLUSTER = 'mainnet-beta'
-export const CLIENT_TX_TIMEOUT = 90000
 const DEFAULT_PROVIDER = new AnchorProvider(
   connection,
   new EmptyWallet(Keypair.generate()),
@@ -52,8 +55,6 @@ const DEFAULT_CLIENT = MangoClient.connect(
   CLUSTER,
   MANGO_V4_ID[CLUSTER]
 )
-export const INPUT_TOKEN_DEFAULT = 'USDC'
-export const OUTPUT_TOKEN_DEFAULT = 'SOL'
 
 interface TotalInterestDataItem {
   borrow_interest: number

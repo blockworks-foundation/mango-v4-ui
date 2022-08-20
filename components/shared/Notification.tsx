@@ -5,11 +5,12 @@ import {
   InformationCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/outline'
-import mangoStore, { CLIENT_TX_TIMEOUT, CLUSTER } from '../../store/state'
+import mangoStore, { CLUSTER } from '../../store/mangoStore'
 import { Notification, notify } from '../../utils/notifications'
 import Loading from './Loading'
 import { Transition } from '@headlessui/react'
 import { TokenInstructions } from '@project-serum/serum'
+import { CLIENT_TX_TIMEOUT } from '../../utils/constants'
 
 const setMangoStore = mangoStore.getState().set
 

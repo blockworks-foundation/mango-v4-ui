@@ -1,7 +1,7 @@
 import { XIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
-import mangoStore from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Switch from '../forms/Switch'

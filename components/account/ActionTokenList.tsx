@@ -1,5 +1,5 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
-import mangoStore from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import ActionTokenItem from './ActionTokenItem'
 
 type BankParams = {

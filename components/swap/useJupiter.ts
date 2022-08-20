@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import JSBI from 'jsbi'
 import Decimal from 'decimal.js'
 
-import mangoStore, { CLUSTER } from '../../store/state'
+import mangoStore, { CLUSTER } from '../../store/mangoStore'
 import { Token } from '../../types/jupiter'
 import { PublicKey } from '@solana/web3.js'
 

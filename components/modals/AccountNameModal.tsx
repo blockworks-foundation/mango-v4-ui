@@ -1,6 +1,6 @@
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
-import mangoStore from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import { notify } from '../../utils/notifications'
 import Button from '../shared/Button'
 import { useTranslation } from 'next-i18next'

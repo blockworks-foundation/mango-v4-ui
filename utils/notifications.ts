@@ -1,4 +1,4 @@
-import mangoStore from '../store/state'
+import mangoStore from '../store/mangoStore'
 
 export type Notification = {
   type: 'success' | 'info' | 'error' | 'confirm'

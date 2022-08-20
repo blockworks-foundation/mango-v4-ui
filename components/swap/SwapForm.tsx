@@ -5,10 +5,7 @@ import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import Decimal from 'decimal.js'
 
-import mangoStore, {
-  INPUT_TOKEN_DEFAULT,
-  OUTPUT_TOKEN_DEFAULT,
-} from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import ContentBox from '../shared/ContentBox'
 import JupiterRouteInfo from './JupiterRouteInfo'
 import TokenSelect from '../TokenSelect'
@@ -26,6 +23,10 @@ import useJupiter from './useJupiter'
 import SwapSettings from './SwapSettings'
 import SheenLoader from '../shared/SheenLoader'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import {
+  INPUT_TOKEN_DEFAULT,
+  OUTPUT_TOKEN_DEFAULT,
+} from '../../utils/constants'
 
 const MAX_DIGITS = 11
 const withValueLimit = (values: NumberFormatValues): boolean => {

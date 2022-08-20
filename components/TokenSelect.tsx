@@ -1,6 +1,6 @@
 import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
-import mangoStore from '../store/state'
+import mangoStore from '../store/mangoStore'
 
 type TokenSelectProps = {
   tokenSymbol: string | undefined

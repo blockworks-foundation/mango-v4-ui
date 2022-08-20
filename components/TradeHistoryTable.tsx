@@ -16,7 +16,7 @@ import { IconButton } from './shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from './shared/SheenLoader'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { TradeHistoryItem } from '../store/state'
+import { TradeHistoryItem } from '../store/mangoStore'
 
 const TradeHistoryTable = ({
   tradeHistory,

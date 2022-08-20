@@ -3,8 +3,9 @@ import { ChevronDownIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
-import mangoStore, { INPUT_TOKEN_DEFAULT } from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import { ModalProps } from '../../types/modal'
+import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
 import { formatFixedDecimals } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
@@ -233,7 +234,10 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
             </div>
           </div>
-          <HealthImpact mintPk={bank!.mint} uiAmount={parseFloat(inputAmount)} />
+          <HealthImpact
+            mintPk={bank!.mint}
+            uiAmount={parseFloat(inputAmount)}
+          />
         </div>
         <Button
           onClick={handleWithdraw}

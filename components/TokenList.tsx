@@ -13,7 +13,7 @@ import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 
-import mangoStore from '../store/state'
+import mangoStore from '../store/mangoStore'
 import { COLORS } from '../styles/colors'
 import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'

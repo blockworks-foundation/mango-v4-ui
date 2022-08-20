@@ -3,7 +3,7 @@ import { ArrowRightIcon } from '@heroicons/react/solid'
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
-import mangoStore from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 
 const HealthImpact = ({
   uiAmount,
@@ -25,11 +25,13 @@ const HealthImpact = ({
   const projectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !mangoAccount) return 0
-    const amount = group.toNativeDecimals(uiAmount, mintPk).toNumber();
+    const amount = group.toNativeDecimals(uiAmount, mintPk).toNumber()
     const projectedHealth = mangoAccount
-      .simHealthRatioWithTokenPositionChanges(group, [
-        { mintPk, tokenAmount: isDeposit ? amount : amount * -1 },
-      ], HealthType.maint)
+      .simHealthRatioWithTokenPositionChanges(
+        group,
+        [{ mintPk, tokenAmount: isDeposit ? amount : amount * -1 }],
+        HealthType.maint
+      )
       .toNumber()
 
     return projectedHealth > 100

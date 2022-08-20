@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react'
 import AccountActions from '../components/account/AccountActions'
 import DepositModal from '../components/modals/DepositModal'
 import WithdrawModal from '../components/modals/WithdrawModal'
-import mangoStore, { PerformanceDataItem } from '../store/state'
+import mangoStore, { PerformanceDataItem } from '../store/mangoStore'
 import { formatDecimal } from '../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import {

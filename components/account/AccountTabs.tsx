@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import mangoStore from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import TabButtons from '../shared/TabButtons'
 import TokenList from '../TokenList'
 import TradeHistoryTable from '../TradeHistoryTable'

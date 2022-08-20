@@ -5,7 +5,7 @@ import { useTranslation } from 'next-i18next'
 // import AccountsModal from './AccountsModal'
 import uniqBy from 'lodash/uniqBy'
 import WalletSelect from './WalletSelect'
-import mangoStore from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import { Wallet as AnchorWallet } from '@project-serum/anchor'
 import { notify } from '../../utils/notifications'
 

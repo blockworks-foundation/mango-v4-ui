@@ -2,7 +2,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import { getProfilePicture } from '@solflare-wallet/pfp'
 import { useEffect, useState } from 'react'
-import mangoStore from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import ProfileIcon from '../icons/ProfileIcon'
 
 const ProfileImage = ({

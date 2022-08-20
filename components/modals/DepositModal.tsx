@@ -4,8 +4,9 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
-import mangoStore, { INPUT_TOKEN_DEFAULT } from '../../store/state'
+import mangoStore from '../../store/mangoStore'
 import { ModalProps } from '../../types/modal'
+import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
 import { floorToDecimal } from '../../utils/numbers'
 import { TokenAccount } from '../../utils/tokens'
@@ -60,6 +61,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
+    console.log('1: ', selectedToken)
+
     return group?.banksMapByName.get(selectedToken)![0]
   }, [selectedToken])
 

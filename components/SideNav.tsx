@@ -17,7 +17,7 @@ import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
 import HealthHeart from './account/HealthHeart'
-import mangoStore from '../store/state'
+import mangoStore from '../store/mangoStore'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
