@@ -49,7 +49,7 @@ const MangoAccountSummary = () => {
           <p className="text-sm text-th-fgd-3">{t('health')}</p>
           <p className="text-sm font-bold text-th-fgd-1">
             {mangoAccount
-              ? mangoAccount.getHealthRatio(HealthType.maint).toNumber()
+              ? mangoAccount.getHealthRatioUi(HealthType.maint)
               : 100}
             %
           </p>
