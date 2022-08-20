@@ -6,7 +6,42 @@ import { useTranslation } from 'next-i18next'
 import uniqBy from 'lodash/uniqBy'
 import WalletSelect from './WalletSelect'
 import mangoStore from '../../store/state'
-import { handleWalletConnect } from './WalletListener'
+import { Wallet as AnchorWallet } from '@project-serum/anchor'
+import { notify } from '../../utils/notifications'
+
+export const handleWalletConnect = async (wallet: Wallet) => {
+  if (!wallet) {
+    return
+  }
+  const actions = mangoStore.getState().actions
+  const set = mangoStore.getState().set
+
+  try {
+    await wallet?.adapter?.connect()
+    await actions.connectMangoClientWithWallet(wallet)
+    await onConnectFetchAccountData(wallet)
+    set((state) => {
+      state.connected = true
+    })
+  } catch (e: any) {
+    console.error('WALLET CONNECT ERROR:', e)
+    if (e.name.includes('WalletLoadError')) {
+      notify({
+        title: `${wallet.adapter.name} Error`,
+        type: 'error',
+        description: `Please install ${wallet.adapter.name} and then reload this page.`,
+      })
+    }
+  }
+}
+
+const onConnectFetchAccountData = async (wallet: Wallet) => {
+  if (!wallet) return
+  const actions = mangoStore.getState().actions
+  await actions.fetchMangoAccounts(wallet.adapter as unknown as AnchorWallet)
+  actions.fetchProfilePicture(wallet.adapter as unknown as AnchorWallet)
+  actions.fetchWalletTokens(wallet.adapter as unknown as AnchorWallet)
+}
 
 export const ConnectWalletButton: React.FC = () => {
   const { wallet, wallets, select } = useWallet()

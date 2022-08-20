@@ -34,8 +34,6 @@ export async function getTokenAccountsByOwnerWithWrappedSol(
   // fetch data
   const [solResp, tokenResp] = await Promise.all([solReq, tokenReq])
 
-  console.log(tokenResp.value)
-
   // parse token accounts
   const tokenAccounts = tokenResp.value.map((t) => {
     return {

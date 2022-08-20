@@ -10,7 +10,6 @@ import {
 import { clusterApiUrl } from '@solana/web3.js'
 
 import '../styles/globals.css'
-import WalletListener from '../components/wallet/WalletListener'
 import mangoStore from '../store/state'
 import useInterval from '../components/shared/useInterval'
 import Notifications from '../components/shared/Notification'
@@ -57,7 +56,6 @@ function MyApp({ Component, pageProps }: AppProps) {
       <HydrateStore />
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets}>
-          <WalletListener />
           <ThemeProvider defaultTheme="Dark">
             <ViewportProvider>
               <Layout>

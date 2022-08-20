@@ -3,33 +3,29 @@ import { LogoutIcon } from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import { Fragment, useCallback, useState } from 'react'
-import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '../../store/state'
 import { notify } from '../../utils/notifications'
 import ProfileImage from '../shared/ProfileImage'
-import { breakpoints } from '../../utils/theme'
 import { abbreviateAddress } from '../../utils/formatting'
-import ProfileIcon from '../icons/ProfileIcon'
 import NftProfilePicModal from '../modals/NftProfilePicModal'
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
   const [showProfileImageModal, setShowProfileImageModal] = useState(false)
   const set = mangoStore((s) => s.set)
-  const { wallet, publicKey } = useWallet()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.sm : false
+  const { publicKey, disconnect } = useWallet()
 
   const handleDisconnect = useCallback(() => {
     set((state) => {
       state.mangoAccount.current = undefined
+      state.connected = false
     })
-    setTimeout(() => wallet?.adapter?.disconnect(), 500)
+    disconnect()
     notify({
       type: 'info',
       title: t('wallet-disconnected'),
     })
-  }, [wallet, set, t])
+  }, [set, t, disconnect])
 
   return (
     <>

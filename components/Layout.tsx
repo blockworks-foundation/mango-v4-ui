@@ -20,7 +20,7 @@ import { LinkButton } from './shared/Button'
 export const IS_ONBOARDED_KEY = 'isOnboarded'
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  const { connected } = useWallet()
+  const connected = mangoStore((s) => s.connected)
   const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)

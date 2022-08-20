@@ -22,7 +22,7 @@ import { Wallet } from '@project-serum/anchor'
 import ActionTokenList from '../account/ActionTokenList'
 import { walletBalanceForToken } from './DepositModal'
 import { floorToDecimal } from '../../utils/numbers'
-import { handleWalletConnect } from '../wallet/WalletListener'
+import { handleWalletConnect } from '../wallet/ConnectWalletButton'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()

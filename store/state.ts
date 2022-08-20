@@ -521,7 +521,6 @@ const mangoStore = create<MangoStore>(
             )
             set((s) => {
               s.client = client
-              s.connected = true
             })
           } catch (e: any) {
             if (e.name.includes('WalletLoadError')) {
