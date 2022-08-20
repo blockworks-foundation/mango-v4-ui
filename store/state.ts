@@ -313,9 +313,17 @@ const mangoStore = create<MangoStore>(
             const set = get().set
             const client = get().client
             const group = await client.getGroup(GROUP)
+            const inputBank =
+              group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
+            const outputBank =
+              group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
 
             set((state) => {
               state.group = group
+              if (!state.swap.inputBank && !state.swap.outputBank) {
+                state.swap.inputBank = inputBank
+                state.swap.outputBank = outputBank
+              }
             })
           } catch (e) {
             console.error('Error fetching group', e)

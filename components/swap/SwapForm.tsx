@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { ArrowDownIcon, CogIcon } from '@heroicons/react/solid'
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
@@ -10,7 +10,6 @@ import mangoStore, {
   OUTPUT_TOKEN_DEFAULT,
 } from '../../store/state'
 import ContentBox from '../shared/ContentBox'
-import { notify } from '../../utils/notifications'
 import JupiterRouteInfo from './JupiterRouteInfo'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
@@ -35,11 +34,10 @@ const withValueLimit = (values: NumberFormatValues): boolean => {
     : true
 }
 
-const Swap = () => {
+const SwapForm = () => {
   const { t } = useTranslation('common')
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
   const [amountInFormValue, setAmountInFormValue] = useState('')
-  const [submitting, setSubmitting] = useState(false)
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [showSettings, setShowSettings] = useState(false)
@@ -120,50 +118,6 @@ const Swap = () => {
     )
   }, [inputTokenInfo, outputTokenInfo, set, amountOut])
 
-  const handleSwap = useCallback(
-    async (userDefinedInstructions: TransactionInstruction[]) => {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const actions = mangoStore.getState().actions
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const inputBank = mangoStore.getState().swap.inputBank
-      const outputBank = mangoStore.getState().swap.outputBank
-      if (!mangoAccount || !group || !inputBank || !outputBank) return
-
-      try {
-        setSubmitting(true)
-        const tx = await client.marginTrade({
-          group,
-          mangoAccount,
-          inputMintPk: inputBank.mint,
-          amountIn: parseFloat(debouncedAmountIn),
-          outputMintPk: outputBank.mint,
-          userDefinedInstructions,
-          flashLoanType: 'swap',
-        })
-        console.log('Success swapping:', tx)
-        notify({
-          title: 'Transaction confirmed',
-          type: 'success',
-          txid: tx,
-        })
-
-        await actions.reloadAccount()
-      } catch (e: any) {
-        console.log('Error swapping:', e)
-        notify({
-          title: 'Transaction failed',
-          description: e.message,
-          txid: e?.signature,
-          type: 'error',
-        })
-      } finally {
-        setSubmitting(false)
-      }
-    },
-    [debouncedAmountIn]
-  )
-
   const amountIn: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
       ? new Decimal(debouncedAmountIn)
@@ -193,8 +147,6 @@ const Swap = () => {
           onClose={() => setShowConfirm(false)}
           amountIn={amountIn}
           slippage={slippage}
-          handleSwap={handleSwap}
-          submitting={submitting}
           outputTokenInfo={outputTokenInfo}
           jupiter={jupiter}
           routes={routes}
@@ -341,12 +293,13 @@ const Swap = () => {
   )
 }
 
-export default Swap
+export default SwapForm
 
 export const useTokenMax = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
+  const slippage = mangoStore((s) => s.swap.slippage)
 
   const tokenInMax = useMemo(() => {
     const group = mangoStore.getState().group
@@ -356,7 +309,12 @@ export const useTokenMax = () => {
 
     const amount = mangoAccount.getTokenBalanceUi(inputBank)
     const amountWithBorrow = mangoAccount
-      ?.getMaxSourceForTokenSwap(group, inputBank.mint, outputBank.mint, 0.94)
+      ?.getMaxSourceForTokenSwap(
+        group,
+        inputBank.mint,
+        outputBank.mint,
+        0.98 - slippage / 10
+      )
       .toNumber()
 
     return {
@@ -370,7 +328,7 @@ export const useTokenMax = () => {
           : 0,
       decimals: inputBank.mintDecimals,
     }
-  }, [inputBank, mangoAccount, outputBank])
+  }, [inputBank, mangoAccount, outputBank, slippage])
 
   return tokenInMax
 }

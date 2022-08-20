@@ -24,10 +24,10 @@ import { useTranslation } from 'next-i18next'
 import { Token } from '../../types/jupiter'
 import Image from 'next/image'
 import { formatDecimal } from '../../utils/numbers'
+import { notify } from '../../utils/notifications'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
-  handleSwap: (x: TransactionInstruction[]) => void
   inputTokenInfo: Token | undefined
   jupiter: Jupiter | undefined
   onClose: () => void
@@ -36,7 +36,6 @@ type JupiterRouteInfoProps = {
   selectedRoute: RouteInfo | undefined
   setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined>>
   slippage: number
-  submitting: boolean
 }
 
 const parseJupiterRoute = async (
@@ -64,8 +63,6 @@ const parseJupiterRoute = async (
 const JupiterRouteInfo = ({
   inputTokenInfo,
   amountIn,
-  handleSwap,
-  submitting,
   onClose,
   jupiter,
   routes,
@@ -78,6 +75,7 @@ const JupiterRouteInfo = ({
   const [swapRate, setSwapRate] = useState<boolean>(false)
   const [depositAndFee, setDepositAndFee] = useState<TransactionFeeInfo>()
   const [feeValue, setFeeValue] = useState<number | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
@@ -141,13 +139,56 @@ const JupiterRouteInfo = ({
 
   const onSwap = async () => {
     if (!jupiter || !selectedRoute) return
-    const ixs = await parseJupiterRoute(
-      jupiter,
-      selectedRoute,
-      mangoAccount!.owner
-    )
-    await handleSwap(ixs)
-    onClose()
+    try {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const actions = mangoStore.getState().actions
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const inputBank = mangoStore.getState().swap.inputBank
+      const outputBank = mangoStore.getState().swap.outputBank
+
+      if (!mangoAccount || !group || !inputBank || !outputBank) return
+
+      const ixs = await parseJupiterRoute(
+        jupiter,
+        selectedRoute,
+        mangoAccount!.owner
+      )
+
+      try {
+        setSubmitting(true)
+        const tx = await client.marginTrade({
+          group,
+          mangoAccount,
+          inputMintPk: inputBank.mint,
+          amountIn: amountIn.toNumber(),
+          outputMintPk: outputBank.mint,
+          userDefinedInstructions: ixs,
+          flashLoanType: { swap: {} },
+        })
+
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: tx,
+        })
+        await actions.reloadAccount()
+      } catch (e: any) {
+        console.log('Error swapping:', e)
+        notify({
+          title: 'Transaction failed',
+          description: e.message,
+          txid: e?.signature,
+          type: 'error',
+        })
+      } finally {
+        setSubmitting(false)
+      }
+    } catch (e) {
+      console.error('Swap error:', e)
+    } finally {
+      onClose()
+    }
   }
 
   return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (

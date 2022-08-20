@@ -1,7 +1,6 @@
-import { PublicKey } from '@solana/web3.js'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import mangoStore from '../../store/state'
-import { useTokenMax } from './Swap'
+import { useTokenMax } from './SwapForm'
 
 const LeverageSlider = ({
   amount,

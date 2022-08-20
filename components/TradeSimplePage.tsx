@@ -1,4 +1,4 @@
-import Swap from './swap/Swap'
+import Swap from './swap/SwapForm'
 import SwapTokenChart from './swap/SwapTokenChart'
 import mangoStore from '../store/state'
 import AccountTabs from './account/AccountTabs'
