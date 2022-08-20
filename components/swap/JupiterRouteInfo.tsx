@@ -128,13 +128,16 @@ const JupiterRouteInfo = ({
         },
         {
           mintPk: new PublicKey(outputTokenInfo.address),
-          tokenAmount: amountOut,
+          tokenAmount: toNativeDecimals(
+            amountOut,
+            outputTokenInfo.decimals
+          ).toNumber(),
         },
       ])
       .toNumber()
-    // console.log('simulatedHealthRatio', simulatedHealthRatio)
 
-    return simulatedHealthRatio
+    // console.log('simulatedHealthRatio', simulatedHealthRatio)
+    return simulatedHealthRatio > 100 ? 100 : simulatedHealthRatio
   }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
 
   const onSwap = async () => {
@@ -291,13 +294,13 @@ const JupiterRouteInfo = ({
             ) : null}
           </div>
           <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">{t('trade:health-impact')}</p>
+            <p className="text-sm text-th-fgd-3">Projected Health</p>
             <p
               className={`text-right text-sm text-th-fgd-1 ${
                 healthImpact < 0 ? 'text-th-red' : 'text-th-green'
               }`}
             >
-              {healthImpact}
+              {healthImpact}%
             </p>
           </div>
           <div className="flex justify-between">

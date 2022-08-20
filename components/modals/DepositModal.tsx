@@ -4,7 +4,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
-import mangoStore from '../../store/state'
+import mangoStore, { INPUT_TOKEN_DEFAULT } from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
 import { floorToDecimal } from '../../utils/numbers'
@@ -51,7 +51,9 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const group = mangoStore((s) => s.group)
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [selectedToken, setSelectedToken] = useState(token || 'USDC')
+  const [selectedToken, setSelectedToken] = useState(
+    token || INPUT_TOKEN_DEFAULT
+  )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)

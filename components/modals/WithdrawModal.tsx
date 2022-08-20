@@ -4,7 +4,7 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 
-import mangoStore from '../../store/state'
+import mangoStore, { INPUT_TOKEN_DEFAULT } from '../../store/state'
 import { ModalProps } from '../../types/modal'
 import { notify } from '../../utils/notifications'
 import { floorToDecimal } from '../../utils/numbers'
@@ -24,12 +24,14 @@ interface WithdrawModalProps {
 
 type ModalCombinedProps = WithdrawModalProps & ModalProps
 
-function WithdrawModal({ isOpen, onClose }: ModalCombinedProps) {
+function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation('common')
   const group = mangoStore((s) => s.group)
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [selectedToken, setSelectedToken] = useState('USDC')
+  const [selectedToken, setSelectedToken] = useState(
+    token || INPUT_TOKEN_DEFAULT
+  )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
@@ -136,7 +138,7 @@ function WithdrawModal({ isOpen, onClose }: ModalCombinedProps) {
               <p className="text-xs">{t('token')}</p>
             </div>
             <div className="col-span-1 flex justify-end">
-              <p className="text-xs">{t('available-balance')}</p>
+              <p className="text-xs">Account Balance</p>
             </div>
           </div>
           <ActionTokenList
