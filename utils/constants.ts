@@ -5,3 +5,5 @@ export const CLIENT_TX_TIMEOUT = 60000
 export const INPUT_TOKEN_DEFAULT = 'USDC'
 
 export const OUTPUT_TOKEN_DEFAULT = 'SOL'
+
+export const IS_ONBOARDED_KEY = 'isOnboarded-0.1'

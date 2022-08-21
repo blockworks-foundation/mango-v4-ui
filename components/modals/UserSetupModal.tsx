@@ -13,7 +13,6 @@ import useLocalStorageState from '../../hooks/useLocalStorageState'
 import { CheckCircleIcon, PencilIcon } from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '../../store/mangoStore'
-import { IS_ONBOARDED_KEY } from '../Layout'
 import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
 import Image from 'next/image'
 import BounceLoader from '../shared/BounceLoader'
@@ -23,6 +22,7 @@ import ActionTokenList from '../account/ActionTokenList'
 import { walletBalanceForToken } from './DepositModal'
 import { floorToDecimal } from '../../utils/numbers'
 import { handleWalletConnect } from '../wallet/ConnectWalletButton'
+import { IS_ONBOARDED_KEY } from '../../utils/constants'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -59,6 +59,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     if (wallet) {
       handleWalletConnect(wallet)
       setIsOnboarded(true)
+      setShowSetupStep(2)
     }
   }
 
@@ -139,12 +140,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       onClose()
     }
   }, [mangoAccount, showSetupStep, onClose, setIsOnboarded])
-
-  useEffect(() => {
-    if (connected && !mangoAccountLoading) {
-      setShowSetupStep(2)
-    }
-  }, [connected, mangoAccountLoading])
 
   const banks = useMemo(() => {
     return group?.banksMapByName

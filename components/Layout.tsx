@@ -13,11 +13,9 @@ import ConnectedMenu from './wallet/ConnectedMenu'
 import WalletIcon from './icons/WalletIcon'
 import BounceLoader from './shared/BounceLoader'
 import MangoAccountsList from './MangoAccountsList'
-import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from './modals/CreateAccountModal'
 import { LinkButton } from './shared/Button'
-
-export const IS_ONBOARDED_KEY = 'isOnboarded'
+import { IS_ONBOARDED_KEY } from '../utils/constants'
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const connected = mangoStore((s) => s.connected)
