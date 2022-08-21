@@ -32,11 +32,11 @@ const ActionTokenItem = ({
 
   return (
     <button
-      className="default-transition flex w-full rounded-md border border-th-bkg-4 px-4 py-3 disabled:cursor-not-allowed disabled:opacity-60 md:hover:border-th-fgd-4 md:disabled:hover:border-th-bkg-4"
+      className="default-transition grid w-full auto-cols-fr grid-flow-col rounded-md border border-th-bkg-4 px-4 py-3 disabled:cursor-not-allowed disabled:opacity-60 md:hover:border-th-fgd-4 md:disabled:hover:border-th-bkg-4"
       onClick={() => onSelect(name)}
       disabled={customValue <= 0}
     >
-      <div className="flex w-1/5 items-center">
+      <div className="flex items-center">
         <div className="mr-2.5 flex flex-shrink-0 items-center">
           <Image
             alt=""
@@ -48,20 +48,20 @@ const ActionTokenItem = ({
         <p className="text-th-fgd-1">{name}</p>
       </div>
       {showDepositRates ? (
-        <div className="w-2/5 text-right">
+        <div className="text-right">
           <p className="text-th-green">
             {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
           </p>
         </div>
       ) : null}
       {showBorrowRates ? (
-        <div className="w-2/5 text-right">
+        <div className="text-right">
           <p className="text-th-red">
             {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
           </p>
         </div>
       ) : null}
-      <div className="w-2/5 text-right">
+      <div className="text-right">
         <p className="text-th-fgd-1">{formatDecimal(customValue)}</p>
       </div>
     </button>

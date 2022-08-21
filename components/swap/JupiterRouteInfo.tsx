@@ -6,7 +6,11 @@ import React, {
   useState,
 } from 'react'
 import { TransactionInstruction, PublicKey } from '@solana/web3.js'
-import { toNativeDecimals, toUiDecimals } from '@blockworks-foundation/mango-v4'
+import {
+  HealthType,
+  toNativeDecimals,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
 import { Jupiter, RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
 import JSBI from 'jsbi'
 import Decimal from 'decimal.js'
@@ -117,27 +121,29 @@ const JupiterRouteInfo = ({
       return 'Unknown'
 
     const simulatedHealthRatio = mangoAccount
-      .simHealthRatioWithTokenPositionChanges(group, [
-        {
-          mintPk: new PublicKey(inputTokenInfo.address),
-          tokenAmount:
-            toNativeDecimals(
-              amountIn.toNumber(),
-              inputTokenInfo.decimals
-            ).toNumber() * -1,
-        },
-        {
-          mintPk: new PublicKey(outputTokenInfo.address),
-          tokenAmount: toNativeDecimals(
-            amountOut,
-            outputTokenInfo.decimals
-          ).toNumber(),
-        },
-      ])
+      .simHealthRatioWithTokenPositionChanges(
+        group,
+        [
+          {
+            mintPk: new PublicKey(inputTokenInfo.address),
+            tokenAmount:
+              toNativeDecimals(
+                amountIn.toNumber(),
+                inputTokenInfo.decimals
+              ).toNumber() * -1,
+          },
+          {
+            mintPk: new PublicKey(outputTokenInfo.address),
+            tokenAmount: toNativeDecimals(
+              amountOut,
+              outputTokenInfo.decimals
+            ).toNumber(),
+          },
+        ],
+        HealthType.maint
+      )
       .toNumber()
-
-    // console.log('simulatedHealthRatio', simulatedHealthRatio)
-    return simulatedHealthRatio > 100 ? 100 : simulatedHealthRatio
+    return simulatedHealthRatio > 100 ? 100 : simulatedHealthRatio.toFixed(2)
   }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
 
   const onSwap = async () => {
@@ -177,7 +183,7 @@ const JupiterRouteInfo = ({
         })
         await actions.reloadAccount()
       } catch (e: any) {
-        console.log('Error swapping:', e)
+        console.error('onSwap error: ', e)
         notify({
           title: 'Transaction failed',
           description: e.message,
@@ -218,7 +224,7 @@ const JupiterRouteInfo = ({
                 />
               </div>
             </div>
-            <p className="mb-0.5 text-lg font-bold text-th-fgd-1">{`${amountIn} ${
+            <p className="mb-0.5 text-lg text-th-fgd-1">{`${amountIn} ${
               inputTokenInfo!.name
             } for ${amountOut} ${outputTokenInfo.symbol}`}</p>
             <div className="flex items-center justify-end">

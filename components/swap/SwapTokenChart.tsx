@@ -129,7 +129,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
       setChartData(chartData)
       setLoadChartData(false)
     } catch (e) {
-      console.log('Unable to load chart data')
+      console.warn('Unable to load chart data')
     }
   }, [baseTokenId, quoteTokenId, daysToShow])
 

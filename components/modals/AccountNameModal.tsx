@@ -40,7 +40,7 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
         txid: e?.signature,
         type: 'error',
       })
-      console.log(e)
+      console.error(e)
     }
   }
 

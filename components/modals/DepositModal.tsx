@@ -61,8 +61,6 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    console.log('1: ', selectedToken)
-
     return group?.banksMapByName.get(selectedToken)![0]
   }, [selectedToken])
 
@@ -145,7 +143,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   }
 
   const banks = useMemo(() => {
-    return group?.banksMapByName
+    const banks = group?.banksMapByName
       ? Array.from(group?.banksMapByName, ([key, value]) => {
           const walletBalance = walletBalanceForToken(walletTokens, key)
           return {
@@ -158,6 +156,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           }
         })
       : []
+    return banks.filter((b) => b.walletBalance > 0)
   }, [group?.banksMapByName, walletTokens])
 
   return (
@@ -168,14 +167,14 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           show={showTokenList}
         >
           <h2 className="mb-4 text-center">{t('select-token')}</h2>
-          <div className="flex px-4 pb-2">
-            <div className="w-1/5">
+          <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
+            <div className="">
               <p className="text-xs">{t('token')}</p>
             </div>
-            <div className="w-2/5 text-right">
+            <div className="text-right">
               <p className="text-xs">{t('deposit-rate')}</p>
             </div>
-            <div className="w-2/5 text-right">
+            <div className="text-right">
               <p className="whitespace-nowrap text-xs">{t('wallet-balance')}</p>
             </div>
           </div>

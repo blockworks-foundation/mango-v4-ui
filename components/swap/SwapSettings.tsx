@@ -30,8 +30,6 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
     })
   }
 
-  console.log('slippage', slippage)
-
   return (
     <>
       <h3 className="mb-3">{t('settings')}</h3>

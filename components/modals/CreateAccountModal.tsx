@@ -73,7 +73,7 @@ const CreateAccountModal = ({
         txid: e?.signature,
         type: 'error',
       })
-      console.log(e)
+      console.error(e)
     }
   }
 

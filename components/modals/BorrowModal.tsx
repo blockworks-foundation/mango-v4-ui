@@ -1,4 +1,9 @@
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  Group,
+  MangoAccount,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -7,7 +12,7 @@ import mangoStore from '../../store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
-import { formatFixedDecimals } from '../../utils/numbers'
+import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -17,7 +22,30 @@ import HealthImpact from '../shared/HealthImpact'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
-import { BorrowLeverageSlider } from '../swap/LeverageSlider'
+// import { BorrowLeverageSlider } from '../swap/LeverageSlider'
+
+const getMaxBorrowForToken = (
+  group: Group,
+  mangoAccount: MangoAccount,
+  bank: Bank
+) => {
+  const vaultBalance = floorToDecimal(
+    bank.uiDeposits() - bank.uiBorrows(),
+    bank.mintDecimals
+  )
+  const currentBalance = mangoAccount?.getTokenBalanceUi(bank) || 0
+  const maxBorrow = toUiDecimals(
+    mangoAccount?.getMaxWithdrawWithBorrowForToken(group, bank.mint).toNumber(),
+    bank.mintDecimals
+  )
+  const maxBorrowWithBalance =
+    currentBalance > 0 ? maxBorrow + currentBalance : maxBorrow
+
+  return Math.min(
+    vaultBalance,
+    floorToDecimal(maxBorrowWithBalance, bank.mintDecimals)
+  )
+}
 
 interface BorrowModalProps {
   token?: string
@@ -56,12 +84,9 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const tokenMax = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !bank) return 0
-    const amount = mangoAccount
-      ?.getMaxWithdrawWithBorrowForToken(group, bank.mint)
-      .toNumber()
-    return amount && amount > 0 ? toUiDecimals(amount, bank.mintDecimals) : 0
-  }, [mangoAccount, bank, selectedToken])
+    if (!group || !bank || !mangoAccount) return 0
+    return getMaxBorrowForToken(group, mangoAccount, bank)
+  }, [mangoAccount, bank])
 
   const setMax = useCallback(() => {
     setInputAmount(tokenMax.toString())
@@ -69,11 +94,12 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
+      if (!bank) return
       setSizePercentage(percentage)
       const amount = (Number(percentage) / 100) * (tokenMax || 0)
-      setInputAmount(amount.toString())
+      setInputAmount(floorToDecimal(amount, bank.mintDecimals).toString())
     },
-    [tokenMax]
+    [tokenMax, bank]
   )
 
   const handleSelectToken = (token: string) => {
@@ -103,8 +129,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
       })
       actions.reloadAccount()
     } catch (e: any) {
-      console.log(e)
-
+      console.error(e)
       notify({
         title: 'Transaction failed',
         description: e.message,
@@ -122,17 +147,8 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
       return group?.banksMapByName
         ? Array.from(group?.banksMapByName, ([key, value]) => {
             const bank = value[0]
-            const amount = mangoAccount
-              ?.getMaxWithdrawWithBorrowForToken(group, bank.mint)
-              .toNumber()
-            return {
-              key,
-              value,
-              maxAmount:
-                amount && amount > 0
-                  ? toUiDecimals(amount, bank.mintDecimals)
-                  : 0,
-            }
+            const maxAmount = getMaxBorrowForToken(group, mangoAccount, bank)
+            return { key, value, maxAmount }
           })
         : []
     }
@@ -146,14 +162,14 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         show={showTokenList}
       >
         <h2 className="mb-4 text-center">{t('select-token')}</h2>
-        <div className="flex px-4 pb-2">
-          <div className="w-1/5">
+        <div className="grid auto-cols-fr grid-flow-col  px-4 pb-2">
+          <div className="">
             <p className="text-xs">{t('token')}</p>
           </div>
-          <div className="w-2/5 text-right">
+          <div className="text-right">
             <p className="text-xs">{t('borrow-rate')}</p>
           </div>
-          <div className="w-2/5 text-right">
+          <div className="text-right">
             <p className="whitespace-nowrap text-xs">{t('max-borrow')}</p>
           </div>
         </div>
@@ -177,9 +193,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 <span className="mr-1 font-normal text-th-fgd-3">
                   {t('max')}:
                 </span>
-                <span className="mx-1 text-th-fgd-1 underline">
-                  {formatFixedDecimals(tokenMax)}
-                </span>
+                <span className="mx-1 text-th-fgd-1 underline">{tokenMax}</span>
               </LinkButton>
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
@@ -222,7 +236,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 unit="%"
               />
             </div>
-            <div className="col-span-2 mt-4">
+            {/* <div className="col-span-2 mt-4">
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-th-fgd-3">{t('leverage')}</p>
                 <p className="text-th-fgd-3">0.00x</p>
@@ -232,7 +246,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 tokenMax={tokenMax}
                 onChange={(x) => setInputAmount(x)}
               />
-            </div>
+            </div> */}
           </div>
           <HealthImpact
             mintPk={bank!.mint}

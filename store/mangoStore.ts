@@ -305,7 +305,7 @@ const mangoStore = create<MangoStore>(
               state.coingeckoPrices.loading = false
             })
           } catch (e) {
-            console.log('ERORR: Unable to load Coingecko prices')
+            console.warn('Unable to load Coingecko prices')
             set((state) => {
               state.coingeckoPrices.loading = false
             })
@@ -583,7 +583,7 @@ const mangoStore = create<MangoStore>(
               state.wallet.loadProfilePic = false
             })
           } catch (e) {
-            console.log('Could not get profile picture', e)
+            console.error('Could not get profile picture', e)
             set((state) => {
               state.wallet.loadProfilePic = false
             })

@@ -91,8 +91,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
       })
       actions.reloadAccount()
     } catch (e: any) {
-      console.log(e)
-
+      console.error(e)
       notify({
         title: 'Transaction failed',
         description: e.message,
@@ -110,9 +109,9 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     setShowTokenList(false)
   }
 
-  const banks = useMemo(() => {
+  const withdrawBank = useMemo(() => {
     if (mangoAccount) {
-      return group?.banksMapByName
+      const banks = group?.banksMapByName
         ? Array.from(group?.banksMapByName, ([key, value]) => {
             const accountBalance = mangoAccount?.getTokenBalanceUi(value[0])
             return {
@@ -122,6 +121,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
             }
           })
         : []
+      return banks.filter((b) => b.accountBalance > 0)
     }
     return []
   }, [mangoAccount, group?.banksMapByName])
@@ -134,16 +134,16 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
           show={showTokenList}
         >
           <h2 className="mb-4 text-center">{t('select-token')}</h2>
-          <div className="grid grid-cols-2 px-4 pb-2">
-            <div className="col-span-1">
+          <div className="grid auto-cols-fr grid-flow-col  px-4 pb-2">
+            <div className="">
               <p className="text-xs">{t('token')}</p>
             </div>
-            <div className="col-span-1 flex justify-end">
+            <div className="flex justify-end">
               <p className="text-xs">Account Balance</p>
             </div>
           </div>
           <ActionTokenList
-            banks={banks}
+            banks={withdrawBank}
             onSelect={handleSelectToken}
             sortByKey="accountBalance"
           />
@@ -162,7 +162,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   onClick={() => handleSizePercentage('100')}
                 >
                   <span className="mr-1 font-normal text-th-fgd-3">
-                    {t('available-balance')}
+                    {t('account-balance')}
                   </span>
                   <span className="text-th-fgd-1 underline">{tokenMax}</span>
                 </LinkButton>
