@@ -3,12 +3,10 @@ import { useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
-import mangoStore from '../../store/mangoStore'
 import {
   DotsHorizontalIcon,
   PencilIcon,
   TrashIcon,
-  XIcon,
 } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import IconDropMenu from '../shared/IconDropMenu'

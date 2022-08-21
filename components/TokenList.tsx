@@ -392,6 +392,7 @@ const ActionsMenu = ({
   const set = mangoStore.getState().set
   const router = useRouter()
   const { asPath } = router
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const handleShowActionModals = useCallback(
     (token: string, action: 'borrow' | 'deposit' | 'withdraw') => {
@@ -406,22 +407,30 @@ const ActionsMenu = ({
   )
 
   const handleBuy = useCallback(() => {
+    const outputTokenInfo = jupiterTokens.find(
+      (t: any) => t.address === bank.mint.toString()
+    )
     set((s) => {
       s.swap.outputBank = bank
+      s.swap.outputTokenInfo = outputTokenInfo
     })
     if (asPath === '/') {
       router.push('/trade', undefined, { shallow: true })
     }
-  }, [bank, router, asPath, set])
+  }, [bank, router, asPath, set, jupiterTokens])
 
   const handleSell = useCallback(() => {
+    const inputTokenInfo = jupiterTokens.find(
+      (t: any) => t.address === bank.mint.toString()
+    )
     set((s) => {
       s.swap.inputBank = bank
+      s.swap.inputTokenInfo = inputTokenInfo
     })
     if (asPath === '/') {
       router.push('/trade', undefined, { shallow: true })
     }
-  }, [router, asPath, set, bank])
+  }, [router, asPath, set, bank, jupiterTokens])
 
   return (
     <>
