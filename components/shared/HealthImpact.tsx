@@ -65,7 +65,8 @@ const HealthImpact = ({
                   : 'text-th-red'
               }`}
             >
-              ({(projectedHealth - currentHealth).toFixed(2)}%)
+              ({projectedHealth >= currentHealth ? '+' : '-'}
+              {(projectedHealth - currentHealth).toFixed(2)}%)
             </span>
           </p>
         </div>
