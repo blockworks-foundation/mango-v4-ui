@@ -45,6 +45,7 @@ const onConnectFetchAccountData = async (wallet: Wallet) => {
 
 export const ConnectWalletButton: React.FC = () => {
   const { wallet, wallets, select } = useWallet()
+  const group = mangoStore((s) => s.group)
   const { t } = useTranslation('common')
   // const [showAccountsModal, setShowAccountsModal] = useState(false)
 
@@ -67,7 +68,8 @@ export const ConnectWalletButton: React.FC = () => {
   }, [wallets, installedWallets])
 
   const handleConnect = useCallback(async () => {
-    if (wallet) {
+    const group = mangoStore.getState().group
+    if (wallet && group) {
       await handleWalletConnect(wallet)
     }
   }, [wallet])
@@ -86,9 +88,10 @@ export const ConnectWalletButton: React.FC = () => {
     <div className="relative">
       <button
         onClick={handleConnect}
-        className="bg-transparent text-white focus:outline-none disabled:cursor-wait disabled:text-th-bkg-2"
+        disabled={!group}
+        className={` text-white focus:outline-none disabled:cursor-wait disabled:opacity-25`}
       >
-        <div className="relative flex h-16 w-44 bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100">
+        <div className="relative flex h-16 w-44 bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100">
           <div className="default-transition flex h-full flex-row items-center justify-center space-x-3 px-4">
             <div
               className={`flex h-[28px] w-[28px] items-center justify-center rounded-full ${

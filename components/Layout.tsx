@@ -25,7 +25,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation('common')
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetupModal, setShowUserSetupModal] = useState(false)
   const [showFirstAccountModal, setShowFirstAccountModal] = useState(false)
@@ -79,65 +78,58 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <BounceLoader />
         </div>
       ) : null}
-      <div className={`flex-grow bg-th-bkg-1 text-th-fgd-1 transition-all`}>
+      <div className="flex-grow bg-th-bkg-1 text-th-fgd-1 transition-all">
         <div className="flex">
-          {isMobile ? (
-            <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
-              <BottomBar />
+          <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
+            <BottomBar />
+          </div>
+
+          <div className="fixed z-20 hidden h-screen md:block">
+            <button
+              className="absolute -right-4 top-1/2 z-20 hidden h-10 w-4 -translate-y-1/2 rounded-none rounded-r bg-th-bkg-4 focus:outline-none lg:block"
+              onClick={handleToggleSidebar}
+            >
+              <ChevronRightIcon
+                className={`h-full w-full ${
+                  !isCollapsed ? 'rotate-180' : 'rotate-360'
+                }`}
+              />
+            </button>
+            <div className={`h-full ${!isCollapsed ? 'overflow-y-auto' : ''}`}>
+              <SideNav collapsed={isCollapsed} />
             </div>
-          ) : (
-            <div className={`fixed z-20 h-screen`}>
-              <button
-                className="absolute -right-4 top-1/2 z-20 hidden h-10 w-4 -translate-y-1/2 rounded-none rounded-r bg-th-bkg-4 focus:outline-none lg:block"
-                onClick={handleToggleSidebar}
-              >
-                <ChevronRightIcon
-                  className={`h-full w-full ${
-                    !isCollapsed ? 'rotate-180' : 'rotate-360'
-                  }`}
-                />
-              </button>
-              <div
-                className={`h-full ${!isCollapsed ? 'overflow-y-auto' : ''}`}
-              >
-                <SideNav collapsed={isCollapsed} />
-              </div>
-            </div>
-          )}
+          </div>
+
           <div
             className={`w-full overflow-hidden transition-all duration-500 ease-in-out ${
-              isMobile ? '' : isCollapsed ? 'pl-[64px]' : 'pl-44 lg:pl-56'
+              isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-56'
             }`}
           >
             <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6 md:px-8">
               <div className="flex items-center text-th-fgd-3">
-                {isMobile ? (
-                  <img
-                    className={`mr-4 h-8 w-auto`}
-                    src="/logos/logo-mark.svg"
-                    alt="next"
-                  />
-                ) : null}
+                <img
+                  className="mr-4 h-8 w-auto md:hidden"
+                  src="/logos/logo-mark.svg"
+                  alt="next"
+                />
                 <span className="mb-0 mr-2">
                   {mangoAccount ? (
                     <MangoAccountsList mangoAccount={mangoAccount} />
-                  ) : !isMobile ? (
-                    !connected ? (
-                      <span className="flex items-center">
-                        🔗<span className="ml-2">{t('connect-helper')}</span>
-                        <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
-                      </span>
-                    ) : (
-                      <div className="flex items-center">
-                        🥭
-                        <LinkButton
-                          onClick={() => setShowFirstAccountModal(true)}
-                        >
-                          <span className="ml-2">{t('create-account')}</span>
-                        </LinkButton>
-                      </div>
-                    )
-                  ) : null}
+                  ) : !connected ? (
+                    <span className="hidden items-center md:flex">
+                      🔗<span className="ml-2">{t('connect-helper')}</span>
+                      <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
+                    </span>
+                  ) : (
+                    <div className="hidden items-center md:flex">
+                      🥭
+                      <LinkButton
+                        onClick={() => setShowFirstAccountModal(true)}
+                      >
+                        <span className="ml-2">{t('create-account')}</span>
+                      </LinkButton>
+                    </div>
+                  )}
                 </span>
               </div>
               <div className="flex items-center space-x-4">
@@ -156,9 +148,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
                 )}
               </div>
             </div>
-            <div className={`min-h-screen ${isMobile ? 'p-6 pb-20' : 'p-8'}`}>
-              {children}
-            </div>
+            <div className="min-h-screen p-6 pb-20 md:p-8">{children}</div>
           </div>
         </div>
       </div>
