@@ -57,9 +57,16 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
 
   const connectWallet = async () => {
     if (wallet) {
-      handleWalletConnect(wallet)
-      setIsOnboarded(true)
-      setShowSetupStep(2)
+      try {
+        await handleWalletConnect(wallet)
+        setIsOnboarded(true)
+        setShowSetupStep(2)
+      } catch (e) {
+        notify({
+          title: 'Setup failed. Refresh and try again.',
+          type: 'error',
+        })
+      }
     }
   }
 
@@ -135,11 +142,10 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   }, [depositAmount, depositToken, onClose, setIsOnboarded])
 
   useEffect(() => {
-    if (mangoAccount && showSetupStep === 1) {
-      setIsOnboarded(true)
+    if (mangoAccount && showSetupStep === 2) {
       onClose()
     }
-  }, [mangoAccount, showSetupStep, onClose, setIsOnboarded])
+  }, [mangoAccount, showSetupStep, onClose])
 
   const banks = useMemo(() => {
     return group?.banksMapByName
