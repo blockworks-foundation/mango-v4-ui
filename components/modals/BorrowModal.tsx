@@ -178,6 +178,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
           onSelect={handleSelectToken}
           showBorrowRates
           sortByKey="maxAmount"
+          valueKey="maxAmount"
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut

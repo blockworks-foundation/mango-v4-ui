@@ -16,33 +16,39 @@ const ActionTokenList = ({
   sortByKey,
   showBorrowRates,
   showDepositRates,
+  valueKey,
 }: {
   banks: BankParams[]
   onSelect: (x: string) => void
-  sortByKey: 'maxAmount' | 'walletBalance' | 'accountBalance'
+  sortByKey: 'maxAmount' | 'walletBalanceValue' | 'accountBalanceValue'
   showBorrowRates?: boolean
   showDepositRates?: boolean
+  valueKey: 'maxAmount' | 'walletBalance' | 'accountBalance'
 }) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   return mangoAccount ? (
     <>
       <div className="space-y-2">
-        {banks?.length
-          ? banks
-              .filter((b: BankParams) => !!b)
-              .sort((a: any, b: any) => b[sortByKey] - a[sortByKey])
-              .map((bank: any) => (
-                <ActionTokenItem
-                  bank={bank.value[0]}
-                  customValue={bank[sortByKey]}
-                  key={bank.value[0].name}
-                  onSelect={onSelect}
-                  showBorrowRates={showBorrowRates}
-                  showDepositRates={showDepositRates}
-                />
-              ))
-          : null}
+        {banks?.length ? (
+          banks
+            .filter((b: BankParams) => !!b)
+            .sort((a: any, b: any) => b[sortByKey] - a[sortByKey])
+            .map((bank: any) => (
+              <ActionTokenItem
+                bank={bank.value[0]}
+                customValue={bank[valueKey]}
+                key={bank.value[0].name}
+                onSelect={onSelect}
+                showBorrowRates={showBorrowRates}
+                showDepositRates={showDepositRates}
+              />
+            ))
+        ) : (
+          <div className="mt-4 rounded border border-th-bkg-2 py-3 text-center text-th-fgd-4">
+            Nothing to select
+          </div>
+        )}
       </div>
     </>
   ) : null

@@ -118,6 +118,10 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               key,
               value,
               accountBalance: accountBalance ? accountBalance : 0,
+              accountBalanceValue:
+                accountBalance && value[0]?.uiPrice
+                  ? accountBalance * value[0]?.uiPrice
+                  : 0,
             }
           })
         : []
@@ -145,7 +149,8 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
           <ActionTokenList
             banks={withdrawBank}
             onSelect={handleSelectToken}
-            sortByKey="accountBalance"
+            sortByKey="accountBalanceValue"
+            valueKey="accountBalance"
           />
         </EnterBottomExitBottom>
         <FadeInFadeOut

@@ -147,8 +147,9 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     }
   }, [mangoAccount, showSetupStep, onClose])
 
+  // TODO extract into a shared hook for DepositModal.tsx
   const banks = useMemo(() => {
-    return group?.banksMapByName
+    const banks = group?.banksMapByName
       ? Array.from(group?.banksMapByName, ([key, value]) => {
           const walletBalance = walletBalanceForToken(walletTokens, key)
           return {
@@ -158,9 +159,11 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               walletBalance.maxAmount,
               walletBalance.maxDecimals
             ),
+            walletBalanceValue: walletBalance.maxAmount * value[0]?.uiPrice,
           }
         })
       : []
+    return banks.filter((b) => b.walletBalance > 0)
   }, [group?.banksMapByName, walletTokens])
 
   return (
@@ -426,7 +429,8 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       banks={banks}
                       onSelect={setDepositToken}
                       showDepositRates
-                      sortByKey="walletBalance"
+                      sortByKey="walletBalanceValue"
+                      valueKey="walletBalance"
                     />
                   </div>
                 ) : null}

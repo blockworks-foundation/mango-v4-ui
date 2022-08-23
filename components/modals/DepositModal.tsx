@@ -142,6 +142,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     onClose()
   }
 
+  // TODO extract into a shared hook for UserSetupModal.tsx
   const banks = useMemo(() => {
     const banks = group?.banksMapByName
       ? Array.from(group?.banksMapByName, ([key, value]) => {
@@ -153,6 +154,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               walletBalance.maxAmount,
               walletBalance.maxDecimals
             ),
+            walletBalanceValue: walletBalance.maxAmount * value[0]?.uiPrice,
           }
         })
       : []
@@ -182,7 +184,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             banks={banks}
             onSelect={handleSelectToken}
             showDepositRates
-            sortByKey="walletBalance"
+            sortByKey="walletBalanceValue"
+            valueKey="walletBalance"
           />
         </EnterBottomExitBottom>
         <FadeInFadeOut
