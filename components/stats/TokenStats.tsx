@@ -66,13 +66,23 @@ const TokenList = () => {
                 </div>
               </th>
               <th className="">
-                <div className="flex items-center">
-                  <span>LTV</span>
-                  <InfoTooltip
+                <div className="flex items-center justify-center">
+                  <span>Asset Weight</span>
+                  {/* <InfoTooltip
                     content={
                       'The loan-to-value (LTV) ratio is how much you can borrow against your deposits.'
                     }
-                  />
+                  /> */}
+                </div>
+              </th>
+              <th className="">
+                <div className="flex items-center justify-center">
+                  <span>Liability Weight</span>
+                  {/* <InfoTooltip
+                    content={
+                      'The loan-to-value (LTV) ratio is how much you can borrow against your deposits.'
+                    }
+                  /> */}
                 </div>
               </th>
             </tr>
@@ -151,10 +161,13 @@ const TokenList = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="flex flex-col">
-                      <p>
-                        {(bank.initAssetWeight.toNumber() * 100).toFixed()}%
-                      </p>
+                    <div className="text-center">
+                      <p>{bank.initAssetWeight.toFixed(2)}</p>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="text-center">
+                      <p>{bank.initLiabWeight.toFixed(2)}</p>
                     </div>
                   </td>
                 </tr>
