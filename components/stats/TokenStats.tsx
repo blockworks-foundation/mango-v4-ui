@@ -124,11 +124,11 @@ const TokenList = () => {
                       <p>
                         {bank.uiDeposits() > 0
                           ? formatDecimal(
-                              bank.uiBorrows() / bank.uiDeposits(),
-                              2,
+                              (bank.uiBorrows() / bank.uiDeposits()) * 100,
+                              1,
                               { fixed: true }
                             )
-                          : 0}
+                          : '0.0'}
                         %
                       </p>
                     </div>
