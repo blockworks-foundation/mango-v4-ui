@@ -215,7 +215,10 @@ const SwapForm = () => {
           />
         </div>
         {!useMargin ? (
-          <PercentageSelectButtons setAmountIn={setAmountInFormValue} />
+          <PercentageSelectButtons
+            amountIn={amountInFormValue}
+            setAmountIn={setAmountInFormValue}
+          />
         ) : null}
       </div>
       <div className="flex justify-center">
@@ -377,12 +380,20 @@ const MaxSwapAmount = ({
 }
 
 const PercentageSelectButtons = ({
+  amountIn,
   setAmountIn,
 }: {
+  amountIn: string
   setAmountIn: (x: any) => any
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
   const { amount: tokenMax, decimals } = useTokenMax()
+
+  useEffect(() => {
+    if (tokenMax > 0 && Number(amountIn) === tokenMax) {
+      setSizePercentage('100')
+    }
+  }, [amountIn, tokenMax])
 
   const handleSizePercentage = (percentage: string) => {
     setSizePercentage(percentage)
