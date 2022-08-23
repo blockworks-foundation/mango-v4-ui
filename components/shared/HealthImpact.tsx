@@ -25,11 +25,10 @@ const HealthImpact = ({
   const projectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !mangoAccount) return 0
-    const amount = group.toNativeDecimals(uiAmount, mintPk).toNumber()
     const projectedHealth = mangoAccount
-      .simHealthRatioWithTokenPositionChanges(
+      .simHealthRatioWithTokenPositionUiChanges(
         group,
-        [{ mintPk, tokenAmount: isDeposit ? amount : amount * -1 }],
+        [{ mintPk, uiTokenAmount: isDeposit ? uiAmount : uiAmount * -1 }],
         HealthType.maint
       )
       .toNumber()
