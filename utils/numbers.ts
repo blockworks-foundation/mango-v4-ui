@@ -9,6 +9,8 @@ export const formatDecimal = (
 ) => {
   if (opts?.fixed) return value.toFixed(decimals)
 
+  if (value < 0.000001 && decimals === 6) return digits6.format(0.0)
+
   if (decimals === 2) return digits2.format(value)
   if (decimals === 6) return digits6.format(value)
   if (decimals === 9) return digits9.format(value)

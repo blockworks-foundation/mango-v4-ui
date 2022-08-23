@@ -33,16 +33,12 @@ const getMaxBorrowForToken = (
     bank.uiDeposits() - bank.uiBorrows(),
     bank.mintDecimals
   )
-  const currentBalance = mangoAccount?.getTokenBalanceUi(bank) || 0
   const maxBorrow = mangoAccount?.getMaxWithdrawWithBorrowForTokenUi(
     group,
     bank.mint
   )
 
-  return Math.min(
-    vaultBalance,
-    floorToDecimal(maxBorrow, bank.mintDecimals)
-  )
+  return Math.min(vaultBalance, floorToDecimal(maxBorrow, bank.mintDecimals))
 }
 
 interface BorrowModalProps {

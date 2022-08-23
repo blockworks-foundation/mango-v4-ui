@@ -245,7 +245,10 @@ const TokenList = () => {
                   <td className="w-[16.67%] pt-4 text-right">
                     <p className="px-2">
                       {mangoAccount
-                        ? formatDecimal(mangoAccount.getTokenBalanceUi(bank))
+                        ? formatDecimal(
+                            mangoAccount.getTokenBalanceUi(bank),
+                            bank.mintDecimals
+                          )
                         : 0}
                     </p>
                     <p className="px-2 text-sm text-th-fgd-4">

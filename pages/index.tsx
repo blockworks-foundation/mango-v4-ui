@@ -113,6 +113,14 @@ const Index: NextPage = () => {
     return 0
   }, [totalInterestData])
 
+  const maintHealth = useMemo(() => {
+    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 100
+  }, [mangoAccount])
+
+  const initHealth = useMemo(() => {
+    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.init) : 100
+  }, [mangoAccount])
+
   return !chartToShow ? (
     <>
       <div className="mb-8 flex flex-col md:mb-10 lg:flex-row lg:items-end lg:justify-between">
@@ -217,17 +225,16 @@ const Index: NextPage = () => {
         </div>
         <AccountActions />
       </div>
-      <div className="grid grid-cols-4 gap-x-6 border-b border-th-bkg-3 md:border-b-0">
-        <div className="col-span-4 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
-          <p className="text-th-fgd-3">{t('health')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">
-            {mangoAccount
-              ? mangoAccount.getHealthRatioUi(HealthType.maint)
-              : 100}
-            %
-          </p>
+      <div className="grid grid-cols-5 gap-x-6 border-b border-th-bkg-3 md:border-b-0">
+        <div className="col-span-5 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+          <p className="text-th-fgd-3">Maint {t('health')}</p>
+          <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
         </div>
-        <div className="col-span-4 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div className="col-span-5 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+          <p className="text-th-fgd-3">Init {t('health')}</p>
+          <p className="text-2xl font-bold text-th-fgd-1">{initHealth}%</p>
+        </div>
+        <div className="col-span-5 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <p className="text-th-fgd-3">{t('free-collateral')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
             {mangoAccount
@@ -240,7 +247,7 @@ const Index: NextPage = () => {
               : (0).toFixed(2)}
           </p>
         </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div className="col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
             <p className="text-th-fgd-3">{t('pnl')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">
@@ -256,7 +263,7 @@ const Index: NextPage = () => {
             </IconButton>
           ) : null}
         </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div className="col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">
