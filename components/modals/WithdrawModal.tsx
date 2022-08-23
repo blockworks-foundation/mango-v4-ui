@@ -57,7 +57,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const tokenMax = useMemo(() => {
     if (!bank) return 0
     const amount = mangoAccount?.getTokenBalanceUi(bank)
-    return amount ? floorToDecimal(amount, bank.mintDecimals) : 0
+    return amount && amount > 0 ? floorToDecimal(amount, bank.mintDecimals) : 0
   }, [mangoAccount, bank])
 
   const handleSizePercentage = useCallback(
