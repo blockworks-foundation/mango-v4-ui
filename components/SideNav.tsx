@@ -1,15 +1,14 @@
 import Link from 'next/link'
 import TradeIcon from './icons/TradeIcon'
 import {
-  // ChartBarIcon,
   DotsHorizontalIcon,
   LibraryIcon,
   LightBulbIcon,
   ExternalLinkIcon,
   ChevronDownIcon,
-  // ReceiptTaxIcon,
   CogIcon,
   CurrencyDollarIcon,
+  ChartBarIcon,
 } from '@heroicons/react/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -76,13 +75,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             title={t('trade')}
             pagePath="/trade"
           />
-          {/* <MenuItem
+          <MenuItem
             active={pathname === '/stats'}
             collapsed={collapsed}
             icon={<ChartBarIcon className="h-5 w-5" />}
             title={t('stats')}
             pagePath="/stats"
-          /> */}
+          />
           <MenuItem
             active={pathname === '/settings'}
             collapsed={collapsed}

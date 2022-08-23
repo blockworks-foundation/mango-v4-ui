@@ -44,6 +44,7 @@
   "health-impact": "Health Impact",
   "insufficient-sol": "The Solana blockchain requires 0.00757 SOL to create a Mango Account. This covers rent for your account and will be refunded if you close your account.",
   "interest-earned": "Interest Earned",
+  "interest-earned-paid": "Interest Earned/Paid",
   "language": "Language",
   "learn": "Learn",
   "leverage": "Leverage",

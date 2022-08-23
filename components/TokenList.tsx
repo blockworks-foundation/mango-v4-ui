@@ -11,10 +11,12 @@ import { useTheme } from 'next-themes'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import useLocalStorageState from '../hooks/useLocalStorageState'
 import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '../store/mangoStore'
 import { COLORS } from '../styles/colors'
+import { SHOW_ZERO_BALANCES_KEY } from '../utils/constants'
 import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
@@ -23,15 +25,14 @@ import DepositModal from './modals/DepositModal'
 import WithdrawModal from './modals/WithdrawModal'
 import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
-import { UpTriangle } from './shared/DirectionTriangles'
 import IconDropMenu from './shared/IconDropMenu'
 import SimpleAreaChart from './shared/SimpleAreaChart'
-import { FadeInList } from './shared/Transitions'
 
 const TokenList = () => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const [showTokenDetails, setShowTokenDetails] = useState('')
+  const [isOnboarded] = useLocalStorageState(SHOW_ZERO_BALANCES_KEY)
   const [showZeroBalances, setShowZeroBalances] = useState(true)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
@@ -118,10 +119,8 @@ const TokenList = () => {
               <th className="text-left">{t('token')}</th>
               <th className="text-right">{t('price')}</th>
               <th className="className='hidden lg:block' text-right"></th>
-              <th className="text-right">Total Deposits</th>
-              <th className="text-right">Total Borrows</th>
               <th className="text-center">{t('rates')}</th>
-              <th className="text-right">{t('interest-earned')}</th>
+              <th className="text-right">{t('interest-earned-paid')}</th>
               <th className="text-right">{t('available-balance')}</th>
             </tr>
           </thead>
@@ -166,7 +165,7 @@ const TokenList = () => {
 
               return (
                 <tr key={key}>
-                  <td className="w-[16.67%]">
+                  <td className="">
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         {logoURI ? (
@@ -178,7 +177,7 @@ const TokenList = () => {
                       <p>{bank.name}</p>
                     </div>
                   </td>
-                  <td className="w-[16.67%]">
+                  <td className="">
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(oraclePrice, true)}</p>
                     </div>
@@ -207,17 +206,7 @@ const TokenList = () => {
                       <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
                     )}
                   </td>
-                  <td className="w-[16.67%]">
-                    <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiDeposits())}</p>
-                    </div>
-                  </td>
-                  <td className="w-[16.67%]">
-                    <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiBorrows())}</p>
-                    </div>
-                  </td>
-                  <td className="w-[16.67%]">
+                  <td className="">
                     <div className="flex justify-center space-x-2">
                       <p className="text-th-green">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
@@ -234,7 +223,7 @@ const TokenList = () => {
                       </p>
                     </div>
                   </td>
-                  <td className="w-[16.67%]">
+                  <td className="">
                     <div className="flex flex-col text-right">
                       <p>{formatDecimal(interestAmount)}</p>
                       <p className="text-sm text-th-fgd-4">
@@ -242,7 +231,7 @@ const TokenList = () => {
                       </p>
                     </div>
                   </td>
-                  <td className="w-[16.67%] pt-4 text-right">
+                  <td className=" pt-4 text-right">
                     <p className="px-2">
                       {mangoAccount
                         ? formatDecimal(
@@ -260,7 +249,7 @@ const TokenList = () => {
                         : '$0.00'}
                     </p>
                   </td>
-                  <td className="w-[16.67%]">
+                  <td className="">
                     <div className="flex justify-end space-x-2">
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
                     </div>
@@ -336,15 +325,6 @@ const TokenList = () => {
                       <p className="font-bold">
                         ${formatDecimal(oraclePrice, 2)}
                       </p>
-                    </div>
-                    <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">
-                        {t('rolling-change')}
-                      </p>
-                      <div className="flex items-center">
-                        <UpTriangle />
-                        <p className="ml-1 font-bold text-th-green">0%</p>
-                      </div>
                     </div>
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('rates')}</p>

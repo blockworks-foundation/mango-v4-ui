@@ -223,7 +223,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     <FlipNumbers
                       height={40}
                       width={26}
-                      duration={1.5}
                       play
                       numbers={formatFixedDecimals(mouseData['price'])}
                     />

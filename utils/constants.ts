@@ -7,3 +7,5 @@ export const INPUT_TOKEN_DEFAULT = 'USDC'
 export const OUTPUT_TOKEN_DEFAULT = 'SOL'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded-0.1'
+
+export const SHOW_ZERO_BALANCES_KEY = 'show-zero-balances-0.1'
