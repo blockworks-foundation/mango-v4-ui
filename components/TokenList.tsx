@@ -126,12 +126,12 @@ const TokenList = () => {
             </tr>
           </thead>
           <tbody>
-            {banks.map(({ key, value }, index) => {
+            {banks.map(({ key, value }) => {
               const bank = value[0]
               const oraclePrice = bank.uiPrice
 
-              const coingeckoData = coingeckoPrices.find(
-                (asset) => asset.symbol === key
+              const coingeckoData = coingeckoPrices.find((asset) =>
+                key === 'soETH' ? asset.symbol === 'ETH' : asset.symbol === key
               )
 
               const change = coingeckoData
