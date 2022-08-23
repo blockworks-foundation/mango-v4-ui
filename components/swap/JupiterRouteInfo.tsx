@@ -121,23 +121,16 @@ const JupiterRouteInfo = ({
       return 'Unknown'
 
     const simulatedHealthRatio = mangoAccount
-      .simHealthRatioWithTokenPositionChanges(
+      .simHealthRatioWithTokenPositionUiChanges(
         group,
         [
           {
             mintPk: new PublicKey(inputTokenInfo.address),
-            tokenAmount:
-              toNativeDecimals(
-                amountIn.toNumber(),
-                inputTokenInfo.decimals
-              ).toNumber() * -1,
+            uiTokenAmount: amountIn.toNumber() * -1,
           },
           {
             mintPk: new PublicKey(outputTokenInfo.address),
-            tokenAmount: toNativeDecimals(
-              amountOut,
-              outputTokenInfo.decimals
-            ).toNumber(),
+            uiTokenAmount: amountOut,
           },
         ],
         HealthType.maint

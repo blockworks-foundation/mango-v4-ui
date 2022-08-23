@@ -34,9 +34,9 @@ const getMaxBorrowForToken = (
     bank.mintDecimals
   )
   const currentBalance = mangoAccount?.getTokenBalanceUi(bank) || 0
-  const maxBorrow = toUiDecimals(
-    mangoAccount?.getMaxWithdrawWithBorrowForToken(group, bank.mint).toNumber(),
-    bank.mintDecimals
+  const maxBorrow = mangoAccount?.getMaxWithdrawWithBorrowForTokenUi(
+    group,
+    bank.mint
   )
   const maxBorrowWithBalance =
     currentBalance > 0 ? maxBorrow + currentBalance : maxBorrow
