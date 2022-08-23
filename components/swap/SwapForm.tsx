@@ -319,18 +319,13 @@ export const useTokenMax = () => {
       mangoAccount.getTokenBalanceUi(inputBank),
       inputBankLiquidity
     )
-    const maxNativeAmountWithBorrow = mangoAccount
-      ?.getMaxSourceForTokenSwap(
+    const maxUiAmountWithBorrow = mangoAccount
+      ?.getMaxSourceUiForTokenSwap(
         group,
         inputBank.mint,
         outputBank.mint,
         0.98 - slippage / 10
       )
-      .toNumber()
-    const maxUiAmountWithBorrow = toUiDecimals(
-      maxNativeAmountWithBorrow,
-      inputBank.mintDecimals
-    )
 
     return {
       amount:

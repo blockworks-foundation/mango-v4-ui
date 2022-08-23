@@ -31,7 +31,6 @@ const HealthImpact = ({
         [{ mintPk, uiTokenAmount: isDeposit ? uiAmount : uiAmount * -1 }],
         HealthType.maint
       )
-      .toNumber()
 
     return projectedHealth > 100
       ? 100

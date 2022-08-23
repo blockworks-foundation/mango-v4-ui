@@ -135,7 +135,6 @@ const JupiterRouteInfo = ({
         ],
         HealthType.maint
       )
-      .toNumber()
     return simulatedHealthRatio > 100 ? 100 : simulatedHealthRatio.toFixed(2)
   }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
 
