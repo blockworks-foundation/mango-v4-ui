@@ -38,12 +38,10 @@ const getMaxBorrowForToken = (
     group,
     bank.mint
   )
-  const maxBorrowWithBalance =
-    currentBalance > 0 ? maxBorrow + currentBalance : maxBorrow
 
   return Math.min(
     vaultBalance,
-    floorToDecimal(maxBorrowWithBalance, bank.mintDecimals)
+    floorToDecimal(maxBorrow, bank.mintDecimals)
   )
 }
 
