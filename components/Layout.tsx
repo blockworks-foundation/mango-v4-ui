@@ -73,7 +73,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   return (
     <>
-      {connected && loadingMangoAccount && isOnboarded ? (
+      {connected && loadingMangoAccount ? (
         <div className="fixed z-30 flex h-screen w-full items-center justify-center bg-[rgba(0,0,0,0.7)]">
           <BounceLoader />
         </div>

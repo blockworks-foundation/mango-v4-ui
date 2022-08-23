@@ -355,8 +355,8 @@ const mangoStore = create<MangoStore>(
           }
         },
         fetchMangoAccounts: async (wallet) => {
+          const set = get().set
           try {
-            const set = get().set
             const group = get().group
             const client = get().client
             const selectedMangoAccount = get().mangoAccount.current
@@ -389,10 +389,13 @@ const mangoStore = create<MangoStore>(
             set((state) => {
               state.mangoAccounts.accounts = mangoAccounts
               state.mangoAccount.current = newSelectedMangoAccount
-              state.mangoAccount.initialLoad = false
             })
           } catch (e) {
             console.error('Error fetching mango accts', e)
+          } finally {
+            set((state) => {
+              state.mangoAccount.initialLoad = false
+            })
           }
         },
         fetchNfts: async (connection: Connection, ownerPk: PublicKey) => {
