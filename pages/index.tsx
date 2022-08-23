@@ -10,7 +10,7 @@ import AccountActions from '../components/account/AccountActions'
 import DepositModal from '../components/modals/DepositModal'
 import WithdrawModal from '../components/modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '../store/mangoStore'
-import { formatDecimal } from '../utils/numbers'
+import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import {
   DownTriangle,
@@ -230,13 +230,12 @@ const Index: NextPage = () => {
         <div className="col-span-4 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <p className="text-th-fgd-3">{t('free-collateral')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
-            $
             {mangoAccount
-              ? formatDecimal(
+              ? formatFixedDecimals(
                   toUiDecimalsForQuote(
                     mangoAccount.getCollateralValue().toNumber()
                   ),
-                  2
+                  true
                 )
               : (0).toFixed(2)}
           </p>
@@ -245,7 +244,7 @@ const Index: NextPage = () => {
           <div>
             <p className="text-th-fgd-3">{t('pnl')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">
-              ${accountPnl.toFixed(2)}
+              {formatFixedDecimals(accountPnl, true)}
             </p>
           </div>
           {performanceData.length > 4 ? (
@@ -261,7 +260,7 @@ const Index: NextPage = () => {
           <div>
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">
-              ${interestTotalValue.toFixed(2)}
+              {formatFixedDecimals(interestTotalValue, true)}
             </p>
           </div>
           {interestTotalValue > 1 || interestTotalValue < -1 ? (
