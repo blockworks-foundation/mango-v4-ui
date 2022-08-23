@@ -260,7 +260,7 @@ const SwapForm = () => {
         <>
           <div className="mb-1 flex items-center justify-between">
             <p className="text-th-fgd-3">{t('leverage')}</p>
-            <p className="text-th-fgd-1">0.00x</p>
+            {/* <p className="text-th-fgd-1">0.00x</p> */}
           </div>
           <SwapLeverageSlider
             amount={amountIn.toNumber()}

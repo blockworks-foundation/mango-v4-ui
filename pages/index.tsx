@@ -257,10 +257,6 @@ const Index: NextPage = () => {
             </IconButton>
           ) : null}
         </div>
-        {/* <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
-          <p className="text-th-fgd-3">{t('leverage')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">0.0x</p>
-        </div> */}
         <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
