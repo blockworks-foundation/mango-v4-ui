@@ -64,7 +64,7 @@ const HealthImpact = ({
   return (
     <div className="space-y-2 border-y border-th-bkg-3 px-2 py-4">
       <div className="flex justify-between">
-        <p>Maint {t('health-impact')}</p>
+        <p>Liquidation {t('health-impact')}</p>
         <div className="flex items-center space-x-2">
           <p className="text-th-fgd-1">{currentMaintHealth}%</p>
           <ArrowRightIcon className="h-4 w-4 text-th-fgd-3" />
@@ -92,7 +92,7 @@ const HealthImpact = ({
         </div>
       </div>
       <div className="flex justify-between">
-        <p>Init {t('health-impact')}</p>
+        <p>Withdraw {t('health-impact')}</p>
         <div className="flex items-center space-x-2">
           <p className="text-th-fgd-1">{currentInitHealth}%</p>
           <ArrowRightIcon className="h-4 w-4 text-th-fgd-3" />
