@@ -1,3 +1,4 @@
+import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon } from '@heroicons/react/solid'
 import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -6,7 +7,7 @@ import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import mangoStore from '../../store/mangoStore'
 import { ModalProps } from '../../types/modal'
-import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
+import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { TokenAccount } from '../../utils/tokens'
@@ -162,6 +163,18 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     return banks.filter((b) => b.walletBalance > 0)
   }, [group?.banksMapByName, walletTokens])
 
+  const exceedsAlphaMax = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!mangoAccount) return
+    const accountValue = toUiDecimalsForQuote(
+      mangoAccount.getEquity().toNumber()
+    )
+    return (
+      parseFloat(inputAmount) > ALPHA_DEPOSIT_LIMIT ||
+      accountValue > ALPHA_DEPOSIT_LIMIT
+    )
+  }, [inputAmount])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <EnterBottomExitBottom
@@ -280,16 +293,26 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </p>
             </div>
           </div>
-        </div>
-        <Button
-          onClick={handleDeposit}
-          className="mt-6 flex w-full items-center justify-center"
-          disabled={!inputAmount}
-          size="large"
-        >
-          {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('deposit')}
-        </Button>
-      </FadeInFadeOut>
+          <div>
+            <Button
+              onClick={handleDeposit}
+              className="mt-6 flex w-full items-center justify-center"
+              disabled={!inputAmount || exceedsAlphaMax}
+              size="large"
+            >
+              {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('deposit')}
+            </Button>
+            {exceedsAlphaMax ? (
+              <div className="mt-2 rounded border border-th-bkg-4 px-2 py-1 text-th-red">
+                <div className="text-center text-th-red">
+                  There is a ${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha
+                  testing.
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </FadeInFadeOut>
+      </div>
     </Modal>
   )
 }
