@@ -120,8 +120,8 @@ const JupiterRouteInfo = ({
     )
       return 'Unknown'
 
-    const simulatedHealthRatio = mangoAccount
-      .simHealthRatioWithTokenPositionUiChanges(
+    const simulatedHealthRatio =
+      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
         group,
         [
           {
