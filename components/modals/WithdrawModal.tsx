@@ -190,7 +190,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   onClick={() => handleSizePercentage('100')}
                 >
                   <span className="mr-1 font-normal text-th-fgd-4">
-                    {t('account-balance')}:
+                    {t('max')}:
                   </span>
                   <span className="text-th-fgd-1 underline">{tokenMax}</span>
                 </LinkButton>
