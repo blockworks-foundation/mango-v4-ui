@@ -31,7 +31,11 @@ import { breakpoints } from '../utils/theme'
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common', 'close-account'])),
+      ...(await serverSideTranslations(locale, [
+        'common',
+        'close-account',
+        'trade',
+      ])),
     },
   }
 }

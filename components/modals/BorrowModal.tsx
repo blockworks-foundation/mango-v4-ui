@@ -176,7 +176,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut
-        className="flex h-[440px] flex-col justify-between"
+        className="flex h-[420px] flex-col justify-between"
         show={isOpen}
       >
         <div>
@@ -185,9 +185,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
               <LinkButton className="mb-2 no-underline" onClick={setMax}>
-                <span className="mr-1 font-normal text-th-fgd-3">
-                  {t('max')}:
-                </span>
+                <span className="font-normal text-th-fgd-4">{t('max')}:</span>
                 <span className="mx-1 text-th-fgd-1 underline">{tokenMax}</span>
               </LinkButton>
             </div>

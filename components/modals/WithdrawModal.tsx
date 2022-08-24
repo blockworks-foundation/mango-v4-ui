@@ -16,6 +16,7 @@ import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import HealthImpact from '../shared/HealthImpact'
+import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
@@ -44,7 +45,7 @@ const getMaxWithdrawWithoutBorrow = (
 type ModalCombinedProps = WithdrawModalProps & ModalProps
 
 function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const group = mangoStore((s) => s.group)
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -154,7 +155,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="h-96">
+      <div className="h-[420px]">
         <EnterBottomExitBottom
           className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6"
           show={showTokenList}
@@ -165,7 +166,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p className="text-xs">{t('token')}</p>
             </div>
             <div className="flex justify-end">
-              <p className="text-xs">Account Balance</p>
+              <p className="text-xs">{t('account-balance')}</p>
             </div>
           </div>
           <ActionTokenList
@@ -188,8 +189,8 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   className="mb-2 no-underline"
                   onClick={() => handleSizePercentage('100')}
                 >
-                  <span className="mr-1 font-normal text-th-fgd-3">
-                    {t('account-balance')}
+                  <span className="mr-1 font-normal text-th-fgd-4">
+                    {t('account-balance')}:
                   </span>
                   <span className="text-th-fgd-1 underline">{tokenMax}</span>
                 </LinkButton>
@@ -247,7 +248,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               onClick={handleWithdraw}
               className="flex w-full items-center justify-center"
               size="large"
-              disabled={!inputAmount}
+              disabled={!inputAmount || Number(inputAmount) > tokenMax}
             >
               {submitting ? (
                 <Loading className="mr-2 h-5 w-5" />
@@ -256,6 +257,16 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               )}
             </Button>
           </div>
+          {Number(inputAmount) > tokenMax ? (
+            <div className="pt-4">
+              <InlineNotification
+                type="error"
+                desc={t('trade:insufficient-balance', {
+                  symbol: selectedToken,
+                })}
+              />
+            </div>
+          ) : null}
         </FadeInFadeOut>
       </div>
     </Modal>
