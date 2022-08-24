@@ -27,6 +27,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
+import InlineNotification from '../shared/InlineNotification'
 
 const MAX_DIGITS = 11
 const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -52,6 +53,7 @@ const SwapForm = () => {
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
+  const { amount: tokenMax, amountWithBorrow, decimals } = useTokenMax()
 
   const { amountOut, jupiter, routes } = useJupiter({
     inputTokenInfo,
@@ -188,8 +190,10 @@ const SwapForm = () => {
       <div className="mb-2 flex items-center justify-between">
         <p className="text-th-fgd-3">{t('sell')}</p>
         <MaxSwapAmount
+          amountWithBorrow={amountWithBorrow}
           useMargin={useMargin}
           setAmountIn={setAmountInFormValue}
+          tokenMax={tokenMax}
         />
       </div>
       <div className="mb-3 grid grid-cols-2">
@@ -217,7 +221,9 @@ const SwapForm = () => {
         {!useMargin ? (
           <PercentageSelectButtons
             amountIn={amountInFormValue}
+            decimals={decimals}
             setAmountIn={setAmountInFormValue}
+            tokenMax={tokenMax}
           />
         ) : null}
       </div>
@@ -279,7 +285,8 @@ const SwapForm = () => {
           !connected ||
           !routes?.length ||
           !selectedRoute ||
-          !outputTokenInfo
+          !outputTokenInfo ||
+          (!useMargin && amountIn.toNumber() > tokenMax)
         }
         size="large"
       >
@@ -293,6 +300,16 @@ const SwapForm = () => {
           t('connect')
         )}
       </Button>
+      {!useMargin && amountIn.toNumber() > tokenMax ? (
+        <div className="pt-4">
+          <InlineNotification
+            type="error"
+            desc={t('trade:insufficient-balance', {
+              symbol: inputTokenInfo?.symbol,
+            })}
+          />
+        </div>
+      ) : null}
     </ContentBox>
   )
 }
@@ -319,13 +336,12 @@ export const useTokenMax = () => {
       mangoAccount.getTokenBalanceUi(inputBank),
       inputBankLiquidity
     )
-    const maxUiAmountWithBorrow = mangoAccount
-      ?.getMaxSourceUiForTokenSwap(
-        group,
-        inputBank.mint,
-        outputBank.mint,
-        0.98 - slippage / 10
-      )
+    const maxUiAmountWithBorrow = mangoAccount?.getMaxSourceUiForTokenSwap(
+      group,
+      inputBank.mint,
+      outputBank.mint,
+      0.98 - slippage / 10
+    )
 
     return {
       amount:
@@ -347,15 +363,18 @@ export const useTokenMax = () => {
 }
 
 const MaxSwapAmount = ({
+  amountWithBorrow,
   setAmountIn,
+  tokenMax,
   useMargin,
 }: {
+  amountWithBorrow: number
   setAmountIn: (x: any) => void
+  tokenMax: number
   useMargin: boolean
 }) => {
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const { t } = useTranslation('common')
-  const { amount: tokenMax, amountWithBorrow } = useTokenMax()
 
   const setMaxInputAmount = () => {
     const amountIn = useMargin ? amountWithBorrow : tokenMax
@@ -376,13 +395,16 @@ const MaxSwapAmount = ({
 
 const PercentageSelectButtons = ({
   amountIn,
+  decimals,
   setAmountIn,
+  tokenMax,
 }: {
   amountIn: string
+  decimals: number
   setAmountIn: (x: any) => any
+  tokenMax: number
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
-  const { amount: tokenMax, decimals } = useTokenMax()
 
   useEffect(() => {
     if (tokenMax > 0 && Number(amountIn) === tokenMax) {
