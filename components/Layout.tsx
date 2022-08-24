@@ -106,21 +106,19 @@ const Layout = ({ children }: { children: ReactNode }) => {
             }`}
           >
             <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6 md:px-8">
-              <div className="flex items-center text-th-fgd-3">
-                <img
-                  className="mr-4 h-8 w-auto md:hidden"
-                  src="/logos/logo-mark.svg"
-                  alt="next"
-                />
-                <span className="mb-0 mr-2">
-                  {mangoAccount ? (
-                    <MangoAccountsList mangoAccount={mangoAccount} />
-                  ) : !connected ? (
+              <img
+                className="mr-4 h-8 w-auto md:hidden"
+                src="/logos/logo-mark.svg"
+                alt="next"
+              />
+              <div className="flex w-full items-center justify-between space-x-4">
+                <span className="mb-0">
+                  {!connected ? (
                     <span className="hidden items-center md:flex">
                       🔗<span className="ml-2">{t('connect-helper')}</span>
                       <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
                     </span>
-                  ) : (
+                  ) : !mangoAccount ? (
                     <div className="hidden items-center md:flex">
                       🥭
                       <LinkButton
@@ -129,12 +127,15 @@ const Layout = ({ children }: { children: ReactNode }) => {
                         <span className="ml-2">{t('create-account')}</span>
                       </LinkButton>
                     </div>
-                  )}
+                  ) : null}
                 </span>
-              </div>
-              <div className="flex items-center space-x-4">
                 {connected ? (
-                  <ConnectedMenu />
+                  <div className="flex items-center space-x-4">
+                    {mangoAccount ? (
+                      <MangoAccountsList mangoAccount={mangoAccount} />
+                    ) : null}
+                    <ConnectedMenu />
+                  </div>
                 ) : isOnboarded ? (
                   <ConnectWalletButton />
                 ) : (
