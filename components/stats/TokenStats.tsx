@@ -68,20 +68,14 @@ const TokenList = () => {
               <th className="">
                 <div className="flex items-center justify-center">
                   <span>Asset Weight</span>
-                  {/* <InfoTooltip
-                    content={
-                      'The loan-to-value (LTV) ratio is how much you can borrow against your deposits.'
-                    }
-                  /> */}
+                  <InfoTooltip content="The asset weight applies a haircut to the value of the collateral in your account health calculation. The lower the asset weight, the less the asset counts towards collateral." />
                 </div>
               </th>
               <th className="">
                 <div className="flex items-center justify-center">
                   <span>Liability Weight</span>
                   {/* <InfoTooltip
-                    content={
-                      'The loan-to-value (LTV) ratio is how much you can borrow against your deposits.'
-                    }
+                    content=""
                   /> */}
                 </div>
               </th>
