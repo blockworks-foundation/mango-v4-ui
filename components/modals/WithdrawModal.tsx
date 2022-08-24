@@ -1,3 +1,4 @@
+import { Bank, Group, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon } from '@heroicons/react/solid'
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
@@ -21,6 +22,23 @@ import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 
 interface WithdrawModalProps {
   token?: string
+}
+
+const getMaxWithdrawWithoutBorrow = (
+  group: Group,
+  bank: Bank,
+  mangoAccount: MangoAccount
+): number => {
+  const accountBalance = mangoAccount?.getTokenBalanceUi(bank)
+  const vaultBalance = floorToDecimal(
+    bank.uiDeposits() - bank.uiBorrows(),
+    bank.mintDecimals
+  )
+  const maxBorrow = mangoAccount?.getMaxWithdrawWithBorrowForTokenUi(
+    group,
+    bank.mint
+  )
+  return Math.min(accountBalance, vaultBalance, maxBorrow)
 }
 
 type ModalCombinedProps = WithdrawModalProps & ModalProps
@@ -55,10 +73,10 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   const tokenMax = useMemo(() => {
-    if (!bank) return 0
-    const amount = mangoAccount?.getTokenBalanceUi(bank)
+    if (!bank || !mangoAccount || !group) return 0
+    const amount = getMaxWithdrawWithoutBorrow(group, bank, mangoAccount)
     return amount && amount > 0 ? floorToDecimal(amount, bank.mintDecimals) : 0
-  }, [mangoAccount, bank])
+  }, [mangoAccount, bank, group])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -113,7 +131,11 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     if (mangoAccount) {
       const banks = group?.banksMapByName
         ? Array.from(group?.banksMapByName, ([key, value]) => {
-            const accountBalance = mangoAccount?.getTokenBalanceUi(value[0])
+            const accountBalance = getMaxWithdrawWithoutBorrow(
+              group,
+              value[0],
+              mangoAccount
+            )
             return {
               key,
               value,
@@ -128,7 +150,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
       return banks.filter((b) => b.accountBalance > 0)
     }
     return []
-  }, [mangoAccount, group?.banksMapByName])
+  }, [mangoAccount, group])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
