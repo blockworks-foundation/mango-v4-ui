@@ -223,7 +223,7 @@ const Index: NextPage = () => {
             ) : null
           ) : (
             <SheenLoader>
-              <div className="h-[72px] w-[180px] rounded-md bg-th-bkg-2" />
+              <div className="h-[88px] w-[180px] rounded-md bg-th-bkg-2" />
             </SheenLoader>
           )}
         </div>
