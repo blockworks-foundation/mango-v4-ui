@@ -54,15 +54,6 @@ const MangoAccountSummary = () => {
             %
           </p>
         </div>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-th-fgd-3">Withdraw {t('health')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
-            {mangoAccount
-              ? mangoAccount.getHealthRatioUi(HealthType.init)
-              : 100}
-            %
-          </p>
-        </div>
       </div>
       <div className="flex items-center space-x-2">
         <Button

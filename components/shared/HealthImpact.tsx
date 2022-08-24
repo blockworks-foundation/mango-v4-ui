@@ -91,34 +91,6 @@ const HealthImpact = ({
           </p>
         </div>
       </div>
-      <div className="flex justify-between">
-        <p>Withdraw {t('health-impact')}</p>
-        <div className="flex items-center space-x-2">
-          <p className="text-th-fgd-1">{currentInitHealth}%</p>
-          <ArrowRightIcon className="h-4 w-4 text-th-fgd-3" />
-          <p
-            className={
-              initProjectedHealth < 50 && initProjectedHealth > 15
-                ? 'text-th-orange'
-                : initProjectedHealth <= 15
-                ? 'text-th-red'
-                : 'text-th-green'
-            }
-          >
-            {initProjectedHealth.toFixed(2)}%{' '}
-            <span
-              className={`text-xs ${
-                initProjectedHealth >= currentInitHealth
-                  ? 'text-th-green'
-                  : 'text-th-red'
-              }`}
-            >
-              ({initProjectedHealth >= currentInitHealth ? '+' : ''}
-              {(initProjectedHealth - currentInitHealth).toFixed(2)}%)
-            </span>
-          </p>
-        </div>
-      </div>
     </div>
   )
 }

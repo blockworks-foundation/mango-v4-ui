@@ -235,10 +235,6 @@ const Index: NextPage = () => {
           <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
         </div>
         <div className="col-span-5 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
-          <p className="text-th-fgd-3">Withdraw {t('health')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">{initHealth}%</p>
-        </div>
-        <div className="col-span-5 border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <p className="text-th-fgd-3">{t('free-collateral')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
             {mangoAccount
