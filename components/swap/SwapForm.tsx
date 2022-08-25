@@ -1,10 +1,9 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { PublicKey } from '@solana/web3.js'
-import { ArrowDownIcon, CogIcon } from '@heroicons/react/solid'
+import { ArrowDownIcon, ArrowRightIcon, CogIcon } from '@heroicons/react/solid'
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import Decimal from 'decimal.js'
-
 import mangoStore from '../../store/mangoStore'
 import ContentBox from '../shared/ContentBox'
 import JupiterRouteInfo from './JupiterRouteInfo'
@@ -22,7 +21,7 @@ import { EnterBottomExitBottom } from '../shared/Transitions'
 import useJupiter from './useJupiter'
 import SwapSettings from './SwapSettings'
 import SheenLoader from '../shared/SheenLoader'
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   INPUT_TOKEN_DEFAULT,
   OUTPUT_TOKEN_DEFAULT,
@@ -48,6 +47,7 @@ const SwapForm = () => {
   const set = mangoStore.getState().set
   const useMargin = mangoStore((s) => s.swap.margin)
   const slippage = mangoStore((s) => s.swap.slippage)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
   const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
@@ -127,6 +127,44 @@ const SwapForm = () => {
       : new Decimal(0)
   }, [debouncedAmountIn])
 
+  const currentMaintHealth = useMemo(() => {
+    if (!mangoAccount) return 0
+    return mangoAccount.getHealthRatioUi(HealthType.maint)
+  }, [mangoAccount])
+
+  const maintProjectedHealth = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (
+      !inputTokenInfo ||
+      !mangoAccount ||
+      !outputTokenInfo ||
+      !amountOut ||
+      !group
+    )
+      return 0
+
+    const simulatedHealthRatio =
+      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
+        group,
+        [
+          {
+            mintPk: new PublicKey(inputTokenInfo.address),
+            uiTokenAmount: amountIn.toNumber() * -1,
+          },
+          {
+            mintPk: new PublicKey(outputTokenInfo.address),
+            uiTokenAmount: amountOut,
+          },
+        ],
+        HealthType.maint
+      )
+    return simulatedHealthRatio > 100
+      ? 100
+      : simulatedHealthRatio < 0
+      ? 0
+      : simulatedHealthRatio
+  }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
+
   const isLoadingTradeDetails = useMemo(() => {
     return (
       amountIn.toNumber() && connected && (!selectedRoute || !outputTokenInfo)
@@ -134,180 +172,214 @@ const SwapForm = () => {
   }, [amountIn, connected, selectedRoute, outputTokenInfo])
 
   return (
-    <ContentBox showBackground className="relative overflow-hidden">
-      <Transition
-        className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
-        show={showConfirm}
-        enter="transition ease-in duration-300"
-        enterFrom="translate-x-full"
-        enterTo="translate-x-0"
-        leave="transition ease-out duration-300"
-        leaveFrom="translate-x-0"
-        leaveTo="translate-x-full"
-      >
-        <JupiterRouteInfo
-          inputTokenInfo={inputTokenInfo}
-          onClose={() => setShowConfirm(false)}
-          amountIn={amountIn}
-          slippage={slippage}
-          outputTokenInfo={outputTokenInfo}
-          jupiter={jupiter}
-          routes={routes}
-          selectedRoute={selectedRoute}
-          setSelectedRoute={setSelectedRoute}
-        />
-      </Transition>
-      <EnterBottomExitBottom
-        className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
-        show={!!showTokenSelect}
-      >
-        <SwapFormTokenList
-          onClose={() => setShowTokenSelect('')}
-          onTokenSelect={
-            showTokenSelect === 'input'
-              ? handleTokenInSelect
-              : handleTokenOutSelect
-          }
-          type={showTokenSelect}
-        />
-      </EnterBottomExitBottom>
-      <div className="mb-4 flex items-center justify-between">
-        <h3>{t('trade')}</h3>
-        <IconButton
-          className="text-th-fgd-3"
-          onClick={() => setShowSettings(true)}
-          size="small"
+    <ContentBox hidePadding showBackground className="relative overflow-hidden">
+      <div className="p-6">
+        <Transition
+          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          show={showConfirm}
+          enter="transition ease-in duration-300"
+          enterFrom="translate-x-full"
+          enterTo="translate-x-0"
+          leave="transition ease-out duration-300"
+          leaveFrom="translate-x-0"
+          leaveTo="translate-x-full"
         >
-          <CogIcon className="h-5 w-5" />
-        </IconButton>
-      </div>
-      <EnterBottomExitBottom
-        className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
-        show={showSettings}
-      >
-        <SwapSettings onClose={() => setShowSettings(false)} />
-      </EnterBottomExitBottom>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-th-fgd-3">{t('sell')}</p>
-        <MaxSwapAmount
-          amountWithBorrow={amountWithBorrow}
-          useMargin={useMargin}
-          setAmountIn={setAmountInFormValue}
-          tokenMax={tokenMax}
-        />
-      </div>
-      <div className="mb-3 grid grid-cols-2">
-        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
-          <TokenSelect
-            tokenSymbol={inputTokenInfo?.symbol || INPUT_TOKEN_DEFAULT}
-            showTokenList={setShowTokenSelect}
-            type="input"
+          <JupiterRouteInfo
+            inputTokenInfo={inputTokenInfo}
+            onClose={() => setShowConfirm(false)}
+            amountIn={amountIn}
+            slippage={slippage}
+            outputTokenInfo={outputTokenInfo}
+            jupiter={jupiter}
+            routes={routes}
+            selectedRoute={selectedRoute}
+            setSelectedRoute={setSelectedRoute}
           />
-        </div>
-        <div className="col-span-1">
-          <NumberFormat
-            inputMode="decimal"
-            thousandSeparator=","
-            decimalScale={inputTokenInfo?.decimals || 6}
-            name="amountIn"
-            id="amountIn"
-            className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
-            placeholder="0.00"
-            value={amountInFormValue}
-            onValueChange={handleAmountInChange}
-            isAllowed={withValueLimit}
+        </Transition>
+        <EnterBottomExitBottom
+          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          show={!!showTokenSelect}
+        >
+          <SwapFormTokenList
+            onClose={() => setShowTokenSelect('')}
+            onTokenSelect={
+              showTokenSelect === 'input'
+                ? handleTokenInSelect
+                : handleTokenOutSelect
+            }
+            type={showTokenSelect}
           />
+        </EnterBottomExitBottom>
+        <div className="mb-4 flex items-center justify-between">
+          <h3>{t('trade')}</h3>
+          <IconButton
+            className="text-th-fgd-3"
+            onClick={() => setShowSettings(true)}
+            size="small"
+          >
+            <CogIcon className="h-5 w-5" />
+          </IconButton>
         </div>
-        {!useMargin ? (
-          <PercentageSelectButtons
-            amountIn={amountInFormValue}
-            decimals={decimals}
+        <EnterBottomExitBottom
+          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          show={showSettings}
+        >
+          <SwapSettings onClose={() => setShowSettings(false)} />
+        </EnterBottomExitBottom>
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-th-fgd-3">{t('sell')}</p>
+          <MaxSwapAmount
+            amountWithBorrow={amountWithBorrow}
+            useMargin={useMargin}
             setAmountIn={setAmountInFormValue}
             tokenMax={tokenMax}
           />
+        </div>
+        <div className="mb-3 grid grid-cols-2">
+          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+            <TokenSelect
+              tokenSymbol={inputTokenInfo?.symbol || INPUT_TOKEN_DEFAULT}
+              showTokenList={setShowTokenSelect}
+              type="input"
+            />
+          </div>
+          <div className="col-span-1">
+            <NumberFormat
+              inputMode="decimal"
+              thousandSeparator=","
+              decimalScale={inputTokenInfo?.decimals || 6}
+              name="amountIn"
+              id="amountIn"
+              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+              placeholder="0.00"
+              value={amountInFormValue}
+              onValueChange={handleAmountInChange}
+              isAllowed={withValueLimit}
+            />
+          </div>
+          {!useMargin ? (
+            <PercentageSelectButtons
+              amountIn={amountInFormValue}
+              decimals={decimals}
+              setAmountIn={setAmountInFormValue}
+              tokenMax={tokenMax}
+            />
+          ) : null}
+        </div>
+        <div className="flex justify-center">
+          <button
+            className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 md:hover:text-th-primary"
+            onClick={handleSwitchTokens}
+          >
+            <ArrowDownIcon
+              className="h-5 w-5"
+              style={
+                animateSwitchArrow % 2 == 0
+                  ? { transform: 'rotate(0deg)' }
+                  : { transform: 'rotate(360deg)' }
+              }
+            />
+          </button>
+        </div>
+        <p className="mb-2 text-th-fgd-3">{t('buy')}</p>
+        <div className="mb-3 grid grid-cols-2">
+          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+            <TokenSelect
+              tokenSymbol={outputTokenInfo?.symbol || OUTPUT_TOKEN_DEFAULT}
+              showTokenList={setShowTokenSelect}
+              type="output"
+            />
+          </div>
+          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
+            {isLoadingTradeDetails ? (
+              <div className="w-full">
+                <SheenLoader className="rounded-l-none">
+                  <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-3" />
+                </SheenLoader>
+              </div>
+            ) : (
+              <span className="p-3">
+                {amountOut ? numberFormat.format(amountOut) : ''}
+              </span>
+            )}
+          </div>
+        </div>
+        {useMargin ? (
+          <>
+            <div className="mb-1 flex items-center justify-between">
+              <p className="text-th-fgd-3">{t('leverage')}</p>
+              {/* <p className="text-th-fgd-1">0.00x</p> */}
+            </div>
+            <SwapLeverageSlider
+              amount={amountIn.toNumber()}
+              onChange={setAmountInFormValue}
+            />
+          </>
+        ) : null}
+        <Button
+          onClick={() => setShowConfirm(true)}
+          className="mt-6 flex w-full items-center justify-center text-base"
+          disabled={
+            !amountIn.toNumber() ||
+            !connected ||
+            !routes?.length ||
+            !selectedRoute ||
+            !outputTokenInfo ||
+            (!useMargin && amountIn.toNumber() > tokenMax)
+          }
+          size="large"
+        >
+          {connected ? (
+            isLoadingTradeDetails ? (
+              <Loading />
+            ) : (
+              <div className="flex items-center">{t('trade:review-trade')}</div>
+            )
+          ) : (
+            t('connect')
+          )}
+        </Button>
+        {!useMargin && amountIn.toNumber() > tokenMax ? (
+          <div className="pt-4">
+            <InlineNotification
+              type="error"
+              desc={t('trade:insufficient-balance', {
+                symbol: inputTokenInfo?.symbol,
+              })}
+            />
+          </div>
         ) : null}
       </div>
-      <div className="flex justify-center">
-        <button
-          className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 md:hover:text-th-primary"
-          onClick={handleSwitchTokens}
-        >
-          <ArrowDownIcon
-            className="h-5 w-5"
-            style={
-              animateSwitchArrow % 2 == 0
-                ? { transform: 'rotate(0deg)' }
-                : { transform: 'rotate(360deg)' }
-            }
-          />
-        </button>
-      </div>
-      <p className="mb-2 text-th-fgd-3">{t('buy')}</p>
-      <div className="mb-3 grid grid-cols-2">
-        <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
-          <TokenSelect
-            tokenSymbol={outputTokenInfo?.symbol || OUTPUT_TOKEN_DEFAULT}
-            showTokenList={setShowTokenSelect}
-            type="output"
-          />
-        </div>
-        <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
-          {isLoadingTradeDetails ? (
-            <div className="w-full">
-              <SheenLoader className="rounded-l-none">
-                <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-3" />
-              </SheenLoader>
+      {inputTokenInfo && mangoAccount && outputTokenInfo && amountOut ? (
+        <div className="bg-th-bkg-3 px-6 py-4">
+          <div className="flex justify-between">
+            <p className="text-sm">{t('health-impact')}</p>
+            <div className="flex items-center space-x-2">
+              <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
+              <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
+              <p
+                className={`${
+                  maintProjectedHealth < 50 && maintProjectedHealth > 15
+                    ? 'text-th-orange'
+                    : maintProjectedHealth <= 15
+                    ? 'text-th-red'
+                    : 'text-th-green'
+                } text-sm`}
+              >
+                {maintProjectedHealth.toFixed(2)}%{' '}
+                <span
+                  className={`text-xs ${
+                    maintProjectedHealth >= currentMaintHealth
+                      ? 'text-th-green'
+                      : 'text-th-red'
+                  }`}
+                >
+                  ({maintProjectedHealth >= currentMaintHealth ? '+' : ''}
+                  {(maintProjectedHealth - currentMaintHealth).toFixed(2)}%)
+                </span>
+              </p>
             </div>
-          ) : (
-            <span className="p-3">
-              {amountOut ? numberFormat.format(amountOut) : ''}
-            </span>
-          )}
-        </div>
-      </div>
-      {useMargin ? (
-        <>
-          <div className="mb-1 flex items-center justify-between">
-            <p className="text-th-fgd-3">{t('leverage')}</p>
-            {/* <p className="text-th-fgd-1">0.00x</p> */}
           </div>
-          <SwapLeverageSlider
-            amount={amountIn.toNumber()}
-            onChange={setAmountInFormValue}
-          />
-        </>
-      ) : null}
-      <Button
-        onClick={() => setShowConfirm(true)}
-        className="mt-6 flex w-full items-center justify-center text-base"
-        disabled={
-          !amountIn.toNumber() ||
-          !connected ||
-          !routes?.length ||
-          !selectedRoute ||
-          !outputTokenInfo ||
-          (!useMargin && amountIn.toNumber() > tokenMax)
-        }
-        size="large"
-      >
-        {connected ? (
-          isLoadingTradeDetails ? (
-            <Loading />
-          ) : (
-            <div className="flex items-center">{t('trade:review-trade')}</div>
-          )
-        ) : (
-          t('connect')
-        )}
-      </Button>
-      {!useMargin && amountIn.toNumber() > tokenMax ? (
-        <div className="pt-4">
-          <InlineNotification
-            type="error"
-            desc={t('trade:insufficient-balance', {
-              symbol: inputTokenInfo?.symbol,
-            })}
-          />
         </div>
       ) : null}
     </ContentBox>
