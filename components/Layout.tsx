@@ -27,7 +27,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const { width } = useViewport()
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetupModal, setShowUserSetupModal] = useState(false)
-  const [showFirstAccountModal, setShowFirstAccountModal] = useState(false)
+  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
 
   useEffect(() => {
     if (mangoAccount) {
@@ -47,14 +47,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
       setIsCollapsed(true)
     }
   }, [width])
-
-  useEffect(() => {
-    if (connected && isOnboarded && !loadingMangoAccount && !mangoAccount) {
-      setShowFirstAccountModal(true)
-    } else {
-      setShowFirstAccountModal(false)
-    }
-  }, [connected, isOnboarded, loadingMangoAccount, mangoAccount])
 
   const handleCloseModal = useCallback(() => {
     setShowUserSetupModal(false)
@@ -122,7 +114,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
                     <div className="hidden items-center md:flex">
                       🥭
                       <LinkButton
-                        onClick={() => setShowFirstAccountModal(true)}
+                        onClick={() => setShowCreateAccountModal(true)}
                       >
                         <span className="ml-2">{t('create-account')}</span>
                       </LinkButton>
@@ -159,10 +151,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
           onClose={handleCloseModal}
         />
       ) : null}
-      {showFirstAccountModal ? (
+      {showCreateAccountModal ? (
         <CreateAccountModal
-          isOpen={showFirstAccountModal}
-          onClose={() => setShowFirstAccountModal(false)}
+          isOpen={showCreateAccountModal}
+          onClose={() => setShowCreateAccountModal(false)}
           isFirstAccount
         />
       ) : null}

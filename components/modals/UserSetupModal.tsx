@@ -60,6 +60,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       try {
         await handleWalletConnect(wallet)
         setShowSetupStep(2)
+        setIsOnboarded(true)
       } catch (e) {
         notify({
           title: 'Setup failed. Refresh and try again.',
@@ -126,7 +127,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       })
 
       await actions.reloadAccount()
-      setIsOnboarded(true)
       onClose()
       setSubmitDeposit(false)
     } catch (e: any) {
