@@ -216,8 +216,8 @@ const JupiterRouteInfo = ({
                 />
               </div>
             </div>
-            <p className="mb-0.5 text-lg text-th-fgd-1">{`${amountIn} ${
-              inputTokenInfo!.name
+            <p className="mb-0.5 text-center text-lg text-th-fgd-1">{`${amountIn} ${
+              inputTokenInfo!.symbol
             } for ${amountOut} ${outputTokenInfo.symbol}`}</p>
             <div className="flex items-center justify-end">
               <p className="text-right text-sm">
