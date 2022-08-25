@@ -196,13 +196,13 @@ const JupiterRouteInfo = ({
     <div className="flex h-full flex-col justify-between">
       <div>
         <IconButton
-          className="mr-3 text-th-fgd-3"
+          className="absolute mr-3 text-th-fgd-3"
           onClick={onClose}
           size="small"
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
-        <div className="mb-6 -mt-4 flex justify-center">
+        <div className="mb-6 flex justify-center">
           <div className="flex flex-col items-center">
             <div className="relative mb-2 w-[72px]">
               <Image alt="" width="40" height="40" src={inputTokenIconUri} />
