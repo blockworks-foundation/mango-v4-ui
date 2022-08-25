@@ -92,7 +92,7 @@ const MangoAccountsList = ({
                       onClick={() => setShowNewAccountModal(true)}
                     >
                       <PlusCircleIcon className="h-5 w-5" />
-                      <span className="ml-2">New Account</span>
+                      <span className="ml-2">New Sub Account</span>
                     </LinkButton>
                   </div>
                 </Popover.Panel>

@@ -7,6 +7,7 @@ import Button from '../shared/Button'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
 import BounceLoader from '../shared/BounceLoader'
+import { MangoAccount } from '@blockworks-foundation/mango-v4'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
@@ -17,12 +18,22 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const handleCloseMangoAccount = async () => {
     const client = mangoStore.getState().client
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const mangoAccounts = mangoStore.getState().mangoAccounts.accounts
     const group = mangoStore.getState().group
     if (!mangoAccount || !group) return
     setLoading(true)
     try {
       const tx = await client.closeMangoAccount(group, mangoAccount)
       if (tx) {
+        const newMangoAccounts = mangoAccounts.filter(
+          (ma) => !ma.publicKey.equals(mangoAccount.publicKey)
+        )
+        let newCurrentAccount: MangoAccount
+        if (newMangoAccounts[0]) {
+          await newMangoAccounts[0].reload(client, group)
+          newCurrentAccount = newMangoAccounts[0]
+        }
+
         setLoading(false)
         onClose()
         notify({
@@ -31,7 +42,8 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           txid: tx,
         })
         set((state) => {
-          state.mangoAccount.current = undefined
+          state.mangoAccounts.accounts = newMangoAccounts
+          state.mangoAccount.current = newCurrentAccount
         })
       }
     } catch (e) {
