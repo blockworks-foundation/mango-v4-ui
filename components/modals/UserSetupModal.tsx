@@ -59,7 +59,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     if (wallet) {
       try {
         await handleWalletConnect(wallet)
-        setIsOnboarded(true)
         setShowSetupStep(2)
       } catch (e) {
         notify({
@@ -101,7 +100,8 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       })
       console.error(e)
     }
-  }, [accountName, wallet, t])
+    setIsOnboarded(true)
+  }, [accountName, wallet, t, setIsOnboarded])
 
   const handleDeposit = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -351,13 +351,21 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               </div>
               <div className="space-y-6">
                 <InlineNotification type="info" desc={t('insufficient-sol')} />
-                <Button
-                  className="mb-4 w-full"
-                  onClick={() => handleCreateAccount()}
-                  size="large"
-                >
-                  Create Account
-                </Button>
+                <div className="">
+                  <Button
+                    className="w-full"
+                    onClick={() => handleCreateAccount()}
+                    size="large"
+                  >
+                    Create Account
+                  </Button>
+                  <LinkButton
+                    className="mt-2 flex w-full justify-center"
+                    onClick={onClose}
+                  >
+                    <div className=" text-th-fgd-4 underline">Skip for now</div>
+                  </LinkButton>
+                </div>
               </div>
             </div>
           )}

@@ -72,12 +72,12 @@ export const SwapLeverageSlider = ({
   amount: number
   onChange: (x: string) => void
 }) => {
-  const mangoAccountNotLoaded = mangoStore((s) => s.mangoAccount.initialLoad)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const { amountWithBorrow } = useTokenMax()
 
   return (
     <>
-      {mangoAccountNotLoaded ? (
+      {!mangoAccount ? (
         <LeverageSlider amount={amount} leverageMax={100} onChange={onChange} />
       ) : (
         <LeverageSlider

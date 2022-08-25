@@ -97,8 +97,6 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   )
 
   const handleSelectToken = (token: string) => {
-    setInputAmount('')
-    setSizePercentage('')
     setSelectedToken(token)
     setShowTokenList(false)
   }
