@@ -65,7 +65,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             active={pathname === '/'}
             collapsed={collapsed}
             icon={<CurrencyDollarIcon className="h-5 w-5" />}
-            title={t('portfolio')}
+            title={t('account')}
             pagePath="/"
           />
           <MenuItem

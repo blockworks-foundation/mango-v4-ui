@@ -42,7 +42,7 @@ const BottomBar = () => {
             } col-span-1 flex cursor-pointer flex-col items-center`}
           >
             <HomeIcon className="mb-1 h-4 w-4" />
-            <StyledBarItemLabel>{t('portfolio')}</StyledBarItemLabel>
+            <StyledBarItemLabel>{t('account')}</StyledBarItemLabel>
           </a>
         </Link>
         <Link

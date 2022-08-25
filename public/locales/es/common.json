@@ -1,4 +1,5 @@
 {
+  "account": "Account",
   "account-balance": "Account Balance",
   "account-closed": "Account Closed 👋",
   "account-name": "Account Name",
@@ -59,7 +60,6 @@
   "new-account-failed": "Failed to create account",
   "new-account-success": "Your new account is ready 😎",
   "pnl": "PnL",
-  "portfolio": "Portfolio",
   "price": "Price",
   "rate": "Rate (APR)",
   "rates": "Rates (APR)",
