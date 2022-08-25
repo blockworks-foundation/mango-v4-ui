@@ -328,14 +328,21 @@ export const useTokenMax = () => {
     if (!group || !inputBank || !mangoAccount || !outputBank)
       return { amount: 0.0, decimals: 6, amountWithBorrow: 0.0 }
 
-    const inputBankLiquidity = floorToDecimal(
+    const tokenBalance = mangoAccount?.getTokenBalanceUi(inputBank)
+    const maxAmountWithoutMargin = tokenBalance > 0 ? tokenBalance : 0
+    const inputBankVaultBalance = floorToDecimal(
       inputBank.uiDeposits() - inputBank.uiBorrows(),
       inputBank.mintDecimals
     )
-    const maxWithdrawableAmount = Math.min(
-      mangoAccount.getTokenBalanceUi(inputBank),
-      inputBankLiquidity
-    )
+
+    // const inputBankLiquidity = floorToDecimal(
+    //   inputBank.uiDeposits() - inputBank.uiBorrows(),
+    //   inputBank.mintDecimals
+    // )
+    // const maxWithdrawableAmount = Math.min(
+    //   mangoAccount.getTokenBalanceUi(inputBank),
+    //   inputBankLiquidity
+    // )
     const maxUiAmountWithBorrow = mangoAccount?.getMaxSourceUiForTokenSwap(
       group,
       inputBank.mint,
@@ -344,17 +351,15 @@ export const useTokenMax = () => {
     )
 
     return {
-      amount:
-        maxWithdrawableAmount > 0
-          ? floorToDecimal(maxWithdrawableAmount, inputBank.mintDecimals)
-          : 0,
-      amountWithBorrow:
-        maxUiAmountWithBorrow > 0
-          ? Math.min(
-              floorToDecimal(maxUiAmountWithBorrow, inputBank.mintDecimals),
-              inputBankLiquidity
-            )
-          : 0,
+      amount: Math.min(
+        maxAmountWithoutMargin,
+        inputBankVaultBalance,
+        maxUiAmountWithBorrow
+      ),
+      amountWithBorrow: Math.min(
+        floorToDecimal(maxUiAmountWithBorrow, inputBank.mintDecimals),
+        inputBankVaultBalance
+      ),
       decimals: inputBank.mintDecimals,
     }
   }, [inputBank, mangoAccount, outputBank, slippage])
