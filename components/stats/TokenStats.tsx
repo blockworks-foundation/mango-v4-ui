@@ -11,6 +11,7 @@ import { breakpoints } from '../../utils/theme'
 import { IconButton } from '../shared/Button'
 import ContentBox from '../shared/ContentBox'
 import InfoTooltip from '../shared/InfoTooltip'
+import FlipNumbers from 'react-flip-numbers'
 
 const TokenList = () => {
   const { t } = useTranslation('common')
@@ -35,27 +36,61 @@ const TokenList = () => {
     showTokenDetails ? setShowTokenDetails('') : setShowTokenDetails(name)
   }
 
+  const [totalDepositValue, totalBorrowValue] = useMemo(() => {
+    if (banks.length) {
+      return [
+        banks.reduce(
+          (a, c) => a + c.value[0].uiPrice * c.value[0].uiDeposits(),
+          0
+        ),
+        banks.reduce(
+          (a, c) => a + c.value[0].uiPrice * c.value[0].uiBorrows(),
+          0
+        ),
+      ]
+    }
+    return []
+  }, [banks])
+
   return (
     <ContentBox hideBorder hidePadding className="mt-0 md:mt-4">
+      <div className="mb-8 grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-5xl md:border-b-0">
+        <div className="col-span-2 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-t-0">
+          <p className="mb-2.5 leading-none">{t('total-deposit-value')}</p>
+          <div className="flex items-center font-bold">
+            <FlipNumbers
+              height={48}
+              width={32}
+              play
+              delay={0.05}
+              duration={1}
+              numbers={formatFixedDecimals(totalDepositValue!, true)}
+            />
+          </div>
+        </div>
+        <div className="col-span-2 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+          <p className="mb-2.5 leading-none">{t('total-borrow-value')}</p>
+          <div className="flex items-center font-bold">
+            <FlipNumbers
+              height={48}
+              width={32}
+              play
+              delay={0.05}
+              duration={1}
+              numbers={formatFixedDecimals(totalBorrowValue!, true)}
+            />
+          </div>
+        </div>
+      </div>
       {showTableView ? (
         <table className="-mt-1 min-w-full">
           <thead>
             <tr>
               <th className="text-left">{t('token')}</th>
               <th className="text-right">{t('price')}</th>
-              <th className="text-right">Total Deposits</th>
-              <th className="text-right">Total Borrows</th>
-              <th className="">
-                <div className="flex items-center justify-end">
-                  <span>Utilization</span>
-                  <InfoTooltip
-                    content={
-                      'The percentage of deposits that have been lent out.'
-                    }
-                  />
-                </div>
-              </th>
-              <th className="">
+              <th className="text-right">{t('total-deposits')}</th>
+              <th className="text-right">{t('total-borrows')}</th>
+              <th>
                 <div className="flex items-center justify-center">
                   <span>{t('rates')}</span>
                   <InfoTooltip
@@ -65,15 +100,25 @@ const TokenList = () => {
                   />
                 </div>
               </th>
-              <th className="">
-                <div className="flex items-center justify-center">
+              <th>
+                <div className="flex items-center justify-end">
+                  <span>{t('utilization')}</span>
+                  <InfoTooltip
+                    content={
+                      'The percentage of deposits that have been lent out.'
+                    }
+                  />
+                </div>
+              </th>
+              <th>
+                <div className="flex items-center justify-end">
                   <span>{t('asset-weight')}</span>
                   <InfoTooltip content={t('asset-weight-desc')} />
                 </div>
               </th>
-              <th className="">
-                <div className="flex items-center justify-center">
-                  <span>Liability Weight</span>
+              <th>
+                <div className="flex items-center justify-end">
+                  <span>{t('liability-weight')}</span>
                   {/* <InfoTooltip
                     content=""
                   /> */}
@@ -95,7 +140,7 @@ const TokenList = () => {
 
               return (
                 <tr key={key}>
-                  <td className="">
+                  <td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         {logoURI ? (
@@ -107,37 +152,23 @@ const TokenList = () => {
                       <p>{bank.name}</p>
                     </div>
                   </td>
-                  <td className="">
+                  <td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(oraclePrice, true)}</p>
                     </div>
                   </td>
 
-                  <td className="">
+                  <td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(bank.uiDeposits())}</p>
                     </div>
                   </td>
-                  <td className="">
+                  <td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(bank.uiBorrows())}</p>
                     </div>
                   </td>
-                  <td className="">
-                    <div className="flex flex-col text-right">
-                      <p>
-                        {bank.uiDeposits() > 0
-                          ? formatDecimal(
-                              (bank.uiBorrows() / bank.uiDeposits()) * 100,
-                              1,
-                              { fixed: true }
-                            )
-                          : '0.0'}
-                        %
-                      </p>
-                    </div>
-                  </td>
-                  <td className="">
+                  <td>
                     <div className="flex justify-center space-x-2">
                       <p className="text-th-green">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
@@ -155,12 +186,26 @@ const TokenList = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="text-center">
+                    <div className="flex flex-col text-right">
+                      <p>
+                        {bank.uiDeposits() > 0
+                          ? formatDecimal(
+                              (bank.uiBorrows() / bank.uiDeposits()) * 100,
+                              1,
+                              { fixed: true }
+                            )
+                          : '0.0'}
+                        %
+                      </p>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="text-right">
                       <p>{bank.initAssetWeight.toFixed(2)}</p>
                     </div>
                   </td>
                   <td>
-                    <div className="text-center">
+                    <div className="text-right">
                       <p>{bank.initLiabWeight.toFixed(2)}</p>
                     </div>
                   </td>

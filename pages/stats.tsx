@@ -20,6 +20,7 @@ const Stats: NextPage = () => {
   return (
     <div className="grid grid-cols-12">
       <div className="col-span-12">
+        <h1 className="mb-4">{t('stats')}</h1>
         <TokenStats />
       </div>
     </div>
