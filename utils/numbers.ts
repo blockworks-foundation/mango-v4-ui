@@ -92,3 +92,18 @@ export const formatFixedDecimals = (
   if (formattedValue === '-$0.00') return '$0.00'
   return formattedValue
 }
+
+export const countLeadingZeros = (x: number) => {
+  if (x % 1 == 0) {
+    return 0
+  } else {
+    return -1 - Math.floor(Math.log10(x % 1))
+  }
+}
+
+export const trimDecimals = (n: number, digits: number) => {
+  const step = Math.pow(10, digits || 0)
+  const temp = Math.trunc(step * n)
+
+  return temp / step
+}

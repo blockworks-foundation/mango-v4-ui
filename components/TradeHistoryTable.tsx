@@ -17,6 +17,11 @@ import { Transition } from '@headlessui/react'
 import SheenLoader from './shared/SheenLoader'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { TradeHistoryItem } from '../store/mangoStore'
+import {
+  countLeadingZeros,
+  formatFixedDecimals,
+  trimDecimals,
+} from '../utils/numbers'
 
 const TradeHistoryTable = ({
   tradeHistory,
@@ -67,16 +72,25 @@ const TradeHistoryTable = ({
                 } = h
                 const borrowAmount =
                   swap_in_loan > 0
-                    ? `${swap_in_loan} ${swap_in_symbol}`
+                    ? `${trimDecimals(
+                        swap_in_loan,
+                        countLeadingZeros(swap_in_loan) + 2
+                      )} ${swap_in_symbol}`
                     : loan > 0
-                    ? `${loan} ${swap_out_symbol}`
+                    ? `${trimDecimals(
+                        loan,
+                        countLeadingZeros(loan) + 2
+                      )} ${swap_out_symbol}`
                     : 0
                 const borrowFee =
                   swap_in_loan_origination_fee > 0
-                    ? swap_in_loan_origination_fee
+                    ? swap_in_loan_origination_fee.toFixed(4)
                     : loan_origination_fee > 0
-                    ? loan_origination_fee
+                    ? loan_origination_fee.toFixed(4)
                     : 0
+
+                const inDecimals = countLeadingZeros(swap_in_amount) + 2
+                const outDecimals = countLeadingZeros(swap_out_amount) + 2
                 return (
                   <tr key={signature}>
                     <td>
@@ -97,13 +111,17 @@ const TradeHistoryTable = ({
                             />
                           </div>
                           <div>
-                            <p className="mb-1.5 whitespace-nowrap leading-none">{`${swap_in_amount.toFixed(
-                              2
+                            <p className="mb-1.5 whitespace-nowrap leading-none">{`${trimDecimals(
+                              swap_in_amount,
+                              inDecimals
                             )} ${swap_in_symbol}`}</p>
                             <p className="text-xs leading-none text-th-fgd-3">
-                              ${swap_in_price_usd.toFixed(2)}
-                              <span className="mx-1 text-th-fgd-4">|</span>$
-                              {(swap_in_amount * swap_in_price_usd).toFixed(2)}
+                              {formatFixedDecimals(swap_in_price_usd, true)}
+                              <span className="mx-1 text-th-fgd-4">|</span>
+                              {formatFixedDecimals(
+                                swap_in_amount * swap_in_price_usd,
+                                true
+                              )}
                             </p>
                           </div>
                         </div>
@@ -120,14 +138,16 @@ const TradeHistoryTable = ({
                             />
                           </div>
                           <div>
-                            <p className="mb-1.5 whitespace-nowrap leading-none">{`${swap_out_amount.toFixed(
-                              2
+                            <p className="mb-1.5 whitespace-nowrap leading-none">{`${trimDecimals(
+                              swap_out_amount,
+                              outDecimals
                             )} ${swap_out_symbol}`}</p>
                             <p className="text-xs leading-none text-th-fgd-3">
-                              ${swap_out_price_usd.toFixed(2)}
-                              <span className="mx-1 text-th-fgd-4">|</span>$
-                              {(swap_out_amount * swap_out_price_usd).toFixed(
-                                2
+                              {formatFixedDecimals(swap_out_price_usd, true)}
+                              <span className="mx-1 text-th-fgd-4">|</span>
+                              {formatFixedDecimals(
+                                swap_out_amount * swap_out_price_usd,
+                                true
                               )}
                             </p>
                           </div>
@@ -178,17 +198,24 @@ const TradeHistoryTable = ({
                 swap_out_price_usd,
                 swap_out_symbol,
               } = h
+
               const borrowAmount =
                 swap_in_loan > 0
-                  ? `${swap_in_loan} ${swap_in_symbol}`
+                  ? `${trimDecimals(
+                      swap_in_loan,
+                      countLeadingZeros(swap_in_loan) + 2
+                    )} ${swap_in_symbol}`
                   : loan > 0
-                  ? `${loan} ${swap_out_symbol}`
+                  ? `${trimDecimals(
+                      loan,
+                      countLeadingZeros(loan) + 2
+                    )} ${swap_out_symbol}`
                   : 0
               const borrowFee =
                 swap_in_loan_origination_fee > 0
-                  ? swap_in_loan_origination_fee
+                  ? swap_in_loan_origination_fee.toFixed(4)
                   : loan_origination_fee > 0
-                  ? loan_origination_fee
+                  ? loan_origination_fee.toFixed(4)
                   : 0
               return (
                 <div
@@ -211,9 +238,12 @@ const TradeHistoryTable = ({
                             2
                           )} ${swap_in_symbol}`}</p>
                           <p className="text-xs leading-none text-th-fgd-3">
-                            ${swap_in_price_usd.toFixed(2)}
-                            <span className="mx-1 text-th-fgd-4">|</span>$
-                            {(swap_in_amount * swap_in_price_usd).toFixed(2)}
+                            {formatFixedDecimals(swap_in_price_usd, true)}
+                            <span className="mx-1 text-th-fgd-4">|</span>
+                            {formatFixedDecimals(
+                              swap_in_amount * swap_in_price_usd,
+                              true
+                            )}
                           </p>
                         </div>
                       </div>
@@ -234,9 +264,12 @@ const TradeHistoryTable = ({
                             2
                           )} ${swap_out_symbol}`}</p>
                           <p className="text-xs leading-none text-th-fgd-3">
-                            ${swap_out_price_usd.toFixed(2)}
-                            <span className="mx-1 text-th-fgd-4">|</span>$
-                            {(swap_out_amount * swap_out_price_usd).toFixed(2)}
+                            {formatFixedDecimals(swap_out_price_usd, true)}
+                            <span className="mx-1 text-th-fgd-4">|</span>
+                            {formatFixedDecimals(
+                              swap_out_amount * swap_out_price_usd,
+                              true
+                            )}
                           </p>
                         </div>
                       </div>
