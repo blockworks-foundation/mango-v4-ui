@@ -53,7 +53,11 @@ const SwapForm = () => {
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
-  const { amount: tokenMax, amountWithBorrow, decimals } = useTokenMax()
+  const {
+    amount: tokenMax,
+    amountWithBorrow,
+    decimals,
+  } = useTokenMax(useMargin)
 
   const { amountOut, jupiter, routes } = useJupiter({
     inputTokenInfo,
@@ -397,7 +401,7 @@ const SwapForm = () => {
 
 export default SwapForm
 
-export const useTokenMax = () => {
+export const useTokenMax = (useMargin = true) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
@@ -409,21 +413,16 @@ export const useTokenMax = () => {
     if (!group || !inputBank || !mangoAccount || !outputBank)
       return { amount: 0.0, decimals: 6, amountWithBorrow: 0.0 }
 
-    const tokenBalance = mangoAccount?.getTokenBalanceUi(inputBank)
+    const tokenBalance = floorToDecimal(
+      mangoAccount?.getTokenBalanceUi(inputBank),
+      inputBank.mintDecimals
+    )
     const maxAmountWithoutMargin = tokenBalance > 0 ? tokenBalance : 0
     const inputBankVaultBalance = floorToDecimal(
       inputBank.uiDeposits() - inputBank.uiBorrows(),
       inputBank.mintDecimals
     )
 
-    // const inputBankLiquidity = floorToDecimal(
-    //   inputBank.uiDeposits() - inputBank.uiBorrows(),
-    //   inputBank.mintDecimals
-    // )
-    // const maxWithdrawableAmount = Math.min(
-    //   mangoAccount.getTokenBalanceUi(inputBank),
-    //   inputBankLiquidity
-    // )
     const maxUiAmountWithBorrow = mangoAccount?.getMaxSourceUiForTokenSwap(
       group,
       inputBank.mint,
@@ -432,11 +431,13 @@ export const useTokenMax = () => {
     )
 
     return {
-      amount: Math.min(
-        maxAmountWithoutMargin,
-        inputBankVaultBalance,
-        maxUiAmountWithBorrow
-      ),
+      amount: useMargin
+        ? Math.min(
+            maxAmountWithoutMargin,
+            inputBankVaultBalance,
+            maxUiAmountWithBorrow
+          )
+        : Math.min(maxAmountWithoutMargin, inputBankVaultBalance),
       amountWithBorrow: Math.min(
         floorToDecimal(maxUiAmountWithBorrow, inputBank.mintDecimals),
         inputBankVaultBalance
