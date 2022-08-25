@@ -171,6 +171,8 @@ const SwapForm = () => {
     )
   }, [amountIn, connected, selectedRoute, outputTokenInfo])
 
+  const showHealthImpact = !!inputTokenInfo && !!outputTokenInfo && !!amountOut
+
   return (
     <ContentBox hidePadding showBackground className="relative overflow-hidden">
       <div className="p-6">
@@ -210,6 +212,12 @@ const SwapForm = () => {
             type={showTokenSelect}
           />
         </EnterBottomExitBottom>
+        <EnterBottomExitBottom
+          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          show={showSettings}
+        >
+          <SwapSettings onClose={() => setShowSettings(false)} />
+        </EnterBottomExitBottom>
         <div className="mb-4 flex items-center justify-between">
           <h3>{t('trade')}</h3>
           <IconButton
@@ -220,12 +228,6 @@ const SwapForm = () => {
             <CogIcon className="h-5 w-5" />
           </IconButton>
         </div>
-        <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
-          show={showSettings}
-        >
-          <SwapSettings onClose={() => setShowSettings(false)} />
-        </EnterBottomExitBottom>
         <div className="mb-2 flex items-center justify-between">
           <p className="text-th-fgd-3">{t('sell')}</p>
           <MaxSwapAmount
@@ -350,8 +352,13 @@ const SwapForm = () => {
           </div>
         ) : null}
       </div>
-      {inputTokenInfo && mangoAccount && outputTokenInfo && amountOut ? (
-        <div className="bg-th-bkg-3 px-6 py-4">
+
+      {!!mangoAccount ? (
+        <div
+          className={`bg-th-bkg-3 px-6  transition-all ${
+            showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
+          }`}
+        >
           <div className="flex justify-between">
             <p className="text-sm">{t('health-impact')}</p>
             <div className="flex items-center space-x-2">
