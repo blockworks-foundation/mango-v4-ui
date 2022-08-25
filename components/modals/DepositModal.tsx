@@ -210,7 +210,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           <h2 className="mb-2 text-center">{t('deposit')}</h2>
           <InlineNotification
             type="info"
-            desc={`There is a ${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha
+            desc={`There is a $${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha
             testing.`}
           />
           <div className="mt-4 grid grid-cols-2 pb-6">
