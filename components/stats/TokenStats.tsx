@@ -67,8 +67,8 @@ const TokenList = () => {
               </th>
               <th className="">
                 <div className="flex items-center justify-center">
-                  <span>Asset Weight</span>
-                  <InfoTooltip content="The asset weight applies a haircut to the value of the collateral in your account health calculation. The lower the asset weight, the less the asset counts towards collateral." />
+                  <span>{t('asset-weight')}</span>
+                  <InfoTooltip content={t('asset-weight-desc')} />
                 </div>
               </th>
               <th className="">

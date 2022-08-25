@@ -62,34 +62,32 @@ const HealthImpact = ({
   }, [mangoAccount, mintPk, uiAmount, isDeposit])
 
   return (
-    <div className="space-y-2 border-y border-th-bkg-3 px-2 py-4">
-      <div className="flex justify-between">
-        <p>Liquidation {t('health-impact')}</p>
-        <div className="flex items-center space-x-2">
-          <p className="text-th-fgd-1">{currentMaintHealth}%</p>
-          <ArrowRightIcon className="h-4 w-4 text-th-fgd-3" />
-          <p
-            className={
-              maintProjectedHealth < 50 && maintProjectedHealth > 15
-                ? 'text-th-orange'
-                : maintProjectedHealth <= 15
-                ? 'text-th-red'
-                : 'text-th-green'
-            }
+    <div className="flex justify-between">
+      <p>{t('health-impact')}</p>
+      <div className="flex items-center space-x-2">
+        <p className="text-th-fgd-1">{currentMaintHealth}%</p>
+        <ArrowRightIcon className="h-4 w-4 text-th-fgd-3" />
+        <p
+          className={
+            maintProjectedHealth < 50 && maintProjectedHealth > 15
+              ? 'text-th-orange'
+              : maintProjectedHealth <= 15
+              ? 'text-th-red'
+              : 'text-th-green'
+          }
+        >
+          {maintProjectedHealth.toFixed(2)}%{' '}
+          <span
+            className={`text-xs ${
+              maintProjectedHealth >= currentMaintHealth
+                ? 'text-th-green'
+                : 'text-th-red'
+            }`}
           >
-            {maintProjectedHealth.toFixed(2)}%{' '}
-            <span
-              className={`text-xs ${
-                maintProjectedHealth >= currentMaintHealth
-                  ? 'text-th-green'
-                  : 'text-th-red'
-              }`}
-            >
-              ({maintProjectedHealth >= currentMaintHealth ? '+' : ''}
-              {(maintProjectedHealth - currentMaintHealth).toFixed(2)}%)
-            </span>
-          </p>
-        </div>
+            ({maintProjectedHealth >= currentMaintHealth ? '+' : ''}
+            {(maintProjectedHealth - currentMaintHealth).toFixed(2)}%)
+          </span>
+        </p>
       </div>
     </div>
   )

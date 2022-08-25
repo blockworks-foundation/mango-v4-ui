@@ -238,10 +238,12 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 />
               </div>
             </div>
-            <HealthImpact
-              mintPk={bank!.mint}
-              uiAmount={parseFloat(inputAmount)}
-            />
+            <div className="space-y-2 border-y border-th-bkg-3 px-2 py-4">
+              <HealthImpact
+                mintPk={bank!.mint}
+                uiAmount={parseFloat(inputAmount)}
+              />
+            </div>
           </div>
           <div className="mt-4 flex justify-center">
             <Button
