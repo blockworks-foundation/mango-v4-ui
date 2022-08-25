@@ -66,6 +66,10 @@ const SwapForm = () => {
     setSelectedRoute(routes[0])
   }, [routes])
 
+  useEffect(() => {
+    setAmountInFormValue('0')
+  }, [useMargin])
+
   const handleAmountInChange = useCallback((e: NumberFormatValues) => {
     setAmountInFormValue(e.value)
   }, [])

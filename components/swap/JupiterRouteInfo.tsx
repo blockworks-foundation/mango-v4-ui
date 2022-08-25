@@ -21,9 +21,12 @@ import {
   SwitchHorizontalIcon,
 } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
-import { Token } from '../../types/jupiter'
 import Image from 'next/image'
-import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 
 type JupiterRouteInfoProps = {
@@ -199,10 +202,13 @@ const JupiterRouteInfo = ({
 
   const coinGeckoPriceDifference = useMemo(() => {
     return amountOut
-      ? (amountIn.toNumber() / amountOut -
-          coingeckoPrices?.outputCoingeckoPrice /
-            coingeckoPrices?.inputCoingeckoPrice) /
-          (amountIn.toNumber() / amountOut)
+      ? floorToDecimal(
+          (amountIn.toNumber() / amountOut -
+            coingeckoPrices?.outputCoingeckoPrice /
+              coingeckoPrices?.inputCoingeckoPrice) /
+            (amountIn.toNumber() / amountOut),
+          1
+        )
       : 0
   }, [coingeckoPrices, amountIn, amountOut])
 
