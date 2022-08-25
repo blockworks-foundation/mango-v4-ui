@@ -18,6 +18,7 @@ import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import HealthImpact from '../shared/HealthImpact'
 import InfoTooltip from '../shared/InfoTooltip'
+import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
@@ -206,8 +207,13 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         show={isOpen}
       >
         <div>
-          <h2 className="mb-4 text-center">{t('deposit')}</h2>
-          <div className="grid grid-cols-2 pb-6">
+          <h2 className="mb-2 text-center">{t('deposit')}</h2>
+          <InlineNotification
+            type="info"
+            desc={`There is a ${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha
+            testing.`}
+          />
+          <div className="mt-4 grid grid-cols-2 pb-6">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
               <LinkButton className="mb-2 no-underline" onClick={setMax}>
@@ -293,26 +299,30 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </p>
             </div>
           </div>
-          <div>
-            <Button
-              onClick={handleDeposit}
-              className="mt-6 flex w-full items-center justify-center"
-              disabled={!inputAmount || exceedsAlphaMax}
-              size="large"
-            >
-              {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('deposit')}
-            </Button>
-            {exceedsAlphaMax ? (
-              <div className="mt-2 rounded border border-th-bkg-4 px-2 py-1 text-th-red">
-                <div className="text-center text-th-red">
-                  There is a ${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha
-                  testing.
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </FadeInFadeOut>
-      </div>
+          <Button
+            onClick={handleDeposit}
+            className="mt-6 flex w-full items-center justify-center"
+            disabled={
+              !inputAmount ||
+              exceedsAlphaMax ||
+              tokenMax.maxAmount < Number(inputAmount)
+            }
+            size="large"
+          >
+            {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('deposit')}
+          </Button>
+          {tokenMax.maxAmount < Number(inputAmount) ? (
+            <div className="pt-4">
+              <InlineNotification
+                type="error"
+                desc={t('trade:insufficient-balance', {
+                  symbol: selectedToken,
+                })}
+              />
+            </div>
+          ) : null}
+        </div>
+      </FadeInFadeOut>
     </Modal>
   )
 }
