@@ -66,7 +66,7 @@ const HealthImpact = ({
       <p>{t('health-impact')}</p>
       <div className="flex items-center space-x-2">
         <p className="text-th-fgd-1">{currentMaintHealth}%</p>
-        <ArrowRightIcon className="h-4 w-4 text-th-fgd-3" />
+        <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
         <p
           className={
             maintProjectedHealth < 50 && maintProjectedHealth > 15

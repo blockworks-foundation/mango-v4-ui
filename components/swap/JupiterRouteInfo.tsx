@@ -6,11 +6,7 @@ import React, {
   useState,
 } from 'react'
 import { TransactionInstruction, PublicKey } from '@solana/web3.js'
-import {
-  HealthType,
-  toNativeDecimals,
-  toUiDecimals,
-} from '@blockworks-foundation/mango-v4'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { Jupiter, RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
 import JSBI from 'jsbi'
 import Decimal from 'decimal.js'
@@ -81,7 +77,6 @@ const JupiterRouteInfo = ({
   const [feeValue, setFeeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
 
@@ -108,35 +103,6 @@ const JupiterRouteInfo = ({
       getDepositAndFee()
     }
   }, [selectedRoute, connected])
-
-  const healthImpact = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (
-      !inputTokenInfo ||
-      !mangoAccount ||
-      !outputTokenInfo ||
-      !amountOut ||
-      !group
-    )
-      return 'Unknown'
-
-    const simulatedHealthRatio =
-      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
-        group,
-        [
-          {
-            mintPk: new PublicKey(inputTokenInfo.address),
-            uiTokenAmount: amountIn.toNumber() * -1,
-          },
-          {
-            mintPk: new PublicKey(outputTokenInfo.address),
-            uiTokenAmount: amountOut,
-          },
-        ],
-        HealthType.maint
-      )
-    return simulatedHealthRatio > 100 ? 100 : simulatedHealthRatio.toFixed(2)
-  }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
 
   const onSwap = async () => {
     if (!jupiter || !selectedRoute) return
@@ -202,7 +168,7 @@ const JupiterRouteInfo = ({
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
-        <div className="mb-6 flex justify-center">
+        <div className="mb-6 mt-4 flex justify-center">
           <div className="flex flex-col items-center">
             <div className="relative mb-2 w-[72px]">
               <Image alt="" width="40" height="40" src={inputTokenIconUri} />
@@ -290,16 +256,6 @@ const JupiterRouteInfo = ({
                 {outputTokenInfo?.symbol}
               </p>
             ) : null}
-          </div>
-          <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">Projected Health</p>
-            <p
-              className={`text-right text-sm text-th-fgd-1 ${
-                healthImpact < 0 ? 'text-th-red' : 'text-th-green'
-              }`}
-            >
-              {healthImpact}%
-            </p>
           </div>
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">{t('trade:est-liq-price')}</p>
