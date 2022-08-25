@@ -23,15 +23,13 @@ import {
 import { useTranslation } from 'next-i18next'
 import { Token } from '../../types/jupiter'
 import Image from 'next/image'
-import { formatDecimal } from '../../utils/numbers'
+import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
-  inputTokenInfo: Token | undefined
   jupiter: Jupiter | undefined
   onClose: () => void
-  outputTokenInfo: Token | undefined
   routes: RouteInfo[] | undefined
   selectedRoute: RouteInfo | undefined
   setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined>>
@@ -60,13 +58,16 @@ const parseJupiterRoute = async (
   return instructions
 }
 
+const EMPTY_COINGECKO_PRICES = {
+  inputCoingeckoPrice: 0,
+  outputCoingeckoPrice: 0,
+}
+
 const JupiterRouteInfo = ({
-  inputTokenInfo,
   amountIn,
   onClose,
   jupiter,
   routes,
-  outputTokenInfo,
   selectedRoute,
   setSelectedRoute,
 }: JupiterRouteInfoProps) => {
@@ -76,7 +77,10 @@ const JupiterRouteInfo = ({
   const [depositAndFee, setDepositAndFee] = useState<TransactionFeeInfo>()
   const [feeValue, setFeeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [coingeckoPrices, setCoingeckoPrices] = useState(EMPTY_COINGECKO_PRICES)
 
+  const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
+  const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
 
@@ -103,6 +107,31 @@ const JupiterRouteInfo = ({
       getDepositAndFee()
     }
   }, [selectedRoute, connected])
+
+  useEffect(() => {
+    setCoingeckoPrices(EMPTY_COINGECKO_PRICES)
+    const fetchTokenPrices = async () => {
+      const inputId = inputTokenInfo?.extensions?.coingeckoId
+      const outputId = outputTokenInfo?.extensions?.coingeckoId
+
+      if (inputId && outputId) {
+        const results = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${inputId},${outputId}&vs_currencies=usd`
+        )
+        const json = await results.json()
+        if (json[inputId]?.usd && json[outputId]?.usd) {
+          setCoingeckoPrices({
+            inputCoingeckoPrice: json[inputId].usd,
+            outputCoingeckoPrice: json[outputId].usd,
+          })
+        }
+      }
+    }
+
+    if (inputTokenInfo && outputTokenInfo) {
+      fetchTokenPrices()
+    }
+  }, [inputTokenInfo, outputTokenInfo])
 
   const onSwap = async () => {
     if (!jupiter || !selectedRoute) return
@@ -158,6 +187,25 @@ const JupiterRouteInfo = ({
     }
   }
 
+  const borrowAmount = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const inputBank = mangoStore.getState().swap.inputBank
+    if (!mangoAccount || !inputBank) return 0
+
+    const remainingBalance =
+      mangoAccount.getTokenDepositsUi(inputBank) - amountIn.toNumber()
+    return remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+  }, [amountIn])
+
+  const coinGeckoPriceDifference = useMemo(() => {
+    return amountOut
+      ? (amountIn.toNumber() / amountOut -
+          coingeckoPrices?.outputCoingeckoPrice /
+            coingeckoPrices?.inputCoingeckoPrice) /
+          (amountIn.toNumber() / amountOut)
+      : 0
+  }, [coingeckoPrices, amountIn, amountOut])
+
   return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (
     <div className="flex h-full flex-col justify-between">
       <div>
@@ -185,63 +233,55 @@ const JupiterRouteInfo = ({
             <p className="mb-0.5 text-center text-lg text-th-fgd-1">{`${amountIn} ${
               inputTokenInfo!.symbol
             } for ${amountOut} ${outputTokenInfo.symbol}`}</p>
-            <div className="flex items-center justify-end">
-              <p className="text-right text-sm">
-                {swapRate ? (
-                  <>
-                    1 {inputTokenInfo!.name} ≈{' '}
-                    {formatDecimal(amountOut / amountIn.toNumber(), 6)}{' '}
-                    {outputTokenInfo?.symbol}
-                  </>
-                ) : (
-                  <>
-                    1 {outputTokenInfo?.symbol} ≈{' '}
-                    {formatDecimal(amountIn.toNumber() / amountOut, 6)}{' '}
-                    {inputTokenInfo!.name}
-                  </>
-                )}
-              </p>
-              <SwitchHorizontalIcon
-                className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-3 hover:text-th-fgd-2"
-                onClick={() => setSwapRate(!swapRate)}
-              />
-            </div>
           </div>
         </div>
+
         <div className="space-y-2 px-1">
-          {/* {tokenPrices?.outputTokenPrice && tokenPrices?.inputTokenPrice ? (
-        <div
-          className={`text-right ${
-            ((amountIn / amountOut -
-              tokenPrices?.outputTokenPrice /
-                tokenPrices?.inputTokenPrice) /
-              (amountIn / amountOut)) *
-              100 <=
-            0
-              ? 'text-th-green'
-              : 'text-th-red'
-          }`}
-        >
-          {Math.abs(
-            ((amountIn / amountOut -
-              tokenPrices?.outputTokenPrice /
-                tokenPrices?.inputTokenPrice) /
-              (amountIn / amountOut)) *
-              100
-          ).toFixed(1)}
-          %{' '}
-          <span className="text-th-fgd-4">{`${
-            ((amountIn / amountOut -
-              tokenPrices?.outputTokenPrice /
-                tokenPrices?.inputTokenPrice) /
-              (amountIn / amountOut)) *
-              100 <=
-            0
-              ? 'Cheaper'
-              : 'More expensive'
-          } CoinGecko`}</span>
-        </div>
-      ) : null} */}
+          <div className="flex justify-between">
+            <span>{t('rate')}</span>
+            <div>
+              <div className="flex items-center justify-end">
+                <p className="text-right text-sm">
+                  {swapRate ? (
+                    <>
+                      1 {inputTokenInfo!.name} ≈{' '}
+                      {formatDecimal(amountOut / amountIn.toNumber(), 6)}{' '}
+                      {outputTokenInfo?.symbol}
+                    </>
+                  ) : (
+                    <>
+                      1 {outputTokenInfo?.symbol} ≈{' '}
+                      {formatDecimal(amountIn.toNumber() / amountOut, 6)}{' '}
+                      {inputTokenInfo!.name}
+                    </>
+                  )}
+                </p>
+                <SwitchHorizontalIcon
+                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-3 hover:text-th-fgd-2"
+                  onClick={() => setSwapRate(!swapRate)}
+                />
+              </div>
+              <div className="space-y-2 px-1">
+                {coingeckoPrices?.outputCoingeckoPrice &&
+                coingeckoPrices?.inputCoingeckoPrice ? (
+                  <div
+                    className={`text-right ${
+                      coinGeckoPriceDifference * 100 > 0
+                        ? 'text-th-red'
+                        : 'text-th-green'
+                    }`}
+                  >
+                    {Math.abs(coinGeckoPriceDifference * 100).toFixed(1)}%{' '}
+                    <span className="text-th-fgd-4">{`${
+                      coinGeckoPriceDifference * 100 <= 0
+                        ? 'cheaper'
+                        : 'more expensive'
+                    } than CoinGecko`}</span>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">
               {t('trade:minimum-received')}
@@ -257,10 +297,14 @@ const JupiterRouteInfo = ({
               </p>
             ) : null}
           </div>
-          <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">{t('trade:est-liq-price')}</p>
-            <p className="text-right text-sm text-th-fgd-1">N/A</p>
-          </div>
+          {borrowAmount ? (
+            <div className="flex justify-between">
+              <p className="text-sm text-th-fgd-3">{t('borrow-amount')}</p>
+              <p className="text-right text-sm text-th-fgd-1">
+                ~{formatFixedDecimals(borrowAmount)} {inputTokenInfo?.symbol}
+              </p>
+            </div>
+          ) : null}
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">{t('trade:slippage')}</p>
             <p className="text-right text-sm text-th-fgd-1">

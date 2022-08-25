@@ -14,6 +14,7 @@
   "available-balance": "Available Balance",
   "balance": "Balance",
   "borrow": "Borrow",
+  "borrow-amount": "Borrow Amount",
   "borrow-fee": "Borrow Fee",
   "borrow-rate": "Borrow Rate (APR)",
   "borrow-value": "Borrow Value",

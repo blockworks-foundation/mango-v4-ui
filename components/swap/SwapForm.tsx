@@ -187,11 +187,9 @@ const SwapForm = () => {
           leaveTo="translate-x-full"
         >
           <JupiterRouteInfo
-            inputTokenInfo={inputTokenInfo}
             onClose={() => setShowConfirm(false)}
             amountIn={amountIn}
             slippage={slippage}
-            outputTokenInfo={outputTokenInfo}
             jupiter={jupiter}
             routes={routes}
             selectedRoute={selectedRoute}
