@@ -86,6 +86,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const setMax = useCallback(() => {
     setInputAmount(tokenMax.maxAmount.toString())
+    setSizePercentage('100')
   }, [tokenMax])
 
   const handleSizePercentage = useCallback(
