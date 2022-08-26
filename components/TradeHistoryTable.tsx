@@ -60,7 +60,6 @@ const TradeHistoryTable = ({
                   block_datetime,
                   signature,
                   swap_in_amount,
-                  swap_in_loan,
                   swap_in_loan_origination_fee,
                   swap_in_price_usd,
                   swap_in_symbol,
@@ -71,16 +70,11 @@ const TradeHistoryTable = ({
                   swap_out_symbol,
                 } = h
                 const borrowAmount =
-                  swap_in_loan > 0
-                    ? `${trimDecimals(
-                        swap_in_loan,
-                        countLeadingZeros(swap_in_loan) + 2
-                      )} ${swap_in_symbol}`
-                    : loan > 0
+                  loan > 0
                     ? `${trimDecimals(
                         loan,
                         countLeadingZeros(loan) + 2
-                      )} ${swap_out_symbol}`
+                      )} ${swap_in_symbol}`
                     : 0
                 const borrowFee =
                   swap_in_loan_origination_fee > 0
