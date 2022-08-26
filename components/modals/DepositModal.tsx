@@ -130,7 +130,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         txid: tx,
       })
 
-      await actions.reloadAccount()
+      await actions.reloadMangoAccount()
       actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
       setSubmitting(false)
     } catch (e: any) {

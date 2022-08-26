@@ -147,10 +147,7 @@ export type MangoStore = {
     ) => Promise<void>
     fetchCoingeckoPrices: () => Promise<void>
     fetchGroup: () => Promise<void>
-    reloadMangoAccount: (
-      wallet: AnchorWallet,
-      accountNumber?: number
-    ) => Promise<void>
+    reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (wallet: AnchorWallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchProfilePicture: (wallet: AnchorWallet) => void
@@ -158,7 +155,6 @@ export type MangoStore = {
     fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
     fetchWalletTokens: (wallet: AnchorWallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: Wallet) => Promise<void>
-    reloadAccount: () => Promise<void>
     reloadGroup: () => Promise<void>
   }
 }
@@ -554,26 +550,6 @@ const mangoStore = create<MangoStore>(
             })
           } catch (e) {
             console.error('Error fetching group', e)
-          }
-        },
-        reloadAccount: async () => {
-          const set = get().set
-          const client = get().client
-          const mangoAccount = get().mangoAccount.current
-          const group = get().group
-          const actions = get().actions
-
-          if (!mangoAccount || !group) return
-
-          try {
-            const newMangoAccount = await client.getMangoAccount(mangoAccount)
-            await newMangoAccount.reloadAccountData(client, group)
-
-            set((state) => {
-              state.mangoAccount.current = newMangoAccount
-            })
-          } catch {
-            console.error('Error reloading mango account')
           }
         },
         async fetchProfilePicture(wallet: AnchorWallet) {

@@ -22,12 +22,16 @@ import { WalletProvider } from '../components/wallet/WalletProvider'
 const hydrateStore = async () => {
   const actions = mangoStore.getState().actions
   actions.fetchGroup()
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  if (mangoAccount) {
+    actions.reloadMangoAccount()
+  }
 }
 
 const HydrateStore = () => {
   useInterval(() => {
     hydrateStore()
-  }, 10000)
+  }, 5000)
 
   useEffect(() => {
     const actions = mangoStore.getState().actions

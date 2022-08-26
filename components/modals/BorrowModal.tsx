@@ -121,7 +121,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         type: 'success',
         txid: tx,
       })
-      actions.reloadAccount()
+      actions.reloadMangoAccount()
     } catch (e: any) {
       console.error(e)
       notify({

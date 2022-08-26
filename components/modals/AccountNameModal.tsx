@@ -32,7 +32,7 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
         type: 'success',
         txid: tx,
       })
-      await actions.reloadAccount()
+      await actions.reloadMangoAccount()
     } catch (e: any) {
       setLoading(false)
       notify({

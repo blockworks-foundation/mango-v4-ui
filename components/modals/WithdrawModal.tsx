@@ -1,6 +1,5 @@
 import { Bank, Group, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
-import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { ChangeEvent, useCallback, useMemo, useState } from 'react'
@@ -16,7 +15,6 @@ import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import HealthImpact from '../shared/HealthImpact'
-import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
@@ -108,7 +106,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         type: 'success',
         txid: tx,
       })
-      actions.reloadAccount()
+      actions.reloadMangoAccount()
     } catch (e: any) {
       console.error(e)
       notify({

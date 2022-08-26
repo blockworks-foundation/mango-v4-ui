@@ -126,7 +126,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         txid: tx,
       })
 
-      await actions.reloadAccount()
+      await actions.reloadMangoAccount()
       onClose()
       setSubmitDeposit(false)
     } catch (e: any) {
