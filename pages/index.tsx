@@ -145,7 +145,7 @@ const Index: NextPage = () => {
                 (0).toFixed(2)
               )}
             </div>
-            {performanceData.length ? (
+            {performanceData.length && mangoAccount ? (
               <div className="mt-1 flex items-center space-x-2">
                 {accountValueChange > 0 ? (
                   <UpTriangle />
@@ -170,7 +170,13 @@ const Index: NextPage = () => {
                   %
                 </p>
               </div>
-            ) : null}
+            ) : (
+              <div className="mt-1 flex items-center space-x-2">
+                <UpTriangle />
+
+                <p className="text-th-green">0.00%</p>
+              </div>
+            )}
           </div>
           {!loadPerformanceData ? (
             performanceData.length ? (
