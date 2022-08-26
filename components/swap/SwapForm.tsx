@@ -14,7 +14,11 @@ import ContentBox from '../shared/ContentBox'
 import JupiterRouteInfo from './JupiterRouteInfo'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
-import { floorToDecimal, numberFormat } from '../../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  numberFormat,
+} from '../../utils/numbers'
 import { SwapLeverageSlider } from './LeverageSlider'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
@@ -417,10 +421,13 @@ export const useTokenMax = (useMargin = true) => {
 
     if (!group || !inputBank || !mangoAccount || !outputBank)
       return { amount: 0.0, decimals: 6, amountWithBorrow: 0.0 }
+    const inputBankFromGroup = group.getFirstBankByMint(inputBank.mint)
 
-    const tokenBalance = floorToDecimal(
-      mangoAccount?.getTokenBalanceUi(inputBank),
-      inputBank.mintDecimals
+    const tokenBalance = parseFloat(
+      formatDecimal(
+        mangoAccount?.getTokenBalanceUi(inputBankFromGroup),
+        inputBankFromGroup.mintDecimals
+      )
     )
     const maxAmountWithoutMargin = tokenBalance > 0 ? tokenBalance : 0
     const inputBankVaultBalance = floorToDecimal(

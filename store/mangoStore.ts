@@ -326,6 +326,11 @@ const mangoStore = create<MangoStore>(
               if (!state.swap.inputBank && !state.swap.outputBank) {
                 state.swap.inputBank = inputBank
                 state.swap.outputBank = outputBank
+              } else {
+                state.swap.inputBank = group.getFirstBankByMint(inputBank!.mint)
+                state.swap.outputBank = group.getFirstBankByMint(
+                  outputBank!.mint
+                )
               }
             })
           } catch (e) {
