@@ -1,5 +1,5 @@
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
-import { ChevronDownIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
 import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
@@ -177,6 +177,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     )
   }, [inputAmount])
 
+  const showInsufficientBalance = tokenMax.maxAmount < Number(inputAmount)
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <EnterBottomExitBottom
@@ -304,24 +306,23 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             onClick={handleDeposit}
             className="mt-6 flex w-full items-center justify-center"
             disabled={
-              !inputAmount ||
-              exceedsAlphaMax ||
-              tokenMax.maxAmount < Number(inputAmount)
+              !inputAmount || exceedsAlphaMax || showInsufficientBalance
             }
             size="large"
           >
-            {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('deposit')}
-          </Button>
-          {tokenMax.maxAmount < Number(inputAmount) ? (
-            <div className="pt-4">
-              <InlineNotification
-                type="error"
-                desc={t('trade:insufficient-balance', {
+            {submitting ? (
+              <Loading className="mr-2 h-5 w-5" />
+            ) : showInsufficientBalance ? (
+              <div className="flex items-center">
+                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                {t('trade:insufficient-balance', {
                   symbol: selectedToken,
                 })}
-              />
-            </div>
-          ) : null}
+              </div>
+            ) : (
+              t('deposit')
+            )}
+          </Button>
         </div>
       </FadeInFadeOut>
     </Modal>

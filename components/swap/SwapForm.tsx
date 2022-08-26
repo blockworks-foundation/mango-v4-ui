@@ -1,6 +1,11 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { PublicKey } from '@solana/web3.js'
-import { ArrowDownIcon, ArrowRightIcon, CogIcon } from '@heroicons/react/solid'
+import {
+  ArrowDownIcon,
+  ArrowRightIcon,
+  CogIcon,
+  ExclamationCircleIcon,
+} from '@heroicons/react/solid'
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import Decimal from 'decimal.js'
@@ -26,7 +31,6 @@ import {
   INPUT_TOKEN_DEFAULT,
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
-import InlineNotification from '../shared/InlineNotification'
 
 const MAX_DIGITS = 11
 const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -181,6 +185,10 @@ const SwapForm = () => {
 
   const showHealthImpact = !!inputTokenInfo && !!outputTokenInfo && !!amountOut
 
+  const showInsufficientBalance =
+    (!useMargin && amountIn.toNumber() > tokenMax) ||
+    (useMargin && amountIn.toNumber() > amountWithBorrow)
+
   return (
     <ContentBox hidePadding showBackground className="relative overflow-hidden">
       <div className="p-6">
@@ -333,12 +341,19 @@ const SwapForm = () => {
             !routes?.length ||
             !selectedRoute ||
             !outputTokenInfo ||
-            (!useMargin && amountIn.toNumber() > tokenMax)
+            showInsufficientBalance
           }
           size="large"
         >
           {connected ? (
-            isLoadingTradeDetails ? (
+            showInsufficientBalance ? (
+              <div className="flex items-center">
+                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                {t('trade:insufficient-balance', {
+                  symbol: inputTokenInfo?.symbol,
+                })}
+              </div>
+            ) : isLoadingTradeDetails ? (
               <Loading />
             ) : (
               <div className="flex items-center">{t('trade:review-trade')}</div>
@@ -347,16 +362,6 @@ const SwapForm = () => {
             t('connect')
           )}
         </Button>
-        {!useMargin && amountIn.toNumber() > tokenMax ? (
-          <div className="pt-4">
-            <InlineNotification
-              type="error"
-              desc={t('trade:insufficient-balance', {
-                symbol: inputTokenInfo?.symbol,
-              })}
-            />
-          </div>
-        ) : null}
       </div>
 
       {!!mangoAccount ? (

@@ -1,5 +1,5 @@
 import { Bank, Group, MangoAccount } from '@blockworks-foundation/mango-v4'
-import { ChevronDownIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -153,6 +153,8 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     return []
   }, [mangoAccount, group])
 
+  const showInsufficientBalance = tokenMax < Number(inputAmount)
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="h-[420px]">
@@ -250,25 +252,22 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               onClick={handleWithdraw}
               className="flex w-full items-center justify-center"
               size="large"
-              disabled={!inputAmount || Number(inputAmount) > tokenMax}
+              disabled={!inputAmount || showInsufficientBalance}
             >
               {submitting ? (
                 <Loading className="mr-2 h-5 w-5" />
+              ) : showInsufficientBalance ? (
+                <div className="flex items-center">
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  {t('trade:insufficient-balance', {
+                    symbol: selectedToken,
+                  })}
+                </div>
               ) : (
                 t('withdraw')
               )}
             </Button>
           </div>
-          {Number(inputAmount) > tokenMax ? (
-            <div className="pt-4">
-              <InlineNotification
-                type="error"
-                desc={t('trade:insufficient-balance', {
-                  symbol: selectedToken,
-                })}
-              />
-            </div>
-          ) : null}
         </FadeInFadeOut>
       </div>
     </Modal>

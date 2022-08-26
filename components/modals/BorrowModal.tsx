@@ -4,7 +4,7 @@ import {
   MangoAccount,
   toUiDecimals,
 } from '@blockworks-foundation/mango-v4'
-import { ChevronDownIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
@@ -149,6 +149,8 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     return []
   }, [mangoAccount, group])
 
+  const showInsufficientBalance = tokenMax < Number(inputAmount)
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <EnterBottomExitBottom
@@ -251,10 +253,19 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         <Button
           onClick={handleWithdraw}
           className="flex w-full items-center justify-center"
-          disabled={!inputAmount}
+          disabled={!inputAmount || showInsufficientBalance}
           size="large"
         >
-          {submitting ? <Loading className="mr-2 h-5 w-5" /> : t('borrow')}
+          {submitting ? (
+            <Loading className="mr-2 h-5 w-5" />
+          ) : showInsufficientBalance ? (
+            <div className="flex items-center">
+              <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+              {t('trade:insufficient-collateral')}
+            </div>
+          ) : (
+            t('borrow')
+          )}
         </Button>
       </FadeInFadeOut>
     </Modal>
