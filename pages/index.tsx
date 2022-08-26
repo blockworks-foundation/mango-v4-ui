@@ -259,7 +259,7 @@ const Index: NextPage = () => {
               : (0).toFixed(2)}
           </p>
         </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        {/* <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
             <p className="text-th-fgd-3">{t('pnl')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">
@@ -274,7 +274,7 @@ const Index: NextPage = () => {
               <ChevronRightIcon className="h-5 w-5" />
             </IconButton>
           ) : null}
-        </div>
+        </div> */}
         <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
