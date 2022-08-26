@@ -272,14 +272,14 @@ const JupiterRouteInfo = ({
                 coingeckoPrices?.inputCoingeckoPrice ? (
                   <div
                     className={`text-right ${
-                      coinGeckoPriceDifference * 100 > 0
+                      coinGeckoPriceDifference > 0
                         ? 'text-th-red'
                         : 'text-th-green'
                     }`}
                   >
-                    {Math.abs(coinGeckoPriceDifference * 100).toFixed(1)}%{' '}
+                    {Math.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
                     <span className="text-th-fgd-4">{`${
-                      coinGeckoPriceDifference * 100 <= 0
+                      coinGeckoPriceDifference <= 0
                         ? 'cheaper'
                         : 'more expensive'
                     } than CoinGecko`}</span>
