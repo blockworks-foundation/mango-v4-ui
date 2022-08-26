@@ -22,11 +22,6 @@ const HealthImpact = ({
     return mangoAccount.getHealthRatioUi(HealthType.maint)
   }, [mangoAccount])
 
-  const currentInitHealth = useMemo(() => {
-    if (!mangoAccount) return 0
-    return mangoAccount.getHealthRatioUi(HealthType.init)
-  }, [mangoAccount])
-
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !mangoAccount) return 0

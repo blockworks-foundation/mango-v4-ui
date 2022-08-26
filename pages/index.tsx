@@ -121,10 +121,6 @@ const Index: NextPage = () => {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 100
   }, [mangoAccount])
 
-  const initHealth = useMemo(() => {
-    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.init) : 100
-  }, [mangoAccount])
-
   return !chartToShow ? (
     <>
       <div className="mb-8 flex flex-col md:mb-10 lg:flex-row lg:items-end lg:justify-between">

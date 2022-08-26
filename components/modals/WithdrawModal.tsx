@@ -1,4 +1,9 @@
-import { Bank, Group, MangoAccount } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  Group,
+  HealthType,
+  MangoAccount,
+} from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -15,6 +20,7 @@ import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import HealthImpact from '../shared/HealthImpact'
+import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
@@ -151,6 +157,10 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     return []
   }, [mangoAccount, group])
 
+  const initHealth = useMemo(() => {
+    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.init) : 100
+  }, [mangoAccount])
+
   const showInsufficientBalance = tokenMax < Number(inputAmount)
 
   return (
@@ -182,6 +192,14 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         >
           <div>
             <h2 className="mb-4 text-center">{t('withdraw')}</h2>
+            {initHealth <= 0 ? (
+              <div className="mb-4">
+                <InlineNotification
+                  type="error"
+                  desc="You have no available collateral to withdraw."
+                />
+              </div>
+            ) : null}
             <div className="grid grid-cols-2 pb-6">
               <div className="col-span-2 flex justify-between">
                 <Label text={t('token')} />
@@ -250,7 +268,9 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               onClick={handleWithdraw}
               className="flex w-full items-center justify-center"
               size="large"
-              disabled={!inputAmount || showInsufficientBalance}
+              disabled={
+                !inputAmount || showInsufficientBalance || initHealth <= 0
+              }
             >
               {submitting ? (
                 <Loading className="mr-2 h-5 w-5" />
