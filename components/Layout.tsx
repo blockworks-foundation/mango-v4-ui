@@ -1,41 +1,18 @@
 import SideNav from './SideNav'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
-import { ArrowRightIcon, ChevronRightIcon } from '@heroicons/react/solid'
+import { ReactNode, useEffect, useState } from 'react'
+import { ChevronRightIcon } from '@heroicons/react/solid'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
-import { useTranslation } from 'next-i18next'
 import mangoStore from '../store/mangoStore'
 import BottomBar from './mobile/BottomBar'
-import useLocalStorageState from '../hooks/useLocalStorageState'
-import UserSetupModal from './modals/UserSetupModal'
-import { ConnectWalletButton } from './wallet/ConnectWalletButton'
-import ConnectedMenu from './wallet/ConnectedMenu'
-import WalletIcon from './icons/WalletIcon'
 import BounceLoader from './shared/BounceLoader'
-import MangoAccountsList from './MangoAccountsList'
-import CreateAccountModal from './modals/CreateAccountModal'
-import { LinkButton } from './shared/Button'
-import { IS_ONBOARDED_KEY } from '../utils/constants'
+import TopBar from './TopBar'
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const connected = mangoStore((s) => s.connected)
-  const actions = mangoStore((s) => s.actions)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
-  const { t } = useTranslation('common')
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { width } = useViewport()
-  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
-  const [showUserSetupModal, setShowUserSetupModal] = useState(false)
-  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
-
-  useEffect(() => {
-    if (mangoAccount) {
-      const pubKey = mangoAccount.publicKey.toString()
-      actions.fetchAccountPerformance(pubKey, 1)
-      actions.fetchAccountInterestTotals(pubKey)
-    }
-  }, [actions, mangoAccount])
 
   useEffect(() => {
     const collapsed = width ? width < breakpoints.xl : false
@@ -47,14 +24,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
       setIsCollapsed(true)
     }
   }, [width])
-
-  const handleCloseModal = useCallback(() => {
-    setShowUserSetupModal(false)
-  }, [])
-
-  const handleShowModal = useCallback(() => {
-    setShowUserSetupModal(true)
-  }, [])
 
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
@@ -103,61 +72,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
                 src="/logos/logo-mark.svg"
                 alt="next"
               />
-              <div className="flex w-full items-center justify-between space-x-4">
-                <span className="mb-0">
-                  {!connected ? (
-                    <span className="hidden items-center md:flex">
-                      🔗<span className="ml-2">{t('connect-helper')}</span>
-                      <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
-                    </span>
-                  ) : !mangoAccount ? (
-                    <div className="hidden items-center md:flex">
-                      🥭
-                      <LinkButton
-                        onClick={() => setShowCreateAccountModal(true)}
-                      >
-                        <span className="ml-2">{t('create-account')}</span>
-                      </LinkButton>
-                    </div>
-                  ) : null}
-                </span>
-                {connected ? (
-                  <div className="flex items-center space-x-4">
-                    {mangoAccount ? (
-                      <MangoAccountsList mangoAccount={mangoAccount} />
-                    ) : null}
-                    <ConnectedMenu />
-                  </div>
-                ) : isOnboarded ? (
-                  <ConnectWalletButton />
-                ) : (
-                  <button
-                    className="relative flex h-16 items-center justify-center rounded-none bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark px-6 text-base font-bold text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100"
-                    onClick={handleShowModal}
-                  >
-                    <WalletIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                    {t('connect')}
-                  </button>
-                )}
-              </div>
+              <TopBar />
             </div>
             <div className="min-h-screen p-6 pb-20 md:p-8">{children}</div>
           </div>
         </div>
       </div>
-      {showUserSetupModal ? (
-        <UserSetupModal
-          isOpen={showUserSetupModal}
-          onClose={handleCloseModal}
-        />
-      ) : null}
-      {showCreateAccountModal ? (
-        <CreateAccountModal
-          isOpen={showCreateAccountModal}
-          onClose={() => setShowCreateAccountModal(false)}
-          isFirstAccount
-        />
-      ) : null}
     </>
   )
 }

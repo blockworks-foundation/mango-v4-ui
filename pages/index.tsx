@@ -27,6 +27,7 @@ import SheenLoader from '../components/shared/SheenLoader'
 import AccountChart from '../components/account/AccountChart'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
+import useMangoAccount from '../components/shared/useMangoAccount'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -42,7 +43,8 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Index: NextPage = () => {
   const { t } = useTranslation('common')
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
+  const actions = mangoStore((s) => s.actions)
   const loadPerformanceData = mangoStore(
     (s) => s.mangoAccount.stats.performance.loading
   )
@@ -64,6 +66,14 @@ const Index: NextPage = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
+
+  useEffect(() => {
+    if (mangoAccount) {
+      const pubKey = mangoAccount.publicKey.toString()
+      actions.fetchAccountPerformance(pubKey, 1)
+      actions.fetchAccountInterestTotals(pubKey)
+    }
+  }, [actions, mangoAccount])
 
   useEffect(() => {
     if (!oneDayPerformanceData.length && performanceData.length) {

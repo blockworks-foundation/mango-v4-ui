@@ -33,6 +33,7 @@ const MangoAccountsList = ({
 
     set((s) => {
       s.mangoAccount.current = acc
+      s.mangoAccount.lastUpdatedAt = new Date().toISOString()
     })
     setLastAccountViewed(acc.publicKey.toString())
   }

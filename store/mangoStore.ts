@@ -110,6 +110,7 @@ export type MangoStore = {
   mangoAccount: {
     current: MangoAccount | undefined
     initialLoad: boolean
+    lastUpdatedAt: string
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
       performance: { data: PerformanceDataItem[]; loading: boolean }
@@ -174,6 +175,7 @@ const mangoStore = create<MangoStore>(
       mangoAccount: {
         current: undefined,
         initialLoad: true,
+        lastUpdatedAt: '',
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
@@ -348,6 +350,7 @@ const mangoStore = create<MangoStore>(
             await mangoAccount.reload(client, group)
             set((state) => {
               state.mangoAccount.current = mangoAccount
+              state.mangoAccount.lastUpdatedAt = new Date().toISOString()
             })
           } catch (e) {
             console.error('Error reloading mango acct', e)
@@ -392,6 +395,7 @@ const mangoStore = create<MangoStore>(
             set((state) => {
               state.mangoAccounts.accounts = mangoAccounts
               state.mangoAccount.current = newSelectedMangoAccount
+              state.mangoAccount.lastUpdatedAt = new Date().toISOString()
             })
           } catch (e) {
             console.error('Error fetching mango accts', e)
