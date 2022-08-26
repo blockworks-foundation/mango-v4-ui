@@ -74,7 +74,7 @@ const JupiterRouteInfo = ({
   selectedRoute,
   setSelectedRoute,
 }: JupiterRouteInfoProps) => {
-  const { t } = useTranslation('trade')
+  const { t } = useTranslation(['common', 'trade'])
   const [showRoutesModal, setShowRoutesModal] = useState(false)
   const [swapRate, setSwapRate] = useState<boolean>(false)
   const [depositAndFee, setDepositAndFee] = useState<TransactionFeeInfo>()
@@ -244,7 +244,7 @@ const JupiterRouteInfo = ({
 
         <div className="space-y-2 px-1">
           <div className="flex justify-between">
-            <span>{t('rate')}</span>
+            <span>Rate</span>
             <div>
               <div className="flex items-center justify-end">
                 <p className="text-right text-sm">
@@ -307,7 +307,7 @@ const JupiterRouteInfo = ({
             <div className="flex justify-between">
               <p className="text-sm text-th-fgd-3">{t('borrow-amount')}</p>
               <p className="text-right text-sm text-th-fgd-1">
-                ~{formatFixedDecimals(borrowAmount)} {inputTokenInfo?.symbol}
+                ~ {formatFixedDecimals(borrowAmount)} {inputTokenInfo?.symbol}
               </p>
             </div>
           ) : null}

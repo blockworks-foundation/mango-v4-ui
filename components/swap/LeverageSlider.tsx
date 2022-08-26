@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import mangoStore from '../../store/mangoStore'
-import { useTokenMax } from './SwapForm'
+import { useTokenMax } from './useTokenMax'
 
 const LeverageSlider = ({
   amount,

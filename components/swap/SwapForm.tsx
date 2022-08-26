@@ -14,11 +14,7 @@ import ContentBox from '../shared/ContentBox'
 import JupiterRouteInfo from './JupiterRouteInfo'
 import TokenSelect from '../TokenSelect'
 import useDebounce from '../shared/useDebounce'
-import {
-  floorToDecimal,
-  formatDecimal,
-  numberFormat,
-} from '../../utils/numbers'
+import { floorToDecimal, numberFormat } from '../../utils/numbers'
 import { SwapLeverageSlider } from './LeverageSlider'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
@@ -35,6 +31,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
+import { useTokenMax } from './useTokenMax'
 
 const MAX_DIGITS = 11
 const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -409,57 +406,6 @@ const SwapForm = () => {
 }
 
 export default SwapForm
-
-export const useTokenMax = (useMargin = true) => {
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const inputBank = mangoStore((s) => s.swap.inputBank)
-  const outputBank = mangoStore((s) => s.swap.outputBank)
-  const slippage = mangoStore((s) => s.swap.slippage)
-
-  const tokenInMax = useMemo(() => {
-    const group = mangoStore.getState().group
-
-    if (!group || !inputBank || !mangoAccount || !outputBank)
-      return { amount: 0.0, decimals: 6, amountWithBorrow: 0.0 }
-    const inputBankFromGroup = group.getFirstBankByMint(inputBank.mint)
-
-    const tokenBalance = parseFloat(
-      formatDecimal(
-        mangoAccount?.getTokenBalanceUi(inputBankFromGroup),
-        inputBankFromGroup.mintDecimals
-      )
-    )
-    const maxAmountWithoutMargin = tokenBalance > 0 ? tokenBalance : 0
-    const inputBankVaultBalance = floorToDecimal(
-      inputBank.uiDeposits() - inputBank.uiBorrows(),
-      inputBank.mintDecimals
-    )
-
-    const maxUiAmountWithBorrow = mangoAccount?.getMaxSourceUiForTokenSwap(
-      group,
-      inputBank.mint,
-      outputBank.mint,
-      0.98 - slippage / 10
-    )
-
-    return {
-      amount: useMargin
-        ? Math.min(
-            maxAmountWithoutMargin,
-            inputBankVaultBalance,
-            maxUiAmountWithBorrow
-          )
-        : Math.min(maxAmountWithoutMargin, inputBankVaultBalance),
-      amountWithBorrow: Math.min(
-        floorToDecimal(maxUiAmountWithBorrow, inputBank.mintDecimals),
-        inputBankVaultBalance
-      ),
-      decimals: inputBank.mintDecimals,
-    }
-  }, [inputBank, mangoAccount, outputBank, slippage])
-
-  return tokenInMax
-}
 
 const MaxSwapAmount = ({
   amountWithBorrow,
