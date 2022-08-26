@@ -24,7 +24,7 @@ const hydrateStore = async () => {
   actions.fetchGroup()
   const mangoAccount = mangoStore.getState().mangoAccount.current
   if (mangoAccount) {
-    actions.reloadMangoAccount()
+    // actions.reloadMangoAccount()
   }
 }
 
