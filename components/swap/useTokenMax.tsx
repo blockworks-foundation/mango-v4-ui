@@ -21,7 +21,7 @@ export const useTokenMax = (useMargin = true) => {
       )
     )
     const inputBankVaultBalance = group.getTokenVaultBalanceByMintUi(
-      inputBankFromGroup.mint
+      inputBank.mint
     )
     const maxAmountWithoutMargin = tokenBalance > 0 ? tokenBalance : 0
 
