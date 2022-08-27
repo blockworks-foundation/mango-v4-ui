@@ -353,17 +353,19 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                 <InlineNotification type="info" desc={t('insufficient-sol')} />
                 <div className="">
                   <Button
-                    className="w-full"
+                    className="mb-4 w-full"
                     onClick={() => handleCreateAccount()}
                     size="large"
                   >
                     Create Account
                   </Button>
                   <LinkButton
-                    className="mt-2 flex w-full justify-center"
+                    className="flex w-full justify-center"
                     onClick={onClose}
                   >
-                    <div className=" text-th-fgd-4 underline">Skip for now</div>
+                    <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
+                      Skip for now
+                    </span>
                   </LinkButton>
                 </div>
               </div>
@@ -420,14 +422,14 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                 </FadeInFadeOut>
                 {!depositToken ? (
                   <div className="absolute top-10 mt-2 h-56 w-full overflow-auto">
-                    <div className="flex px-4 pb-2">
-                      <div className="w-1/5">
+                    <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
+                      <div className="">
                         <p className="text-xs">{t('token')}</p>
                       </div>
-                      <div className="w-2/5 text-right">
+                      <div className="text-right">
                         <p className="text-xs">{t('deposit-rate')}</p>
                       </div>
-                      <div className="w-2/5 text-right">
+                      <div className="text-right">
                         <p className="whitespace-nowrap text-xs">
                           {t('wallet-balance')}
                         </p>
@@ -453,7 +455,9 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                   Deposit
                 </Button>
                 <LinkButton onClick={handleEndOnboarding}>
-                  Skip for now
+                  <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
+                    Skip for now
+                  </span>
                 </LinkButton>
               </div>
             </div>
