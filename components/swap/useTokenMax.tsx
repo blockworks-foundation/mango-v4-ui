@@ -14,14 +14,16 @@ export const useTokenMax = (useMargin = true) => {
       return { amount: 0.0, decimals: 6, amountWithBorrow: 0.0 }
 
     const inputBankFromGroup = group.getFirstBankByMint(inputBank.mint)
-    const tokenBalance = group.getTokenVaultBalanceByMintUi(
+    const tokenBalance = parseFloat(
+      formatDecimal(
+        mangoAccount?.getTokenBalanceUi(inputBankFromGroup),
+        inputBankFromGroup.mintDecimals
+      )
+    )
+    const inputBankVaultBalance = group.getTokenVaultBalanceByMintUi(
       inputBankFromGroup.mint
     )
     const maxAmountWithoutMargin = tokenBalance > 0 ? tokenBalance : 0
-    const inputBankVaultBalance = floorToDecimal(
-      inputBank.uiDeposits() - inputBank.uiBorrows(),
-      inputBank.mintDecimals
-    )
 
     const maxUiAmountWithBorrow = mangoAccount?.getMaxSourceUiForTokenSwap(
       group,
