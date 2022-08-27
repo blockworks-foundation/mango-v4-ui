@@ -20,6 +20,8 @@ export const useTokenMax = (useMargin = true) => {
         inputBankFromGroup.mintDecimals
       )
     )
+    console.log('inputBank.mint', inputBank.mint.toString())
+
     const inputBankVaultBalance = group.getTokenVaultBalanceByMintUi(
       inputBank.mint
     )
