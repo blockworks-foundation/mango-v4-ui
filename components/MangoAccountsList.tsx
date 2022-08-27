@@ -29,13 +29,17 @@ const MangoAccountsList = ({
     const group = mangoStore.getState().group
     if (!group) return
 
-    await acc.reloadAccountData(client, group)
+    try {
+      await acc.reloadAccountData(client, group)
 
-    set((s) => {
-      s.mangoAccount.current = acc
-      s.mangoAccount.lastUpdatedAt = new Date().toISOString()
-    })
-    setLastAccountViewed(acc.publicKey.toString())
+      set((s) => {
+        s.mangoAccount.current = acc
+        s.mangoAccount.lastUpdatedAt = new Date().toISOString()
+      })
+      setLastAccountViewed(acc.publicKey.toString())
+    } catch (e) {
+      console.warn('Error selecting account', e)
+    }
   }
 
   return (
