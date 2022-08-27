@@ -173,7 +173,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p className="text-xs">{t('token')}</p>
             </div>
             <div className="flex justify-end">
-              <p className="text-xs">{t('account-balance')}</p>
+              <p className="text-xs">{t('available-balance')}</p>
             </div>
           </div>
           <ActionTokenList

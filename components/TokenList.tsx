@@ -121,7 +121,7 @@ const TokenList = () => {
               <th className="className='hidden lg:block' text-right"></th>
               <th className="text-center">{t('rates')}</th>
               <th className="text-right">{t('interest-earned-paid')}</th>
-              <th className="text-right">{t('available-balance')}</th>
+              <th className="text-right">{t('balance')}</th>
             </tr>
           </thead>
           <tbody>
@@ -232,7 +232,7 @@ const TokenList = () => {
                     </div>
                   </td>
                   <td className=" pt-4 text-right">
-                    <p className="px-2">
+                    <p>
                       {mangoAccount
                         ? formatDecimal(
                             mangoAccount.getTokenBalanceUi(bank),
@@ -240,7 +240,7 @@ const TokenList = () => {
                           )
                         : 0}
                     </p>
-                    <p className="px-2 text-sm text-th-fgd-4">
+                    <p className="text-sm text-th-fgd-4">
                       {mangoAccount
                         ? `${formatFixedDecimals(
                             mangoAccount.getTokenBalanceUi(bank) * oraclePrice,
