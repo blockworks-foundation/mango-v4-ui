@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect } from 'react'
+import React, { useCallback, useMemo, useEffect, useState } from 'react'
 import { useWallet, Wallet } from '@solana/wallet-adapter-react'
 import { WalletReadyState } from '@solana/wallet-adapter-base'
 import { useTranslation } from 'next-i18next'
@@ -8,6 +8,7 @@ import WalletSelect from './WalletSelect'
 import mangoStore from '../../store/mangoStore'
 import { Wallet as AnchorWallet } from '@project-serum/anchor'
 import { notify } from '../../utils/notifications'
+import Loading from '../shared/Loading'
 
 export const handleWalletConnect = async (wallet: Wallet) => {
   if (!wallet) {
@@ -47,6 +48,7 @@ export const ConnectWalletButton: React.FC = () => {
   const { wallet, wallets, select } = useWallet()
   const group = mangoStore((s) => s.group)
   const { t } = useTranslation('common')
+  const [connecting, setConnecting] = useState(false)
   // const [showAccountsModal, setShowAccountsModal] = useState(false)
 
   const installedWallets = useMemo(() => {
@@ -68,9 +70,16 @@ export const ConnectWalletButton: React.FC = () => {
   }, [wallets, installedWallets])
 
   const handleConnect = useCallback(async () => {
+    setConnecting(true)
     const group = mangoStore.getState().group
-    if (wallet && group) {
-      await handleWalletConnect(wallet)
+    try {
+      if (wallet && group) {
+        await handleWalletConnect(wallet)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setConnecting(false)
     }
   }, [wallet])
 
@@ -109,8 +118,8 @@ export const ConnectWalletButton: React.FC = () => {
               />
             </div>
             <div className="text-left">
-              <div className="mb-1.5 text-base font-bold leading-none">
-                {t('connect')}
+              <div className="mb-1.5 flex justify-center text-base font-bold leading-none">
+                {connecting ? <Loading className="h-4 w-4" /> : t('connect')}
               </div>
               {wallet?.adapter?.name && (
                 <div className="text-xxs font-normal leading-3 tracking-wider text-white">

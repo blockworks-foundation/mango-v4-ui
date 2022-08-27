@@ -13,7 +13,7 @@ const ConnectedMenu = () => {
   const { t } = useTranslation('common')
   const [showProfileImageModal, setShowProfileImageModal] = useState(false)
   const set = mangoStore((s) => s.set)
-  const { publicKey, disconnect } = useWallet()
+  const { publicKey, disconnect, wallet } = useWallet()
 
   const handleDisconnect = useCallback(() => {
     set((state) => {
@@ -21,6 +21,7 @@ const ConnectedMenu = () => {
       state.connected = false
     })
     disconnect()
+    wallet?.adapter.disconnect()
     notify({
       type: 'info',
       title: t('wallet-disconnected'),
