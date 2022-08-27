@@ -152,7 +152,14 @@ const Index: NextPage = () => {
                   )}
                 />
               ) : (
-                (0).toFixed(2)
+                <FlipNumbers
+                  height={48}
+                  width={32}
+                  play
+                  delay={0.05}
+                  duration={1}
+                  numbers={'0.00'}
+                />
               )}
             </div>
             {performanceData.length && mangoAccount ? (
@@ -164,15 +171,14 @@ const Index: NextPage = () => {
                 ) : (
                   ''
                 )}
-
                 <p
-                  className={`mb-0.5 ${
+                  className={
                     accountValueChange > 0
                       ? 'text-th-green'
                       : accountValueChange < 0
                       ? 'text-th-red'
                       : 'text-th-fgd-4'
-                  }`}
+                  }
                 >
                   {isNaN(accountValueChange)
                     ? '0.00'
@@ -183,13 +189,12 @@ const Index: NextPage = () => {
             ) : (
               <div className="mt-1 flex items-center space-x-2">
                 <UpTriangle />
-
                 <p className="text-th-green">0.00%</p>
               </div>
             )}
           </div>
           {!loadPerformanceData ? (
-            performanceData.length ? (
+            mangoAccount && performanceData.length ? (
               <div
                 className="relative flex items-end"
                 onMouseEnter={() =>
