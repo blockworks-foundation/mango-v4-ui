@@ -35,10 +35,7 @@ const getMaxWithdrawWithoutBorrow = (
   mangoAccount: MangoAccount
 ): number => {
   const accountBalance = mangoAccount?.getTokenBalanceUi(bank)
-  const vaultBalance = floorToDecimal(
-    bank.uiDeposits() - bank.uiBorrows(),
-    bank.mintDecimals
-  )
+  const vaultBalance = group.getTokenVaultBalanceByMintUi(bank.mint)
   const maxBorrow = mangoAccount?.getMaxWithdrawWithBorrowForTokenUi(
     group,
     bank.mint
