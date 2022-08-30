@@ -114,7 +114,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
           fontSize={10}
           textAnchor="middle"
         >
-          {value}
+          {formatFixedDecimals(value)}
         </text>
       )
     } else return <div />
