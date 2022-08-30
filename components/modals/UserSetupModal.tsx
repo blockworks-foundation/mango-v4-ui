@@ -163,7 +163,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           }
         })
       : []
-    return banks.filter((b) => b.walletBalance > 0)
+    return banks
   }, [group?.banksMapByName, walletTokens])
 
   return (
