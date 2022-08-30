@@ -1,4 +1,10 @@
-import { FunctionComponent, useCallback, useEffect, useState } from 'react'
+import {
+  FunctionComponent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -18,7 +24,6 @@ import { formatFixedDecimals } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
-import { SwitchHorizontalIcon } from '@heroicons/react/solid'
 
 dayjs.extend(relativeTime)
 
@@ -88,6 +93,32 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState(1)
   const { theme } = useTheme()
+
+  const [min, max] = useMemo(() => {
+    if (chartData.length) {
+      const prices = chartData.map((d: any) => d.price)
+      return [Math.min(...prices), Math.max(...prices)]
+    }
+    return ['', '']
+  }, [chartData])
+
+  const CustomizedLabel = (props: any) => {
+    const { x, y, value } = props
+    if (value === min || value === max) {
+      return (
+        <text
+          x={x}
+          y={y}
+          dy={value === min ? 16 : -8}
+          fill={theme === 'Light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)'}
+          fontSize={10}
+          textAnchor="middle"
+        >
+          {value}
+        </text>
+      )
+    } else return <div />
+  }
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -363,6 +394,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     }
                     strokeWidth={1.5}
                     fill="url(#gradientArea)"
+                    label={<CustomizedLabel />}
                   />
                   <XAxis
                     dataKey="time"

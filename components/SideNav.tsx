@@ -171,7 +171,7 @@ const MenuItem = ({
   return (
     <Link href={pagePath} shallow={true}>
       <a
-        className={`default-transition flex cursor-pointer px-4 md:hover:text-th-primary ${
+        className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
           active ? 'text-th-primary' : 'text-th-fgd-1'
         } ${hideIconBg ? 'py-1' : 'py-2'}`}
       >
