@@ -161,6 +161,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
       setLoadChartData(false)
     } catch (e) {
       console.warn('Unable to load chart data')
+      setLoadChartData(false)
     }
   }, [baseTokenId, quoteTokenId, daysToShow])
 
@@ -213,7 +214,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }
 
   return (
-    <ContentBox hideBorder hidePadding>
+    <ContentBox hideBorder hidePadding className="h-full">
       {loadChartData ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
@@ -226,7 +227,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
             <div className="h-[18px] bg-th-bkg-2" />
           </SheenLoader>
           <SheenLoader className="mt-4 w-full rounded-md">
-            <div className="h-[300px] bg-th-bkg-2" />
+            <div className="h-[328px] bg-th-bkg-2" />
           </SheenLoader>
         </>
       ) : chartData.length && baseTokenId && quoteTokenId ? (
@@ -414,7 +415,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
           </div>
         </div>
       ) : (
-        <div className="mt-4 flex h-96 items-center justify-center rounded-lg bg-th-bkg-2 p-4 text-th-fgd-3 md:mt-0">
+        <div className="mt-4 flex h-full items-center justify-center rounded-lg bg-th-bkg-2 p-4 text-th-fgd-3 md:mt-0">
           <div className="">
             <LineChartIcon className="mx-auto h-10 w-10 text-th-fgd-4" />
             <p className="text-th-fgd-4">Chart not available</p>
