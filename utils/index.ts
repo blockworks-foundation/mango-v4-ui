@@ -2,15 +2,21 @@ export const retryFn = async (
   fn: (...x: any) => Promise<any>,
   opts = { maxRetries: 3 }
 ) => {
-  let failureCount = 0
-  try {
-    if (failureCount < opts?.maxRetries) {
-      await fn()
-    } else {
-      return
+  for (let attempt = 1; attempt <= opts?.maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (err: any) {
+      if (attempt <= opts?.maxRetries) {
+        console.error(err?.message, `(retry ${attempt}/${opts?.maxRetries})`)
+        await sleep(100)
+      } else {
+        console.error(err?.message)
+      }
     }
-  } catch (e) {
-    failureCount++
-    console.error('Retry: ', e)
   }
+  throw Error(`failed after ${opts?.maxRetries} retries`)
+}
+
+export async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }

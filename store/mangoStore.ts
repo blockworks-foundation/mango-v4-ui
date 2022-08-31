@@ -403,7 +403,6 @@ const mangoStore = create<MangoStore>(
               state.mangoAccount.current = newSelectedMangoAccount
               state.mangoAccount.lastUpdatedAt = new Date().toISOString()
             })
-            actions.reloadMangoAccount()
           } catch (e) {
             console.error('Error fetching mango accts', e)
           } finally {
