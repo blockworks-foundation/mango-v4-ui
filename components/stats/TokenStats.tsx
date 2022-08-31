@@ -40,11 +40,11 @@ const TokenList = () => {
     if (banks.length) {
       return [
         banks.reduce(
-          (a, c) => a + c.value[0].uiPrice * c.value[0].uiDeposits(),
+          (a, c) => a + c.value[0].uiPrice! * c.value[0].uiDeposits(),
           0
         ),
         banks.reduce(
-          (a, c) => a + c.value[0].uiPrice * c.value[0].uiBorrows(),
+          (a, c) => a + c.value[0].uiPrice! * c.value[0].uiBorrows(),
           0
         ),
       ]
@@ -154,7 +154,7 @@ const TokenList = () => {
                   </td>
                   <td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(oraclePrice, true)}</p>
+                      <p>{formatFixedDecimals(oraclePrice!, true)}</p>
                     </div>
                   </td>
 
@@ -269,7 +269,7 @@ const TokenList = () => {
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('price')}</p>
                       <p className="font-bold">
-                        ${formatDecimal(oraclePrice, 2)}
+                        ${formatDecimal(oraclePrice!, 2)}
                       </p>
                     </div>
                     <div className="col-span-1">

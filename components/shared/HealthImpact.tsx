@@ -32,11 +32,11 @@ const HealthImpact = ({
         HealthType.maint
       )
 
-    return projectedHealth > 100
+    return projectedHealth! > 100
       ? 100
-      : projectedHealth < 0
+      : projectedHealth! < 0
       ? 0
-      : Math.trunc(projectedHealth)
+      : Math.trunc(projectedHealth!)
   }, [mangoAccount, mintPk, uiAmount, isDeposit])
 
   const initProjectedHealth = useMemo(() => {
@@ -49,9 +49,9 @@ const HealthImpact = ({
         HealthType.init
       )
 
-    return projectedHealth > 100
+    return projectedHealth! > 100
       ? 100
-      : projectedHealth < 0
+      : projectedHealth! < 0
       ? 0
       : projectedHealth
   }, [mangoAccount, mintPk, uiAmount, isDeposit])
@@ -74,13 +74,13 @@ const HealthImpact = ({
           {maintProjectedHealth}%{' '}
           <span
             className={`text-xs ${
-              maintProjectedHealth >= currentMaintHealth
+              maintProjectedHealth >= currentMaintHealth!
                 ? 'text-th-green'
                 : 'text-th-red'
             }`}
           >
-            ({maintProjectedHealth >= currentMaintHealth ? '+' : ''}
-            {maintProjectedHealth - currentMaintHealth}%)
+            ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
+            {maintProjectedHealth - currentMaintHealth!}%)
           </span>
         </p>
       </div>

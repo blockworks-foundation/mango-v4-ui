@@ -173,9 +173,9 @@ const SwapForm = () => {
         ],
         HealthType.maint
       )
-    return simulatedHealthRatio > 100
+    return simulatedHealthRatio! > 100
       ? 100
-      : simulatedHealthRatio < 0
+      : simulatedHealthRatio! < 0
       ? 0
       : simulatedHealthRatio
   }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
@@ -383,23 +383,23 @@ const SwapForm = () => {
               <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
               <p
                 className={`${
-                  maintProjectedHealth < 50 && maintProjectedHealth > 15
+                  maintProjectedHealth! < 50 && maintProjectedHealth! > 15
                     ? 'text-th-orange'
-                    : maintProjectedHealth <= 15
+                    : maintProjectedHealth! <= 15
                     ? 'text-th-red'
                     : 'text-th-green'
                 } text-sm`}
               >
-                {maintProjectedHealth.toFixed(2)}%{' '}
+                {maintProjectedHealth!.toFixed(2)}%{' '}
                 <span
                   className={`text-xs ${
-                    maintProjectedHealth >= currentMaintHealth
+                    maintProjectedHealth! >= currentMaintHealth!
                       ? 'text-th-green'
                       : 'text-th-red'
                   }`}
                 >
-                  ({maintProjectedHealth >= currentMaintHealth ? '+' : ''}
-                  {(maintProjectedHealth - currentMaintHealth).toFixed(2)}%)
+                  ({maintProjectedHealth! >= currentMaintHealth! ? '+' : ''}
+                  {(maintProjectedHealth! - currentMaintHealth!).toFixed(2)}%)
                 </span>
               </p>
             </div>

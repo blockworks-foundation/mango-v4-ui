@@ -25,7 +25,7 @@ const MangoAccountSummary = () => {
             $
             {mangoAccount
               ? formatDecimal(
-                  toUiDecimalsForQuote(mangoAccount.getEquity().toNumber()),
+                  toUiDecimalsForQuote(mangoAccount.getEquity()!.toNumber()),
                   2
                 )
               : (0).toFixed(2)}
@@ -38,7 +38,7 @@ const MangoAccountSummary = () => {
             {mangoAccount
               ? formatDecimal(
                   toUiDecimalsForQuote(
-                    mangoAccount.getCollateralValue().toNumber()
+                    mangoAccount.getCollateralValue()!.toNumber()
                   ),
                   2
                 )

@@ -65,11 +65,11 @@ const TokenList = () => {
               (a, b) =>
                 Math.abs(
                   mangoAccount?.getTokenBalanceUi(b.value[0]) *
-                    b.value[0].uiPrice
+                    b.value[0].uiPrice!
                 ) -
                 Math.abs(
                   mangoAccount?.getTokenBalanceUi(a.value[0]) *
-                    a.value[0].uiPrice
+                    a.value[0].uiPrice!
                 )
             )
           : rawBanks
@@ -78,11 +78,11 @@ const TokenList = () => {
                 (a, b) =>
                   Math.abs(
                     mangoAccount?.getTokenBalanceUi(b.value[0]) *
-                      b.value[0].uiPrice
+                      b.value[0].uiPrice!
                   ) -
                   Math.abs(
                     mangoAccount?.getTokenBalanceUi(a.value[0]) *
-                      a.value[0].uiPrice
+                      a.value[0].uiPrice!
                   )
               )
         : rawBanks
@@ -179,7 +179,7 @@ const TokenList = () => {
                   </td>
                   <td className="">
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(oraclePrice, true)}</p>
+                      <p>{formatFixedDecimals(oraclePrice!, true)}</p>
                     </div>
                   </td>
 
@@ -243,7 +243,7 @@ const TokenList = () => {
                     <p className="text-sm text-th-fgd-4">
                       {mangoAccount
                         ? `${formatFixedDecimals(
-                            mangoAccount.getTokenBalanceUi(bank) * oraclePrice,
+                            mangoAccount.getTokenBalanceUi(bank) * oraclePrice!,
                             true
                           )}`
                         : '$0.00'}
@@ -323,7 +323,7 @@ const TokenList = () => {
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('price')}</p>
                       <p className="font-bold">
-                        ${formatDecimal(oraclePrice, 2)}
+                        ${formatDecimal(oraclePrice!, 2)}
                       </p>
                     </div>
                     <div className="col-span-1">

@@ -37,12 +37,12 @@ export const useTokenMax = (useMargin = true) => {
       ? Math.min(
           maxAmountWithoutMargin,
           inputBankVaultBalance,
-          maxUiAmountWithBorrow
+          maxUiAmountWithBorrow!
         )
       : Math.min(maxAmountWithoutMargin, inputBankVaultBalance)
 
     const maxAmountWithBorrow = Math.min(
-      floorToDecimal(maxUiAmountWithBorrow, inputBank.mintDecimals),
+      floorToDecimal(maxUiAmountWithBorrow!, inputBank.mintDecimals),
       inputBankVaultBalance
     )
 

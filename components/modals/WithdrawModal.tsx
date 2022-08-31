@@ -40,7 +40,7 @@ const getMaxWithdrawWithoutBorrow = (
     group,
     bank.mint
   )
-  return Math.min(accountBalance, vaultBalance, maxBorrow)
+  return Math.min(accountBalance, vaultBalance, maxBorrow!)
 }
 
 type ModalCombinedProps = WithdrawModalProps & ModalProps
@@ -189,7 +189,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         >
           <div>
             <h2 className="mb-4 text-center">{t('withdraw')}</h2>
-            {initHealth <= 0 ? (
+            {initHealth! <= 0 ? (
               <div className="mb-4">
                 <InlineNotification
                   type="error"
@@ -266,7 +266,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               className="flex w-full items-center justify-center"
               size="large"
               disabled={
-                !inputAmount || showInsufficientBalance || initHealth <= 0
+                !inputAmount || showInsufficientBalance || initHealth! <= 0
               }
             >
               {submitting ? (

@@ -1,6 +1,8 @@
 import {
   HealthType,
+  I80F48,
   toUiDecimalsForQuote,
+  ZERO_I80F48,
 } from '@blockworks-foundation/mango-v4'
 import type { NextPage } from 'next'
 import { useTranslation } from 'next-i18next'
@@ -131,6 +133,12 @@ const Index: NextPage = () => {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 100
   }, [mangoAccount])
 
+  const equity = useMemo(() => {
+    return mangoAccount?.getEquity()
+      ? (mangoAccount.getEquity() as I80F48)
+      : ZERO_I80F48
+  }, [mangoAccount])
+
   return !chartToShow ? (
     <>
       <div className="mb-8 flex flex-col md:mb-10 lg:flex-row lg:items-end lg:justify-between">
@@ -147,7 +155,7 @@ const Index: NextPage = () => {
                   delay={0.05}
                   duration={1}
                   numbers={formatDecimal(
-                    toUiDecimalsForQuote(mangoAccount.getEquity().toNumber()),
+                    toUiDecimalsForQuote(equity.toNumber()),
                     2
                   )}
                 />
@@ -257,7 +265,7 @@ const Index: NextPage = () => {
             {mangoAccount
               ? formatFixedDecimals(
                   toUiDecimalsForQuote(
-                    mangoAccount.getCollateralValue().toNumber()
+                    mangoAccount.getCollateralValue()!.toNumber()
                   ),
                   true
                 )

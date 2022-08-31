@@ -38,7 +38,7 @@ const getMaxBorrowForToken = (
   const maxBorrow = mangoAccount?.getMaxWithdrawWithBorrowForTokenUi(
     group,
     bank.mint
-  )
+  )!
 
   return Math.min(vaultBalance, floorToDecimal(maxBorrow, bank.mintDecimals))
 }
@@ -189,7 +189,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
       >
         <div>
           <h2 className="mb-4 text-center">{t('borrow')}</h2>
-          {initHealth <= 0 ? (
+          {initHealth && initHealth <= 0 ? (
             <div className="mb-4">
               <InlineNotification
                 type="error"

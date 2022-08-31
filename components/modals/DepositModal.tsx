@@ -158,7 +158,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               walletBalance.maxAmount,
               walletBalance.maxDecimals
             ),
-            walletBalanceValue: walletBalance.maxAmount * value[0]?.uiPrice,
+            walletBalanceValue: walletBalance.maxAmount * value[0].uiPrice!,
           }
         })
       : []
@@ -169,7 +169,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     const mangoAccount = mangoStore.getState().mangoAccount.current
     if (!mangoAccount) return
     const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity().toNumber()
+      mangoAccount.getEquity()!.toNumber()
     )
     return (
       parseFloat(inputAmount) > ALPHA_DEPOSIT_LIMIT ||
@@ -278,7 +278,10 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="flex justify-between">
               <p>{t('deposit-value')}</p>
               <p className="text-th-fgd-1">
-                {formatFixedDecimals(bank!.uiPrice * Number(inputAmount), true)}
+                {formatFixedDecimals(
+                  bank?.uiPrice! * Number(inputAmount),
+                  true
+                )}
               </p>
             </div>
             <div className="flex justify-between">
@@ -294,7 +297,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p>{t('collateral-value')}</p>
               <p className="text-th-fgd-1">
                 {formatFixedDecimals(
-                  bank!.uiPrice *
+                  bank!.uiPrice! *
                     Number(inputAmount) *
                     Number(bank!.initAssetWeight),
                   true

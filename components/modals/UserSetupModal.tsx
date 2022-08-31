@@ -159,7 +159,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               walletBalance.maxAmount,
               walletBalance.maxDecimals
             ),
-            walletBalanceValue: walletBalance.maxAmount * value[0]?.uiPrice,
+            walletBalanceValue: walletBalance.maxAmount * value[0]?.uiPrice!,
           }
         })
       : []
