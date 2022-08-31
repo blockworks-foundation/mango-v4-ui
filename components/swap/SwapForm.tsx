@@ -120,7 +120,9 @@ const SwapForm = () => {
   )
 
   const handleSwitchTokens = useCallback(() => {
-    setAmountInFormValue(amountOut.toString())
+    if (amountIn?.gt(0)) {
+      setAmountInFormValue(amountOut.toString())
+    }
     const inputBank = mangoStore.getState().swap.inputBank
     const outputBank = mangoStore.getState().swap.outputBank
     set((s) => {
