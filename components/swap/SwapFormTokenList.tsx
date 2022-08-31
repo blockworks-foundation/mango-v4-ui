@@ -64,7 +64,7 @@ const TokenItem = ({
   )
 }
 
-const popularTokenSymbols = ['USDC', 'SOL', 'USDT', 'MNGO', 'BTC', 'ETH']
+const popularTokenSymbols = ['USDC', 'SOL', 'USDT', 'MNGO', 'BTC']
 
 const SwapFormTokenList = ({
   onClose,
@@ -84,20 +84,12 @@ const SwapFormTokenList = ({
   const outputBank = mangoStore((s) => s.swap.outputBank)
 
   const popularTokens = useMemo(() => {
-    return walletTokens?.length
-      ? tokens.filter((token) => {
-          const walletMints = walletTokens.map((tok) => tok.mint.toString())
-          return !token?.name || !token?.symbol
-            ? false
-            : popularTokenSymbols.includes(token.symbol) &&
-                walletMints.includes(token.address)
-        })
-      : tokens.filter((token) => {
-          return !token?.name || !token?.symbol
-            ? false
-            : popularTokenSymbols.includes(token.symbol)
-        })
-  }, [walletTokens, tokens])
+    return tokens.filter((token) => {
+      return !token?.name || !token?.symbol
+        ? false
+        : popularTokenSymbols.includes(token.symbol)
+    })
+  }, [tokens])
 
   useEffect(() => {
     function onEscape(e: any) {
