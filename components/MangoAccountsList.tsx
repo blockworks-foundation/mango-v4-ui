@@ -12,6 +12,7 @@ import CreateAccountModal from './modals/CreateAccountModal'
 import { useLocalStorageStringState } from '../hooks/useLocalStorageState'
 import { LAST_ACCOUNT_KEY } from '../utils/constants'
 import { useTranslation } from 'next-i18next'
+import { retryFn } from '../utils'
 
 const MangoAccountsList = ({
   mangoAccount,
@@ -30,8 +31,7 @@ const MangoAccountsList = ({
     if (!group) return
 
     try {
-      await acc.reloadAccountData(client, group)
-
+      await retryFn(() => acc.reload(client, group))
       set((s) => {
         s.mangoAccount.current = acc
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()

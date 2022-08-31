@@ -24,17 +24,18 @@ import {
 import EmptyWallet from '../utils/wallet'
 import { Notification, notify } from '../utils/notifications'
 import {
-  COINGECKO_IDS,
   fetchNftsFromHolaplexIndexer,
   getTokenAccountsByOwnerWithWrappedSol,
   TokenAccount,
 } from '../utils/tokens'
 import { Token } from '../types/jupiter'
 import {
+  COINGECKO_IDS,
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
 } from '../utils/constants'
+import { retryFn } from '../utils'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
@@ -339,6 +340,7 @@ const mangoStore = create<MangoStore>(
         },
         reloadMangoAccount: async () => {
           const set = get().set
+          const actions = get().actions
           try {
             const group = get().group
             const client = get().client
@@ -354,6 +356,7 @@ const mangoStore = create<MangoStore>(
             })
           } catch (e) {
             console.error('Error reloading mango acct', e)
+            actions.reloadMangoAccount()
           } finally {
             set((state) => {
               state.mangoAccount.initialLoad = false
@@ -362,6 +365,7 @@ const mangoStore = create<MangoStore>(
         },
         fetchMangoAccounts: async (wallet) => {
           const set = get().set
+          const actions = get().actions
           try {
             const group = get().group
             const client = get().client
@@ -389,7 +393,9 @@ const mangoStore = create<MangoStore>(
             }
 
             if (newSelectedMangoAccount) {
-              await newSelectedMangoAccount.reloadAccountData(client, group)
+              await retryFn(() =>
+                newSelectedMangoAccount!.reloadAccountData(client, group)
+              )
             }
 
             set((state) => {
@@ -397,6 +403,7 @@ const mangoStore = create<MangoStore>(
               state.mangoAccount.current = newSelectedMangoAccount
               state.mangoAccount.lastUpdatedAt = new Date().toISOString()
             })
+            actions.reloadMangoAccount()
           } catch (e) {
             console.error('Error fetching mango accts', e)
           } finally {
