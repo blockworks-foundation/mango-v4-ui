@@ -252,6 +252,7 @@ const SwapForm = () => {
             useMargin={useMargin}
             setAmountIn={setAmountInFormValue}
             tokenMax={tokenMax}
+            decimals={decimals}
           />
         </div>
         <div className="mb-3 grid grid-cols-2">
@@ -266,6 +267,8 @@ const SwapForm = () => {
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
+              allowNegative={false}
+              isNumericString={true}
               decimalScale={inputTokenInfo?.decimals || 6}
               name="amountIn"
               id="amountIn"
@@ -414,27 +417,31 @@ const MaxSwapAmount = ({
   setAmountIn,
   tokenMax,
   useMargin,
+  decimals,
 }: {
   amountWithBorrow: number
-  setAmountIn: (x: any) => void
+  setAmountIn: (x: string) => void
   tokenMax: number
   useMargin: boolean
+  decimals: number
 }) => {
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const { t } = useTranslation('common')
 
   const setMaxInputAmount = () => {
     const amountIn = useMargin ? amountWithBorrow : tokenMax
-    setAmountIn(amountIn)
+    setAmountIn(amountIn.toFixed(decimals))
   }
 
   if (mangoAccountLoading) return null
+
+  const maxAmount = useMargin ? amountWithBorrow : tokenMax
 
   return (
     <LinkButton className="no-underline" onClick={setMaxInputAmount}>
       <span className="font-normal text-th-fgd-4">{t('max')}:</span>
       <span className="mx-1 text-th-fgd-3 underline">
-        {useMargin ? amountWithBorrow : tokenMax}
+        {maxAmount < 1 ? maxAmount.toFixed(decimals) : maxAmount}
       </span>
     </LinkButton>
   )
@@ -448,7 +455,7 @@ const PercentageSelectButtons = ({
 }: {
   amountIn: string
   decimals: number
-  setAmountIn: (x: any) => any
+  setAmountIn: (x: string) => any
   tokenMax: number
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
