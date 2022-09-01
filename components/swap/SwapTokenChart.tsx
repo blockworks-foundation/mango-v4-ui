@@ -110,7 +110,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
           x={x}
           y={y}
           dy={value === min ? 16 : -8}
-          fill={theme === 'Light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)'}
+          fill={theme === 'Light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)'}
           fontSize={10}
           textAnchor="middle"
         >

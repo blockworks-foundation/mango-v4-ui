@@ -37,7 +37,7 @@
     "react-number-format": "4.5.4",
     "react-window": "^1.8.7",
     "recharts": "^2.1.12",
-    "zustand": "^3.7.2"
+    "zustand": "^4.1.1"
   },
   "peerDependencies": {
     "@project-serum/serum": ">=0.13.62"

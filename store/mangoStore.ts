@@ -161,8 +161,8 @@ export type MangoStore = {
   }
 }
 
-const mangoStore = create<MangoStore>(
-  subscribeWithSelector((set, get) => {
+const mangoStore = create<MangoStore>()(
+  subscribeWithSelector((_set, get) => {
     return {
       coingeckoPrices: {
         data: [],
@@ -188,7 +188,7 @@ const mangoStore = create<MangoStore>(
       notificationIdCounter: 0,
       notifications: [],
       serumOrders: undefined,
-      set: (fn) => set(produce(fn)),
+      set: (fn) => _set(produce(fn)),
       swap: {
         inputBank: undefined,
         outputBank: undefined,
@@ -515,6 +515,7 @@ const mangoStore = create<MangoStore>(
             })
         },
         connectMangoClientWithWallet: async (wallet: Wallet) => {
+          const set = get().set
           try {
             const provider = new AnchorProvider(
               connection,
