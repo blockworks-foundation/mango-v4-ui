@@ -26,7 +26,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
 
   return (
     <div
-      className={`flex flex-col justify-between ${
+      className={`flex flex-col justify-between transition-all duration-500 ${
         collapsed ? 'w-[64px]' : 'w-44 lg:w-56'
       } min-h-screen border-r border-th-bkg-3 bg-th-bkg-1`}
     >
