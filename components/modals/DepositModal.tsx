@@ -162,7 +162,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           }
         })
       : []
-    return banks.filter((b) => b.walletBalance > 0)
+    return banks
   }, [group?.banksMapByName, walletTokens])
 
   const exceedsAlphaMax = useMemo(() => {

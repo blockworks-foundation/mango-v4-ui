@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import TradeSimplePage from '../components/TradeSimplePage'
+import TradeSimplePage from '../components/swap/TradeSimplePage'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {

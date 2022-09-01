@@ -12,7 +12,7 @@ import Decimal from 'decimal.js'
 import mangoStore from '../../store/mangoStore'
 import ContentBox from '../shared/ContentBox'
 import JupiterRouteInfo from './JupiterRouteInfo'
-import TokenSelect from '../TokenSelect'
+import TokenSelect from './TokenSelect'
 import useDebounce from '../shared/useDebounce'
 import { floorToDecimal, numberFormat } from '../../utils/numbers'
 import { SwapLeverageSlider } from './LeverageSlider'
@@ -63,6 +63,12 @@ const SwapForm = () => {
     amountWithBorrow,
     decimals,
   } = useTokenMax(useMargin)
+
+  const amountIn: Decimal | null = useMemo(() => {
+    return Number(debouncedAmountIn)
+      ? new Decimal(debouncedAmountIn)
+      : new Decimal(0)
+  }, [debouncedAmountIn])
 
   const { amountOut, jupiter, routes } = useJupiter({
     inputTokenInfo,
@@ -134,13 +140,7 @@ const SwapForm = () => {
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
     )
-  }, [inputTokenInfo, outputTokenInfo, set, amountOut])
-
-  const amountIn: Decimal | null = useMemo(() => {
-    return Number(debouncedAmountIn)
-      ? new Decimal(debouncedAmountIn)
-      : new Decimal(0)
-  }, [debouncedAmountIn])
+  }, [inputTokenInfo, outputTokenInfo, set, amountOut, amountIn])
 
   const currentMaintHealth = useMemo(() => {
     if (!mangoAccount) return 0
