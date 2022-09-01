@@ -341,10 +341,10 @@ const ExpandableMenuItem = ({
         appear={true}
         show={showMenu}
         as={Fragment}
-        enter="transition ease-in duration-500"
+        enter="transition-all ease-in duration-300"
         enterFrom="opacity-100 max-h-0"
         enterTo="opacity-100 max-h-80"
-        leave="transition ease-out duration-500"
+        leave="transition-all ease-out duration-300"
         leaveFrom="opacity-100 max-h-80"
         leaveTo="opacity-0 max-h-0"
       >
