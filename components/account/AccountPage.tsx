@@ -102,18 +102,18 @@ const AccountPage = () => {
   }
 
   const { accountPnl, accountValueChange } = useMemo(() => {
-    if (performanceData.length) {
+    if (performanceData.length && mangoAccount) {
       return {
         accountPnl: performanceData[performanceData.length - 1].pnl,
         accountValueChange:
-          ((performanceData[performanceData.length - 1].account_equity -
+          ((toUiDecimalsForQuote(mangoAccount.getEquity()!.toNumber()) -
             performanceData[0].account_equity) /
             performanceData[0].account_equity) *
           100,
       }
     }
     return { accountPnl: 0, accountValueChange: 0 }
-  }, [performanceData])
+  }, [performanceData, mangoAccount])
 
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
