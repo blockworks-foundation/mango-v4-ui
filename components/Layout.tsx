@@ -7,17 +7,17 @@ import mangoStore from '../store/mangoStore'
 import BottomBar from './mobile/BottomBar'
 import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
+import useLocalStorageState from '../hooks/useLocalStorageState'
+import { SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const connected = mangoStore((s) => s.connected)
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useLocalStorageState(
+    SIDEBAR_COLLAPSE_KEY,
+    false
+  )
   const { width } = useViewport()
-
-  useEffect(() => {
-    const collapsed = width ? width < breakpoints.xl : false
-    setIsCollapsed(collapsed)
-  }, [width])
 
   useEffect(() => {
     if (width < breakpoints.lg) {
@@ -27,9 +27,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'))
-    }, 100)
   }
 
   return (
@@ -63,7 +60,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
           <div
             className={`w-full overflow-hidden transition-all duration-500 ease-in-out ${
-              isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-56'
+              isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-48 xl:pl-52'
             }`}
           >
             <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 px-6 md:px-8">

@@ -17,6 +17,7 @@ import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
 import HealthHeart from './account/HealthHeart'
 import mangoStore from '../store/mangoStore'
+import Tooltip from './shared/Tooltip'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
@@ -27,7 +28,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   return (
     <div
       className={`flex flex-col justify-between transition-all duration-500 ${
-        collapsed ? 'w-[64px]' : 'w-44 lg:w-56'
+        collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
       } min-h-screen border-r border-th-bkg-3 bg-th-bkg-1`}
     >
       <div className="my-2">
@@ -109,6 +110,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               pagePath="https://docs.mango.markets"
               hideIconBg
               isExternal
+              showTooltip={false}
             />
             <MenuItem
               collapsed={false}
@@ -117,6 +119,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               pagePath="https://dao.mango.markets"
               hideIconBg
               isExternal
+              showTooltip={false}
             />
           </ExpandableMenuItem>
         </div>
@@ -159,6 +162,7 @@ const MenuItem = ({
   pagePath,
   hideIconBg,
   isExternal,
+  showTooltip = true,
 }: {
   active?: boolean
   collapsed: boolean
@@ -167,42 +171,45 @@ const MenuItem = ({
   pagePath: string
   hideIconBg?: boolean
   isExternal?: boolean
+  showTooltip?: boolean
 }) => {
   return (
-    <Link href={pagePath} shallow={true}>
-      <a
-        className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
-          active ? 'text-th-primary' : 'text-th-fgd-1'
-        } ${hideIconBg ? 'py-1' : 'py-2'}`}
-      >
-        <div className="flex w-full items-center justify-between">
-          <div className="flex items-center">
-            <div
-              className={
-                hideIconBg
-                  ? ''
-                  : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
-              }
-            >
-              {icon}
+    <Tooltip content={title} placement="right" show={showTooltip}>
+      <Link href={pagePath} shallow={true}>
+        <a
+          className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
+            active ? 'text-th-primary' : 'text-th-fgd-1'
+          } ${hideIconBg ? 'py-1' : 'py-2'}`}
+        >
+          <div className="flex w-full items-center justify-between">
+            <div className="flex items-center">
+              <div
+                className={
+                  hideIconBg
+                    ? ''
+                    : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
+                }
+              >
+                {icon}
+              </div>
+              <Transition
+                show={!collapsed}
+                as={Fragment}
+                enter="transition ease-in duration-300"
+                enterFrom="opacity-50"
+                enterTo="opacity-100"
+                leave="transition ease-out duration-300"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <span className="ml-3 lg:text-base">{title}</span>
+              </Transition>
             </div>
-            <Transition
-              show={!collapsed}
-              as={Fragment}
-              enter="transition ease-in duration-300"
-              enterFrom="opacity-50"
-              enterTo="opacity-100"
-              leave="transition ease-out duration-300"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <span className="ml-3 lg:text-base">{title}</span>
-            </Transition>
+            {isExternal ? <ExternalLinkIcon className="h-4 w-4" /> : null}
           </div>
-          {isExternal ? <ExternalLinkIcon className="h-4 w-4" /> : null}
-        </div>
-      </a>
-    </Link>
+        </a>
+      </Link>
+    </Tooltip>
   )
 }
 
