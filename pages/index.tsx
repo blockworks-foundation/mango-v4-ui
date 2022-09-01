@@ -136,7 +136,7 @@ const Index: NextPage = () => {
   const equity = useMemo(() => {
     return mangoAccount?.getEquity()
       ? (mangoAccount.getEquity() as I80F48)
-      : ZERO_I80F48
+      : ZERO_I80F48()
   }, [mangoAccount])
 
   return !chartToShow ? (
