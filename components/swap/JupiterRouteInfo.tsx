@@ -171,6 +171,7 @@ const JupiterRouteInfo = ({
           type: 'success',
           txid: tx,
         })
+        actions.fetchGroup()
         await actions.reloadMangoAccount()
       } catch (e: any) {
         console.error('onSwap error: ', e)

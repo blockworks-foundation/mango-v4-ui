@@ -349,9 +349,12 @@ const mangoStore = create<MangoStore>()(
             if (!mangoAccount)
               throw new Error('No mango account exists for reload')
 
-            await mangoAccount.reload(client, group)
+            const reloadedMangoAccount = await mangoAccount.reload(
+              client,
+              group
+            )
             set((state) => {
-              state.mangoAccount.current = mangoAccount
+              state.mangoAccount.current = reloadedMangoAccount
               state.mangoAccount.lastUpdatedAt = new Date().toISOString()
             })
           } catch (e) {

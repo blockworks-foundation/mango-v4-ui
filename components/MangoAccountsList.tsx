@@ -31,9 +31,11 @@ const MangoAccountsList = ({
     if (!group) return
 
     try {
-      await retryFn(() => acc.reload(client, group))
+      const reloadedMangoAccount = await retryFn(() =>
+        acc.reload(client, group)
+      )
       set((s) => {
-        s.mangoAccount.current = acc
+        s.mangoAccount.current = reloadedMangoAccount
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()
       })
       setLastAccountViewed(acc.publicKey.toString())

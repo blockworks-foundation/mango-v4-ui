@@ -30,8 +30,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
         )
         let newCurrentAccount: MangoAccount
         if (newMangoAccounts[0]) {
-          await newMangoAccounts[0].reload(client, group)
-          newCurrentAccount = newMangoAccounts[0]
+          newCurrentAccount = await newMangoAccounts[0].reload(client, group)
         }
 
         setLoading(false)
