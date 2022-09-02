@@ -174,7 +174,7 @@ const MenuItem = ({
   showTooltip?: boolean
 }) => {
   return (
-    <Tooltip content={title} placement="right" show={showTooltip}>
+    <Tooltip content={title} placement="right" show={collapsed && showTooltip}>
       <Link href={pagePath} shallow={true}>
         <a
           className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
