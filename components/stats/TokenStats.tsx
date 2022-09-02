@@ -287,10 +287,9 @@ const TokenList = () => {
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('liquidity')}</p>
                       <p className="font-bold">
-                        {formatDecimal(
-                          bank.uiDeposits() - bank.uiBorrows(),
-                          bank.mintDecimals
-                        )}
+                        {group
+                          ? group.getTokenVaultBalanceByMintUi(bank.mint)
+                          : '-'}
                       </p>
                     </div>
                   </div>

@@ -1,19 +1,15 @@
-import {
-  Bank,
-  Group,
-  HealthType,
-  MangoAccount,
-  toUiDecimals,
-} from '@blockworks-foundation/mango-v4'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
+import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '../../store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
+import { floorToDecimal } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -24,24 +20,9 @@ import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
+import { withValueLimit } from '../swap/SwapForm'
+import { getMaxWithdrawForBank } from '../swap/useTokenMax'
 // import { BorrowLeverageSlider } from '../swap/LeverageSlider'
-
-const getMaxBorrowForToken = (
-  group: Group,
-  mangoAccount: MangoAccount,
-  bank: Bank
-) => {
-  const vaultBalance = floorToDecimal(
-    bank.uiDeposits() - bank.uiBorrows(),
-    bank.mintDecimals
-  )
-  const maxBorrow = mangoAccount?.getMaxWithdrawWithBorrowForTokenUi(
-    group,
-    bank.mint
-  )!
-
-  return Math.min(vaultBalance, floorToDecimal(maxBorrow, bank.mintDecimals))
-}
 
 interface BorrowModalProps {
   token?: string
@@ -80,20 +61,20 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const tokenMax = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !bank || !mangoAccount) return 0
-    return getMaxBorrowForToken(group, mangoAccount, bank)
+    if (!group || !bank || !mangoAccount) return new Decimal(0)
+    return getMaxWithdrawForBank(group, bank, mangoAccount, true)
   }, [mangoAccount, bank])
 
   const setMax = useCallback(() => {
-    setInputAmount(tokenMax.toString())
+    setInputAmount(tokenMax.toFixed())
   }, [tokenMax])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       if (!bank) return
       setSizePercentage(percentage)
-      const amount = (Number(percentage) / 100) * (tokenMax || 0)
-      setInputAmount(floorToDecimal(amount, bank.mintDecimals).toString())
+      const amount = (Number(percentage) / 100) * (tokenMax.toNumber() || 0)
+      setInputAmount(floorToDecimal(amount, bank.mintDecimals).toFixed())
     },
     [tokenMax, bank]
   )
@@ -143,8 +124,13 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
       return group?.banksMapByName
         ? Array.from(group?.banksMapByName, ([key, value]) => {
             const bank = value[0]
-            const maxAmount = getMaxBorrowForToken(group, mangoAccount, bank)
-            return { key, value, maxAmount }
+            const maxAmount = getMaxWithdrawForBank(
+              group,
+              bank,
+              mangoAccount,
+              true
+            )
+            return { key, value, maxAmount: maxAmount.toNumber() }
           })
         : []
     }
@@ -155,7 +141,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.init) : 100
   }, [mangoAccount])
 
-  const showInsufficientBalance = tokenMax < Number(inputAmount)
+  const showInsufficientBalance = inputAmount ? tokenMax.lt(inputAmount) : false
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -202,7 +188,9 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <Label text={t('token')} />
               <LinkButton className="mb-2 no-underline" onClick={setMax}>
                 <span className="font-normal text-th-fgd-4">{t('max')}:</span>
-                <span className="mx-1 text-th-fgd-1 underline">{tokenMax}</span>
+                <span className="mx-1 text-th-fgd-1 underline">
+                  {tokenMax.toFixed()}
+                </span>
               </LinkButton>
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
@@ -225,16 +213,21 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </button>
             </div>
             <div className="col-span-1">
-              <Input
-                type="text"
-                name="borrow"
-                id="borrow"
+              <NumberFormat
+                name="amountIn"
+                id="amountIn"
+                inputMode="decimal"
+                thousandSeparator=","
+                allowNegative={false}
+                isNumericString={true}
+                decimalScale={bank?.mintDecimals || 6}
                 className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
                 placeholder="0.00"
                 value={inputAmount}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setInputAmount(e.target.value)
+                onValueChange={(e: NumberFormatValues) =>
+                  setInputAmount(e.value)
                 }
+                isAllowed={withValueLimit}
               />
             </div>
             <div className="col-span-2 mt-2">

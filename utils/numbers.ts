@@ -1,3 +1,5 @@
+import Decimal from 'decimal.js'
+
 const digits2 = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
 const digits6 = new Intl.NumberFormat('en', { maximumFractionDigits: 6 })
 const digits8 = new Intl.NumberFormat('en', { maximumFractionDigits: 8 })
@@ -23,8 +25,15 @@ export const numberFormat = new Intl.NumberFormat('en', {
   maximumSignificantDigits: 7,
 })
 
-export const floorToDecimal = (value: number, decimals: number) => {
-  return Math.floor(value * 10 ** decimals) / 10 ** decimals
+export const floorToDecimal = (
+  value: number | string | Decimal,
+  decimals: number
+): Decimal => {
+  const decimal: Decimal = !(value instanceof Decimal)
+    ? new Decimal(value)
+    : value
+
+  return decimal.toDecimalPlaces(decimals, Decimal.ROUND_DOWN)
 }
 
 const usdFormatter0 = Intl.NumberFormat('en', {

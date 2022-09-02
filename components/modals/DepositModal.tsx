@@ -2,9 +2,11 @@ import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
 import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
+import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '../../store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from '../../utils/constants'
@@ -22,6 +24,7 @@ import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
+import { withValueLimit } from '../swap/SwapForm'
 
 interface DepositModalProps {
   token?: string
@@ -93,7 +96,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     (percentage: string) => {
       setSizePercentage(percentage)
 
-      let amount = (Number(percentage) / 100) * tokenMax.maxAmount
+      let amount = new Decimal(tokenMax.maxAmount).mul(percentage).div(100)
       if (percentage !== '100') {
         amount = floorToDecimal(amount, tokenMax.maxDecimals)
       }
@@ -157,7 +160,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             walletBalance: floorToDecimal(
               walletBalance.maxAmount,
               walletBalance.maxDecimals
-            ),
+            ).toNumber(),
             walletBalanceValue: walletBalance.maxAmount * value[0].uiPrice!,
           }
         })
@@ -224,7 +227,10 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   {t('wallet-balance')}:
                 </span>
                 <span className="text-th-fgd-1 underline">
-                  {floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals)}
+                  {floorToDecimal(
+                    tokenMax.maxAmount,
+                    tokenMax.maxDecimals
+                  ).toFixed()}
                 </span>
               </LinkButton>
             </div>
@@ -248,16 +254,21 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </button>
             </div>
             <div className="col-span-1">
-              <Input
-                type="text"
-                name="deposit"
-                id="deposit"
+              <NumberFormat
+                name="amountIn"
+                id="amountIn"
+                inputMode="decimal"
+                thousandSeparator=","
+                allowNegative={false}
+                isNumericString={true}
+                decimalScale={bank?.mintDecimals || 6}
                 className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
                 placeholder="0.00"
                 value={inputAmount}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setInputAmount(e.target.value)
+                onValueChange={(e: NumberFormatValues) =>
+                  setInputAmount(e.value)
                 }
+                isAllowed={withValueLimit}
               />
             </div>
             <div className="col-span-2 mt-2">

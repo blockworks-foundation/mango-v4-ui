@@ -34,7 +34,7 @@ import {
 import { useTokenMax } from './useTokenMax'
 
 const MAX_DIGITS = 11
-const withValueLimit = (values: NumberFormatValues): boolean => {
+export const withValueLimit = (values: NumberFormatValues): boolean => {
   return values.floatValue
     ? values.floatValue.toFixed(0).length <= MAX_DIGITS
     : true
@@ -469,11 +469,11 @@ const PercentageSelectButtons = ({
   const handleSizePercentage = (percentage: string) => {
     setSizePercentage(percentage)
     if (tokenMax > 0) {
-      let amount = (Number(percentage) / 100) * tokenMax
+      let amount = new Decimal(tokenMax).mul(percentage).div(100)
       if (percentage !== '100') {
         amount = floorToDecimal(amount, decimals)
       }
-      setAmountIn(amount.toString())
+      setAmountIn(amount.toFixed())
     } else {
       setAmountIn('0')
     }

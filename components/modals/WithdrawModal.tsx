@@ -1,13 +1,10 @@
-import {
-  Bank,
-  Group,
-  HealthType,
-  MangoAccount,
-} from '@blockworks-foundation/mango-v4'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
+import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import NumberFormat, { NumberFormatValues } from 'react-number-format'
 
 import mangoStore from '../../store/mangoStore'
 import { ModalProps } from '../../types/modal'
@@ -24,23 +21,11 @@ import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
+import { withValueLimit } from '../swap/SwapForm'
+import { getMaxWithdrawForBank } from '../swap/useTokenMax'
 
 interface WithdrawModalProps {
   token?: string
-}
-
-const getMaxWithdrawWithoutBorrow = (
-  group: Group,
-  bank: Bank,
-  mangoAccount: MangoAccount
-): number => {
-  const accountBalance = mangoAccount?.getTokenBalanceUi(bank)
-  const vaultBalance = group.getTokenVaultBalanceByMintUi(bank.mint)
-  const maxBorrow = mangoAccount?.getMaxWithdrawWithBorrowForTokenUi(
-    group,
-    bank.mint
-  )
-  return Math.min(accountBalance, vaultBalance, maxBorrow!)
 }
 
 type ModalCombinedProps = WithdrawModalProps & ModalProps
@@ -75,16 +60,18 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   const tokenMax = useMemo(() => {
-    if (!bank || !mangoAccount || !group) return 0
-    const amount = getMaxWithdrawWithoutBorrow(group, bank, mangoAccount)
-    return amount && amount > 0 ? floorToDecimal(amount, bank.mintDecimals) : 0
+    if (!bank || !mangoAccount || !group) return new Decimal(0)
+    const amount = getMaxWithdrawForBank(group, bank, mangoAccount)
+    return amount && amount.gt(0)
+      ? floorToDecimal(amount, bank.mintDecimals)
+      : new Decimal(0)
   }, [mangoAccount, bank, group])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       setSizePercentage(percentage)
-      const amount = (Number(percentage) / 100) * (tokenMax || 0)
-      setInputAmount(amount.toString())
+      const amount = tokenMax.mul(Number(percentage) / 100)
+      setInputAmount(amount.toFixed())
     },
     [tokenMax]
   )
@@ -129,11 +116,11 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     setShowTokenList(false)
   }
 
-  const withdrawBank = useMemo(() => {
+  const withdrawBanks = useMemo(() => {
     if (mangoAccount) {
       const banks = group?.banksMapByName
         ? Array.from(group?.banksMapByName, ([key, value]) => {
-            const accountBalance = getMaxWithdrawWithoutBorrow(
+            const accountBalance = getMaxWithdrawForBank(
               group,
               value[0],
               mangoAccount
@@ -141,10 +128,10 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
             return {
               key,
               value,
-              accountBalance: accountBalance ? accountBalance : 0,
+              accountBalance: accountBalance ? accountBalance.toNumber() : 0,
               accountBalanceValue:
                 accountBalance && value[0]?.uiPrice
-                  ? accountBalance * value[0]?.uiPrice
+                  ? accountBalance.toNumber() * value[0]?.uiPrice
                   : 0,
             }
           })
@@ -158,7 +145,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.init) : 100
   }, [mangoAccount])
 
-  const showInsufficientBalance = tokenMax < Number(inputAmount)
+  const showInsufficientBalance = inputAmount ? tokenMax.gt(inputAmount) : false
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -177,7 +164,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
             </div>
           </div>
           <ActionTokenList
-            banks={withdrawBank}
+            banks={withdrawBanks}
             onSelect={handleSelectToken}
             sortByKey="accountBalanceValue"
             valueKey="accountBalance"
@@ -207,7 +194,9 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   <span className="mr-1 font-normal text-th-fgd-4">
                     {t('max')}:
                   </span>
-                  <span className="text-th-fgd-1 underline">{tokenMax}</span>
+                  <span className="text-th-fgd-1 underline">
+                    {tokenMax.toFixed()}
+                  </span>
                 </LinkButton>
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
@@ -232,16 +221,21 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 </button>
               </div>
               <div className="col-span-1">
-                <Input
-                  type="text"
-                  name="withdraw"
-                  id="withdraw"
+                <NumberFormat
+                  name="amountIn"
+                  id="amountIn"
+                  inputMode="decimal"
+                  thousandSeparator=","
+                  allowNegative={false}
+                  isNumericString={true}
+                  decimalScale={bank?.mintDecimals || 6}
                   className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
                   placeholder="0.00"
                   value={inputAmount}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setInputAmount(e.target.value)
+                  onValueChange={(e: NumberFormatValues) =>
+                    setInputAmount(e.value)
                   }
+                  isAllowed={withValueLimit}
                 />
               </div>
               <div className="col-span-2 mt-2">

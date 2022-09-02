@@ -31,8 +31,6 @@ import SimpleAreaChart from './shared/SimpleAreaChart'
 const TokenList = () => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
-  const [showTokenDetails, setShowTokenDetails] = useState('')
-  const [isOnboarded] = useLocalStorageState(SHOW_ZERO_BALANCES_KEY)
   const [showZeroBalances, setShowZeroBalances] = useState(true)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
@@ -59,33 +57,25 @@ const TokenList = () => {
         key,
         value,
       }))
-      return mangoAccount
-        ? showZeroBalances
-          ? rawBanks.sort(
-              (a, b) =>
-                Math.abs(
-                  mangoAccount?.getTokenBalanceUi(b.value[0]) *
-                    b.value[0].uiPrice!
-                ) -
-                Math.abs(
-                  mangoAccount?.getTokenBalanceUi(a.value[0]) *
-                    a.value[0].uiPrice!
-                )
-            )
-          : rawBanks
-              .filter((b) => mangoAccount?.getTokenBalanceUi(b.value[0]) !== 0)
-              .sort(
-                (a, b) =>
-                  Math.abs(
-                    mangoAccount?.getTokenBalanceUi(b.value[0]) *
-                      b.value[0].uiPrice!
-                  ) -
-                  Math.abs(
-                    mangoAccount?.getTokenBalanceUi(a.value[0]) *
-                      a.value[0].uiPrice!
-                  )
+      const sortedBanks = mangoAccount
+        ? rawBanks.sort(
+            (a, b) =>
+              Math.abs(
+                mangoAccount?.getTokenBalanceUi(b.value[0]) *
+                  b.value[0].uiPrice!
+              ) -
+              Math.abs(
+                mangoAccount?.getTokenBalanceUi(a.value[0]) *
+                  a.value[0].uiPrice!
               )
+          )
         : rawBanks
+
+      return mangoAccount && !showZeroBalances
+        ? sortedBanks.filter(
+            (b) => mangoAccount?.getTokenBalanceUi(b.value[0]) !== 0
+          )
+        : sortedBanks
     }
     return []
   }, [showZeroBalances, group, mangoAccount])
@@ -95,10 +85,6 @@ const TokenList = () => {
       setShowZeroBalances(true)
     }
   }, [connected])
-
-  const handleShowTokenDetails = (name: string) => {
-    showTokenDetails ? setShowTokenDetails('') : setShowTokenDetails(name)
-  }
 
   return (
     <ContentBox hideBorder hidePadding className="mt-0 md:-mt-10">
@@ -262,95 +248,7 @@ const TokenList = () => {
       ) : (
         <div className="mt-4 space-y-2">
           {banks.map(({ key, value }) => {
-            const bank = value[0]
-            const oraclePrice = bank.uiPrice
-            let logoURI
-            if (jupiterTokens.length) {
-              logoURI = jupiterTokens.find(
-                (t) => t.address === bank.mint.toString()
-              )!.logoURI
-            }
-            return (
-              <div key={key} className="rounded-md border border-th-bkg-4 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="mr-2.5 flex flex-shrink-0 items-center">
-                      {logoURI ? (
-                        <Image alt="" width="24" height="24" src={logoURI} />
-                      ) : (
-                        <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                      )}
-                    </div>
-                    <div>
-                      <p>{bank.name}</p>
-                      <p className="text-sm">
-                        <span className="mr-1 text-th-fgd-4">
-                          {t('available')}:
-                        </span>
-                        {mangoAccount
-                          ? formatDecimal(mangoAccount.getTokenBalanceUi(bank))
-                          : 0}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
-                    <IconButton
-                      onClick={() => handleShowTokenDetails(bank.name)}
-                    >
-                      <ChevronDownIcon
-                        className={`${
-                          showTokenDetails === bank.name
-                            ? 'rotate-180'
-                            : 'rotate-360'
-                        } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
-                      />
-                    </IconButton>
-                  </div>
-                </div>
-                <Transition
-                  appear={true}
-                  show={showTokenDetails === bank.name}
-                  as={Fragment}
-                  enter="transition ease-in duration-200"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="transition ease-out"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
-                    <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">{t('price')}</p>
-                      <p className="font-bold">
-                        ${formatDecimal(oraclePrice!, 2)}
-                      </p>
-                    </div>
-                    <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">{t('rates')}</p>
-                      <p className="space-x-2 font-bold">
-                        <span className="text-th-green">
-                          {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
-                        </span>
-                        <span className="font-normal text-th-fgd-4">|</span>
-                        <span className="text-th-red">
-                          {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
-                        </span>
-                      </p>
-                    </div>
-                    <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">{t('liquidity')}</p>
-                      <p className="font-bold">
-                        {formatDecimal(
-                          bank.uiDeposits() - bank.uiBorrows(),
-                          bank.mintDecimals
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </Transition>
-              </div>
-            )
+            return <MobileTokenListItem key={key} bank={value[0]} />
           })}
         </div>
       )}
@@ -359,6 +257,91 @@ const TokenList = () => {
 }
 
 export default TokenList
+
+const MobileTokenListItem = ({ bank, key }: { bank: Bank; key: string }) => {
+  const { t } = useTranslation('common')
+  const [showTokenDetails, setShowTokenDetails] = useState(false)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const group = mangoStore((s) => s.group)
+
+  let logoURI
+  if (jupiterTokens.length) {
+    logoURI = jupiterTokens.find(
+      (t) => t.address === bank.mint.toString()
+    )!.logoURI
+  }
+  return (
+    <div key={key} className="rounded-md border border-th-bkg-4 p-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="mr-2.5 flex flex-shrink-0 items-center">
+            {logoURI ? (
+              <Image alt="" width="24" height="24" src={logoURI} />
+            ) : (
+              <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+            )}
+          </div>
+          <div>
+            <p>{bank.name}</p>
+            <p className="text-sm">
+              <span className="mr-1 text-th-fgd-4">{t('balance')}:</span>
+              {mangoAccount
+                ? formatDecimal(mangoAccount.getTokenBalanceUi(bank))
+                : 0}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-3">
+          <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
+          <IconButton onClick={() => setShowTokenDetails((prev) => !prev)}>
+            <ChevronDownIcon
+              className={`${
+                showTokenDetails ? 'rotate-180' : 'rotate-360'
+              } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
+            />
+          </IconButton>
+        </div>
+      </div>
+      <Transition
+        appear={true}
+        show={showTokenDetails}
+        as={Fragment}
+        enter="transition ease-in duration-200"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition ease-out"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
+          <div className="col-span-1">
+            <p className="text-xs text-th-fgd-3">{t('price')}</p>
+            <p className="font-bold">${formatDecimal(bank.uiPrice!, 2)}</p>
+          </div>
+          <div className="col-span-1">
+            <p className="text-xs text-th-fgd-3">{t('rates')}</p>
+            <p className="space-x-2 font-bold">
+              <span className="text-th-green">
+                {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
+              </span>
+              <span className="font-normal text-th-fgd-4">|</span>
+              <span className="text-th-red">
+                {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
+              </span>
+            </p>
+          </div>
+          <div className="col-span-1">
+            <p className="text-xs text-th-fgd-3">Vault {t('liquidity')}</p>
+            <p className="font-bold">
+              {group ? group.getTokenVaultBalanceByMintUi(bank.mint) : '-'}
+            </p>
+          </div>
+        </div>
+      </Transition>
+    </div>
+  )
+}
 
 const ActionsMenu = ({
   bank,

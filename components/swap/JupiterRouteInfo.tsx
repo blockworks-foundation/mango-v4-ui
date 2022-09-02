@@ -203,13 +203,17 @@ const JupiterRouteInfo = ({
   const coinGeckoPriceDifference = useMemo(() => {
     return amountOut
       ? floorToDecimal(
-          (amountIn.toNumber() / amountOut -
-            coingeckoPrices?.outputCoingeckoPrice /
-              coingeckoPrices?.inputCoingeckoPrice) /
-            (amountIn.toNumber() / amountOut),
+          amountIn
+            .div(amountOut)
+            .minus(
+              new Decimal(coingeckoPrices?.outputCoingeckoPrice).div(
+                coingeckoPrices?.inputCoingeckoPrice
+              )
+            )
+            .div(amountIn.div(amountOut)),
           1
         )
-      : 0
+      : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
 
   return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (
@@ -272,14 +276,14 @@ const JupiterRouteInfo = ({
                 coingeckoPrices?.inputCoingeckoPrice ? (
                   <div
                     className={`text-right ${
-                      coinGeckoPriceDifference > 0
+                      coinGeckoPriceDifference.gt(0)
                         ? 'text-th-red'
                         : 'text-th-green'
                     }`}
                   >
-                    {Math.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
+                    {Decimal.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
                     <span className="text-th-fgd-4">{`${
-                      coinGeckoPriceDifference <= 0
+                      coinGeckoPriceDifference.lte(0)
                         ? 'cheaper'
                         : 'more expensive'
                     } than CoinGecko`}</span>
