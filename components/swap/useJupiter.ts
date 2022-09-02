@@ -17,12 +17,12 @@ type useJupiterPropTypes = {
 
 type RouteParams = {
   routes: RouteInfo[]
-  amountOut: number
+  amountOut: Decimal
 }
 
 const defaultComputedInfo = {
   routes: [],
-  amountOut: 0,
+  amountOut: new Decimal(0),
 }
 
 const useJupiter = ({
@@ -96,9 +96,8 @@ const useJupiter = ({
 
             setComputedInfo({
               routes: routesInfosWithoutRaydium,
-              amountOut: toUiDecimals(
-                JSBI.toNumber(bestRoute.outAmount),
-                outputTokenInfo.decimals!
+              amountOut: new Decimal(bestRoute.outAmount.toString()).div(
+                10 ** outputTokenInfo.decimals!
               ),
             })
           }

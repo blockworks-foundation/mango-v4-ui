@@ -93,9 +93,8 @@ const JupiterRouteInfo = ({
 
   const amountOut = useMemo(() => {
     if (!selectedRoute || !outputTokenInfo) return
-    return toUiDecimals(
-      JSBI.toNumber(selectedRoute.outAmount),
-      outputTokenInfo.decimals
+    return new Decimal(selectedRoute.outAmount.toString()).div(
+      10 ** outputTokenInfo.decimals
     )
   }, [selectedRoute, outputTokenInfo])
 
@@ -256,14 +255,13 @@ const JupiterRouteInfo = ({
                   {swapRate ? (
                     <>
                       1 {inputTokenInfo!.name} ≈{' '}
-                      {formatDecimal(amountOut / amountIn.toNumber(), 6)}{' '}
+                      {amountOut.div(amountIn).toFixed()}{' '}
                       {outputTokenInfo?.symbol}
                     </>
                   ) : (
                     <>
                       1 {outputTokenInfo?.symbol} ≈{' '}
-                      {formatDecimal(amountIn.toNumber() / amountOut, 6)}{' '}
-                      {inputTokenInfo!.name}
+                      {amountIn.div(amountOut).toFixed()} {inputTokenInfo!.name}
                     </>
                   )}
                 </p>

@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import mangoStore from '../../store/mangoStore'
 import { useTokenMax } from './useTokenMax'
@@ -30,7 +31,7 @@ const LeverageSlider = ({
 
   useEffect(() => {
     if (amount) {
-      onChange(amount.toString())
+      onChange(new Decimal(amount).toFixed())
       setValue(amount)
     }
   }, [amount])
@@ -82,7 +83,7 @@ export const SwapLeverageSlider = ({
       ) : (
         <LeverageSlider
           amount={amount}
-          leverageMax={amountWithBorrow}
+          leverageMax={amountWithBorrow.toNumber()}
           onChange={onChange}
         />
       )}

@@ -82,7 +82,7 @@ const SwapForm = () => {
   }, [routes])
 
   useEffect(() => {
-    setAmountInFormValue('0')
+    setAmountInFormValue('')
   }, [useMargin])
 
   const handleAmountInChange = useCallback((e: NumberFormatValues) => {
@@ -168,7 +168,7 @@ const SwapForm = () => {
           },
           {
             mintPk: new PublicKey(outputTokenInfo.address),
-            uiTokenAmount: amountOut,
+            uiTokenAmount: amountOut.toNumber(),
           },
         ],
         HealthType.maint
@@ -188,9 +188,9 @@ const SwapForm = () => {
 
   const showHealthImpact = !!inputTokenInfo && !!outputTokenInfo && !!amountOut
 
-  const showInsufficientBalance =
-    (!useMargin && amountIn.toNumber() > tokenMax) ||
-    (useMargin && amountIn.toNumber() > amountWithBorrow)
+  const showInsufficientBalance = useMargin
+    ? amountWithBorrow.lt(amountIn)
+    : tokenMax.lt(amountIn)
 
   return (
     <ContentBox hidePadding showBackground className="relative overflow-hidden">
@@ -321,7 +321,7 @@ const SwapForm = () => {
               </div>
             ) : (
               <span className="p-3">
-                {amountOut ? numberFormat.format(amountOut) : ''}
+                {amountOut ? numberFormat.format(amountOut.toNumber()) : ''}
               </span>
             )}
           </div>
@@ -419,9 +419,9 @@ const MaxSwapAmount = ({
   useMargin,
   decimals,
 }: {
-  amountWithBorrow: number
+  amountWithBorrow: Decimal
   setAmountIn: (x: string) => void
-  tokenMax: number
+  tokenMax: Decimal
   useMargin: boolean
   decimals: number
 }) => {
@@ -441,7 +441,7 @@ const MaxSwapAmount = ({
     <LinkButton className="no-underline" onClick={setMaxInputAmount}>
       <span className="font-normal text-th-fgd-4">{t('max')}:</span>
       <span className="mx-1 text-th-fgd-3 underline">
-        {maxAmount < 1 ? maxAmount.toFixed(decimals) : maxAmount}
+        {maxAmount.toFixed()}
       </span>
     </LinkButton>
   )
@@ -456,20 +456,20 @@ const PercentageSelectButtons = ({
   amountIn: string
   decimals: number
   setAmountIn: (x: string) => any
-  tokenMax: number
+  tokenMax: Decimal
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
 
   useEffect(() => {
-    if (tokenMax > 0 && Number(amountIn) === tokenMax) {
+    if (tokenMax.gt(0) && tokenMax.eq(amountIn)) {
       setSizePercentage('100')
     }
   }, [amountIn, tokenMax])
 
   const handleSizePercentage = (percentage: string) => {
     setSizePercentage(percentage)
-    if (tokenMax > 0) {
-      let amount = new Decimal(tokenMax).mul(percentage).div(100)
+    if (tokenMax.gt(0)) {
+      let amount = tokenMax.mul(percentage).div(100)
       if (percentage !== '100') {
         amount = floorToDecimal(amount, decimals)
       }
