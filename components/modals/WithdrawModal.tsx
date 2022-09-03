@@ -145,7 +145,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.init) : 100
   }, [mangoAccount])
 
-  const showInsufficientBalance = inputAmount ? tokenMax.gt(inputAmount) : false
+  const showInsufficientBalance = inputAmount ? tokenMax.lt(inputAmount) : false
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
