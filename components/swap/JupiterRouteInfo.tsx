@@ -86,6 +86,7 @@ const JupiterRouteInfo = ({
   const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
+  const inputBank = mangoStore((s) => s.swap.inputBank)
 
   const inputTokenIconUri = useMemo(() => {
     return inputTokenInfo ? inputTokenInfo.logoURI : ''
@@ -240,9 +241,16 @@ const JupiterRouteInfo = ({
                 />
               </div>
             </div>
-            <p className="mb-0.5 text-center text-lg text-th-fgd-1">{`${amountIn} ${
-              inputTokenInfo!.symbol
-            } for ${amountOut} ${outputTokenInfo.symbol}`}</p>
+            <p className="mb-0.5 text-center text-lg">
+              <span className="text-th-fgd-1">{`${formatFixedDecimals(
+                amountIn.toNumber()
+              )}`}</span>{' '}
+              {`${inputTokenInfo!.symbol} for`}{' '}
+              <span className="text-th-fgd-1">{`${formatFixedDecimals(
+                amountOut.toNumber()
+              )}`}</span>{' '}
+              {`${outputTokenInfo.symbol}`}
+            </p>
           </div>
         </div>
 
@@ -255,18 +263,19 @@ const JupiterRouteInfo = ({
                   {swapRate ? (
                     <>
                       1 {inputTokenInfo!.name} ≈{' '}
-                      {amountOut.div(amountIn).toFixed()}{' '}
+                      {formatFixedDecimals(amountOut.div(amountIn).toNumber())}{' '}
                       {outputTokenInfo?.symbol}
                     </>
                   ) : (
                     <>
                       1 {outputTokenInfo?.symbol} ≈{' '}
-                      {amountIn.div(amountOut).toFixed()} {inputTokenInfo!.name}
+                      {formatFixedDecimals(amountIn.div(amountOut).toNumber())}{' '}
+                      {inputTokenInfo!.name}
                     </>
                   )}
                 </p>
                 <SwitchHorizontalIcon
-                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-3 hover:text-th-fgd-2"
+                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-3 hover:text-th-primary"
                   onClick={() => setSwapRate(!swapRate)}
                 />
               </div>
@@ -300,26 +309,40 @@ const JupiterRouteInfo = ({
                 {formatDecimal(
                   JSBI.toNumber(selectedRoute?.otherAmountThreshold) /
                     10 ** outputTokenInfo.decimals || 1,
-                  6
+                  outputTokenInfo.decimals
                 )}{' '}
                 {outputTokenInfo?.symbol}
               </p>
             ) : null}
           </div>
           {borrowAmount ? (
-            <div className="flex justify-between">
-              <p className="text-sm text-th-fgd-3">{t('borrow-amount')}</p>
-              <p className="text-right text-sm text-th-fgd-1">
-                ~ {formatFixedDecimals(borrowAmount)} {inputTokenInfo?.symbol}
-              </p>
-            </div>
+            <>
+              <div className="flex justify-between">
+                <p className="text-sm text-th-fgd-3">{t('borrow-amount')}</p>
+                <p className="text-right text-sm text-th-fgd-1">
+                  ~ {formatFixedDecimals(borrowAmount)} {inputTokenInfo?.symbol}
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <p className="text-sm text-th-fgd-3">Borrow Fee</p>
+                <p className="text-right text-sm text-th-fgd-1">
+                  ~{' '}
+                  {formatFixedDecimals(
+                    amountIn
+                      .mul(inputBank!.loanOriginationFeeRate.toFixed())
+                      .toNumber()
+                  )}{' '}
+                  {inputBank!.name}
+                </p>
+              </div>
+            </>
           ) : null}
           <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">{t('trade:slippage')}</p>
+            <p className="text-sm text-th-fgd-3">Est. {t('trade:slippage')}</p>
             <p className="text-right text-sm text-th-fgd-1">
               {selectedRoute?.priceImpactPct * 100 < 0.1
                 ? '< 0.1%'
-                : `~ ${(selectedRoute?.priceImpactPct * 100).toFixed(4)}%`}
+                : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
             </p>
           </div>
           <div className="flex items-center justify-between">
@@ -345,7 +368,7 @@ const JupiterRouteInfo = ({
                   )
                 })}
               </span>
-              <PencilIcon className="ml-2 h-4 w-4" />
+              <PencilIcon className="ml-2 h-4 w-4 hover:text-th-primary" />
             </div>
           </div>
           {typeof feeValue === 'number' ? (
