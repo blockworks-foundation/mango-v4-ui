@@ -103,11 +103,11 @@ const TokenList = () => {
           <thead>
             <tr>
               <th className="text-left">{t('token')}</th>
+              <th className="text-right">{t('balance')}</th>
+              <th className="text-right">{t('interest-earned-paid')}</th>
               <th className="text-right">{t('price')}</th>
               <th className="className='hidden lg:block' text-right"></th>
               <th className="text-center">{t('rates')}</th>
-              <th className="text-right">{t('interest-earned-paid')}</th>
-              <th className="text-right">{t('balance')}</th>
             </tr>
           </thead>
           <tbody>
@@ -151,7 +151,7 @@ const TokenList = () => {
 
               return (
                 <tr key={key}>
-                  <td className="">
+                  <td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         {logoURI ? (
@@ -163,7 +163,33 @@ const TokenList = () => {
                       <p>{bank.name}</p>
                     </div>
                   </td>
-                  <td className="">
+                  <td className=" pt-4 text-right">
+                    <p>
+                      {mangoAccount
+                        ? formatDecimal(
+                            mangoAccount.getTokenBalanceUi(bank),
+                            bank.mintDecimals
+                          )
+                        : 0}
+                    </p>
+                    <p className="text-sm text-th-fgd-4">
+                      {mangoAccount
+                        ? `${formatFixedDecimals(
+                            mangoAccount.getTokenBalanceUi(bank) * oraclePrice!,
+                            true
+                          )}`
+                        : '$0.00'}
+                    </p>
+                  </td>
+                  <td>
+                    <div className="flex flex-col text-right">
+                      <p>{formatDecimal(interestAmount)}</p>
+                      <p className="text-sm text-th-fgd-4">
+                        {formatFixedDecimals(interestValue, true)}
+                      </p>
+                    </div>
+                  </td>
+                  <td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(oraclePrice!, true)}</p>
                     </div>
@@ -192,7 +218,7 @@ const TokenList = () => {
                       <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
                     )}
                   </td>
-                  <td className="">
+                  <td>
                     <div className="flex justify-center space-x-2">
                       <p className="text-th-green">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
@@ -209,33 +235,7 @@ const TokenList = () => {
                       </p>
                     </div>
                   </td>
-                  <td className="">
-                    <div className="flex flex-col text-right">
-                      <p>{formatDecimal(interestAmount)}</p>
-                      <p className="text-sm text-th-fgd-4">
-                        {formatFixedDecimals(interestValue, true)}
-                      </p>
-                    </div>
-                  </td>
-                  <td className=" pt-4 text-right">
-                    <p>
-                      {mangoAccount
-                        ? formatDecimal(
-                            mangoAccount.getTokenBalanceUi(bank),
-                            bank.mintDecimals
-                          )
-                        : 0}
-                    </p>
-                    <p className="text-sm text-th-fgd-4">
-                      {mangoAccount
-                        ? `${formatFixedDecimals(
-                            mangoAccount.getTokenBalanceUi(bank) * oraclePrice!,
-                            true
-                          )}`
-                        : '$0.00'}
-                    </p>
-                  </td>
-                  <td className="">
+                  <td>
                     <div className="flex justify-end space-x-2">
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
                     </div>

@@ -177,7 +177,7 @@ const SwapForm = () => {
       ? 100
       : simulatedHealthRatio! < 0
       ? 0
-      : simulatedHealthRatio
+      : Math.trunc(simulatedHealthRatio!)
   }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
 
   const isLoadingTradeDetails = useMemo(() => {
@@ -390,7 +390,7 @@ const SwapForm = () => {
                     : 'text-th-green'
                 } text-sm`}
               >
-                {maintProjectedHealth!.toFixed(2)}%{' '}
+                {maintProjectedHealth!}%{' '}
                 <span
                   className={`text-xs ${
                     maintProjectedHealth! >= currentMaintHealth!
@@ -399,7 +399,7 @@ const SwapForm = () => {
                   }`}
                 >
                   ({maintProjectedHealth! >= currentMaintHealth! ? '+' : ''}
-                  {(maintProjectedHealth! - currentMaintHealth!).toFixed(2)}%)
+                  {maintProjectedHealth! - currentMaintHealth!}%)
                 </span>
               </p>
             </div>

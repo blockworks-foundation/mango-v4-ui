@@ -5,7 +5,7 @@ import TokenList from '../TokenList'
 import TradeHistoryTable from '../TradeHistoryTable'
 
 const AccountTabs = () => {
-  const [activeTab, setActiveTab] = useState('tokens')
+  const [activeTab, setActiveTab] = useState('balances')
   const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const tradeHistory = mangoStore((s) => s.mangoAccount.stats.tradeHistory.data)
@@ -23,11 +23,11 @@ const AccountTabs = () => {
         <TabButtons
           activeValue={activeTab}
           onChange={(v) => setActiveTab(v)}
-          values={['tokens', 'trade-history']}
+          values={['balances', 'trade-history']}
           large
         />
       </div>
-      {activeTab === 'tokens' ? (
+      {activeTab === 'balances' ? (
         <TokenList />
       ) : (
         <TradeHistoryTable tradeHistory={tradeHistory} loading={loading} />
