@@ -177,9 +177,9 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         <Dialog.Overlay
           className={`intro-bg pointer-events-none fixed inset-0 bg-th-bkg-1`}
         />
-        {/* <div className="absolute top-6 left-6 z-10">
-          <img className="h-12 w-auto" src="/logos/logo-mark.svg" alt="next" />
-        </div> */}
+        <div className="absolute top-6 left-6 z-10">
+          <img className="h-10 w-auto" src="/logos/logo-mark.svg" alt="next" />
+        </div>
         <div className="absolute bottom-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
             style={{
