@@ -208,7 +208,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               leaveFrom="translate-x-0"
               leaveTo="-translate-x-full"
             >
-              <h2 className="mb-4 text-4xl">Welcome</h2>
+              <h2 className="mb-6 text-4xl">Welcome</h2>
               <p className="mb-4">
                 {
                   "You're seconds away from trading the most liquid dex markets on Solana."
@@ -261,7 +261,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                 <div className="flex h-full flex-col justify-between">
                   <div>
                     <div className="mb-4">
-                      <h2 className="mb-4 text-4xl">Connect Wallet</h2>
+                      <h2 className="mb-6 text-4xl">Connect Wallet</h2>
                     </div>
                     <p className="mb-2">Choose Wallet</p>
                     <div className="thin-scroll grid max-h-56 grid-flow-row grid-cols-3 gap-2 overflow-y-auto">
@@ -360,7 +360,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                 <div className="flex h-full flex-col justify-between">
                   <div>
                     <div className="pb-4">
-                      <h2 className="mb-1">Create Account</h2>
+                      <h2 className="mb-6 text-4xl">Create Account</h2>
                       <p>You need a Mango Account to get started.</p>
                     </div>
                     <div className="pb-4">
@@ -415,7 +415,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               ) : (
                 <div className="flex h-full flex-col justify-between">
                   <div className="relative">
-                    <h2 className="mb-4">Fund Your Account</h2>
+                    <h2 className="mb-6 text-4xl">Fund Your Account</h2>
                     <FadeInFadeOut show={!!depositToken}>
                       <Label text="Amount" />
                       <div className="grid grid-cols-2">
@@ -452,7 +452,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       </div>
                     </FadeInFadeOut>
                     {!depositToken ? (
-                      <div className="absolute top-10 mt-2 h-56 w-full overflow-auto">
+                      <div className="absolute top-14 mt-2 h-52 w-full overflow-auto">
                         <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
                           <div className="">
                             <p className="text-xs">{t('token')}</p>
