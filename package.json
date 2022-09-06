@@ -35,8 +35,10 @@
     "react-dom": "18.0.0",
     "react-flip-numbers": "^3.0.5",
     "react-number-format": "^4.9.2",
+    "react-tsparticles": "^2.2.4",
     "react-window": "^1.8.7",
     "recharts": "^2.1.12",
+    "tsparticles": "^2.2.4",
     "zustand": "^4.1.1"
   },
   "peerDependencies": {
