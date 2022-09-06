@@ -304,7 +304,7 @@ input[type='range']::-webkit-slider-runnable-track {
 }
 
 .intro-bg {
-  background-color: #141026;
+  background-color: var(--bkg-1);
   background-image: radial-gradient(at -40% -10%, #5b48ad 0, transparent 40%),
     radial-gradient(at 150% 150%, #e54033 0, transparent 50%);
 }
