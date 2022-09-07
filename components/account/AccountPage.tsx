@@ -18,7 +18,10 @@ import SimpleAreaChart from '../shared/SimpleAreaChart'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../shared/Button'
-import { ArrowsExpandIcon, ChevronRightIcon } from '@heroicons/react/solid'
+import {
+  ArrowsPointingOutIcon,
+  ChevronRightIcon,
+} from '@heroicons/react/20/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
 import SheenLoader from '../shared/SheenLoader'
@@ -231,7 +234,7 @@ const AccountPage = () => {
                     hideBg
                     onClick={() => handleShowAccountValueChart()}
                   >
-                    <ArrowsExpandIcon className="h-5 w-5" />
+                    <ArrowsPointingOutIcon className="h-5 w-5" />
                   </IconButton>
                 </Transition>
               </div>

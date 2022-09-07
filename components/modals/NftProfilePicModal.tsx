@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import mangoStore from '../../store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { PhotographIcon } from '@heroicons/react/solid'
+import { PhotoIcon } from '@heroicons/react/20/solid'
 import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
 import Button, { LinkButton } from '../shared/Button'
@@ -13,7 +13,7 @@ const ImgWithLoader = (props: any) => {
   return (
     <div className="relative">
       {isLoading && (
-        <PhotographIcon className="absolute left-1/2 top-1/2 z-10 h-1/4 w-1/4 -translate-x-1/2 -translate-y-1/2 animate-pulse text-th-fgd-4" />
+        <PhotoIcon className="absolute left-1/2 top-1/2 z-10 h-1/4 w-1/4 -translate-x-1/2 -translate-y-1/2 animate-pulse text-th-fgd-4" />
       )}
       <img {...props} onLoad={() => setIsLoading(false)} alt="" />
     </div>

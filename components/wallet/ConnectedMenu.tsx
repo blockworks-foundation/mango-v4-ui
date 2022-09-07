@@ -1,5 +1,5 @@
 import { Menu, Transition } from '@headlessui/react'
-import { LogoutIcon } from '@heroicons/react/solid'
+import { ArrowRightOnRectangleIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import { Fragment, useCallback, useState } from 'react'
@@ -86,7 +86,7 @@ const ConnectedMenu = () => {
                     className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer focus:outline-none md:hover:text-th-primary"
                     onClick={handleDisconnect}
                   >
-                    <LogoutIcon className="h-4 w-4" />
+                    <ArrowRightOnRectangleIcon className="h-4 w-4" />
                     <div className="pl-2 text-left">
                       <div className="pb-0.5">{t('disconnect')}</div>
                       {publicKey ? (

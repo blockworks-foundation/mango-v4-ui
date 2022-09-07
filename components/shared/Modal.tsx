@@ -1,5 +1,5 @@
 import { Dialog } from '@headlessui/react'
-import { XIcon } from '@heroicons/react/solid'
+import { XMarkIcon } from '@heroicons/react/20/solid'
 
 type ModalProps = {
   title?: string
@@ -39,7 +39,7 @@ function Modal({
               onClick={onClose}
               className={`absolute right-4 top-4 z-50 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-primary`}
             >
-              <XIcon className={`h-5 w-5`} />
+              <XMarkIcon className={`h-5 w-5`} />
             </button>
           ) : null}
           <Dialog.Title>{title}</Dialog.Title>

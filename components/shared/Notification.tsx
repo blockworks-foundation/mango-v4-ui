@@ -1,10 +1,10 @@
 import { Fragment, useEffect } from 'react'
 import {
   CheckCircleIcon,
-  ExternalLinkIcon,
+  ArrowTopRightOnSquareIcon,
   InformationCircleIcon,
   XCircleIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 import mangoStore, { CLUSTER } from '../../store/mangoStore'
 import { Notification, notify } from '../../utils/notifications'
 import Loading from './Loading'
@@ -172,7 +172,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}
                 </div>
-                <ExternalLinkIcon className="mb-0.5 ml-1 h-4 w-4" />
+                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-4 w-4" />
               </a>
             ) : null}
           </div>

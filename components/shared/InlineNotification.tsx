@@ -2,9 +2,9 @@ import { FunctionComponent } from 'react'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
-  ExclamationIcon,
+  ExclamationTriangleIcon,
   InformationCircleIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 
 interface InlineNotificationProps {
   desc?: string
@@ -49,7 +49,7 @@ const InlineNotification: FunctionComponent<InlineNotificationProps> = ({
       <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-green" />
     ) : null}
     {type === 'warning' ? (
-      <ExclamationIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-orange" />
+      <ExclamationTriangleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-orange" />
     ) : null}
     {type === 'info' ? (
       <InformationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-fgd-4" />

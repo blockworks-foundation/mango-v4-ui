@@ -2,9 +2,9 @@ import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
-  DotsHorizontalIcon,
+  EllipsisHorizontalIcon,
   QuestionMarkCircleIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
@@ -401,7 +401,7 @@ const ActionsMenu = ({
   return (
     <>
       <IconDropMenu
-        icon={<DotsHorizontalIcon className="h-5 w-5" />}
+        icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
         postion="leftBottom"
       >
         <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">

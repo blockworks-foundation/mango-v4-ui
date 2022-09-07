@@ -1,15 +1,15 @@
 import Link from 'next/link'
 import TradeIcon from './icons/TradeIcon'
 import {
-  DotsHorizontalIcon,
-  LibraryIcon,
+  EllipsisHorizontalIcon,
+  BuildingLibraryIcon,
   LightBulbIcon,
-  ExternalLinkIcon,
+  ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
   CogIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
@@ -92,7 +92,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           />
           <ExpandableMenuItem
             collapsed={collapsed}
-            icon={<DotsHorizontalIcon className="h-5 w-5" />}
+            icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
             title={t('more')}
           >
             {/* <MenuItem
@@ -114,7 +114,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             />
             <MenuItem
               collapsed={false}
-              icon={<LibraryIcon className="h-5 w-5" />}
+              icon={<BuildingLibraryIcon className="h-5 w-5" />}
               title={t('governance')}
               pagePath="https://dao.mango.markets"
               hideIconBg
@@ -205,7 +205,9 @@ const MenuItem = ({
                 <span className="ml-3 lg:text-base">{title}</span>
               </Transition>
             </div>
-            {isExternal ? <ExternalLinkIcon className="h-4 w-4" /> : null}
+            {isExternal ? (
+              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            ) : null}
           </div>
         </a>
       </Link>
