@@ -302,3 +302,9 @@ input[type='range']::-webkit-slider-thumb {
 input[type='range']::-webkit-slider-runnable-track {
   @apply appearance-none border-0 bg-transparent shadow-none;
 }
+
+.intro-bg {
+  background-color: var(--bkg-1);
+  background-image: radial-gradient(at -40% -10%, #5b48ad 0, transparent 40%),
+    radial-gradient(at 150% 150%, #e54033 0, transparent 50%);
+}
