@@ -6,11 +6,11 @@ import { ModalProps } from '../../types/modal'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 // import Select from '../forms/Select'
-import Button, { LinkButton } from '../shared/Button'
+import Button, { IconButton, LinkButton } from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import Modal from '../shared/Modal'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
-import { CheckCircleIcon, PencilIcon } from '@heroicons/react/solid'
+import { CheckCircleIcon, PencilIcon, XIcon } from '@heroicons/react/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '../../store/mangoStore'
 import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
@@ -177,8 +177,13 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         <Dialog.Overlay
           className={`intro-bg pointer-events-none fixed inset-0 bg-th-bkg-1`}
         />
-        <div className="absolute top-6 left-6 z-10">
+        <div className="absolute top-6 left-6 z-10" id="repulse">
           <img className="h-10 w-auto" src="/logos/logo-mark.svg" alt="next" />
+        </div>
+        <div className="absolute top-6 right-6 z-10" id="repulse">
+          <IconButton hideBg onClick={() => onClose()}>
+            <XIcon className="h-6 w-6 text-th-fgd-2" />
+          </IconButton>
         </div>
         <div className="absolute bottom-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
@@ -192,11 +197,8 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         <span className="inline-block h-screen align-middle" aria-hidden="true">
           &#8203;
         </span>
-        <div
-          id="repulse-div"
-          className="m-8 inline-block w-full max-w-md transform overflow-x-hidden rounded-lg p-6 text-left align-middle"
-        >
-          <div className="h-[392px]">
+        <div className="m-8 inline-block w-full max-w-md transform overflow-x-hidden rounded-lg p-6 text-left align-middle">
+          <div className="h-[420px]">
             <Transition
               appear={true}
               className="absolute top-0.5 left-0 z-20 h-full w-full rounded-lg bg-th-bkg-1 p-6"

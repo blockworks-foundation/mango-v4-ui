@@ -25,6 +25,11 @@ const ParticlesBackground = () => {
         interactivity: {
           detect_on: 'canvas',
           events: {
+            onDiv: {
+              selectors: '#repulse',
+              enable: true,
+              mode: 'repulse',
+            },
             onHover: {
               enable: true,
               mode: 'attract',
