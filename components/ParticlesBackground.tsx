@@ -127,6 +127,16 @@ const ParticlesBackground = () => {
                     width: 32,
                     height: 32,
                   },
+                  {
+                    src: '/icons/usdt.svg',
+                    width: 32,
+                    height: 32,
+                  },
+                  {
+                    src: '/icons/msol.svg',
+                    width: 32,
+                    height: 32,
+                  },
                 ],
               },
             },

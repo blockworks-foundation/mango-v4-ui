@@ -10,7 +10,11 @@ import Button, { IconButton, LinkButton } from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import Modal from '../shared/Modal'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
-import { CheckCircleIcon, PencilIcon, XIcon } from '@heroicons/react/20/solid'
+import {
+  CheckCircleIcon,
+  PencilIcon,
+  XMarkIcon,
+} from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '../../store/mangoStore'
 import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
@@ -207,7 +211,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         </div>
         <div className="absolute top-6 right-6 z-10" id="repulse">
           <IconButton hideBg onClick={() => onClose()}>
-            <XIcon className="h-6 w-6 text-th-fgd-2" />
+            <XMarkIcon className="h-6 w-6 text-th-fgd-2" />
           </IconButton>
         </div>
         <div className="absolute bottom-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
