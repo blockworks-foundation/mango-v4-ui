@@ -131,9 +131,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             icon={<HealthHeart health={50} size={32} />}
             title={
               <div className="text-left">
-                <p className="mb-0.5 whitespace-nowrap text-xs">
-                  Account Summary
-                </p>
+                <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
                 <p className="text-sm font-bold text-th-fgd-1">
                   {mangoAccount.name}
                 </p>
@@ -290,10 +288,10 @@ const ExpandableMenuItem = ({
           leaveTo="opacity-0"
         >
           <Popover.Panel
-            className={`absolute z-20 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
+            className={`absolute z-20 w-56 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
               alignBottom
-                ? 'bottom-0 left-[63px] w-72 rounded-b-none p-0'
-                : 'top-1/2 left-[63px] w-56 -translate-y-1/2'
+                ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
+                : 'top-1/2 left-[63px] -translate-y-1/2'
             }`}
           >
             {children}

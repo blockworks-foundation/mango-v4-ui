@@ -18,8 +18,17 @@ const MangoAccountSummary = () => {
 
   return (
     <>
-      <div className="mb-4 space-y-1.5">
-        <div className="flex items-center justify-between">
+      <div className="mb-4 space-y-2">
+        <div>
+          <p className="text-sm text-th-fgd-3">{t('health')}</p>
+          <p className="text-sm font-bold text-th-fgd-1">
+            {mangoAccount
+              ? mangoAccount.getHealthRatioUi(HealthType.maint)
+              : 100}
+            %
+          </p>
+        </div>
+        <div>
           <p className="text-sm text-th-fgd-3">{t('account-value')}</p>
           <p className="text-sm font-bold text-th-fgd-1">
             $
@@ -31,7 +40,7 @@ const MangoAccountSummary = () => {
               : (0).toFixed(2)}
           </p>
         </div>
-        <div className="flex items-center justify-between">
+        <div>
           <p className="text-sm text-th-fgd-3">{t('free-collateral')}</p>
           <p className="text-sm font-bold text-th-fgd-1">
             $
@@ -45,30 +54,18 @@ const MangoAccountSummary = () => {
               : (0).toFixed(2)}
           </p>
         </div>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-th-fgd-3">{t('health')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
-            {mangoAccount
-              ? mangoAccount.getHealthRatioUi(HealthType.maint)
-              : 100}
-            %
-          </p>
-        </div>
       </div>
-      <div className="flex items-center space-x-2">
-        <Button
-          className="w-1/2 pl-3 pr-3"
-          onClick={() => setShowDepositModal(true)}
-        >
+      <div className="space-y-2">
+        <Button className="w-full" onClick={() => setShowDepositModal(true)}>
           {t('deposit')}
         </Button>
-        <Button
-          className="w-1/2 pl-3 pr-3"
+        {/* <Button
+          className="w-full"
           onClick={() => setShowWithdrawModal(true)}
           secondary
         >
           {t('withdraw')}
-        </Button>
+        </Button> */}
       </div>
       {showDepositModal ? (
         <DepositModal
