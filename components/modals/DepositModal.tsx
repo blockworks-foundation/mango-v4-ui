@@ -1,5 +1,8 @@
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
-import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
+import {
+  ChevronDownIcon,
+  ExclamationCircleIcon,
+} from '@heroicons/react/20/solid'
 import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'

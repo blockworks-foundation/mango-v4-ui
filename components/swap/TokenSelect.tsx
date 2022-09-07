@@ -1,4 +1,7 @@
-import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/solid'
+import {
+  ChevronDownIcon,
+  QuestionMarkCircleIcon,
+} from '@heroicons/react/20/solid'
 import Image from 'next/image'
 import mangoStore from '../../store/mangoStore'
 

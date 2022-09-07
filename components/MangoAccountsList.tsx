@@ -3,7 +3,7 @@ import {
   CheckCircleIcon,
   ChevronDownIcon,
   PlusCircleIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 import { Popover, Transition } from '@headlessui/react'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import mangoStore from '../store/mangoStore'

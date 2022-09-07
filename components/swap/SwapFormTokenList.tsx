@@ -1,11 +1,14 @@
 import { memo, useMemo, useState, useEffect, ChangeEvent } from 'react'
-import { SearchIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
 import { Token } from '../../types/jupiter'
 import mangoStore from '../../store/mangoStore'
 import Input from '../forms/Input'
 import { IconButton } from '../shared/Button'
-import { QuestionMarkCircleIcon, XIcon } from '@heroicons/react/solid'
+import {
+  QuestionMarkCircleIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 
 const generateSearchTerm = (item: Token, searchValue: string) => {
@@ -134,13 +137,13 @@ const SwapFormTokenList = ({
     <>
       <p className="mb-3">{type === 'input' ? t('sell') : t('buy')}</p>
       <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
-        <XIcon className="h-5 w-5" />
+        <XMarkIcon className="h-5 w-5" />
       </IconButton>
       <div className="flex items-center text-th-fgd-4">
         <Input
           type="text"
           placeholder="Search by token or paste address"
-          prefix={<SearchIcon className="h-5 w-5" />}
+          prefix={<MagnifyingGlassIcon className="h-5 w-5" />}
           autoFocus
           value={search}
           onChange={handleUpdateSearch}

@@ -2,9 +2,9 @@ import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
-  DotsHorizontalIcon,
+  EllipsisHorizontalIcon,
   QuestionMarkCircleIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
@@ -86,6 +86,8 @@ const TokenList = () => {
     }
   }, [connected])
 
+  console.log(coingeckoPrices)
+
   return (
     <ContentBox hideBorder hidePadding className="mt-0 md:-mt-10">
       <div className="mb-6 flex items-center justify-end">
@@ -105,9 +107,10 @@ const TokenList = () => {
               <th className="text-left">{t('token')}</th>
               <th className="text-right">{t('balance')}</th>
               <th className="text-right">{t('interest-earned-paid')}</th>
+              <th className="text-right">{t('rates')}</th>
               <th className="text-right">{t('price')}</th>
-              <th className="className='hidden lg:block' text-right"></th>
-              <th className="text-center">{t('rates')}</th>
+              <th className="hidden text-right lg:block"></th>
+              <th className="text-right">{t('rolling-change')}</th>
             </tr>
           </thead>
           <tbody>
@@ -190,11 +193,27 @@ const TokenList = () => {
                     </div>
                   </td>
                   <td>
+                    <div className="flex justify-end space-x-2">
+                      <p className="text-th-green">
+                        {formatDecimal(bank.getDepositRateUi(), 2, {
+                          fixed: true,
+                        })}
+                        %
+                      </p>
+                      <span className="text-th-fgd-4">|</span>
+                      <p className="text-th-red">
+                        {formatDecimal(bank.getBorrowRateUi(), 2, {
+                          fixed: true,
+                        })}
+                        %
+                      </p>
+                    </div>
+                  </td>
+                  <td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(oraclePrice!, true)}</p>
                     </div>
                   </td>
-
                   <td className="hidden lg:table-cell">
                     {!loadingCoingeckoPrices ? (
                       chartData !== undefined ? (
@@ -219,19 +238,13 @@ const TokenList = () => {
                     )}
                   </td>
                   <td>
-                    <div className="flex justify-center space-x-2">
-                      <p className="text-th-green">
-                        {formatDecimal(bank.getDepositRateUi(), 2, {
-                          fixed: true,
-                        })}
-                        %
-                      </p>
-                      <span className="text-th-fgd-4">|</span>
-                      <p className="text-th-red">
-                        {formatDecimal(bank.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        })}
-                        %
+                    <div className="flex flex-col text-right">
+                      <p
+                        className={
+                          change >= 0 ? 'text-th-green' : 'text-th-red'
+                        }
+                      >
+                        {change.toFixed(2)}%
                       </p>
                     </div>
                   </td>
@@ -401,7 +414,7 @@ const ActionsMenu = ({
   return (
     <>
       <IconDropMenu
-        icon={<DotsHorizontalIcon className="h-5 w-5" />}
+        icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
         postion="leftBottom"
       >
         <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">

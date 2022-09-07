@@ -1,5 +1,8 @@
 import { Transition } from '@headlessui/react'
-import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/solid'
+import {
+  ChevronDownIcon,
+  QuestionMarkCircleIcon,
+} from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { Fragment, useMemo, useState } from 'react'

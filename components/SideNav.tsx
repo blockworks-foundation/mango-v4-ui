@@ -1,15 +1,15 @@
 import Link from 'next/link'
 import TradeIcon from './icons/TradeIcon'
 import {
-  DotsHorizontalIcon,
-  LibraryIcon,
+  EllipsisHorizontalIcon,
+  BuildingLibraryIcon,
   LightBulbIcon,
-  ExternalLinkIcon,
+  ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
   CogIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
@@ -92,7 +92,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           />
           <ExpandableMenuItem
             collapsed={collapsed}
-            icon={<DotsHorizontalIcon className="h-5 w-5" />}
+            icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
             title={t('more')}
           >
             {/* <MenuItem
@@ -114,7 +114,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             />
             <MenuItem
               collapsed={false}
-              icon={<LibraryIcon className="h-5 w-5" />}
+              icon={<BuildingLibraryIcon className="h-5 w-5" />}
               title={t('governance')}
               pagePath="https://dao.mango.markets"
               hideIconBg
@@ -131,9 +131,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             icon={<HealthHeart health={50} size={32} />}
             title={
               <div className="text-left">
-                <p className="mb-0.5 whitespace-nowrap text-xs">
-                  Account Summary
-                </p>
+                <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
                 <p className="text-sm font-bold text-th-fgd-1">
                   {mangoAccount.name}
                 </p>
@@ -205,7 +203,9 @@ const MenuItem = ({
                 <span className="ml-3 lg:text-base">{title}</span>
               </Transition>
             </div>
-            {isExternal ? <ExternalLinkIcon className="h-4 w-4" /> : null}
+            {isExternal ? (
+              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            ) : null}
           </div>
         </a>
       </Link>
@@ -290,10 +290,10 @@ const ExpandableMenuItem = ({
           leaveTo="opacity-0"
         >
           <Popover.Panel
-            className={`absolute z-20 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
+            className={`absolute z-20 w-56 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
               alignBottom
-                ? 'bottom-0 left-[63px] w-72 rounded-b-none p-0'
-                : 'top-1/2 left-[63px] w-56 -translate-y-1/2'
+                ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
+                : 'top-1/2 left-[63px] -translate-y-1/2'
             }`}
           >
             {children}

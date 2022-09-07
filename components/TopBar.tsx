@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { ArrowRightIcon } from '@heroicons/react/solid'
+import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 
 import mangoStore from '../store/mangoStore'

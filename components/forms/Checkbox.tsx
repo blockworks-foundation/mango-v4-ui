@@ -1,5 +1,5 @@
 import React, { ChangeEvent, ReactNode } from 'react'
-import { CheckIcon } from '@heroicons/react/solid'
+import { CheckIcon } from '@heroicons/react/20/solid'
 
 interface CheckboxProps {
   checked: boolean

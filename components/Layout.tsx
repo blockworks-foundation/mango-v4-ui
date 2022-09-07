@@ -1,6 +1,6 @@
 import SideNav from './SideNav'
-import { ReactNode, useEffect, useState } from 'react'
-import { ChevronRightIcon } from '@heroicons/react/solid'
+import { ReactNode, useEffect } from 'react'
+import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
 import mangoStore from '../store/mangoStore'

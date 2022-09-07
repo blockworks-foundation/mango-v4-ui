@@ -18,7 +18,7 @@ import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from './Button'
-import { ArrowLeftIcon } from '@heroicons/react/solid'
+import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
 
 dayjs.extend(relativeTime)

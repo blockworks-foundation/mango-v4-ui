@@ -10,7 +10,7 @@ import Button, { IconButton, LinkButton } from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import Modal from '../shared/Modal'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
-import { CheckCircleIcon, PencilIcon, XIcon } from '@heroicons/react/solid'
+import { CheckCircleIcon, PencilIcon, XIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '../../store/mangoStore'
 import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
@@ -24,6 +24,8 @@ import { floorToDecimal } from '../../utils/numbers'
 import { handleWalletConnect } from '../wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../../utils/constants'
 import ParticlesBackground from '../ParticlesBackground'
+import ButtonGroup from '../forms/ButtonGroup'
+import Decimal from 'decimal.js'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -40,6 +42,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [depositToken, setDepositToken] = useState('')
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
+  const [sizePercentage, setSizePercentage] = useState('')
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
@@ -156,6 +159,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           return {
             key,
             value,
+            tokenDecimals: walletBalance.maxDecimals,
             walletBalance: floorToDecimal(
               walletBalance.maxAmount,
               walletBalance.maxDecimals
@@ -166,6 +170,27 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       : []
     return banks
   }, [group?.banksMapByName, walletTokens])
+
+  const tokenMax = useMemo(() => {
+    const bank = banks.find((bank) => bank.key === depositToken)
+    if (bank) {
+      return { amount: bank.walletBalance, decimals: bank.tokenDecimals }
+    }
+    return { amount: 0, decimals: 0 }
+  }, [banks, depositToken])
+
+  const handleSizePercentage = useCallback(
+    (percentage: string) => {
+      setSizePercentage(percentage)
+      let amount = new Decimal(tokenMax.amount).mul(percentage).div(100)
+      if (percentage !== '100') {
+        amount = floorToDecimal(amount, tokenMax.decimals)
+      }
+
+      setDepositAmount(amount.toString())
+    },
+    [tokenMax]
+  )
 
   return (
     <Dialog

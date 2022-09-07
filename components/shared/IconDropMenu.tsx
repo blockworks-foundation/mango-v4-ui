@@ -1,5 +1,5 @@
 import { Popover, Transition } from '@headlessui/react'
-import { XIcon } from '@heroicons/react/solid'
+import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useTheme } from 'next-themes'
 import { Fragment, ReactNode } from 'react'
 
@@ -49,7 +49,7 @@ const IconDropMenu = ({
             }`}
             disabled={disabled}
           >
-            {open ? <XIcon className="h-5 w-5" /> : icon}
+            {open ? <XMarkIcon className="h-5 w-5" /> : icon}
           </Popover.Button>
           <Transition
             appear={true}
