@@ -1,4 +1,4 @@
-import { XIcon } from '@heroicons/react/solid'
+import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
 import mangoStore from '../../store/mangoStore'
@@ -34,7 +34,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
     <>
       <h3 className="mb-3">{t('settings')}</h3>
       <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
-        <XIcon className="h-5 w-5" />
+        <XMarkIcon className="h-5 w-5" />
       </IconButton>
 
       <div className="mt-4">

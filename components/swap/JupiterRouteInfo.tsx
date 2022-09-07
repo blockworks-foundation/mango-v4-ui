@@ -18,8 +18,8 @@ import Loading from '../shared/Loading'
 import {
   ArrowLeftIcon,
   PencilIcon,
-  SwitchHorizontalIcon,
-} from '@heroicons/react/solid'
+  ArrowsRightLeftIcon,
+} from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import {
@@ -274,7 +274,7 @@ const JupiterRouteInfo = ({
                     </>
                   )}
                 </p>
-                <SwitchHorizontalIcon
+                <ArrowsRightLeftIcon
                   className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-3 hover:text-th-primary"
                   onClick={() => setSwapRate(!swapRate)}
                 />

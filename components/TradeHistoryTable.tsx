@@ -3,13 +3,12 @@ import {
   ArrowRightIcon,
   ChevronDownIcon,
   ClockIcon,
-  ExternalLinkIcon,
+  ArrowTopRightOnSquareIcon,
   LinkIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { FadeInList } from './shared/Transitions'
 import { breakpoints } from '../utils/theme'
 import { useViewport } from '../hooks/useViewport'
 import { IconButton } from './shared/Button'
@@ -166,7 +165,7 @@ const TradeHistoryTable = ({
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <ExternalLinkIcon className="h-5 w-5 text-th-fgd-4" />
+                          <ArrowTopRightOnSquareIcon className="h-5 w-5 text-th-fgd-4" />
                         </a>
                       </div>
                     </td>

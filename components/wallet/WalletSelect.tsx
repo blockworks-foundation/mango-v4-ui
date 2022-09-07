@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { ChevronDownIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Menu, Transition } from '@headlessui/react'
 import mangoStore from '../../store/mangoStore'
 

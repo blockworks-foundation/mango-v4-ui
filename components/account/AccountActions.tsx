@@ -4,10 +4,10 @@ import Button, { LinkButton } from '../shared/Button'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import {
-  DotsHorizontalIcon,
+  EllipsisHorizontalIcon,
   PencilIcon,
   TrashIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import IconDropMenu from '../shared/IconDropMenu'
 import CloseAccountModal from '../modals/CloseAccountModal'
@@ -39,7 +39,10 @@ const AccountActions = () => {
         >
           {t('withdraw')}
         </Button>
-        <IconDropMenu icon={<DotsHorizontalIcon className="h-5 w-5" />} large>
+        <IconDropMenu
+          icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
+          large
+        >
           <LinkButton
             className="whitespace-nowrap"
             disabled={!connected}

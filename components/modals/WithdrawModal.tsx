@@ -1,5 +1,8 @@
 import { HealthType } from '@blockworks-foundation/mango-v4'
-import { ChevronDownIcon, ExclamationCircleIcon } from '@heroicons/react/solid'
+import {
+  ChevronDownIcon,
+  ExclamationCircleIcon,
+} from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'

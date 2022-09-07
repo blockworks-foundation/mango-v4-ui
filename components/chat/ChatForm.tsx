@@ -1,4 +1,4 @@
-import { PaperAirplaneIcon } from '@heroicons/react/solid'
+import { PaperAirplaneIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { IconButton } from '../shared/Button'
 import Input from '../forms/Input'

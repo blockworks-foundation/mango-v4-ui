@@ -1,4 +1,4 @@
-import { InformationCircleIcon } from '@heroicons/react/outline'
+import { InformationCircleIcon } from '@heroicons/react/20/solid'
 import Tooltip from './Tooltip'
 
 const InfoTooltip = ({ content }: { content: any }) => (

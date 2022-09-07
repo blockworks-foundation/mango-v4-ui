@@ -5,7 +5,7 @@ import {
   ArrowRightIcon,
   CogIcon,
   ExclamationCircleIcon,
-} from '@heroicons/react/solid'
+} from '@heroicons/react/20/solid'
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import Decimal from 'decimal.js'
