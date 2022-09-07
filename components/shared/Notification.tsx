@@ -4,7 +4,7 @@ import {
   ExternalLinkIcon,
   InformationCircleIcon,
   XCircleIcon,
-} from '@heroicons/react/outline'
+} from '@heroicons/react/solid'
 import mangoStore, { CLUSTER } from '../../store/mangoStore'
 import { Notification, notify } from '../../utils/notifications'
 import Loading from './Loading'
@@ -137,9 +137,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
               <CheckCircleIcon className={`mr-1 h-7 w-7 text-th-green`} />
             ) : null}
             {type === 'info' && (
-              <InformationCircleIcon
-                className={`mr-1 h-7 w-7 text-th-primary`}
-              />
+              <InformationCircleIcon className={`mr-1 h-7 w-7 text-th-fgd-3`} />
             )}
             {type === 'error' && (
               <XCircleIcon className={`mr-1 h-7 w-7 text-th-red`} />
@@ -149,9 +147,9 @@ const Notification = ({ notification }: { notification: Notification }) => {
             )}
           </div>
           <div className={`ml-2 flex-1`}>
-            <div className={`text-normal font-bold text-th-fgd-1`}>
+            <p className={`text-normal font-bold text-th-fgd-1`}>
               {parsedTitle || title}
-            </div>
+            </p>
             {description ? (
               <p className={`mb-0 mt-0.5 leading-tight text-th-fgd-3`}>
                 {description}
@@ -169,7 +167,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
                 target="_blank"
                 rel="noreferrer"
               >
-                <div className="flex-1 break-all text-xs text-th-primary">
+                <div className="break-all text-th-primary">
                   {type === 'error'
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}

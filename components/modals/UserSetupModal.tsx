@@ -23,6 +23,8 @@ import { walletBalanceForToken } from './DepositModal'
 import { floorToDecimal } from '../../utils/numbers'
 import { handleWalletConnect } from '../wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../../utils/constants'
+import ButtonGroup from '../forms/ButtonGroup'
+import Decimal from 'decimal.js'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -39,6 +41,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [depositToken, setDepositToken] = useState('')
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
+  const [sizePercentage, setSizePercentage] = useState('')
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
@@ -155,6 +158,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
           return {
             key,
             value,
+            tokenDecimals: walletBalance.maxDecimals,
             walletBalance: floorToDecimal(
               walletBalance.maxAmount,
               walletBalance.maxDecimals
@@ -165,6 +169,27 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       : []
     return banks
   }, [group?.banksMapByName, walletTokens])
+
+  const tokenMax = useMemo(() => {
+    const bank = banks.find((bank) => bank.key === depositToken)
+    if (bank) {
+      return { amount: bank.walletBalance, decimals: bank.tokenDecimals }
+    }
+    return { amount: 0, decimals: 0 }
+  }, [banks, depositToken])
+
+  const handleSizePercentage = useCallback(
+    (percentage: string) => {
+      setSizePercentage(percentage)
+      let amount = new Decimal(tokenMax.amount).mul(percentage).div(100)
+      if (percentage !== '100') {
+        amount = floorToDecimal(amount, tokenMax.decimals)
+      }
+
+      setDepositAmount(amount.toString())
+    },
+    [tokenMax]
+  )
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} disableOutsideClose hideClose>
@@ -386,7 +411,30 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               <div className="relative">
                 <h2 className="mb-4">Fund Your Account</h2>
                 <FadeInFadeOut show={!!depositToken}>
-                  <Label text="Amount" />
+                  <div className="flex justify-between">
+                    <Label text="Amount" />
+                    <LinkButton
+                      className="mb-2 no-underline"
+                      onClick={() =>
+                        setDepositAmount(
+                          floorToDecimal(
+                            tokenMax.amount,
+                            tokenMax.decimals
+                          ).toFixed()
+                        )
+                      }
+                    >
+                      <span className="mr-1 text-sm font-normal text-th-fgd-4">
+                        {t('wallet-balance')}:
+                      </span>
+                      <span className="text-th-fgd-1 underline">
+                        {floorToDecimal(
+                          tokenMax.amount,
+                          tokenMax.decimals
+                        ).toFixed()}
+                      </span>
+                    </LinkButton>
+                  </div>
                   <div className="grid grid-cols-2">
                     <button
                       className="col-span-1 flex items-center rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1 px-4 hover:bg-th-bkg-2"
@@ -418,6 +466,14 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                         setDepositAmount(e.target.value)
                       }
                     />
+                    <div className="col-span-2 mt-2">
+                      <ButtonGroup
+                        activeValue={sizePercentage}
+                        onChange={(p) => handleSizePercentage(p)}
+                        values={['10', '25', '50', '75', '100']}
+                        unit="%"
+                      />
+                    </div>
                   </div>
                 </FadeInFadeOut>
                 {!depositToken ? (
