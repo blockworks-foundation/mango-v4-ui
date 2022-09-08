@@ -252,7 +252,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
                       height={40}
                       width={26}
@@ -271,7 +271,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 </>
               ) : (
                 <>
-                  <div className="flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
                       height={40}
                       width={26}

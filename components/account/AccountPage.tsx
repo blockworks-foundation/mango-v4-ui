@@ -164,14 +164,7 @@ const AccountPage = () => {
                 />
               )}
             </div>
-            {performanceData.length && mangoAccount ? (
-              <PercentageChange change={accountValueChange} />
-            ) : (
-              <div className="mt-1 flex items-center space-x-2">
-                <UpTriangle />
-                <p className="text-th-green">0.00%</p>
-              </div>
-            )}
+            <PercentageChange change={accountValueChange} />
           </div>
           {!loadPerformanceData ? (
             mangoAccount && performanceData.length ? (

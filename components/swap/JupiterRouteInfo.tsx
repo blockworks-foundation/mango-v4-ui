@@ -260,7 +260,7 @@ const JupiterRouteInfo = ({
             <span>Rate</span>
             <div>
               <div className="flex items-center justify-end">
-                <p className="text-right text-sm">
+                <p className="text-right text-sm text-th-fgd-1">
                   {swapRate ? (
                     <>
                       1 {inputTokenInfo!.name} ≈{' '}
@@ -276,11 +276,11 @@ const JupiterRouteInfo = ({
                   )}
                 </p>
                 <ArrowsRightLeftIcon
-                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-3 hover:text-th-primary"
+                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-1 hover:text-th-primary"
                   onClick={() => setSwapRate(!swapRate)}
                 />
               </div>
-              <div className="space-y-2 px-1">
+              <div className="space-y-2 px-1 text-xs">
                 {coingeckoPrices?.outputCoingeckoPrice &&
                 coingeckoPrices?.inputCoingeckoPrice ? (
                   <div
@@ -291,7 +291,7 @@ const JupiterRouteInfo = ({
                     }`}
                   >
                     {Decimal.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
-                    <span className="text-th-fgd-4">{`${
+                    <span className="text-th-fgd-3">{`${
                       coinGeckoPriceDifference.lte(0)
                         ? 'cheaper'
                         : 'more expensive'
