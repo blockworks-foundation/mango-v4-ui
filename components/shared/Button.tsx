@@ -44,7 +44,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       } default-transition font-bold focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
       {...props}
     >
-      <span className="z-10 flex">{children}</span>
+      <div className="relative flex justify-center">{children}</div>
     </button>
   )
 }
