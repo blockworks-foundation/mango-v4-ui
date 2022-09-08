@@ -29,6 +29,7 @@ import AccountChart from './AccountChart'
 import { useViewport } from '../../hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import useMangoAccount from '../shared/useMangoAccount'
+import PercentageChange from '../shared/PercentageChange'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -164,29 +165,7 @@ const AccountPage = () => {
               )}
             </div>
             {performanceData.length && mangoAccount ? (
-              <div className="mt-1 flex items-center space-x-2">
-                {accountValueChange > 0 ? (
-                  <UpTriangle />
-                ) : accountValueChange < 0 ? (
-                  <DownTriangle />
-                ) : (
-                  ''
-                )}
-                <p
-                  className={
-                    accountValueChange > 0
-                      ? 'text-th-green'
-                      : accountValueChange < 0
-                      ? 'text-th-red'
-                      : 'text-th-fgd-4'
-                  }
-                >
-                  {isNaN(accountValueChange)
-                    ? '0.00'
-                    : accountValueChange.toFixed(2)}
-                  %
-                </p>
-              </div>
+              <PercentageChange change={accountValueChange} />
             ) : (
               <div className="mt-1 flex items-center space-x-2">
                 <UpTriangle />

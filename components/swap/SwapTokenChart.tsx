@@ -24,6 +24,7 @@ import { formatFixedDecimals } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
+import PercentageChange from '../shared/PercentageChange'
 
 dayjs.extend(relativeTime)
 
@@ -251,7 +252,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
                       height={40}
                       width={26}
@@ -259,20 +260,9 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       numbers={formatFixedDecimals(mouseData['price'])}
                     />
                     <span
-                      className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0 ${
-                        calculateChartChange() >= 0
-                          ? 'text-th-green'
-                          : 'text-th-red'
-                      }`}
+                      className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      {calculateChartChange() >= 0 ? (
-                        <UpTriangle />
-                      ) : (
-                        <DownTriangle />
-                      )}
-                      <span className="ml-1">
-                        {calculateChartChange().toFixed(2)}%
-                      </span>
+                      <PercentageChange change={calculateChartChange()} />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
@@ -281,7 +271,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 </>
               ) : (
                 <>
-                  <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
                       height={40}
                       width={26}
@@ -291,20 +281,9 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                       )}
                     />
                     <span
-                      className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0 ${
-                        calculateChartChange() >= 0
-                          ? 'text-th-green'
-                          : 'text-th-red'
-                      }`}
+                      className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      {calculateChartChange() >= 0 ? (
-                        <UpTriangle />
-                      ) : (
-                        <DownTriangle />
-                      )}
-                      <span className="ml-1">
-                        {calculateChartChange().toFixed(2)}%
-                      </span>
+                      <PercentageChange change={calculateChartChange()} />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">

@@ -26,6 +26,7 @@ import WithdrawModal from './modals/WithdrawModal'
 import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
+import PercentageChange from './shared/PercentageChange'
 import SimpleAreaChart from './shared/SimpleAreaChart'
 
 const TokenList = () => {
@@ -238,14 +239,8 @@ const TokenList = () => {
                     )}
                   </td>
                   <td>
-                    <div className="flex flex-col text-right">
-                      <p
-                        className={
-                          change >= 0 ? 'text-th-green' : 'text-th-red'
-                        }
-                      >
-                        {change.toFixed(2)}%
-                      </p>
+                    <div className="flex flex-col items-end">
+                      <PercentageChange change={change} />
                     </div>
                   </td>
                   <td>
