@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useEffect, useState } from 'react'
 import { useWallet, Wallet } from '@solana/wallet-adapter-react'
 import { WalletReadyState } from '@solana/wallet-adapter-base'
 import { useTranslation } from 'next-i18next'
-// import AccountsModal from './AccountsModal'
 import uniqBy from 'lodash/uniqBy'
 import WalletSelect from './WalletSelect'
 import mangoStore from '../../store/mangoStore'
@@ -49,7 +48,6 @@ export const ConnectWalletButton: React.FC = () => {
   const group = mangoStore((s) => s.group)
   const { t } = useTranslation('common')
   const [connecting, setConnecting] = useState(false)
-  // const [showAccountsModal, setShowAccountsModal] = useState(false)
 
   const installedWallets = useMemo(() => {
     const installed: Wallet[] = []
@@ -83,10 +81,6 @@ export const ConnectWalletButton: React.FC = () => {
     }
   }, [wallet])
 
-  // const handleCloseAccounts = useCallback(() => {
-  //   setShowAccountsModal(false)
-  // }, [])
-
   useEffect(() => {
     if (!wallet && displayedWallets?.length) {
       select(displayedWallets[0].adapter.name)
@@ -100,7 +94,7 @@ export const ConnectWalletButton: React.FC = () => {
         disabled={!group}
         className={` text-white focus:outline-none disabled:cursor-wait disabled:opacity-25`}
       >
-        <div className="relative flex h-16 w-44 bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100">
+        <div className="relative flex h-16 w-44 bg-gradient-to-br from-mango-theme-orange to-mango-theme-red-dark before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100">
           <div className="default-transition flex h-full flex-row items-center justify-center space-x-3 px-4">
             <div
               className={`flex h-[28px] w-[28px] items-center justify-center rounded-full ${
@@ -134,11 +128,5 @@ export const ConnectWalletButton: React.FC = () => {
         <WalletSelect />
       </div>
     </div>
-    // {showAccountsModal && (
-    //   <AccountsModal
-    //     onClose={handleCloseAccounts}
-    //     isOpen={showAccountsModal}
-    //   />
-    // )}
   )
 }

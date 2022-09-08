@@ -29,13 +29,11 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`whitespace-nowrap rounded-md ${
+      className={`relative whitespace-nowrap rounded-md ${
         secondary
-          ? `border border-th-button md:hover:border-th-button-hover ${
-              theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
-            }`
-          : `bg-th-button md:hover:bg-th-button-hover ${
-              theme === 'Light' ? 'text-th-bkg-1' : 'text-th-fgd-1'
+          ? 'secondary-button rounded-md text-th-fgd-1'
+          : `bg-gradient-to-br from-mango-theme-orange to-mango-theme-red-dark before:absolute before:left-0 before:right-0 before:top-0 before:bottom-0 before:rounded-md before:bg-gradient-to-tl before:from-mango-theme-orange before:to-mango-theme-red-dark before:opacity-0 before:transition-all before:duration-300 before:ease-out before:hover:opacity-100 ${
+              theme === 'Light' ? 'text-th-bkg-1' : 'text-white'
             }`
       } ${
         size === 'medium'
@@ -43,10 +41,10 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
           : size === 'large'
           ? 'h-12 px-6'
           : 'h-8 px-3'
-      } default-transition font-bold focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
+      } default-transition font-bold focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
       {...props}
     >
-      {children}
+      <span className="z-10 flex">{children}</span>
     </button>
   )
 }
