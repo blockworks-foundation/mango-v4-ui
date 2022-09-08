@@ -59,7 +59,7 @@ const DEFAULT_CLIENT = MangoClient.connect(
   'get-program-accounts'
 )
 
-interface TotalInterestDataItem {
+export interface TotalInterestDataItem {
   borrow_interest: number
   deposit_interest: number
   borrow_interest_usd: number

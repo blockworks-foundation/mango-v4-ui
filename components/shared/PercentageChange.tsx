@@ -2,7 +2,7 @@ import { DownTriangle, UpTriangle } from './DirectionTriangles'
 
 const PercentageChange = ({ change }: { change: number | typeof NaN }) => {
   return (
-    <div className="mt-1 flex items-center space-x-2">
+    <div className="flex items-center space-x-2">
       {change > 0 ? <UpTriangle /> : change < 0 ? <DownTriangle /> : ''}
       <p
         className={`font-normal ${

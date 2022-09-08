@@ -139,7 +139,7 @@ const AccountPage = () => {
         <div className="mb-4 flex items-center space-x-6 lg:mb-0">
           <div>
             <p className="mb-1.5">{t('account-value')}</p>
-            <div className="flex items-center text-5xl font-bold text-th-fgd-1">
+            <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
               $
               {mangoAccount ? (
                 <FlipNumbers

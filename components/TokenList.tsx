@@ -11,12 +11,12 @@ import { useTheme } from 'next-themes'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import useLocalStorageState from '../hooks/useLocalStorageState'
+// import useLocalStorageState from '../hooks/useLocalStorageState'
 import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '../store/mangoStore'
 import { COLORS } from '../styles/colors'
-import { SHOW_ZERO_BALANCES_KEY } from '../utils/constants'
+// import { SHOW_ZERO_BALANCES_KEY } from '../utils/constants'
 import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
@@ -86,8 +86,6 @@ const TokenList = () => {
       setShowZeroBalances(true)
     }
   }, [connected])
-
-  console.log(coingeckoPrices)
 
   return (
     <ContentBox hideBorder hidePadding className="mt-0 md:-mt-10">
@@ -266,12 +264,28 @@ const TokenList = () => {
 
 export default TokenList
 
-const MobileTokenListItem = ({ bank, key }: { bank: Bank; key: string }) => {
+const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation('common')
   const [showTokenDetails, setShowTokenDetails] = useState(false)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const group = mangoStore((s) => s.group)
+  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
+  const totalInterestData = mangoStore(
+    (s) => s.mangoAccount.stats.interestTotals.data
+  )
+  const symbol = bank.name
+  const oraclePrice = bank.uiPrice
+
+  const coingeckoData = coingeckoPrices.find((asset) =>
+    symbol === 'soETH' ? asset.symbol === 'ETH' : asset.symbol === symbol
+  )
+
+  const change = coingeckoData
+    ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
+        coingeckoData.prices[0][1]) /
+        coingeckoData.prices[0][1]) *
+      100
+    : 0
 
   let logoURI
   if (jupiterTokens.length) {
@@ -279,8 +293,22 @@ const MobileTokenListItem = ({ bank, key }: { bank: Bank; key: string }) => {
       (t) => t.address === bank.mint.toString()
     )!.logoURI
   }
+
+  const hasInterestEarned = totalInterestData.find(
+    (d) => d.symbol === bank.name
+  )
+
+  const interestAmount = hasInterestEarned
+    ? hasInterestEarned.borrow_interest + hasInterestEarned.deposit_interest
+    : 0
+
+  const interestValue = hasInterestEarned
+    ? hasInterestEarned.borrow_interest_usd +
+      hasInterestEarned.deposit_interest_usd
+    : 0.0
+
   return (
-    <div key={key} className="rounded-md border border-th-bkg-4 p-4">
+    <div key={symbol} className="rounded-md border border-th-bkg-4 p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -324,12 +352,17 @@ const MobileTokenListItem = ({ bank, key }: { bank: Bank; key: string }) => {
       >
         <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
           <div className="col-span-1">
-            <p className="text-xs text-th-fgd-3">{t('price')}</p>
-            <p className="font-bold">${formatDecimal(bank.uiPrice!, 2)}</p>
+            <p className="text-xs text-th-fgd-3">{t('interest-earned-paid')}</p>
+            <div className="flex">
+              <p>{formatDecimal(interestAmount)}</p>
+              <p className="ml-1 text-th-fgd-4">
+                ({formatFixedDecimals(interestValue, true)})
+              </p>
+            </div>
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('rates')}</p>
-            <p className="space-x-2 font-bold">
+            <p className="space-x-2">
               <span className="text-th-green">
                 {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
               </span>
@@ -340,10 +373,12 @@ const MobileTokenListItem = ({ bank, key }: { bank: Bank; key: string }) => {
             </p>
           </div>
           <div className="col-span-1">
-            <p className="text-xs text-th-fgd-3">Vault {t('liquidity')}</p>
-            <p className="font-bold">
-              {group ? group.getTokenVaultBalanceByMintUi(bank.mint) : '-'}
-            </p>
+            <p className="text-xs text-th-fgd-3">{t('price')}</p>
+            <p>{formatFixedDecimals(oraclePrice!, true)}</p>
+          </div>
+          <div className="col-span-1">
+            <p className="text-xs text-th-fgd-3">{t('rolling-change')}</p>
+            <PercentageChange change={change} />
           </div>
         </div>
       </Transition>
