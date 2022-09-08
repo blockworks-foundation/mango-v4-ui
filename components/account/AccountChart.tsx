@@ -22,9 +22,12 @@ const AccountChart = ({
   const [daysToShow, setDaysToShow] = useState<number>(1)
   const loading = mangoStore((s) => s.mangoAccount.stats.performance.loading)
 
-  const handleDaysToShow = (days: number) => {
+  const handleDaysToShow = async (days: number) => {
+    await actions.fetchAccountPerformance(
+      mangoAccount.publicKey.toString(),
+      days
+    )
     setDaysToShow(days)
-    actions.fetchAccountPerformance(mangoAccount.publicKey.toString(), days)
   }
 
   return (

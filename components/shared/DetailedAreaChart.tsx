@@ -20,6 +20,7 @@ import { useTheme } from 'next-themes'
 import { IconButton } from './Button'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
+import ChartRangeButtons from './ChartRangeButtons'
 
 dayjs.extend(relativeTime)
 
@@ -176,30 +177,12 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
             </div>
             <div className="-mt-1 h-96 w-auto">
               <div className="absolute -top-1 right-0 -mb-2 flex justify-end">
-                <button
-                  className={`rounded-md px-3 py-2 font-bold  focus:outline-none md:hover:text-th-primary ${
-                    daysToShow === 1 ? 'text-th-primary' : 'text-th-fgd-4'
-                  }`}
-                  onClick={() => setDaysToShow(1)}
-                >
-                  24H
-                </button>
-                <button
-                  className={`rounded-md px-3 py-2 font-bold focus:outline-none md:hover:text-th-primary ${
-                    daysToShow === 7 ? 'text-th-primary' : 'text-th-fgd-4'
-                  }`}
-                  onClick={() => setDaysToShow(7)}
-                >
-                  7D
-                </button>
-                <button
-                  className={`rounded-md px-3 py-2 font-bold focus:outline-none md:hover:text-th-primary ${
-                    daysToShow === 30 ? 'text-th-primary' : 'text-th-fgd-4'
-                  }`}
-                  onClick={() => setDaysToShow(30)}
-                >
-                  30D
-                </button>
+                <ChartRangeButtons
+                  activeValue={daysToShow}
+                  names={['24H', '7D', '30D']}
+                  values={[1, 7, 30]}
+                  onChange={(v) => setDaysToShow(v)}
+                />
               </div>
               <div className="-mx-6 mt-6 h-full">
                 <ResponsiveContainer width="100%" height="100%">

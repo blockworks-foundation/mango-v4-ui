@@ -19,12 +19,12 @@ import FlipNumbers from 'react-flip-numbers'
 
 import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
-import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 import { formatFixedDecimals } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import PercentageChange from '../shared/PercentageChange'
+import ChartRangeButtons from '../shared/ChartRangeButtons'
 
 dayjs.extend(relativeTime)
 
@@ -297,30 +297,12 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
           </div>
           <div className="mt-2 h-28 w-1/2 md:h-72 md:w-auto">
             <div className="-mb-2 flex justify-end md:absolute md:-top-1 md:right-0">
-              <button
-                className={`rounded-md px-3 py-2 font-bold focus:outline-none md:hover:text-th-primary ${
-                  daysToShow === 1 ? 'text-th-primary' : 'text-th-fgd-4'
-                }`}
-                onClick={() => setDaysToShow(1)}
-              >
-                24H
-              </button>
-              <button
-                className={`rounded-md px-3 py-2 font-bold focus:outline-none md:hover:text-th-primary ${
-                  daysToShow === 7 ? 'text-th-primary' : 'text-th-fgd-4'
-                }`}
-                onClick={() => setDaysToShow(7)}
-              >
-                7D
-              </button>
-              <button
-                className={`rounded-md px-3 py-2 font-bold focus:outline-none md:hover:text-th-primary ${
-                  daysToShow === 30 ? 'text-th-primary' : 'text-th-fgd-4'
-                }`}
-                onClick={() => setDaysToShow(30)}
-              >
-                30D
-              </button>
+              <ChartRangeButtons
+                activeValue={daysToShow}
+                names={['24H', '7D', '30D']}
+                values={[1, 7, 30]}
+                onChange={(v) => setDaysToShow(v)}
+              />
             </div>
             <div className="-mx-6 h-full">
               <ResponsiveContainer width="100%" height="100%">
