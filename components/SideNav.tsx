@@ -6,9 +6,9 @@ import {
   LightBulbIcon,
   ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
-  CogIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
+  Cog8ToothIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -86,7 +86,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           <MenuItem
             active={pathname === '/settings'}
             collapsed={collapsed}
-            icon={<CogIcon className="h-5 w-5" />}
+            icon={<Cog8ToothIcon className="h-5 w-5" />}
             title={t('settings')}
             pagePath="/settings"
           />

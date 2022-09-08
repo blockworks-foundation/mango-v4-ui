@@ -19,6 +19,7 @@ import {
   ArrowLeftIcon,
   PencilIcon,
   ArrowsRightLeftIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -510,7 +511,10 @@ const JupiterRouteInfo = ({
           {submitting ? (
             <Loading className="mr-2 h-5 w-5" />
           ) : (
-            t('trade:confirm-trade')
+            <div className="flex items-center">
+              <CheckCircleIcon className="mr-2 h-5 w-5" />
+              {t('trade:confirm-trade')}
+            </div>
           )}
         </Button>
       </div>

@@ -1,5 +1,6 @@
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
+  ArrowUpTrayIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
@@ -278,7 +279,10 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   })}
                 </div>
               ) : (
-                t('withdraw')
+                <div className="flex items-center">
+                  <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
+                  {t('withdraw')}
+                </div>
               )}
             </Button>
           </div>

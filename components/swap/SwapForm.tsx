@@ -3,7 +3,8 @@ import { PublicKey } from '@solana/web3.js'
 import {
   ArrowDownIcon,
   ArrowRightIcon,
-  CogIcon,
+  Cog8ToothIcon,
+  MagnifyingGlassIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
 import { RouteInfo } from '@jup-ag/core'
@@ -32,6 +33,7 @@ import {
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
 import { useTokenMax } from './useTokenMax'
+import WalletIcon from '../icons/WalletIcon'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -242,7 +244,7 @@ const SwapForm = () => {
             onClick={() => setShowSettings(true)}
             size="small"
           >
-            <CogIcon className="h-5 w-5" />
+            <Cog8ToothIcon className="h-5 w-5" />
           </IconButton>
         </div>
         <div className="mb-2 flex items-center justify-between">
@@ -362,10 +364,16 @@ const SwapForm = () => {
             ) : isLoadingTradeDetails ? (
               <Loading />
             ) : (
-              <div className="flex items-center">{t('trade:review-trade')}</div>
+              <div className="flex items-center">
+                <MagnifyingGlassIcon className="mr-2 h-5 w-5" />
+                {t('trade:review-trade')}
+              </div>
             )
           ) : (
-            t('connect')
+            <div className="flex items-center">
+              <WalletIcon className="mr-2 h-5 w-5" />
+              {t('connect')}
+            </div>
           )}
         </Button>
       </div>

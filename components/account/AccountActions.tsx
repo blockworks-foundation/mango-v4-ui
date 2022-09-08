@@ -4,6 +4,8 @@ import Button, { LinkButton } from '../shared/Button'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
   EllipsisHorizontalIcon,
   PencilIcon,
   TrashIcon,
@@ -25,18 +27,22 @@ const AccountActions = () => {
     <>
       <div className="flex space-x-3">
         <Button
+          className="flex items-center"
           disabled={!connected}
           onClick={() => setShowDepositModal(true)}
           size="large"
         >
+          <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
           {t('deposit')}
         </Button>
         <Button
+          className="flex items-center"
           disabled={!connected}
           onClick={() => setShowWithdrawModal(true)}
           secondary
           size="large"
         >
+          <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
           {t('withdraw')}
         </Button>
         <IconDropMenu

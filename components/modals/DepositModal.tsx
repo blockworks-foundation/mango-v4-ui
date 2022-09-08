@@ -1,5 +1,6 @@
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import {
+  ArrowDownTrayIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
@@ -337,7 +338,10 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 })}
               </div>
             ) : (
-              t('deposit')
+              <div className="flex items-center">
+                <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
+                {t('deposit')}
+              </div>
             )}
           </Button>
         </div>

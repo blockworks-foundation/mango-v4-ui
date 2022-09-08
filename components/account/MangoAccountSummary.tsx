@@ -9,6 +9,7 @@ import { useState } from 'react'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
+import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
 
 const MangoAccountSummary = () => {
   const { t } = useTranslation('common')
@@ -56,7 +57,11 @@ const MangoAccountSummary = () => {
         </div>
       </div>
       <div className="space-y-2">
-        <Button className="w-full" onClick={() => setShowDepositModal(true)}>
+        <Button
+          className="flex w-full items-center justify-center"
+          onClick={() => setShowDepositModal(true)}
+        >
+          <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
           {t('deposit')}
         </Button>
         {/* <Button

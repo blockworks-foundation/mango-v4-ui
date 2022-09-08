@@ -35,7 +35,8 @@ const TopBar = () => {
         <span className="mb-0">
           {!connected ? (
             <span className="hidden items-center md:flex">
-              🔗<span className="ml-2">{t('connect-helper')}</span>
+              <WalletIcon className="h-5 w-5 text-th-fgd-3" />
+              <span className="ml-2">{t('connect-helper')}</span>
               <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
             </span>
           ) : !mangoAccount ? (
