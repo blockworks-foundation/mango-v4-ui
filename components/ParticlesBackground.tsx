@@ -85,88 +85,94 @@ const ParticlesBackground = () => {
             speed: 1,
           },
         },
-        emitters: {
-          autoPlay: true,
-          life: {
-            wait: false,
-          },
-          rate: {
-            quantity: 1,
-            delay: 8,
-          },
-          particles: {
-            opacity: {
-              value: 100,
+        emitters: [
+          {
+            autoPlay: true,
+            fill: true,
+            life: {
+              wait: false,
+              delay: 0.5,
+              duration: 1,
             },
-            shape: {
-              type: 'images',
-              options: {
-                images: [
-                  {
-                    src: '/icons/mngo.svg',
-                    width: 32,
-                    height: 32,
-                  },
-                  {
-                    src: '/icons/btc.svg',
-                    width: 32,
-                    height: 32,
-                  },
-                  {
-                    src: '/icons/eth.svg',
-                    width: 32,
-                    height: 32,
-                  },
-                  {
-                    src: '/icons/sol.svg',
-                    width: 32,
-                    height: 32,
-                  },
-                  {
-                    src: '/icons/usdc.svg',
-                    width: 32,
-                    height: 32,
-                  },
-                  {
-                    src: '/icons/usdt.svg',
-                    width: 32,
-                    height: 32,
-                  },
-                  {
-                    src: '/icons/msol.svg',
-                    width: 32,
-                    height: 32,
-                  },
-                ],
+            rate: {
+              quantity: 1,
+              delay: { min: 3, max: 12 },
+            },
+            startCount: 0,
+            particles: {
+              shape: {
+                type: 'images',
+                options: {
+                  images: [
+                    {
+                      src: '/icons/mngo.svg',
+                      width: 32,
+                      height: 32,
+                    },
+                    {
+                      src: '/icons/btc.svg',
+                      width: 32,
+                      height: 32,
+                    },
+                    {
+                      src: '/icons/eth.svg',
+                      width: 32,
+                      height: 32,
+                    },
+                    {
+                      src: '/icons/sol.svg',
+                      width: 32,
+                      height: 32,
+                    },
+                    {
+                      src: '/icons/usdc.svg',
+                      width: 32,
+                      height: 32,
+                    },
+                    {
+                      src: '/icons/usdt.svg',
+                      width: 32,
+                      height: 32,
+                    },
+                    {
+                      src: '/icons/msol.svg',
+                      width: 32,
+                      height: 32,
+                    },
+                  ],
+                },
+              },
+              rotate: {
+                value: 0,
+                random: true,
+                direction: 'clockwise',
+                animation: {
+                  enable: true,
+                  speed: 15,
+                  sync: false,
+                },
+              },
+              lineLinked: {
+                enable: false,
+              },
+              opacity: {
+                value: 1,
+              },
+              size: {
+                value: 16,
+                random: false,
+              },
+              move: {
+                speed: 3,
+                random: false,
+                outMode: 'destroy',
               },
             },
-            size: {
-              value: 16,
-            },
-            move: {
-              speed: 3,
-              straight: true,
-            },
-            zIndex: {
-              value: 0,
-            },
-            rotate: {
-              value: {
-                min: 0,
-                max: 360,
-              },
-              animation: {
-                enable: true,
-                speed: 10,
-                sync: true,
-              },
+            position: {
+              x: 0,
             },
           },
-          position: {
-            x: -5,
-            y: -5,
-          },
-        },
+        ],
       }}
     />
   )
