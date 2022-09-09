@@ -1,8 +1,6 @@
 import {
   HealthType,
-  I80F48,
   toUiDecimalsForQuote,
-  ZERO_I80F48,
 } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -13,7 +11,6 @@ import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '../../store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
-import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 import SimpleAreaChart from '../shared/SimpleAreaChart'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
@@ -30,6 +27,7 @@ import { useViewport } from '../../hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import useMangoAccount from '../shared/useMangoAccount'
 import PercentageChange from '../shared/PercentageChange'
+import HealthParticles from './HealthParticles'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -220,9 +218,16 @@ const AccountPage = () => {
         <AccountActions />
       </div>
       <div className="grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:border-b-0">
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
-          <p className="text-th-fgd-3">{t('health')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
+        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+          <div>
+            <p className="text-th-fgd-3">{t('health')}</p>
+            <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
+          </div>
+          {mangoAccount ? (
+            <div className="h-16 w-16 rounded-full bg-gradient-to-bl from-th-bkg-4 to-th-bkg-2">
+              <HealthParticles numberOfParticles={maintHealth!} />
+            </div>
+          ) : null}
         </div>
         <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <p className="text-th-fgd-3">{t('free-collateral')}</p>

@@ -308,3 +308,11 @@ input[type='range']::-webkit-slider-runnable-track {
   background-image: radial-gradient(at -40% -10%, #5b48ad 0, transparent 40%),
     radial-gradient(at 150% 150%, #e54033 0, transparent 50%);
 }
+
+#health-particles {
+  @apply h-full w-full;
+}
+
+#health-particles canvas {
+  @apply rounded-full;
+}
