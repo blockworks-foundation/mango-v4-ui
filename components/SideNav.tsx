@@ -18,6 +18,7 @@ import MangoAccountSummary from './account/MangoAccountSummary'
 import HealthHeart from './account/HealthHeart'
 import mangoStore from '../store/mangoStore'
 import Tooltip from './shared/Tooltip'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
@@ -128,7 +129,12 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
         <div className="border-t border-th-bkg-3">
           <ExpandableMenuItem
             collapsed={collapsed}
-            icon={<HealthHeart health={50} size={32} />}
+            icon={
+              <HealthHeart
+                health={mangoAccount.getHealthRatioUi(HealthType.maint)!}
+                size={32}
+              />
+            }
             title={
               <div className="text-left">
                 <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
