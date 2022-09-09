@@ -317,8 +317,8 @@ const SwapForm = () => {
           <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
             {isLoadingTradeDetails ? (
               <div className="w-full">
-                <SheenLoader className="rounded-l-none">
-                  <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-3" />
+                <SheenLoader className="flex flex-1 rounded-l-none">
+                  <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-4" />
                 </SheenLoader>
               </div>
             ) : (

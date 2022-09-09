@@ -21,6 +21,7 @@ import { IconButton } from './Button'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
+import PercentageChange from './PercentageChange'
 
 dayjs.extend(relativeTime)
 
@@ -91,8 +92,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
         {loading ? (
-          <SheenLoader>
-            <div className="h-[448px] rounded-lg bg-th-bkg-2" />
+          <SheenLoader className="flex flex-1">
+            <div className="h-[448px] w-full rounded-lg bg-th-bkg-2" />
           </SheenLoader>
         ) : data.length ? (
           <div className="relative">
@@ -114,21 +115,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           numbers={mouseData[yKey].toFixed(2)}
                         />
                         {!hideChange ? (
-                          <span
-                            className={`ml-3 flex items-center text-sm ${
-                              calculateChartChange() >= 0
-                                ? 'text-th-green'
-                                : 'text-th-red'
-                            }`}
-                          >
-                            {calculateChartChange() >= 0 ? (
-                              <UpTriangle />
-                            ) : (
-                              <DownTriangle />
-                            )}
-                            <span className="ml-1">
-                              {calculateChartChange().toFixed(2)}%
-                            </span>
+                          <span className="ml-3">
+                            <PercentageChange change={calculateChartChange()} />
                           </span>
                         ) : null}
                       </div>
@@ -147,21 +135,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           numbers={data[data.length - 1][yKey].toFixed(2)}
                         />
                         {!hideChange ? (
-                          <span
-                            className={`ml-3 mt-0 flex items-center text-sm ${
-                              calculateChartChange() >= 0
-                                ? 'text-th-green'
-                                : 'text-th-red'
-                            }`}
-                          >
-                            {calculateChartChange() >= 0 ? (
-                              <UpTriangle />
-                            ) : (
-                              <DownTriangle />
-                            )}
-                            <span className="ml-1">
-                              {calculateChartChange().toFixed(2)}%
-                            </span>
+                          <span className="ml-3">
+                            <PercentageChange change={calculateChartChange()} />
                           </span>
                         ) : null}
                       </div>

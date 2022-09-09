@@ -340,16 +340,16 @@ const TradeHistoryTable = ({
       )
     ) : (
       <div className="mt-8 space-y-2">
-        <SheenLoader>
+        <SheenLoader className="flex flex-1">
           <div className="h-8 w-full rounded bg-th-bkg-2" />
         </SheenLoader>
-        <SheenLoader>
+        <SheenLoader className="flex flex-1">
           <div className="h-16 w-full rounded bg-th-bkg-2" />
         </SheenLoader>
-        <SheenLoader>
+        <SheenLoader className="flex flex-1">
           <div className="h-16 w-full rounded bg-th-bkg-2" />
         </SheenLoader>
-        <SheenLoader>
+        <SheenLoader className="flex flex-1">
           <div className="h-16 w-full rounded bg-th-bkg-2" />
         </SheenLoader>
       </div>
