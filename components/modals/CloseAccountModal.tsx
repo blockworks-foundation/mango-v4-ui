@@ -8,6 +8,7 @@ import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
 import BounceLoader from '../shared/BounceLoader'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
+import { TrashIcon } from '@heroicons/react/20/solid'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
@@ -68,7 +69,10 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
               onClick={handleCloseMangoAccount}
               size="large"
             >
-              {t('close-account')}
+              <div className="flex items-center justify-center">
+                <TrashIcon className="mr-2 h-5 w-5" />
+                {t('close-account')}
+              </div>
             </Button>
           </div>
         )}

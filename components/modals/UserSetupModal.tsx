@@ -11,8 +11,11 @@ import InlineNotification from '../shared/InlineNotification'
 import Modal from '../shared/Modal'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
 import {
+  ArrowDownTrayIcon,
   CheckCircleIcon,
+  FireIcon,
   PencilIcon,
+  PlusCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -30,6 +33,7 @@ import { IS_ONBOARDED_KEY } from '../../utils/constants'
 import ParticlesBackground from '../ParticlesBackground'
 import ButtonGroup from '../forms/ButtonGroup'
 import Decimal from 'decimal.js'
+import WalletIcon from '../icons/WalletIcon'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -276,7 +280,10 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                 </div>
               </div>
               <Button className="w-full" onClick={handleNextStep} size="large">
-                {"Let's Go"}
+                <div className="flex items-center justify-center">
+                  <FireIcon className="mr-2 h-5 w-5" />
+                  {"Let's Go"}
+                </div>
               </Button>
             </Transition>
             <EnterRightExitLeft
@@ -325,7 +332,10 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                     onClick={connectWallet}
                     size="large"
                   >
-                    Connect Wallet
+                    <div className="flex items-center justify-center">
+                      <WalletIcon className="mr-2 h-5 w-5" />
+                      Connect Wallet
+                    </div>
                   </Button>
                 </div>
               )}
@@ -419,7 +429,10 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                         onClick={() => handleCreateAccount()}
                         size="large"
                       >
-                        Create Account
+                        <div className="flex items-center justify-center">
+                          <PlusCircleIcon className="mr-2 h-5 w-5" />
+                          Create Account
+                        </div>
                       </Button>
                       <LinkButton
                         className="flex w-full justify-center"
@@ -514,7 +527,10 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       onClick={handleDeposit}
                       size="large"
                     >
-                      Deposit
+                      <div className="flex items-center justify-center">
+                        <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
+                        Deposit
+                      </div>
                     </Button>
                     <LinkButton onClick={handleEndOnboarding}>
                       <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
