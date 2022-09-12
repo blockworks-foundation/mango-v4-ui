@@ -496,7 +496,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       </div>
                     </FadeInFadeOut>
                     {!depositToken ? (
-                      <div className="absolute top-14 mt-2 h-52 w-full overflow-auto">
+                      <div className="thin-scroll absolute top-14 mt-2 h-52 w-full overflow-auto">
                         <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
                           <div className="">
                             <p className="text-xs">{t('token')}</p>
