@@ -10,8 +10,10 @@ import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
 import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
+import HealthHeart from './HealthHeart'
+import { ExpandableMenuItem } from '../SideNav'
 
-const MangoAccountSummary = () => {
+const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showDepositModal, setShowDepositModal] = useState(false)
@@ -19,59 +21,90 @@ const MangoAccountSummary = () => {
 
   return (
     <>
-      <div className="mb-4 space-y-2">
-        <div>
-          <p className="text-sm text-th-fgd-3">{t('health')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
-            {mangoAccount
-              ? mangoAccount.getHealthRatioUi(HealthType.maint)
-              : 100}
-            %
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-th-fgd-3">{t('account-value')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
-            $
-            {mangoAccount
-              ? formatDecimal(
-                  toUiDecimalsForQuote(mangoAccount.getEquity()!.toNumber()),
-                  2
-                )
-              : (0).toFixed(2)}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-th-fgd-3">{t('free-collateral')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
-            $
-            {mangoAccount
-              ? formatDecimal(
-                  toUiDecimalsForQuote(
-                    mangoAccount.getCollateralValue()!.toNumber()
-                  ),
-                  2
-                )
-              : (0).toFixed(2)}
-          </p>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Button
-          className="flex w-full items-center justify-center"
-          onClick={() => setShowDepositModal(true)}
-        >
-          <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
-          {t('deposit')}
-        </Button>
-        {/* <Button
+      {mangoAccount ? (
+        <div className="border-t border-th-bkg-3">
+          <ExpandableMenuItem
+            collapsed={collapsed}
+            icon={
+              <HealthHeart
+                health={mangoAccount.getHealthRatioUi(HealthType.maint)!}
+                size={32}
+              />
+            }
+            title={
+              <div className="text-left">
+                <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
+                <p className="text-sm font-bold text-th-fgd-1">
+                  {mangoAccount.name}
+                </p>
+              </div>
+            }
+            alignBottom
+            hideIconBg
+          >
+            <div className="px-4 pb-4 pt-2">
+              <div className="mb-4 space-y-2">
+                <div>
+                  <p className="text-sm text-th-fgd-3">{t('health')}</p>
+                  <p className="text-sm font-bold text-th-fgd-1">
+                    {mangoAccount
+                      ? mangoAccount.getHealthRatioUi(HealthType.maint)
+                      : 100}
+                    %
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-th-fgd-3">{t('account-value')}</p>
+                  <p className="text-sm font-bold text-th-fgd-1">
+                    $
+                    {mangoAccount
+                      ? formatDecimal(
+                          toUiDecimalsForQuote(
+                            mangoAccount.getEquity()!.toNumber()
+                          ),
+                          2
+                        )
+                      : (0).toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-th-fgd-3">
+                    {t('free-collateral')}
+                  </p>
+                  <p className="text-sm font-bold text-th-fgd-1">
+                    $
+                    {mangoAccount
+                      ? formatDecimal(
+                          toUiDecimalsForQuote(
+                            mangoAccount.getCollateralValue()!.toNumber()
+                          ),
+                          2
+                        )
+                      : (0).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Button
+                  className="flex w-full items-center justify-center"
+                  onClick={() => setShowDepositModal(true)}
+                >
+                  <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
+                  {t('deposit')}
+                </Button>
+                {/* <Button
           className="w-full"
           onClick={() => setShowWithdrawModal(true)}
           secondary
         >
           {t('withdraw')}
         </Button> */}
-      </div>
+              </div>
+            </div>
+          </ExpandableMenuItem>
+        </div>
+      ) : null}
+
       {showDepositModal ? (
         <DepositModal
           isOpen={showDepositModal}
