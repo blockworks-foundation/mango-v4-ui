@@ -10,7 +10,7 @@ import {
 import { clusterApiUrl } from '@solana/web3.js'
 
 import '../styles/globals.css'
-import mangoStore from '../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import useInterval from '../components/shared/useInterval'
 import Notifications from '../components/shared/Notification'
 import { ThemeProvider } from 'next-themes'

@@ -8,7 +8,7 @@ import Image from 'next/image'
 import { Fragment, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import { IconButton } from '../shared/Button'

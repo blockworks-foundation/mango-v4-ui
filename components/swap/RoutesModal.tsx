@@ -2,7 +2,7 @@ import { RouteInfo } from '@jup-ag/core'
 import { Dispatch, SetStateAction } from 'react'
 import JSBI from 'jsbi'
 
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { Token } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
 import Modal from '../shared/Modal'

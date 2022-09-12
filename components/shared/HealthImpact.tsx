@@ -3,7 +3,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 
 const HealthImpact = ({
   uiAmount,

@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { useTokenMax } from './useTokenMax'
 
 const LeverageSlider = ({

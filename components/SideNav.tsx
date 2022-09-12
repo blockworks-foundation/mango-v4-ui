@@ -15,14 +15,10 @@ import { useTranslation } from 'next-i18next'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
-import HealthHeart from './account/HealthHeart'
-import mangoStore from '../store/mangoStore'
 import Tooltip from './shared/Tooltip'
-import { HealthType } from '@blockworks-foundation/mango-v4'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const router = useRouter()
   const { pathname } = router
 
@@ -69,6 +65,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             icon={<CurrencyDollarIcon className="h-5 w-5" />}
             title={t('account')}
             pagePath="/"
+          />
+          <MenuItem
+            active={pathname === '/swap'}
+            collapsed={collapsed}
+            icon={<TradeIcon className="h-5 w-5" />}
+            title={t('swap')}
+            pagePath="/swap"
           />
           <MenuItem
             active={pathname === '/trade'}
@@ -125,33 +128,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           </ExpandableMenuItem>
         </div>
       </div>
-      {mangoAccount ? (
-        <div className="border-t border-th-bkg-3">
-          <ExpandableMenuItem
-            collapsed={collapsed}
-            icon={
-              <HealthHeart
-                health={mangoAccount.getHealthRatioUi(HealthType.maint)!}
-                size={32}
-              />
-            }
-            title={
-              <div className="text-left">
-                <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
-                <p className="text-sm font-bold text-th-fgd-1">
-                  {mangoAccount.name}
-                </p>
-              </div>
-            }
-            alignBottom
-            hideIconBg
-          >
-            <div className="px-4 pb-4 pt-2">
-              <MangoAccountSummary />
-            </div>
-          </ExpandableMenuItem>
-        </div>
-      ) : null}
+      <MangoAccountSummary collapsed={collapsed} />
     </div>
   )
 }
@@ -219,7 +196,7 @@ const MenuItem = ({
   )
 }
 
-const ExpandableMenuItem = ({
+export const ExpandableMenuItem = ({
   alignBottom,
   children,
   collapsed,

@@ -1,9 +1,9 @@
-import Swap from './SwapForm'
-import SwapTokenChart from './SwapTokenChart'
+import Swap from '@components/swap/SwapForm'
+import SwapTokenChart from '@components/swap/SwapTokenChart'
+import AccountTabs from '@components/account/AccountTabs'
 import mangoStore from '@store/mangoStore'
-import AccountTabs from '../account/AccountTabs'
 
-const TradeSimplePage = () => {
+const TradeAdvancedPage = () => {
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
   const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
 
@@ -25,4 +25,4 @@ const TradeSimplePage = () => {
   )
 }
 
-export default TradeSimplePage
+export default TradeAdvancedPage

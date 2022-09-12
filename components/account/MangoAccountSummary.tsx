@@ -1,4 +1,4 @@
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import {
   HealthType,
   toUiDecimalsForQuote,

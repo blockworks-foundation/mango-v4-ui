@@ -1,6 +1,6 @@
-import TradeAdvancedPage from '@components/trade/TradeAdvancedPage'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
+import TradeSimplePage from '../components/swap/TradeSimplePage'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -11,7 +11,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 }
 
 const Trade: NextPage = () => {
-  return <TradeAdvancedPage />
+  return <TradeSimplePage />
 }
 
 export default Trade
