@@ -8,15 +8,23 @@ import BottomBar from './mobile/BottomBar'
 import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
-import { SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
+import {
+  IS_ONBOARDED_KEY,
+  ONBOARDING_TOUR_KEY,
+  SIDEBAR_COLLAPSE_KEY,
+} from '../utils/constants'
+import OnboardingTour from './OnboardingTour'
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const connected = mangoStore((s) => s.connected)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
     false
   )
+  const [showOnboardingTour] = useLocalStorageState(ONBOARDING_TOUR_KEY, false)
+  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const { width } = useViewport()
 
   useEffect(() => {
@@ -75,6 +83,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
           </div>
         </div>
       </div>
+      {showOnboardingTour && isOnboarded && connected ? (
+        <OnboardingTour />
+      ) : null}
     </>
   )
 }

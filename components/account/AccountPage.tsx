@@ -130,14 +130,14 @@ const AccountPage = () => {
   }, [totalInterestData])
 
   const maintHealth = useMemo(() => {
-    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 100
+    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
   }, [mangoAccount])
 
   return !chartToShow ? (
     <>
       <div className="mb-8 flex flex-col md:mb-10 lg:flex-row lg:items-end lg:justify-between">
         <div className="mb-4 flex items-center space-x-6 lg:mb-0">
-          <div>
+          <div id="step-two">
             <p className="mb-1.5">{t('account-value')}</p>
             <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
               $
@@ -220,11 +220,17 @@ const AccountPage = () => {
         <AccountActions />
       </div>
       <div className="grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:border-b-0">
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div
+          id="step-three"
+          className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1"
+        >
           <p className="text-th-fgd-3">{t('health')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
         </div>
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div
+          id="step-four"
+          className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1"
+        >
           <p className="text-th-fgd-3">{t('free-collateral')}</p>
           <p className="text-2xl font-bold text-th-fgd-1">
             {mangoAccount
@@ -253,7 +259,10 @@ const AccountPage = () => {
             </IconButton>
           ) : null}
         </div> */}
-        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div
+          id="step-five"
+          className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1"
+        >
           <div>
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">

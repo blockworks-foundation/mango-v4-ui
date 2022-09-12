@@ -50,9 +50,7 @@ const TopBar = () => {
         </span>
         {connected ? (
           <div className="flex items-center space-x-4">
-            {mangoAccount ? (
-              <MangoAccountsList mangoAccount={mangoAccount} />
-            ) : null}
+            <MangoAccountsList mangoAccount={mangoAccount} />
             <ConnectedMenu />
           </div>
         ) : isOnboarded ? (

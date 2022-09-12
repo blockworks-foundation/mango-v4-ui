@@ -8,12 +8,12 @@ import Label from '../forms/Label'
 // import Select from '../forms/Select'
 import Button, { IconButton, LinkButton } from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
-import Modal from '../shared/Modal'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
 import {
   ArrowDownTrayIcon,
   CheckCircleIcon,
   FireIcon,
+  InformationCircleIcon,
   PencilIcon,
   PlusCircleIcon,
   XMarkIcon,
@@ -29,7 +29,7 @@ import ActionTokenList from '../account/ActionTokenList'
 import { walletBalanceForToken } from './DepositModal'
 import { floorToDecimal } from '../../utils/numbers'
 import { handleWalletConnect } from '../wallet/ConnectWalletButton'
-import { IS_ONBOARDED_KEY } from '../../utils/constants'
+import { IS_ONBOARDED_KEY, ONBOARDING_TOUR_KEY } from '../../utils/constants'
 import ParticlesBackground from '../ParticlesBackground'
 import ButtonGroup from '../forms/ButtonGroup'
 import Decimal from 'decimal.js'
@@ -52,19 +52,21 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [, setShowTour] = useLocalStorageState(ONBOARDING_TOUR_KEY)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const handleNextStep = () => {
     setShowSetupStep(showSetupStep + 1)
   }
 
-  const handleSaveProfile = () => {
-    // save profile details to db then:
-    setShowSetupStep(2)
-  }
+  // const handleSaveProfile = () => {
+  //   // save profile details to db then:
+  //   setShowSetupStep(2)
+  // }
 
-  const handleEndOnboarding = () => {
+  const handleShowTour = () => {
     onClose()
+    setShowTour(true)
   }
 
   const connectWallet = async () => {
@@ -113,8 +115,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       })
       console.error(e)
     }
-    setIsOnboarded(true)
-  }, [accountName, wallet, t, setIsOnboarded])
+  }, [accountName, wallet, t])
 
   const handleDeposit = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -139,7 +140,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       })
 
       await actions.reloadMangoAccount()
-      onClose()
+      setShowSetupStep(4)
       setSubmitDeposit(false)
     } catch (e: any) {
       notify({
@@ -151,7 +152,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       setSubmitDeposit(false)
       console.error(e)
     }
-  }, [depositAmount, depositToken, onClose, setIsOnboarded])
+  }, [depositAmount, depositToken, onClose])
 
   useEffect(() => {
     if (mangoAccount && showSetupStep === 2) {
@@ -208,11 +209,11 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     >
       <div className="min-h-screen px-4 text-center">
         <Dialog.Overlay
-          className={`intro-bg pointer-events-none fixed inset-0 bg-th-bkg-1`}
+          className={`intro-bg pointer-events-none fixed inset-0 bg-th-bkg-1 opacity-80`}
         />
-        <div className="absolute top-6 left-6 z-10" id="repulse">
+        {/* <div className="absolute top-6 left-6 z-10" id="repulse">
           <img className="h-10 w-auto" src="/logos/logo-mark.svg" alt="next" />
-        </div>
+        </div> */}
         <div className="absolute top-6 right-6 z-10" id="repulse">
           <IconButton hideBg onClick={() => onClose()}>
             <XMarkIcon className="h-6 w-6 text-th-fgd-2" />
@@ -221,7 +222,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
         <div className="absolute bottom-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
             style={{
-              width: `${(showSetupStep / 3) * 100}%`,
+              width: `${(showSetupStep / 4) * 100}%`,
             }}
             className="flex rounded bg-th-primary transition-all duration-700 ease-out"
           />
@@ -436,7 +437,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       </Button>
                       <LinkButton
                         className="flex w-full justify-center"
-                        onClick={onClose}
+                        onClick={() => setShowSetupStep(4)}
                       >
                         <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                           Skip for now
@@ -496,7 +497,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       </div>
                     </FadeInFadeOut>
                     {!depositToken ? (
-                      <div className="absolute top-14 mt-2 h-52 w-full overflow-auto">
+                      <div className="thin-scroll absolute top-14 mt-2 h-52 w-full overflow-auto">
                         <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
                           <div className="">
                             <p className="text-xs">{t('token')}</p>
@@ -532,7 +533,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                         Deposit
                       </div>
                     </Button>
-                    <LinkButton onClick={handleEndOnboarding}>
+                    <LinkButton onClick={() => setShowSetupStep(4)}>
                       <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                         Skip for now
                       </span>
@@ -540,6 +541,46 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                   </div>
                 </div>
               )}
+            </EnterRightExitLeft>
+            <EnterRightExitLeft
+              className="absolute top-0.5 left-0 z-20 w-full rounded-lg bg-th-bkg-1 p-6"
+              show={showSetupStep === 4}
+              style={{ height: 'calc(100% - 12px)' }}
+            >
+              <div className="flex h-full flex-col justify-between">
+                <div>
+                  <h2 className="mb-6 text-4xl">That&apos;s a wrap</h2>
+                  <p className="mb-2">
+                    We recommend taking a short tour to get familiar with our
+                    new interface.
+                  </p>
+                  <p className="mb-2">
+                    Or, jump in the deep end and start trading.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Button
+                    className="flex-1"
+                    secondary
+                    onClick={onClose}
+                    size="large"
+                  >
+                    <div className="flex items-center justify-center">
+                      Get Started
+                    </div>
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={handleShowTour}
+                    size="large"
+                  >
+                    <div className="flex items-center justify-center">
+                      <InformationCircleIcon className="mr-2 h-5 w-5" />
+                      Show Tour
+                    </div>
+                  </Button>
+                </div>
+              </div>
             </EnterRightExitLeft>
           </div>
         </div>

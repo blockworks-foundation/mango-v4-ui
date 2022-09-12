@@ -5333,6 +5333,11 @@ wait-on@6.0.0:
     minimist "^1.2.5"
     rxjs "^7.1.0"
 
+walktour@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/walktour/-/walktour-5.1.1.tgz#951b5bce2abed0ae4209dc74d4d79f252a85e813"
+  integrity sha512-pRjbjjBGddgiWaWryE+H6DxOeAuUgIZJ5ck0hOVrhZ4QNgZDs1okuGMXDKx3Gi4hi/N9ESwATyyB5hb7kiK7wQ==
+
 web-streams-polyfill@^3.0.3:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/web-streams-polyfill/-/web-streams-polyfill-3.2.1.tgz#71c2718c52b45fd49dbeee88634b3a60ceab42a6"
