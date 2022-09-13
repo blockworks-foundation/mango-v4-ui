@@ -1,6 +1,11 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
-import { CardinalOrientation, Walktour, WalktourLogic } from 'walktour'
+import {
+  CardinalOrientation,
+  MaskOptions,
+  Walktour,
+  WalktourLogic,
+} from 'walktour'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import { ONBOARDING_TOUR_KEY } from '../utils/constants'
 
@@ -73,7 +78,7 @@ const OnboardingTour = () => {
       selector: '#step-one',
       title: 'Your Accounts',
       description:
-        'Switch between your accounts and create new ones. Use multiple accounts to trade isolated margin and protect your capital from liquidation.',
+        'Switch between accounts and create new ones. Use multiple accounts to trade isolated margin and protect your capital from liquidation.',
       orientationPreferences: [CardinalOrientation.SOUTHEAST],
       movingTarget: true,
     },
@@ -144,7 +149,7 @@ const OnboardingTour = () => {
       selector: '#step-nine',
       title: 'Token to Sell',
       description:
-        'Select the token you want to sell (trade from). If your sell size is above your balance a loan will be opened to cover the shortfall.',
+        'Select the token you want to sell. If your sell size is above your token balance a loan will be opened to cover the shortfall.',
       orientationPreferences: [CardinalOrientation.WESTNORTH],
       movingTarget: true,
     },
@@ -163,6 +168,7 @@ const OnboardingTour = () => {
       customTooltipRenderer={renderTooltip}
       steps={steps}
       updateInterval={200}
+      disableCloseOnClick
     />
   )
 }
