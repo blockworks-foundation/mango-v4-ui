@@ -147,7 +147,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           </ExpandableMenuItem>
         </div>
       </div>
-      {/* {mangoAccount ? ( */}
       <div className="border-t border-th-bkg-3">
         <ExpandableMenuItem
           collapsed={collapsed}
@@ -181,7 +180,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           </div>
         </ExpandableMenuItem>
       </div>
-      {/* ) : null} */}
     </div>
   )
 }

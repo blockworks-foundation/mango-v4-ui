@@ -220,28 +220,26 @@ const AccountPage = () => {
         <AccountActions />
       </div>
       <div className="grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:border-b-0">
-        <div
-          id="step-three"
-          className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1"
-        >
-          <p className="text-th-fgd-3">{t('health')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
+        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+          <div id="step-three">
+            <p className="text-th-fgd-3">{t('health')}</p>
+            <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
+          </div>
         </div>
-        <div
-          id="step-four"
-          className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1"
-        >
-          <p className="text-th-fgd-3">{t('free-collateral')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">
-            {mangoAccount
-              ? formatFixedDecimals(
-                  toUiDecimalsForQuote(
-                    mangoAccount.getCollateralValue()!.toNumber()
-                  ),
-                  true
-                )
-              : (0).toFixed(2)}
-          </p>
+        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+          <div id="step-four">
+            <p className="text-th-fgd-3">{t('free-collateral')}</p>
+            <p className="text-2xl font-bold text-th-fgd-1">
+              {mangoAccount
+                ? formatFixedDecimals(
+                    toUiDecimalsForQuote(
+                      mangoAccount.getCollateralValue()!.toNumber()
+                    ),
+                    true
+                  )
+                : (0).toFixed(2)}
+            </p>
+          </div>
         </div>
         {/* <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
@@ -259,11 +257,8 @@ const AccountPage = () => {
             </IconButton>
           ) : null}
         </div> */}
-        <div
-          id="step-five"
-          className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1"
-        >
-          <div>
+        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+          <div id="step-five">
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">
               {formatFixedDecimals(interestTotalValue, true)}
