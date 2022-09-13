@@ -17,7 +17,6 @@ import OnboardingTour from './OnboardingTour'
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const connected = mangoStore((s) => s.connected)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
