@@ -118,7 +118,7 @@ const OnboardingTour = () => {
       selector: '#step-six',
       title: 'Health Check',
       description:
-        'Check the health of your account here. No need to visit the account page.',
+        'Check the health of your account from any screen in the app. A green heart represents good health, orange okay and red poor.',
       orientationPreferences: [CardinalOrientation.EASTSOUTH],
       movingTarget: true,
       customNextFunc: (tourLogic: WalktourLogic) => {

@@ -165,7 +165,11 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             <div className="text-left">
               <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
               <p className="whitespace-nowrap text-sm font-bold text-th-fgd-1">
-                {mangoAccount ? mangoAccount.name : 'No Account'}
+                {mangoAccount
+                  ? mangoAccount.name
+                  : connected
+                  ? 'No Account'
+                  : 'Connect'}
               </p>
             </div>
           }
