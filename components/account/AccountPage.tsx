@@ -308,7 +308,9 @@ const AccountPage = () => {
           ) : null}
         </div>
       </div>
-      <AccountTabs />
+      <div className="mt-8">
+        <AccountTabs />
+      </div>
       {showDepositModal ? (
         <DepositModal
           isOpen={showDepositModal}

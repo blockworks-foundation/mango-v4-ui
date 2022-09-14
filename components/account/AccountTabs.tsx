@@ -19,7 +19,7 @@ const AccountTabs = () => {
 
   return (
     <>
-      <div className="mb-4 mt-8 md:mt-10">
+      <div className="mb-4">
         <TabButtons
           activeValue={activeTab}
           onChange={(v) => setActiveTab(v)}

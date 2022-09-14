@@ -12,7 +12,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Trade: NextPage = () => {
   return (
-    <div className="p-8 pb-20 md:p-12">
+    <div className="p-8 pb-20 md:p-0">
       <TradeSimplePage />
     </div>
   )
