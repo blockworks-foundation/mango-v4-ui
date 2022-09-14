@@ -239,15 +239,17 @@ const SwapForm = () => {
         </EnterBottomExitBottom>
         <div className="mb-4 flex items-center justify-between">
           <h3>{t('trade')}</h3>
-          <IconButton
-            className="text-th-fgd-3"
-            onClick={() => setShowSettings(true)}
-            size="small"
-          >
-            <Cog8ToothIcon className="h-5 w-5" />
-          </IconButton>
+          <div id="step-eight">
+            <IconButton
+              className="text-th-fgd-3"
+              onClick={() => setShowSettings(true)}
+              size="small"
+            >
+              <Cog8ToothIcon className="h-5 w-5" />
+            </IconButton>
+          </div>
         </div>
-        <div className="mb-2 flex items-center justify-between">
+        <div id="step-nine" className="mb-2 flex items-center justify-between">
           <p className="text-th-fgd-3">{t('sell')}</p>
           <MaxSwapAmount
             amountWithBorrow={amountWithBorrow}
@@ -378,42 +380,43 @@ const SwapForm = () => {
         </Button>
       </div>
 
-      {!!mangoAccount ? (
-        <div
-          className={`bg-th-bkg-3 px-6  transition-all ${
-            showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
-          }`}
-        >
-          <div className="flex justify-between">
-            <p className="text-sm">{t('health-impact')}</p>
-            <div className="flex items-center space-x-2">
-              <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
-              <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
-              <p
-                className={`${
-                  maintProjectedHealth! < 50 && maintProjectedHealth! > 15
-                    ? 'text-th-orange'
-                    : maintProjectedHealth! <= 15
-                    ? 'text-th-red'
-                    : 'text-th-green'
-                } text-sm`}
+      {/* {!!mangoAccount ? ( */}
+      <div
+        id="step-ten"
+        className={`bg-th-bkg-3 px-6  transition-all ${
+          showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
+        }`}
+      >
+        <div className="flex justify-between">
+          <p className="text-sm">{t('health-impact')}</p>
+          <div className="flex items-center space-x-2">
+            <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
+            <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
+            <p
+              className={`${
+                maintProjectedHealth! < 50 && maintProjectedHealth! > 15
+                  ? 'text-th-orange'
+                  : maintProjectedHealth! <= 15
+                  ? 'text-th-red'
+                  : 'text-th-green'
+              } text-sm`}
+            >
+              {maintProjectedHealth!}%{' '}
+              <span
+                className={`text-xs ${
+                  maintProjectedHealth! >= currentMaintHealth!
+                    ? 'text-th-green'
+                    : 'text-th-red'
+                }`}
               >
-                {maintProjectedHealth!}%{' '}
-                <span
-                  className={`text-xs ${
-                    maintProjectedHealth! >= currentMaintHealth!
-                      ? 'text-th-green'
-                      : 'text-th-red'
-                  }`}
-                >
-                  ({maintProjectedHealth! >= currentMaintHealth! ? '+' : ''}
-                  {maintProjectedHealth! - currentMaintHealth!}%)
-                </span>
-              </p>
-            </div>
+                ({maintProjectedHealth! >= currentMaintHealth! ? '+' : ''}
+                {maintProjectedHealth! - currentMaintHealth!}%)
+              </span>
+            </p>
           </div>
         </div>
-      ) : null}
+      </div>
+      {/* ) : null} */}
     </ContentBox>
   )
 }

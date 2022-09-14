@@ -9,6 +9,7 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
   Cog8ToothIcon,
+  InformationCircleIcon,
   ArrowsRightLeftIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
@@ -17,11 +18,25 @@ import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
 import Tooltip from './shared/Tooltip'
+import { HealthType } from '@blockworks-foundation/mango-v4'
+import { useWallet } from '@solana/wallet-adapter-react'
+import useLocalStorageState from '../hooks/useLocalStorageState'
+import { ONBOARDING_TOUR_KEY } from '../utils/constants'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
+  const [, setShowOnboardingTour] = useLocalStorageState(ONBOARDING_TOUR_KEY)
   const { t } = useTranslation('common')
+  const { connected } = useWallet()
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const router = useRouter()
   const { pathname } = router
+
+  const handleTakeTour = () => {
+    if (pathname !== '/') {
+      router.push('/')
+    }
+    setShowOnboardingTour(true)
+  }
 
   return (
     <div
@@ -126,10 +141,51 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               isExternal
               showTooltip={false}
             />
+            {connected ? (
+              <button
+                className="default-transition mt-1 flex items-center px-4 text-th-fgd-2 md:hover:text-th-primary"
+                onClick={handleTakeTour}
+              >
+                <InformationCircleIcon className="mr-3 h-5 w-5" />
+                <span className="text-base">Take UI Tour</span>
+              </button>
+            ) : null}
           </ExpandableMenuItem>
         </div>
       </div>
-      <MangoAccountSummary collapsed={collapsed} />
+      <div className="border-t border-th-bkg-3">
+        <ExpandableMenuItem
+          collapsed={collapsed}
+          icon={
+            <HealthHeart
+              health={
+                mangoAccount
+                  ? mangoAccount.getHealthRatioUi(HealthType.maint)
+                  : undefined
+              }
+              size={32}
+            />
+          }
+          title={
+            <div className="text-left">
+              <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
+              <p className="whitespace-nowrap text-sm font-bold text-th-fgd-1">
+                {mangoAccount
+                  ? mangoAccount.name
+                  : connected
+                  ? 'No Account'
+                  : 'Connect'}
+              </p>
+            </div>
+          }
+          alignBottom
+          hideIconBg
+        >
+          <div className="px-4 pb-4 pt-2">
+            <MangoAccountSummary />
+          </div>
+        </ExpandableMenuItem>
+      </div>
     </div>
   )
 }

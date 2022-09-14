@@ -130,14 +130,14 @@ const AccountPage = () => {
   }, [totalInterestData])
 
   const maintHealth = useMemo(() => {
-    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 100
+    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
   }, [mangoAccount])
 
   return !chartToShow ? (
     <>
       <div className="mb-8 flex flex-col md:mb-10 lg:flex-row lg:items-end lg:justify-between">
         <div className="mb-4 flex items-center space-x-6 lg:mb-0">
-          <div>
+          <div id="step-two">
             <p className="mb-1.5">{t('account-value')}</p>
             <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
               $
@@ -221,21 +221,25 @@ const AccountPage = () => {
       </div>
       <div className="grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:border-b-0">
         <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
-          <p className="text-th-fgd-3">{t('health')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
+          <div id="step-three">
+            <p className="text-th-fgd-3">{t('health')}</p>
+            <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
+          </div>
         </div>
         <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
-          <p className="text-th-fgd-3">{t('free-collateral')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">
-            {mangoAccount
-              ? formatFixedDecimals(
-                  toUiDecimalsForQuote(
-                    mangoAccount.getCollateralValue()!.toNumber()
-                  ),
-                  true
-                )
-              : (0).toFixed(2)}
-          </p>
+          <div id="step-four">
+            <p className="text-th-fgd-3">{t('free-collateral')}</p>
+            <p className="text-2xl font-bold text-th-fgd-1">
+              {mangoAccount
+                ? formatFixedDecimals(
+                    toUiDecimalsForQuote(
+                      mangoAccount.getCollateralValue()!.toNumber()
+                    ),
+                    true
+                  )
+                : (0).toFixed(2)}
+            </p>
+          </div>
         </div>
         {/* <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
@@ -254,7 +258,7 @@ const AccountPage = () => {
           ) : null}
         </div> */}
         <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
-          <div>
+          <div id="step-five">
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
             <p className="text-2xl font-bold text-th-fgd-1">
               {formatFixedDecimals(interestTotalValue, true)}

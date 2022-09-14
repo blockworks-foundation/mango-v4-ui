@@ -14,6 +14,8 @@ export const ALPHA_DEPOSIT_LIMIT = 20
 
 export const SIDEBAR_COLLAPSE_KEY = 'sidebar-0.1'
 
+export const ONBOARDING_TOUR_KEY = 'showOnboardingTour'
+
 export const PROFILE_CATEGORIES = [
   'borrower',
   'day-trader',

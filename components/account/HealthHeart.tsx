@@ -1,4 +1,10 @@
-const HealthHeart = ({ health, size }: { health: number; size: number }) => {
+const HealthHeart = ({
+  health,
+  size,
+}: {
+  health: number | undefined
+  size: number
+}) => {
   const styles = {
     height: `${size}px`,
     width: `${size}px`,
@@ -6,13 +12,16 @@ const HealthHeart = ({ health, size }: { health: number; size: number }) => {
 
   return (
     <svg
+      id="step-six"
       xmlns="http://www.w3.org/2000/svg"
       className={
-        health > 15 && health < 50
-          ? 'text-th-orange'
-          : health >= 50
-          ? 'text-th-green'
-          : 'text-th-red'
+        health
+          ? health > 15 && health < 50
+            ? 'text-th-orange'
+            : health >= 50
+            ? 'text-th-green'
+            : 'text-th-red'
+          : 'text-th-fgd-4'
       }
       style={styles}
       viewBox="0 0 20 20"
@@ -30,7 +39,13 @@ const HealthHeart = ({ health, size }: { health: number; size: number }) => {
           keyTimes="0;0.5;1"
           values="1;1.1;1"
           dur={
-            health > 15 && health < 50 ? '1s' : health >= 50 ? '2s' : '0.33s'
+            health
+              ? health > 15 && health < 50
+                ? '1s'
+                : health >= 50
+                ? '2s'
+                : '0.33s'
+              : '0s'
           }
           repeatCount="indefinite"
         />
@@ -38,7 +53,13 @@ const HealthHeart = ({ health, size }: { health: number; size: number }) => {
           attributeName="opacity"
           values="0.8;1;0.8"
           dur={
-            health > 15 && health < 50 ? '1s' : health >= 50 ? '2s' : '0.33s'
+            health
+              ? health > 15 && health < 50
+                ? '1s'
+                : health >= 50
+                ? '2s'
+                : '0.33s'
+              : '0s'
           }
           repeatCount="indefinite"
         />

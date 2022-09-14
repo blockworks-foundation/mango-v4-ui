@@ -43,6 +43,7 @@
     "react-window": "^1.8.7",
     "recharts": "^2.1.12",
     "tsparticles": "^2.2.4",
+    "walktour": "^5.1.1",
     "zustand": "^4.1.1"
   },
   "peerDependencies": {
