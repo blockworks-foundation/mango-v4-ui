@@ -14,6 +14,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  Text,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
 
@@ -25,6 +26,7 @@ import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import PercentageChange from '../shared/PercentageChange'
 import ChartRangeButtons from '../shared/ChartRangeButtons'
+import { useViewport } from 'hooks/useViewport'
 
 dayjs.extend(relativeTime)
 
@@ -81,6 +83,43 @@ const fetchTokenInfo = async (tokenId: string) => {
   return data
 }
 
+const CustomizedLabel = ({
+  chartData,
+  x,
+  y,
+  value,
+}: {
+  chartData: any[]
+  x?: number
+  y?: string | number
+  value?: number
+}) => {
+  const { width } = useViewport()
+  const { theme } = useTheme()
+  const [min, max] = useMemo(() => {
+    if (chartData.length) {
+      const prices = chartData.map((d: any) => d.price)
+      return [Math.min(...prices), Math.max(...prices)]
+    }
+    return ['', '']
+  }, [chartData])
+
+  if (value === min || value === max) {
+    return (
+      <Text
+        x={x}
+        y={y}
+        dy={value === min ? 16 : -8}
+        fill={theme === 'Light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)'}
+        fontSize={10}
+        textAnchor={x && y && x > width / 3 ? 'end' : 'start'}
+      >
+        {formatFixedDecimals(value)}
+      </Text>
+    )
+  } else return <div />
+}
+
 const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   inputTokenId,
   outputTokenId,
@@ -94,32 +133,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState(1)
   const { theme } = useTheme()
-
-  const [min, max] = useMemo(() => {
-    if (chartData.length) {
-      const prices = chartData.map((d: any) => d.price)
-      return [Math.min(...prices), Math.max(...prices)]
-    }
-    return ['', '']
-  }, [chartData])
-
-  const CustomizedLabel = (props: any) => {
-    const { x, y, value } = props
-    if (value === min || value === max) {
-      return (
-        <text
-          x={x}
-          y={y}
-          dy={value === min ? 16 : -8}
-          fill={theme === 'Light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)'}
-          fontSize={10}
-          textAnchor="middle"
-        >
-          {formatFixedDecimals(value)}
-        </text>
-      )
-    } else return <div />
-  }
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -143,11 +156,11 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
     }
   }, [inputTokenId, outputTokenId])
 
-  const handleFlipChart = useCallback(() => {
-    if (!baseTokenId || !quoteTokenId) return
-    setBaseTokenId(quoteTokenId)
-    setQuoteTokenId(baseTokenId)
-  }, [baseTokenId, quoteTokenId])
+  // const handleFlipChart = useCallback(() => {
+  //   if (!baseTokenId || !quoteTokenId) return
+  //   setBaseTokenId(quoteTokenId)
+  //   setQuoteTokenId(baseTokenId)
+  // }, [baseTokenId, quoteTokenId])
 
   // Use ohlc data
   const getChartData = useCallback(async () => {
@@ -215,7 +228,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="h-full">
+    <ContentBox hideBorder className="h-full">
       {loadChartData ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
@@ -295,7 +308,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
               )}
             </div>
           </div>
-          <div className="mt-2 h-28 w-1/2 md:h-72 md:w-auto">
+          <div className="mt-2 h-28 w-1/2 md:h-80 md:w-auto">
             <div className="-mb-2 flex justify-end md:absolute md:-top-1 md:right-0">
               <ChartRangeButtons
                 activeValue={daysToShow}
@@ -304,12 +317,13 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 onChange={(v) => setDaysToShow(v)}
               />
             </div>
-            <div className="-mx-6 h-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="mt-4 h-full md:-mx-5">
+              <ResponsiveContainer>
                 <AreaChart
                   data={chartData}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
+                  margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                 >
                   <Tooltip
                     cursor={{
@@ -332,7 +346,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                             ? COLORS.GREEN[theme]
                             : COLORS.RED[theme]
                         }
-                        stopOpacity={0.15}
+                        stopOpacity={0.25}
                       />
                       <stop
                         offset="99%"
@@ -356,13 +370,9 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     }
                     strokeWidth={1.5}
                     fill="url(#gradientArea)"
-                    label={<CustomizedLabel />}
+                    label={<CustomizedLabel chartData={chartData} />}
                   />
-                  <XAxis
-                    dataKey="time"
-                    hide
-                    padding={{ left: 20, right: 20 }}
-                  />
+                  <XAxis dataKey="time" hide padding={{ left: 0, right: 0 }} />
                   <YAxis
                     dataKey="price"
                     type="number"
