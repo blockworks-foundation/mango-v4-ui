@@ -229,6 +229,7 @@ const SwapForm = () => {
                 : handleTokenOutSelect
             }
             type={showTokenSelect}
+            useMargin={useMargin}
           />
         </EnterBottomExitBottom>
         <EnterBottomExitBottom

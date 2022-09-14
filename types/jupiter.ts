@@ -1,4 +1,5 @@
 import { RouteInfo } from '@jup-ag/core'
+import Decimal from 'decimal.js'
 
 export type Routes = {
   routesInfos: RouteInfo[]
@@ -16,4 +17,6 @@ export interface Token {
   extensions?: {
     coingeckoId: string
   }
+  maxAmount?: Decimal
+  maxAmountWithBorrow?: Decimal
 }
