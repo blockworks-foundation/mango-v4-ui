@@ -30,6 +30,7 @@ import { useViewport } from '../../hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import useMangoAccount from '../shared/useMangoAccount'
 import PercentageChange from '../shared/PercentageChange'
+import Tooltip from '@components/shared/Tooltip'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -220,16 +221,49 @@ const AccountPage = () => {
         <AccountActions />
       </div>
       <div className="grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:border-b-0">
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div className="col-span-3 border-t border-th-bkg-3 py-3 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div id="step-three">
-            <p className="text-th-fgd-3">{t('health')}</p>
-            <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
+            <Tooltip
+              maxWidth="26rem"
+              placement="bottom"
+              content={
+                <div className="flex-col space-y-2 text-sm">
+                  <div>
+                    The health percentage describes how close the account is to
+                    liquidation. Accounts with low health are more likely to get
+                    liquidated when prices fluctuate.
+                  </div>
+                  <div>Your account health is at {maintHealth}%</div>
+                  <div>
+                    Scenario: If the prices of all your liabilities increase by{' '}
+                    {maintHealth}%, even for just a moment, some of your
+                    liabilities will be liquidated.
+                  </div>
+                  <div>
+                    Scenario: If the value of your total collateral decreases by{' '}
+                    {(1 - 1 / ((maintHealth || 0) / 100 + 1)) * 100}%, some of
+                    your liabilities will be liquidated.
+                  </div>
+                  <div>
+                    These are examples. A combination of events can also lead to
+                    liquidation.
+                  </div>
+                </div>
+              }
+            >
+              <p className="text-th-fgd-3 underline decoration-dashed underline-offset-4 hover:cursor-help">
+                {t('health')}
+              </p>
+            </Tooltip>
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+              {maintHealth}%
+            </p>
           </div>
         </div>
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div className="col-span-3 border-t border-th-bkg-3 py-3 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div id="step-four">
             <p className="text-th-fgd-3">{t('free-collateral')}</p>
-            <p className="text-2xl font-bold text-th-fgd-1">
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
               {mangoAccount
                 ? formatFixedDecimals(
                     toUiDecimalsForQuote(
@@ -241,10 +275,10 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        {/* <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        {/* <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div>
             <p className="text-th-fgd-3">{t('pnl')}</p>
-            <p className="text-2xl font-bold text-th-fgd-1">
+            <p className="text-2xl font-bold text-th-fgd-1 mt-1">
               {formatFixedDecimals(accountPnl, true)}
             </p>
           </div>
@@ -257,10 +291,10 @@ const AccountPage = () => {
             </IconButton>
           ) : null}
         </div> */}
-        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-3 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
           <div id="step-five">
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
-            <p className="text-2xl font-bold text-th-fgd-1">
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
               {formatFixedDecimals(interestTotalValue, true)}
             </p>
           </div>

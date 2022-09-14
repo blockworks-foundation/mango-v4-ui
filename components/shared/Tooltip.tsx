@@ -9,6 +9,7 @@ type TooltipProps = {
   children?: ReactNode
   delay?: number
   show?: boolean
+  maxWidth?: string
 }
 
 const Tooltip = ({
@@ -18,6 +19,7 @@ const Tooltip = ({
   placement = 'top',
   delay = 0,
   show = true,
+  maxWidth = '20rem',
 }: TooltipProps) => {
   if (show) {
     return (
@@ -25,7 +27,7 @@ const Tooltip = ({
         animation="scale"
         placement={placement}
         appendTo={() => document.body}
-        maxWidth="20rem"
+        maxWidth={maxWidth}
         interactive
         delay={delay}
         content={
