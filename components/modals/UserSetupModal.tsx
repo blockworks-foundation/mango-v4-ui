@@ -18,7 +18,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
 import Image from 'next/image'
 import BounceLoader from '../shared/BounceLoader'

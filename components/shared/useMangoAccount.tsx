@@ -1,5 +1,5 @@
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 
 export default function useMangoAccount(): {
   mangoAccount: MangoAccount | undefined

@@ -2,7 +2,7 @@ import React, { Fragment } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Menu, Transition } from '@headlessui/react'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 
 const WalletSelect = () => {
   const { wallets, select } = useWallet()
@@ -13,7 +13,7 @@ const WalletSelect = () => {
       {({ open }) => (
         <>
           <Menu.Button
-            className={`flex h-full w-14 cursor-pointer items-center justify-center rounded-none bg-transparent text-white hover:brightness-[1.1] focus:outline-none disabled:opacity-25`}
+            className={`flex h-full w-12 cursor-pointer items-center justify-center rounded-none bg-transparent text-white hover:brightness-[1.1] focus:outline-none disabled:opacity-25`}
             disabled={!group}
           >
             <ChevronDownIcon

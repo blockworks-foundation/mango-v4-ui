@@ -7,6 +7,7 @@ module.exports = {
     fontFamily: {
       display: ['Lato, sans-serif'],
       body: ['Lato, sans-serif'],
+      mono: ['Roboto Mono'],
     },
     extend: {
       animation: {
@@ -46,8 +47,8 @@ module.exports = {
           red: { DEFAULT: '#CC2929', dark: '#AA2222', muted: '#571e20' },
           green: { DEFAULT: '#5EBF4D', dark: '#4BA53B', muted: '#365D31' },
           orange: { DEFAULT: '#FF9C24' },
-          'bkg-1': '#101012',
-          'bkg-2': '#1B1B1F',
+          'bkg-1': '#131316',
+          'bkg-2': '#1D1D20',
           'bkg-3': '#27272B',
           'bkg-4': '#38383D',
           'fgd-1': '#D1D1D1',

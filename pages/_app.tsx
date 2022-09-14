@@ -10,7 +10,7 @@ import {
 import { clusterApiUrl } from '@solana/web3.js'
 
 import '../styles/globals.css'
-import mangoStore from '../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import useInterval from '../components/shared/useInterval'
 import Notifications from '../components/shared/Notification'
 import { ThemeProvider } from 'next-themes'
@@ -19,7 +19,7 @@ import Layout from '../components/Layout'
 import { ViewportProvider } from '../hooks/useViewport'
 import { WalletProvider } from '../components/wallet/WalletProvider'
 
-const hydrateStore = async () => {
+const rehydrateStore = async () => {
   const actions = mangoStore.getState().actions
   actions.fetchGroup()
   const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -30,7 +30,7 @@ const hydrateStore = async () => {
 
 const HydrateStore = () => {
   useInterval(() => {
-    hydrateStore()
+    rehydrateStore()
   }, 5000)
 
   useEffect(() => {
@@ -38,6 +38,7 @@ const HydrateStore = () => {
     actions.fetchGroup().then(() => {
       actions.fetchJupiterTokens()
     })
+    actions.fetchCoingeckoPrices()
   }, [])
 
   return null

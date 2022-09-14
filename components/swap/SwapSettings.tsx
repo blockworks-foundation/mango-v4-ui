@@ -1,7 +1,7 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Switch from '../forms/Switch'

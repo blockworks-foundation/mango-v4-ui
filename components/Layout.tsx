@@ -3,7 +3,7 @@ import { ReactNode, useEffect } from 'react'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
-import mangoStore from '../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import BottomBar from './mobile/BottomBar'
 import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
@@ -71,7 +71,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
               />
               <TopBar />
             </div>
-            <div className="min-h-screen p-6 pb-20 md:p-8">{children}</div>
+            <div className="hide-scroll max-h-screen overflow-y-scroll">
+              {children}
+            </div>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 
-import mangoStore from '../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import WalletIcon from './icons/WalletIcon'
 import MangoAccountsList from './MangoAccountsList'
 import { LinkButton } from './shared/Button'

@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { Popover, Transition } from '@headlessui/react'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
-import mangoStore from '../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { LinkButton } from './shared/Button'
 import CreateAccountModal from './modals/CreateAccountModal'
 import { useLocalStorageStringState } from '../hooks/useLocalStorageState'

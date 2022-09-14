@@ -3,7 +3,7 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import Image from 'next/image'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 
 type TokenSelectProps = {
   tokenSymbol: string | undefined

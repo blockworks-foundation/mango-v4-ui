@@ -17,7 +17,7 @@ import React, {
   useState,
 } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'

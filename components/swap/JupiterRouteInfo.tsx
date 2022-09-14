@@ -11,7 +11,7 @@ import { Jupiter, RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
 import JSBI from 'jsbi'
 import Decimal from 'decimal.js'
 
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import RoutesModal from './RoutesModal'
 import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'

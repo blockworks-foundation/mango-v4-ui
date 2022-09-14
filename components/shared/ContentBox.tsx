@@ -15,7 +15,7 @@ const ContentBox = ({
 }: ContentBoxProps) => {
   return (
     <div
-      className={`rounded-lg ${hideBorder ? '' : 'border border-th-bkg-3'} ${
+      className={`rounded ${hideBorder ? '' : 'border border-th-bkg-3'} ${
         showBackground ? 'bg-th-bkg-2' : ''
       } ${hidePadding ? '' : 'p-6'} ${className}`}
     >

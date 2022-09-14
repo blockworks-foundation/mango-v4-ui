@@ -1,7 +1,7 @@
 import { Bank, Group, MangoAccount } from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 import { useMemo } from 'react'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { floorToDecimal } from '../../utils/numbers'
 import useMangoAccount from '../shared/useMangoAccount'
 
