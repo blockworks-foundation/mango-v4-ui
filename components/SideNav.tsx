@@ -10,14 +10,13 @@ import {
   ChartBarIcon,
   Cog8ToothIcon,
   InformationCircleIcon,
+  ArrowsRightLeftIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
-import HealthHeart from './account/HealthHeart'
-import mangoStore from '../store/mangoStore'
 import Tooltip from './shared/Tooltip'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -82,6 +81,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             icon={<CurrencyDollarIcon className="h-5 w-5" />}
             title={t('account')}
             pagePath="/"
+          />
+          <MenuItem
+            active={pathname === '/swap'}
+            collapsed={collapsed}
+            icon={<ArrowsRightLeftIcon className="h-5 w-5" />}
+            title={t('swap')}
+            pagePath="/swap"
           />
           <MenuItem
             active={pathname === '/trade'}
@@ -247,7 +253,7 @@ const MenuItem = ({
   )
 }
 
-const ExpandableMenuItem = ({
+export const ExpandableMenuItem = ({
   alignBottom,
   children,
   collapsed,

@@ -1,0 +1,248 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400&display=swap');
+
+:root:not(.theme-dark) {
+  --black: #fff;
+  --primary: #ff9c24;
+  --bkg-light: rgba(0, 0, 0, 0.05);
+  --bkg-dark: rgba(0, 0, 0, 0.1);
+  --bkg-darker: rgba(0, 0, 0, 0.15);
+  --bkg-darkest: rgba(0, 0, 0, 0.2);
+  --text: rgba(0, 0, 0, 0.6);
+
+  --tv-color-platform-background: transparent;
+  --tv-color-pane-background: transparent;
+  --tv-color-pane-background-secondary: var(--bkg-dark);
+  --tv-color-toolbar-button-background-hover: transparent;
+  --tv-color-toolbar-button-background-secondary-hover: var(--bkg-darker);
+  --tv-color-toolbar-button-background-expanded: var(--bkg-dark);
+  --tv-color-pane-background-secondary: var(--bkg-dark);
+  --tv-color-toolbar-button-text: var(--text);
+  --tv-color-toolbar-button-text-hover: var(--primary);
+  --tv-color-toolbar-button-text-active: var(--primary);
+  --tv-color-toolbar-button-text-active-hover: var(--primary);
+  --tv-color-item-active-text: var(--primary);
+  --tv-color-toolbar-toggle-button-background-active: var(--primary);
+  --tv-color-toolbar-toggle-button-background-active-hover: var(--primary);
+}
+
+.theme-dark:root {
+  --black: #141414;
+  --primary: #f2c94c;
+  --bkg-light: rgba(255, 255, 255, 0.1);
+  --bkg-dark: rgba(0, 0, 0, 0.1);
+  --bkg-darker: rgba(0, 0, 0, 0.2);
+  --bkg-darkest: rgba(0, 0, 0, 0.4);
+  --text: rgba(255, 255, 255, 0.6);
+
+  --tv-color-platform-background: transparent;
+  --tv-color-pane-background: transparent;
+  --tv-color-pane-background-secondary: var(--bkg-dark);
+  --tv-color-toolbar-button-text: var(--text);
+  --tv-color-toolbar-button-background-hover: transparent;
+  --tv-color-toolbar-button-background-secondary-hover: var(--bkg-darker);
+  --tv-color-toolbar-button-background-expanded: var(--bkg-darkest);
+  --tv-color-toolbar-button-text: var(--text);
+  --tv-color-toolbar-button-text-hover: var(--primary);
+  --tv-color-toolbar-button-text-active: var(--primary);
+  --tv-color-toolbar-button-text-active-hover: var(--primary);
+  --tv-color-item-active-text: var(--text);
+  --tv-color-toolbar-toggle-button-background-active: var(--primary);
+  --tv-color-toolbar-toggle-button-background-active-hover: var(--primary);
+}
+
+/* light theme */
+
+html .chart-page .chart-container-border {
+  background-color: transparent;
+}
+
+html .chart-page {
+  font-family: 'Lato', sans-serif;
+}
+
+html .loading-indicator {
+  background: transparent;
+}
+
+html .tv-spinner {
+  color: var(--primary);
+}
+
+html ::selection {
+  background-color: var(--bkg-light);
+}
+
+html .container-113jHcZc {
+  background: var(--text);
+}
+
+/* toggle toolbar arrow */
+
+html .toggleButton-3zv4iS2j .arrow-3zv4iS2j {
+  stroke: #000;
+}
+
+html .toggleButton-3zv4iS2j:hover .arrow-3zv4iS2j {
+  stroke: #000;
+}
+
+.container-3CL4Geq2 .arrow-3CL4Geq2, html .container-3CL4Geq2:hover .arrow-3CL4Geq2 {
+  stroke: #000;
+}
+
+/* menu background */
+
+html .menuWrap-g78rwseC {
+  background-color: var(--black);
+}
+
+html .item-2IihgTnv {
+  background-color: var(--black);
+}
+
+/* menu hover */
+
+html .item-2IihgTnv:hover {
+  background-color: var(--bkg-light);
+}
+
+/* minutes, hours, days menu hover */
+
+html .summary-3UYGeClB:hover {
+  background-color: var(--bkg-light);
+}
+
+/* menu active highlight */
+
+html .item-2IihgTnv.isActive-2IihgTnv, html .item-2IihgTnv.isActive-2IihgTnv:active {
+  background-color: var(--bkg-light);
+}
+
+html .item-2IihgTnv.isActive-2IihgTnv:hover {
+  background-color: var(--bkg-light);
+}
+
+/* dialog */
+
+html .dialog-UM6w7sFp {
+  background-color: var(--black);
+}
+
+/* dialog item hovers */
+
+html .container-3Ywm3-oo:not(.disabled-3Ywm3-oo):hover {
+  background-color: var(--bkg-light);
+}
+
+/* dialog item selected */
+
+html .container-3Ywm3-oo.selected-3Ywm3-oo {
+  background-color: var(--bkg-light);
+}
+
+html .container-3Ywm3-oo.selected-3Ywm3-oo.highlighted-3Ywm3-oo.dark-3Ywm3-oo {
+  background-color: var(--bkg-light);
+}
+
+html .container-3Ywm3-oo:not(.disabled-3Ywm3-oo):hover.selected-3Ywm3-oo {
+  background-color: var(--bkg-light);
+}
+
+
+/* dark theme */
+
+html.theme-dark .chart-page .chart-container-border {
+  background-color: transparent;
+}
+
+html.theme-dark .chart-page {
+  font-family: 'Lato', sans-serif;
+}
+
+html.theme-dark .loading-indicator {
+  background: transparent;
+}
+
+html.theme-dark .tv-spinner {
+  color: var(--primary);
+}
+
+html.theme-dark ::selection {
+  background-color: var(--bkg-light);
+}
+
+html.theme-dark .container-113jHcZc {
+  background: var(--black);
+}
+
+/* toggle toolbar arrow */
+
+html.theme-dark .toggleButton-3zv4iS2j .arrow-3zv4iS2j {
+  stroke: #000;
+}
+
+html.theme-dark .toggleButton-3zv4iS2j:hover .arrow-3zv4iS2j {
+  stroke: #000;
+}
+
+.container-3CL4Geq2 .arrow-3CL4Geq2, html.theme-dark .container-3CL4Geq2:hover .arrow-3CL4Geq2 {
+  stroke: #000;
+}
+
+/* menu background */
+
+html.theme-dark .menuWrap-g78rwseC {
+  background-color: var(--black);
+}
+
+html.theme-dark .item-2IihgTnv {
+  background-color: var(--black);
+}
+
+/* menu hover */
+
+html.theme-dark .item-2IihgTnv:hover {
+  background-color: var(--bkg-light);
+}
+
+/* minutes, hours, days menu hover */
+
+html.theme-dark .summary-3UYGeClB:hover {
+  background-color: var(--bkg-light);
+}
+
+/* menu active highlight */
+
+html.theme-dark .item-2IihgTnv.isActive-2IihgTnv, html.theme-dark .item-2IihgTnv.isActive-2IihgTnv:active {
+  background-color: var(--bkg-light);
+}
+
+html.theme-dark .item-2IihgTnv.isActive-2IihgTnv:hover {
+  background-color: var(--bkg-light);
+}
+
+/* dialog */
+
+html.theme-dark .dialog-UM6w7sFp {
+  background-color: var(--black);
+}
+
+/* dialog item hovers */
+
+html.theme-dark .container-3Ywm3-oo:not(.disabled-3Ywm3-oo):hover {
+  background-color: var(--bkg-light);
+}
+
+/* dialog item selected */
+
+html.theme-dark .container-3Ywm3-oo.selected-3Ywm3-oo {
+  background-color: var(--bkg-light);
+}
+
+html.theme-dark .container-3Ywm3-oo.selected-3Ywm3-oo.highlighted-3Ywm3-oo.dark-3Ywm3-oo {
+  background-color: var(--bkg-light);
+}
+
+html.theme-dark .container-3Ywm3-oo:not(.disabled-3Ywm3-oo):hover.selected-3Ywm3-oo {
+  background-color: var(--bkg-light);
+}

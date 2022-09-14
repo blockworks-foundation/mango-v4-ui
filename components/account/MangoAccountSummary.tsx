@@ -1,4 +1,4 @@
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import {
   HealthType,
   toUiDecimalsForQuote,
@@ -11,8 +11,10 @@ import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
 import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
+import HealthHeart from './HealthHeart'
+import { ExpandableMenuItem } from '../SideNav'
 
-const MangoAccountSummary = () => {
+const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
@@ -72,7 +74,12 @@ const MangoAccountSummary = () => {
         >
           {t('withdraw')}
         </Button> */}
-      </div>
+              </div>
+            </div>
+          </ExpandableMenuItem>
+        </div>
+      ) : null}
+
       {showDepositModal ? (
         <DepositModal
           isOpen={showDepositModal}

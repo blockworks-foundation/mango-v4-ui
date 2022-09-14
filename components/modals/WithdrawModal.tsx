@@ -10,7 +10,7 @@ import Image from 'next/image'
 import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'

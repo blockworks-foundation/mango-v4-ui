@@ -5,7 +5,7 @@ import {
   InformationCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/20/solid'
-import mangoStore, { CLUSTER } from '../../store/mangoStore'
+import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Notification, notify } from '../../utils/notifications'
 import Loading from './Loading'
 import { Transition } from '@headlessui/react'

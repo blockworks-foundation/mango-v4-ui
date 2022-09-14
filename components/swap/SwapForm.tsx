@@ -10,7 +10,7 @@ import {
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import Decimal from 'decimal.js'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import ContentBox from '../shared/ContentBox'
 import JupiterRouteInfo from './JupiterRouteInfo'
 import TokenSelect from './TokenSelect'
@@ -472,7 +472,7 @@ const PercentageSelectButtons = ({
   const [sizePercentage, setSizePercentage] = useState('')
 
   useEffect(() => {
-    if (tokenMax.gt(0) && tokenMax.eq(amountIn)) {
+    if (tokenMax.gt(0) && amountIn && tokenMax.eq(amountIn)) {
       setSizePercentage('100')
     }
   }, [amountIn, tokenMax])

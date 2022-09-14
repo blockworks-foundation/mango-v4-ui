@@ -19,7 +19,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
 import Image from 'next/image'
 import BounceLoader from '../shared/BounceLoader'
@@ -462,7 +462,30 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                   <div className="relative">
                     <h2 className="mb-6 text-4xl">Fund Your Account</h2>
                     <FadeInFadeOut show={!!depositToken}>
-                      <Label text="Amount" />
+                      <div className="flex justify-between">
+                        <Label text="Amount" />
+                        <LinkButton
+                          className="mb-2 no-underline"
+                          onClick={() =>
+                            setDepositAmount(
+                              floorToDecimal(
+                                tokenMax.amount,
+                                tokenMax.decimals
+                              ).toFixed()
+                            )
+                          }
+                        >
+                          <span className="mr-1 text-sm font-normal text-th-fgd-4">
+                            {t('wallet-balance')}:
+                          </span>
+                          <span className="text-th-fgd-1 underline">
+                            {floorToDecimal(
+                              tokenMax.amount,
+                              tokenMax.decimals
+                            ).toFixed()}
+                          </span>
+                        </LinkButton>
+                      </div>
                       <div className="grid grid-cols-2">
                         <button
                           className="col-span-1 flex items-center rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-transparent px-4 hover:bg-transparent"
@@ -494,6 +517,14 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                             setDepositAmount(e.target.value)
                           }
                         />
+                        <div className="col-span-2 mt-2">
+                          <ButtonGroup
+                            activeValue={sizePercentage}
+                            onChange={(p) => handleSizePercentage(p)}
+                            values={['10', '25', '50', '75', '100']}
+                            unit="%"
+                          />
+                        </div>
                       </div>
                     </FadeInFadeOut>
                     {!depositToken ? (

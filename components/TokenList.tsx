@@ -14,7 +14,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 // import useLocalStorageState from '../hooks/useLocalStorageState'
 import { useViewport } from '../hooks/useViewport'
 
-import mangoStore from '../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { COLORS } from '../styles/colors'
 // import { SHOW_ZERO_BALANCES_KEY } from '../utils/constants'
 import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
@@ -45,12 +45,6 @@ const TokenList = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-
-  useEffect(() => {
-    if (coingeckoPrices.length === 0) {
-      actions.fetchCoingeckoPrices()
-    }
-  }, [coingeckoPrices, actions])
 
   const banks = useMemo(() => {
     if (group) {
@@ -424,7 +418,7 @@ const ActionsMenu = ({
       s.swap.outputTokenInfo = outputTokenInfo
     })
     if (asPath === '/') {
-      router.push('/trade', undefined, { shallow: true })
+      router.push('/swap', undefined, { shallow: true })
     }
   }, [bank, router, asPath, set, jupiterTokens])
 
@@ -437,7 +431,7 @@ const ActionsMenu = ({
       s.swap.inputTokenInfo = inputTokenInfo
     })
     if (asPath === '/') {
-      router.push('/trade', undefined, { shallow: true })
+      router.push('/swap', undefined, { shallow: true })
     }
   }, [router, asPath, set, bank, jupiterTokens])
 

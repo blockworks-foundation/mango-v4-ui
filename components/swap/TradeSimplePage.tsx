@@ -1,6 +1,6 @@
 import Swap from './SwapForm'
 import SwapTokenChart from './SwapTokenChart'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import AccountTabs from '../account/AccountTabs'
 
 const TradeSimplePage = () => {

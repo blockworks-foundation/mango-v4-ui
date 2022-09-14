@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PhotoIcon } from '@heroicons/react/20/solid'
 import Modal from '../shared/Modal'

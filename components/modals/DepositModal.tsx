@@ -9,9 +9,15 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import React, {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
@@ -67,6 +73,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
+  const [showMaxSolWarning, setShowMaxSolWarning] = useState(false)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const bank = useMemo(() => {
@@ -92,7 +99,9 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   }, [walletTokens, selectedToken])
 
   const setMax = useCallback(() => {
-    setInputAmount(tokenMax.maxAmount.toString())
+    const max =
+      selectedToken === 'SOL' ? tokenMax.maxAmount - 0.05 : tokenMax.maxAmount
+    setInputAmount(max.toString())
     setSizePercentage('100')
   }, [tokenMax])
 
@@ -103,12 +112,22 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       let amount = new Decimal(tokenMax.maxAmount).mul(percentage).div(100)
       if (percentage !== '100') {
         amount = floorToDecimal(amount, tokenMax.maxDecimals)
+      } else {
+        amount = selectedToken === 'SOL' ? amount.sub(0.05) : amount
       }
 
       setInputAmount(amount.toString())
     },
     [tokenMax]
   )
+
+  useEffect(() => {
+    if (selectedToken === 'SOL' && sizePercentage === '100') {
+      setShowMaxSolWarning(true)
+    } else {
+      setShowMaxSolWarning(false)
+    }
+  }, [selectedToken, sizePercentage])
 
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
@@ -223,6 +242,14 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             desc={`There is a $${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha
             testing.`}
           />
+          {showMaxSolWarning ? (
+            <div className="mt-2">
+              <InlineNotification
+                type="warning"
+                desc="SOL deposits are restricted to leave 0.05 SOL in your wallet for sending transactions"
+              />
+            </div>
+          ) : null}
           <div className="mt-4 grid grid-cols-2 pb-6">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
