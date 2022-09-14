@@ -22,6 +22,8 @@ import { HealthType } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import { ONBOARDING_TOUR_KEY } from '../utils/constants'
+import mangoStore from '@store/mangoStore'
+import HealthHeart from './account/HealthHeart'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const [, setShowOnboardingTour] = useLocalStorageState(ONBOARDING_TOUR_KEY)
@@ -182,7 +184,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           hideIconBg
         >
           <div className="px-4 pb-4 pt-2">
-            <MangoAccountSummary />
+            <MangoAccountSummary collapsed={collapsed} />
           </div>
         </ExpandableMenuItem>
       </div>

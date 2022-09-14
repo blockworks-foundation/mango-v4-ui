@@ -67,18 +67,7 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
           <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
           {t('deposit')}
         </Button>
-        {/* <Button
-          className="w-full"
-          onClick={() => setShowWithdrawModal(true)}
-          secondary
-        >
-          {t('withdraw')}
-        </Button> */}
-              </div>
-            </div>
-          </ExpandableMenuItem>
-        </div>
-      ) : null}
+      </div>
 
       {showDepositModal ? (
         <DepositModal

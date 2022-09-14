@@ -13,9 +13,8 @@ import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 const TABS = ['Balances', 'Open Orders']
 
 const BalanceAndOpenOrders = () => {
-  const [selectedTab, setSelectedTab] = useState('Open Orders')
+  const [selectedTab, setSelectedTab] = useState('Balances')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
 
   useEffect(() => {
@@ -122,18 +121,18 @@ const Balances = () => {
                   <span>{bank.name}</span>
                 </div>
               </td>
-              <td className="pt-4 text-right font-mono text-sm">
-                <p>
+              <td className="pt-4 text-right font-mono">
+                <div>
                   {mangoAccount
                     ? formatDecimal(
                         mangoAccount.getTokenBalanceUi(bank),
                         bank.mintDecimals
                       )
                     : 0}
-                </p>
+                </div>
               </td>
-              <td className="text-right font-mono text-sm">0.00</td>
-              <td className="text-right font-mono text-sm">0.00</td>
+              <td className="text-right font-mono">0.00</td>
+              <td className="text-right font-mono">0.00</td>
             </tr>
           )
         })}
