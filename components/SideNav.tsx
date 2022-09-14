@@ -9,6 +9,7 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
   Cog8ToothIcon,
+  ArrowsRightLeftIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -69,7 +70,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           <MenuItem
             active={pathname === '/swap'}
             collapsed={collapsed}
-            icon={<TradeIcon className="h-5 w-5" />}
+            icon={<ArrowsRightLeftIcon className="h-5 w-5" />}
             title={t('swap')}
             pagePath="/swap"
           />

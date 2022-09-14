@@ -71,7 +71,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
               />
               <TopBar />
             </div>
-            <div className="min-h-screen p-6 pb-20 md:p-8">{children}</div>
+            <div className="hide-scroll max-h-screen overflow-y-scroll">
+              {children}
+            </div>
           </div>
         </div>
       </div>

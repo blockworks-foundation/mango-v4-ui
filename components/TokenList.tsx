@@ -46,12 +46,6 @@ const TokenList = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
-  useEffect(() => {
-    if (coingeckoPrices.length === 0) {
-      actions.fetchCoingeckoPrices()
-    }
-  }, [coingeckoPrices, actions])
-
   const banks = useMemo(() => {
     if (group) {
       const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({

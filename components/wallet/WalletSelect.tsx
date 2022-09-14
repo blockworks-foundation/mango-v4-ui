@@ -13,7 +13,7 @@ const WalletSelect = () => {
       {({ open }) => (
         <>
           <Menu.Button
-            className={`flex h-full w-14 cursor-pointer items-center justify-center rounded-none bg-transparent text-white hover:brightness-[1.1] focus:outline-none disabled:opacity-25`}
+            className={`flex h-full w-12 cursor-pointer items-center justify-center rounded-none bg-transparent text-white hover:brightness-[1.1] focus:outline-none disabled:opacity-25`}
             disabled={!group}
           >
             <ChevronDownIcon

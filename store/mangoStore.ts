@@ -31,6 +31,7 @@ import {
 import { Token } from '../types/jupiter'
 import {
   COINGECKO_IDS,
+  DEFAULT_MARKET_NAME,
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
@@ -112,6 +113,7 @@ export type MangoStore = {
     current: MangoAccount | undefined
     initialLoad: boolean
     lastUpdatedAt: string
+    openOrders: Order[]
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
       performance: { data: PerformanceDataItem[]; loading: boolean }
@@ -122,6 +124,15 @@ export type MangoStore = {
   markets: Serum3Market[] | undefined
   notificationIdCounter: number
   notifications: Array<Notification>
+  selectedMarket: {
+    name: string
+    current: Serum3Market | undefined
+    orderbook: {
+      bids: number[][]
+      asks: number[][]
+    }
+  }
+  serumMarkets: Serum3Market[]
   serumOrders: Order[] | undefined
   swap: {
     inputBank: Bank | undefined
@@ -132,6 +143,18 @@ export type MangoStore = {
     slippage: number
   }
   set: (x: (x: MangoStore) => void) => void
+  settings: {
+    uiLocked: boolean
+  }
+  tradeForm: {
+    side: 'buy' | 'sell'
+    price: string
+    baseSize: string
+    quoteSize: string
+    tradeType: 'Market' | 'Limit'
+    postOnly: boolean
+    ioc: boolean
+  }
   wallet: {
     loadProfilePic: boolean
     profilePic: ProfilePicture | undefined
@@ -149,11 +172,12 @@ export type MangoStore = {
     ) => Promise<void>
     fetchCoingeckoPrices: () => Promise<void>
     fetchGroup: () => Promise<void>
+    fetchJupiterTokens: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (wallet: AnchorWallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
+    fetchOpenOrdersForMarket: (market: Serum3Market) => Promise<void>
     fetchProfilePicture: (wallet: AnchorWallet) => void
-    fetchJupiterTokens: () => Promise<void>
     fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
     fetchWalletTokens: (wallet: AnchorWallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: Wallet) => Promise<void>
@@ -177,6 +201,7 @@ const mangoStore = create<MangoStore>()(
         current: undefined,
         initialLoad: true,
         lastUpdatedAt: '',
+        openOrders: [],
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
@@ -187,8 +212,29 @@ const mangoStore = create<MangoStore>()(
       markets: undefined,
       notificationIdCounter: 0,
       notifications: [],
+      selectedMarket: {
+        name: 'ETH/USDC',
+        current: undefined,
+        orderbook: {
+          bids: [],
+          asks: [],
+        },
+      },
+      serumMarkets: [],
       serumOrders: undefined,
       set: (fn) => _set(produce(fn)),
+      settings: {
+        uiLocked: true,
+      },
+      tradeForm: {
+        side: 'buy',
+        price: '',
+        baseSize: '',
+        quoteSize: '',
+        tradeType: 'Limit',
+        postOnly: false,
+        ioc: false,
+      },
       swap: {
         inputBank: undefined,
         outputBank: undefined,
@@ -315,13 +361,21 @@ const mangoStore = create<MangoStore>()(
             const set = get().set
             const client = get().client
             const group = await client.getGroup(GROUP)
+
             const inputBank =
               group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
             const outputBank =
               group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
+            const serumMarkets = Array.from(
+              group.serum3MarketsMapByExternal.values()
+            )
 
             set((state) => {
               state.group = group
+              state.serumMarkets = serumMarkets
+              state.selectedMarket.current =
+                state.selectedMarket.current ||
+                getDefaultSelectedMarket(serumMarkets)
               if (!state.swap.inputBank && !state.swap.outputBank) {
                 state.swap.inputBank = inputBank
                 state.swap.outputBank = outputBank
@@ -432,6 +486,26 @@ const mangoStore = create<MangoStore>()(
             })
           }
           return []
+        },
+        fetchOpenOrdersForMarket: async (market) => {
+          const set = get().set
+          const client = get().client
+          const group = await client.getGroup(GROUP)
+          const mangoAccount = get().mangoAccount.current
+
+          if (!mangoAccount) return
+          try {
+            const orders = await mangoAccount.loadSerum3OpenOrdersForMarket(
+              client,
+              group,
+              market.serumMarketExternal
+            )
+            set((s) => {
+              s.mangoAccount.openOrders = orders
+            })
+          } catch (e) {
+            console.error('Failed loading open orders ', e)
+          }
         },
         fetchTradeHistory: async (mangoAccountPk: string) => {
           const set = get().set
@@ -593,5 +667,9 @@ const mangoStore = create<MangoStore>()(
     }
   })
 )
+
+const getDefaultSelectedMarket = (markets: Serum3Market[]): Serum3Market => {
+  return markets.find((m) => m.name === DEFAULT_MARKET_NAME) || markets[0]
+}
 
 export default mangoStore
