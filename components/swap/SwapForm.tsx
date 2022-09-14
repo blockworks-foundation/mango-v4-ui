@@ -469,7 +469,7 @@ const PercentageSelectButtons = ({
   const [sizePercentage, setSizePercentage] = useState('')
 
   useEffect(() => {
-    if (tokenMax.gt(0) && tokenMax.eq(amountIn)) {
+    if (tokenMax.gt(0) && amountIn && tokenMax.eq(amountIn)) {
       setSizePercentage('100')
     }
   }, [amountIn, tokenMax])
