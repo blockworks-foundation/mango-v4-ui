@@ -195,7 +195,11 @@ const SwapForm = () => {
     : tokenMax.lt(amountIn)
 
   return (
-    <ContentBox hidePadding showBackground className="relative overflow-hidden">
+    <ContentBox
+      hidePadding
+      showBackground
+      className="relative overflow-hidden rounded md:rounded-none"
+    >
       <div className="p-6">
         <Transition
           className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"

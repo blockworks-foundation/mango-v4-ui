@@ -228,7 +228,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }
 
   return (
-    <ContentBox hideBorder className="h-full">
+    <ContentBox hideBorder hidePadding className="h-full p-0 md:p-6">
       {loadChartData ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
@@ -317,13 +317,13 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 onChange={(v) => setDaysToShow(v)}
               />
             </div>
-            <div className="mt-4 h-full md:-mx-5">
+            <div className="h-full md:-mx-2 md:mt-4">
               <ResponsiveContainer>
                 <AreaChart
                   data={chartData}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
-                  margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+                  // margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                 >
                   <Tooltip
                     cursor={{

@@ -15,10 +15,10 @@ const TradeSimplePage = () => {
           outputTokenId={outputTokenInfo?.extensions?.coingeckoId}
         />
       </div>
-      <div className="col-span-12 space-y-6 border-th-bkg-3 md:col-span-6 md:border-b lg:col-span-4">
+      <div className="col-span-12 mt-2 space-y-6 border-th-bkg-3 md:col-span-6 md:mt-0 md:border-b lg:col-span-4">
         <Swap />
       </div>
-      <div className="col-span-12 p-6">
+      <div className="col-span-12 p-2 pt-8 md:p-6">
         <AccountTabs />
       </div>
     </div>
