@@ -89,6 +89,10 @@ const OnboardingTour = () => {
         'The value of your assets (deposits) minus the value of your liabilities (borrows).',
       orientationPreferences: [CardinalOrientation.EASTNORTH],
       movingTarget: true,
+      customNextFunc: (tourLogic: WalktourLogic) => {
+        router.push('/')
+        setTimeout(() => tourLogic.next(), 1000)
+      },
     },
     {
       selector: '#step-three',
@@ -122,18 +126,18 @@ const OnboardingTour = () => {
       orientationPreferences: [CardinalOrientation.EASTSOUTH],
       movingTarget: true,
       customNextFunc: (tourLogic: WalktourLogic) => {
-        router.push('/trade')
+        router.push('/swap')
         setTimeout(() => tourLogic.next(), 1000)
       },
     },
     {
       selector: '#step-seven',
-      title: 'Trade',
+      title: 'Swap',
       description:
         "You choose the quote token of your trades. This means you can easily trade tokens on their relative strength vs. another token. Let's say your thesis is BTC will see diminishing returns relative to SOL. You can sell BTC and buy SOL. Now you are long SOL/BTC",
       orientationPreferences: [CardinalOrientation.CENTER],
       customPrevFunc: (tourLogic: WalktourLogic) => {
-        router.push('/')
+        router.push('/swap')
         tourLogic.prev()
       },
     },
