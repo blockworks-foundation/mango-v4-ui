@@ -17,6 +17,6 @@ export interface Token {
   extensions?: {
     coingeckoId: string
   }
-  maxAmount?: Decimal
-  maxAmountWithBorrow?: Decimal
+  amount?: Decimal
+  amountWithBorrow?: Decimal
 }

@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'next-i18next'
 import { floorToDecimal } from '../../utils/numbers'
 import Decimal from 'decimal.js'
+import { getTokenInMax } from './useTokenMax'
 
 const generateSearchTerm = (item: Token, searchValue: string) => {
   const normalizedSearchValue = searchValue.toLowerCase()
@@ -53,8 +54,8 @@ const TokenItem = ({
   const { address, symbol, logoURI, name } = token
 
   const isDisabled =
-    (type === 'input' && useMargin && token.maxAmountWithBorrow!.eq(0)) ||
-    (type === 'input' && !useMargin && token.maxAmount!.eq(0))
+    (type === 'input' && useMargin && token.amountWithBorrow!.eq(0)) ||
+    (type === 'input' && !useMargin && token.amount!.eq(0))
 
   return (
     <div>
@@ -79,8 +80,8 @@ const TokenItem = ({
         {type === 'input' ? (
           <p className="text-sm text-th-fgd-2">
             {useMargin
-              ? token.maxAmountWithBorrow!.toString()
-              : token.maxAmount!.toString()}
+              ? token.amountWithBorrow!.toString()
+              : token.amount!.toString()}
           </p>
         ) : null}
       </button>
@@ -139,45 +140,14 @@ const SwapFormTokenList = ({
     ) {
       const filteredSortedTokens = tokens
         .map((token) => {
-          const bank = group.banksMapByMint.get(token.address)![0]
-          const tokenBalance = floorToDecimal(
-            mangoAccount.getTokenBalanceUi(bank),
-            bank.mintDecimals
-          )
-          const maxAmountWithoutMargin = tokenBalance.gt(0)
-            ? tokenBalance
-            : new Decimal(0)
-          const maxUiAmountWithBorrow = floorToDecimal(
-            mangoAccount?.getMaxSourceUiForTokenSwap(
-              group,
-              bank.mint,
-              outputBank.mint,
-              1
-            )!,
-            bank.mintDecimals
-          )
-          const inputBankVaultBalance = group.getTokenVaultBalanceByMintUi(
-            bank.mint
-          )
-          const maxAmount = useMargin
-            ? Decimal.min(
-                maxAmountWithoutMargin,
-                inputBankVaultBalance,
-                maxUiAmountWithBorrow!
-              )
-            : Decimal.min(maxAmountWithoutMargin, inputBankVaultBalance)
-
-          const maxAmountWithBorrow = Decimal.min(
-            maxUiAmountWithBorrow!,
-            inputBankVaultBalance
-          )
-          return { ...token, maxAmount, maxAmountWithBorrow }
+          const max = getTokenInMax(token.address, group, useMargin)
+          return { ...token, ...max }
         })
         .filter((token) => (token.symbol === outputBank?.name ? false : true))
         .sort((a, b) =>
           useMargin
-            ? Number(b.maxAmountWithBorrow) - Number(a.maxAmountWithBorrow)
-            : Number(b.maxAmount) - Number(a.maxAmount)
+            ? Number(b.amountWithBorrow) - Number(a.amountWithBorrow)
+            : Number(b.amount) - Number(a.amount)
         )
 
       return filteredSortedTokens
@@ -185,8 +155,8 @@ const SwapFormTokenList = ({
       const filteredTokens = tokens
         .map((token) => ({
           ...token,
-          maxAmount: new Decimal(0),
-          maxAmountWithBorrow: new Decimal(0),
+          amount: new Decimal(0),
+          amountWithBorrow: new Decimal(0),
         }))
         .filter((token) => (token.symbol === inputBank?.name ? false : true))
       return filteredTokens
