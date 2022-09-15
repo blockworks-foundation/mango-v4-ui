@@ -1,6 +1,7 @@
 import { Serum3Side } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
 import SideBadge from '@components/shared/SideBadge'
+import TabButtons from '@components/shared/TabButtons'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
 import mangoStore from '@store/mangoStore'
@@ -27,22 +28,13 @@ const BalanceAndOpenOrders = () => {
 
   return (
     <div className="h-full overflow-y-scroll">
-      <div className="sticky top-0 flex select-none border-b border-th-bkg-3 bg-th-bkg-1 text-th-fgd-4">
-        {TABS.map((tab) => {
-          return (
-            <div
-              key={tab}
-              onClick={() => setSelectedTab(tab)}
-              className={`border-r border-th-bkg-3 px-4 py-4 font-bold ${
-                selectedTab === tab
-                  ? 'bg-th-bkg-2 text-th-primary'
-                  : 'hover:cursor-pointer hover:text-th-fgd-2'
-              }`}
-            >
-              {tab}
-            </div>
-          )
-        })}
+      <div className="sticky top-0">
+        <TabButtons
+          activeValue={selectedTab}
+          onChange={(tab: string) => setSelectedTab(tab)}
+          values={TABS}
+          showBorders
+        />
       </div>
       {selectedTab === 'Balances' ? <Balances /> : null}
       {selectedTab === 'Open Orders' ? <OpenOrders /> : null}

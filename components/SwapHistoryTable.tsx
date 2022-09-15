@@ -70,10 +70,7 @@ const SwapHistoryTable = ({
                 } = h
                 const borrowAmount =
                   loan > 0
-                    ? `${trimDecimals(
-                        loan,
-                        countLeadingZeros(loan) + 2
-                      )} ${swap_in_symbol}`
+                    ? `${trimDecimals(loan, countLeadingZeros(loan) + 2)}`
                     : 0
                 const borrowFee =
                   swap_in_loan_origination_fee > 0
@@ -87,7 +84,9 @@ const SwapHistoryTable = ({
                 return (
                   <tr key={signature}>
                     <td>
-                      <p>{dayjs(block_datetime).format('ddd D MMM')}</p>
+                      <p className="font-body tracking-wide">
+                        {dayjs(block_datetime).format('ddd D MMM')}
+                      </p>
                       <p className="text-xs text-th-fgd-3">
                         {dayjs(block_datetime).format('h:mma')}
                       </p>
@@ -104,10 +103,12 @@ const SwapHistoryTable = ({
                             />
                           </div>
                           <div>
-                            <p className="mb-1.5 whitespace-nowrap leading-none">{`${trimDecimals(
-                              swap_in_amount,
-                              inDecimals
-                            )} ${swap_in_symbol}`}</p>
+                            <p className="mb-1.5 whitespace-nowrap leading-none">
+                              {`${trimDecimals(swap_in_amount, inDecimals)}`}
+                              <span className="ml-1 font-body tracking-wide">
+                                {swap_in_symbol}
+                              </span>
+                            </p>
                             <p className="text-xs leading-none text-th-fgd-3">
                               {formatFixedDecimals(swap_in_price_usd, true)}
                               <span className="mx-1 text-th-fgd-4">|</span>
@@ -131,10 +132,12 @@ const SwapHistoryTable = ({
                             />
                           </div>
                           <div>
-                            <p className="mb-1.5 whitespace-nowrap leading-none">{`${trimDecimals(
-                              swap_out_amount,
-                              outDecimals
-                            )} ${swap_out_symbol}`}</p>
+                            <p className="mb-1.5 whitespace-nowrap leading-none">
+                              {`${trimDecimals(swap_out_amount, outDecimals)}`}
+                              <span className="ml-1 font-body tracking-wide">
+                                {swap_out_symbol}
+                              </span>
+                            </p>
                             <p className="text-xs leading-none text-th-fgd-3">
                               {formatFixedDecimals(swap_out_price_usd, true)}
                               <span className="mx-1 text-th-fgd-4">|</span>
@@ -149,7 +152,12 @@ const SwapHistoryTable = ({
                     </td>
                     <td>
                       <div className="flex flex-col text-right">
-                        <p>{borrowAmount}</p>
+                        <p>
+                          {borrowAmount}
+                          <span className="ml-1 font-body tracking-wide">
+                            {swap_in_symbol}
+                          </span>
+                        </p>
                       </div>
                     </td>
                     <td>

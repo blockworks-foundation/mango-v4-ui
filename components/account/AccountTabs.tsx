@@ -3,6 +3,7 @@ import mangoStore from '@store/mangoStore'
 import TabButtons from '../shared/TabButtons'
 import TokenList from '../TokenList'
 import SwapHistoryTable from '../SwapHistoryTable'
+import { useRouter } from 'next/router'
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
@@ -10,6 +11,7 @@ const AccountTabs = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const tradeHistory = mangoStore((s) => s.mangoAccount.stats.tradeHistory.data)
   const loading = mangoStore((s) => s.mangoAccount.stats.tradeHistory.loading)
+  const { pathname } = useRouter()
 
   useEffect(() => {
     if (mangoAccount) {
@@ -24,7 +26,8 @@ const AccountTabs = () => {
           activeValue={activeTab}
           onChange={(v) => setActiveTab(v)}
           values={['balances', 'swap:swap-history']}
-          large
+          showBorders={pathname !== '/'}
+          rounded={pathname === '/'}
         />
       </div>
       {activeTab === 'balances' ? (

@@ -200,7 +200,7 @@ const SwapForm = () => {
       // showBackground
       className="relative overflow-hidden rounded md:rounded-none md:border-r-0 md:border-t-0 md:border-b-0"
     >
-      <div className="p-5 pt-3">
+      <div className="p-6 pt-3">
         <Transition
           className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
           show={showConfirm}
@@ -388,7 +388,7 @@ const SwapForm = () => {
       {/* {!!mangoAccount ? ( */}
       <div
         id="step-ten"
-        className={`border-t border-th-bkg-3 px-6  transition-all ${
+        className={`border-t border-th-bkg-3 bg-th-bkg-2 px-6 transition-all ${
           showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
         }`}
       >
