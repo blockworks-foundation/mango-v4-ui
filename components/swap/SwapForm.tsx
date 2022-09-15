@@ -281,7 +281,7 @@ const SwapForm = () => {
               decimalScale={inputTokenInfo?.decimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl font-bold tracking-wider tracking-tight text-th-fgd-1 focus:outline-none"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -329,7 +329,7 @@ const SwapForm = () => {
                 </SheenLoader>
               </div>
             ) : (
-              <span className="p-3">
+              <span className="p-3 font-mono tracking-tight">
                 {amountOut ? numberFormat.format(amountOut.toNumber()) : ''}
               </span>
             )}

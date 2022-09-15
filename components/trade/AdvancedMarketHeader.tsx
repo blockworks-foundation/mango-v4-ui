@@ -27,20 +27,18 @@ const MarketSelectDropdown = () => {
     <Popover>
       {({ close, open }) => (
         <div className="relative flex flex-col overflow-visible">
-          <Popover.Button className="flex w-full items-center hover:text-th-primary">
-            <div className="p-4">
-              <div className="text-lg">
-                {selectedMarket?.name || DEFAULT_MARKET_NAME}
-              </div>
+          <Popover.Button className="flex w-full items-center p-5 hover:text-th-primary">
+            <div className="text-base font-bold">
+              {selectedMarket?.name || DEFAULT_MARKET_NAME}
             </div>
             <ChevronDownIcon
               className={`${
                 open ? 'rotate-180' : 'rotate-360'
-              } mt-0.5 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+              } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
             />
           </Popover.Button>
 
-          <Popover.Panel className="absolute top-16 z-50 mr-4 w-56 border border-th-bkg-3 bg-th-bkg-1">
+          <Popover.Panel className="absolute top-[66px] z-50 mr-4 w-56 border border-l-0 border-th-bkg-3 bg-th-bkg-1">
             {serumMarkets?.length
               ? serumMarkets.map((m) => (
                   <div
@@ -70,7 +68,7 @@ const OraclePrice = () => {
   )
 
   return (
-    <div className="text-th-fgd-1 md:text-xs">
+    <div className="font-mono text-th-fgd-1 md:text-xs">
       $
       {baseTokenBank.uiPrice
         ? formatFixedDecimals(baseTokenBank.uiPrice)
@@ -119,7 +117,9 @@ const AdvancedMarketHeader = () => {
           {t('rolling-change')}
         </div>
         <div
-          className={`text-xs ${change < 0 ? 'text-th-red' : 'text-th-gree'}`}
+          className={`font-mono text-xs ${
+            change < 0 ? 'text-th-red' : 'text-th-gree'
+          }`}
         >
           {isNaN(change) ? '0.00' : change.toFixed(2)}%
         </div>

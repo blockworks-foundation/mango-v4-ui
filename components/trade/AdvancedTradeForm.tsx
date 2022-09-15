@@ -138,7 +138,7 @@ const AdvancedTradeForm = () => {
       <div className="grid select-none grid-cols-2 justify-between border-b border-th-bkg-3 text-base">
         <div
           onClick={() => setTradeType('Limit')}
-          className={`py-3 px-4 text-center  text-sm hover:cursor-pointer ${
+          className={`py-3 px-4 text-center text-sm hover:cursor-pointer ${
             tradeForm.tradeType === 'Limit'
               ? 'bg-th-bkg-2 text-th-primary'
               : 'text-th-fgd-4 hover:text-th-fgd-2'
@@ -159,7 +159,7 @@ const AdvancedTradeForm = () => {
       </div>
       <div className="mt-6 px-6">
         <div
-          className={`relative mb-3 md:-mt-2.5 md:border-b md:border-th-bkg-3`}
+          className={`relative mb-3 pb-1 md:-mt-2.5 md:border-b md:border-th-bkg-3`}
         >
           <div
             className={`absolute hidden md:block ${
@@ -198,11 +198,11 @@ const AdvancedTradeForm = () => {
           </nav>
         </div>
       </div>
-      <div className="mt-6 px-4">
+      <div className="mt-4 px-4">
         <div className="my-2 flex items-center justify-between">
           <p className="text-xs text-th-fgd-3">{t('amount')}</p>
         </div>
-        <div className="flex items-center rounded-md bg-th-bkg-2 p-2 text-lg font-bold text-th-fgd-1">
+        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 px-3 py-2 text-lg font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
           <NumberFormat
             inputMode="decimal"
             thousandSeparator=","
@@ -211,17 +211,19 @@ const AdvancedTradeForm = () => {
             decimalScale={6}
             name="amountIn"
             id="amountIn"
-            className="w-full bg-th-bkg-2 text-right font-mono focus:outline-none"
+            className="w-full bg-transparent font-mono tracking-tight focus:outline-none"
             placeholder="0.00"
             value={tradeForm.baseSize}
             onValueChange={handleBaseSizeChange}
           />
-          <div className="ml-2 text-sm text-th-fgd-4">{baseSymbol}</div>
+          <div className="ml-2 text-sm font-normal text-th-fgd-4">
+            {baseSymbol}
+          </div>
         </div>
-        <div className="my-2 flex items-center justify-between">
+        <div className="mb-2 mt-4 flex items-center justify-between">
           <p className="text-xs text-th-fgd-3">Limit Price</p>
         </div>
-        <div className="flex items-center rounded-md bg-th-bkg-2 p-2 text-lg font-bold text-th-fgd-1">
+        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 px-3 py-2 text-lg font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
           <NumberFormat
             inputMode="decimal"
             thousandSeparator=","
@@ -230,12 +232,14 @@ const AdvancedTradeForm = () => {
             decimalScale={6}
             name="amountIn"
             id="amountIn"
-            className="w-full bg-th-bkg-2 text-right font-mono focus:outline-none"
+            className="w-full bg-th-bkg-1 font-mono tracking-tight focus:outline-none"
             placeholder="0.00"
             value={tradeForm.price}
             onValueChange={handlePriceChange}
           />
-          <div className="ml-2 text-sm text-th-fgd-4">{quoteSymbol}</div>
+          <div className="ml-2 text-sm font-normal text-th-fgd-4">
+            {quoteSymbol}
+          </div>
         </div>
       </div>
       <div className="mt-5 flex px-5">
@@ -293,10 +297,10 @@ const AdvancedTradeForm = () => {
       <div className="mt-5 flex px-4">
         <Button
           onClick={handlePlaceOrder}
-          className={`flex w-full items-center justify-center text-base ${
+          className={`flex w-full items-center justify-center text-white ${
             tradeForm.side === 'buy'
-              ? 'bg-th-green-dark text-white'
-              : 'bg-th-red-dark text-th-fgd-1'
+              ? 'bg-th-green-dark md:hover:bg-th-green'
+              : 'bg-th-red-dark md:hover:bg-th-red'
           }`}
           disabled={false}
           size="medium"

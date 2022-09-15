@@ -37,17 +37,15 @@ const Checkbox = ({
     />
     <div
       className={`${
-        checked && !disabled && !halfState
-          ? 'border-th-primary'
-          : 'border-th-fgd-4'
-      } default-transition flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded border`}
+        checked && !disabled && !halfState ? 'bg-th-primary' : 'bg-th-bkg-4'
+      } default-transition flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded`}
     >
       {halfState ? (
         <div className="mb-0.5 font-bold">–</div>
       ) : (
         <CheckIcon
           className={`${checked ? 'block' : 'hidden'} h-4 w-4 ${
-            disabled ? 'text-th-fgd-4' : 'text-th-primary'
+            disabled ? 'text-th-bkg-4' : 'text-th-bkg-1'
           }`}
         />
       )}
