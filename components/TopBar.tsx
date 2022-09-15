@@ -49,7 +49,7 @@ const TopBar = () => {
           ) : null}
         </span>
         {connected ? (
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 pr-4 md:pr-6">
             <MangoAccountsList mangoAccount={mangoAccount} />
             <ConnectedMenu />
           </div>

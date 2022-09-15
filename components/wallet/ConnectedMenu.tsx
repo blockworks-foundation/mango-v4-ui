@@ -34,9 +34,9 @@ const ConnectedMenu = () => {
         {({ open }) => (
           <div className="relative">
             <Menu.Button
-              className={`flex h-12 w-12 items-center rounded-full hover:bg-th-bkg-2 focus:outline-none`}
+              className={`flex h-10 w-10 items-center rounded-full hover:bg-th-bkg-2 focus:outline-none`}
             >
-              <ProfileImage imageSize="48" placeholderSize="28" />
+              <ProfileImage imageSize="40" placeholderSize="24" />
             </Menu.Button>
             <Transition
               appear={true}
