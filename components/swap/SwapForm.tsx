@@ -197,10 +197,10 @@ const SwapForm = () => {
   return (
     <ContentBox
       hidePadding
-      showBackground
-      className="relative overflow-hidden rounded border-r-0 border-t-0 md:rounded-none"
+      // showBackground
+      className="relative overflow-hidden rounded md:rounded-none md:border-r-0 md:border-t-0 md:border-b-0"
     >
-      <div className="p-5 pt-[19px]">
+      <div className="p-5 pt-3">
         <Transition
           className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
           show={showConfirm}
@@ -242,7 +242,7 @@ const SwapForm = () => {
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base">{t('swap')}</h3>
+          <h2 className="text-base text-th-fgd-3">{t('swap')}</h2>
           <div id="step-eight">
             <IconButton
               className="text-th-fgd-2"
@@ -388,13 +388,13 @@ const SwapForm = () => {
       {/* {!!mangoAccount ? ( */}
       <div
         id="step-ten"
-        className={`bg-th-bkg-3 px-6  transition-all ${
+        className={`border-t border-th-bkg-3 px-6  transition-all ${
           showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
         }`}
       >
         <div className="flex justify-between">
           <p className="text-sm">{t('health-impact')}</p>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 font-mono tracking-tight">
             <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
             <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
             <p
@@ -456,7 +456,7 @@ const MaxSwapAmount = ({
   return (
     <LinkButton className="no-underline" onClick={setMaxInputAmount}>
       <span className="font-normal text-th-fgd-4">{t('max')}:</span>
-      <span className="mx-1 text-th-fgd-3 underline">
+      <span className="mx-1 font-mono tracking-tight text-th-fgd-3 underline">
         {maxAmount.toFixed()}
       </span>
     </LinkButton>

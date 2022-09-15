@@ -37,7 +37,7 @@ const TradeAdvancedPage = () => {
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
     const innerHeight = Math.max(height - 36, 800)
     const tvChartHeight = 432
-    const headerHeight = 60
+    const headerHeight = 48
     const balancesHeight = innerHeight - tvChartHeight - headerHeight
 
     return {
@@ -144,6 +144,9 @@ const TradeAdvancedPage = () => {
           <BalanceAndOpenOrders />
         </div>
         <div key="orderbook" className="border border-t-0 border-th-bkg-3">
+          <div className="flex h-[49px] items-center border-b border-th-bkg-3 px-4 ">
+            <h2 className="text-sm text-th-fgd-3">Orderbook</h2>
+          </div>
           <div className="flex items-center justify-between px-4 py-2 text-xs text-th-fgd-4">
             <div>Size</div>
             <div>Price</div>

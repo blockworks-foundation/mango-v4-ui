@@ -138,7 +138,7 @@ const AdvancedTradeForm = () => {
       <div className="grid select-none grid-cols-2 justify-between border-b border-th-bkg-3 text-base">
         <div
           onClick={() => setTradeType('Limit')}
-          className={`py-3 px-4 text-center text-sm hover:cursor-pointer ${
+          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
             tradeForm.tradeType === 'Limit'
               ? 'bg-th-bkg-2 text-th-primary'
               : 'text-th-fgd-4 hover:text-th-fgd-2'
@@ -148,7 +148,7 @@ const AdvancedTradeForm = () => {
         </div>
         <div
           onClick={() => setTradeType('Market')}
-          className={`py-3 px-4 text-center  text-sm hover:cursor-pointer ${
+          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
             tradeForm.tradeType === 'Market'
               ? 'bg-th-bkg-2 text-th-primary'
               : 'text-th-fgd-4 hover:text-th-fgd-2'
@@ -157,7 +157,7 @@ const AdvancedTradeForm = () => {
           Market
         </div>
       </div>
-      <div className="mt-6 px-6">
+      <div className="mt-6 px-4">
         <div
           className={`relative mb-3 pb-1 md:-mt-2.5 md:border-b md:border-th-bkg-3`}
         >

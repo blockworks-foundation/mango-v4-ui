@@ -27,13 +27,13 @@ const BalanceAndOpenOrders = () => {
 
   return (
     <div className="h-full overflow-y-scroll">
-      <div className="sticky top-0 flex select-none border-b border-th-bkg-3 bg-th-bkg-1 text-th-fgd-3">
+      <div className="sticky top-0 flex select-none border-b border-th-bkg-3 bg-th-bkg-1 text-th-fgd-4">
         {TABS.map((tab) => {
           return (
             <div
               key={tab}
               onClick={() => setSelectedTab(tab)}
-              className={`border-r border-th-bkg-3 px-4 py-4 ${
+              className={`border-r border-th-bkg-3 px-4 py-4 font-bold ${
                 selectedTab === tab
                   ? 'bg-th-bkg-2 text-th-primary'
                   : 'hover:cursor-pointer hover:text-th-fgd-2'

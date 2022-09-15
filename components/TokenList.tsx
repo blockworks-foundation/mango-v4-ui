@@ -156,7 +156,7 @@ const TokenList = () => {
                           <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
                         )}
                       </div>
-                      <p>{bank.name}</p>
+                      <p className="font-body tracking-wide">{bank.name}</p>
                     </div>
                   </td>
                   <td className=" pt-4 text-right">

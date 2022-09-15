@@ -261,7 +261,7 @@ table th {
 }
 
 table p {
-  @apply text-th-fgd-1;
+  @apply font-mono text-sm tracking-tight text-th-fgd-1;
 }
 
 /* Scrollbars */
@@ -283,7 +283,6 @@ table p {
 .hide-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
-
 
 .thin-scroll::-webkit-scrollbar {
   width: 8px;

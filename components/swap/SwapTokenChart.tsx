@@ -112,6 +112,7 @@ const CustomizedLabel = ({
         dy={value === min ? 16 : -8}
         fill={theme === 'Light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)'}
         fontSize={10}
+        fontFamily="Roboto Mono"
         textAnchor={x && y && x > width / 3 ? 'end' : 'start'}
       >
         {formatFixedDecimals(value)}
@@ -228,7 +229,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="h-full p-0 md:p-5">
+    <ContentBox hideBorder hidePadding className="h-full p-0 md:p-6 md:pt-3">
       {loadChartData ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">

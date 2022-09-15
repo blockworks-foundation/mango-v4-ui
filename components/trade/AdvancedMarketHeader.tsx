@@ -27,7 +27,7 @@ const MarketSelectDropdown = () => {
     <Popover>
       {({ close, open }) => (
         <div className="relative flex flex-col overflow-visible">
-          <Popover.Button className="flex w-full items-center p-5 hover:text-th-primary">
+          <Popover.Button className="flex w-full items-center hover:text-th-primary">
             <div className="text-base font-bold">
               {selectedMarket?.name || DEFAULT_MARKET_NAME}
             </div>
@@ -100,22 +100,18 @@ const AdvancedMarketHeader = () => {
     : 0
 
   return (
-    <div className="flex items-center border border-x-0 border-t-0 border-th-bkg-3 bg-th-bkg-1">
+    <div className="flex h-12 items-center bg-th-bkg-1 px-5">
       <div className="hidden md:block md:pr-6 lg:pb-0">
         <div className="flex items-center">
           <MarketSelectDropdown />
         </div>
       </div>
       <div className="ml-6 flex-col">
-        <div className="text-th-fgd-4 md:pb-0.5 md:text-xs">
-          {t('oracle-price')}
-        </div>
+        <div className="text-th-fgd-4 md:text-xs">{t('oracle-price')}</div>
         <OraclePrice />
       </div>
       <div className="ml-6 flex-col">
-        <div className="text-th-fgd-4 md:pb-0.5 md:text-xs">
-          {t('rolling-change')}
-        </div>
+        <div className="text-th-fgd-4 md:text-xs">{t('rolling-change')}</div>
         <div
           className={`font-mono text-xs ${
             change < 0 ? 'text-th-red' : 'text-th-gree'

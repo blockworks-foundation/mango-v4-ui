@@ -12,7 +12,7 @@ const PercentageChange = ({ change }: { change: number | typeof NaN }) => {
         <MinusSmallIcon className="-mr-1 h-6 w-6 text-th-fgd-4" />
       )}
       <p
-        className={`font-normal ${
+        className={`font-mono font-normal tracking-tight ${
           change > 0
             ? 'text-th-green'
             : change < 0
