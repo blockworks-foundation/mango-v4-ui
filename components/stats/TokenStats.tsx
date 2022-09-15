@@ -56,14 +56,14 @@ const TokenList = () => {
   }, [banks])
 
   return (
-    <ContentBox hideBorder hidePadding className="mt-0 md:mt-4">
-      <div className="mb-8 grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-5xl md:border-b-0">
-        <div className="col-span-2 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-t-0">
+    <ContentBox hideBorder hidePadding>
+      <div className="mb-8 grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-[40px] md:border-b-0">
+        <div className="col-span-2 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-t-0 md:py-1">
           <p className="mb-2.5 leading-none">{t('total-deposit-value')}</p>
           <div className="flex items-center font-bold">
             <FlipNumbers
-              height={48}
-              width={32}
+              height={40}
+              width={24}
               play
               delay={0.05}
               duration={1}
@@ -71,12 +71,12 @@ const TokenList = () => {
             />
           </div>
         </div>
-        <div className="col-span-2 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+        <div className="col-span-2 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:py-1 md:pl-6">
           <p className="mb-2.5 leading-none">{t('total-borrow-value')}</p>
           <div className="flex items-center font-bold">
             <FlipNumbers
-              height={48}
-              width={32}
+              height={40}
+              width={24}
               play
               delay={0.05}
               duration={1}

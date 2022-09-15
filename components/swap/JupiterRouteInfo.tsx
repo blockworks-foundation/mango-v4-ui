@@ -222,9 +222,10 @@ const JupiterRouteInfo = ({
     <div className="flex h-full flex-col justify-between">
       <div>
         <IconButton
-          className="absolute mr-3 text-th-fgd-3"
+          className="absolute mr-3 text-th-fgd-2"
           onClick={onClose}
           size="small"
+          hideBg
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>

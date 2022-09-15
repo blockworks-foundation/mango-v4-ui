@@ -76,7 +76,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             </div>
           </div>
         </Link>
-        <div className="flex flex-col items-start">
+        <div className="mt-2 flex flex-col items-start">
           <MenuItem
             active={pathname === '/'}
             collapsed={collapsed}

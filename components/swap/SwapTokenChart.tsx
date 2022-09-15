@@ -228,7 +228,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="h-full p-0 md:p-6">
+    <ContentBox hideBorder hidePadding className="h-full p-0 md:p-5">
       {loadChartData ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
@@ -309,7 +309,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
             </div>
           </div>
           <div className="mt-2 h-28 w-1/2 md:h-80 md:w-auto">
-            <div className="-mb-2 flex justify-end md:absolute md:-top-1 md:right-0">
+            <div className="-mb-2 flex justify-end md:absolute md:top-[2px] md:right-0">
               <ChartRangeButtons
                 activeValue={daysToShow}
                 names={['24H', '7D', '30D']}

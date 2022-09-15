@@ -47,10 +47,10 @@ const Settings: NextPage = () => {
   }
 
   return (
-    <div className="p-8 pb-20 md:p-12">
+    <div className="p-8 pb-20 md:pt-5 lg:p-10 lg:pt-5">
       <div className="grid grid-cols-12">
         <div className="col-span-12 border-b border-th-bkg-3 lg:col-span-8 lg:col-start-3">
-          <h1 className="mb-4">{t('settings')}</h1>
+          <h2 className="mb-4 text-base">Display</h2>
           <div className="flex flex-col border-t border-th-bkg-3 p-4 md:flex-row md:items-center md:justify-between">
             <p className="mb-2 lg:mb-0">{t('theme')}</p>
             <div className="w-full min-w-[220px] md:w-auto">

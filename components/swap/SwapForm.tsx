@@ -200,7 +200,7 @@ const SwapForm = () => {
       showBackground
       className="relative overflow-hidden rounded border-r-0 border-t-0 md:rounded-none"
     >
-      <div className="p-6">
+      <div className="p-5 pt-[19px]">
         <Transition
           className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
           show={showConfirm}
@@ -242,10 +242,11 @@ const SwapForm = () => {
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
         <div className="mb-4 flex items-center justify-between">
-          <h3>{t('swap')}</h3>
+          <h3 className="text-base">{t('swap')}</h3>
           <div id="step-eight">
             <IconButton
-              className="text-th-fgd-3"
+              className="text-th-fgd-2"
+              hideBg
               onClick={() => setShowSettings(true)}
               size="small"
             >
