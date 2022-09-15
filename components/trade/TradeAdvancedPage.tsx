@@ -129,15 +129,21 @@ const TradeAdvancedPage = () => {
         <div key="market-header" className="z-10">
           <AdvancedMarketHeader />
         </div>
-        <div key="tv-chart" className="h-full border border-th-bkg-3">
+        <div
+          key="tv-chart"
+          className="h-full border border-x-0 border-th-bkg-3"
+        >
           <div className={`relative h-full overflow-auto`}>
             <TradingViewChart />
           </div>
         </div>
-        <div key="balances" className="h-full border border-th-bkg-3">
+        <div
+          key="balances"
+          className="h-full border border-x-0 border-t-0 border-th-bkg-3"
+        >
           <BalanceAndOpenOrders />
         </div>
-        <div key="orderbook" className="border border-th-bkg-3">
+        <div key="orderbook" className="border border-t-0 border-th-bkg-3">
           <div className="flex items-center justify-between px-4 py-2 text-xs text-th-fgd-4">
             <div>Size</div>
             <div>Price</div>
@@ -146,7 +152,10 @@ const TradeAdvancedPage = () => {
             <Orderbook depth={orderbookDepth} />
           </div>
         </div>
-        <div key="trade-form" className="border border-th-bkg-3">
+        <div
+          key="trade-form"
+          className="border border-x-0 border-t-0 border-th-bkg-3"
+        >
           <AdvancedTradeForm />
         </div>
       </ResponsiveGridLayout>

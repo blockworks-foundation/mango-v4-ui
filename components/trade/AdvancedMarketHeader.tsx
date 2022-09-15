@@ -102,7 +102,7 @@ const AdvancedMarketHeader = () => {
     : 0
 
   return (
-    <div className="flex items-center border border-th-bkg-3 bg-th-bkg-1">
+    <div className="flex items-center border border-x-0 border-t-0 border-th-bkg-3 bg-th-bkg-1">
       <div className="hidden md:block md:pr-6 lg:pb-0">
         <div className="flex items-center">
           <MarketSelectDropdown />
