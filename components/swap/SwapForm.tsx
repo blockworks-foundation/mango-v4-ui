@@ -43,7 +43,7 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
 }
 
 const SwapForm = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'swap'])
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
   const [amountInFormValue, setAmountInFormValue] = useState('')
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
@@ -242,7 +242,7 @@ const SwapForm = () => {
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
         <div className="mb-4 flex items-center justify-between">
-          <h3>{t('trade')}</h3>
+          <h3>{t('swap')}</h3>
           <div id="step-eight">
             <IconButton
               className="text-th-fgd-3"
@@ -254,7 +254,7 @@ const SwapForm = () => {
           </div>
         </div>
         <div id="step-nine" className="mb-2 flex items-center justify-between">
-          <p className="text-th-fgd-3">{t('sell')}</p>
+          <p className="text-th-fgd-3">{t('swap:from')}</p>
           <MaxSwapAmount
             amountWithBorrow={amountWithBorrow}
             useMargin={useMargin}
@@ -311,7 +311,7 @@ const SwapForm = () => {
             />
           </button>
         </div>
-        <p className="mb-2 text-th-fgd-3">{t('buy')}</p>
+        <p className="mb-2 text-th-fgd-3">{t('swap:to')}</p>
         <div className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
@@ -363,7 +363,7 @@ const SwapForm = () => {
             showInsufficientBalance ? (
               <div className="flex items-center">
                 <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('trade:insufficient-balance', {
+                {t('swap:insufficient-balance', {
                   symbol: inputTokenInfo?.symbol,
                 })}
               </div>
@@ -372,7 +372,7 @@ const SwapForm = () => {
             ) : (
               <div className="flex items-center">
                 <MagnifyingGlassIcon className="mr-2 h-5 w-5" />
-                {t('trade:review-trade')}
+                {t('swap:review-swap')}
               </div>
             )
           ) : (

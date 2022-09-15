@@ -3,7 +3,7 @@ import SwapTokenChart from './SwapTokenChart'
 import mangoStore from '@store/mangoStore'
 import AccountTabs from '../account/AccountTabs'
 
-const TradeSimplePage = () => {
+const SwapPage = () => {
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
   const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
 
@@ -25,4 +25,4 @@ const TradeSimplePage = () => {
   )
 }
 
-export default TradeSimplePage
+export default SwapPage

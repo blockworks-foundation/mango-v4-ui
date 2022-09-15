@@ -38,7 +38,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
       </IconButton>
 
       <div className="mt-4">
-        <p className="mb-2 text-th-fgd-1">{t('trade:slippage')}</p>
+        <p className="mb-2 text-th-fgd-1">{t('swap:slippage')}</p>
         {showCustomSlippageForm ? (
           <Input
             type="text"
@@ -58,7 +58,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
         )}
       </div>
       <div className="mt-6 flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
-        <p className="text-th-fgd-1">{t('trade:use-margin')}</p>
+        <p className="text-th-fgd-1">{t('swap:use-margin')}</p>
         <Switch
           className="text-th-fgd-3"
           checked={margin}

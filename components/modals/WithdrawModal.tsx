@@ -274,7 +274,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               ) : showInsufficientBalance ? (
                 <div className="flex items-center">
                   <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                  {t('trade:insufficient-balance', {
+                  {t('swap:insufficient-balance', {
                     symbol: selectedToken,
                   })}
                 </div>

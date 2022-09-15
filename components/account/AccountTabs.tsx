@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import TabButtons from '../shared/TabButtons'
 import TokenList from '../TokenList'
-import TradeHistoryTable from '../TradeHistoryTable'
+import SwapHistoryTable from '../SwapHistoryTable'
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
@@ -23,14 +23,14 @@ const AccountTabs = () => {
         <TabButtons
           activeValue={activeTab}
           onChange={(v) => setActiveTab(v)}
-          values={['balances', 'trade-history']}
+          values={['balances', 'swap:swap-history']}
           large
         />
       </div>
       {activeTab === 'balances' ? (
         <TokenList />
       ) : (
-        <TradeHistoryTable tradeHistory={tradeHistory} loading={loading} />
+        <SwapHistoryTable tradeHistory={tradeHistory} loading={loading} />
       )}
     </>
   )

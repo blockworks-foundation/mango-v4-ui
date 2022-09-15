@@ -22,7 +22,7 @@ import {
   trimDecimals,
 } from '../utils/numbers'
 
-const TradeHistoryTable = ({
+const SwapHistoryTable = ({
   tradeHistory,
   loading,
 }: {
@@ -31,12 +31,12 @@ const TradeHistoryTable = ({
 }) => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
-  const [showTradeDetails, setTradeDetails] = useState('')
+  const [showSwapDetails, setSwapDetails] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
-  const handleShowTradeDetails = (signature: string) => {
-    showTradeDetails ? setTradeDetails('') : setTradeDetails(signature)
+  const handleShowSwapDetails = (signature: string) => {
+    showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
   }
 
   return connected ? (
@@ -47,7 +47,7 @@ const TradeHistoryTable = ({
             <thead>
               <tr>
                 <th className="text-left">{t('date')}</th>
-                <th className="w-1/3 text-left">{t('trade')}</th>
+                <th className="w-1/3 text-left">{t('swap')}</th>
                 <th className="text-right">{t('borrow')}</th>
                 <th className="text-right">{t('borrow-fee')}</th>
                 <th />
@@ -268,11 +268,11 @@ const TradeHistoryTable = ({
                       </div>
                     </div>
                     <IconButton
-                      onClick={() => handleShowTradeDetails(signature)}
+                      onClick={() => handleShowSwapDetails(signature)}
                     >
                       <ChevronDownIcon
                         className={`${
-                          showTradeDetails === signature
+                          showSwapDetails === signature
                             ? 'rotate-180'
                             : 'rotate-360'
                         } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
@@ -281,7 +281,7 @@ const TradeHistoryTable = ({
                   </div>
                   <Transition
                     appear={true}
-                    show={showTradeDetails === signature}
+                    show={showSwapDetails === signature}
                     as={Fragment}
                     enter="transition ease-in duration-200"
                     enterFrom="opacity-0"
@@ -357,9 +357,9 @@ const TradeHistoryTable = ({
   ) : (
     <div className="mt-8 flex flex-col items-center rounded-md border border-th-bkg-3 p-8">
       <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>Connect to view your trade history</p>
+      <p>Connect to view your swap history</p>
     </div>
   )
 }
 
-export default TradeHistoryTable
+export default SwapHistoryTable

@@ -16,7 +16,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
   onChange,
   large,
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'swap'])
 
   return (
     <div className="flex w-max space-x-8">

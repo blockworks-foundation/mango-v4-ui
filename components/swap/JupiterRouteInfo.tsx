@@ -257,7 +257,7 @@ const JupiterRouteInfo = ({
 
         <div className="space-y-2 px-1">
           <div className="flex justify-between">
-            <span>Rate</span>
+            <p className="text-sm text-th-fgd-3">{t('swap:rate')}</p>
             <div>
               <div className="flex items-center justify-end">
                 <p className="text-right text-sm text-th-fgd-1">
@@ -303,7 +303,7 @@ const JupiterRouteInfo = ({
           </div>
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">
-              {t('trade:minimum-received')}
+              {t('swap:minimum-received')}
             </p>
             {outputTokenInfo?.decimals ? (
               <p className="text-right text-sm text-th-fgd-1">
@@ -339,7 +339,7 @@ const JupiterRouteInfo = ({
             </>
           ) : null}
           <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">Est. {t('trade:slippage')}</p>
+            <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
             <p className="text-right text-sm text-th-fgd-1">
               {selectedRoute?.priceImpactPct * 100 < 0.1
                 ? '< 0.1%'
@@ -389,7 +389,7 @@ const JupiterRouteInfo = ({
               return (
                 <div className="flex justify-between" key={index}>
                   <p className="text-sm text-th-fgd-3">
-                    {t('trade:fees-paid-to', {
+                    {t('swap:fees-paid-to', {
                       route: info?.amm?.label,
                     })}
                   </p>
@@ -513,7 +513,7 @@ const JupiterRouteInfo = ({
           ) : (
             <div className="flex items-center">
               <CheckCircleIcon className="mr-2 h-5 w-5" />
-              {t('trade:confirm-trade')}
+              {t('swap:confirm-swap')}
             </div>
           )}
         </Button>
