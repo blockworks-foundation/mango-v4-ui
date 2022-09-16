@@ -27,8 +27,8 @@ const BalanceAndOpenOrders = () => {
   }, [mangoAccount, selectedMarket])
 
   return (
-    <div className="h-full overflow-y-scroll">
-      <div className="sticky top-0">
+    <div>
+      <div className="">
         <TabButtons
           activeValue={selectedTab}
           onChange={(tab: string) => setSelectedTab(tab)}

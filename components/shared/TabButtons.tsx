@@ -27,7 +27,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
       {values.map((v, i) => (
         <div key={v + i}>
           <button
-            className={`default-transition rounded-md px-6 py-4 font-bold ${
+            className={`default-transition h-12 rounded-md px-6 font-bold ${
               !rounded ? 'md:rounded-none' : ''
             } ${showBorders ? 'md:border-r md:border-th-bkg-3' : ''} ${
               v === activeValue

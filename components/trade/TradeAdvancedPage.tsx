@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 // import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
@@ -21,8 +21,8 @@ const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
 
 const gridBreakpoints = {
   // sm: breakpoints.sm,
-  // md: breakpoints.md,
-  // lg: breakpoints.lg,
+  md: breakpoints.md,
+  lg: breakpoints.lg,
   xl: breakpoints.xl,
   xxl: breakpoints['2xl'],
   xxxl: breakpoints['3xl'],
@@ -36,25 +36,39 @@ const TradeAdvancedPage = () => {
 
   const defaultLayouts = {
     xxxl: [
-      { i: 'market-header', x: 0, y: 0, w: 12, h: 48 },
+      { i: 'market-header', x: 0, y: 0, w: 16, h: 48 },
       { i: 'tv-chart', x: 0, y: 1, w: 16, h: 676 },
-      { i: 'balances', x: 0, y: 2, w: 20, h: 473 },
+      { i: 'balances', x: 0, y: 2, w: 20, h: 468 },
       { i: 'orderbook', x: 16, y: 1, w: 4, h: 724 },
-      { i: 'trade-form', x: 20, y: 1, w: 4, h: 1197 },
+      { i: 'trade-form', x: 20, y: 1, w: 4, h: 1193 },
     ],
     xxl: [
-      { i: 'market-header', x: 0, y: 0, w: 12, h: 48 },
+      { i: 'market-header', x: 0, y: 0, w: 15, h: 48 },
       { i: 'tv-chart', x: 0, y: 1, w: 15, h: 576 },
-      { i: 'balances', x: 0, y: 2, w: 19, h: 473 },
+      { i: 'balances', x: 0, y: 2, w: 19, h: 468 },
       { i: 'orderbook', x: 15, y: 1, w: 4, h: 624 },
-      { i: 'trade-form', x: 19, y: 1, w: 5, h: 1097 },
+      { i: 'trade-form', x: 19, y: 1, w: 5, h: 1093 },
     ],
     xl: [
-      { i: 'market-header', x: 0, y: 0, w: 12, h: 48 },
+      { i: 'market-header', x: 0, y: 0, w: 14, h: 48 },
       { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
-      { i: 'balances', x: 0, y: 2, w: 18, h: 473 },
+      { i: 'balances', x: 0, y: 2, w: 18, h: 468 },
       { i: 'orderbook', x: 14, y: 1, w: 4, h: 568 },
-      { i: 'trade-form', x: 18, y: 1, w: 6, h: 1041 },
+      { i: 'trade-form', x: 18, y: 1, w: 6, h: 1037 },
+    ],
+    lg: [
+      { i: 'market-header', x: 0, y: 0, w: 14, h: 48 },
+      { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
+      { i: 'balances', x: 0, y: 2, w: 18, h: 468 },
+      { i: 'orderbook', x: 14, y: 1, w: 4, h: 568 },
+      { i: 'trade-form', x: 18, y: 1, w: 6, h: 1037 },
+    ],
+    md: [
+      { i: 'market-header', x: 0, y: 0, w: 18, h: 48 },
+      { i: 'tv-chart', x: 0, y: 1, w: 18, h: 520 },
+      { i: 'balances', x: 0, y: 2, w: 18, h: 468 },
+      { i: 'orderbook', x: 18, y: 2, w: 6, h: 469 },
+      { i: 'trade-form', x: 18, y: 1, w: 6, h: 568 },
     ],
   }
 
