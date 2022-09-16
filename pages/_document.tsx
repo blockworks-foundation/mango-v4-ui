@@ -19,7 +19,7 @@ class MyDocument extends Document {
             strategy="beforeInteractive"
           ></Script>
         </Head>
-        <body className="overflow-hidden bg-th-bkg-1">
+        <body className="bg-th-bkg-1">
           <Main />
           <NextScript />
         </body>

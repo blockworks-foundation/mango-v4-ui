@@ -66,7 +66,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           </div>
 
           <div
-            className={`w-full overflow-hidden transition-all duration-500 ease-in-out ${
+            className={`w-full transition-all duration-500 ease-in-out ${
               isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-48 xl:pl-52'
             }`}
           >
@@ -78,9 +78,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
               />
               <TopBar />
             </div>
-            <div className="hide-scroll max-h-screen overflow-y-scroll">
-              {children}
-            </div>
+            {children}
           </div>
         </div>
       </div>

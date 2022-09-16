@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-// import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
 
@@ -7,7 +7,7 @@ import mangoStore from '@store/mangoStore'
 import { GRID_LAYOUT_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { breakpoints } from 'utils/theme'
-// import { useViewport } from 'hooks/useViewport'
+import { useViewport } from 'hooks/useViewport'
 import Orderbook from './Orderbook'
 import AdvancedMarketHeader from './AdvancedMarketHeader'
 import AdvancedTradeForm from './AdvancedTradeForm'
@@ -29,65 +29,41 @@ const gridBreakpoints = {
 }
 const totalCols = 24
 const TradeAdvancedPage = () => {
-  // const { height } = useViewport()
+  const { height } = useViewport()
   const [currentBreakpoint, setCurrentBreakpoint] = useState<string>()
-  const [orderbookDepth, setOrderbookDepth] = useState(6)
+  const [orderbookDepth, setOrderbookDepth] = useState(12)
   const { uiLocked } = mangoStore((s) => s.settings)
 
-  const defaultLayouts = {
-    xxxl: [
-      { i: 'market-header', x: 0, y: 0, w: 12, h: 48 },
-      { i: 'tv-chart', x: 0, y: 1, w: 16, h: 676 },
-      { i: 'balances', x: 0, y: 2, w: 20, h: 473 },
-      { i: 'orderbook', x: 16, y: 1, w: 4, h: 724 },
-      { i: 'trade-form', x: 20, y: 1, w: 4, h: 1197 },
-    ],
-    xxl: [
-      { i: 'market-header', x: 0, y: 0, w: 12, h: 48 },
-      { i: 'tv-chart', x: 0, y: 1, w: 15, h: 576 },
-      { i: 'balances', x: 0, y: 2, w: 19, h: 473 },
-      { i: 'orderbook', x: 15, y: 1, w: 4, h: 624 },
-      { i: 'trade-form', x: 19, y: 1, w: 5, h: 1097 },
-    ],
-    xl: [
-      { i: 'market-header', x: 0, y: 0, w: 12, h: 48 },
-      { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
-      { i: 'balances', x: 0, y: 2, w: 18, h: 473 },
-      { i: 'orderbook', x: 14, y: 1, w: 4, h: 568 },
-      { i: 'trade-form', x: 18, y: 1, w: 6, h: 1041 },
-    ],
-  }
+  const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
+    const innerHeight = Math.max(height - 36, 800)
+    const tvChartHeight = 432
+    const headerHeight = 48
+    const balancesHeight = innerHeight - tvChartHeight - headerHeight
 
-  // const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
-  //   const innerHeight = Math.max(height - 36, 800)
-  //   const tvChartHeight = 432
-  //   const headerHeight = 48
-  //   const balancesHeight = innerHeight - tvChartHeight - headerHeight
-
-  //   return {
-  //     xxxl: [
-  //       { i: 'market-header', x: 0, y: 0, w: 16, h: headerHeight },
-  //       { i: 'tv-chart', x: 0, y: 1, w: 16, h: tvChartHeight },
-  //       { i: 'balances', x: 0, y: 2, w: 16, h: balancesHeight },
-  //       { i: 'orderbook', x: 16, y: 1, w: 4, h: innerHeight },
-  //       { i: 'trade-form', x: 20, y: 1, w: 4, h: innerHeight },
-  //     ],
-  //     xxl: [
-  //       { i: 'market-header', x: 0, y: 0, w: 14, h: headerHeight },
-  //       { i: 'tv-chart', x: 0, y: 1, w: 14, h: tvChartHeight },
-  //       { i: 'balances', x: 0, y: 2, w: 14, h: balancesHeight },
-  //       { i: 'orderbook', x: 14, y: 1, w: 5, h: innerHeight },
-  //       { i: 'trade-form', x: 20, y: 1, w: 5, h: innerHeight },
-  //     ],
-  //     xl: [
-  //       { i: 'market-header', x: 0, y: 0, w: 14, h: headerHeight },
-  //       { i: 'tv-chart', x: 0, y: 1, w: 14, h: tvChartHeight },
-  //       { i: 'balances', x: 0, y: 2, w: 14, h: balancesHeight },
-  //       { i: 'orderbook', x: 14, y: 1, w: 5, h: innerHeight },
-  //       { i: 'trade-form', x: 20, y: 1, w: 5, h: innerHeight },
-  //     ],
-  //   }
-  // }, [height])
+    return {
+      xxxl: [
+        { i: 'market-header', x: 0, y: 0, w: 16, h: headerHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 16, h: tvChartHeight },
+        { i: 'balances', x: 0, y: 2, w: 16, h: balancesHeight },
+        { i: 'orderbook', x: 16, y: 1, w: 4, h: innerHeight },
+        { i: 'trade-form', x: 20, y: 1, w: 4, h: innerHeight },
+      ],
+      xxl: [
+        { i: 'market-header', x: 0, y: 0, w: 14, h: headerHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 14, h: tvChartHeight },
+        { i: 'balances', x: 0, y: 2, w: 14, h: balancesHeight },
+        { i: 'orderbook', x: 14, y: 1, w: 5, h: innerHeight },
+        { i: 'trade-form', x: 20, y: 1, w: 5, h: innerHeight },
+      ],
+      xl: [
+        { i: 'market-header', x: 0, y: 0, w: 14, h: headerHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 14, h: tvChartHeight },
+        { i: 'balances', x: 0, y: 2, w: 14, h: balancesHeight },
+        { i: 'orderbook', x: 14, y: 1, w: 5, h: innerHeight },
+        { i: 'trade-form', x: 20, y: 1, w: 5, h: innerHeight },
+      ],
+    }
+  }, [height])
 
   const [savedLayouts, setSavedLayouts] = useLocalStorageState(
     GRID_LAYOUT_KEY,
@@ -126,7 +102,7 @@ const TradeAdvancedPage = () => {
   }, [])
 
   return (
-    <div className="">
+    <div className="relative">
       <ResponsiveGridLayout
         // layouts={savedLayouts ? savedLayouts : defaultLayouts}
         layouts={defaultLayouts}
@@ -147,7 +123,7 @@ const TradeAdvancedPage = () => {
         }
         onLayoutChange={(layout, layouts) => onLayoutChange(layouts)}
         measureBeforeMount
-        containerPadding={[0, 0]}
+        containerPadding={{ xxl: [0, 0] }}
         margin={[0, 0]}
       >
         <div key="market-header" className="z-10">
@@ -161,13 +137,13 @@ const TradeAdvancedPage = () => {
             <TradingViewChart />
           </div>
         </div>
-        <div key="balances" className="h-full">
+        <div
+          key="balances"
+          className="h-full border border-x-0 border-t-0 border-th-bkg-3"
+        >
           <BalanceAndOpenOrders />
         </div>
-        <div
-          key="orderbook"
-          className="border border-t-0 border-r-0 border-th-bkg-3"
-        >
+        <div key="orderbook" className="border border-t-0 border-th-bkg-3">
           <div className="flex h-[49px] items-center border-b border-th-bkg-3 px-4 ">
             <h2 className="text-sm text-th-fgd-3">Orderbook</h2>
           </div>
@@ -181,7 +157,7 @@ const TradeAdvancedPage = () => {
         </div>
         <div
           key="trade-form"
-          className="border border-r-0 border-t-0 border-th-bkg-3"
+          className="border border-x-0 border-t-0 border-th-bkg-3"
         >
           <AdvancedTradeForm />
         </div>
