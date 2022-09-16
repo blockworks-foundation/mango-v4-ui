@@ -21,15 +21,15 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
   return (
     <div
       className={`flex bg-th-bkg-1 text-th-fgd-4 ${
-        showBorders ? 'md:border-b md:border-th-bkg-3' : ''
+        showBorders ? 'border-b border-th-bkg-3' : ''
       }`}
     >
       {values.map((v, i) => (
         <div key={v + i}>
           <button
-            className={`default-transition h-12 rounded-md px-6 font-bold ${
-              !rounded ? 'md:rounded-none' : ''
-            } ${showBorders ? 'md:border-r md:border-th-bkg-3' : ''} ${
+            className={`default-transition h-12 px-6 font-bold ${
+              rounded ? 'rounded-md' : 'rounded-none'
+            } ${showBorders ? 'border-r border-th-bkg-3' : ''} ${
               v === activeValue
                 ? 'bg-th-bkg-2 text-th-primary'
                 : 'hover:cursor-pointer hover:text-th-fgd-2'

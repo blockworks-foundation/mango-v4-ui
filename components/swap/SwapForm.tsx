@@ -6,6 +6,7 @@ import {
   Cog8ToothIcon,
   MagnifyingGlassIcon,
   ExclamationCircleIcon,
+  HeartIcon,
 } from '@heroicons/react/20/solid'
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
@@ -384,16 +385,17 @@ const SwapForm = () => {
           )}
         </Button>
       </div>
-
-      {/* {!!mangoAccount ? ( */}
       <div
         id="step-ten"
-        className={`border-t border-th-bkg-3 bg-th-bkg-2 px-6 transition-all ${
+        className={`border-t border-th-bkg-3 px-6 transition-all ${
           showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
         }`}
       >
         <div className="flex justify-between">
-          <p className="text-sm">{t('health-impact')}</p>
+          <div className="flex items-center">
+            <HeartIcon className="mr-1.5 h-4 w-4 text-th-fgd-4" />
+            <p className="text-sm">{t('health-impact')}</p>
+          </div>
           <div className="flex items-center space-x-2 font-mono tracking-tight">
             <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
             <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
@@ -421,7 +423,6 @@ const SwapForm = () => {
           </div>
         </div>
       </div>
-      {/* ) : null} */}
     </ContentBox>
   )
 }

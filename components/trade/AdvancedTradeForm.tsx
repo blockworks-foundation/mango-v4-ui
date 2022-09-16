@@ -171,8 +171,8 @@ const AdvancedTradeForm = () => {
           <nav className="-mb-px flex space-x-2" aria-label="Tabs">
             <button
               onClick={() => handleSetSide('buy')}
-              className={`default-transition relative flex w-1/2 cursor-pointer 
-            items-center justify-center whitespace-nowrap py-1 text-sm font-semibold md:text-base md:hover:opacity-100
+              className={`default-transition relative flex h-10 w-1/2 
+            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 text-sm font-semibold md:h-auto md:rounded-none md:text-base md:hover:opacity-100
             ${
               tradeForm.side === 'buy'
                 ? `border border-th-green text-th-green md:border-0`
@@ -184,8 +184,8 @@ const AdvancedTradeForm = () => {
             </button>
             <button
               onClick={() => handleSetSide('sell')}
-              className={`default-transition relative flex w-1/2 cursor-pointer 
-            items-center justify-center whitespace-nowrap py-1 text-sm font-semibold md:text-base md:hover:opacity-100
+              className={`default-transition relative flex h-10 w-1/2 cursor-pointer items-center justify-center whitespace-nowrap 
+            rounded py-1 text-sm font-semibold md:h-auto md:rounded-none md:text-base md:hover:opacity-100
             ${
               tradeForm.side === 'sell'
                 ? `border border-th-red text-th-red md:border-0`
@@ -202,7 +202,7 @@ const AdvancedTradeForm = () => {
         <div className="my-2 flex items-center justify-between">
           <p className="text-xs text-th-fgd-3">{t('amount')}</p>
         </div>
-        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 px-3 py-2 text-lg font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
+        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
           <NumberFormat
             inputMode="decimal"
             thousandSeparator=","
@@ -223,7 +223,7 @@ const AdvancedTradeForm = () => {
         <div className="mb-2 mt-4 flex items-center justify-between">
           <p className="text-xs text-th-fgd-3">Limit Price</p>
         </div>
-        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 px-3 py-2 text-lg font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
+        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
           <NumberFormat
             inputMode="decimal"
             thousandSeparator=","
@@ -242,9 +242,9 @@ const AdvancedTradeForm = () => {
           </div>
         </div>
       </div>
-      <div className="mt-5 flex px-5">
+      <div className="flex flex-wrap px-5">
         {tradeForm.tradeType === 'Limit' ? (
-          <div className="flex">
+          <div className="mt-4 flex">
             <div className="mr-4 ">
               <Tooltip
                 className="hidden md:block"
@@ -279,7 +279,7 @@ const AdvancedTradeForm = () => {
             </div>
           </div>
         ) : null}
-        <div className="">
+        <div className="mt-4">
           <Tooltip
             delay={250}
             placement="left"

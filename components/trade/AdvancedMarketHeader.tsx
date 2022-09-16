@@ -28,7 +28,7 @@ const MarketSelectDropdown = () => {
       {({ close, open }) => (
         <div className="relative flex flex-col overflow-visible">
           <Popover.Button className="flex w-full items-center hover:text-th-primary">
-            <div className="text-base font-bold">
+            <div className="text-xl font-bold md:text-base">
               {selectedMarket?.name || DEFAULT_MARKET_NAME}
             </div>
             <ChevronDownIcon
@@ -38,7 +38,7 @@ const MarketSelectDropdown = () => {
             />
           </Popover.Button>
 
-          <Popover.Panel className="absolute top-[66px] z-50 mr-4 w-56 border border-l-0 border-th-bkg-3 bg-th-bkg-1">
+          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen border border-l-0 border-th-bkg-3 bg-th-bkg-1 sm:w-56 md:top-[37px]">
             {serumMarkets?.length
               ? serumMarkets.map((m) => (
                   <div
@@ -68,7 +68,7 @@ const OraclePrice = () => {
   )
 
   return (
-    <div className="font-mono text-th-fgd-1 md:text-xs">
+    <div className="font-mono text-xs text-th-fgd-1">
       $
       {baseTokenBank.uiPrice
         ? formatFixedDecimals(baseTokenBank.uiPrice)
@@ -100,18 +100,18 @@ const AdvancedMarketHeader = () => {
     : 0
 
   return (
-    <div className="flex h-12 items-center bg-th-bkg-1 px-5">
-      <div className="hidden md:block md:pr-6 lg:pb-0">
+    <div className="flex h-16 items-center bg-th-bkg-1 px-5 md:h-12">
+      <div className="md:pr-6 lg:pb-0">
         <div className="flex items-center">
           <MarketSelectDropdown />
         </div>
       </div>
       <div className="ml-6 flex-col">
-        <div className="text-th-fgd-4 md:text-xs">{t('oracle-price')}</div>
+        <div className="text-xs text-th-fgd-4">{t('oracle-price')}</div>
         <OraclePrice />
       </div>
       <div className="ml-6 flex-col">
-        <div className="text-th-fgd-4 md:text-xs">{t('rolling-change')}</div>
+        <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
         <div
           className={`font-mono text-xs ${
             change < 0 ? 'text-th-red' : 'text-th-gree'

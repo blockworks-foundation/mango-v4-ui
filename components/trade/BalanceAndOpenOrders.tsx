@@ -28,14 +28,12 @@ const BalanceAndOpenOrders = () => {
 
   return (
     <div>
-      <div className="">
-        <TabButtons
-          activeValue={selectedTab}
-          onChange={(tab: string) => setSelectedTab(tab)}
-          values={TABS}
-          showBorders
-        />
-      </div>
+      <TabButtons
+        activeValue={selectedTab}
+        onChange={(tab: string) => setSelectedTab(tab)}
+        values={TABS}
+        showBorders
+      />
       {selectedTab === 'Balances' ? <Balances /> : null}
       {selectedTab === 'Open Orders' ? <OpenOrders /> : null}
     </div>
