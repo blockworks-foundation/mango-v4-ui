@@ -51,11 +51,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
           <div className="fixed z-20 hidden h-screen md:block">
             <button
-              className="absolute -right-4 top-1/2 z-20 hidden h-10 w-4 -translate-y-1/2 rounded-none rounded-r bg-th-bkg-4 focus:outline-none lg:block"
+              className="default-transition absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none lg:block"
               onClick={handleToggleSidebar}
             >
               <ChevronRightIcon
-                className={`h-full w-full ${
+                className={`absolute bottom-2 -right-[2px] h-4 w-4 flex-shrink-0 ${
                   !isCollapsed ? 'rotate-180' : 'rotate-360'
                 }`}
               />
