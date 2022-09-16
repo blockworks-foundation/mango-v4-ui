@@ -49,7 +49,7 @@ const TokenItem = ({
     <div>
       <button
         key={address}
-        className="flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-4"
+        className="flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2"
         onClick={() => onSubmit(address)}
       >
         <div className="flex items-center">
@@ -78,7 +78,7 @@ const SwapFormTokenList = ({
   onTokenSelect: (x: string) => void
   type: string
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'swap'])
   const [search, setSearch] = useState('')
   const tokens = mangoStore.getState().jupiterTokens
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -135,7 +135,11 @@ const SwapFormTokenList = ({
 
   return (
     <>
-      <p className="mb-3">{type === 'input' ? t('sell') : t('buy')}</p>
+      <p className="mb-3">
+        {type === 'input'
+          ? `${t('swap')} ${t('swap:from')}`
+          : `${t('swap')} ${t('swap:to')}`}
+      </p>
       <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
         <XMarkIcon className="h-5 w-5" />
       </IconButton>
@@ -182,7 +186,7 @@ const SwapFormTokenList = ({
         </div>
       ) : null}
       <div className="my-2 border-t border-th-bkg-4"></div>
-      <div className="overflow-auto">
+      <div className="mb-2 overflow-auto">
         {sortedTokens.map((token) => (
           <TokenItem
             key={token.address}

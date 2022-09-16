@@ -20,6 +20,7 @@ import {
   PencilIcon,
   ArrowsRightLeftIcon,
   CheckCircleIcon,
+  ArrowRightIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -243,36 +244,46 @@ const JupiterRouteInfo = ({
                 />
               </div>
             </div>
-            <p className="mb-0.5 text-center text-lg">
-              <span className="text-th-fgd-1">{`${formatFixedDecimals(
+            <p className="mb-0.5 flex items-center text-center text-lg">
+              <span className="mr-1 font-mono tracking-tighter text-th-fgd-1">{`${formatFixedDecimals(
                 amountIn.toNumber()
               )}`}</span>{' '}
-              {`${inputTokenInfo!.symbol} for`}{' '}
-              <span className="text-th-fgd-1">{`${formatFixedDecimals(
+              {inputTokenInfo!.symbol}
+              <ArrowRightIcon className="mx-2 h-5 w-5 text-th-fgd-4" />
+              <span className="mr-1 font-mono tracking-tighter text-th-fgd-1">{`${formatFixedDecimals(
                 amountOut.toNumber()
               )}`}</span>{' '}
               {`${outputTokenInfo.symbol}`}
             </p>
           </div>
         </div>
-
         <div className="space-y-2 px-1">
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">{t('swap:rate')}</p>
             <div>
               <div className="flex items-center justify-end">
-                <p className="text-right text-sm text-th-fgd-1">
+                <p className="text-right font-mono text-sm tracking-tighter text-th-fgd-1">
                   {swapRate ? (
                     <>
-                      1 {inputTokenInfo!.name} ≈{' '}
+                      1{' '}
+                      <span className="font-body tracking-wide">
+                        {inputTokenInfo!.name} ≈{' '}
+                      </span>
                       {formatFixedDecimals(amountOut.div(amountIn).toNumber())}{' '}
-                      {outputTokenInfo?.symbol}
+                      <span className="font-body tracking-wide">
+                        {outputTokenInfo?.symbol}
+                      </span>
                     </>
                   ) : (
                     <>
-                      1 {outputTokenInfo?.symbol} ≈{' '}
+                      1{' '}
+                      <span className="font-body tracking-wide">
+                        {outputTokenInfo?.symbol} ≈{' '}
+                      </span>
                       {formatFixedDecimals(amountIn.div(amountOut).toNumber())}{' '}
-                      {inputTokenInfo!.name}
+                      <span className="font-body tracking-wide">
+                        {inputTokenInfo!.symbol}
+                      </span>
                     </>
                   )}
                 </p>
@@ -285,14 +296,14 @@ const JupiterRouteInfo = ({
                 {coingeckoPrices?.outputCoingeckoPrice &&
                 coingeckoPrices?.inputCoingeckoPrice ? (
                   <div
-                    className={`text-right ${
+                    className={`text-right font-mono tracking-tighter ${
                       coinGeckoPriceDifference.gt(0)
                         ? 'text-th-red'
                         : 'text-th-green'
                     }`}
                   >
                     {Decimal.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
-                    <span className="text-th-fgd-3">{`${
+                    <span className="font-body tracking-wide text-th-fgd-3">{`${
                       coinGeckoPriceDifference.lte(0)
                         ? 'cheaper'
                         : 'more expensive'
@@ -307,13 +318,15 @@ const JupiterRouteInfo = ({
               {t('swap:minimum-received')}
             </p>
             {outputTokenInfo?.decimals ? (
-              <p className="text-right text-sm text-th-fgd-1">
+              <p className="text-right font-mono text-sm tracking-tighter text-th-fgd-1">
                 {formatDecimal(
                   JSBI.toNumber(selectedRoute?.otherAmountThreshold) /
                     10 ** outputTokenInfo.decimals || 1,
                   outputTokenInfo.decimals
                 )}{' '}
-                {outputTokenInfo?.symbol}
+                <span className="font-body tracking-wide">
+                  {outputTokenInfo?.symbol}
+                </span>
               </p>
             ) : null}
           </div>
@@ -321,27 +334,32 @@ const JupiterRouteInfo = ({
             <>
               <div className="flex justify-between">
                 <p className="text-sm text-th-fgd-3">{t('borrow-amount')}</p>
-                <p className="text-right text-sm text-th-fgd-1">
-                  ~ {formatFixedDecimals(borrowAmount)} {inputTokenInfo?.symbol}
+                <p className="text-right font-mono text-sm tracking-tighter text-th-fgd-1">
+                  ~ {formatFixedDecimals(borrowAmount)}{' '}
+                  <span className="font-body tracking-wide">
+                    {inputTokenInfo?.symbol}
+                  </span>
                 </p>
               </div>
               <div className="flex justify-between">
                 <p className="text-sm text-th-fgd-3">Borrow Fee</p>
-                <p className="text-right text-sm text-th-fgd-1">
+                <p className="text-right font-mono text-sm tracking-tighter text-th-fgd-1">
                   ~{' '}
                   {formatFixedDecimals(
                     amountIn
                       .mul(inputBank!.loanOriginationFeeRate.toFixed())
                       .toNumber()
                   )}{' '}
-                  {inputBank!.name}
+                  <span className="font-body tracking-wide">
+                    {inputBank!.name}
+                  </span>
                 </p>
               </div>
             </>
           ) : null}
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
-            <p className="text-right text-sm text-th-fgd-1">
+            <p className="text-right font-mono text-sm tracking-tighter text-th-fgd-1">
               {selectedRoute?.priceImpactPct * 100 < 0.1
                 ? '< 0.1%'
                 : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
@@ -377,7 +395,7 @@ const JupiterRouteInfo = ({
             <div className="flex justify-between">
               <p className="text-sm text-th-fgd-3">{t('fee')}</p>
               <div className="flex items-center">
-                <p className="text-right text-sm text-th-fgd-1">
+                <p className="text-right font-mono text-sm tracking-tighter text-th-fgd-1">
                   ≈ ${feeValue?.toFixed(2)}
                 </p>
               </div>
@@ -395,12 +413,15 @@ const JupiterRouteInfo = ({
                     })}
                   </p>
                   {feeToken?.decimals && (
-                    <p className="text-right text-sm text-th-fgd-1">
+                    <p className="text-right font-mono text-sm tracking-tighter text-th-fgd-1">
                       {(
                         JSBI.toNumber(info.lpFee?.amount) /
                         Math.pow(10, feeToken.decimals)
                       ).toFixed(6)}{' '}
-                      {feeToken?.symbol} ({info.lpFee?.pct * 100}%)
+                      <span className="font-body tracking-wide">
+                        {feeToken?.symbol}
+                      </span>{' '}
+                      ({info.lpFee?.pct * 100}%)
                     </p>
                   )}
                 </div>

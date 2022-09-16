@@ -57,7 +57,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
           />
         )}
       </div>
-      <div className="mt-6 flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
+      <div className="mt-6 flex items-center justify-between rounded-md bg-th-bkg-2 p-3">
         <p className="text-th-fgd-1">{t('swap:use-margin')}</p>
         <Switch
           className="text-th-fgd-3"

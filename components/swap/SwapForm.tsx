@@ -203,7 +203,7 @@ const SwapForm = () => {
     >
       <div className="p-6 pt-3">
         <Transition
-          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={showConfirm}
           enter="transition ease-in duration-300"
           enterFrom="translate-x-full"
@@ -223,7 +223,7 @@ const SwapForm = () => {
           />
         </Transition>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={!!showTokenSelect}
         >
           <SwapFormTokenList
@@ -237,13 +237,13 @@ const SwapForm = () => {
           />
         </EnterBottomExitBottom>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={showSettings}
         >
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base text-th-fgd-3">{t('swap')}</h2>
+          <h2 className="text-base text-th-fgd-2">{t('swap')}</h2>
           <div id="step-eight">
             <IconButton
               className="text-th-fgd-2"
