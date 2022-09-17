@@ -335,62 +335,73 @@ const Orderbook = ({ depth = 12 }) => {
   if (!serum3MarketExternal) return null
 
   return (
-    <div>
-      {orderbookData?.asks.map(
-        ({
-          price,
-          size,
-          cumulativeSize,
-          sizePercent,
-          maxSizePercent,
-        }: cumOrderbookSide) => (
-          <OrderbookRow
-            market={serum3MarketExternal}
-            // hasOpenOrder={hasOpenOrderForPriceGroup(
-            //   openOrderPrices,
-            //   price,
-            //   grouping
-            // )}
-            key={price + ''}
-            price={price}
-            size={displayCumulativeSize ? cumulativeSize : size}
-            side="sell"
-            sizePercent={displayCumulativeSize ? maxSizePercent : sizePercent}
-            grouping={grouping}
-          />
-        )
-      )}
-      <div className="my-2 flex justify-between border-y border-th-bkg-2 py-2 px-4 text-xs">
-        <div className="text-th-fgd-3">{t('spread')}</div>
-        <div className="text-th-fgd-1">{orderbookData?.spread.toFixed(2)}</div>
-        <div className="text-th-fgd-1">
-          {orderbookData?.spreadPercentage.toFixed(2)}%
-        </div>
+    <div className="hide-scroll h-full overflow-y-scroll">
+      <div className="sticky top-0 z-20 flex h-[49px] items-center border-b border-th-bkg-3 bg-th-bkg-1 px-4">
+        <h2 className="text-sm text-th-fgd-3">Orderbook</h2>
       </div>
-      {orderbookData?.bids.map(
-        ({
-          price,
-          size,
-          cumulativeSize,
-          sizePercent,
-          maxSizePercent,
-        }: cumOrderbookSide) => (
-          <OrderbookRow
-            market={serum3MarketExternal}
-            // hasOpenOrder={hasOpenOrderForPriceGroup(
-            //   openOrderPrices,
-            //   price,
-            //   grouping
-            // )}
-            key={price + ''}
-            price={price}
-            size={displayCumulativeSize ? cumulativeSize : size}
-            side="buy"
-            sizePercent={displayCumulativeSize ? maxSizePercent : sizePercent}
-            grouping={grouping}
-          />
-        )
-      )}
+      <div className="flex items-center justify-between px-4 py-2 text-xs text-th-fgd-4">
+        <div>Size</div>
+        <div>Price</div>
+      </div>
+      <div className="">
+        {orderbookData?.asks.map(
+          ({
+            price,
+            size,
+            cumulativeSize,
+            sizePercent,
+            maxSizePercent,
+          }: cumOrderbookSide) => (
+            <OrderbookRow
+              market={serum3MarketExternal}
+              // hasOpenOrder={hasOpenOrderForPriceGroup(
+              //   openOrderPrices,
+              //   price,
+              //   grouping
+              // )}
+              key={price + ''}
+              price={price}
+              size={displayCumulativeSize ? cumulativeSize : size}
+              side="sell"
+              sizePercent={displayCumulativeSize ? maxSizePercent : sizePercent}
+              grouping={grouping}
+            />
+          )
+        )}
+        <div className="my-2 flex justify-between border-y border-th-bkg-2 py-2 px-4 text-xs">
+          <div className="text-th-fgd-3">{t('spread')}</div>
+          <div className="text-th-fgd-1">
+            {orderbookData?.spread.toFixed(2)}
+          </div>
+          <div className="text-th-fgd-1">
+            {orderbookData?.spreadPercentage.toFixed(2)}%
+          </div>
+        </div>
+        {orderbookData?.bids.map(
+          ({
+            price,
+            size,
+            cumulativeSize,
+            sizePercent,
+            maxSizePercent,
+          }: cumOrderbookSide) => (
+            <OrderbookRow
+              market={serum3MarketExternal}
+              // hasOpenOrder={hasOpenOrderForPriceGroup(
+              //   openOrderPrices,
+              //   price,
+              //   grouping
+              // )}
+              key={price + ''}
+              price={price}
+              size={displayCumulativeSize ? cumulativeSize : size}
+              side="buy"
+              sizePercent={displayCumulativeSize ? maxSizePercent : sizePercent}
+              grouping={grouping}
+            />
+          )
+        )}
+      </div>
     </div>
   )
 }

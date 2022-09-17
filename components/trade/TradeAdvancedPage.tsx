@@ -20,13 +20,14 @@ const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
   ssr: false,
 })
 
+const sidebarWidth = 65
+
 const gridBreakpoints = {
-  sm: breakpoints.sm,
-  md: breakpoints.md,
-  lg: breakpoints.lg,
-  xl: breakpoints.xl,
-  xxl: breakpoints['2xl'],
-  xxxl: breakpoints['3xl'],
+  md: breakpoints.md - sidebarWidth,
+  lg: breakpoints.lg - sidebarWidth,
+  xl: breakpoints.xl - sidebarWidth,
+  xxl: breakpoints['2xl'] - sidebarWidth,
+  xxxl: breakpoints['3xl'] - sidebarWidth,
 }
 const totalCols = 24
 
@@ -34,36 +35,36 @@ const defaultLayouts = {
   xxxl: [
     { i: 'market-header', x: 0, y: 0, w: 16, h: 48 },
     { i: 'tv-chart', x: 0, y: 1, w: 16, h: 676 },
-    { i: 'balances', x: 0, y: 2, w: 20, h: 468 },
-    { i: 'orderbook', x: 16, y: 1, w: 4, h: 724 },
-    { i: 'trade-form', x: 20, y: 1, w: 4, h: 1193 },
+    { i: 'balances', x: 0, y: 2, w: 16, h: 388 },
+    { i: 'orderbook', x: 16, y: 0, w: 4, h: 1113 },
+    { i: 'trade-form', x: 20, y: 0, w: 4, h: 1113 },
   ],
   xxl: [
     { i: 'market-header', x: 0, y: 0, w: 15, h: 48 },
     { i: 'tv-chart', x: 0, y: 1, w: 15, h: 576 },
-    { i: 'balances', x: 0, y: 2, w: 19, h: 468 },
-    { i: 'orderbook', x: 15, y: 1, w: 4, h: 624 },
-    { i: 'trade-form', x: 19, y: 1, w: 5, h: 1093 },
+    { i: 'balances', x: 0, y: 2, w: 15, h: 388 },
+    { i: 'orderbook', x: 15, y: 0, w: 4, h: 1013 },
+    { i: 'trade-form', x: 19, y: 0, w: 5, h: 1013 },
   ],
   xl: [
     { i: 'market-header', x: 0, y: 0, w: 14, h: 48 },
     { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
-    { i: 'balances', x: 0, y: 2, w: 18, h: 468 },
-    { i: 'orderbook', x: 14, y: 1, w: 4, h: 568 },
-    { i: 'trade-form', x: 18, y: 1, w: 6, h: 1037 },
+    { i: 'balances', x: 0, y: 2, w: 14, h: 388 },
+    { i: 'orderbook', x: 14, y: 0, w: 4, h: 957 },
+    { i: 'trade-form', x: 18, y: 0, w: 6, h: 957 },
   ],
   lg: [
     { i: 'market-header', x: 0, y: 0, w: 14, h: 48 },
     { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
-    { i: 'balances', x: 0, y: 2, w: 18, h: 468 },
-    { i: 'orderbook', x: 14, y: 1, w: 4, h: 568 },
-    { i: 'trade-form', x: 18, y: 1, w: 6, h: 1037 },
+    { i: 'balances', x: 0, y: 2, w: 14, h: 388 },
+    { i: 'orderbook', x: 14, y: 0, w: 4, h: 957 },
+    { i: 'trade-form', x: 18, y: 0, w: 6, h: 957 },
   ],
   md: [
     { i: 'market-header', x: 0, y: 0, w: 18, h: 48 },
     { i: 'tv-chart', x: 0, y: 1, w: 18, h: 520 },
-    { i: 'balances', x: 0, y: 2, w: 18, h: 468 },
-    { i: 'orderbook', x: 18, y: 2, w: 6, h: 469 },
+    { i: 'balances', x: 0, y: 2, w: 18, h: 488 },
+    { i: 'orderbook', x: 18, y: 2, w: 6, h: 489 },
     { i: 'trade-form', x: 18, y: 1, w: 6, h: 568 },
   ],
 }
@@ -186,7 +187,7 @@ const TradeAdvancedPage = () => {
       containerPadding={[0, 0]}
       margin={[0, 0]}
     >
-      <div key="market-header" className="z-10">
+      <div key="market-header">
         <AdvancedMarketHeader />
       </div>
       <div key="tv-chart" className="h-full border border-x-0 border-th-bkg-3">
@@ -194,29 +195,20 @@ const TradeAdvancedPage = () => {
           <TradingViewChart />
         </div>
       </div>
-      <div key="balances" className="h-full">
+      <div key="balances">
         <BalanceAndOpenOrders />
       </div>
       <div
-        key="orderbook"
-        className="border border-t-0 border-r-0 border-th-bkg-3"
-      >
-        <div className="flex h-[49px] items-center border-b border-th-bkg-3 px-4 ">
-          <h2 className="text-sm text-th-fgd-3">Orderbook</h2>
-        </div>
-        <div className="flex items-center justify-between px-4 py-2 text-xs text-th-fgd-4">
-          <div>Size</div>
-          <div>Price</div>
-        </div>
-        <div className="hide-scroll h-full overflow-y-scroll">
-          <Orderbook depth={orderbookDepth} />
-        </div>
-      </div>
-      <div
         key="trade-form"
-        className="border border-r-0 border-t-0 border-th-bkg-3"
+        className="border border-t-0 border-r-0 border-th-bkg-3 md:border-b lg:border-b-0"
       >
         <AdvancedTradeForm />
+      </div>
+      <div
+        key="orderbook"
+        className="border border-y-0 border-r-0 border-th-bkg-3"
+      >
+        <Orderbook depth={orderbookDepth} />
       </div>
     </ResponsiveGridLayout>
   )
