@@ -382,7 +382,7 @@ const Orderbook = ({ depth = 12 }) => {
         </Tooltip>
       </div>
       <div className="flex items-center justify-between px-4 pb-2 text-xs text-th-fgd-4">
-        <div>Size</div>
+        <div className="pl-4">Size</div>
         <div>Price</div>
       </div>
       <div className="">
@@ -535,17 +535,19 @@ const OrderbookRow = ({
     >
       <>
         <div className="flex w-full items-center justify-between hover:bg-th-bkg-2">
-          <div
-            style={{ fontFeatureSettings: 'zero 1' }}
-            className={`z-10 ml-4 text-right font-mono text-xs tabular-nums leading-5 md:leading-6 ${
-              /*hasOpenOrder*/ false ? 'text-th-primary' : 'text-th-fgd-3'
-            }`}
-            // onClick={handleSizeClick}
-          >
-            {formattedSize.toFixed(minOrderSizeDecimals)}
+          <div className="flex w-full justify-start pl-2">
+            <div
+              style={{ fontFeatureSettings: 'zero 1' }}
+              className={`z-10 w-16 text-right font-mono text-xs leading-5 md:leading-6 ${
+                /*hasOpenOrder*/ false ? 'text-th-primary' : ''
+              }`}
+              // onClick={handleSizeClick}
+            >
+              {formattedSize.toFixed(minOrderSizeDecimals)}
+            </div>
           </div>
           <div
-            className={`z-10 pr-4 font-mono text-xs tabular-nums  leading-5 text-th-fgd-3 hover:normal-nums md:leading-6`}
+            className={`z-10 w-full pr-4 text-right font-mono text-xs leading-5 md:leading-6`}
             // onClick={handlePriceClick}
           >
             {formattedPrice.toFixed(groupingDecimalCount)}

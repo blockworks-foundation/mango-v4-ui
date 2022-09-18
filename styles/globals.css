@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/fonts/roboto.woff");
+}
+
 /* Reset */
 
 html,
@@ -265,6 +270,11 @@ table p {
 }
 
 /* Scrollbars */
+
+.font-mono {
+  -webkit-font-feature-settings: "zero" 1;
+  font-feature-settings: "zero" 1;
+}
 
 .hide-scroll::-webkit-scrollbar {
   width: 0px;
