@@ -20,3 +20,17 @@ export const retryFn = async (
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+export function isEqual(obj1: any, obj2: any, keys: Array<string>) {
+  if (!keys && Object.keys(obj1).length !== Object.keys(obj2).length) {
+    return false
+  }
+  keys = keys || Object.keys(obj1)
+  for (const k of keys) {
+    if (obj1[k] !== obj2[k]) {
+      // shallow comparison
+      return false
+    }
+  }
+  return true
+}

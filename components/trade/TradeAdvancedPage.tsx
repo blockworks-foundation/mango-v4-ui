@@ -187,7 +187,7 @@ const TradeAdvancedPage = () => {
       containerPadding={[0, 0]}
       margin={[0, 0]}
     >
-      <div key="market-header">
+      <div key="market-header" className="z-10">
         <AdvancedMarketHeader />
       </div>
       <div key="tv-chart" className="h-full border border-x-0 border-th-bkg-3">
