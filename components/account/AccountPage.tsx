@@ -222,8 +222,8 @@ const AccountPage = () => {
           <AccountActions />
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-x-6 border-b border-th-bkg-3">
-        <div className="col-span-3 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:border-l md:border-t-0 lg:col-span-1">
+      <div className="grid grid-cols-4 gap-x-6 border-b border-th-bkg-3">
+        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:border-l md:border-t-0 lg:col-span-1">
           <div id="step-three">
             <Tooltip
               maxWidth="26rem"
@@ -262,7 +262,7 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-3 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:border-l md:border-t-0 lg:col-span-1">
+        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:border-l md:border-t-0 lg:col-span-1">
           <div id="step-four">
             <p className="text-th-fgd-3">{t('free-collateral')}</p>
             <p className="mt-1 text-2xl font-bold text-th-fgd-1">
@@ -277,10 +277,10 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        {/* <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 md:col-span-2 md:border-l md:border-t-0 pl-6 lg:col-span-1">
+        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
           <div>
             <p className="text-th-fgd-3">{t('pnl')}</p>
-            <p className="text-2xl font-bold text-th-fgd-1 mt-1">
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
               {formatFixedDecimals(accountPnl, true)}
             </p>
           </div>
@@ -292,8 +292,8 @@ const AccountPage = () => {
               <ChevronRightIcon className="h-5 w-5" />
             </IconButton>
           ) : null}
-        </div> */}
-        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:border-l md:border-t-0 lg:col-span-1">
+        </div>
+        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:border-l md:border-t-0 lg:col-span-1">
           <div id="step-five">
             <p className="text-th-fgd-3">{t('total-interest-value')}</p>
             <p className="mt-1 text-2xl font-bold text-th-fgd-1">
