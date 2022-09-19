@@ -12,7 +12,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Swap: NextPage = () => {
   return (
-    <div className="p-6 pb-20 md:p-0">
+    <div className="pb-20">
       <SwapPage />
     </div>
   )

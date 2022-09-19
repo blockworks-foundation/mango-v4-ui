@@ -26,8 +26,7 @@ const AccountTabs = () => {
           activeValue={activeTab}
           onChange={(v) => setActiveTab(v)}
           values={['balances', 'swap:swap-history']}
-          showBorders={pathname !== '/'}
-          rounded={pathname === '/'}
+          showBorders
         />
       </div>
       {activeTab === 'balances' ? (

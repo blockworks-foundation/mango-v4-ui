@@ -83,7 +83,7 @@ const TokenList = () => {
 
   return (
     <ContentBox hideBorder hidePadding className="-mt-[51px]">
-      <div className="mb-10 flex items-center justify-end pr-0 md:mb-6 md:pr-6">
+      <div className="mb-4 flex items-center justify-end pr-6">
         <Switch
           className="text-th-fgd-3"
           checked={showZeroBalances}
@@ -159,7 +159,7 @@ const TokenList = () => {
                       <p className="font-body tracking-wide">{bank.name}</p>
                     </div>
                   </td>
-                  <td className=" pt-4 text-right">
+                  <td className="pt-4 text-right">
                     <p>
                       {mangoAccount
                         ? formatDecimal(
@@ -246,7 +246,7 @@ const TokenList = () => {
           </tbody>
         </table>
       ) : (
-        <div className="mt-4 space-y-2">
+        <div>
           {banks.map(({ key, value }) => {
             return <MobileTokenListItem key={key} bank={value[0]} />
           })}
@@ -302,7 +302,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
     : 0.0
 
   return (
-    <div key={symbol} className="rounded-md border border-th-bkg-4 p-4">
+    <div key={symbol} className="border-b border-th-bkg-3 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <div className="mr-2.5 flex flex-shrink-0 items-center">

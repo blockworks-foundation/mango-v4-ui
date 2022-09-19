@@ -229,7 +229,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="h-full p-0 md:p-6 md:pt-3">
+    <ContentBox hideBorder hidePadding className="h-full px-6 py-3 md:pb-6">
       {loadChartData ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">

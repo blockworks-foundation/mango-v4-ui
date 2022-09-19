@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: "Roboto Mono";
-  src: url("/fonts/roboto.woff");
+  font-family: 'Roboto Mono';
+  src: url('/fonts/roboto.woff');
 }
 
 /* Reset */
@@ -258,11 +258,11 @@ thead tr {
 }
 
 table td {
-  @apply p-4;
+  @apply px-6 py-4;
 }
 
 table th {
-  @apply p-4 text-xs font-normal text-th-fgd-3;
+  @apply px-6 py-4 text-xs font-normal text-th-fgd-3;
 }
 
 table p {
@@ -272,8 +272,8 @@ table p {
 /* Scrollbars */
 
 .font-mono {
-  -webkit-font-feature-settings: "zero" 1;
-  font-feature-settings: "zero" 1;
+  -webkit-font-feature-settings: 'zero' 1;
+  font-feature-settings: 'zero' 1;
 }
 
 .hide-scroll::-webkit-scrollbar {

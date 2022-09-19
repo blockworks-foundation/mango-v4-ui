@@ -9,7 +9,7 @@ const SwapPage = () => {
 
   return (
     <div className="grid grid-cols-12">
-      <div className="col-span-12 mb-8 border-th-bkg-3 md:col-span-6 md:mb-0 md:border-b lg:col-span-8">
+      <div className="col-span-12 border-th-bkg-3 md:col-span-6 md:border-b lg:col-span-8">
         <SwapTokenChart
           inputTokenId={inputTokenInfo?.extensions?.coingeckoId}
           outputTokenId={outputTokenInfo?.extensions?.coingeckoId}
@@ -18,7 +18,7 @@ const SwapPage = () => {
       <div className="col-span-12 mt-2 space-y-6 border-th-bkg-3 md:col-span-6 md:mt-0 md:border-b lg:col-span-4">
         <Swap />
       </div>
-      <div className="col-span-12 mt-6 md:mt-0">
+      <div className="col-span-12">
         <AccountTabs />
       </div>
     </div>

@@ -199,7 +199,7 @@ const SwapForm = () => {
     <ContentBox
       hidePadding
       // showBackground
-      className="relative overflow-hidden rounded md:rounded-none md:border-r-0 md:border-t-0 md:border-b-0"
+      className="relative overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
     >
       <div className="p-6 pt-3">
         <Transition
