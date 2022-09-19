@@ -350,7 +350,10 @@ const Orderbook = ({ depth = 12 }) => {
       </div>
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center space-x-2">
-          <Tooltip content="Show Buys" placement="top">
+          <Tooltip
+            content={showBuys ? 'Hide Buys' : 'Show Buys'}
+            placement="top"
+          >
             <button
               className={`rounded ${
                 showBuys ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
@@ -361,7 +364,10 @@ const Orderbook = ({ depth = 12 }) => {
               <OrderbookIcon className="h-4 w-4" side="buy" />
             </button>
           </Tooltip>
-          <Tooltip content="Show Sells" placement="top">
+          <Tooltip
+            content={showSells ? 'Hide Sells' : 'Show Sells'}
+            placement="top"
+          >
             <button
               className={`rounded ${
                 showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
@@ -382,7 +388,7 @@ const Orderbook = ({ depth = 12 }) => {
         </Tooltip>
       </div>
       <div className="flex items-center justify-between px-4 pb-2 text-xs text-th-fgd-4">
-        <div className="pl-4">Size</div>
+        <div>Size</div>
         <div>Price</div>
       </div>
       <div className="">
@@ -538,7 +544,7 @@ const OrderbookRow = ({
           <div className="flex w-full justify-start pl-2">
             <div
               style={{ fontFeatureSettings: 'zero 1' }}
-              className={`z-10 w-16 text-right font-mono text-xs leading-5 md:leading-6 ${
+              className={`z-10 w-16 pl-2 font-mono text-xs leading-5 md:leading-6 ${
                 /*hasOpenOrder*/ false ? 'text-th-primary' : ''
               }`}
               // onClick={handleSizeClick}
