@@ -18,7 +18,7 @@ const Stats: NextPage = () => {
   const { pathname, asPath, query } = router
 
   return (
-    <div className="pb-20">
+    <div className="pb-20 md:pb-16">
       <div className="grid grid-cols-12">
         <div className="col-span-12">
           <TokenStats />

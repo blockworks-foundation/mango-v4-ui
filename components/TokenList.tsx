@@ -82,8 +82,8 @@ const TokenList = () => {
   }, [connected])
 
   return (
-    <ContentBox hideBorder hidePadding className="-mt-[51px]">
-      <div className="mb-4 flex items-center justify-end pr-6">
+    <ContentBox hideBorder hidePadding className="-mt-[36px]">
+      <div className="mb-5 flex items-center justify-end pr-6">
         <Switch
           className="text-th-fgd-3"
           checked={showZeroBalances}

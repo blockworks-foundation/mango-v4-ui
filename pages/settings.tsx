@@ -47,7 +47,7 @@ const Settings: NextPage = () => {
   }
 
   return (
-    <div className="p-8 pb-20 lg:p-10">
+    <div className="p-8 pb-20 md:pb-16 lg:p-10">
       <div className="grid grid-cols-12">
         <div className="col-span-12 border-b border-th-bkg-3 lg:col-span-8 lg:col-start-3">
           <h2 className="mb-4 text-base">Display</h2>

@@ -9,18 +9,18 @@ import {
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { breakpoints } from '../utils/theme'
-import { useViewport } from '../hooks/useViewport'
-import { IconButton } from './shared/Button'
+import { breakpoints } from '../../utils/theme'
+import { useViewport } from '../../hooks/useViewport'
+import { IconButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
-import SheenLoader from './shared/SheenLoader'
+import SheenLoader from '../shared/SheenLoader'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { TradeHistoryItem } from '@store/mangoStore'
 import {
   countLeadingZeros,
   formatFixedDecimals,
   trimDecimals,
-} from '../utils/numbers'
+} from '../../utils/numbers'
 
 const SwapHistoryTable = ({
   tradeHistory,
@@ -43,7 +43,7 @@ const SwapHistoryTable = ({
     !loading ? (
       tradeHistory.length ? (
         showTableView ? (
-          <table className="mt-2 min-w-full">
+          <table className="min-w-full">
             <thead>
               <tr>
                 <th className="text-left">{t('date')}</th>
@@ -341,9 +341,9 @@ const SwapHistoryTable = ({
           </div>
         )
       ) : (
-        <div className="mt-8 flex flex-col items-center rounded-md border border-th-bkg-3 p-8">
+        <div className="flex flex-col items-center border-b border-th-bkg-3 p-8">
           <ClockIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-          <p>No trade history found...</p>
+          <p>No swap history found...</p>
         </div>
       )
     ) : (
@@ -363,7 +363,7 @@ const SwapHistoryTable = ({
       </div>
     )
   ) : (
-    <div className="mt-8 flex flex-col items-center rounded-md border border-th-bkg-3 p-8">
+    <div className="flex flex-col items-center border-b border-th-bkg-3 p-8">
       <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>Connect to view your swap history</p>
     </div>
