@@ -387,9 +387,9 @@ const Orderbook = ({ depth = 12 }) => {
           />
         </Tooltip>
       </div>
-      <div className="flex items-center justify-between px-4 pb-2 text-xs text-th-fgd-4">
-        <div>Size</div>
-        <div>Price</div>
+      <div className="grid grid-cols-2 px-4 pb-2 text-xs text-th-fgd-4">
+        <div className="col-span-1 text-right">Size</div>
+        <div className="col-span-1 text-right">Price</div>
       </div>
       <div className="">
         {showSells
@@ -421,12 +421,14 @@ const Orderbook = ({ depth = 12 }) => {
             )
           : null}
         {showBuys && showSells ? (
-          <div className="my-2 flex justify-between border-y border-th-bkg-2 py-2 px-4 text-xs">
-            <div className="text-th-fgd-3">{t('spread')}</div>
-            <div className="text-th-fgd-1">
-              {orderbookData?.spread.toFixed(2)}
+          <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs">
+            <div className="col-span-1 flex justify-between">
+              <div className="text-th-fgd-3">{t('spread')}</div>
+              <div className="text-th-fgd-1">
+                {orderbookData?.spread.toFixed(2)}
+              </div>
             </div>
-            <div className="text-th-fgd-1">
+            <div className="col-span-1 text-right text-th-fgd-1">
               {orderbookData?.spreadPercentage.toFixed(2)}%
             </div>
           </div>
@@ -544,7 +546,7 @@ const OrderbookRow = ({
           <div className="flex w-full justify-start pl-2">
             <div
               style={{ fontFeatureSettings: 'zero 1' }}
-              className={`z-10 w-16 pl-2 font-mono text-xs leading-5 md:leading-6 ${
+              className={`z-10 w-full text-right font-mono text-xs leading-5 md:leading-6 ${
                 /*hasOpenOrder*/ false ? 'text-th-primary' : ''
               }`}
               // onClick={handleSizeClick}
@@ -561,7 +563,7 @@ const OrderbookRow = ({
         </div>
 
         <Line
-          className={`absolute right-0 opacity-90 ${
+          className={`absolute left-0 opacity-90 ${
             side === 'buy' ? `bg-th-green-muted` : `bg-th-red-muted`
           }`}
           data-width={sizePercent + '%'}
