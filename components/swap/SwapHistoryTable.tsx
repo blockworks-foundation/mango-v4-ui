@@ -341,7 +341,7 @@ const SwapHistoryTable = ({
           </div>
         )
       ) : (
-        <div className="flex flex-col items-center border-b border-th-bkg-3 p-8">
+        <div className="flex flex-col items-center p-8">
           <ClockIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
           <p>No swap history found...</p>
         </div>
@@ -363,7 +363,7 @@ const SwapHistoryTable = ({
       </div>
     )
   ) : (
-    <div className="flex flex-col items-center border-b border-th-bkg-3 p-8">
+    <div className="flex flex-col items-center p-8">
       <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>Connect to view your swap history</p>
     </div>

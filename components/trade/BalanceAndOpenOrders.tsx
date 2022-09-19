@@ -2,8 +2,9 @@ import { Serum3Side } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
 import SideBadge from '@components/shared/SideBadge'
 import TabButtons from '@components/shared/TabButtons'
-import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import { LinkIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
+import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -135,6 +136,7 @@ const Balances = () => {
 
 const OpenOrders = () => {
   const { t } = useTranslation('common')
+  const { connected } = useWallet()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
 
   const handleCancelOrder = useCallback(
@@ -172,35 +174,46 @@ const OpenOrders = () => {
     [t]
   )
 
-  return (
-    <table>
-      <thead>
-        <tr className="">
-          <th className="text-right">Side</th>
-          <th className="text-right">Size</th>
-          <th className="text-right">Price</th>
-          <th className="text-right"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {openOrders.map((o) => {
-          return (
-            <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
-              <td className="text-right">
-                <SideBadge side={o.side} />
-              </td>
-              <td className="text-right">{o.size}</td>
-              <td className="text-right">{o.price}</td>
-              <td className="text-right">
-                <Button size="small" onClick={() => handleCancelOrder(o)}>
-                  Cancel
-                </Button>
-              </td>
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
+  return connected ? (
+    openOrders.length ? (
+      <table>
+        <thead>
+          <tr className="">
+            <th className="text-right">Side</th>
+            <th className="text-right">Size</th>
+            <th className="text-right">Price</th>
+            <th className="text-right"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {openOrders.map((o) => {
+            return (
+              <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
+                <td className="text-right">
+                  <SideBadge side={o.side} />
+                </td>
+                <td className="text-right">{o.size}</td>
+                <td className="text-right">{o.price}</td>
+                <td className="text-right">
+                  <Button size="small" onClick={() => handleCancelOrder(o)}>
+                    Cancel
+                  </Button>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    ) : (
+      <div className="flex flex-col items-center p-8">
+        <p>No open orders...</p>
+      </div>
+    )
+  ) : (
+    <div className="flex flex-col items-center p-8">
+      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+      <p>Connect to view your open orders</p>
+    </div>
   )
 }
 
