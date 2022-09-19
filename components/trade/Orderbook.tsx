@@ -1,7 +1,7 @@
 import { AccountInfo } from '@solana/web3.js'
 import Big from 'big.js'
 import mangoStore from '@store/mangoStore'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
 import useInterval from '@components/shared/useInterval'
 import isEqualLodash from 'lodash/isEqual'
@@ -401,8 +401,9 @@ const Orderbook = ({ depth = 12 }) => {
                 sizePercent,
                 maxSizePercent,
               }: cumOrderbookSide) => (
-                <OrderbookRow
-                  market={serum3MarketExternal}
+                <MemoizedOrderbookRow
+                  minOrderSize={serum3MarketExternal.minOrderSize}
+                  tickSize={serum3MarketExternal.tickSize}
                   // hasOpenOrder={hasOpenOrderForPriceGroup(
                   //   openOrderPrices,
                   //   price,
@@ -442,14 +443,15 @@ const Orderbook = ({ depth = 12 }) => {
                 sizePercent,
                 maxSizePercent,
               }: cumOrderbookSide) => (
-                <OrderbookRow
-                  market={serum3MarketExternal}
+                <MemoizedOrderbookRow
+                  minOrderSize={serum3MarketExternal.minOrderSize}
+                  tickSize={serum3MarketExternal.tickSize}
                   // hasOpenOrder={hasOpenOrderForPriceGroup(
                   //   openOrderPrices,
                   //   price,
                   //   grouping
                   // )}
-                  key={price + ''}
+                  key={price}
                   price={price}
                   size={displayCumulativeSize ? cumulativeSize : size}
                   side="buy"
@@ -473,7 +475,8 @@ const OrderbookRow = ({
   sizePercent,
   // invert,
   // hasOpenOrder,
-  market,
+  minOrderSize,
+  tickSize,
   grouping,
 }: {
   side: 'buy' | 'sell'
@@ -483,7 +486,8 @@ const OrderbookRow = ({
   // hasOpenOrder: boolean
   // invert: boolean
   grouping: number
-  market: Market
+  minOrderSize: number
+  tickSize: number
 }) => {
   const element = useRef<HTMLDivElement>(null)
   // const set = mangoStore.getState().set
@@ -504,13 +508,13 @@ const OrderbookRow = ({
   }, [price, size])
 
   const formattedSize =
-    market!.minOrderSize && !isNaN(size)
-      ? floorToDecimal(size, getDecimalCount(market.minOrderSize))
+    minOrderSize && !isNaN(size)
+      ? floorToDecimal(size, getDecimalCount(minOrderSize))
       : new Decimal(size)
 
   const formattedPrice =
-    market!.tickSize && !isNaN(price)
-      ? floorToDecimal(price, getDecimalCount(market.tickSize))
+    tickSize && !isNaN(price)
+      ? floorToDecimal(price, getDecimalCount(tickSize))
       : new Decimal(price)
 
   // const handlePriceClick = () => {
@@ -530,11 +534,11 @@ const OrderbookRow = ({
     [grouping]
   )
   const minOrderSizeDecimals = useMemo(
-    () => getDecimalCount(market.minOrderSize),
-    [market.minOrderSize]
+    () => getDecimalCount(minOrderSize),
+    [minOrderSize]
   )
 
-  if (!market) return null
+  if (!minOrderSize) return null
 
   return (
     <div
@@ -572,6 +576,8 @@ const OrderbookRow = ({
     </div>
   )
 }
+
+const MemoizedOrderbookRow = React.memo(OrderbookRow)
 
 const Line = (props: any) => {
   return (
