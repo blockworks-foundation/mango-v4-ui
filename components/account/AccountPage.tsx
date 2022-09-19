@@ -324,34 +324,39 @@ const AccountPage = () => {
         />
       ) : null}
     </>
-  ) : chartToShow === 'account-value' ? (
-    <AccountChart
-      chartToShow="account-value"
-      data={performanceData}
-      hideChart={handleHideChart}
-      mangoAccount={mangoAccount!}
-      yKey="account_equity"
-    />
-  ) : chartToShow === 'pnl' ? (
-    <AccountChart
-      chartToShow="pnl"
-      data={performanceData}
-      hideChart={handleHideChart}
-      mangoAccount={mangoAccount!}
-      yKey="pnl"
-    />
   ) : (
-    <AccountChart
-      chartToShow="cumulative-interest-value"
-      data={performanceData.map((d) => ({
-        interest_value:
-          d.borrow_interest_cumulative_usd + d.deposit_interest_cumulative_usd,
-        time: d.time,
-      }))}
-      hideChart={handleHideChart}
-      mangoAccount={mangoAccount!}
-      yKey="interest_value"
-    />
+    <div className="p-6">
+      {chartToShow === 'account-value' ? (
+        <AccountChart
+          chartToShow="account-value"
+          data={performanceData}
+          hideChart={handleHideChart}
+          mangoAccount={mangoAccount!}
+          yKey="account_equity"
+        />
+      ) : chartToShow === 'pnl' ? (
+        <AccountChart
+          chartToShow="pnl"
+          data={performanceData}
+          hideChart={handleHideChart}
+          mangoAccount={mangoAccount!}
+          yKey="pnl"
+        />
+      ) : (
+        <AccountChart
+          chartToShow="cumulative-interest-value"
+          data={performanceData.map((d) => ({
+            interest_value:
+              d.borrow_interest_cumulative_usd +
+              d.deposit_interest_cumulative_usd,
+            time: d.time,
+          }))}
+          hideChart={handleHideChart}
+          mangoAccount={mangoAccount!}
+          yKey="interest_value"
+        />
+      )}
+    </div>
   )
 }
 
