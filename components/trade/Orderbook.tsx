@@ -345,8 +345,25 @@ const Orderbook = ({ depth = 12 }) => {
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
-      <div className="sticky top-0 z-20 flex h-[49px] items-center border-b border-th-bkg-3 bg-th-bkg-1 px-4">
-        <h2 className="text-sm text-th-fgd-3">Orderbook</h2>
+      <div className="sticky top-0 z-20 grid h-[49px] select-none grid-cols-2 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 text-base">
+        <div
+          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
+            true
+              ? 'bg-th-bkg-2 text-th-primary'
+              : 'text-th-fgd-4 hover:text-th-fgd-2'
+          }`}
+        >
+          Orderbook
+        </div>
+        <div
+          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
+            false
+              ? 'bg-th-bkg-2 text-th-primary'
+              : 'text-th-fgd-4 hover:text-th-fgd-2'
+          }`}
+        >
+          Trades
+        </div>
       </div>
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center space-x-2">
