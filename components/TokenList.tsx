@@ -153,7 +153,7 @@ const TokenList = () => {
                         {logoURI ? (
                           <Image alt="" width="24" height="24" src={logoURI} />
                         ) : (
-                          <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                          <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                         )}
                       </div>
                       <p className="font-body tracking-wide">{bank.name}</p>

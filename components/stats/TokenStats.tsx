@@ -57,8 +57,8 @@ const TokenList = () => {
 
   return (
     <ContentBox hideBorder hidePadding>
-      <div className="mb-8 grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-[40px] md:border-b-0">
-        <div className="col-span-2 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-t-0 md:py-1">
+      <div className="grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-[40px]">
+        <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-t-0 ">
           <p className="mb-2.5 leading-none">{t('total-deposit-value')}</p>
           <div className="flex items-center font-bold">
             <FlipNumbers
@@ -71,7 +71,7 @@ const TokenList = () => {
             />
           </div>
         </div>
-        <div className="col-span-2 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:py-1 md:pl-6">
+        <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
           <p className="mb-2.5 leading-none">{t('total-borrow-value')}</p>
           <div className="flex items-center font-bold">
             <FlipNumbers
@@ -115,16 +115,13 @@ const TokenList = () => {
               </th>
               <th>
                 <div className="flex items-center justify-end">
-                  <span>{t('asset-weight')}</span>
+                  <span className="text-right">{t('asset-weight')}</span>
                   <InfoTooltip content={t('asset-weight-desc')} />
                 </div>
               </th>
               <th>
                 <div className="flex items-center justify-end">
-                  <span>{t('liability-weight')}</span>
-                  {/* <InfoTooltip
-                    content=""
-                  /> */}
+                  <span className="text-right">{t('liability-weight')}</span>
                 </div>
               </th>
             </tr>
@@ -147,12 +144,12 @@ const TokenList = () => {
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         {logoURI ? (
-                          <Image alt="" width="26" height="26" src={logoURI} />
+                          <Image alt="" width="24" height="24" src={logoURI} />
                         ) : (
-                          <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                          <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                         )}
                       </div>
-                      <p>{bank.name}</p>
+                      <p className="font-body tracking-wide">{bank.name}</p>
                     </div>
                   </td>
                   <td>
@@ -218,7 +215,7 @@ const TokenList = () => {
           </tbody>
         </table>
       ) : (
-        <div className="mt-4 space-y-2">
+        <div>
           {banks.map(({ key, value }) => {
             const bank = value[0]
             const oraclePrice = bank.uiPrice
@@ -229,7 +226,7 @@ const TokenList = () => {
               )!.logoURI
             }
             return (
-              <div key={key} className="rounded-md border border-th-bkg-4 p-4">
+              <div key={key} className="border-b border-th-bkg-3 px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -239,11 +236,23 @@ const TokenList = () => {
                         <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
                       )}
                     </div>
-                    <div>
-                      <p>{bank.name}</p>
-                    </div>
+                    <p className="text-th-fgd-1">{bank.name}</p>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-4">
+                    <div>
+                      <p className="text-right text-xs">
+                        {t('total-deposits')}
+                      </p>
+                      <p className="text-right font-mono text-th-fgd-1">
+                        {formatFixedDecimals(bank.uiDeposits())}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-right text-xs">{t('total-borrows')}</p>
+                      <p className="text-right font-mono text-th-fgd-1">
+                        {formatFixedDecimals(bank.uiBorrows())}
+                      </p>
+                    </div>
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.name)}
                     >
@@ -271,28 +280,51 @@ const TokenList = () => {
                   <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('price')}</p>
-                      <p className="font-bold">
+                      <p className="font-mono text-th-fgd-1">
                         ${formatDecimal(oraclePrice!, 2)}
                       </p>
                     </div>
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('rates')}</p>
-                      <p className="space-x-2 font-bold">
-                        <span className="text-th-green">
+                      <p className="space-x-2">
+                        <span className="font-mono text-th-green">
                           {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
                         </span>
                         <span className="font-normal text-th-fgd-4">|</span>
-                        <span className="text-th-red">
+                        <span className="font-mono text-th-red">
                           {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
                         </span>
                       </p>
                     </div>
                     <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">{t('liquidity')}</p>
-                      <p className="font-bold">
-                        {group
-                          ? group.getTokenVaultBalanceByMintUi(bank.mint)
-                          : '-'}
+                      <p className="text-xs text-th-fgd-3">
+                        {t('utilization')}
+                      </p>
+                      <p className="font-mono text-th-fgd-1">
+                        {bank.uiDeposits() > 0
+                          ? formatDecimal(
+                              (bank.uiBorrows() / bank.uiDeposits()) * 100,
+                              1,
+                              { fixed: true }
+                            )
+                          : '0.0'}
+                        %
+                      </p>
+                    </div>
+                    <div className="col-span-1">
+                      <p className="text-xs text-th-fgd-3">
+                        {t('asset-weight')}
+                      </p>
+                      <p className="font-mono text-th-fgd-1">
+                        {bank.initAssetWeight.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="col-span-1">
+                      <p className="text-xs text-th-fgd-3">
+                        {t('liability-weight')}
+                      </p>
+                      <p className="font-mono text-th-fgd-1">
+                        {bank.initLiabWeight.toFixed(2)}
                       </p>
                     </div>
                   </div>
