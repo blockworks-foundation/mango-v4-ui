@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 // import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
@@ -14,14 +14,21 @@ import AdvancedTradeForm from './AdvancedTradeForm'
 import BalanceAndOpenOrders from './BalanceAndOpenOrders'
 import MobileTradeAdvancedPage from './MobileTradeAdvancedPage'
 
-const ResponsiveGridLayout = WidthProvider(Responsive)
-
 const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
   ssr: false,
 })
 
-const sidebarWidth = 65
+const ResponsiveGridLayout = WidthProvider(Responsive)
+const getCurrentBreakpoint = () => {
+  // @ts-ignore
+  return Responsive.utils.getBreakpointFromWidth(
+    gridBreakpoints,
+    window.innerWidth - 63
+  )
+}
 
+const sidebarWidth = 65
+const totalCols = 24
 const gridBreakpoints = {
   md: breakpoints.md - sidebarWidth,
   lg: breakpoints.lg - sidebarWidth,
@@ -29,44 +36,14 @@ const gridBreakpoints = {
   xxl: breakpoints['2xl'] - sidebarWidth,
   xxxl: breakpoints['3xl'] - sidebarWidth,
 }
-const totalCols = 24
 
-const defaultLayouts = {
-  xxxl: [
-    { i: 'market-header', x: 0, y: 0, w: 16, h: 48 },
-    { i: 'tv-chart', x: 0, y: 1, w: 16, h: 676 },
-    { i: 'balances', x: 0, y: 2, w: 16, h: 388 },
-    { i: 'orderbook', x: 16, y: 0, w: 4, h: 1113 },
-    { i: 'trade-form', x: 20, y: 0, w: 4, h: 1113 },
-  ],
-  xxl: [
-    { i: 'market-header', x: 0, y: 0, w: 15, h: 48 },
-    { i: 'tv-chart', x: 0, y: 1, w: 15, h: 576 },
-    { i: 'balances', x: 0, y: 2, w: 15, h: 388 },
-    { i: 'orderbook', x: 15, y: 0, w: 4, h: 1013 },
-    { i: 'trade-form', x: 19, y: 0, w: 5, h: 1013 },
-  ],
-  xl: [
-    { i: 'market-header', x: 0, y: 0, w: 14, h: 48 },
-    { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
-    { i: 'balances', x: 0, y: 2, w: 14, h: 388 },
-    { i: 'orderbook', x: 14, y: 0, w: 4, h: 957 },
-    { i: 'trade-form', x: 18, y: 0, w: 6, h: 957 },
-  ],
-  lg: [
-    { i: 'market-header', x: 0, y: 0, w: 14, h: 48 },
-    { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
-    { i: 'balances', x: 0, y: 2, w: 14, h: 388 },
-    { i: 'orderbook', x: 14, y: 0, w: 4, h: 957 },
-    { i: 'trade-form', x: 18, y: 0, w: 6, h: 957 },
-  ],
-  md: [
-    { i: 'market-header', x: 0, y: 0, w: 18, h: 48 },
-    { i: 'tv-chart', x: 0, y: 1, w: 18, h: 520 },
-    { i: 'balances', x: 0, y: 2, w: 18, h: 488 },
-    { i: 'orderbook', x: 18, y: 2, w: 6, h: 489 },
-    { i: 'trade-form', x: 18, y: 1, w: 6, h: 568 },
-  ],
+const getHeight = (
+  pageHeight: number,
+  minHeight: number,
+  remainingRowHeight: number
+) => {
+  console.log(Math.max(minHeight, pageHeight - remainingRowHeight))
+  return Math.max(minHeight, pageHeight - remainingRowHeight)
 }
 
 const TradeAdvancedPage = () => {
@@ -76,71 +53,114 @@ const TradeAdvancedPage = () => {
   const { uiLocked } = mangoStore((s) => s.settings)
   const showMobileView = width <= breakpoints.md
 
-  // const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
-  //   const innerHeight = Math.max(height - 36, 800)
-  //   const tvChartHeight = 432
-  //   const headerHeight = 48
-  //   const balancesHeight = innerHeight - tvChartHeight - headerHeight
+  const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
+    const topnavbarHeight = 67
+    const innerHeight = Math.max(height - topnavbarHeight, 800)
+    const marketHeaderHeight = 48
 
-  //   return {
-  //     xxxl: [
-  //       { i: 'market-header', x: 0, y: 0, w: 16, h: headerHeight },
-  //       { i: 'tv-chart', x: 0, y: 1, w: 16, h: tvChartHeight },
-  //       { i: 'balances', x: 0, y: 2, w: 16, h: balancesHeight },
-  //       { i: 'orderbook', x: 16, y: 1, w: 4, h: innerHeight },
-  //       { i: 'trade-form', x: 20, y: 1, w: 4, h: innerHeight },
-  //     ],
-  //     xxl: [
-  //       { i: 'market-header', x: 0, y: 0, w: 14, h: headerHeight },
-  //       { i: 'tv-chart', x: 0, y: 1, w: 14, h: tvChartHeight },
-  //       { i: 'balances', x: 0, y: 2, w: 14, h: balancesHeight },
-  //       { i: 'orderbook', x: 14, y: 1, w: 5, h: innerHeight },
-  //       { i: 'trade-form', x: 20, y: 1, w: 5, h: innerHeight },
-  //     ],
-  //     xl: [
-  //       { i: 'market-header', x: 0, y: 0, w: 14, h: headerHeight },
-  //       { i: 'tv-chart', x: 0, y: 1, w: 14, h: tvChartHeight },
-  //       { i: 'balances', x: 0, y: 2, w: 14, h: balancesHeight },
-  //       { i: 'orderbook', x: 14, y: 1, w: 5, h: innerHeight },
-  //       { i: 'trade-form', x: 20, y: 1, w: 5, h: innerHeight },
-  //     ],
-  //   }
-  // }, [height])
+    return {
+      xxxl: [
+        { i: 'market-header', x: 0, y: 0, w: 16, h: marketHeaderHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 16, h: 676 },
+        {
+          i: 'balances',
+          x: 0,
+          y: 2,
+          w: 16,
+          h: getHeight(innerHeight, 300, 676 + marketHeaderHeight),
+        },
+        {
+          i: 'orderbook',
+          x: 16,
+          y: 0,
+          w: 4,
+          h: getHeight(innerHeight, 976, marketHeaderHeight),
+        },
+        { i: 'trade-form', x: 20, y: 0, w: 4, h: getHeight(innerHeight, 0, 0) },
+      ],
+      xxl: [
+        { i: 'market-header', x: 0, y: 0, w: 15, h: marketHeaderHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 15, h: 576 },
+        {
+          i: 'balances',
+          x: 0,
+          y: 2,
+          w: 15,
+          h: getHeight(innerHeight, 300, 576 + marketHeaderHeight),
+        },
+        {
+          i: 'orderbook',
+          x: 15,
+          y: 0,
+          w: 4,
+          h: getHeight(innerHeight, 876, marketHeaderHeight),
+        },
+        { i: 'trade-form', x: 19, y: 0, w: 5, h: getHeight(innerHeight, 0, 0) },
+      ],
+      xl: [
+        { i: 'market-header', x: 0, y: 0, w: 14, h: marketHeaderHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
+        {
+          i: 'balances',
+          x: 0,
+          y: 2,
+          w: 14,
+          h: getHeight(innerHeight, 300, 520 + marketHeaderHeight),
+        },
+        {
+          i: 'orderbook',
+          x: 14,
+          y: 0,
+          w: 4,
+          h: getHeight(innerHeight, 820, marketHeaderHeight),
+        },
+        { i: 'trade-form', x: 18, y: 0, w: 6, h: getHeight(innerHeight, 0, 0) },
+      ],
+      lg: [
+        { i: 'market-header', x: 0, y: 0, w: 14, h: marketHeaderHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
+        {
+          i: 'balances',
+          x: 0,
+          y: 2,
+          w: 14,
+          h: getHeight(innerHeight, 300, 520 + marketHeaderHeight),
+        },
+        {
+          i: 'orderbook',
+          x: 14,
+          y: 0,
+          w: 4,
+          h: getHeight(innerHeight, 820, marketHeaderHeight),
+        },
+        { i: 'trade-form', x: 18, y: 0, w: 6, h: getHeight(innerHeight, 0, 0) },
+      ],
+      md: [
+        { i: 'market-header', x: 0, y: 0, w: 18, h: marketHeaderHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 18, h: 520 },
+        { i: 'balances', x: 0, y: 2, w: 18, h: 488 },
+        { i: 'orderbook', x: 18, y: 2, w: 6, h: 489 },
+        { i: 'trade-form', x: 18, y: 1, w: 6, h: 568 },
+      ],
+    }
+  }, [height])
 
   const [savedLayouts, setSavedLayouts] = useLocalStorageState(
     GRID_LAYOUT_KEY,
     defaultLayouts
   )
 
-  // const getCurrentBreakpoint = () => {
-  //   const breakpointsArray = Object.entries(gridBreakpoints)
-  //   let bp
-  //   for (let i = 0; i < breakpointsArray.length; ++i) {
-  //     if (
-  //       width > breakpointsArray[i][1] &&
-  //       width < breakpointsArray[i + 1][1] &&
-  //       i <= breakpointsArray.length - 1
-  //     ) {
-  //       bp = breakpointsArray[i][0]
-  //     } else if (width >= breakpointsArray[breakpointsArray.length - 1][1]) {
-  //       bp = breakpointsArray[breakpointsArray.length - 1][0]
-  //     }
-  //   }
-
-  //   return bp
-  // }
-
   useEffect(() => {
     const adjustOrderBook = (
       layouts: ReactGridLayout.Layouts,
       breakpoint?: string | null
     ) => {
-      const bp = 'xxl'
+      const bp = breakpoint ? breakpoint : getCurrentBreakpoint()
       if (bp) {
         const orderbookLayout = layouts[bp].find((obj) => {
           return obj.i === 'orderbook'
         })
-        let depth = orderbookLayout!.h / 24 / 2
+        let depth = (orderbookLayout!.h / 24 / 2) * 1.25
         const maxNum = Math.max(1, depth)
         if (typeof maxNum === 'number') {
           depth = Math.round(maxNum)

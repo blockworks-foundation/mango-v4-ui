@@ -249,12 +249,12 @@ table caption {
   @apply my-2;
 }
 
-table tr {
-  @apply border-y border-th-bkg-3 p-2;
+tbody tr {
+  @apply border-y border-th-bkg-2 p-2;
 }
 
 thead tr {
-  @apply border-0;
+  @apply border-b border-th-bkg-3;
 }
 
 table td {

@@ -344,29 +344,29 @@ const Orderbook = ({ depth = 12 }) => {
   if (!serum3MarketExternal) return null
 
   return (
-    <div className="hide-scroll h-full overflow-y-scroll">
-      <div className="sticky top-0 z-20 bg-th-bkg-1">
-        <div className="grid h-[49px] select-none grid-cols-2 items-center justify-between border-b border-th-bkg-3 text-base">
-          <div
-            className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-              true
-                ? 'bg-th-bkg-2 text-th-primary'
-                : 'text-th-fgd-4 hover:text-th-fgd-2'
-            }`}
-          >
+    <div className="hide-scroll h-full">
+      <div className="grid h-[49px] select-none grid-cols-2 items-center justify-between border-b border-th-bkg-3 text-base">
+        <div
+          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
+            true
+              ? 'bg-th-bkg-2 text-th-primary'
+              : 'text-th-fgd-4 hover:text-th-fgd-2'
+          }`}
+        >
             Book
-          </div>
-          <div
-            className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-              false
-                ? 'bg-th-bkg-2 text-th-primary'
-                : 'text-th-fgd-4 hover:text-th-fgd-2'
-            }`}
-          >
-            Trades
-          </div>
         </div>
-        <div className="flex items-center justify-between px-4 py-3">
+        <div
+          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
+            false
+              ? 'bg-th-bkg-2 text-th-primary'
+              : 'text-th-fgd-4 hover:text-th-fgd-2'
+          }`}
+        >
+          Trades
+        </div>
+      </div>
+      <div className="flex h-full flex-col">
+        <div className="flex items-center justify-between border-x border-b border-th-bkg-3 px-4 py-2">
           <div className="flex items-center space-x-2">
             <Tooltip
               content={showBuys ? 'Hide Buys' : 'Show Buys'}
@@ -405,83 +405,83 @@ const Orderbook = ({ depth = 12 }) => {
             />
           </Tooltip>
         </div>
-        <div className="grid grid-cols-2 px-4 pb-2 text-xs text-th-fgd-4">
+        <div className="grid grid-cols-2 px-4 py-2 text-xs text-th-fgd-4">
           <div className="col-span-1 text-right">Size</div>
           <div className="col-span-1 text-right">Price</div>
         </div>
-      </div>
-      <div className="">
-        {showSells
-          ? orderbookData?.asks.map(
-              ({
-                price,
-                size,
-                cumulativeSize,
-                sizePercent,
-                maxSizePercent,
-              }: cumOrderbookSide) => (
-                <MemoizedOrderbookRow
-                  minOrderSize={serum3MarketExternal.minOrderSize}
-                  tickSize={serum3MarketExternal.tickSize}
-                  // hasOpenOrder={hasOpenOrderForPriceGroup(
-                  //   openOrderPrices,
-                  //   price,
-                  //   grouping
-                  // )}
-                  key={price + ''}
-                  price={price}
-                  size={displayCumulativeSize ? cumulativeSize : size}
-                  side="sell"
-                  sizePercent={
-                    displayCumulativeSize ? maxSizePercent : sizePercent
-                  }
-                  grouping={grouping}
-                />
+        <div className="hide-scroll relative h-full overflow-y-scroll">
+          {showSells
+            ? orderbookData?.asks.map(
+                ({
+                  price,
+                  size,
+                  cumulativeSize,
+                  sizePercent,
+                  maxSizePercent,
+                }: cumOrderbookSide) => (
+                  <MemoizedOrderbookRow
+                    minOrderSize={serum3MarketExternal.minOrderSize}
+                    tickSize={serum3MarketExternal.tickSize}
+                    // hasOpenOrder={hasOpenOrderForPriceGroup(
+                    //   openOrderPrices,
+                    //   price,
+                    //   grouping
+                    // )}
+                    key={price + ''}
+                    price={price}
+                    size={displayCumulativeSize ? cumulativeSize : size}
+                    side="sell"
+                    sizePercent={
+                      displayCumulativeSize ? maxSizePercent : sizePercent
+                    }
+                    grouping={grouping}
+                  />
+                )
               )
-            )
-          : null}
-        {showBuys && showSells ? (
-          <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs">
-            <div className="col-span-1 flex justify-between">
-              <div className="text-th-fgd-3">{t('spread')}</div>
-              <div className="text-th-fgd-1">
+            : null}
+          {showBuys && showSells ? (
+            <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4">
+              <div className="col-span-1 flex justify-between">
+                <div className="">{t('spread')}</div>
+                <div className="">
+                  {orderbookData?.spreadPercentage.toFixed(2)}%
+                </div>
+              </div>
+              <div className="col-span-1 text-right">
                 {orderbookData?.spread.toFixed(2)}
               </div>
             </div>
-            <div className="col-span-1 text-right text-th-fgd-1">
-              {orderbookData?.spreadPercentage.toFixed(2)}%
-            </div>
-          </div>
-        ) : null}
-        {showBuys
-          ? orderbookData?.bids.map(
-              ({
-                price,
-                size,
-                cumulativeSize,
-                sizePercent,
-                maxSizePercent,
-              }: cumOrderbookSide) => (
-                <MemoizedOrderbookRow
-                  minOrderSize={serum3MarketExternal.minOrderSize}
-                  tickSize={serum3MarketExternal.tickSize}
-                  // hasOpenOrder={hasOpenOrderForPriceGroup(
-                  //   openOrderPrices,
-                  //   price,
-                  //   grouping
-                  // )}
-                  key={price}
-                  price={price}
-                  size={displayCumulativeSize ? cumulativeSize : size}
-                  side="buy"
-                  sizePercent={
-                    displayCumulativeSize ? maxSizePercent : sizePercent
-                  }
-                  grouping={grouping}
-                />
+          ) : null}
+          {showBuys
+            ? orderbookData?.bids.map(
+                ({
+                  price,
+                  size,
+                  cumulativeSize,
+                  sizePercent,
+                  maxSizePercent,
+                }: cumOrderbookSide) => (
+                  <MemoizedOrderbookRow
+                    minOrderSize={serum3MarketExternal.minOrderSize}
+                    tickSize={serum3MarketExternal.tickSize}
+                    // hasOpenOrder={hasOpenOrderForPriceGroup(
+                    //   openOrderPrices,
+                    //   price,
+                    //   grouping
+                    // )}
+                    key={price}
+                    price={price}
+                    size={displayCumulativeSize ? cumulativeSize : size}
+                    side="buy"
+                    sizePercent={
+                      displayCumulativeSize ? maxSizePercent : sizePercent
+                    }
+                    grouping={grouping}
+                  />
+                )
               )
-            )
-          : null}
+            : null}
+        </div>
       </div>
     </div>
   )
