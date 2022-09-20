@@ -28,6 +28,7 @@ import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
 import PercentageChange from './shared/PercentageChange'
 import SimpleAreaChart from './shared/SimpleAreaChart'
+import Tooltip from './shared/Tooltip'
 
 const TokenList = () => {
   const { t } = useTranslation('common')
@@ -36,7 +37,6 @@ const TokenList = () => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
   const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
-  const actions = mangoStore((s) => s.actions)
   const group = mangoStore((s) => s.group)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const totalInterestData = mangoStore(
@@ -98,9 +98,23 @@ const TokenList = () => {
           <thead>
             <tr>
               <th className="text-left">{t('token')}</th>
-              <th className="text-right">{t('balance')}</th>
-              <th className="text-right">{t('interest-earned-paid')}</th>
-              <th className="text-right">{t('rates')}</th>
+              <th className="text-right">
+                <Tooltip content="If your balance is negative, you have a borrow for that token, of that amount.">
+                  <span className="tooltip-underline">{t('balance')}</span>
+                </Tooltip>
+              </th>
+              <th className="text-right">
+                <Tooltip content="The sum of interest earned and interest paid for each token.">
+                  <span className="tooltip-underline">
+                    {t('interest-earned-paid')}
+                  </span>
+                </Tooltip>
+              </th>
+              <th className="text-right">
+                <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right)">
+                  <span className="tooltip-underline">{t('rates')}</span>
+                </Tooltip>
+              </th>
               <th className="text-right">{t('price')}</th>
               <th className="hidden text-right lg:block"></th>
               <th className="text-right">{t('rolling-change')}</th>
