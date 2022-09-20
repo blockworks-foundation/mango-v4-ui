@@ -354,7 +354,7 @@ const Orderbook = ({ depth = 12 }) => {
                 : 'text-th-fgd-4 hover:text-th-fgd-2'
             }`}
           >
-            Orderbook
+            Book
           </div>
           <div
             className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${

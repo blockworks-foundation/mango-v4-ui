@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { notify } from 'utils/notifications'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 
-const TABS = ['Balances', 'Open Orders']
+const TABS = ['Balances', 'Orders']
 
 const BalanceAndOpenOrders = () => {
   const [selectedTab, setSelectedTab] = useState('Balances')
@@ -38,7 +38,7 @@ const BalanceAndOpenOrders = () => {
         />
       </div>
       {selectedTab === 'Balances' ? <Balances /> : null}
-      {selectedTab === 'Open Orders' ? <OpenOrders /> : null}
+      {selectedTab === 'Orders' ? <OpenOrders /> : null}
     </div>
   )
 }

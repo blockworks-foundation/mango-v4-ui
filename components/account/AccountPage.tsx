@@ -299,7 +299,6 @@ const AccountPage = () => {
           <div>
             <Tooltip
               content="The amount your account has made or lost."
-              // maxWidth="20rem"
               placement="bottom"
             >
               <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
