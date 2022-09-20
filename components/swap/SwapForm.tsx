@@ -33,7 +33,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
-import { useTokenMax } from './useTokenMax'
+import { getTokenInMax } from './useTokenMax'
 import WalletIcon from '../icons/WalletIcon'
 
 const MAX_DIGITS = 11
@@ -61,11 +61,22 @@ const SwapForm = () => {
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
+
   const {
     amount: tokenMax,
     amountWithBorrow,
     decimals,
-  } = useTokenMax(useMargin)
+  } = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (inputTokenInfo && group) {
+      return getTokenInMax(inputTokenInfo.address, group, useMargin)
+    }
+    return {
+      amount: new Decimal(0),
+      amountWithBorrow: new Decimal(0),
+      decimals: 6,
+    }
+  }, [inputTokenInfo, useMargin])
 
   const amountIn: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
@@ -234,6 +245,7 @@ const SwapForm = () => {
                 : handleTokenOutSelect
             }
             type={showTokenSelect}
+            useMargin={useMargin}
           />
         </EnterBottomExitBottom>
         <EnterBottomExitBottom

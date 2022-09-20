@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import mangoStore from '@store/mangoStore'
-import { useTokenMax } from './useTokenMax'
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
+import mangoStore from '../../store/mangoStore'
+import { getTokenInMax } from './useTokenMax'
 
 const LeverageSlider = ({
   amount,
@@ -74,7 +74,17 @@ export const SwapLeverageSlider = ({
   onChange: (x: string) => void
 }) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const { amountWithBorrow } = useTokenMax()
+  const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
+
+  const { amountWithBorrow } = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (inputTokenInfo && group) {
+      return getTokenInMax(inputTokenInfo.address, group, true)
+    }
+    return {
+      amountWithBorrow: new Decimal(0),
+    }
+  }, [inputTokenInfo])
 
   return (
     <>

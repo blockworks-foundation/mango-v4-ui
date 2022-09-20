@@ -22,6 +22,63 @@ export const getMaxWithdrawForBank = (
     : Decimal.min(accountBalance, vaultBalance, maxBorrow!)
 }
 
+export const getTokenInMax = (
+  inputTokenAddress: string,
+  group: Group,
+  useMargin: boolean
+) => {
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  const outputBank = mangoStore.getState().swap.outputBank
+  const inputBank = group.banksMapByMint.get(inputTokenAddress)![0]
+
+  if (!group || !inputBank || !mangoAccount || !outputBank) {
+    return {
+      amount: new Decimal(0.0),
+      decimals: 6,
+      amountWithBorrow: new Decimal(0.0),
+    }
+  }
+
+  const inputTokenBalance = floorToDecimal(
+    mangoAccount.getTokenBalanceUi(inputBank),
+    inputBank.mintDecimals
+  )
+  const maxAmountWithoutMargin = inputTokenBalance.gt(0)
+    ? inputTokenBalance
+    : new Decimal(0)
+  const maxUiAmountWithBorrow = floorToDecimal(
+    mangoAccount?.getMaxSourceUiForTokenSwap(
+      group,
+      inputBank.mint,
+      outputBank.mint,
+      1
+    )!,
+    inputBank.mintDecimals
+  )
+  const inputBankVaultBalance = group.getTokenVaultBalanceByMintUi(
+    inputBank.mint
+  )
+
+  const maxAmount = useMargin
+    ? Decimal.min(
+        maxAmountWithoutMargin,
+        inputBankVaultBalance,
+        maxUiAmountWithBorrow!
+      )
+    : Decimal.min(maxAmountWithoutMargin, inputBankVaultBalance)
+
+  const maxAmountWithBorrow = Decimal.min(
+    maxUiAmountWithBorrow!,
+    inputBankVaultBalance
+  )
+
+  return {
+    amount: maxAmount,
+    amountWithBorrow: maxAmountWithBorrow,
+    decimals: inputBank.mintDecimals,
+  }
+}
+
 export const useTokenMax = (useMargin = true) => {
   const { mangoAccount } = useMangoAccount()
   const inputBank = mangoStore((s) => s.swap.inputBank)

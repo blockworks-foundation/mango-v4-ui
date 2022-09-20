@@ -10,6 +10,9 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
+import { floorToDecimal } from '../../utils/numbers'
+import Decimal from 'decimal.js'
+import { getTokenInMax } from './useTokenMax'
 
 const generateSearchTerm = (item: Token, searchValue: string) => {
   const normalizedSearchValue = searchValue.toLowerCase()
@@ -40,17 +43,27 @@ const startSearch = (items: Token[], searchValue: string) => {
 const TokenItem = ({
   token,
   onSubmit,
+  useMargin,
+  type,
 }: {
   token: Token
   onSubmit: (x: string) => void
+  useMargin: boolean
+  type: string
 }) => {
   const { address, symbol, logoURI, name } = token
+
+  const isDisabled =
+    (type === 'input' && useMargin && token.amountWithBorrow!.eq(0)) ||
+    (type === 'input' && !useMargin && token.amount!.eq(0))
+
   return (
     <div>
       <button
         key={address}
         className="flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2"
         onClick={() => onSubmit(address)}
+        disabled={isDisabled}
       >
         <div className="flex items-center">
           <picture>
@@ -59,9 +72,18 @@ const TokenItem = ({
           </picture>
           <div className="ml-2.5">
             <div className="text-left text-th-fgd-2">{symbol || 'unknown'}</div>
-            <div className="text-left text-th-fgd-4">{name || 'unknown'}</div>
+            <div className="text-left text-xs text-th-fgd-4">
+              {name || 'unknown'}
+            </div>
           </div>
         </div>
+        {type === 'input' ? (
+          <p className="text-sm text-th-fgd-2">
+            {useMargin
+              ? token.amountWithBorrow!.toString()
+              : token.amount!.toString()}
+          </p>
+        ) : null}
       </button>
     </div>
   )
@@ -73,10 +95,12 @@ const SwapFormTokenList = ({
   onClose,
   onTokenSelect,
   type,
+  useMargin,
 }: {
   onClose: () => void
   onTokenSelect: (x: string) => void
   type: string
+  useMargin: boolean
 }) => {
   const { t } = useTranslation(['common', 'swap'])
   const [search, setSearch] = useState('')
@@ -85,6 +109,8 @@ const SwapFormTokenList = ({
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const group = mangoStore((s) => s.group)
 
   const popularTokens = useMemo(() => {
     return tokens.filter((token) => {
@@ -105,27 +131,39 @@ const SwapFormTokenList = ({
   }, [onClose])
 
   const tokenInfos = useMemo(() => {
-    if (tokens?.length) {
-      const filteredTokens = tokens.filter((token) => {
-        if (type === 'input') {
-          return token.symbol === outputBank?.name ? false : true
-        } else {
-          return token.symbol === inputBank?.name ? false : true
-        }
-      })
-      if (walletTokens?.length) {
-        const walletMints = walletTokens.map((tok) => tok.mint.toString())
-        return filteredTokens.sort(
-          (a, b) =>
-            walletMints.indexOf(b.address) - walletMints.indexOf(a.address)
+    if (
+      tokens?.length &&
+      group &&
+      mangoAccount &&
+      outputBank &&
+      type === 'input'
+    ) {
+      const filteredSortedTokens = tokens
+        .map((token) => {
+          const max = getTokenInMax(token.address, group, useMargin)
+          return { ...token, ...max }
+        })
+        .filter((token) => (token.symbol === outputBank?.name ? false : true))
+        .sort((a, b) =>
+          useMargin
+            ? Number(b.amountWithBorrow) - Number(a.amountWithBorrow)
+            : Number(b.amount) - Number(a.amount)
         )
-      } else {
-        return filteredTokens
-      }
+
+      return filteredSortedTokens
+    } else if (tokens?.length) {
+      const filteredTokens = tokens
+        .map((token) => ({
+          ...token,
+          amount: new Decimal(0),
+          amountWithBorrow: new Decimal(0),
+        }))
+        .filter((token) => (token.symbol === inputBank?.name ? false : true))
+      return filteredTokens
     } else {
       return []
     }
-  }, [tokens, walletTokens, inputBank, outputBank])
+  }, [tokens, walletTokens, inputBank, outputBank, mangoAccount, group])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -143,7 +181,9 @@ const SwapFormTokenList = ({
       <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
         <XMarkIcon className="h-5 w-5" />
       </IconButton>
-      <div className="flex items-center text-th-fgd-4">
+      {/* No need for search/popular tokens until we have more tokens */}
+
+      {/* <div className="flex items-center text-th-fgd-4">
         <Input
           type="text"
           placeholder="Search by token or paste address"
@@ -184,14 +224,22 @@ const SwapFormTokenList = ({
             )
           })}
         </div>
-      ) : null}
-      <div className="my-2 border-t border-th-bkg-4"></div>
-      <div className="mb-2 overflow-auto">
+      ) : null} */}
+      {/* <div className="my-2 border-t border-th-bkg-4"></div> */}
+      <div className="mb-2 flex justify-between rounded bg-th-bkg-3 p-2">
+        <p className="text-xs text-th-fgd-4">{t('token')}</p>
+        {type === 'input' ? (
+          <p className="text-xs text-th-fgd-4">{t('max')}</p>
+        ) : null}
+      </div>
+      <div className="overflow-auto">
         {sortedTokens.map((token) => (
           <TokenItem
             key={token.address}
             token={token}
             onSubmit={onTokenSelect}
+            useMargin={useMargin}
+            type={type}
           />
         ))}
       </div>
