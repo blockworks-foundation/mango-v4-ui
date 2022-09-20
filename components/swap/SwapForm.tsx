@@ -35,6 +35,7 @@ import {
 } from '../../utils/constants'
 import { getTokenInMax } from './useTokenMax'
 import WalletIcon from '../icons/WalletIcon'
+import Tooltip from '@components/shared/Tooltip'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -406,7 +407,9 @@ const SwapForm = () => {
         <div className="flex justify-between">
           <div className="flex items-center">
             <HeartIcon className="mr-1.5 h-4 w-4 text-th-fgd-4" />
-            <p className="text-sm">{t('health-impact')}</p>
+            <Tooltip content="Projects the health of your account before you make a trade. The first value is your current account health and the second, your projected account health.">
+              <p className="tooltip-underline text-sm">{t('health-impact')}</p>
+            </Tooltip>
           </div>
           <div className="flex items-center space-x-2 font-mono tracking-tight">
             <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
