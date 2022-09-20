@@ -6,11 +6,12 @@ import {
   Cog8ToothIcon,
   MagnifyingGlassIcon,
   ExclamationCircleIcon,
+  HeartIcon,
 } from '@heroicons/react/20/solid'
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import Decimal from 'decimal.js'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import ContentBox from '../shared/ContentBox'
 import JupiterRouteInfo from './JupiterRouteInfo'
 import TokenSelect from './TokenSelect'
@@ -43,7 +44,7 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
 }
 
 const SwapForm = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'swap'])
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
   const [amountInFormValue, setAmountInFormValue] = useState('')
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
@@ -206,10 +207,14 @@ const SwapForm = () => {
     : tokenMax.lt(amountIn)
 
   return (
-    <ContentBox hidePadding showBackground className="relative overflow-hidden">
-      <div className="p-6">
+    <ContentBox
+      hidePadding
+      // showBackground
+      className="relative overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
+    >
+      <div className="p-6 pt-3">
         <Transition
-          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={showConfirm}
           enter="transition ease-in duration-300"
           enterFrom="translate-x-full"
@@ -229,7 +234,7 @@ const SwapForm = () => {
           />
         </Transition>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={!!showTokenSelect}
         >
           <SwapFormTokenList
@@ -244,23 +249,26 @@ const SwapForm = () => {
           />
         </EnterBottomExitBottom>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-2 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={showSettings}
         >
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
         <div className="mb-4 flex items-center justify-between">
-          <h3>{t('trade')}</h3>
-          <IconButton
-            className="text-th-fgd-3"
-            onClick={() => setShowSettings(true)}
-            size="small"
-          >
-            <Cog8ToothIcon className="h-5 w-5" />
-          </IconButton>
+          <h2 className="text-base text-th-fgd-2">{t('swap')}</h2>
+          <div id="step-eight">
+            <IconButton
+              className="text-th-fgd-2"
+              hideBg
+              onClick={() => setShowSettings(true)}
+              size="small"
+            >
+              <Cog8ToothIcon className="h-5 w-5" />
+            </IconButton>
+          </div>
         </div>
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-th-fgd-3">{t('sell')}</p>
+        <div id="step-nine" className="mb-2 flex items-center justify-between">
+          <p className="text-th-fgd-3">{t('swap:from')}</p>
           <MaxSwapAmount
             amountWithBorrow={amountWithBorrow}
             useMargin={useMargin}
@@ -286,7 +294,7 @@ const SwapForm = () => {
               decimalScale={inputTokenInfo?.decimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl font-bold tracking-wider tracking-tight text-th-fgd-1 focus:outline-none"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -317,7 +325,7 @@ const SwapForm = () => {
             />
           </button>
         </div>
-        <p className="mb-2 text-th-fgd-3">{t('buy')}</p>
+        <p className="mb-2 text-th-fgd-3">{t('swap:to')}</p>
         <div className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
@@ -334,7 +342,7 @@ const SwapForm = () => {
                 </SheenLoader>
               </div>
             ) : (
-              <span className="p-3">
+              <span className="p-3 font-mono tracking-tight">
                 {amountOut ? numberFormat.format(amountOut.toNumber()) : ''}
               </span>
             )}
@@ -369,7 +377,7 @@ const SwapForm = () => {
             showInsufficientBalance ? (
               <div className="flex items-center">
                 <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('trade:insufficient-balance', {
+                {t('swap:insufficient-balance', {
                   symbol: inputTokenInfo?.symbol,
                 })}
               </div>
@@ -378,7 +386,7 @@ const SwapForm = () => {
             ) : (
               <div className="flex items-center">
                 <MagnifyingGlassIcon className="mr-2 h-5 w-5" />
-                {t('trade:review-trade')}
+                {t('swap:review-swap')}
               </div>
             )
           ) : (
@@ -389,43 +397,44 @@ const SwapForm = () => {
           )}
         </Button>
       </div>
-
-      {!!mangoAccount ? (
-        <div
-          className={`bg-th-bkg-3 px-6  transition-all ${
-            showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
-          }`}
-        >
-          <div className="flex justify-between">
+      <div
+        id="step-ten"
+        className={`border-t border-th-bkg-3 px-6 transition-all ${
+          showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
+        }`}
+      >
+        <div className="flex justify-between">
+          <div className="flex items-center">
+            <HeartIcon className="mr-1.5 h-4 w-4 text-th-fgd-4" />
             <p className="text-sm">{t('health-impact')}</p>
-            <div className="flex items-center space-x-2">
-              <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
-              <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
-              <p
-                className={`${
-                  maintProjectedHealth! < 50 && maintProjectedHealth! > 15
-                    ? 'text-th-orange'
-                    : maintProjectedHealth! <= 15
-                    ? 'text-th-red'
-                    : 'text-th-green'
-                } text-sm`}
+          </div>
+          <div className="flex items-center space-x-2 font-mono tracking-tight">
+            <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
+            <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
+            <p
+              className={`${
+                maintProjectedHealth! < 50 && maintProjectedHealth! > 15
+                  ? 'text-th-orange'
+                  : maintProjectedHealth! <= 15
+                  ? 'text-th-red'
+                  : 'text-th-green'
+              } text-sm`}
+            >
+              {maintProjectedHealth!}%{' '}
+              <span
+                className={`text-xs ${
+                  maintProjectedHealth! >= currentMaintHealth!
+                    ? 'text-th-green'
+                    : 'text-th-red'
+                }`}
               >
-                {maintProjectedHealth!}%{' '}
-                <span
-                  className={`text-xs ${
-                    maintProjectedHealth! >= currentMaintHealth!
-                      ? 'text-th-green'
-                      : 'text-th-red'
-                  }`}
-                >
-                  ({maintProjectedHealth! >= currentMaintHealth! ? '+' : ''}
-                  {maintProjectedHealth! - currentMaintHealth!}%)
-                </span>
-              </p>
-            </div>
+                ({maintProjectedHealth! >= currentMaintHealth! ? '+' : ''}
+                {maintProjectedHealth! - currentMaintHealth!}%)
+              </span>
+            </p>
           </div>
         </div>
-      ) : null}
+      </div>
     </ContentBox>
   )
 }
@@ -460,7 +469,7 @@ const MaxSwapAmount = ({
   return (
     <LinkButton className="no-underline" onClick={setMaxInputAmount}>
       <span className="font-normal text-th-fgd-4">{t('max')}:</span>
-      <span className="mx-1 text-th-fgd-3 underline">
+      <span className="mx-1 font-mono tracking-tight text-th-fgd-3 underline">
         {maxAmount.toFixed()}
       </span>
     </LinkButton>

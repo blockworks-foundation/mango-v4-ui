@@ -1,4 +1,4 @@
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import {
   HealthType,
   toUiDecimalsForQuote,
@@ -10,9 +10,13 @@ import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
 import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
+import HealthHeart from './HealthHeart'
+import { ExpandableMenuItem } from '../SideNav'
 
-const MangoAccountSummary = () => {
+const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
+  const { connected } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
@@ -23,9 +27,7 @@ const MangoAccountSummary = () => {
         <div>
           <p className="text-sm text-th-fgd-3">{t('health')}</p>
           <p className="text-sm font-bold text-th-fgd-1">
-            {mangoAccount
-              ? mangoAccount.getHealthRatioUi(HealthType.maint)
-              : 100}
+            {mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0}
             %
           </p>
         </div>
@@ -59,19 +61,14 @@ const MangoAccountSummary = () => {
       <div className="space-y-2">
         <Button
           className="flex w-full items-center justify-center"
+          disabled={!mangoAccount || !connected}
           onClick={() => setShowDepositModal(true)}
         >
           <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
           {t('deposit')}
         </Button>
-        {/* <Button
-          className="w-full"
-          onClick={() => setShowWithdrawModal(true)}
-          secondary
-        >
-          {t('withdraw')}
-        </Button> */}
       </div>
+
       {showDepositModal ? (
         <DepositModal
           isOpen={showDepositModal}

@@ -8,14 +8,18 @@ export async function getStaticProps({ locale }: { locale: string }) {
       ...(await serverSideTranslations(locale, [
         'common',
         'close-account',
-        'trade',
+        'swap',
       ])),
     },
   }
 }
 
 const Index: NextPage = () => {
-  return <AccountPage />
+  return (
+    <div className="pb-20 md:pb-16">
+      <AccountPage />
+    </div>
+  )
 }
 
 export default Index

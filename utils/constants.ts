@@ -14,6 +14,8 @@ export const ALPHA_DEPOSIT_LIMIT = 20
 
 export const SIDEBAR_COLLAPSE_KEY = 'sidebar-0.1'
 
+export const ONBOARDING_TOUR_KEY = 'showOnboardingTour'
+
 export const PROFILE_CATEGORIES = [
   'borrower',
   'day-trader',
@@ -43,3 +45,13 @@ export const COINGECKO_IDS = [
   // { id: 'tether', symbol: 'USDT' },
   // { id: 'stepn', symbol: 'GMT' },
 ]
+
+const baseUrl = 'https://event-history-api-candles.herokuapp.com'
+
+export const CHART_DATA_FEED = `${baseUrl}/tv`
+
+export const DEFAULT_MARKET_NAME = 'SOL/USDC'
+
+export const GRID_LAYOUT_KEY = 'savedLayouts-0.1'
+
+export const ORDERBOOK_FLASH_KEY = 'showOrderbookFlash-0.1'

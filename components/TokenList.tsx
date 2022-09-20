@@ -14,7 +14,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 // import useLocalStorageState from '../hooks/useLocalStorageState'
 import { useViewport } from '../hooks/useViewport'
 
-import mangoStore from '../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { COLORS } from '../styles/colors'
 // import { SHOW_ZERO_BALANCES_KEY } from '../utils/constants'
 import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
@@ -45,12 +45,6 @@ const TokenList = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-
-  useEffect(() => {
-    if (coingeckoPrices.length === 0) {
-      actions.fetchCoingeckoPrices()
-    }
-  }, [coingeckoPrices, actions])
 
   const banks = useMemo(() => {
     if (group) {
@@ -88,8 +82,8 @@ const TokenList = () => {
   }, [connected])
 
   return (
-    <ContentBox hideBorder hidePadding className="mt-0 md:-mt-10">
-      <div className="mb-6 flex items-center justify-end">
+    <ContentBox hideBorder hidePadding className="-mt-[36px]">
+      <div className="mb-5 flex items-center justify-end pr-6">
         <Switch
           className="text-th-fgd-3"
           checked={showZeroBalances}
@@ -159,13 +153,13 @@ const TokenList = () => {
                         {logoURI ? (
                           <Image alt="" width="24" height="24" src={logoURI} />
                         ) : (
-                          <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                          <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                         )}
                       </div>
-                      <p>{bank.name}</p>
+                      <p className="font-body tracking-wide">{bank.name}</p>
                     </div>
                   </td>
-                  <td className=" pt-4 text-right">
+                  <td className="pt-4 text-right">
                     <p>
                       {mangoAccount
                         ? formatDecimal(
@@ -252,7 +246,7 @@ const TokenList = () => {
           </tbody>
         </table>
       ) : (
-        <div className="mt-4 space-y-2">
+        <div>
           {banks.map(({ key, value }) => {
             return <MobileTokenListItem key={key} bank={value[0]} />
           })}
@@ -308,7 +302,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
     : 0.0
 
   return (
-    <div key={symbol} className="rounded-md border border-th-bkg-4 p-4">
+    <div key={symbol} className="border-b border-th-bkg-3 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -319,9 +313,11 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
             )}
           </div>
           <div>
-            <p>{bank.name}</p>
-            <p className="text-sm">
-              <span className="mr-1 text-th-fgd-4">{t('balance')}:</span>
+            <p className="text-th-fgd-1">{bank.name}</p>
+            <p className="font-mono text-sm text-th-fgd-1">
+              <span className="mr-1 font-body text-th-fgd-4">
+                {t('balance')}:
+              </span>
               {mangoAccount
                 ? formatDecimal(mangoAccount.getTokenBalanceUi(bank))
                 : 0}
@@ -424,7 +420,7 @@ const ActionsMenu = ({
       s.swap.outputTokenInfo = outputTokenInfo
     })
     if (asPath === '/') {
-      router.push('/trade', undefined, { shallow: true })
+      router.push('/swap', undefined, { shallow: true })
     }
   }, [bank, router, asPath, set, jupiterTokens])
 
@@ -437,7 +433,7 @@ const ActionsMenu = ({
       s.swap.inputTokenInfo = inputTokenInfo
     })
     if (asPath === '/') {
-      router.push('/trade', undefined, { shallow: true })
+      router.push('/swap', undefined, { shallow: true })
     }
   }, [router, asPath, set, bank, jupiterTokens])
 

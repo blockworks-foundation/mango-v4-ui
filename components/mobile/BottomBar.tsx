@@ -49,13 +49,13 @@ const BottomBar = () => {
         </Link>
         <Link
           href={{
-            pathname: '/trade',
+            pathname: '/swap',
           }}
           shallow={true}
         >
           <a
             className={`${
-              asPath === '/trade' ? 'text-th-primary' : 'text-th-fgd-3'
+              asPath === '/swap' ? 'text-th-primary' : 'text-th-fgd-3'
             } col-span-1 flex cursor-pointer flex-col items-center`}
           >
             <TradeIcon className="mb-1 h-4 w-4" />

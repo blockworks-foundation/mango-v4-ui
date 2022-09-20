@@ -6,21 +6,23 @@ import {
 } from '@heroicons/react/20/solid'
 import { Popover, Transition } from '@headlessui/react'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
-import mangoStore from '../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { LinkButton } from './shared/Button'
 import CreateAccountModal from './modals/CreateAccountModal'
 import { useLocalStorageStringState } from '../hooks/useLocalStorageState'
 import { LAST_ACCOUNT_KEY } from '../utils/constants'
 import { useTranslation } from 'next-i18next'
 import { retryFn } from '../utils'
+import Loading from './shared/Loading'
 
 const MangoAccountsList = ({
   mangoAccount,
 }: {
-  mangoAccount: MangoAccount
+  mangoAccount: MangoAccount | undefined
 }) => {
   const { t } = useTranslation('common')
   const mangoAccounts = mangoStore((s) => s.mangoAccounts.accounts)
+  const loading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [showNewAccountModal, setShowNewAccountModal] = useState(false)
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
 
@@ -45,7 +47,7 @@ const MangoAccountsList = ({
   }
 
   return (
-    <>
+    <div id="step-one">
       <Popover>
         {({ open }) => (
           <>
@@ -53,7 +55,7 @@ const MangoAccountsList = ({
               <div className="mr-2">
                 <p className="text-right text-xs">{t('accounts')}</p>
                 <p className="text-left text-sm font-bold text-th-fgd-1">
-                  {mangoAccount.name}
+                  {mangoAccount ? mangoAccount.name : 'No Accounts'}
                 </p>
               </div>
               <ChevronDownIcon
@@ -75,7 +77,9 @@ const MangoAccountsList = ({
                 leaveTo="opacity-0"
               >
                 <Popover.Panel className="absolute top-[13.5px] -right-5 z-10 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-3 bg-th-bkg-1 p-4">
-                  {mangoAccounts.length ? (
+                  {loading ? (
+                    <Loading />
+                  ) : mangoAccounts.length ? (
                     mangoAccounts.map((acc) => (
                       <div key={acc.publicKey.toString()}>
                         <button
@@ -84,14 +88,16 @@ const MangoAccountsList = ({
                         >
                           {acc.name}
                           {acc.publicKey.toString() ===
-                          mangoAccount.publicKey.toString() ? (
+                          mangoAccount!.publicKey.toString() ? (
                             <CheckCircleIcon className="h-5 w-5 text-th-green" />
                           ) : null}
                         </button>
                       </div>
                     ))
                   ) : (
-                    <p>Loading...</p>
+                    <p className="mb-4 text-center text-sm">
+                      Create your first account 😎
+                    </p>
                   )}
                   <div>
                     <LinkButton
@@ -114,7 +120,7 @@ const MangoAccountsList = ({
           onClose={() => setShowNewAccountModal(false)}
         />
       ) : null}
-    </>
+    </div>
   )
 }
 

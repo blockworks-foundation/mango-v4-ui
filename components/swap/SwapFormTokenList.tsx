@@ -1,7 +1,7 @@
 import { memo, useMemo, useState, useEffect, ChangeEvent } from 'react'
 import Image from 'next/image'
 import { Token } from '../../types/jupiter'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import Input from '../forms/Input'
 import { IconButton } from '../shared/Button'
 import {
@@ -61,7 +61,7 @@ const TokenItem = ({
     <div>
       <button
         key={address}
-        className="default-transition flex w-full cursor-pointer items-start justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 md:hover:bg-th-bkg-4"
+        className="flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2"
         onClick={() => onSubmit(address)}
         disabled={isDisabled}
       >
@@ -102,7 +102,7 @@ const SwapFormTokenList = ({
   type: string
   useMargin: boolean
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'swap'])
   const [search, setSearch] = useState('')
   const tokens = mangoStore.getState().jupiterTokens
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -173,7 +173,11 @@ const SwapFormTokenList = ({
 
   return (
     <>
-      <p className="mb-3">{type === 'input' ? t('sell') : t('buy')}</p>
+      <p className="mb-3">
+        {type === 'input'
+          ? `${t('swap')} ${t('swap:from')}`
+          : `${t('swap')} ${t('swap:to')}`}
+      </p>
       <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
         <XMarkIcon className="h-5 w-5" />
       </IconButton>

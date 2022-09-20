@@ -9,7 +9,7 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
@@ -272,7 +272,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
           ) : showInsufficientBalance ? (
             <div className="flex items-center">
               <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-              {t('trade:insufficient-collateral')}
+              {t('swap:insufficient-collateral')}
             </div>
           ) : (
             <div className="flex items-center">

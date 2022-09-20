@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 
-import mangoStore from '../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import WalletIcon from './icons/WalletIcon'
 import MangoAccountsList from './MangoAccountsList'
 import { LinkButton } from './shared/Button'
@@ -49,10 +49,8 @@ const TopBar = () => {
           ) : null}
         </span>
         {connected ? (
-          <div className="flex items-center space-x-4">
-            {mangoAccount ? (
-              <MangoAccountsList mangoAccount={mangoAccount} />
-            ) : null}
+          <div className="flex items-center space-x-4 pr-4 md:pr-6">
+            <MangoAccountsList mangoAccount={mangoAccount} />
             <ConnectedMenu />
           </div>
         ) : isOnboarded ? (

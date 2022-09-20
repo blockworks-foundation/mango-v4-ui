@@ -17,7 +17,7 @@ import React, {
   useState,
 } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
@@ -360,7 +360,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             ) : showInsufficientBalance ? (
               <div className="flex items-center">
                 <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('trade:insufficient-balance', {
+                {t('swap:insufficient-balance', {
                   symbol: selectedToken,
                 })}
               </div>

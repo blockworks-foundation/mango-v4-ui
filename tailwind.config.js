@@ -7,6 +7,7 @@ module.exports = {
     fontFamily: {
       display: ['Lato, sans-serif'],
       body: ['Lato, sans-serif'],
+      mono: ['Roboto Mono'],
     },
     extend: {
       animation: {

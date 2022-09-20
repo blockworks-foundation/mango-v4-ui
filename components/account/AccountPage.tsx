@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
-import mangoStore, { PerformanceDataItem } from '../../store/mangoStore'
+import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
@@ -30,6 +30,7 @@ import { useViewport } from '../../hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import useMangoAccount from '../shared/useMangoAccount'
 import PercentageChange from '../shared/PercentageChange'
+import Tooltip from '@components/shared/Tooltip'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -130,15 +131,21 @@ const AccountPage = () => {
   }, [totalInterestData])
 
   const maintHealth = useMemo(() => {
-    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 100
+    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
   }, [mangoAccount])
 
   return !chartToShow ? (
     <>
-      <div className="mb-8 flex flex-col md:mb-10 lg:flex-row lg:items-end lg:justify-between">
-        <div className="mb-4 flex items-center space-x-6 lg:mb-0">
-          <div>
-            <p className="mb-1.5">{t('account-value')}</p>
+      <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 pt-3 pb-0 md:border-b md:pb-3">
+        <div className="flex items-center space-x-6">
+          <div id="step-two">
+            <Tooltip
+              maxWidth="20rem"
+              placement="bottom"
+              content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
+            >
+              <p className="tooltip-underline mb-1.5">{t('account-value')}</p>
+            </Tooltip>
             <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
               $
               {mangoAccount ? (
@@ -217,30 +224,86 @@ const AccountPage = () => {
             </SheenLoader>
           )}
         </div>
-        <AccountActions />
+        <div className="my-3 lg:my-0">
+          <AccountActions />
+        </div>
       </div>
-      <div className="grid grid-cols-3 gap-x-6 border-b border-th-bkg-3 md:border-b-0">
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
-          <p className="text-th-fgd-3">{t('health')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">{maintHealth}%</p>
+      <div className="grid grid-cols-4 border-b border-th-bkg-3">
+        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
+          <div id="step-three">
+            <Tooltip
+              maxWidth="20rem"
+              placement="bottom"
+              content={
+                <div className="flex-col space-y-2 text-sm">
+                  <p className="text-xs">
+                    Health describes how close your account is to liquidation.
+                    The lower your account health is the more likely you are to
+                    get liquidated when prices fluctuate.
+                  </p>
+                  <p className="text-xs font-bold text-th-fgd-1">
+                    Your account health is {maintHealth}%
+                  </p>
+                  <p className="text-xs">
+                    <span className="font-bold text-th-fgd-1">Scenario:</span>{' '}
+                    If the prices of all your liabilities increase by{' '}
+                    {maintHealth}%, even for just a moment, some of your
+                    liabilities will be liquidated.
+                  </p>
+                  <p className="text-xs">
+                    <span className="font-bold text-th-fgd-1">Scenario:</span>{' '}
+                    If the value of your total collateral decreases by{' '}
+                    {((1 - 1 / ((maintHealth || 0) / 100 + 1)) * 100).toFixed(
+                      2
+                    )}
+                    % , some of your liabilities will be liquidated.
+                  </p>
+                  <p className="text-xs">
+                    These are examples. A combination of events can also lead to
+                    liquidation.
+                  </p>
+                </div>
+              }
+            >
+              <p className="tooltip-underline text-th-fgd-3">{t('health')}</p>
+            </Tooltip>
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+              {maintHealth}%
+            </p>
+          </div>
         </div>
-        <div className="col-span-3 border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
-          <p className="text-th-fgd-3">{t('free-collateral')}</p>
-          <p className="text-2xl font-bold text-th-fgd-1">
-            {mangoAccount
-              ? formatFixedDecimals(
-                  toUiDecimalsForQuote(
-                    mangoAccount.getCollateralValue()!.toNumber()
-                  ),
-                  true
-                )
-              : (0).toFixed(2)}
-          </p>
+        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
+          <div id="step-four">
+            <Tooltip
+              content="The amount of capital you have to trade or borrow against. When your free collateral reaches $0 you won't be able to make withdrawals."
+              maxWidth="20rem"
+              placement="bottom"
+            >
+              <p className="tooltip-underline text-th-fgd-3">
+                {t('free-collateral')}
+              </p>
+            </Tooltip>
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+              {mangoAccount
+                ? formatFixedDecimals(
+                    toUiDecimalsForQuote(
+                      mangoAccount.getCollateralValue()!.toNumber()
+                    ),
+                    true
+                  )
+                : (0).toFixed(2)}
+            </p>
+          </div>
         </div>
-        {/* <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-2 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
+        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
           <div>
-            <p className="text-th-fgd-3">{t('pnl')}</p>
-            <p className="text-2xl font-bold text-th-fgd-1">
+            <Tooltip
+              content="The amount your account has made or lost."
+              placement="bottom"
+            >
+              <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
+            </Tooltip>
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
               {formatFixedDecimals(accountPnl, true)}
             </p>
           </div>
@@ -252,11 +315,19 @@ const AccountPage = () => {
               <ChevronRightIcon className="h-5 w-5" />
             </IconButton>
           ) : null}
-        </div> */}
-        <div className="col-span-3 flex items-center justify-between border-t border-th-bkg-3 py-4 md:col-span-1 md:border-l md:border-t-0 md:pl-6 lg:col-span-1">
-          <div>
-            <p className="text-th-fgd-3">{t('total-interest-value')}</p>
-            <p className="text-2xl font-bold text-th-fgd-1">
+        </div>
+        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
+          <div id="step-five">
+            <Tooltip
+              content="The value of interest earned (deposits) minus interest paid (borrows)."
+              maxWidth="20rem"
+              placement="bottom"
+            >
+              <p className="tooltip-underline text-th-fgd-3">
+                {t('total-interest-value')}
+              </p>
+            </Tooltip>
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
               {formatFixedDecimals(interestTotalValue, true)}
             </p>
           </div>
@@ -284,34 +355,39 @@ const AccountPage = () => {
         />
       ) : null}
     </>
-  ) : chartToShow === 'account-value' ? (
-    <AccountChart
-      chartToShow="account-value"
-      data={performanceData}
-      hideChart={handleHideChart}
-      mangoAccount={mangoAccount!}
-      yKey="account_equity"
-    />
-  ) : chartToShow === 'pnl' ? (
-    <AccountChart
-      chartToShow="pnl"
-      data={performanceData}
-      hideChart={handleHideChart}
-      mangoAccount={mangoAccount!}
-      yKey="pnl"
-    />
   ) : (
-    <AccountChart
-      chartToShow="cumulative-interest-value"
-      data={performanceData.map((d) => ({
-        interest_value:
-          d.borrow_interest_cumulative_usd + d.deposit_interest_cumulative_usd,
-        time: d.time,
-      }))}
-      hideChart={handleHideChart}
-      mangoAccount={mangoAccount!}
-      yKey="interest_value"
-    />
+    <div className="p-6">
+      {chartToShow === 'account-value' ? (
+        <AccountChart
+          chartToShow="account-value"
+          data={performanceData}
+          hideChart={handleHideChart}
+          mangoAccount={mangoAccount!}
+          yKey="account_equity"
+        />
+      ) : chartToShow === 'pnl' ? (
+        <AccountChart
+          chartToShow="pnl"
+          data={performanceData}
+          hideChart={handleHideChart}
+          mangoAccount={mangoAccount!}
+          yKey="pnl"
+        />
+      ) : (
+        <AccountChart
+          chartToShow="cumulative-interest-value"
+          data={performanceData.map((d) => ({
+            interest_value:
+              d.borrow_interest_cumulative_usd +
+              d.deposit_interest_cumulative_usd,
+            time: d.time,
+          }))}
+          hideChart={handleHideChart}
+          mangoAccount={mangoAccount!}
+          yKey="interest_value"
+        />
+      )}
+    </div>
   )
 }
 

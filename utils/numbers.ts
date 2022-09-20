@@ -116,3 +116,19 @@ export const trimDecimals = (n: number, digits: number) => {
 
   return temp / step
 }
+
+export const getDecimalCount = (value: number): number => {
+  if (
+    !isNaN(value) &&
+    Math.floor(value) !== value &&
+    value.toString().includes('.')
+  )
+    return value.toString().split('.')[1].length || 0
+  if (
+    !isNaN(value) &&
+    Math.floor(value) !== value &&
+    value.toString().includes('e')
+  )
+    return parseInt(value.toString().split('e-')[1] || '0')
+  return 0
+}

@@ -13,4 +13,7 @@ export const breakpoints = {
 
   '2xl': 1536,
   // => @media (min-width: 1536px) { ... }
+
+  '3xl': 1792,
+  // => @media (min-width: 1536px) { ... }
 }

@@ -3,7 +3,7 @@ import { ArrowRightOnRectangleIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import { Fragment, useCallback, useState } from 'react'
-import mangoStore from '../../store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
 import ProfileImage from '../shared/ProfileImage'
 import { abbreviateAddress } from '../../utils/formatting'
@@ -34,9 +34,9 @@ const ConnectedMenu = () => {
         {({ open }) => (
           <div className="relative">
             <Menu.Button
-              className={`flex h-12 w-12 items-center rounded-full hover:bg-th-bkg-2 focus:outline-none`}
+              className={`flex h-10 w-10 items-center rounded-full hover:bg-th-bkg-2 focus:outline-none`}
             >
-              <ProfileImage imageSize="48" placeholderSize="28" />
+              <ProfileImage imageSize="40" placeholderSize="24" />
             </Menu.Button>
             <Transition
               appear={true}
