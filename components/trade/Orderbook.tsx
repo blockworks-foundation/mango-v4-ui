@@ -345,68 +345,70 @@ const Orderbook = ({ depth = 12 }) => {
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
-      <div className="sticky top-0 z-20 grid h-[49px] select-none grid-cols-2 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 text-base">
-        <div
-          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-            true
-              ? 'bg-th-bkg-2 text-th-primary'
-              : 'text-th-fgd-4 hover:text-th-fgd-2'
-          }`}
-        >
-          Orderbook
-        </div>
-        <div
-          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-            false
-              ? 'bg-th-bkg-2 text-th-primary'
-              : 'text-th-fgd-4 hover:text-th-fgd-2'
-          }`}
-        >
-          Trades
-        </div>
-      </div>
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center space-x-2">
-          <Tooltip
-            content={showBuys ? 'Hide Buys' : 'Show Buys'}
-            placement="top"
+      <div className="sticky top-0 z-20 bg-th-bkg-1">
+        <div className="grid h-[49px] select-none grid-cols-2 items-center justify-between border-b border-th-bkg-3 text-base">
+          <div
+            className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
+              true
+                ? 'bg-th-bkg-2 text-th-primary'
+                : 'text-th-fgd-4 hover:text-th-fgd-2'
+            }`}
           >
-            <button
-              className={`rounded ${
-                showBuys ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
-              onClick={() => setShowBuys(!showBuys)}
-              disabled={!showSells}
-            >
-              <OrderbookIcon className="h-4 w-4" side="buy" />
-            </button>
-          </Tooltip>
-          <Tooltip
-            content={showSells ? 'Hide Sells' : 'Show Sells'}
-            placement="top"
+            Orderbook
+          </div>
+          <div
+            className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
+              false
+                ? 'bg-th-bkg-2 text-th-primary'
+                : 'text-th-fgd-4 hover:text-th-fgd-2'
+            }`}
           >
-            <button
-              className={`rounded ${
-                showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
-              onClick={() => setShowSells(!showSells)}
-              disabled={!showBuys}
+            Trades
+          </div>
+        </div>
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center space-x-2">
+            <Tooltip
+              content={showBuys ? 'Hide Buys' : 'Show Buys'}
+              placement="top"
             >
-              <OrderbookIcon className="h-4 w-4" side="sell" />
-            </button>
+              <button
+                className={`rounded ${
+                  showBuys ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+                } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+                onClick={() => setShowBuys(!showBuys)}
+                disabled={!showSells}
+              >
+                <OrderbookIcon className="h-4 w-4" side="buy" />
+              </button>
+            </Tooltip>
+            <Tooltip
+              content={showSells ? 'Hide Sells' : 'Show Sells'}
+              placement="top"
+            >
+              <button
+                className={`rounded ${
+                  showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+                } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+                onClick={() => setShowSells(!showSells)}
+                disabled={!showBuys}
+              >
+                <OrderbookIcon className="h-4 w-4" side="sell" />
+              </button>
+            </Tooltip>
+          </div>
+          <Tooltip content="Grouping" placement="top">
+            <GroupSize
+              tickSize={serum3MarketExternal.tickSize}
+              onChange={onGroupSizeChange}
+              value={grouping}
+            />
           </Tooltip>
         </div>
-        <Tooltip content="Grouping" placement="top">
-          <GroupSize
-            tickSize={serum3MarketExternal.tickSize}
-            onChange={onGroupSizeChange}
-            value={grouping}
-          />
-        </Tooltip>
-      </div>
-      <div className="grid grid-cols-2 px-4 pb-2 text-xs text-th-fgd-4">
-        <div className="col-span-1 text-right">Size</div>
-        <div className="col-span-1 text-right">Price</div>
+        <div className="grid grid-cols-2 px-4 pb-2 text-xs text-th-fgd-4">
+          <div className="col-span-1 text-right">Size</div>
+          <div className="col-span-1 text-right">Price</div>
+        </div>
       </div>
       <div className="">
         {showSells

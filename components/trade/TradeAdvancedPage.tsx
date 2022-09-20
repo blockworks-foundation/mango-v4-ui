@@ -140,7 +140,7 @@ const TradeAdvancedPage = () => {
         const orderbookLayout = layouts[bp].find((obj) => {
           return obj.i === 'orderbook'
         })
-        let depth = orderbookLayout!.h / 24 / 2 - 2
+        let depth = orderbookLayout!.h / 24 / 2
         const maxNum = Math.max(1, depth)
         if (typeof maxNum === 'number') {
           depth = Math.round(maxNum)
