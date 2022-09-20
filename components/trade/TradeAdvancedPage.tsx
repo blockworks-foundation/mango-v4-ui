@@ -13,6 +13,7 @@ import AdvancedMarketHeader from './AdvancedMarketHeader'
 import AdvancedTradeForm from './AdvancedTradeForm'
 import BalanceAndOpenOrders from './BalanceAndOpenOrders'
 import MobileTradeAdvancedPage from './MobileTradeAdvancedPage'
+import OrderbookAndTrades from './OrderbookAndTrades'
 
 const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
   ssr: false,
@@ -49,7 +50,6 @@ const getHeight = (
 const TradeAdvancedPage = () => {
   const { height, width } = useViewport()
   const [currentBreakpoint, setCurrentBreakpoint] = useState<string>()
-  const [orderbookDepth, setOrderbookDepth] = useState(60)
   const { uiLocked } = mangoStore((s) => s.settings)
   const showMobileView = width <= breakpoints.md
 
@@ -205,7 +205,7 @@ const TradeAdvancedPage = () => {
         key="orderbook"
         className="border border-y-0 border-r-0 border-th-bkg-3"
       >
-        <Orderbook depth={orderbookDepth} />
+        <OrderbookAndTrades />
       </div>
     </ResponsiveGridLayout>
   )

@@ -4,7 +4,7 @@ import mangoStore from '@store/mangoStore'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
 import useInterval from '@components/shared/useInterval'
-import isEqualLodash from 'lodash/isEqual'
+import isEqual from 'lodash/isEqual'
 import usePrevious from '@components/shared/usePrevious'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/dist/types/src/accounts/perp'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -147,8 +147,8 @@ const groupBy = (
     })
   return sortedGroups
 }
-
-const Orderbook = ({ depth = 12 }) => {
+const depth = 60
+const Orderbook = () => {
   const { t } = useTranslation('common')
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
 
@@ -210,10 +210,7 @@ const Orderbook = ({ depth = 12 }) => {
     )
     if (
       nextOrderbookData?.current &&
-      (!isEqualLodash(
-        currentOrderbookData.current,
-        nextOrderbookData.current
-      ) ||
+      (!isEqual(currentOrderbookData.current, nextOrderbookData.current) ||
         previousDepth !== depth ||
         previousGrouping !== grouping)
     ) {
@@ -226,7 +223,7 @@ const Orderbook = ({ depth = 12 }) => {
       //       )
       //       .map(({ order }) => order.price)
       //   : []
-      // if (!isEqualLodash(newOpenOrderPrices, openOrderPrices)) {
+      // if (!isEqual(newOpenOrderPrices, openOrderPrices)) {
       //   setOpenOrderPrices(newOpenOrderPrices)
       // }
 
@@ -368,126 +365,60 @@ const Orderbook = ({ depth = 12 }) => {
   if (!serum3MarketExternal) return null
 
   return (
-    <div className="hide-scroll h-full">
-      <div className="grid h-[49px] select-none grid-cols-2 items-center justify-between border-b border-th-bkg-3 text-base">
-        <div
-          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-            true
-              ? 'bg-th-bkg-2 text-th-primary'
-              : 'text-th-fgd-4 hover:text-th-fgd-2'
-          }`}
-        >
-          Book
-        </div>
-        <div
-          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-            false
-              ? 'bg-th-bkg-2 text-th-primary'
-              : 'text-th-fgd-4 hover:text-th-fgd-2'
-          }`}
-        >
-          Trades
-        </div>
-      </div>
-      <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-          <div className="flex items-center space-x-2">
-            <Tooltip
-              content={showBuys ? 'Hide Buys' : 'Show Buys'}
-              placement="top"
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
+        <div className="flex items-center space-x-2">
+          <Tooltip
+            content={showBuys ? 'Hide Buys' : 'Show Buys'}
+            placement="top"
+          >
+            <button
+              className={`rounded ${
+                showBuys ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              onClick={() => setShowBuys(!showBuys)}
+              disabled={!showSells}
             >
-              <button
-                className={`rounded ${
-                  showBuys ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-                } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
-                onClick={() => setShowBuys(!showBuys)}
-                disabled={!showSells}
-              >
-                <OrderbookIcon className="h-4 w-4" side="buy" />
-              </button>
-            </Tooltip>
-            <Tooltip
-              content={showSells ? 'Hide Sells' : 'Show Sells'}
-              placement="top"
+              <OrderbookIcon className="h-4 w-4" side="buy" />
+            </button>
+          </Tooltip>
+          <Tooltip
+            content={showSells ? 'Hide Sells' : 'Show Sells'}
+            placement="top"
+          >
+            <button
+              className={`rounded ${
+                showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              onClick={() => setShowSells(!showSells)}
+              disabled={!showBuys}
             >
-              <button
-                className={`rounded ${
-                  showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-                } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
-                onClick={() => setShowSells(!showSells)}
-                disabled={!showBuys}
-              >
-                <OrderbookIcon className="h-4 w-4" side="sell" />
-              </button>
-            </Tooltip>
-          </div>
-          <Tooltip content="Grouping" placement="top">
-            <GroupSize
-              tickSize={serum3MarketExternal.tickSize}
-              onChange={onGroupSizeChange}
-              value={grouping}
-            />
+              <OrderbookIcon className="h-4 w-4" side="sell" />
+            </button>
           </Tooltip>
         </div>
-        <div className="grid grid-cols-2 px-4 py-2 text-xs text-th-fgd-4">
-          <div className="col-span-1 text-right">Size</div>
-          <div className="col-span-1 text-right">Price</div>
-        </div>
-        <div
-          className="hide-scroll relative h-full overflow-y-scroll"
-          ref={orderbookElRef}
-          onScroll={() => setIsScrolled(true)}
-        >
-          {showSells && orderbookData?.asks?.length
-            ? depthArray.map((_x, index) => {
-                return (
-                  <div key={index}>
-                    {orderbookData?.asks[index] ? (
-                      <MemoizedOrderbookRow
-                        minOrderSize={serum3MarketExternal.minOrderSize}
-                        tickSize={serum3MarketExternal.tickSize}
-                        // hasOpenOrder={hasOpenOrderForPriceGroup(
-                        //   openOrderPrices,
-                        //   price,
-                        //   grouping
-                        // )}
-                        key={orderbookData?.asks[index].price}
-                        price={orderbookData?.asks[index].price}
-                        size={
-                          displayCumulativeSize
-                            ? orderbookData?.asks[index].cumulativeSize
-                            : orderbookData?.asks[index].size
-                        }
-                        side="sell"
-                        sizePercent={
-                          displayCumulativeSize
-                            ? orderbookData?.asks[index].maxSizePercent
-                            : orderbookData?.asks[index].sizePercent
-                        }
-                        grouping={grouping}
-                      />
-                    ) : null}
-                  </div>
-                )
-              })
-            : null}
-          {showBuys && showSells ? (
-            <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4">
-              <div className="col-span-1 flex justify-between">
-                <div className="">{t('spread')}</div>
-                <div className="">
-                  {orderbookData?.spreadPercentage.toFixed(2)}%
-                </div>
-              </div>
-              <div className="col-span-1 text-right">
-                {orderbookData?.spread.toFixed(2)}
-              </div>
-            </div>
-          ) : null}
-          {showBuys && orderbookData?.bids?.length
-            ? depthArray.map((_x, index) => (
+        <Tooltip content="Grouping" placement="top">
+          <GroupSize
+            tickSize={serum3MarketExternal.tickSize}
+            onChange={onGroupSizeChange}
+            value={grouping}
+          />
+        </Tooltip>
+      </div>
+      <div className="grid grid-cols-2 px-4 py-2 text-xs text-th-fgd-4">
+        <div className="col-span-1 text-right">Size</div>
+        <div className="col-span-1 text-right">Price</div>
+      </div>
+      <div
+        className="hide-scroll relative h-full overflow-y-scroll"
+        ref={orderbookElRef}
+        onScroll={() => setIsScrolled(true)}
+      >
+        {showSells && orderbookData?.asks?.length
+          ? depthArray.map((_x, index) => {
+              return (
                 <div key={index}>
-                  {orderbookData?.bids[index] ? (
+                  {orderbookData?.asks[index] ? (
                     <MemoizedOrderbookRow
                       minOrderSize={serum3MarketExternal.minOrderSize}
                       tickSize={serum3MarketExternal.tickSize}
@@ -496,25 +427,69 @@ const Orderbook = ({ depth = 12 }) => {
                       //   price,
                       //   grouping
                       // )}
-                      price={orderbookData?.bids[index].price}
+                      key={orderbookData?.asks[index].price}
+                      price={orderbookData?.asks[index].price}
                       size={
                         displayCumulativeSize
-                          ? orderbookData?.bids[index].cumulativeSize
-                          : orderbookData?.bids[index].size
+                          ? orderbookData?.asks[index].cumulativeSize
+                          : orderbookData?.asks[index].size
                       }
-                      side="buy"
+                      side="sell"
                       sizePercent={
                         displayCumulativeSize
-                          ? orderbookData?.bids[index].maxSizePercent
-                          : orderbookData?.bids[index].sizePercent
+                          ? orderbookData?.asks[index].maxSizePercent
+                          : orderbookData?.asks[index].sizePercent
                       }
                       grouping={grouping}
                     />
                   ) : null}
                 </div>
-              ))
-            : null}
-        </div>
+              )
+            })
+          : null}
+        {showBuys && showSells ? (
+          <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4">
+            <div className="col-span-1 flex justify-between">
+              <div className="">{t('spread')}</div>
+              <div className="">
+                {orderbookData?.spreadPercentage.toFixed(2)}%
+              </div>
+            </div>
+            <div className="col-span-1 text-right">
+              {orderbookData?.spread.toFixed(2)}
+            </div>
+          </div>
+        ) : null}
+        {showBuys && orderbookData?.bids?.length
+          ? depthArray.map((_x, index) => (
+              <div key={index}>
+                {orderbookData?.bids[index] ? (
+                  <MemoizedOrderbookRow
+                    minOrderSize={serum3MarketExternal.minOrderSize}
+                    tickSize={serum3MarketExternal.tickSize}
+                    // hasOpenOrder={hasOpenOrderForPriceGroup(
+                    //   openOrderPrices,
+                    //   price,
+                    //   grouping
+                    // )}
+                    price={orderbookData?.bids[index].price}
+                    size={
+                      displayCumulativeSize
+                        ? orderbookData?.bids[index].cumulativeSize
+                        : orderbookData?.bids[index].size
+                    }
+                    side="buy"
+                    sizePercent={
+                      displayCumulativeSize
+                        ? orderbookData?.bids[index].maxSizePercent
+                        : orderbookData?.bids[index].sizePercent
+                    }
+                    grouping={grouping}
+                  />
+                ) : null}
+              </div>
+            ))
+          : null}
       </div>
     </div>
   )

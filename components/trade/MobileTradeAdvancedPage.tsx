@@ -27,7 +27,7 @@ const MobileTradeAdvancedPage = () => {
         <AdvancedTradeForm />
       </div>
       <div className="col-span-1 border-l border-th-bkg-3">
-        <Orderbook depth={6} />
+        <Orderbook />
       </div>
       <div className="col-span-2 border-t border-th-bkg-3 sm:col-span-3">
         <BalanceAndOpenOrders />
