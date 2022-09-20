@@ -76,7 +76,7 @@ const SwapForm = () => {
       amountWithBorrow: new Decimal(0),
       decimals: 6,
     }
-  }, [inputTokenInfo, useMargin])
+  }, [inputTokenInfo, useMargin, connected])
 
   const amountIn: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
