@@ -220,27 +220,31 @@ const AdvancedTradeForm = () => {
             {baseSymbol}
           </div>
         </div>
-        <div className="mb-2 mt-4 flex items-center justify-between">
-          <p className="text-xs text-th-fgd-3">Limit Price</p>
-        </div>
-        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
-          <NumberFormat
-            inputMode="decimal"
-            thousandSeparator=","
-            allowNegative={false}
-            isNumericString={true}
-            decimalScale={6}
-            name="amountIn"
-            id="amountIn"
-            className="w-full bg-th-bkg-1 font-mono tracking-tight focus:outline-none"
-            placeholder="0.00"
-            value={tradeForm.price}
-            onValueChange={handlePriceChange}
-          />
-          <div className="ml-2 text-sm font-normal text-th-fgd-4">
-            {quoteSymbol}
-          </div>
-        </div>
+        {tradeForm.tradeType === 'Limit' ? (
+          <>
+            <div className="mb-2 mt-4 flex items-center justify-between">
+              <p className="text-xs text-th-fgd-3">Limit Price</p>
+            </div>
+            <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
+              <NumberFormat
+                inputMode="decimal"
+                thousandSeparator=","
+                allowNegative={false}
+                isNumericString={true}
+                decimalScale={6}
+                name="amountIn"
+                id="amountIn"
+                className="w-full bg-th-bkg-1 font-mono tracking-tight focus:outline-none"
+                placeholder="0.00"
+                value={tradeForm.price}
+                onValueChange={handlePriceChange}
+              />
+              <div className="ml-2 text-sm font-normal text-th-fgd-4">
+                {quoteSymbol}
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
       <div className="flex flex-wrap px-5">
         {tradeForm.tradeType === 'Limit' ? (
