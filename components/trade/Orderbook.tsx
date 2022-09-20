@@ -353,7 +353,7 @@ const Orderbook = ({ depth = 12 }) => {
               : 'text-th-fgd-4 hover:text-th-fgd-2'
           }`}
         >
-            Book
+          Book
         </div>
         <div
           className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
@@ -366,7 +366,7 @@ const Orderbook = ({ depth = 12 }) => {
         </div>
       </div>
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-x border-b border-th-bkg-3 px-4 py-2">
+        <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
           <div className="flex items-center space-x-2">
             <Tooltip
               content={showBuys ? 'Hide Buys' : 'Show Buys'}

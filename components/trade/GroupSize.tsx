@@ -31,15 +31,15 @@ const GroupSize = ({
         {({ open }) => (
           <>
             <Listbox.Button
-              className={`default-transition flex h-6 items-center rounded border border-th-bkg-3 bg-th-bkg-1 py-1 font-normal hover:bg-th-bkg-2 focus:border-th-bkg-4 focus:outline-none`}
+              className={`default-transition flex h-6 items-center rounded bg-th-bkg-1 py-1 font-normal text-th-fgd-2 hover:text-th-primary focus:border-th-bkg-4 focus:outline-none`}
             >
               <div
-                className={`flex items-center justify-between space-x-1 pr-1 pl-2 font-mono text-xs leading-none`}
+                className={`flex items-center justify-between font-mono text-xs leading-none`}
               >
-                <span className="text-th-fgd-2">{value}</span>
+                <span>{value}</span>
 
                 <ChevronDownIcon
-                  className={`default-transition h-4 w-4 text-th-fgd-3 ${
+                  className={`default-transition ml-0.5 h-5 w-5 text-th-fgd-3 ${
                     open ? 'rotate-180 transform' : 'rotate-360 transform'
                   }`}
                 />
@@ -48,7 +48,7 @@ const GroupSize = ({
             {open ? (
               <Listbox.Options
                 static
-                className={`thin-scroll absolute left-0 top-7 z-20 w-full space-y-2 overflow-auto rounded border border-th-bkg-3 bg-th-bkg-1 p-2 text-th-fgd-2 outline-none`}
+                className={`thin-scroll absolute right-0 top-7 z-20 w-20 space-y-2 overflow-auto rounded border border-th-bkg-3 bg-th-bkg-1 p-2 text-th-fgd-2 outline-none`}
               >
                 {sizes.map((size) => (
                   <Listbox.Option key={size} value={size}>
