@@ -49,7 +49,7 @@ const getHeight = (
 const TradeAdvancedPage = () => {
   const { height, width } = useViewport()
   const [currentBreakpoint, setCurrentBreakpoint] = useState<string>()
-  const [orderbookDepth, setOrderbookDepth] = useState(6)
+  const [orderbookDepth, setOrderbookDepth] = useState(60)
   const { uiLocked } = mangoStore((s) => s.settings)
   const showMobileView = width <= breakpoints.md
 
@@ -149,29 +149,6 @@ const TradeAdvancedPage = () => {
     GRID_LAYOUT_KEY,
     defaultLayouts
   )
-
-  useEffect(() => {
-    const adjustOrderBook = (
-      layouts: ReactGridLayout.Layouts,
-      breakpoint?: string | null
-    ) => {
-      const bp = breakpoint ? breakpoint : getCurrentBreakpoint()
-      if (bp) {
-        const orderbookLayout = layouts[bp].find((obj) => {
-          return obj.i === 'orderbook'
-        })
-        let depth = (orderbookLayout!.h / 24 / 2) * 1.25
-        const maxNum = Math.max(1, depth)
-        if (typeof maxNum === 'number') {
-          depth = Math.round(maxNum)
-        }
-
-        setOrderbookDepth(depth)
-      }
-    }
-
-    adjustOrderBook(defaultLayouts, currentBreakpoint)
-  }, [currentBreakpoint, defaultLayouts])
 
   const onLayoutChange = useCallback((layouts: ReactGridLayout.Layouts) => {
     if (layouts) {

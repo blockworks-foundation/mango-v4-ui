@@ -42,82 +42,83 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
 
   return (
     <div
-      className={`flex flex-col justify-between transition-all duration-500 ${
+      className={`transition-all duration-500 ${
         collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
-      } min-h-screen border-r border-th-bkg-3 bg-th-bkg-1`}
+      } border-r border-th-bkg-3 bg-th-bkg-1`}
     >
-      <div className="my-2">
-        <Link href={'/'} shallow={true} passHref>
-          <div
-            className={`h-14 items-center transition-all duration-500 ease-in-out ${
-              collapsed ? '' : 'justify-start'
-            } pb-1 pt-2 pl-4`}
-          >
-            <div className={`flex flex-shrink-0 cursor-pointer items-center`}>
-              <img
-                className={`h-8 w-8 flex-shrink-0`}
-                src="/logos/logo-mark.svg"
-                alt="next"
-              />
-              <Transition
-                show={!collapsed}
-                as={Fragment}
-                enter="transition ease-in duration-200"
-                enterFrom="opacity-50"
-                enterTo="opacity-100"
-                leave="transition ease-out duration-200"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <span className="ml-3 text-lg font-bold text-th-fgd-1">
-                  Mango
-                </span>
-              </Transition>
+      <div className="flex min-h-screen flex-col justify-between">
+        <div className="my-2">
+          <Link href={'/'} shallow={true} passHref>
+            <div
+              className={`h-14 items-center transition-all duration-500 ease-in-out ${
+                collapsed ? '' : 'justify-start'
+              } pb-1 pt-2 pl-4`}
+            >
+              <div className={`flex flex-shrink-0 cursor-pointer items-center`}>
+                <img
+                  className={`h-8 w-8 flex-shrink-0`}
+                  src="/logos/logo-mark.svg"
+                  alt="next"
+                />
+                <Transition
+                  show={!collapsed}
+                  as={Fragment}
+                  enter="transition ease-in duration-200"
+                  enterFrom="opacity-50"
+                  enterTo="opacity-100"
+                  leave="transition ease-out duration-200"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <span className="ml-3 text-lg font-bold text-th-fgd-1">
+                    Mango
+                  </span>
+                </Transition>
+              </div>
             </div>
-          </div>
-        </Link>
-        <div className="flex flex-col items-start">
-          <MenuItem
-            active={pathname === '/'}
-            collapsed={collapsed}
-            icon={<CurrencyDollarIcon className="h-5 w-5" />}
-            title={t('account')}
-            pagePath="/"
-          />
-          <MenuItem
-            active={pathname === '/swap'}
-            collapsed={collapsed}
-            icon={<ArrowsRightLeftIcon className="h-5 w-5" />}
-            title={t('swap')}
-            pagePath="/swap"
-          />
-          <MenuItem
-            active={pathname === '/trade'}
-            collapsed={collapsed}
-            icon={<TradeIcon className="h-5 w-5" />}
-            title={t('trade')}
-            pagePath="/trade"
-          />
-          <MenuItem
-            active={pathname === '/stats'}
-            collapsed={collapsed}
-            icon={<ChartBarIcon className="h-5 w-5" />}
-            title={t('stats')}
-            pagePath="/stats"
-          />
-          <MenuItem
-            active={pathname === '/settings'}
-            collapsed={collapsed}
-            icon={<Cog8ToothIcon className="h-5 w-5" />}
-            title={t('settings')}
-            pagePath="/settings"
-          />
-          <ExpandableMenuItem
-            collapsed={collapsed}
-            icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
-            title={t('more')}
-          >
-            {/* <MenuItem
+          </Link>
+          <div className="flex flex-col items-start">
+            <MenuItem
+              active={pathname === '/'}
+              collapsed={collapsed}
+              icon={<CurrencyDollarIcon className="h-5 w-5" />}
+              title={t('account')}
+              pagePath="/"
+            />
+            <MenuItem
+              active={pathname === '/swap'}
+              collapsed={collapsed}
+              icon={<ArrowsRightLeftIcon className="h-5 w-5" />}
+              title={t('swap')}
+              pagePath="/swap"
+            />
+            <MenuItem
+              active={pathname === '/trade'}
+              collapsed={collapsed}
+              icon={<TradeIcon className="h-5 w-5" />}
+              title={t('trade')}
+              pagePath="/trade"
+            />
+            <MenuItem
+              active={pathname === '/stats'}
+              collapsed={collapsed}
+              icon={<ChartBarIcon className="h-5 w-5" />}
+              title={t('stats')}
+              pagePath="/stats"
+            />
+            <MenuItem
+              active={pathname === '/settings'}
+              collapsed={collapsed}
+              icon={<Cog8ToothIcon className="h-5 w-5" />}
+              title={t('settings')}
+              pagePath="/settings"
+            />
+            <ExpandableMenuItem
+              collapsed={collapsed}
+              icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
+              title={t('more')}
+            >
+              {/* <MenuItem
               active={pathname === '/fees'}
               collapsed={false}
               icon={<ReceiptTaxIcon className="h-5 w-5" />}
@@ -125,68 +126,69 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               pagePath="/fees"
               hideIconBg
             /> */}
-            <MenuItem
-              collapsed={false}
-              icon={<LightBulbIcon className="h-5 w-5" />}
-              title={t('learn')}
-              pagePath="https://docs.mango.markets"
-              hideIconBg
-              isExternal
-              showTooltip={false}
-            />
-            <MenuItem
-              collapsed={false}
-              icon={<BuildingLibraryIcon className="h-5 w-5" />}
-              title={t('governance')}
-              pagePath="https://dao.mango.markets"
-              hideIconBg
-              isExternal
-              showTooltip={false}
-            />
-            {connected ? (
-              <button
-                className="default-transition mt-1 flex items-center px-4 text-th-fgd-2 md:hover:text-th-primary"
-                onClick={handleTakeTour}
-              >
-                <InformationCircleIcon className="mr-3 h-5 w-5" />
-                <span className="text-base">Take UI Tour</span>
-              </button>
-            ) : null}
+              <MenuItem
+                collapsed={false}
+                icon={<LightBulbIcon className="h-5 w-5" />}
+                title={t('learn')}
+                pagePath="https://docs.mango.markets"
+                hideIconBg
+                isExternal
+                showTooltip={false}
+              />
+              <MenuItem
+                collapsed={false}
+                icon={<BuildingLibraryIcon className="h-5 w-5" />}
+                title={t('governance')}
+                pagePath="https://dao.mango.markets"
+                hideIconBg
+                isExternal
+                showTooltip={false}
+              />
+              {connected ? (
+                <button
+                  className="default-transition mt-1 flex items-center px-4 text-th-fgd-2 md:hover:text-th-primary"
+                  onClick={handleTakeTour}
+                >
+                  <InformationCircleIcon className="mr-3 h-5 w-5" />
+                  <span className="text-base">Take UI Tour</span>
+                </button>
+              ) : null}
+            </ExpandableMenuItem>
+          </div>
+        </div>
+        <div className="border-t border-th-bkg-3">
+          <ExpandableMenuItem
+            collapsed={collapsed}
+            icon={
+              <HealthHeart
+                health={
+                  mangoAccount
+                    ? mangoAccount.getHealthRatioUi(HealthType.maint)
+                    : undefined
+                }
+                size={32}
+              />
+            }
+            title={
+              <div className="text-left">
+                <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
+                <p className="whitespace-nowrap text-sm font-bold text-th-fgd-1">
+                  {mangoAccount
+                    ? mangoAccount.name
+                    : connected
+                    ? 'No Account'
+                    : 'Connect'}
+                </p>
+              </div>
+            }
+            alignBottom
+            hideIconBg
+          >
+            <div className="px-4 pb-4 pt-2">
+              <MangoAccountSummary collapsed={collapsed} />
+            </div>
           </ExpandableMenuItem>
         </div>
-      </div>
-      <div className="border-t border-th-bkg-3">
-        <ExpandableMenuItem
-          collapsed={collapsed}
-          icon={
-            <HealthHeart
-              health={
-                mangoAccount
-                  ? mangoAccount.getHealthRatioUi(HealthType.maint)
-                  : undefined
-              }
-              size={32}
-            />
-          }
-          title={
-            <div className="text-left">
-              <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
-              <p className="whitespace-nowrap text-sm font-bold text-th-fgd-1">
-                {mangoAccount
-                  ? mangoAccount.name
-                  : connected
-                  ? 'No Account'
-                  : 'Connect'}
-              </p>
-            </div>
-          }
-          alignBottom
-          hideIconBg
-        >
-          <div className="px-4 pb-4 pt-2">
-            <MangoAccountSummary collapsed={collapsed} />
-          </div>
-        </ExpandableMenuItem>
       </div>
     </div>
   )

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react'
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import { isEqual } from '../../utils'
 
 const GroupSize = ({
   tickSize,
@@ -72,6 +71,4 @@ const GroupSize = ({
   )
 }
 
-export default React.memo(GroupSize, (prevProps, nextProps) =>
-  isEqual(prevProps, nextProps, ['tickSize', 'value'])
-)
+export default React.memo(GroupSize)

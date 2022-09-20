@@ -1,7 +1,7 @@
 import { AccountInfo } from '@solana/web3.js'
 import Big from 'big.js'
 import mangoStore from '@store/mangoStore'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
 import useInterval from '@components/shared/useInterval'
 import isEqualLodash from 'lodash/isEqual'
@@ -152,7 +152,8 @@ const Orderbook = ({ depth = 12 }) => {
   const { t } = useTranslation('common')
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
 
-  const [openOrderPrices, setOpenOrderPrices] = useState<any[]>([])
+  // const [openOrderPrices, setOpenOrderPrices] = useState<any[]>([])
+  const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)
   const [defaultLayout, setDefaultLayout] = useState(true)
   const [displayCumulativeSize, setDisplayCumulativeSize] = useState(false)
@@ -162,8 +163,13 @@ const Orderbook = ({ depth = 12 }) => {
 
   const currentOrderbookData = useRef<any>(null)
   const nextOrderbookData = useRef<any>(null)
+  const orderbookElRef = useRef<HTMLDivElement>(null)
   const previousDepth = usePrevious(depth)
   const previousGrouping = usePrevious(grouping)
+
+  const depthArray = useMemo(() => {
+    return Array(depth).fill(0)
+  }, [depth])
 
   const serum3MarketExternal = useMemo(() => {
     const group = mangoStore.getState().group
@@ -187,6 +193,13 @@ const Orderbook = ({ depth = 12 }) => {
       ),
     []
   )
+
+  const verticallyCenterOrderbook = useCallback(() => {
+    const element = orderbookElRef.current
+    if (element) {
+      element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
+    }
+  }, [])
 
   useInterval(() => {
     const orderbook = mangoStore.getState().selectedMarket.orderbook
@@ -273,6 +286,9 @@ const Orderbook = ({ depth = 12 }) => {
           spread,
           spreadPercentage,
         })
+        if (!isScrolled) {
+          verticallyCenterOrderbook()
+        }
       } else {
         setOrderbookData(null)
       }
@@ -337,9 +353,17 @@ const Orderbook = ({ depth = 12 }) => {
     }
   }, [serum3MarketExternal])
 
-  const onGroupSizeChange = (groupSize: number) => {
+  useEffect(() => {
+    function handleResize() {
+      verticallyCenterOrderbook()
+    }
+
+    window.addEventListener('resize', handleResize)
+  }, [verticallyCenterOrderbook])
+
+  const onGroupSizeChange = useCallback((groupSize: number) => {
     setGrouping(groupSize)
-  }
+  }, [])
 
   if (!serum3MarketExternal) return null
 
@@ -409,35 +433,43 @@ const Orderbook = ({ depth = 12 }) => {
           <div className="col-span-1 text-right">Size</div>
           <div className="col-span-1 text-right">Price</div>
         </div>
-        <div className="hide-scroll relative h-full overflow-y-scroll">
-          {showSells
-            ? orderbookData?.asks.map(
-                ({
-                  price,
-                  size,
-                  cumulativeSize,
-                  sizePercent,
-                  maxSizePercent,
-                }: cumOrderbookSide) => (
-                  <MemoizedOrderbookRow
-                    minOrderSize={serum3MarketExternal.minOrderSize}
-                    tickSize={serum3MarketExternal.tickSize}
-                    // hasOpenOrder={hasOpenOrderForPriceGroup(
-                    //   openOrderPrices,
-                    //   price,
-                    //   grouping
-                    // )}
-                    key={price + ''}
-                    price={price}
-                    size={displayCumulativeSize ? cumulativeSize : size}
-                    side="sell"
-                    sizePercent={
-                      displayCumulativeSize ? maxSizePercent : sizePercent
-                    }
-                    grouping={grouping}
-                  />
+        <div
+          className="hide-scroll relative h-full overflow-y-scroll"
+          ref={orderbookElRef}
+          onScroll={() => setIsScrolled(true)}
+        >
+          {showSells && orderbookData?.asks?.length
+            ? depthArray.map((_x, index) => {
+                return (
+                  <div key={index}>
+                    {orderbookData?.asks[index] ? (
+                      <MemoizedOrderbookRow
+                        minOrderSize={serum3MarketExternal.minOrderSize}
+                        tickSize={serum3MarketExternal.tickSize}
+                        // hasOpenOrder={hasOpenOrderForPriceGroup(
+                        //   openOrderPrices,
+                        //   price,
+                        //   grouping
+                        // )}
+                        key={orderbookData?.asks[index].price}
+                        price={orderbookData?.asks[index].price}
+                        size={
+                          displayCumulativeSize
+                            ? orderbookData?.asks[index].cumulativeSize
+                            : orderbookData?.asks[index].size
+                        }
+                        side="sell"
+                        sizePercent={
+                          displayCumulativeSize
+                            ? orderbookData?.asks[index].maxSizePercent
+                            : orderbookData?.asks[index].sizePercent
+                        }
+                        grouping={grouping}
+                      />
+                    ) : null}
+                  </div>
                 )
-              )
+              })
             : null}
           {showBuys && showSells ? (
             <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4">
@@ -452,34 +484,35 @@ const Orderbook = ({ depth = 12 }) => {
               </div>
             </div>
           ) : null}
-          {showBuys
-            ? orderbookData?.bids.map(
-                ({
-                  price,
-                  size,
-                  cumulativeSize,
-                  sizePercent,
-                  maxSizePercent,
-                }: cumOrderbookSide) => (
-                  <MemoizedOrderbookRow
-                    minOrderSize={serum3MarketExternal.minOrderSize}
-                    tickSize={serum3MarketExternal.tickSize}
-                    // hasOpenOrder={hasOpenOrderForPriceGroup(
-                    //   openOrderPrices,
-                    //   price,
-                    //   grouping
-                    // )}
-                    key={price}
-                    price={price}
-                    size={displayCumulativeSize ? cumulativeSize : size}
-                    side="buy"
-                    sizePercent={
-                      displayCumulativeSize ? maxSizePercent : sizePercent
-                    }
-                    grouping={grouping}
-                  />
-                )
-              )
+          {showBuys && orderbookData?.bids?.length
+            ? depthArray.map((_x, index) => (
+                <div key={index}>
+                  {orderbookData?.bids[index] ? (
+                    <MemoizedOrderbookRow
+                      minOrderSize={serum3MarketExternal.minOrderSize}
+                      tickSize={serum3MarketExternal.tickSize}
+                      // hasOpenOrder={hasOpenOrderForPriceGroup(
+                      //   openOrderPrices,
+                      //   price,
+                      //   grouping
+                      // )}
+                      price={orderbookData?.bids[index].price}
+                      size={
+                        displayCumulativeSize
+                          ? orderbookData?.bids[index].cumulativeSize
+                          : orderbookData?.bids[index].size
+                      }
+                      side="buy"
+                      sizePercent={
+                        displayCumulativeSize
+                          ? orderbookData?.bids[index].maxSizePercent
+                          : orderbookData?.bids[index].sizePercent
+                      }
+                      grouping={grouping}
+                    />
+                  ) : null}
+                </div>
+              ))
             : null}
         </div>
       </div>
@@ -561,7 +594,7 @@ const OrderbookRow = ({
 
   return (
     <div
-      className={`relative flex cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
+      className={`relative flex h-[24px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
       ref={element}
     >
       <>
