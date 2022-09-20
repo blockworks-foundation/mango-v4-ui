@@ -112,13 +112,14 @@ const AdvancedMarketHeader = () => {
       </div>
       <div className="ml-6 flex-col">
         <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
-        <div
+        <PercentageChange change={change} size="small" />
+        {/* <div
           className={`font-mono text-xs ${
             change < 0 ? 'text-th-red' : 'text-th-gree'
           }`}
         >
           {isNaN(change) ? '0.00' : change.toFixed(2)}%
-        </div>
+        </div> */}
       </div>
     </div>
   )
