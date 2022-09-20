@@ -137,9 +137,15 @@ const AccountPage = () => {
   return !chartToShow ? (
     <>
       <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 pt-3 pb-0 md:border-b md:pb-3">
-        <div className="mb-3 flex items-center space-x-6 md:mb-0">
+        <div className="flex items-center space-x-6">
           <div id="step-two">
-            <p className="mb-1.5">{t('account-value')}</p>
+            <Tooltip
+              maxWidth="20rem"
+              placement="bottom"
+              content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
+            >
+              <p className="tooltip-underline mb-1.5">{t('account-value')}</p>
+            </Tooltip>
             <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
               $
               {mangoAccount ? (
@@ -218,53 +224,65 @@ const AccountPage = () => {
             </SheenLoader>
           )}
         </div>
-        <div className="mb-3 md:mb-0">
+        <div className="my-3 lg:my-0">
           <AccountActions />
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-x-6 border-b border-th-bkg-3">
-        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:border-l md:border-t-0 lg:col-span-1">
+      <div className="grid grid-cols-4 border-b border-th-bkg-3">
+        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
           <div id="step-three">
             <Tooltip
-              maxWidth="26rem"
+              maxWidth="20rem"
               placement="bottom"
               content={
                 <div className="flex-col space-y-2 text-sm">
-                  <div>
-                    The health percentage describes how close the account is to
-                    liquidation. Accounts with low health are more likely to get
-                    liquidated when prices fluctuate.
-                  </div>
-                  <div>Your account health is at {maintHealth}%</div>
-                  <div>
-                    Scenario: If the prices of all your liabilities increase by{' '}
+                  <p className="text-xs">
+                    Health describes how close your account is to liquidation.
+                    The lower your account health is the more likely you are to
+                    get liquidated when prices fluctuate.
+                  </p>
+                  <p className="text-xs font-bold text-th-fgd-1">
+                    Your account health is {maintHealth}%
+                  </p>
+                  <p className="text-xs">
+                    <span className="font-bold text-th-fgd-1">Scenario:</span>{' '}
+                    If the prices of all your liabilities increase by{' '}
                     {maintHealth}%, even for just a moment, some of your
                     liabilities will be liquidated.
-                  </div>
-                  <div>
-                    Scenario: If the value of your total collateral decreases by{' '}
-                    {(1 - 1 / ((maintHealth || 0) / 100 + 1)) * 100}%, some of
-                    your liabilities will be liquidated.
-                  </div>
-                  <div>
+                  </p>
+                  <p className="text-xs">
+                    <span className="font-bold text-th-fgd-1">Scenario:</span>{' '}
+                    If the value of your total collateral decreases by{' '}
+                    {((1 - 1 / ((maintHealth || 0) / 100 + 1)) * 100).toFixed(
+                      2
+                    )}
+                    % , some of your liabilities will be liquidated.
+                  </p>
+                  <p className="text-xs">
                     These are examples. A combination of events can also lead to
                     liquidation.
-                  </div>
+                  </p>
                 </div>
               }
             >
-              <p className="text-th-fgd-3 underline decoration-dashed underline-offset-4 hover:cursor-help">
-                {t('health')}
-              </p>
+              <p className="tooltip-underline text-th-fgd-3">{t('health')}</p>
             </Tooltip>
             <p className="mt-1 text-2xl font-bold text-th-fgd-1">
               {maintHealth}%
             </p>
           </div>
         </div>
-        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:border-l md:border-t-0 lg:col-span-1">
+        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
           <div id="step-four">
-            <p className="text-th-fgd-3">{t('free-collateral')}</p>
+            <Tooltip
+              content="The amount of capital you have to trade or borrow against. When your free collateral reaches $0 you won't be able to make withdrawals."
+              maxWidth="20rem"
+              placement="bottom"
+            >
+              <p className="tooltip-underline text-th-fgd-3">
+                {t('free-collateral')}
+              </p>
+            </Tooltip>
             <p className="mt-1 text-2xl font-bold text-th-fgd-1">
               {mangoAccount
                 ? formatFixedDecimals(
@@ -277,9 +295,15 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
+        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
           <div>
-            <p className="text-th-fgd-3">{t('pnl')}</p>
+            <Tooltip
+              content="The amount your account has made or lost."
+              // maxWidth="20rem"
+              placement="bottom"
+            >
+              <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
+            </Tooltip>
             <p className="mt-1 text-2xl font-bold text-th-fgd-1">
               {formatFixedDecimals(accountPnl, true)}
             </p>
@@ -293,9 +317,17 @@ const AccountPage = () => {
             </IconButton>
           ) : null}
         </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:border-l md:border-t-0 lg:col-span-1">
+        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
           <div id="step-five">
-            <p className="text-th-fgd-3">{t('total-interest-value')}</p>
+            <Tooltip
+              content="The value of interest earned (deposits) minus interest paid (borrows)."
+              maxWidth="20rem"
+              placement="bottom"
+            >
+              <p className="tooltip-underline text-th-fgd-3">
+                {t('total-interest-value')}
+              </p>
+            </Tooltip>
             <p className="mt-1 text-2xl font-bold text-th-fgd-1">
               {formatFixedDecimals(interestTotalValue, true)}
             </p>

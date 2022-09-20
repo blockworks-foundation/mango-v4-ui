@@ -413,3 +413,7 @@ input[type='range']::-webkit-slider-runnable-track {
   -webkit-animation: red-flash 0.5s ease 0s 1 alternate;
   animation: red-flash 0.5s ease 0s 1 alternate;
 }
+
+.tooltip-underline {
+  @apply default-transition w-max border-b border-dashed border-th-fgd-4 leading-tight hover:cursor-help hover:border-transparent;
+}
