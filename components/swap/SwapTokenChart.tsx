@@ -246,7 +246,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
           </SheenLoader>
         </>
       ) : chartData.length && baseTokenId && quoteTokenId ? (
-        <div className="relative flex justify-between md:block">
+        <div className="relative">
           <div className="flex items-start justify-between">
             <div>
               {inputTokenInfo && outputTokenInfo ? (
@@ -309,8 +309,8 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
               )}
             </div>
           </div>
-          <div className="mt-2 h-28 w-1/2 md:h-80 md:w-auto">
-            <div className="-mb-2 flex justify-end md:absolute md:top-[2px] md:right-0">
+          <div className="mt-2 h-40 w-auto md:h-80">
+            <div className="absolute top-[2px] right-0 -mb-2 flex justify-end">
               <ChartRangeButtons
                 activeValue={daysToShow}
                 names={['24H', '7D', '30D']}

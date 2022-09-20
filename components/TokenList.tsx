@@ -313,9 +313,11 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
             )}
           </div>
           <div>
-            <p>{bank.name}</p>
-            <p className="text-sm">
-              <span className="mr-1 text-th-fgd-4">{t('balance')}:</span>
+            <p className="text-th-fgd-1">{bank.name}</p>
+            <p className="font-mono text-sm text-th-fgd-1">
+              <span className="mr-1 font-body text-th-fgd-4">
+                {t('balance')}:
+              </span>
               {mangoAccount
                 ? formatDecimal(mangoAccount.getTokenBalanceUi(bank))
                 : 0}

@@ -183,7 +183,7 @@ const SwapHistoryTable = ({
             </tbody>
           </table>
         ) : (
-          <div className="mt-4 space-y-2">
+          <div>
             {tradeHistory.map((h) => {
               const {
                 block_datetime,
@@ -201,16 +201,8 @@ const SwapHistoryTable = ({
               } = h
 
               const borrowAmount =
-                swap_in_loan > 0
-                  ? `${trimDecimals(
-                      swap_in_loan,
-                      countLeadingZeros(swap_in_loan) + 2
-                    )} ${swap_in_symbol}`
-                  : loan > 0
-                  ? `${trimDecimals(
-                      loan,
-                      countLeadingZeros(loan) + 2
-                    )} ${swap_out_symbol}`
+                loan > 0
+                  ? `${trimDecimals(loan, countLeadingZeros(loan) + 2)}`
                   : 0
               const borrowFee =
                 swap_in_loan_origination_fee > 0
@@ -219,10 +211,7 @@ const SwapHistoryTable = ({
                   ? loan_origination_fee.toFixed(4)
                   : 0
               return (
-                <div
-                  key={signature}
-                  className="rounded-md border border-th-bkg-4 p-4"
-                >
+                <div key={signature} className="border-b border-th-bkg-3 p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="flex w-1/2 items-center">
@@ -235,12 +224,15 @@ const SwapHistoryTable = ({
                           />
                         </div>
                         <div>
-                          <p className="mb-1.5 whitespace-nowrap leading-none text-th-fgd-1">{`${swap_in_amount.toFixed(
-                            2
-                          )} ${swap_in_symbol}`}</p>
-                          <p className="text-xs leading-none text-th-fgd-3">
+                          <p className="mb-1.5 whitespace-nowrap font-mono leading-none text-th-fgd-1">
+                            {swap_in_amount.toFixed(2)}{' '}
+                            <span className="font-body">{swap_in_symbol}</span>
+                          </p>
+                          <p className="font-mono text-xs leading-none text-th-fgd-3">
                             {formatFixedDecimals(swap_in_price_usd, true)}
-                            <span className="mx-1 text-th-fgd-4">|</span>
+                            <span className="mx-1 font-body text-th-fgd-4">
+                              |
+                            </span>
                             {formatFixedDecimals(
                               swap_in_amount * swap_in_price_usd,
                               true
@@ -261,12 +253,15 @@ const SwapHistoryTable = ({
                           />
                         </div>
                         <div>
-                          <p className="mb-1.5 whitespace-nowrap leading-none text-th-fgd-1">{`${swap_out_amount.toFixed(
-                            2
-                          )} ${swap_out_symbol}`}</p>
-                          <p className="text-xs leading-none text-th-fgd-3">
+                          <p className="mb-1.5 whitespace-nowrap leading-none text-th-fgd-1">
+                            {swap_out_amount.toFixed(2)}{' '}
+                            <span className="font-body">{swap_out_symbol}</span>
+                          </p>
+                          <p className="font-mono text-xs leading-none text-th-fgd-3">
                             {formatFixedDecimals(swap_out_price_usd, true)}
-                            <span className="mx-1 text-th-fgd-4">|</span>
+                            <span className="mx-1 font-body text-th-fgd-4">
+                              |
+                            </span>
                             {formatFixedDecimals(
                               swap_out_amount * swap_out_price_usd,
                               true
@@ -310,13 +305,16 @@ const SwapHistoryTable = ({
                       </div>
                       <div className="col-span-1">
                         <p className="text-xs text-th-fgd-3">{t('borrow')}</p>
-                        <p className="text-th-fgd-1">{borrowAmount}</p>
+                        <p className="font-mono text-th-fgd-1">
+                          {borrowAmount}{' '}
+                          <span className="font-body">{swap_in_symbol}</span>
+                        </p>
                       </div>
                       <div className="col-span-1">
                         <p className="text-xs text-th-fgd-3">
                           {t('borrow-fee')}
                         </p>
-                        <p className="text-th-fgd-1">${borrowFee}</p>
+                        <p className="font-mono text-th-fgd-1">${borrowFee}</p>
                       </div>
                       <div className="col-span-1">
                         <p className="text-xs text-th-fgd-3">
