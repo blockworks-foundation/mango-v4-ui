@@ -55,7 +55,7 @@ const ConnectedMenu = () => {
           <div className="relative">
             <Menu.Button
               className={`default-transition flex h-16 ${
-                !isMobile ? 'w-48 border-x border-th-bkg-3 px-3' : ''
+                !isMobile ? 'w-48 border-l border-th-bkg-3 px-3' : ''
               } items-center hover:bg-th-bkg-2 focus:outline-none`}
             >
               <ProfileImage
@@ -70,7 +70,7 @@ const ConnectedMenu = () => {
                       ? abbreviateAddress(new PublicKey(wallet_pk))
                       : ''}
                   </p>
-                  <p className="truncate text-sm font-bold capitalize text-th-fgd-1">
+                  <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
                     {profile_name}
                   </p>
                 </div>

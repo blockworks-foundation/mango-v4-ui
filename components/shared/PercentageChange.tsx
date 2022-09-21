@@ -11,9 +11,13 @@ const PercentageChange = ({
   return (
     <div className="flex items-center space-x-1.5">
       {change > 0 ? (
-        <UpTriangle size={size} />
+        <div className="mt-[1px]">
+          <UpTriangle size={size} />
+        </div>
       ) : change < 0 ? (
-        <DownTriangle size={size} />
+        <div className="mt-[1px]">
+          <DownTriangle size={size} />
+        </div>
       ) : (
         <MinusSmallIcon
           className={`-mr-1 ${
@@ -32,7 +36,7 @@ const PercentageChange = ({
             : 'text-th-fgd-4'
         }`}
       >
-        {isNaN(change) ? '0.00' : change.toFixed(2)}%
+        {isNaN(change) ? '0.00' : Math.abs(change).toFixed(2)}%
       </p>
     </div>
   )
