@@ -2,18 +2,26 @@ import { Menu, Transition } from '@headlessui/react'
 import { ArrowRightOnRectangleIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
-import { Fragment, useCallback, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
 import ProfileImage from '../shared/ProfileImage'
 import { abbreviateAddress } from '../../utils/formatting'
 import NftProfilePicModal from '../modals/NftProfilePicModal'
+import { PublicKey } from '@solana/web3.js'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from '../../utils/theme'
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
   const [showProfileImageModal, setShowProfileImageModal] = useState(false)
   const set = mangoStore((s) => s.set)
   const { publicKey, disconnect, wallet } = useWallet()
+  const actions = mangoStore((s) => s.actions)
+  const profileDetails = mangoStore((s) => s.profile.details)
+  const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
 
   const handleDisconnect = useCallback(() => {
     set((state) => {
@@ -28,15 +36,37 @@ const ConnectedMenu = () => {
     })
   }, [set, t, disconnect])
 
+  useEffect(() => {
+    if (publicKey) {
+      actions.fetchProfileDetails(publicKey.toString())
+    }
+  }, [publicKey])
+
+  const { profile_name, wallet_pk } = profileDetails
+
   return (
     <>
       <Menu>
         {({ open }) => (
           <div className="relative">
             <Menu.Button
-              className={`flex h-10 w-10 items-center rounded-full hover:bg-th-bkg-2 focus:outline-none`}
+              className={`default-transition flex h-16 ${
+                !isMobile ? 'w-48 border-x border-th-bkg-3 px-3' : ''
+              } items-center hover:bg-th-bkg-2 focus:outline-none`}
             >
               <ProfileImage imageSize="40" placeholderSize="24" />
+              {!loadProfileDetails && !isMobile ? (
+                <div className="ml-2 w-32 text-left">
+                  <p className="text-xs text-th-fgd-3">
+                    {wallet_pk
+                      ? abbreviateAddress(new PublicKey(wallet_pk))
+                      : ''}
+                  </p>
+                  <p className="truncate text-sm font-bold capitalize text-th-fgd-1">
+                    {profile_name}
+                  </p>
+                </div>
+              ) : null}
             </Menu.Button>
             <Transition
               appear={true}
@@ -49,7 +79,7 @@ const ConnectedMenu = () => {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <Menu.Items className="absolute right-0 top-[53px] z-20 mt-1 w-48 space-y-1.5 rounded-md rounded-t-none border border-t-0 border-th-bkg-3 bg-th-bkg-1 px-4 py-2.5">
+              <Menu.Items className="absolute right-0 top-[61px] z-20 mt-1 w-48 space-y-1.5 rounded-md rounded-t-none border border-t-0 border-th-bkg-3 bg-th-bkg-1 px-4 py-2.5 md:rounded-r-none">
                 {/* <Menu.Item>
                     <button
                       className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer hover:text-th-primary focus:outline-none"

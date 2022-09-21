@@ -99,6 +99,13 @@ interface NFT {
   image: string
 }
 
+interface ProfileDetails {
+  profile_image_url?: string
+  profile_name: string
+  trader_category: string
+  wallet_pk: string
+}
+
 export type MangoStore = {
   coingeckoPrices: {
     data: any[]
@@ -124,6 +131,10 @@ export type MangoStore = {
   markets: Serum3Market[] | undefined
   notificationIdCounter: number
   notifications: Array<Notification>
+  profile: {
+    details: ProfileDetails
+    loadDetails: boolean
+  }
   selectedMarket: {
     name: string
     current: Serum3Market | undefined
@@ -178,6 +189,7 @@ export type MangoStore = {
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrdersForMarket: (market: Serum3Market) => Promise<void>
     fetchProfilePicture: (wallet: AnchorWallet) => void
+    fetchProfileDetails: (walletPk: string) => void
     fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
     fetchWalletTokens: (wallet: AnchorWallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: Wallet) => Promise<void>
@@ -212,6 +224,10 @@ const mangoStore = create<MangoStore>()(
       markets: undefined,
       notificationIdCounter: 0,
       notifications: [],
+      profile: {
+        loadDetails: false,
+        details: { profile_name: '', trader_category: '', wallet_pk: '' },
+      },
       selectedMarket: {
         name: 'ETH/USDC',
         current: undefined,
@@ -660,6 +676,29 @@ const mangoStore = create<MangoStore>()(
             console.error('Could not get profile picture', e)
             set((state) => {
               state.wallet.loadProfilePic = false
+            })
+          }
+        },
+        async fetchProfileDetails(walletPk: string) {
+          const set = get().set
+          set((state) => {
+            state.profile.loadDetails = true
+          })
+          try {
+            const response = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/user-data/profile-details?wallet-pk=${walletPk}`
+            )
+            const data = await response.json()
+            console.log(data)
+            set((state) => {
+              state.profile.details = data
+              state.profile.loadDetails = false
+            })
+          } catch (e) {
+            notify({ type: 'error', title: 'Failed to load profile details' })
+            console.log(e)
+            set((state) => {
+              state.profile.loadDetails = false
             })
           }
         },
