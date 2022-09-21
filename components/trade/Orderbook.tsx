@@ -147,7 +147,9 @@ const groupBy = (
     })
   return sortedGroups
 }
+
 const depth = 60
+
 const Orderbook = () => {
   const { t } = useTranslation('common')
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
@@ -197,7 +199,14 @@ const Orderbook = () => {
   const verticallyCenterOrderbook = useCallback(() => {
     const element = orderbookElRef.current
     if (element) {
-      element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
+      if (element.scrollHeight > window.innerHeight) {
+        element.scrollTop =
+          (element.scrollHeight - element.scrollHeight) / 2 +
+          (element.scrollHeight - window.innerHeight) / 2 +
+          94
+      } else {
+        element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
+      }
     }
   }, [])
 
