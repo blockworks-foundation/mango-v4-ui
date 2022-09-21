@@ -1,58 +1,29 @@
-import { useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey } from '@solana/web3.js'
-import { getProfilePicture } from '@solflare-wallet/pfp'
-import { useEffect, useState } from 'react'
-import mangoStore from '@store/mangoStore'
+import mangoStore from '../../store/mangoStore'
 import ProfileIcon from '../icons/ProfileIcon'
 
 const ProfileImage = ({
   imageSize,
   placeholderSize,
-  publicKey,
+  imageUrl,
+  isOwnerProfile,
 }: {
   imageSize: string
   placeholderSize: string
-  publicKey?: string
+  imageUrl?: string
+  isOwnerProfile?: boolean
 }) => {
-  const pfp = mangoStore((s) => s.wallet.profilePic)
-  const loadPfp = mangoStore((s) => s.wallet.loadProfilePic)
-  // const loadingTransaction = mangoStore(
-  //   (s) => s.wallet.nfts.loadingTransaction
-  // )
-  const connection = mangoStore((s) => s.connection)
-  const [unownedPfp, setUnownedPfp] = useState<any>(null)
-  const [loadUnownedPfp, setLoadUnownedPfp] = useState<boolean>(false)
-  const { connected } = useWallet()
+  const profile = mangoStore((s) => s.profile.details)
 
-  useEffect(() => {
-    if (publicKey) {
-      setLoadUnownedPfp(true)
-      const getProfilePic = async () => {
-        const pfp = await getProfilePicture(
-          connection,
-          new PublicKey(publicKey)
-        )
-        setUnownedPfp(pfp)
-        setLoadUnownedPfp(false)
-      }
-      getProfilePic()
-    }
-  }, [publicKey, connection])
-
-  const isLoading = (connected && loadPfp && !publicKey) || loadUnownedPfp
-
-  return pfp?.isAvailable || unownedPfp?.isAvailable ? (
+  return imageUrl || (isOwnerProfile && profile.profile_image_url) ? (
     <img
       alt=""
-      src={publicKey ? unownedPfp?.url : pfp?.url}
+      src={imageUrl ? imageUrl : profile.profile_image_url}
       className={`default-transition rounded-full`}
       style={{ width: `${imageSize}px`, height: `${imageSize}px` }}
     />
   ) : (
     <div
-      className={`flex flex-shrink-0 items-center justify-center rounded-full ${
-        isLoading ? 'animate-pulse bg-th-bkg-4' : 'bg-th-bkg-4'
-      }`}
+      className={`flex flex-shrink-0 items-center justify-center rounded-full bg-th-bkg-3`}
       style={{ width: `${imageSize}px`, height: `${imageSize}px` }}
     >
       <div

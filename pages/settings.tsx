@@ -15,7 +15,7 @@ require('dayjs/locale/zh-tw')
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common', 'trade'])),
+      ...(await serverSideTranslations(locale, ['common', 'profile', 'trade'])),
     },
   }
 }
