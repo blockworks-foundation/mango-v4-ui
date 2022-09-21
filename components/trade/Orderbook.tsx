@@ -371,6 +371,10 @@ const Orderbook = () => {
     setGrouping(groupSize)
   }, [])
 
+  const handleScroll = useCallback(() => {
+    setIsScrolled(true)
+  }, [])
+
   if (!serum3MarketExternal) return null
 
   return (
@@ -421,7 +425,7 @@ const Orderbook = () => {
       <div
         className="hide-scroll relative h-full overflow-y-scroll"
         ref={orderbookElRef}
-        onScroll={() => setIsScrolled(true)}
+        onScroll={handleScroll}
       >
         {showSells && orderbookData?.asks?.length
           ? depthArray.map((_x, index) => {
