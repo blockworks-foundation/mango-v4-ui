@@ -43,7 +43,6 @@ const getHeight = (
   minHeight: number,
   remainingRowHeight: number
 ) => {
-  console.log(Math.max(minHeight, pageHeight - remainingRowHeight))
   return Math.max(minHeight, pageHeight - remainingRowHeight)
 }
 
