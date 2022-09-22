@@ -56,9 +56,9 @@ const RecentTrades = () => {
     }
   }, 5000)
   return (
-    <>
+    <div className="h-full overflow-y-scroll ">
       <div className={`mb-1 grid grid-cols-3 px-4 pt-2 text-xxs text-th-fgd-4`}>
-        <div>{`${t('price')} (${quoteSymbol})`} </div>
+        <div className="text-right">{`${t('price')} (${quoteSymbol})`} </div>
         <div className={`text-right`}>
           {t('size')} ({baseSymbol})
         </div>
@@ -83,7 +83,7 @@ const RecentTrades = () => {
             return (
               <div key={i} className={`grid grid-cols-3 leading-6`}>
                 <div
-                  className={`${
+                  className={`text-right ${
                     trade.side === 'buy' ? `text-th-green` : `text-th-red`
                   }`}
                 >
@@ -100,7 +100,7 @@ const RecentTrades = () => {
           })}
         </div>
       )}
-    </>
+    </div>
   )
 }
 
