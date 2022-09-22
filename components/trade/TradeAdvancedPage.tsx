@@ -14,6 +14,8 @@ import AdvancedTradeForm from './AdvancedTradeForm'
 import BalanceAndOpenOrders from './BalanceAndOpenOrders'
 import MobileTradeAdvancedPage from './MobileTradeAdvancedPage'
 import OrderbookAndTrades from './OrderbookAndTrades'
+import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
   ssr: false,
@@ -51,6 +53,9 @@ const TradeAdvancedPage = () => {
   const [currentBreakpoint, setCurrentBreakpoint] = useState<string>()
   const { uiLocked } = mangoStore((s) => s.settings)
   const showMobileView = width <= breakpoints.md
+  const userSettings = mangoStore((s) => s.settings.current)
+  const loadingUserSettings = mangoStore((s) => s.settings.loading)
+  const { connected } = useWallet()
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
     const topnavbarHeight = 67
@@ -162,51 +167,61 @@ const TradeAdvancedPage = () => {
   return showMobileView ? (
     <MobileTradeAdvancedPage />
   ) : (
-    <ResponsiveGridLayout
-      // layouts={savedLayouts ? savedLayouts : defaultLayouts}
-      layouts={defaultLayouts}
-      breakpoints={gridBreakpoints}
-      cols={{
-        xxxl: totalCols,
-        xxl: totalCols,
-        xl: totalCols,
-        lg: totalCols,
-        md: totalCols,
-        sm: totalCols,
-      }}
-      rowHeight={1}
-      isDraggable={!uiLocked}
-      isResizable={!uiLocked}
-      onBreakpointChange={(newBreakpoint) => onBreakpointChange(newBreakpoint)}
-      onLayoutChange={(layout, layouts) => onLayoutChange(layouts)}
-      measureBeforeMount
-      containerPadding={[0, 0]}
-      margin={[0, 0]}
-    >
-      <div key="market-header" className="z-10">
-        <AdvancedMarketHeader />
-      </div>
-      <div key="tv-chart" className="h-full border border-x-0 border-th-bkg-3">
-        <div className={`relative h-full overflow-auto`}>
-          <TradingViewChart />
+    <>
+      <ResponsiveGridLayout
+        // layouts={savedLayouts ? savedLayouts : defaultLayouts}
+        layouts={defaultLayouts}
+        breakpoints={gridBreakpoints}
+        cols={{
+          xxxl: totalCols,
+          xxl: totalCols,
+          xl: totalCols,
+          lg: totalCols,
+          md: totalCols,
+          sm: totalCols,
+        }}
+        rowHeight={1}
+        isDraggable={!uiLocked}
+        isResizable={!uiLocked}
+        onBreakpointChange={(newBreakpoint) =>
+          onBreakpointChange(newBreakpoint)
+        }
+        onLayoutChange={(layout, layouts) => onLayoutChange(layouts)}
+        measureBeforeMount
+        containerPadding={[0, 0]}
+        margin={[0, 0]}
+      >
+        <div key="market-header" className="z-10">
+          <AdvancedMarketHeader />
         </div>
-      </div>
-      <div key="balances">
-        <BalanceAndOpenOrders />
-      </div>
-      <div
-        key="trade-form"
-        className="border border-t-0 border-r-0 border-th-bkg-3 md:border-b lg:border-b-0"
-      >
-        <AdvancedTradeForm />
-      </div>
-      <div
-        key="orderbook"
-        className="border border-y-0 border-r-0 border-th-bkg-3"
-      >
-        <OrderbookAndTrades />
-      </div>
-    </ResponsiveGridLayout>
+        <div
+          key="tv-chart"
+          className="h-full border border-x-0 border-th-bkg-3"
+        >
+          <div className={`relative h-full overflow-auto`}>
+            <TradingViewChart />
+          </div>
+        </div>
+        <div key="balances">
+          <BalanceAndOpenOrders />
+        </div>
+        <div
+          key="trade-form"
+          className="border border-t-0 border-r-0 border-th-bkg-3 md:border-b lg:border-b-0"
+        >
+          <AdvancedTradeForm />
+        </div>
+        <div
+          key="orderbook"
+          className="border border-y-0 border-r-0 border-th-bkg-3"
+        >
+          <OrderbookAndTrades />
+        </div>
+      </ResponsiveGridLayout>
+      {!userSettings?.account_tour_seen && !loadingUserSettings && connected ? (
+        <TradeOnboardingTour />
+      ) : null}
+    </>
   )
 }
 

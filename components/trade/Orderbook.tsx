@@ -380,7 +380,7 @@ const Orderbook = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-        <div className="flex items-center space-x-2">
+        <div id="trade-step-three" className="flex items-center space-x-2">
           <Tooltip
             content={showBuys ? 'Hide Buys' : 'Show Buys'}
             placement="top"
@@ -410,13 +410,15 @@ const Orderbook = () => {
             </button>
           </Tooltip>
         </div>
-        <Tooltip content="Grouping" placement="top">
-          <GroupSize
-            tickSize={serum3MarketExternal.tickSize}
-            onChange={onGroupSizeChange}
-            value={grouping}
-          />
-        </Tooltip>
+        <div id="trade-step-four">
+          <Tooltip content="Grouping" placement="top">
+            <GroupSize
+              tickSize={serum3MarketExternal.tickSize}
+              onChange={onGroupSizeChange}
+              value={grouping}
+            />
+          </Tooltip>
+        </div>
       </div>
       <div className="grid grid-cols-2 px-4 py-2 text-xs text-th-fgd-4">
         <div className="col-span-1 text-right">Size</div>
@@ -461,7 +463,10 @@ const Orderbook = () => {
             })
           : null}
         {showBuys && showSells ? (
-          <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4">
+          <div
+            className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4"
+            id="trade-step-nine"
+          >
             <div className="col-span-1 flex justify-between">
               <div className="">{t('spread')}</div>
               <div className="">

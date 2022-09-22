@@ -24,6 +24,7 @@ const OrderbookAndTrades = () => {
               ? 'bg-th-bkg-2 text-th-primary'
               : 'text-th-fgd-4 hover:text-th-fgd-2'
           }`}
+          id="trade-step-five"
         >
           Trades
         </div>

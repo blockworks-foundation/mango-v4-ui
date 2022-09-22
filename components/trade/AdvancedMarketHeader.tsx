@@ -26,7 +26,10 @@ const MarketSelectDropdown = () => {
   return (
     <Popover>
       {({ close, open }) => (
-        <div className="relative flex flex-col overflow-visible">
+        <div
+          id="trade-step-one"
+          className="relative flex flex-col overflow-visible"
+        >
           <Popover.Button className="flex w-full items-center hover:text-th-primary">
             <div className="text-xl font-bold md:text-base">
               {selectedMarket?.name || DEFAULT_MARKET_NAME}
@@ -106,7 +109,7 @@ const AdvancedMarketHeader = () => {
           <MarketSelectDropdown />
         </div>
       </div>
-      <div className="ml-6 flex-col">
+      <div id="trade-step-two" className="ml-6 flex-col">
         <div className="text-xs text-th-fgd-4">{t('oracle-price')}</div>
         <OraclePrice />
       </div>

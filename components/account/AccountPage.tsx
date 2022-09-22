@@ -1,8 +1,6 @@
 import {
   HealthType,
-  I80F48,
   toUiDecimalsForQuote,
-  ZERO_I80F48,
 } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -13,7 +11,6 @@ import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
-import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 import SimpleAreaChart from '../shared/SimpleAreaChart'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
@@ -31,6 +28,10 @@ import { breakpoints } from '../../utils/theme'
 import useMangoAccount from '../shared/useMangoAccount'
 import PercentageChange from '../shared/PercentageChange'
 import Tooltip from '@components/shared/Tooltip'
+import { IS_ONBOARDED_KEY, ONBOARDING_TOUR_KEY } from 'utils/constants'
+import { useWallet } from '@solana/wallet-adapter-react'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -46,7 +47,8 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const AccountPage = () => {
   const { t } = useTranslation('common')
-  const { mangoAccount, lastUpdatedAt } = useMangoAccount()
+  const { connected } = useWallet()
+  const { mangoAccount } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
   const loadPerformanceData = mangoStore(
     (s) => s.mangoAccount.stats.performance.loading
@@ -69,6 +71,9 @@ const AccountPage = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
+  const userSettings = mangoStore((s) => s.settings.current)
+  const loadingUserSettings = mangoStore((s) => s.settings.loading)
+  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   useEffect(() => {
     if (mangoAccount) {
@@ -138,7 +143,7 @@ const AccountPage = () => {
     <>
       <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 pt-3 pb-0 md:border-b md:pb-3">
         <div className="flex items-center space-x-6">
-          <div id="step-two">
+          <div id="account-step-three">
             <Tooltip
               maxWidth="20rem"
               placement="bottom"
@@ -230,7 +235,7 @@ const AccountPage = () => {
       </div>
       <div className="grid grid-cols-4 border-b border-th-bkg-3">
         <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
-          <div id="step-three">
+          <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
               placement="bottom"
@@ -273,7 +278,7 @@ const AccountPage = () => {
           </div>
         </div>
         <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
-          <div id="step-four">
+          <div id="account-step-five">
             <Tooltip
               content="The amount of capital you have to trade or borrow against. When your free collateral reaches $0 you won't be able to make withdrawals."
               maxWidth="20rem"
@@ -296,7 +301,7 @@ const AccountPage = () => {
           </div>
         </div>
         <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
-          <div>
+          <div id="account-step-six">
             <Tooltip
               content="The amount your account has made or lost."
               placement="bottom"
@@ -317,7 +322,7 @@ const AccountPage = () => {
           ) : null}
         </div>
         <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
-          <div id="step-five">
+          <div id="account-step-seven">
             <Tooltip
               content="The value of interest earned (deposits) minus interest paid (borrows)."
               maxWidth="20rem"
@@ -353,6 +358,12 @@ const AccountPage = () => {
           isOpen={showWithdrawModal}
           onClose={() => setShowWithdrawModal(false)}
         />
+      ) : null}
+      {!userSettings?.account_tour_seen &&
+      !loadingUserSettings &&
+      isOnboarded &&
+      connected ? (
+        <AccountOnboardingTour />
       ) : null}
     </>
   ) : (

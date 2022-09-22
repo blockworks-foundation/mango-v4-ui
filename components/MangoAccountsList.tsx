@@ -47,7 +47,7 @@ const MangoAccountsList = ({
   }
 
   return (
-    <div id="step-one">
+    <div id="account-step-two">
       <Popover>
         {({ open }) => (
           <>

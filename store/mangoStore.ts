@@ -8,7 +8,6 @@ import {
   web3,
 } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
-import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
 import { TOKEN_LIST_URL } from '@jup-ag/core'
 import { Order } from '@project-serum/serum/lib/market'
 import { Wallet } from '@solana/wallet-adapter-react'
@@ -106,6 +105,34 @@ interface ProfileDetails {
   wallet_pk: string
 }
 
+interface UserSettings {
+  account_tour_seen: boolean
+  default_language: string
+  default_market: string
+  orderbook_animation: boolean
+  rpc_endpoint: string
+  rpc_node_url: null | string
+  spot_margin: boolean
+  swap_tour_seen: boolean
+  theme: string
+  trade_tour_seen: boolean
+  wallet_pk: string
+}
+
+const defaultUserSettings = {
+  account_tour_seen: false,
+  default_language: 'English',
+  default_market: 'SOL-Perp',
+  orderbook_animation: false,
+  rpc_endpoint: 'Triton (RPC Pool)',
+  rpc_node_url: null,
+  spot_margin: false,
+  swap_tour_seen: false,
+  theme: 'Mango',
+  trade_tour_seen: false,
+  wallet_pk: '',
+}
+
 export type MangoStore = {
   coingeckoPrices: {
     data: any[]
@@ -145,6 +172,11 @@ export type MangoStore = {
   }
   serumMarkets: Serum3Market[]
   serumOrders: Order[] | undefined
+  settings: {
+    loading: boolean
+    current: UserSettings | undefined
+    uiLocked: boolean
+  }
   swap: {
     inputBank: Bank | undefined
     outputBank: Bank | undefined
@@ -154,9 +186,6 @@ export type MangoStore = {
     slippage: number
   }
   set: (x: (x: MangoStore) => void) => void
-  settings: {
-    uiLocked: boolean
-  }
   tradeForm: {
     side: 'buy' | 'sell'
     price: string
@@ -167,8 +196,6 @@ export type MangoStore = {
     ioc: boolean
   }
   wallet: {
-    loadProfilePic: boolean
-    profilePic: ProfilePicture | undefined
     tokens: TokenAccount[]
     nfts: {
       data: NFT[] | []
@@ -188,8 +215,8 @@ export type MangoStore = {
     fetchMangoAccounts: (wallet: AnchorWallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrdersForMarket: (market: Serum3Market) => Promise<void>
-    fetchProfilePicture: (wallet: AnchorWallet) => void
     fetchProfileDetails: (walletPk: string) => void
+    fetchSettings: (walletPk: string) => void
     fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
     fetchWalletTokens: (wallet: AnchorWallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: Wallet) => Promise<void>
@@ -240,6 +267,8 @@ const mangoStore = create<MangoStore>()(
       serumOrders: undefined,
       set: (fn) => _set(produce(fn)),
       settings: {
+        loading: false,
+        current: defaultUserSettings,
         uiLocked: true,
       },
       tradeForm: {
@@ -260,8 +289,6 @@ const mangoStore = create<MangoStore>()(
         slippage: 0.5,
       },
       wallet: {
-        loadProfilePic: true,
-        profilePic: undefined,
         tokens: [],
         nfts: {
           data: [],
@@ -658,27 +685,6 @@ const mangoStore = create<MangoStore>()(
             console.error('Error fetching group', e)
           }
         },
-        async fetchProfilePicture(wallet: AnchorWallet) {
-          const set = get().set
-          const walletPk = wallet?.publicKey
-          const connection = get().connection
-
-          if (!walletPk) return
-
-          try {
-            const result = await getProfilePicture(connection, walletPk)
-
-            set((state) => {
-              state.wallet.profilePic = result
-              state.wallet.loadProfilePic = false
-            })
-          } catch (e) {
-            console.error('Could not get profile picture', e)
-            set((state) => {
-              state.wallet.loadProfilePic = false
-            })
-          }
-        },
         async fetchProfileDetails(walletPk: string) {
           const set = get().set
           set((state) => {
@@ -689,7 +695,6 @@ const mangoStore = create<MangoStore>()(
               `https://mango-transaction-log.herokuapp.com/v4/user-data/profile-details?wallet-pk=${walletPk}`
             )
             const data = await response.json()
-            console.log(data)
             set((state) => {
               state.profile.details = data
               state.profile.loadDetails = false
@@ -699,6 +704,27 @@ const mangoStore = create<MangoStore>()(
             console.log(e)
             set((state) => {
               state.profile.loadDetails = false
+            })
+          }
+        },
+        async fetchSettings(walletPk: string) {
+          const set = get().set
+          set((state) => {
+            state.settings.loading = true
+          })
+          try {
+            const response = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/user-data/settings?wallet-pk=${walletPk}`
+            )
+            const data = await response.json()
+            set((state) => {
+              state.settings.current = data
+              state.settings.loading = false
+            })
+          } catch (e) {
+            console.log(e)
+            set((state) => {
+              state.settings.loading = false
             })
           }
         },

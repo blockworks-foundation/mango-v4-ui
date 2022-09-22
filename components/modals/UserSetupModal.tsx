@@ -41,6 +41,8 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { connected, select, wallet, wallets } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
+  const userSettings = mangoStore((s) => s.settings.current)
+  const loadUserSettings = mangoStore((s) => s.settings.loading)
   const [accountName, setAccountName] = useState('')
   const [loadingAccount, setLoadingAccount] = useState(false)
   // const [profileName, setProfileName] = useState('')
@@ -140,7 +142,11 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       })
 
       await actions.reloadMangoAccount()
-      setShowSetupStep(4)
+      if (!loadUserSettings && !userSettings?.account_tour_seen) {
+        setShowSetupStep(4)
+      } else {
+        onClose()
+      }
       setSubmitDeposit(false)
     } catch (e: any) {
       notify({
@@ -158,7 +164,15 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     if (mangoAccount && showSetupStep === 2) {
       onClose()
     }
-  }, [mangoAccount, showSetupStep, onClose])
+  }, [mangoAccount, showSetupStep, onClose, userSettings])
+
+  const handleGoToFinalStep = () => {
+    if (!loadUserSettings && !userSettings?.account_tour_seen) {
+      setShowSetupStep(4)
+    } else {
+      onClose()
+    }
+  }
 
   // TODO extract into a shared hook for DepositModal.tsx
   const banks = useMemo(() => {
@@ -437,7 +451,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       </Button>
                       <LinkButton
                         className="flex w-full justify-center"
-                        onClick={() => setShowSetupStep(4)}
+                        onClick={handleGoToFinalStep}
                       >
                         <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                           Skip for now
@@ -564,7 +578,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                         Deposit
                       </div>
                     </Button>
-                    <LinkButton onClick={() => setShowSetupStep(4)}>
+                    <LinkButton onClick={handleGoToFinalStep}>
                       <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                         Skip for now
                       </span>

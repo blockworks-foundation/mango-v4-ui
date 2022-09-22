@@ -85,7 +85,9 @@ const Balances = () => {
           <th className="bg-th-bkg-1 text-left">{t('token')}</th>
           <th className="bg-th-bkg-1 text-right">{t('balance')}</th>
           <th className="bg-th-bkg-1 text-right">In Orders</th>
-          <th className="bg-th-bkg-1 text-right">Unsettled</th>
+          <th className="bg-th-bkg-1 text-right" id="trade-step-ten">
+            Unsettled
+          </th>
         </tr>
       </thead>
       <tbody>
