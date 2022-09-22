@@ -140,7 +140,12 @@ const SwapFormTokenList = ({
     ) {
       const filteredSortedTokens = tokens
         .map((token) => {
-          const max = getTokenInMax(token.address, group, useMargin)
+          const max = getTokenInMax(
+            mangoAccount,
+            token.address,
+            group,
+            useMargin
+          )
           return { ...token, ...max }
         })
         .filter((token) => (token.symbol === outputBank?.name ? false : true))
