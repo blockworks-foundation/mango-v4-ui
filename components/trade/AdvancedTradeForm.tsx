@@ -12,6 +12,7 @@ import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { notify } from 'utils/notifications'
+import SpotSlider from './SpotSlider'
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation('common')
@@ -199,27 +200,6 @@ const AdvancedTradeForm = () => {
         </div>
       </div>
       <div className="mt-4 px-4">
-        <div className="my-2 flex items-center justify-between">
-          <p className="text-xs text-th-fgd-3">{t('amount')}</p>
-        </div>
-        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
-          <NumberFormat
-            inputMode="decimal"
-            thousandSeparator=","
-            allowNegative={false}
-            isNumericString={true}
-            decimalScale={6}
-            name="amountIn"
-            id="amountIn"
-            className="w-full bg-transparent font-mono tracking-tight focus:outline-none"
-            placeholder="0.00"
-            value={tradeForm.baseSize}
-            onValueChange={handleBaseSizeChange}
-          />
-          <div className="ml-2 text-sm font-normal text-th-fgd-4">
-            {baseSymbol}
-          </div>
-        </div>
         {tradeForm.tradeType === 'Limit' ? (
           <>
             <div className="mb-2 mt-4 flex items-center justify-between">
@@ -245,10 +225,34 @@ const AdvancedTradeForm = () => {
             </div>
           </>
         ) : null}
+        <div className="my-2 flex items-center justify-between">
+          <p className="text-xs text-th-fgd-3">{t('amount')}</p>
+        </div>
+        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
+          <NumberFormat
+            inputMode="decimal"
+            thousandSeparator=","
+            allowNegative={false}
+            isNumericString={true}
+            decimalScale={6}
+            name="amountIn"
+            id="amountIn"
+            className="w-full bg-transparent font-mono tracking-tight focus:outline-none"
+            placeholder="0.00"
+            value={tradeForm.baseSize}
+            onValueChange={handleBaseSizeChange}
+          />
+          <div className="ml-2 text-sm font-normal text-th-fgd-4">
+            {baseSymbol}
+          </div>
+        </div>
       </div>
-      <div className="flex flex-wrap px-5">
+      <div className="flex">
+        <SpotSlider />
+      </div>
+      <div className="mt-5 flex flex-wrap px-5">
         {tradeForm.tradeType === 'Limit' ? (
-          <div className="mt-4 flex">
+          <div className="flex">
             <div className="mr-4 ">
               <Tooltip
                 className="hidden md:block"
@@ -283,7 +287,7 @@ const AdvancedTradeForm = () => {
             </div>
           </div>
         ) : null}
-        <div className="mt-4">
+        <div className="">
           <Tooltip
             delay={250}
             placement="left"

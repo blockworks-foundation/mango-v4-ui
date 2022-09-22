@@ -182,6 +182,7 @@ const TradeAdvancedPage = () => {
       measureBeforeMount
       containerPadding={[0, 0]}
       margin={[0, 0]}
+      useCSSTransforms
     >
       <div key="market-header" className="z-10">
         <AdvancedMarketHeader />
