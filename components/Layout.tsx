@@ -15,6 +15,8 @@ import {
 } from '../utils/constants'
 import OnboardingTour from './OnboardingTour'
 
+const sideBarAnimationDuration = 500
+
 const Layout = ({ children }: { children: ReactNode }) => {
   const connected = mangoStore((s) => s.connected)
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
@@ -31,6 +33,16 @@ const Layout = ({ children }: { children: ReactNode }) => {
       setIsCollapsed(true)
     }
   }, [width])
+
+  useEffect(() => {
+    const animationFrames = 5
+
+    for (let x = 1; x <= animationFrames; x++) {
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'))
+      }, (sideBarAnimationDuration / animationFrames) * x)
+    }
+  }, [isCollapsed])
 
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
@@ -66,7 +78,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           </div>
 
           <div
-            className={`w-full transition-all duration-500 ease-in-out ${
+            className={`w-full transition-all duration-${sideBarAnimationDuration} ease-in-out ${
               isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-48 xl:pl-52'
             }`}
           >
