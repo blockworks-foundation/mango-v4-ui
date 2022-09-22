@@ -57,7 +57,7 @@ const RecentTrades = () => {
   }, 5000)
   return (
     <>
-      <div className={`mb-2 grid grid-cols-3 text-xs text-th-fgd-4`}>
+      <div className={`mb-1 grid grid-cols-3 px-4 pt-2 text-xxs text-th-fgd-4`}>
         <div>{`${t('price')} (${quoteSymbol})`} </div>
         <div className={`text-right`}>
           {t('size')} ({baseSymbol})
@@ -65,7 +65,7 @@ const RecentTrades = () => {
         <div className={`text-right`}>{t('time')}</div>
       </div>
       {!!trades.length && (
-        <div className="text-xs">
+        <div className="px-4 font-mono text-xs tracking-tight">
           {trades.map((trade: ChartTradeType, i: number) => {
             const formattedPrice = serum3MarketExternal?.tickSize
               ? floorToDecimal(
@@ -89,10 +89,10 @@ const RecentTrades = () => {
                 >
                   {formattedPrice.toFixed()}
                 </div>
-                <div className={`text-right text-th-fgd-3`}>
+                <div className={`text-right text-th-fgd-2`}>
                   {formattedSize.toFixed()}
                 </div>
-                <div className={`text-right text-th-fgd-3`}>
+                <div className={`text-right text-th-fgd-4`}>
                   {trade.time && new Date(trade.time).toLocaleTimeString()}
                 </div>
               </div>
