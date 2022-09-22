@@ -5,6 +5,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import Checkbox from '@components/forms/Checkbox'
 import Button from '@components/shared/Button'
+import TabButtons from '@components/shared/TabButtons'
 import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -136,28 +137,12 @@ const AdvancedTradeForm = () => {
 
   return (
     <div>
-      <div className="grid select-none grid-cols-2 justify-between border-b border-th-bkg-3 text-base">
-        <div
-          onClick={() => setTradeType('Limit')}
-          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-            tradeForm.tradeType === 'Limit'
-              ? 'bg-th-bkg-2 text-th-primary'
-              : 'text-th-fgd-4 hover:text-th-fgd-2'
-          }`}
-        >
-          Limit
-        </div>
-        <div
-          onClick={() => setTradeType('Market')}
-          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-            tradeForm.tradeType === 'Market'
-              ? 'bg-th-bkg-2 text-th-primary'
-              : 'text-th-fgd-4 hover:text-th-fgd-2'
-          }`}
-        >
-          Market
-        </div>
-      </div>
+      <TabButtons
+        activeValue={tradeForm.tradeType}
+        onChange={(tab: 'Limit' | 'Market') => setTradeType(tab)}
+        values={['Limit', 'Market']}
+        fillWidth
+      />
       <div className="mt-6 px-4">
         <div
           className={`relative mb-3 pb-1 md:-mt-2.5 md:border-b md:border-th-bkg-3`}

@@ -3,10 +3,11 @@ import { FunctionComponent } from 'react'
 
 interface TabButtonsProps {
   activeValue: string
-  onChange: (x: string) => void
+  onChange: (x: any) => void
   values: Array<any>
   showBorders?: boolean
   rounded?: boolean
+  fillWidth?: boolean
 }
 
 const TabButtons: FunctionComponent<TabButtonsProps> = ({
@@ -15,6 +16,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
   onChange,
   showBorders = false,
   rounded = false,
+  fillWidth = false,
 }) => {
   const { t } = useTranslation(['common', 'swap'])
 
@@ -25,9 +27,9 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
       }`}
     >
       {values.map((v, i) => (
-        <div key={v + i}>
+        <div className={fillWidth ? 'flex-1' : ''} key={v + i}>
           <button
-            className={`default-transition h-12 px-6 font-bold ${
+            className={`default-transition h-12 w-full px-6 font-bold ${
               rounded ? 'rounded-md' : 'rounded-none'
             } ${showBorders ? 'border-r border-th-bkg-3' : ''} ${
               v === activeValue
