@@ -272,6 +272,7 @@ table p {
 /* Scrollbars */
 
 .font-mono {
+  @apply tracking-tight;
   -webkit-font-feature-settings: 'zero' 1;
   font-feature-settings: 'zero' 1;
 }

@@ -26,7 +26,7 @@ const PercentageChange = ({
         />
       )}
       <p
-        className={`font-mono font-normal tracking-tight ${
+        className={`font-mono font-normal ${
           size === 'small' ? 'text-xs' : ''
         } ${
           change > 0

@@ -65,7 +65,7 @@ const RecentTrades = () => {
         <div className={`text-right`}>{t('time')}</div>
       </div>
       {!!trades.length && (
-        <div className="px-4 font-mono text-xs tracking-tight">
+        <div className="px-4 font-mono text-xs">
           {trades.map((trade: ChartTradeType, i: number) => {
             const formattedPrice = serum3MarketExternal?.tickSize
               ? floorToDecimal(

@@ -201,7 +201,7 @@ const AdvancedTradeForm = () => {
                 decimalScale={6}
                 name="amountIn"
                 id="amountIn"
-                className="w-full bg-th-bkg-1 font-mono tracking-tight focus:outline-none"
+                className="w-full bg-th-bkg-1 font-mono focus:outline-none"
                 placeholder="0.00"
                 value={tradeForm.price}
                 onValueChange={handlePriceChange}
@@ -224,7 +224,7 @@ const AdvancedTradeForm = () => {
             decimalScale={6}
             name="amountIn"
             id="amountIn"
-            className="w-full bg-transparent font-mono tracking-tight focus:outline-none"
+            className="w-full bg-transparent font-mono focus:outline-none"
             placeholder="0.00"
             value={tradeForm.baseSize}
             onValueChange={handleBaseSizeChange}

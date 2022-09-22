@@ -295,7 +295,7 @@ const SwapForm = () => {
               decimalScale={inputTokenInfo?.decimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl font-bold tracking-wider tracking-tight text-th-fgd-1 focus:outline-none"
+              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl font-bold text-th-fgd-1 focus:outline-none"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -335,7 +335,7 @@ const SwapForm = () => {
               type="output"
             />
           </div>
-          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
+          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold text-th-fgd-3">
             {isLoadingTradeDetails ? (
               <div className="w-full">
                 <SheenLoader className="flex flex-1 rounded-l-none">
@@ -343,7 +343,7 @@ const SwapForm = () => {
                 </SheenLoader>
               </div>
             ) : (
-              <span className="p-3 font-mono tracking-tight">
+              <span className="p-3 font-mono">
                 {amountOut ? numberFormat.format(amountOut.toNumber()) : ''}
               </span>
             )}
@@ -411,7 +411,7 @@ const SwapForm = () => {
               <p className="tooltip-underline text-sm">{t('health-impact')}</p>
             </Tooltip>
           </div>
-          <div className="flex items-center space-x-2 font-mono tracking-tight">
+          <div className="flex items-center space-x-2 font-mono">
             <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
             <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
             <p
@@ -472,7 +472,7 @@ const MaxSwapAmount = ({
   return (
     <LinkButton className="no-underline" onClick={setMaxInputAmount}>
       <span className="font-normal text-th-fgd-4">{t('max')}:</span>
-      <span className="mx-1 font-mono tracking-tight text-th-fgd-3 underline">
+      <span className="mx-1 font-mono text-th-fgd-3 underline">
         {maxAmount.toFixed()}
       </span>
     </LinkButton>
