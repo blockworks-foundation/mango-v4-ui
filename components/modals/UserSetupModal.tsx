@@ -2,10 +2,8 @@ import { Dialog, Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { ModalProps } from '../../types/modal'
-// import { PROFILE_CATEGORIES } from '../../utils/profile'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
-// import Select from '../forms/Select'
 import Button, { IconButton, LinkButton } from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import useLocalStorageState from '../../hooks/useLocalStorageState'
@@ -13,14 +11,17 @@ import {
   ArrowDownTrayIcon,
   CheckCircleIcon,
   FireIcon,
-  InformationCircleIcon,
   PencilIcon,
   PlusCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
-import { EnterRightExitLeft, FadeInFadeOut } from '../shared/Transitions'
+import {
+  EnterBottomExitBottom,
+  EnterRightExitLeft,
+  FadeInFadeOut,
+} from '../shared/Transitions'
 import Image from 'next/image'
 import BounceLoader from '../shared/BounceLoader'
 import { notify } from '../../utils/notifications'
@@ -29,11 +30,13 @@ import ActionTokenList from '../account/ActionTokenList'
 import { walletBalanceForToken } from './DepositModal'
 import { floorToDecimal } from '../../utils/numbers'
 import { handleWalletConnect } from '../wallet/ConnectWalletButton'
-import { IS_ONBOARDED_KEY, ONBOARDING_TOUR_KEY } from '../../utils/constants'
+import { IS_ONBOARDED_KEY } from '../../utils/constants'
 import ParticlesBackground from '../ParticlesBackground'
 import ButtonGroup from '../forms/ButtonGroup'
 import Decimal from 'decimal.js'
 import WalletIcon from '../icons/WalletIcon'
+import EditProfileForm from '@components/profile/EditProfileForm'
+import EditNftProfilePic from '@components/EditNftProfilePic'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -43,30 +46,17 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [accountName, setAccountName] = useState('')
   const [loadingAccount, setLoadingAccount] = useState(false)
-  // const [profileName, setProfileName] = useState('')
-  // const [profileCategory, setProfileCategory] = useState('')
   const [showSetupStep, setShowSetupStep] = useState(0)
-  // const [acceptRisks, setAcceptRisks] = useState(false)
   const [depositToken, setDepositToken] = useState('')
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
+  const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
-  const [, setShowTour] = useLocalStorageState(ONBOARDING_TOUR_KEY)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const handleNextStep = () => {
     setShowSetupStep(showSetupStep + 1)
-  }
-
-  // const handleSaveProfile = () => {
-  //   // save profile details to db then:
-  //   setShowSetupStep(2)
-  // }
-
-  const handleShowTour = () => {
-    onClose()
-    setShowTour(true)
   }
 
   const connectWallet = async () => {
@@ -341,54 +331,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                 </div>
               )}
             </EnterRightExitLeft>
-            {/* <EnterRightExitLeft
-          className="absolute top-0.5 left-0 z-20 w-full bg-th-bkg-1 p-6"
-          show={showSetupStep === 2}
-          style={{ height: 'calc(100% - 12px)' }}
-        >
-          <div className="flex h-full flex-col justify-between">
-            <div>
-              <div className="pb-4">
-                <h2 className="mb-1">Create Profile</h2>
-                <p>Your public facing identity on Mango...</p>
-              </div>
-              <div className="pb-4">
-                <Label text="Profile Name" />
-                <Input
-                  type="text"
-                  value={profileName}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setProfileName(e.target.value)
-                  }
-                />
-              </div>
-              <div className="pb-6">
-                <Label text="Profile Category" />
-                <Select
-                  value={profileCategory}
-                  onChange={(cat: string) => setProfileCategory(cat)}
-                  className="w-full"
-                >
-                  {PROFILE_CATEGORIES.map((cat) => (
-                    <Select.Option key={cat} value={cat}>
-                      {cat}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </div>
-            </div>
-            <div className="flex flex-col items-center">
-              <Button
-                className="mb-4 w-full"
-                onClick={handleSaveProfile}
-                size="large"
-              >
-                Save Profile
-              </Button>
-              <LinkButton onClick={handleNextStep}>Skip for now</LinkButton>
-            </div>
-          </div>
-        </EnterRightExitLeft> */}
             <EnterRightExitLeft
               className="absolute top-0.5 left-0 z-20 w-full rounded-lg bg-th-bkg-1 p-6"
               show={showSetupStep === 2}
@@ -578,40 +520,28 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
               show={showSetupStep === 4}
               style={{ height: 'calc(100% - 12px)' }}
             >
-              <div className="flex h-full flex-col justify-between">
-                <div>
-                  <h2 className="mb-6 text-4xl">That&apos;s a wrap</h2>
-                  <p className="mb-2">
-                    We recommend taking a short tour to get familiar with our
-                    new interface.
-                  </p>
-                  <p className="mb-2">
-                    Or, jump in the deep end and start trading.
-                  </p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Button
-                    className="flex-1"
-                    secondary
-                    onClick={onClose}
-                    size="large"
-                  >
-                    <div className="flex items-center justify-center">
-                      Get Started
-                    </div>
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={handleShowTour}
-                    size="large"
-                  >
-                    <div className="flex items-center justify-center">
-                      <InformationCircleIcon className="mr-2 h-5 w-5" />
-                      Show Tour
-                    </div>
-                  </Button>
-                </div>
-              </div>
+              <h2 className="mb-2 text-4xl">Your Profile</h2>
+              <p className="text-sm">
+                Add an NFT profile pic and edit your assigned name. Your profile
+                will be used for social features in the app.
+              </p>
+              <EditProfileForm
+                onFinish={onClose}
+                onEditProfileImage={() => setShowEditProfilePic(true)}
+              />
+              <LinkButton className="mx-auto mt-4" onClick={onClose}>
+                <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
+                  Skip and Finish
+                </span>
+              </LinkButton>
+              <EnterBottomExitBottom
+                className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6"
+                show={showEditProfilePic}
+              >
+                <EditNftProfilePic
+                  onClose={() => setShowEditProfilePic(false)}
+                />
+              </EnterBottomExitBottom>
             </EnterRightExitLeft>
           </div>
         </div>

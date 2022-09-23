@@ -26,26 +26,13 @@ const EditProfileForm = ({
   const [profileName, setProfileName] = useState(
     startCase(profile?.profile_name) || ''
   )
-  const [inputErrors, setInputErrors] = useState({})
+  const [inputError, setInputError] = useState('')
   const [loadUniquenessCheck, setLoadUniquenessCheck] = useState(false)
   const [loadUpdateProfile, setLoadUpdateProfile] = useState(false)
   const [updateError, setUpdateError] = useState('')
   const actions = mangoStore((s) => s.actions)
 
-  const validateProfileName = async (name: string) => {
-    const re = /^([a-zA-Z0-9]+\s)*[a-zA-Z0-9]+$/
-    if (!re.test(name)) {
-      setInputErrors({
-        ...inputErrors,
-        regex: t('profile:invalid-characters'),
-      })
-    }
-    if (name.length > 29) {
-      setInputErrors({
-        ...inputErrors,
-        length: t('profile:length-error'),
-      })
-    }
+  const validateProfileNameUniqueness = async (name: string) => {
     try {
       setLoadUniquenessCheck(true)
       const response = await fetch(
@@ -53,17 +40,15 @@ const EditProfileForm = ({
       )
       const uniquenessCheck = await response.json()
 
-      if (response.status === 200 && !uniquenessCheck) {
-        setInputErrors({
-          ...inputErrors,
-          uniqueness: t('profile:uniqueness-fail'),
-        })
+      if (uniquenessCheck) {
+        return true
+      } else {
+        setInputError(t('profile:uniqueness-fail'))
+        return false
       }
     } catch {
-      setInputErrors({
-        ...inputErrors,
-        api: t('profile:uniqueness-api-fail'),
-      })
+      setInputError(t('profile:uniqueness-api-fail'))
+      return false
     } finally {
       setLoadUniquenessCheck(false)
     }
@@ -71,7 +56,14 @@ const EditProfileForm = ({
 
   const onChangeNameInput = (name: string) => {
     setProfileName(name)
-    setInputErrors({})
+    const re = /^([a-zA-Z0-9]+\s)*[a-zA-Z0-9]+$/
+    if (!re.test(name)) {
+      setInputError(t('profile:invalid-characters'))
+    } else if (name.length > 19) {
+      setInputError(t('profile:length-error'))
+    } else {
+      setInputError('')
+    }
   }
 
   const saveProfile = async () => {
@@ -81,8 +73,8 @@ const EditProfileForm = ({
       onFinish()
       return
     }
-    await validateProfileName(name)
-    if (!Object.keys(inputErrors).length) {
+    const isUnique = await validateProfileNameUniqueness(name)
+    if (!inputError && isUnique) {
       setLoadUpdateProfile(true)
       try {
         if (!publicKey) throw new Error('Wallet not connected!')
@@ -149,18 +141,16 @@ const EditProfileForm = ({
         <Label text={t('profile:profile-name')} />
         <Input
           type="text"
-          error={Object.keys(inputErrors).length}
+          error={inputError.length}
           value={profileName}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             onChangeNameInput(e.target.value)
           }
         />
-        {Object.keys(inputErrors).length ? (
+        {inputError ? (
           <div className="mt-1.5 flex items-center space-x-1">
             <ExclamationCircleIcon className="h-4 w-4 text-th-red" />
-            <p className="mb-0 text-xs text-th-red">
-              {Object.values(inputErrors).toString()}
-            </p>
+            <p className="mb-0 text-xs text-th-red">{inputError}</p>
           </div>
         ) : null}
       </div>
@@ -183,7 +173,7 @@ const EditProfileForm = ({
       <Button
         className="flex w-full items-center justify-center"
         disabled={
-          !!Object.keys(inputErrors).length ||
+          !!Object.keys(inputError).length ||
           loadUniquenessCheck ||
           !profileName
         }
