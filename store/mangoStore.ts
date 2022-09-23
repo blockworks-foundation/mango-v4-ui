@@ -689,7 +689,6 @@ const mangoStore = create<MangoStore>()(
               `https://mango-transaction-log.herokuapp.com/v4/user-data/profile-details?wallet-pk=${walletPk}`
             )
             const data = await response.json()
-            console.log(data)
             set((state) => {
               state.profile.details = data
               state.profile.loadDetails = false
