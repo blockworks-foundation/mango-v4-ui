@@ -466,7 +466,7 @@ const ActionsMenu = ({
               src={`/icons/${bank.name.toLowerCase()}.svg`}
             />
           </div>
-          <p>{bank.name}</p>
+          <p className="font-body tracking-wide">{bank.name}</p>
         </div>
         <LinkButton
           className="w-full text-left"

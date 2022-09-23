@@ -234,13 +234,13 @@ const AdvancedTradeForm = () => {
           </div>
         </div>
       </div>
-      <div className="flex">
+      <div className="mt-4 flex">
         <SpotSlider />
       </div>
-      <div className="mt-5 flex flex-wrap px-5">
+      <div className="flex flex-wrap px-5">
         {tradeForm.tradeType === 'Limit' ? (
           <div className="flex">
-            <div className="mr-4 ">
+            <div className="mr-4 mt-4">
               <Tooltip
                 className="hidden md:block"
                 delay={250}
@@ -255,7 +255,7 @@ const AdvancedTradeForm = () => {
                 </Checkbox>
               </Tooltip>
             </div>
-            <div className="mr-4 ">
+            <div className="mr-4 mt-4">
               <Tooltip
                 className="hidden md:block"
                 delay={250}
@@ -274,7 +274,7 @@ const AdvancedTradeForm = () => {
             </div>
           </div>
         ) : null}
-        <div className="">
+        <div className="mt-4">
           <Tooltip
             delay={250}
             placement="left"
@@ -289,7 +289,7 @@ const AdvancedTradeForm = () => {
           </Tooltip>
         </div>
       </div>
-      <div className="mt-5 flex px-4">
+      <div className="mt-6 flex px-4">
         <Button
           onClick={handlePlaceOrder}
           className={`flex w-full items-center justify-center text-white ${
@@ -298,7 +298,7 @@ const AdvancedTradeForm = () => {
               : 'bg-th-red-dark md:hover:bg-th-red'
           }`}
           disabled={false}
-          size="medium"
+          size="large"
         >
           <span className="capitalize">Place {tradeForm.side} Order</span>
         </Button>

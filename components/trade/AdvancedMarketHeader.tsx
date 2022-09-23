@@ -27,7 +27,7 @@ const MarketSelectDropdown = () => {
     <Popover>
       {({ close, open }) => (
         <div className="relative flex flex-col overflow-visible">
-          <Popover.Button className="flex w-full items-center hover:text-th-primary">
+          <Popover.Button className="default-transition flex w-full items-center hover:text-th-primary">
             <div className="text-xl font-bold md:text-base">
               {selectedMarket?.name || DEFAULT_MARKET_NAME}
             </div>
