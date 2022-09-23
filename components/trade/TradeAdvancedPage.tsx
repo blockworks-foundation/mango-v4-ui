@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 // import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
@@ -8,13 +8,14 @@ import { GRID_LAYOUT_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { breakpoints } from 'utils/theme'
 import { useViewport } from 'hooks/useViewport'
+import Orderbook from './Orderbook'
 import AdvancedMarketHeader from './AdvancedMarketHeader'
 import AdvancedTradeForm from './AdvancedTradeForm'
 import BalanceAndOpenOrders from './BalanceAndOpenOrders'
 import MobileTradeAdvancedPage from './MobileTradeAdvancedPage'
 import OrderbookAndTrades from './OrderbookAndTrades'
-import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
 import { useWallet } from '@solana/wallet-adapter-react'
+import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
 
 const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
   ssr: false,
@@ -190,26 +191,6 @@ const TradeAdvancedPage = () => {
         margin={[0, 0]}
         useCSSTransforms
       >
-        <div key="market-header" className="z-10">
-          <AdvancedMarketHeader />
-        </div>
-        <div
-          key="tv-chart"
-          className="h-full border border-x-0 border-th-bkg-3"
-        >
-          <div className={`relative h-full overflow-auto`}>
-            <TradingViewChart />
-          </div>
-        </div>
-        <div key="balances">
-          <BalanceAndOpenOrders />
-        </div>
-        <div
-          key="trade-form"
-          className="border border-t-0 border-r-0 border-th-bkg-3 md:border-b lg:border-b-0"
-        >
-          <AdvancedTradeForm />
-        </div>
         <div key="market-header" className="z-10">
           <AdvancedMarketHeader />
         </div>
