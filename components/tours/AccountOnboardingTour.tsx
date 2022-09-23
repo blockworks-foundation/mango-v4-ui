@@ -1,20 +1,22 @@
 import { CardinalOrientation, Walktour, WalktourLogic } from 'walktour'
-import useLocalStorageState from '../../hooks/useLocalStorageState'
-import { ONBOARDING_TOUR_KEY } from '../../utils/constants'
 import CustomTooltip from './CustomTooltip'
 
 const AccountOnboardingTour = () => {
-  const [, setShowOnboardingTour] = useLocalStorageState(ONBOARDING_TOUR_KEY)
-
   const renderTooltip = (tourLogic: WalktourLogic | undefined) => {
-    const handleClose = () => {
-      setShowOnboardingTour(false)
-    }
-
-    return <CustomTooltip tourLogic={tourLogic!} customOnClose={handleClose} />
+    return (
+      <CustomTooltip hasSeenKey="account_tour_seen" tourLogic={tourLogic!} />
+    )
   }
 
   const steps = [
+    {
+      selector: '#account-step-zero',
+      title: 'Your Account Dashboard',
+      description:
+        "Here you'll find the important information related to your account. Let us show you around. Click close to skip the tour at any time.",
+      orientationPreferences: [CardinalOrientation.SOUTHEAST],
+      movingTarget: true,
+    },
     {
       selector: '#account-step-one',
       title: 'Profile Menu',
@@ -72,6 +74,30 @@ const AccountOnboardingTour = () => {
     },
     {
       selector: '#account-step-eight',
+      title: 'Interest Earned',
+      description:
+        'The sum of interest earned and interest paid for each token.',
+      orientationPreferences: [CardinalOrientation.SOUTHEAST],
+      movingTarget: true,
+    },
+    {
+      selector: '#account-step-nine',
+      title: 'Rates',
+      description:
+        'The interest rates (per year) for depositing (green/left) and borrowing (red/right).',
+      orientationPreferences: [CardinalOrientation.SOUTHEAST],
+      movingTarget: true,
+    },
+    {
+      selector: '#account-step-ten',
+      title: 'Token Actions',
+      description:
+        'Deposit, withdraw, borrow, buy and sell buttons for each token.',
+      orientationPreferences: [CardinalOrientation.SOUTHEAST],
+      movingTarget: true,
+    },
+    {
+      selector: '#account-step-eleven',
       title: 'Health Check',
       description:
         'Check the health of your account from any screen in the app. A green heart represents good health, orange okay and red poor.',

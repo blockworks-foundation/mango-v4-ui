@@ -9,8 +9,7 @@ const SwapPage = () => {
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
   const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
   const { connected } = useWallet()
-  const userSettings = mangoStore((s) => s.settings.current)
-  const loadingUserSettings = mangoStore((s) => s.settings.loading)
+  const tourSettings = mangoStore((s) => s.settings.tours)
 
   return (
     <>
@@ -28,7 +27,7 @@ const SwapPage = () => {
           <AccountTabs />
         </div>
       </div>
-      {!userSettings?.swap_tour_seen && !loadingUserSettings && connected ? (
+      {!tourSettings?.swap_tour_seen && connected ? (
         <SwapOnboardingTour />
       ) : null}
     </>

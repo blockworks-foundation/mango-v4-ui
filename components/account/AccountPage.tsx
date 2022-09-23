@@ -28,7 +28,7 @@ import { breakpoints } from '../../utils/theme'
 import useMangoAccount from '../shared/useMangoAccount'
 import PercentageChange from '../shared/PercentageChange'
 import Tooltip from '@components/shared/Tooltip'
-import { IS_ONBOARDED_KEY, ONBOARDING_TOUR_KEY } from 'utils/constants'
+import { IS_ONBOARDED_KEY } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
@@ -71,8 +71,7 @@ const AccountPage = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
-  const userSettings = mangoStore((s) => s.settings.current)
-  const loadingUserSettings = mangoStore((s) => s.settings.loading)
+  const tourSettings = mangoStore((s) => s.settings.tours)
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   useEffect(() => {
@@ -359,10 +358,7 @@ const AccountPage = () => {
           onClose={() => setShowWithdrawModal(false)}
         />
       ) : null}
-      {!userSettings?.account_tour_seen &&
-      !loadingUserSettings &&
-      isOnboarded &&
-      connected ? (
+      {!tourSettings?.account_tour_seen && isOnboarded && connected ? (
         <AccountOnboardingTour />
       ) : null}
     </>

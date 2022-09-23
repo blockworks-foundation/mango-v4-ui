@@ -12,7 +12,7 @@ const HealthHeart = ({
 
   return (
     <svg
-      id="account-step-eight"
+      id="account-step-eleven"
       xmlns="http://www.w3.org/2000/svg"
       className={
         health

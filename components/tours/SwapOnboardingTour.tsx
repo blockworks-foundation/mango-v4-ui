@@ -1,23 +1,15 @@
 import { CardinalOrientation, Walktour, WalktourLogic } from 'walktour'
-import useLocalStorageState from '../../hooks/useLocalStorageState'
-import { ONBOARDING_TOUR_KEY } from '../../utils/constants'
 import CustomTooltip from './CustomTooltip'
 
 const SwapOnboardingTour = () => {
-  const [, setShowOnboardingTour] = useLocalStorageState(ONBOARDING_TOUR_KEY)
-
   const renderTooltip = (tourLogic: WalktourLogic | undefined) => {
-    const handleClose = () => {
-      setShowOnboardingTour(false)
-    }
-
-    return <CustomTooltip tourLogic={tourLogic!} customOnClose={handleClose} />
+    return <CustomTooltip tourLogic={tourLogic!} hasSeenKey="swap_tour_seen" />
   }
 
   const steps = [
     {
       selector: '#swap-step-zero',
-      title: 'Swap',
+      title: "We've Juiced Swap",
       description:
         "The swap you know and love + leverage. Swap lets you trade tokens on their relative strength. Let's say your thesis is BTC will see diminishing returns relative to SOL. You can sell BTC and buy SOL. Now you are long SOL/BTC",
       orientationPreferences: [CardinalOrientation.CENTER],

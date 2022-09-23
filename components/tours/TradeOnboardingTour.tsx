@@ -1,31 +1,23 @@
 import { CardinalOrientation, Walktour, WalktourLogic } from 'walktour'
-import useLocalStorageState from '../../hooks/useLocalStorageState'
-import { ONBOARDING_TOUR_KEY } from '../../utils/constants'
 import CustomTooltip from './CustomTooltip'
 
 const TradeOnboardingTour = () => {
-  const [, setShowOnboardingTour] = useLocalStorageState(ONBOARDING_TOUR_KEY)
-
   const renderTooltip = (tourLogic: WalktourLogic | undefined) => {
-    const handleClose = () => {
-      setShowOnboardingTour(false)
-    }
-
-    return <CustomTooltip tourLogic={tourLogic!} customOnClose={handleClose} />
+    return <CustomTooltip tourLogic={tourLogic!} hasSeenKey="trade_tour_seen" />
   }
 
   const steps = [
     {
       selector: '#trade-step-zero',
-      title: 'Trade',
+      title: 'Trade 100s of Tokens...',
       description:
-        "The swap you know and love + leverage. Swap lets you trade tokens on their relative strength. Let's say your thesis is BTC will see diminishing returns relative to SOL. You can sell BTC and buy SOL. Now you are long SOL/BTC",
+        'A refined interface without listing limits. The tokens you want to trade are now on Mango and no longer only quoted in USDC.',
       orientationPreferences: [CardinalOrientation.CENTER],
     },
     {
       selector: '#trade-step-one',
       title: 'Market Selector',
-      description: 'Chose the market you want to trade here.',
+      description: 'Chose the market you want to trade.',
       orientationPreferences: [CardinalOrientation.SOUTHWEST],
       movingTarget: true,
     },
@@ -96,7 +88,8 @@ const TradeOnboardingTour = () => {
     {
       selector: '#trade-step-ten',
       title: 'Unsettled Balance',
-      description: 'Description needed...',
+      description:
+        'When a limit order is filled, the funds are placed in your unsettled balances. When you have an unsettled balance you\'ll see a "Settle All" button above this table. Use it to move the funds to your account balance.',
       orientationPreferences: [CardinalOrientation.NORTHEAST],
       movingTarget: true,
     },

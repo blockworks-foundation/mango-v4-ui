@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 // import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
@@ -8,7 +8,6 @@ import { GRID_LAYOUT_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { breakpoints } from 'utils/theme'
 import { useViewport } from 'hooks/useViewport'
-import Orderbook from './Orderbook'
 import AdvancedMarketHeader from './AdvancedMarketHeader'
 import AdvancedTradeForm from './AdvancedTradeForm'
 import BalanceAndOpenOrders from './BalanceAndOpenOrders'
@@ -53,8 +52,7 @@ const TradeAdvancedPage = () => {
   const [currentBreakpoint, setCurrentBreakpoint] = useState<string>()
   const { uiLocked } = mangoStore((s) => s.settings)
   const showMobileView = width <= breakpoints.md
-  const userSettings = mangoStore((s) => s.settings.current)
-  const loadingUserSettings = mangoStore((s) => s.settings.loading)
+  const tourSettings = mangoStore((s) => s.settings.tours)
   const { connected } = useWallet()
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
@@ -218,7 +216,7 @@ const TradeAdvancedPage = () => {
           <OrderbookAndTrades />
         </div>
       </ResponsiveGridLayout>
-      {!userSettings?.account_tour_seen && !loadingUserSettings && connected ? (
+      {!tourSettings?.trade_tour_seen && connected ? (
         <TradeOnboardingTour />
       ) : null}
     </>

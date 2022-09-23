@@ -13,7 +13,6 @@ import {
   ArrowDownTrayIcon,
   CheckCircleIcon,
   FireIcon,
-  InformationCircleIcon,
   PencilIcon,
   PlusCircleIcon,
   XMarkIcon,
@@ -29,7 +28,7 @@ import ActionTokenList from '../account/ActionTokenList'
 import { walletBalanceForToken } from './DepositModal'
 import { floorToDecimal } from '../../utils/numbers'
 import { handleWalletConnect } from '../wallet/ConnectWalletButton'
-import { IS_ONBOARDED_KEY, ONBOARDING_TOUR_KEY } from '../../utils/constants'
+import { IS_ONBOARDED_KEY } from '../../utils/constants'
 import ParticlesBackground from '../ParticlesBackground'
 import ButtonGroup from '../forms/ButtonGroup'
 import Decimal from 'decimal.js'
@@ -41,8 +40,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { connected, select, wallet, wallets } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
-  const userSettings = mangoStore((s) => s.settings.current)
-  const loadUserSettings = mangoStore((s) => s.settings.loading)
   const [accountName, setAccountName] = useState('')
   const [loadingAccount, setLoadingAccount] = useState(false)
   // const [profileName, setProfileName] = useState('')
@@ -54,7 +51,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
-  const [, setShowTour] = useLocalStorageState(ONBOARDING_TOUR_KEY)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const handleNextStep = () => {
@@ -65,11 +61,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   //   // save profile details to db then:
   //   setShowSetupStep(2)
   // }
-
-  const handleShowTour = () => {
-    onClose()
-    setShowTour(true)
-  }
 
   const connectWallet = async () => {
     if (wallet) {
@@ -142,11 +133,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       })
 
       await actions.reloadMangoAccount()
-      if (!loadUserSettings && !userSettings?.account_tour_seen) {
-        setShowSetupStep(4)
-      } else {
-        onClose()
-      }
+      onClose()
       setSubmitDeposit(false)
     } catch (e: any) {
       notify({
@@ -164,15 +151,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
     if (mangoAccount && showSetupStep === 2) {
       onClose()
     }
-  }, [mangoAccount, showSetupStep, onClose, userSettings])
-
-  const handleGoToFinalStep = () => {
-    if (!loadUserSettings && !userSettings?.account_tour_seen) {
-      setShowSetupStep(4)
-    } else {
-      onClose()
-    }
-  }
+  }, [mangoAccount, showSetupStep, onClose])
 
   // TODO extract into a shared hook for DepositModal.tsx
   const banks = useMemo(() => {
@@ -451,7 +430,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       </Button>
                       <LinkButton
                         className="flex w-full justify-center"
-                        onClick={handleGoToFinalStep}
+                        onClick={onClose}
                       >
                         <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                           Skip for now
@@ -578,7 +557,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                         Deposit
                       </div>
                     </Button>
-                    <LinkButton onClick={handleGoToFinalStep}>
+                    <LinkButton onClick={onClose}>
                       <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                         Skip for now
                       </span>
@@ -586,46 +565,6 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                   </div>
                 </div>
               )}
-            </EnterRightExitLeft>
-            <EnterRightExitLeft
-              className="absolute top-0.5 left-0 z-20 w-full rounded-lg bg-th-bkg-1 p-6"
-              show={showSetupStep === 4}
-              style={{ height: 'calc(100% - 12px)' }}
-            >
-              <div className="flex h-full flex-col justify-between">
-                <div>
-                  <h2 className="mb-6 text-4xl">That&apos;s a wrap</h2>
-                  <p className="mb-2">
-                    We recommend taking a short tour to get familiar with our
-                    new interface.
-                  </p>
-                  <p className="mb-2">
-                    Or, jump in the deep end and start trading.
-                  </p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Button
-                    className="flex-1"
-                    secondary
-                    onClick={onClose}
-                    size="large"
-                  >
-                    <div className="flex items-center justify-center">
-                      Get Started
-                    </div>
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={handleShowTour}
-                    size="large"
-                  >
-                    <div className="flex items-center justify-center">
-                      <InformationCircleIcon className="mr-2 h-5 w-5" />
-                      Show Tour
-                    </div>
-                  </Button>
-                </div>
-              </div>
             </EnterRightExitLeft>
           </div>
         </div>

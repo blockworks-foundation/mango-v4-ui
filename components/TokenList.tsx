@@ -103,15 +103,15 @@ const TokenList = () => {
                   <span className="tooltip-underline">{t('balance')}</span>
                 </Tooltip>
               </th>
-              <th className="text-right">
+              <th className="text-right" id="account-step-eight">
                 <Tooltip content="The sum of interest earned and interest paid for each token.">
                   <span className="tooltip-underline">
                     {t('interest-earned-paid')}
                   </span>
                 </Tooltip>
               </th>
-              <th className="text-right">
-                <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right)">
+              <th className="text-right" id="account-step-nine">
+                <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right).">
                   <span className="tooltip-underline">{t('rates')}</span>
                 </Tooltip>
               </th>
@@ -121,7 +121,7 @@ const TokenList = () => {
             </tr>
           </thead>
           <tbody>
-            {banks.map(({ key, value }) => {
+            {banks.map(({ key, value }, i) => {
               const bank = value[0]
               const oraclePrice = bank.uiPrice
 
@@ -250,7 +250,10 @@ const TokenList = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="flex justify-end space-x-2">
+                    <div
+                      className="flex justify-end space-x-2"
+                      id={i === 0 ? 'account-step-ten' : ''}
+                    >
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
                     </div>
                   </td>

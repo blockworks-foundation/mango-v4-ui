@@ -105,33 +105,26 @@ interface ProfileDetails {
   wallet_pk: string
 }
 
-interface UserSettings {
+interface TourSettings {
   account_tour_seen: boolean
-  default_language: string
-  default_market: string
-  orderbook_animation: boolean
-  rpc_endpoint: string
-  rpc_node_url: null | string
-  spot_margin: boolean
   swap_tour_seen: boolean
-  theme: string
   trade_tour_seen: boolean
   wallet_pk: string
 }
 
-const defaultUserSettings = {
-  account_tour_seen: false,
-  default_language: 'English',
-  default_market: 'SOL-Perp',
-  orderbook_animation: false,
-  rpc_endpoint: 'Triton (RPC Pool)',
-  rpc_node_url: null,
-  spot_margin: false,
-  swap_tour_seen: false,
-  theme: 'Mango',
-  trade_tour_seen: false,
-  wallet_pk: '',
-}
+// const defaultUserSettings = {
+//   account_tour_seen: false,
+//   default_language: 'English',
+//   default_market: 'SOL-Perp',
+//   orderbook_animation: false,
+//   rpc_endpoint: 'Triton (RPC Pool)',
+//   rpc_node_url: null,
+//   spot_margin: false,
+//   swap_tour_seen: false,
+//   theme: 'Mango',
+//   trade_tour_seen: false,
+//   wallet_pk: '',
+// }
 
 export type MangoStore = {
   coingeckoPrices: {
@@ -174,7 +167,7 @@ export type MangoStore = {
   serumOrders: Order[] | undefined
   settings: {
     loading: boolean
-    current: UserSettings | undefined
+    tours: TourSettings
     uiLocked: boolean
   }
   swap: {
@@ -216,7 +209,7 @@ export type MangoStore = {
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrdersForMarket: (market: Serum3Market) => Promise<void>
     fetchProfileDetails: (walletPk: string) => void
-    fetchSettings: (walletPk: string) => void
+    fetchTourSettings: (walletPk: string) => void
     fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
     fetchWalletTokens: (wallet: AnchorWallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: Wallet) => Promise<void>
@@ -268,7 +261,12 @@ const mangoStore = create<MangoStore>()(
       set: (fn) => _set(produce(fn)),
       settings: {
         loading: false,
-        current: defaultUserSettings,
+        tours: {
+          account_tour_seen: true,
+          swap_tour_seen: true,
+          trade_tour_seen: true,
+          wallet_pk: '',
+        },
         uiLocked: true,
       },
       tradeForm: {
@@ -707,18 +705,18 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        async fetchSettings(walletPk: string) {
+        async fetchTourSettings(walletPk: string) {
           const set = get().set
           set((state) => {
             state.settings.loading = true
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/user-data/settings?wallet-pk=${walletPk}`
+              `https://mango-transaction-log.herokuapp.com/v4/user-data/settings-unsigned?wallet-pk=${walletPk}`
             )
             const data = await response.json()
             set((state) => {
-              state.settings.current = data
+              state.settings.tours = data
               state.settings.loading = false
             })
           } catch (e) {

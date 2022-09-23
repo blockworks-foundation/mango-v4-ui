@@ -40,7 +40,7 @@ const onConnectFetchAccountData = async (wallet: Wallet) => {
   if (!wallet) return
   const actions = mangoStore.getState().actions
   await actions.fetchMangoAccounts(wallet.adapter as unknown as AnchorWallet)
-  await actions.fetchSettings(wallet.adapter.publicKey?.toString() as string)
+  actions.fetchTourSettings(wallet.adapter.publicKey?.toString() as string)
   actions.fetchWalletTokens(wallet.adapter as unknown as AnchorWallet)
 }
 

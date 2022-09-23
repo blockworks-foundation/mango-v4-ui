@@ -1,21 +1,52 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
+import mangoStore from '@store/mangoStore'
 import { WalktourLogic } from 'walktour'
 
 const CustomTooltip = ({
-  tourLogic,
   customOnClose,
+  hasSeenKey,
+  tourLogic,
 }: {
-  tourLogic: WalktourLogic | undefined
   customOnClose?: () => void
+  hasSeenKey: 'account_tour_seen' | 'swap_tour_seen' | 'trade_tour_seen'
+  tourLogic: WalktourLogic | undefined
 }) => {
   const { title, description } = tourLogic!.stepContent
   const { next, prev, close, allSteps, stepIndex } = tourLogic!
+  const { publicKey } = useWallet()
+  const actions = mangoStore((s) => s.actions)
+  const tourSettings = mangoStore((s) => s.settings.tours)
 
-  const onClose = () => {
-    if (customOnClose) {
-      customOnClose()
+  const onClose = async () => {
+    if (!publicKey || !tourSettings) return
+
+    try {
+      const settings = {
+        ...tourSettings,
+      }
+      settings[hasSeenKey] = true
+      const message = JSON.stringify(settings)
+      const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: message,
+      }
+      const response = await fetch(
+        'https://mango-transaction-log.herokuapp.com/v4/user-data/settings-unsigned',
+        requestOptions
+      )
+      if (response.status === 200) {
+        await actions.fetchTourSettings(publicKey.toString())
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      if (customOnClose) {
+        customOnClose()
+      }
+      close()
     }
-    close()
   }
 
   return (
