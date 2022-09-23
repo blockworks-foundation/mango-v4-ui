@@ -88,7 +88,7 @@ const MangoAccountsList = ({
                         >
                           {acc.name}
                           {acc.publicKey.toString() ===
-                          mangoAccount!.publicKey.toString() ? (
+                          mangoAccount?.publicKey.toString() ? (
                             <CheckCircleIcon className="h-5 w-5 text-th-green" />
                           ) : null}
                         </button>

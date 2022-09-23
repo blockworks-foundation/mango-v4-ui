@@ -113,10 +113,10 @@ const TradeAdvancedPage = () => {
           i: 'orderbook',
           x: 14,
           y: 0,
-          w: 4,
+          w: 5,
           h: getHeight(innerHeight, 820, marketHeaderHeight),
         },
-        { i: 'trade-form', x: 18, y: 0, w: 6, h: getHeight(innerHeight, 0, 0) },
+        { i: 'trade-form', x: 19, y: 0, w: 5, h: getHeight(innerHeight, 0, 0) },
       ],
       lg: [
         { i: 'market-header', x: 0, y: 0, w: 14, h: marketHeaderHeight },
@@ -132,10 +132,10 @@ const TradeAdvancedPage = () => {
           i: 'orderbook',
           x: 14,
           y: 0,
-          w: 4,
+          w: 5,
           h: getHeight(innerHeight, 820, marketHeaderHeight),
         },
-        { i: 'trade-form', x: 18, y: 0, w: 6, h: getHeight(innerHeight, 0, 0) },
+        { i: 'trade-form', x: 19, y: 0, w: 5, h: getHeight(innerHeight, 0, 0) },
       ],
       md: [
         { i: 'market-header', x: 0, y: 0, w: 18, h: marketHeaderHeight },
@@ -188,7 +188,28 @@ const TradeAdvancedPage = () => {
         measureBeforeMount
         containerPadding={[0, 0]}
         margin={[0, 0]}
+        useCSSTransforms
       >
+        <div key="market-header" className="z-10">
+          <AdvancedMarketHeader />
+        </div>
+        <div
+          key="tv-chart"
+          className="h-full border border-x-0 border-th-bkg-3"
+        >
+          <div className={`relative h-full overflow-auto`}>
+            <TradingViewChart />
+          </div>
+        </div>
+        <div key="balances">
+          <BalanceAndOpenOrders />
+        </div>
+        <div
+          key="trade-form"
+          className="border border-t-0 border-r-0 border-th-bkg-3 md:border-b lg:border-b-0"
+        >
+          <AdvancedTradeForm />
+        </div>
         <div key="market-header" className="z-10">
           <AdvancedMarketHeader />
         </div>

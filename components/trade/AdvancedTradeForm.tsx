@@ -5,6 +5,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import Checkbox from '@components/forms/Checkbox'
 import Button from '@components/shared/Button'
+import TabButtons from '@components/shared/TabButtons'
 import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -12,6 +13,7 @@ import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { notify } from 'utils/notifications'
+import SpotSlider from './SpotSlider'
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation('common')
@@ -135,27 +137,13 @@ const AdvancedTradeForm = () => {
 
   return (
     <div>
-      <div className="grid select-none grid-cols-2 justify-between border-b border-th-bkg-3 text-base">
-        <div
-          onClick={() => setTradeType('Limit')}
-          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-            tradeForm.tradeType === 'Limit'
-              ? 'bg-th-bkg-2 text-th-primary'
-              : 'text-th-fgd-4 hover:text-th-fgd-2'
-          }`}
-        >
-          Limit
-        </div>
-        <div
-          onClick={() => setTradeType('Market')}
-          className={`flex h-12 items-center justify-center px-4 text-sm font-bold hover:cursor-pointer ${
-            tradeForm.tradeType === 'Market'
-              ? 'bg-th-bkg-2 text-th-primary'
-              : 'text-th-fgd-4 hover:text-th-fgd-2'
-          }`}
-        >
-          Market
-        </div>
+      <div className="border-b border-th-bkg-3">
+        <TabButtons
+          activeValue={tradeForm.tradeType}
+          onChange={(tab: 'Limit' | 'Market') => setTradeType(tab)}
+          values={['Limit', 'Market']}
+          fillWidth
+        />
       </div>
       <div className="mt-6 px-4">
         <div
@@ -199,27 +187,6 @@ const AdvancedTradeForm = () => {
         </div>
       </div>
       <div className="mt-4 px-4">
-        <div className="my-2 flex items-center justify-between">
-          <p className="text-xs text-th-fgd-3">{t('amount')}</p>
-        </div>
-        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
-          <NumberFormat
-            inputMode="decimal"
-            thousandSeparator=","
-            allowNegative={false}
-            isNumericString={true}
-            decimalScale={6}
-            name="amountIn"
-            id="amountIn"
-            className="w-full bg-transparent font-mono tracking-tight focus:outline-none"
-            placeholder="0.00"
-            value={tradeForm.baseSize}
-            onValueChange={handleBaseSizeChange}
-          />
-          <div className="ml-2 text-sm font-normal text-th-fgd-4">
-            {baseSymbol}
-          </div>
-        </div>
         {tradeForm.tradeType === 'Limit' ? (
           <>
             <div className="mb-2 mt-4 flex items-center justify-between">
@@ -234,7 +201,7 @@ const AdvancedTradeForm = () => {
                 decimalScale={6}
                 name="amountIn"
                 id="amountIn"
-                className="w-full bg-th-bkg-1 font-mono tracking-tight focus:outline-none"
+                className="w-full bg-th-bkg-1 font-mono focus:outline-none"
                 placeholder="0.00"
                 value={tradeForm.price}
                 onValueChange={handlePriceChange}
@@ -245,10 +212,34 @@ const AdvancedTradeForm = () => {
             </div>
           </>
         ) : null}
+        <div className="my-2 flex items-center justify-between">
+          <p className="text-xs text-th-fgd-3">{t('amount')}</p>
+        </div>
+        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
+          <NumberFormat
+            inputMode="decimal"
+            thousandSeparator=","
+            allowNegative={false}
+            isNumericString={true}
+            decimalScale={6}
+            name="amountIn"
+            id="amountIn"
+            className="w-full bg-transparent font-mono focus:outline-none"
+            placeholder="0.00"
+            value={tradeForm.baseSize}
+            onValueChange={handleBaseSizeChange}
+          />
+          <div className="ml-2 text-sm font-normal text-th-fgd-4">
+            {baseSymbol}
+          </div>
+        </div>
       </div>
-      <div className="flex flex-wrap px-5">
+      <div className="flex">
+        <SpotSlider />
+      </div>
+      <div className="mt-5 flex flex-wrap px-5">
         {tradeForm.tradeType === 'Limit' ? (
-          <div className="mt-4 flex">
+          <div className="flex">
             <div className="mr-4" id="trade-step-six">
               <Tooltip
                 className="hidden md:block"
@@ -283,7 +274,7 @@ const AdvancedTradeForm = () => {
             </div>
           </div>
         ) : null}
-        <div className="mt-4" id="trade-step-eight">
+        <div id="trade-step-eight">
           <Tooltip
             delay={250}
             placement="left"

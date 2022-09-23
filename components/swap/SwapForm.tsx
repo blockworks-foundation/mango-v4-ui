@@ -33,7 +33,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
-import { getTokenInMax } from './useTokenMax'
+import { getTokenInMax, useTokenMax } from './useTokenMax'
 import WalletIcon from '../icons/WalletIcon'
 import Tooltip from '@components/shared/Tooltip'
 
@@ -62,22 +62,6 @@ const SwapForm = () => {
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const connected = mangoStore((s) => s.connected)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
-
-  const {
-    amount: tokenMax,
-    amountWithBorrow,
-    decimals,
-  } = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (inputTokenInfo && group) {
-      return getTokenInMax(inputTokenInfo.address, group, useMargin)
-    }
-    return {
-      amount: new Decimal(0),
-      amountWithBorrow: new Decimal(0),
-      decimals: 6,
-    }
-  }, [inputTokenInfo, useMargin, connected])
 
   const amountIn: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
@@ -195,17 +179,13 @@ const SwapForm = () => {
       : Math.trunc(simulatedHealthRatio!)
   }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
 
-  const isLoadingTradeDetails = useMemo(() => {
+  const loadingSwapDetails: boolean = useMemo(() => {
     return (
-      amountIn.toNumber() && connected && (!selectedRoute || !outputTokenInfo)
+      !!amountIn.toNumber() && connected && (!selectedRoute || !outputTokenInfo)
     )
   }, [amountIn, connected, selectedRoute, outputTokenInfo])
 
   const showHealthImpact = !!inputTokenInfo && !!outputTokenInfo && !!amountOut
-
-  const showInsufficientBalance = useMargin
-    ? amountWithBorrow.lt(amountIn)
-    : tokenMax.lt(amountIn)
 
   return (
     <ContentBox
@@ -274,11 +254,8 @@ const SwapForm = () => {
         >
           <p className="text-th-fgd-3">{t('swap:from')}</p>
           <MaxSwapAmount
-            amountWithBorrow={amountWithBorrow}
             useMargin={useMargin}
             setAmountIn={setAmountInFormValue}
-            tokenMax={tokenMax}
-            decimals={decimals}
           />
         </div>
         <div className="mb-3 grid grid-cols-2">
@@ -298,7 +275,7 @@ const SwapForm = () => {
               decimalScale={inputTokenInfo?.decimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl font-bold tracking-wider tracking-tight text-th-fgd-1 focus:outline-none"
+              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl font-bold text-th-fgd-1 focus:outline-none"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -308,9 +285,8 @@ const SwapForm = () => {
           {!useMargin ? (
             <PercentageSelectButtons
               amountIn={amountInFormValue}
-              decimals={decimals}
               setAmountIn={setAmountInFormValue}
-              tokenMax={tokenMax}
+              useMargin={useMargin}
             />
           ) : null}
         </div>
@@ -338,15 +314,15 @@ const SwapForm = () => {
               type="output"
             />
           </div>
-          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold tracking-wider text-th-fgd-3">
-            {isLoadingTradeDetails ? (
+          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold text-th-fgd-3">
+            {loadingSwapDetails ? (
               <div className="w-full">
                 <SheenLoader className="flex flex-1 rounded-l-none">
                   <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-4" />
                 </SheenLoader>
               </div>
             ) : (
-              <span className="p-3 font-mono tracking-tight">
+              <span className="p-3 font-mono">
                 {amountOut ? numberFormat.format(amountOut.toNumber()) : ''}
               </span>
             )}
@@ -359,47 +335,20 @@ const SwapForm = () => {
               {/* <p className="text-th-fgd-1">0.00x</p> */}
             </div>
             <SwapLeverageSlider
+              useMargin={useMargin}
               amount={amountIn.toNumber()}
               onChange={setAmountInFormValue}
             />
           </>
         ) : null}
-        <Button
-          onClick={() => setShowConfirm(true)}
-          className="mt-6 flex w-full items-center justify-center text-base"
-          disabled={
-            !amountIn.toNumber() ||
-            !connected ||
-            !routes?.length ||
-            !selectedRoute ||
-            !outputTokenInfo ||
-            showInsufficientBalance
-          }
-          size="large"
-        >
-          {connected ? (
-            showInsufficientBalance ? (
-              <div className="flex items-center">
-                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('swap:insufficient-balance', {
-                  symbol: inputTokenInfo?.symbol,
-                })}
-              </div>
-            ) : isLoadingTradeDetails ? (
-              <Loading />
-            ) : (
-              <div className="flex items-center">
-                <MagnifyingGlassIcon className="mr-2 h-5 w-5" />
-                {t('swap:review-swap')}
-              </div>
-            )
-          ) : (
-            <div className="flex items-center">
-              <WalletIcon className="mr-2 h-5 w-5" />
-              {t('connect')}
-            </div>
-          )}
-        </Button>
+        <SwapFormSubmitButton
+          loadingSwapDetails={loadingSwapDetails}
+          useMargin={useMargin}
+          setShowConfirm={setShowConfirm}
+          amountIn={amountIn}
+          inputSymbol={inputTokenInfo?.symbol}
+          amountOut={amountOut}
+        />
       </div>
       <div
         id="swap-step-four"
@@ -414,7 +363,7 @@ const SwapForm = () => {
               <p className="tooltip-underline text-sm">{t('health-impact')}</p>
             </Tooltip>
           </div>
-          <div className="flex items-center space-x-2 font-mono tracking-tight">
+          <div className="flex items-center space-x-2 font-mono">
             <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
             <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
             <p
@@ -447,21 +396,87 @@ const SwapForm = () => {
 
 export default SwapForm
 
-const MaxSwapAmount = ({
-  amountWithBorrow,
-  setAmountIn,
-  tokenMax,
+const SwapFormSubmitButton = ({
+  amountIn,
+  amountOut,
+  inputSymbol,
+  loadingSwapDetails,
+  setShowConfirm,
   useMargin,
-  decimals,
 }: {
-  amountWithBorrow: Decimal
-  setAmountIn: (x: string) => void
-  tokenMax: Decimal
+  amountIn: Decimal
+  amountOut: Decimal
+  inputSymbol: string | undefined
+  loadingSwapDetails: boolean
+  setShowConfirm: (x: any) => any
   useMargin: boolean
-  decimals: number
 }) => {
-  const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const { t } = useTranslation('common')
+  const connected = mangoStore((s) => s.connected)
+  const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
+
+  const showInsufficientBalance = useMargin
+    ? amountWithBorrow.lt(amountIn)
+    : tokenMax.lt(amountIn)
+
+  const disabled =
+    !amountIn.toNumber() ||
+    !connected ||
+    showInsufficientBalance ||
+    !amountOut.gt(0)
+
+  return (
+    <Button
+      onClick={() => setShowConfirm(true)}
+      className="mt-6 flex w-full items-center justify-center text-base"
+      disabled={disabled}
+      size="large"
+    >
+      {connected ? (
+        showInsufficientBalance ? (
+          <div className="flex items-center">
+            <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+            {t('swap:insufficient-balance', {
+              symbol: inputSymbol,
+            })}
+          </div>
+        ) : loadingSwapDetails ? (
+          <Loading />
+        ) : disabled ? (
+          <div className="flex items-center">
+            <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+            No routes found
+          </div>
+        ) : (
+          <div className="flex items-center">
+            <MagnifyingGlassIcon className="mr-2 h-5 w-5" />
+            {t('swap:review-swap')}
+          </div>
+        )
+      ) : (
+        <div className="flex items-center">
+          <WalletIcon className="mr-2 h-5 w-5" />
+          {t('connect')}
+        </div>
+      )}
+    </Button>
+  )
+}
+
+const MaxSwapAmount = ({
+  setAmountIn,
+  useMargin,
+}: {
+  setAmountIn: (x: string) => void
+  useMargin: boolean
+}) => {
+  const { t } = useTranslation('common')
+  const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
+  const {
+    amount: tokenMax,
+    amountWithBorrow,
+    decimals,
+  } = useTokenMax(useMargin)
 
   const setMaxInputAmount = () => {
     const amountIn = useMargin ? amountWithBorrow : tokenMax
@@ -475,7 +490,7 @@ const MaxSwapAmount = ({
   return (
     <LinkButton className="no-underline" onClick={setMaxInputAmount}>
       <span className="font-normal text-th-fgd-4">{t('max')}:</span>
-      <span className="mx-1 font-mono tracking-tight text-th-fgd-3 underline">
+      <span className="mx-1 font-mono text-th-fgd-3 underline">
         {maxAmount.toFixed()}
       </span>
     </LinkButton>
@@ -484,16 +499,15 @@ const MaxSwapAmount = ({
 
 const PercentageSelectButtons = ({
   amountIn,
-  decimals,
   setAmountIn,
-  tokenMax,
+  useMargin,
 }: {
   amountIn: string
-  decimals: number
   setAmountIn: (x: string) => any
-  tokenMax: Decimal
+  useMargin: boolean
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
+  const { amount: tokenMax, decimals } = useTokenMax(useMargin)
 
   useEffect(() => {
     if (tokenMax.gt(0) && amountIn && tokenMax.eq(amountIn)) {

@@ -420,9 +420,9 @@ const Orderbook = () => {
           </Tooltip>
         </div>
       </div>
-      <div className="grid grid-cols-2 px-4 py-2 text-xs text-th-fgd-4">
-        <div className="col-span-1 text-right">Size</div>
-        <div className="col-span-1 text-right">Price</div>
+      <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">
+        <div className="col-span-1 text-right">{t('size')}</div>
+        <div className="col-span-1 text-right">{t('price')}</div>
       </div>
       <div
         className="hide-scroll relative h-full overflow-y-scroll"
@@ -468,12 +468,12 @@ const Orderbook = () => {
             id="trade-step-nine"
           >
             <div className="col-span-1 flex justify-between">
-              <div className="">{t('spread')}</div>
-              <div className="">
+              <div className="text-xxs">{t('spread')}</div>
+              <div className="font-mono">
                 {orderbookData?.spreadPercentage.toFixed(2)}%
               </div>
             </div>
-            <div className="col-span-1 text-right">
+            <div className="col-span-1 text-right font-mono">
               {orderbookData?.spread.toFixed(2)}
             </div>
           </div>
