@@ -3,7 +3,7 @@ import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { ArrowLeftIcon, PhotoIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import Button, { LinkButton } from './shared/Button'
+import Button, { LinkButton } from '../shared/Button'
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { notify } from 'utils/notifications'
 

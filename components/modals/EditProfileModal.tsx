@@ -2,7 +2,7 @@ import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
-import EditNftProfilePic from '@components/EditNftProfilePic'
+import EditNftProfilePic from '@components/profile/EditNftProfilePic'
 import { EnterBottomExitBottom } from '@components/shared/Transitions'
 import EditProfileForm from '@components/profile/EditProfileForm'
 

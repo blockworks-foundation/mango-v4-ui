@@ -15,6 +15,7 @@ import Decimal from 'decimal.js'
 import OrderbookIcon from '@components/icons/OrderbookIcon'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
+import SheenLoader from '@components/shared/SheenLoader'
 
 function decodeBookL2(
   market: Market,
@@ -218,10 +219,10 @@ const Orderbook = () => {
       selectedMarket.serumMarketExternal.toBase58()
     )
     if (
-      nextOrderbookData?.current &&
-      (!isEqual(currentOrderbookData.current, nextOrderbookData.current) ||
-        previousDepth !== depth ||
-        previousGrouping !== grouping)
+      (nextOrderbookData?.current &&
+        !isEqual(currentOrderbookData.current, nextOrderbookData.current)) ||
+      previousDepth !== depth ||
+      previousGrouping !== grouping
     ) {
       // check if user has open orders so we can highlight them on orderbook
       // const openOrders = mangoStore.getState().mangoAccount.openOrders
@@ -422,16 +423,62 @@ const Orderbook = () => {
         <div className="col-span-1 text-right">{t('size')}</div>
         <div className="col-span-1 text-right">{t('price')}</div>
       </div>
-      <div
-        className="hide-scroll relative h-full overflow-y-scroll"
-        ref={orderbookElRef}
-        onScroll={handleScroll}
-      >
-        {showSells && orderbookData?.asks?.length
-          ? depthArray.map((_x, index) => {
-              return (
+      {orderbookData ? (
+        <div
+          className="hide-scroll relative h-full overflow-y-scroll"
+          ref={orderbookElRef}
+          onScroll={handleScroll}
+        >
+          {showSells && orderbookData?.asks?.length
+            ? depthArray.map((_x, index) => {
+                return (
+                  <div key={index}>
+                    {orderbookData?.asks[index] ? (
+                      <MemoizedOrderbookRow
+                        minOrderSize={serum3MarketExternal.minOrderSize}
+                        tickSize={serum3MarketExternal.tickSize}
+                        // hasOpenOrder={hasOpenOrderForPriceGroup(
+                        //   openOrderPrices,
+                        //   price,
+                        //   grouping
+                        // )}
+                        key={orderbookData?.asks[index].price}
+                        price={orderbookData?.asks[index].price}
+                        size={
+                          displayCumulativeSize
+                            ? orderbookData?.asks[index].cumulativeSize
+                            : orderbookData?.asks[index].size
+                        }
+                        side="sell"
+                        sizePercent={
+                          displayCumulativeSize
+                            ? orderbookData?.asks[index].maxSizePercent
+                            : orderbookData?.asks[index].sizePercent
+                        }
+                        grouping={grouping}
+                      />
+                    ) : null}
+                  </div>
+                )
+              })
+            : null}
+          {showBuys && showSells ? (
+            <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4">
+              <div className="col-span-1 flex justify-between">
+                <div className="text-xxs">{t('spread')}</div>
+                <div className="font-mono">
+                  {orderbookData?.spreadPercentage.toFixed(2)}%
+                </div>
+              </div>
+              <div className="col-span-1 text-right font-mono">
+                {orderbookData?.spread.toFixed(2)}
+              </div>
+            </div>
+          ) : null}
+          {showBuys && orderbookData?.bids?.length
+            ? depthArray.map((_x, index) => (
                 <div key={index}>
-                  {orderbookData?.asks[index] ? (
+                  {orderbookData?.bids[index] ? (
                     <MemoizedOrderbookRow
                       minOrderSize={serum3MarketExternal.minOrderSize}
                       tickSize={serum3MarketExternal.tickSize}
@@ -440,70 +487,34 @@ const Orderbook = () => {
                       //   price,
                       //   grouping
                       // )}
-                      key={orderbookData?.asks[index].price}
-                      price={orderbookData?.asks[index].price}
+                      price={orderbookData?.bids[index].price}
                       size={
                         displayCumulativeSize
-                          ? orderbookData?.asks[index].cumulativeSize
-                          : orderbookData?.asks[index].size
+                          ? orderbookData?.bids[index].cumulativeSize
+                          : orderbookData?.bids[index].size
                       }
-                      side="sell"
+                      side="buy"
                       sizePercent={
                         displayCumulativeSize
-                          ? orderbookData?.asks[index].maxSizePercent
-                          : orderbookData?.asks[index].sizePercent
+                          ? orderbookData?.bids[index].maxSizePercent
+                          : orderbookData?.bids[index].sizePercent
                       }
                       grouping={grouping}
                     />
                   ) : null}
                 </div>
-              )
-            })
-          : null}
-        {showBuys && showSells ? (
-          <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4">
-            <div className="col-span-1 flex justify-between">
-              <div className="text-xxs">{t('spread')}</div>
-              <div className="font-mono">
-                {orderbookData?.spreadPercentage.toFixed(2)}%
-              </div>
-            </div>
-            <div className="col-span-1 text-right font-mono">
-              {orderbookData?.spread.toFixed(2)}
-            </div>
-          </div>
-        ) : null}
-        {showBuys && orderbookData?.bids?.length
-          ? depthArray.map((_x, index) => (
-              <div key={index}>
-                {orderbookData?.bids[index] ? (
-                  <MemoizedOrderbookRow
-                    minOrderSize={serum3MarketExternal.minOrderSize}
-                    tickSize={serum3MarketExternal.tickSize}
-                    // hasOpenOrder={hasOpenOrderForPriceGroup(
-                    //   openOrderPrices,
-                    //   price,
-                    //   grouping
-                    // )}
-                    price={orderbookData?.bids[index].price}
-                    size={
-                      displayCumulativeSize
-                        ? orderbookData?.bids[index].cumulativeSize
-                        : orderbookData?.bids[index].size
-                    }
-                    side="buy"
-                    sizePercent={
-                      displayCumulativeSize
-                        ? orderbookData?.bids[index].maxSizePercent
-                        : orderbookData?.bids[index].sizePercent
-                    }
-                    grouping={grouping}
-                  />
-                ) : null}
-              </div>
-            ))
-          : null}
-      </div>
+              ))
+            : null}
+        </div>
+      ) : (
+        <div className="space-y-[1px] px-4">
+          {depthArray.map((_x, index) => (
+            <SheenLoader className="flex flex-1" key={index}>
+              <div className="h-5 w-full rounded bg-th-bkg-2" />
+            </SheenLoader>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
