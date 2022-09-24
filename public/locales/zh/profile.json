@@ -10,7 +10,7 @@
     "follow": "追踪",
     "following": "追踪中",
     "invalid-characters": "限制于字母、数字和空格",
-    "length-error": "标签必须十个字母一下",
+    "length-error": "Names must be less than 20 characters",
     "market-maker": "做市商",
     "no-followers": "无追踪者",
     "no-followers-desc": "以隐身模式交易😎",

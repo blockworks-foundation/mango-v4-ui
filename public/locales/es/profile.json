@@ -10,7 +10,7 @@
     "follow": "Follow",
     "following": "Following",
     "invalid-characters": "Only alphanumeric characters and single spaces allowed",
-    "length-error": "Names must be less than 10 characters",
+    "length-error": "Names must be less than 20 characters",
     "market-maker": "Market Maker",
     "no-followers": "No Followers",
     "no-followers-desc": "Trading in stealth mode 😎",

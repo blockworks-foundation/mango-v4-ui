@@ -39,7 +39,7 @@ const SpotSlider = () => {
   }, [])
 
   return (
-    <div className="mt-4 w-full px-4">
+    <div className="w-full px-4">
       <LeverageSlider
         amount={0}
         leverageMax={leverageMax}

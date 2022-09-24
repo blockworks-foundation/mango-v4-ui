@@ -112,8 +112,8 @@ const CustomizedLabel = ({
         dy={value === min ? 16 : -8}
         fill={theme === 'Light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)'}
         fontSize={10}
-        fontFamily="Roboto Mono"
         textAnchor={x && y && x > width / 3 ? 'end' : 'start'}
+        className="font-mono"
       >
         {formatFixedDecimals(value)}
       </Text>
@@ -268,8 +268,8 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 <>
                   <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
-                      height={40}
-                      width={26}
+                      height={48}
+                      width={32}
                       play
                       numbers={formatFixedDecimals(mouseData['price'])}
                     />
@@ -285,10 +285,10 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 </>
               ) : (
                 <>
-                  <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
-                      height={40}
-                      width={26}
+                      height={48}
+                      width={32}
                       play
                       numbers={formatFixedDecimals(
                         chartData[chartData.length - 1]['price']
