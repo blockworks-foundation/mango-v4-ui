@@ -1,21 +1,19 @@
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import PercentageChange from '@components/shared/PercentageChange'
 import { Popover } from '@headlessui/react'
-import {
-  ChevronDownIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/image'
 import { useCallback, useMemo } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import { formatFixedDecimals } from 'utils/numbers'
+import MarketLogos from './MarketLogos'
 
 const MarketSelectDropdown = () => {
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const group = mangoStore((s) => s.group)
   const set = mangoStore((s) => s.set)
 
   const handleSelectMarket = useCallback(
@@ -29,13 +27,18 @@ const MarketSelectDropdown = () => {
   )
 
   const [baseLogoURI, quoteLogoURI] = useMemo(() => {
-    if (jupiterTokens.length && selectedMarket) {
-      const tokenSymbols = selectedMarket.name.split('/')
+    if (jupiterTokens.length && selectedMarket && group) {
+      const baseSymbol = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex
+      ).name
+      const quoteSymbol = group.getFirstBankByTokenIndex(
+        selectedMarket.quoteTokenIndex
+      ).name
       const baseURI = jupiterTokens.find(
-        (t) => t.symbol === tokenSymbols[0]
+        (t) => t.symbol === baseSymbol
       )!.logoURI
       const quoteURI = jupiterTokens.find(
-        (t) => t.symbol === tokenSymbols[1]
+        (t) => t.symbol === quoteSymbol
       )!.logoURI
       return [baseURI, quoteURI]
     } else {
@@ -64,16 +67,20 @@ const MarketSelectDropdown = () => {
               ? serumMarkets.map((m) => {
                   let baseLogoURI = ''
                   let quoteLogoURI = ''
-                  const tokenSymbols = m.name.split('/')
+                  const baseSymbol = group?.getFirstBankByTokenIndex(
+                    m.baseTokenIndex
+                  ).name
+                  const quoteSymbol = group?.getFirstBankByTokenIndex(
+                    m.quoteTokenIndex
+                  ).name
                   if (jupiterTokens.length) {
                     baseLogoURI = jupiterTokens.find(
-                      (t) => t.symbol === tokenSymbols[0]
+                      (t) => t.symbol === baseSymbol
                     )!.logoURI
                     quoteLogoURI = jupiterTokens.find(
-                      (t) => t.symbol === tokenSymbols[1]
+                      (t) => t.symbol === quoteSymbol
                     )!.logoURI
                   }
-
                   return (
                     <div
                       key={m.publicKey.toString()}
@@ -101,45 +108,6 @@ const MarketSelectDropdown = () => {
         </div>
       )}
     </Popover>
-  )
-}
-
-const MarketLogos = ({
-  baseURI,
-  quoteURI,
-}: {
-  baseURI: string
-  quoteURI: string
-}) => {
-  return (
-    <div className="relative mr-1.5 h-5 w-[34px]">
-      <div className="absolute left-0 top-0">
-        {baseURI ? (
-          <Image
-            alt=""
-            className="z-10 rounded-full drop-shadow-md"
-            width="20"
-            height="20"
-            src={baseURI}
-          />
-        ) : (
-          <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
-        )}
-      </div>
-      <div className="absolute right-0 top-0">
-        {quoteURI ? (
-          <Image
-            alt=""
-            className="rounded-full opacity-70"
-            width="20"
-            height="20"
-            src={quoteURI}
-          />
-        ) : (
-          <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
-        )}
-      </div>
-    </div>
   )
 }
 

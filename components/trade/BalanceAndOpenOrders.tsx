@@ -1,5 +1,5 @@
 import { Serum3Side } from '@blockworks-foundation/mango-v4'
-import Button, { IconButton } from '@components/shared/Button'
+import { IconButton } from '@components/shared/Button'
 import SideBadge from '@components/shared/SideBadge'
 import TabButtons from '@components/shared/TabButtons'
 import Tooltip from '@components/shared/Tooltip'
@@ -17,6 +17,7 @@ import Image from 'next/image'
 import { useCallback, useMemo, useState } from 'react'
 import { notify } from 'utils/notifications'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import MarketLogos from './MarketLogos'
 
 const TABS = ['Balances', 'Orders']
 
@@ -138,6 +139,7 @@ const OpenOrders = () => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const handleCancelOrder = useCallback(
     async (o: Order) => {
@@ -197,9 +199,31 @@ const OpenOrders = () => {
                 const market = group?.getSerum3MarketByPk(
                   new PublicKey(marketPk)
                 )
+                let baseLogoURI = ''
+                let quoteLogoURI = ''
+                const baseSymbol = group?.getFirstBankByTokenIndex(
+                  market!.baseTokenIndex
+                ).name
+                const quoteSymbol = group?.getFirstBankByTokenIndex(
+                  market!.quoteTokenIndex
+                ).name
+                if (jupiterTokens.length) {
+                  baseLogoURI = jupiterTokens.find(
+                    (t) => t.symbol === baseSymbol
+                  )!.logoURI
+                  quoteLogoURI = jupiterTokens.find(
+                    (t) => t.symbol === quoteSymbol
+                  )!.logoURI
+                }
                 return (
                   <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
-                    <td>{market?.name}</td>
+                    <td className="flex items-center">
+                      <MarketLogos
+                        baseURI={baseLogoURI}
+                        quoteURI={quoteLogoURI}
+                      />
+                      {market?.name}
+                    </td>
                     <td className="text-right">
                       <SideBadge side={o.side} />
                     </td>
@@ -207,13 +231,7 @@ const OpenOrders = () => {
                     <td className="text-right">
                       <span>
                         {o.price}{' '}
-                        <span className="text-th-fgd-4">
-                          {market
-                            ? group?.getFirstBankByTokenIndex(
-                                market.quoteTokenIndex
-                              ).name
-                            : ''}
-                        </span>
+                        <span className="text-th-fgd-4">{quoteSymbol}</span>
                       </span>
                     </td>
                     <td className="text-right">
