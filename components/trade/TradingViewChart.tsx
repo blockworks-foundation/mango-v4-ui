@@ -32,7 +32,7 @@ export interface ChartContainerProps {
 const TradingViewChart = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
-  const { publicKey } = useWallet()
+
   const [chartReady, setChartReady] = useState(false)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const isMobile = width ? width < breakpoints.sm : false
@@ -45,10 +45,6 @@ const TradingViewChart = () => {
       theme: 'Dark',
       container: 'tv_chart_container',
       datafeedUrl: CHART_DATA_FEED,
-      chartsStorageUrl: 'https://trading-view-backend.herokuapp.com',
-      chartsStorageApiVersion: '1.1',
-      clientId: 'mango.markets',
-      userId: '',
       libraryPath: '/charting_library/',
       fullscreen: false,
       autosize: true,
@@ -129,10 +125,7 @@ const TradingViewChart = () => {
           defaultProps.container as ChartingLibraryWidgetOptions['container'],
         library_path: defaultProps.libraryPath as string,
         locale: 'en',
-        enabled_features: [
-          'hide_left_toolbar_by_default',
-          publicKey ? 'study_templates' : '',
-        ],
+        enabled_features: ['hide_left_toolbar_by_default'],
         disabled_features: [
           'use_localstorage_for_settings',
           'timeframes_toolbar',
@@ -146,16 +139,12 @@ const TradingViewChart = () => {
           'header_screenshot',
           // 'header_widget_dom_node',
           // 'header_widget',
-          !publicKey ? 'header_saveload' : '',
+          'header_saveload',
           'header_undo_redo',
           'header_interval_dialog_button',
           'show_interval_dialog_on_key_press',
           'header_symbol_search',
         ],
-        charts_storage_url: defaultProps.chartsStorageUrl,
-        charts_storage_api_version: defaultProps.chartsStorageApiVersion,
-        client_id: defaultProps.clientId,
-        user_id: publicKey ? publicKey.toString() : defaultProps.userId,
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,
@@ -184,7 +173,7 @@ const TradingViewChart = () => {
       })
       //eslint-disable-next-line
     }
-  }, [theme, isMobile, defaultProps, publicKey])
+  }, [theme, isMobile, defaultProps])
 
   return (
     <div id={defaultProps.container as string} className="tradingview-chart" />
