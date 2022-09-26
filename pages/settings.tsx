@@ -8,6 +8,7 @@ import useLocalStorageState from '../hooks/useLocalStorageState'
 import dayjs from 'dayjs'
 import { ORDERBOOK_FLASH_KEY } from 'utils/constants'
 import Switch from '@components/forms/Switch'
+import { useCallback, useMemo } from 'react'
 
 require('dayjs/locale/en')
 require('dayjs/locale/es')
@@ -47,13 +48,18 @@ const Settings: NextPage = () => {
     ORDERBOOK_FLASH_KEY,
     true
   )
-  const THEMES = [t('settings:light'), t('settings:dark'), t('settings:mango')]
+  const themes = useMemo(() => {
+    return [t('settings:light'), t('settings:dark'), t('settings:mango')]
+  }, [t])
 
-  const handleLangChange = (l: string) => {
-    setSavedLanguage(l)
-    router.push({ pathname, query }, asPath, { locale: l })
-    dayjs.locale(l == 'zh_tw' ? 'zh-tw' : l)
-  }
+  const handleLangChange = useCallback(
+    (l: string) => {
+      setSavedLanguage(l)
+      router.push({ pathname, query }, asPath, { locale: l })
+      dayjs.locale(l == 'zh_tw' ? 'zh-tw' : l)
+    },
+    [router]
+  )
 
   return (
     <div className="p-8 pb-20 md:pb-16 lg:p-10">
@@ -66,7 +72,7 @@ const Settings: NextPage = () => {
               <ButtonGroup
                 activeValue={theme}
                 onChange={(t) => setTheme(t)}
-                values={THEMES}
+                values={themes}
                 large
               />
             </div>
