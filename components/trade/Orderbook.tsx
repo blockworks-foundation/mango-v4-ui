@@ -158,7 +158,6 @@ const Orderbook = () => {
   // const [openOrderPrices, setOpenOrderPrices] = useState<any[]>([])
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)
-  const [displayCumulativeSize, setDisplayCumulativeSize] = useState(false)
   const [grouping, setGrouping] = useState(0.01)
   const [showBuys, setShowBuys] = useState(true)
   const [showSells, setShowSells] = useState(true)
@@ -438,17 +437,9 @@ const Orderbook = () => {
                       // )}
                       key={orderbookData?.asks[index].price}
                       price={orderbookData?.asks[index].price}
-                      size={
-                        displayCumulativeSize
-                          ? orderbookData?.asks[index].cumulativeSize
-                          : orderbookData?.asks[index].size
-                      }
+                      size={orderbookData?.asks[index].size}
                       side="sell"
-                      sizePercent={
-                        displayCumulativeSize
-                          ? orderbookData?.asks[index].maxSizePercent
-                          : orderbookData?.asks[index].sizePercent
-                      }
+                      sizePercent={orderbookData?.asks[index].sizePercent}
                       grouping={grouping}
                     />
                   ) : null}
@@ -482,17 +473,9 @@ const Orderbook = () => {
                     //   grouping
                     // )}
                     price={orderbookData?.bids[index].price}
-                    size={
-                      displayCumulativeSize
-                        ? orderbookData?.bids[index].cumulativeSize
-                        : orderbookData?.bids[index].size
-                    }
+                    size={orderbookData?.bids[index].size}
                     side="buy"
-                    sizePercent={
-                      displayCumulativeSize
-                        ? orderbookData?.bids[index].maxSizePercent
-                        : orderbookData?.bids[index].sizePercent
-                    }
+                    sizePercent={orderbookData?.bids[index].sizePercent}
                     grouping={grouping}
                   />
                 ) : null}
@@ -538,26 +521,29 @@ const OrderbookRow = ({
       () =>
         element.current?.classList.contains(`${flashClassName}`) &&
         element.current?.classList.remove(`${flashClassName}`),
-      250
+      500
     )
     return () => clearTimeout(id)
   }, [price, size])
 
-  const formattedSize =
-    minOrderSize && !isNaN(size)
+  const formattedSize = useMemo(() => {
+    return minOrderSize && !isNaN(size)
       ? floorToDecimal(size, getDecimalCount(minOrderSize))
       : new Decimal(size)
+  }, [size, minOrderSize])
 
-  const formattedPrice =
-    tickSize && !isNaN(price)
+  const formattedPrice = useMemo(() => {
+    return tickSize && !isNaN(price)
       ? floorToDecimal(price, getDecimalCount(tickSize))
       : new Decimal(price)
+  }, [price, tickSize])
 
-  // const handlePriceClick = () => {
-  //   set((state) => {
-  //     state.tradeForm.price = Number(formattedPrice)
-  //   })
-  // }
+  const handlePriceClick = useCallback(() => {
+    const set = mangoStore.getState().set
+    set((state) => {
+      state.tradeForm.price = formattedPrice.toFixed()
+    })
+  }, [formattedPrice])
 
   // const handleSizeClick = () => {
   //   set((state) => {
@@ -580,6 +566,7 @@ const OrderbookRow = ({
     <div
       className={`relative flex h-[24px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
       ref={element}
+      onClick={handlePriceClick}
     >
       <>
         <div className="flex w-full items-center justify-between hover:bg-th-bkg-2">
@@ -596,7 +583,6 @@ const OrderbookRow = ({
           </div>
           <div
             className={`z-10 w-full pr-4 text-right font-mono text-xs leading-5 md:leading-6`}
-            // onClick={handlePriceClick}
           >
             {formattedPrice.toFixed(groupingDecimalCount)}
           </div>

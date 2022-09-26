@@ -32,6 +32,12 @@ export const handleWalletConnect = async (wallet: Wallet) => {
         type: 'error',
         description: `Please install ${wallet.adapter.name} and then reload this page.`,
       })
+    } else {
+      notify({
+        title: `${wallet.adapter.name} Error`,
+        type: 'error',
+        description: `${wallet.adapter.name} not available.`,
+      })
     }
   }
 }
