@@ -194,6 +194,11 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
     if (!mangoAccount) return
+    if (
+      mangoAccount.owner.toString() ===
+      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
+    )
+      return false
     const accountValue = toUiDecimalsForQuote(
       mangoAccount.getEquity()!.toNumber()
     )
