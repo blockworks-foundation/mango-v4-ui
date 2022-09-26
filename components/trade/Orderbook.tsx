@@ -149,7 +149,7 @@ const groupBy = (
   return sortedGroups
 }
 
-const depth = 60
+const depth = 40
 
 const Orderbook = () => {
   const { t } = useTranslation('common')
@@ -158,7 +158,6 @@ const Orderbook = () => {
   // const [openOrderPrices, setOpenOrderPrices] = useState<any[]>([])
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)
-  const [defaultLayout, setDefaultLayout] = useState(true)
   const [displayCumulativeSize, setDisplayCumulativeSize] = useState(false)
   const [grouping, setGrouping] = useState(0.01)
   const [showBuys, setShowBuys] = useState(true)
@@ -167,7 +166,6 @@ const Orderbook = () => {
   const currentOrderbookData = useRef<any>(null)
   const nextOrderbookData = useRef<any>(null)
   const orderbookElRef = useRef<HTMLDivElement>(null)
-  const previousDepth = usePrevious(depth)
   const previousGrouping = usePrevious(grouping)
 
   const depthArray = useMemo(() => {
@@ -219,10 +217,9 @@ const Orderbook = () => {
       selectedMarket.serumMarketExternal.toBase58()
     )
     if (
-      (nextOrderbookData?.current &&
-        !isEqual(currentOrderbookData.current, nextOrderbookData.current)) ||
-      previousDepth !== depth ||
-      previousGrouping !== grouping
+      nextOrderbookData?.current &&
+      (!isEqual(currentOrderbookData.current, nextOrderbookData.current) ||
+        previousGrouping !== grouping)
     ) {
       // check if user has open orders so we can highlight them on orderbook
       // const openOrders = mangoStore.getState().mangoAccount.openOrders
@@ -245,31 +242,33 @@ const Orderbook = () => {
 
       const sum = (total: number, [, size]: number[], index: number) =>
         index < depth ? total + size : total
-      const totalSize = bids.reduce(sum, 0) + asks.reduce(sum, 0)
-      const maxSize =
-        Math.max(
-          ...asks.map((a: number[]) => {
-            return a[1]
-          })
-        ) +
-        Math.max(
-          ...bids.map((b: number[]) => {
-            return b[1]
-          })
-        )
+      const totalBidSize = bids.reduce(sum, 0)
+      const totalAskSize = asks.reduce(sum, 0)
+      const maxBidSize = Math.max(
+        ...bids.map((b: number[]) => {
+          return b[1]
+        })
+      )
+      const maxAskSize = Math.max(
+        ...asks.map((a: number[]) => {
+          return a[1]
+        })
+      )
 
-      const bidsToDisplay = defaultLayout
-        ? getCumulativeOrderbookSide(bids, totalSize, maxSize, depth, false)
-        : getCumulativeOrderbookSide(bids, totalSize, maxSize, depth / 2, false)
-      const asksToDisplay = defaultLayout
-        ? getCumulativeOrderbookSide(asks, totalSize, maxSize, depth, false)
-        : getCumulativeOrderbookSide(
-            asks,
-            totalSize,
-            maxSize,
-            (depth + 1) / 2,
-            true
-          )
+      const bidsToDisplay = getCumulativeOrderbookSide(
+        bids,
+        totalBidSize,
+        maxBidSize,
+        depth,
+        false
+      )
+      const asksToDisplay = getCumulativeOrderbookSide(
+        asks,
+        totalAskSize,
+        maxAskSize,
+        depth,
+        false
+      )
 
       currentOrderbookData.current = {
         bids: orderbook?.bids,
@@ -277,9 +276,7 @@ const Orderbook = () => {
       }
       if (bidsToDisplay[0] || asksToDisplay[0]) {
         const bid = bidsToDisplay[0]?.price
-        const ask = defaultLayout
-          ? asksToDisplay[0]?.price
-          : asksToDisplay[asksToDisplay.length - 1]?.price
+        const ask = asksToDisplay[0]?.price
         let spread = 0,
           spreadPercentage = 0
         if (bid && ask) {
@@ -364,7 +361,7 @@ const Orderbook = () => {
     function handleResize() {
       verticallyCenterOrderbook()
     }
-
+    handleResize()
     window.addEventListener('resize', handleResize)
   }, [verticallyCenterOrderbook])
 
