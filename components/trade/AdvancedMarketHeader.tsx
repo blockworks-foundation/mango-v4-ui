@@ -59,7 +59,7 @@ const MarketSelectDropdown = () => {
             />
           </Popover.Button>
 
-          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen border border-l-0 border-th-bkg-3 bg-th-bkg-1 sm:w-56 md:top-[37px]">
+          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen border border-l-0 border-th-bkg-3 bg-th-bkg-1 py-2 sm:w-56 md:top-[37px]">
             {serumMarkets?.length
               ? serumMarkets.map((m) => {
                   let baseLogoURI = ''
@@ -84,7 +84,15 @@ const MarketSelectDropdown = () => {
                         baseURI={baseLogoURI}
                         quoteURI={quoteLogoURI}
                       />
-                      <span>{m.name}</span>
+                      <span
+                        className={
+                          m.name === selectedMarket?.name
+                            ? 'text-th-primary'
+                            : ''
+                        }
+                      >
+                        {m.name}
+                      </span>
                     </div>
                   )
                 })
