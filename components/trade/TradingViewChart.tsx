@@ -32,7 +32,6 @@ export interface ChartContainerProps {
 const TradingViewChart = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
-  const { publicKey } = useWallet()
 
   const [chartReady, setChartReady] = useState(false)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
@@ -102,12 +101,6 @@ const TradingViewChart = () => {
 
   useEffect(() => {
     if (tvWidgetRef.current && chartReady && selectedMarketName) {
-      console.log('selectedMarketName', selectedMarketName)
-      console.log(
-        'tvWidgetRef.current?.activeChart()?.symbol()',
-        tvWidgetRef.current?.activeChart()?.symbol()
-      )
-
       tvWidgetRef.current.setSymbol(
         selectedMarketName!,
         tvWidgetRef.current.activeChart().resolution(),
@@ -146,7 +139,7 @@ const TradingViewChart = () => {
           'header_screenshot',
           // 'header_widget_dom_node',
           // 'header_widget',
-          !publicKey ? 'header_saveload' : '',
+          'header_saveload',
           'header_undo_redo',
           'header_interval_dialog_button',
           'show_interval_dialog_on_key_press',
@@ -180,7 +173,7 @@ const TradingViewChart = () => {
       })
       //eslint-disable-next-line
     }
-  }, [theme, isMobile, publicKey, defaultProps])
+  }, [theme, isMobile, defaultProps])
 
   return (
     <div id={defaultProps.container as string} className="tradingview-chart" />
