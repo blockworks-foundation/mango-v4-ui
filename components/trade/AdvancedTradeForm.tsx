@@ -14,6 +14,7 @@ import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
+import { calculateMarketPrice } from 'utils/tradeForm'
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation('common')
@@ -96,6 +97,7 @@ const AdvancedTradeForm = () => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const tradeForm = mangoStore.getState().tradeForm
     const actions = mangoStore.getState().actions
+    const selectedMarket = mangoStore.getState().selectedMarket.current
 
     if (!group || !mangoAccount) return
 
@@ -106,19 +108,27 @@ const AdvancedTradeForm = () => {
         ? Serum3OrderType.postOnly
         : Serum3OrderType.limit
 
+      let baseSize = new Decimal(tradeForm.baseSize).toNumber()
+      let price = new Decimal(tradeForm.price).toNumber()
+      if (tradeForm.tradeType === 'Market') {
+        const orderbook = mangoStore.getState().selectedMarket.orderbook
+        price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
+      }
+
       const tx = await client.serum3PlaceOrder(
         group,
         mangoAccount,
         selectedMarket!.serumMarketExternal,
         tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-        new Decimal(tradeForm.price).toNumber(),
-        new Decimal(tradeForm.baseSize).toNumber(),
+        price,
+        baseSize,
         Serum3SelfTradeBehavior.decrementTake,
         orderType,
         Date.now(),
         10
       )
       actions.reloadMangoAccount()
+      actions.fetchSerumOpenOrders()
       notify({
         type: 'success',
         title: 'Transaction successful',
@@ -126,14 +136,14 @@ const AdvancedTradeForm = () => {
       })
     } catch (e: any) {
       notify({
-        title: t('order-error'),
+        title: 'There was an issue.',
         description: e.message,
-        txid: e.txid,
+        txid: e?.txid,
         type: 'error',
       })
       console.error('Place trade error:', e)
     }
-  }, [])
+  }, [t])
 
   return (
     <div>
@@ -201,7 +211,7 @@ const AdvancedTradeForm = () => {
                 decimalScale={6}
                 name="amountIn"
                 id="amountIn"
-                className="w-full bg-th-bkg-1 font-mono focus:outline-none"
+                className="w-full bg-transparent font-mono focus:outline-none"
                 placeholder="0.00"
                 value={tradeForm.price}
                 onValueChange={handlePriceChange}
