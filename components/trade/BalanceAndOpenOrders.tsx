@@ -1,8 +1,13 @@
 import { Serum3Side } from '@blockworks-foundation/mango-v4'
-import Button from '@components/shared/Button'
+import Button, { IconButton } from '@components/shared/Button'
 import SideBadge from '@components/shared/SideBadge'
 import TabButtons from '@components/shared/TabButtons'
-import { LinkIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import Tooltip from '@components/shared/Tooltip'
+import {
+  LinkIcon,
+  QuestionMarkCircleIcon,
+  TrashIcon,
+} from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
@@ -11,7 +16,7 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { useCallback, useMemo, useState } from 'react'
 import { notify } from 'utils/notifications'
-import { formatDecimal } from 'utils/numbers'
+import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 
 const TABS = ['Balances', 'Orders']
 
@@ -76,14 +81,13 @@ const Balances = () => {
         <tr>
           <th className="bg-th-bkg-1 text-left">{t('token')}</th>
           <th className="bg-th-bkg-1 text-right">{t('balance')}</th>
-          <th className="bg-th-bkg-1 text-right">In Orders</th>
-          <th className="bg-th-bkg-1 text-right">Unsettled</th>
+          <th className="bg-th-bkg-1 text-right">{t('in-orders')}</th>
+          <th className="bg-th-bkg-1 text-right">{t('unsettled')}</th>
         </tr>
       </thead>
       <tbody>
         {banks.map(({ key, value }) => {
           const bank = value[0]
-          const oraclePrice = bank.uiPrice
 
           let logoURI
           if (jupiterTokens.length) {
@@ -176,11 +180,12 @@ const OpenOrders = () => {
     Object.values(openOrders).flat().length ? (
       <table>
         <thead>
-          <tr className="">
-            <th className="text-left">Token</th>
-            <th className="text-right">Side</th>
-            <th className="text-right">Size</th>
-            <th className="text-right">Price</th>
+          <tr>
+            <th className="text-left">{t('token')}</th>
+            <th className="text-right">{t('side')}</th>
+            <th className="text-right">{t('size')}</th>
+            <th className="text-right">{t('price')}</th>
+            <th className="text-right">{t('value')}</th>
             <th className="text-right"></th>
           </tr>
         </thead>
@@ -189,23 +194,42 @@ const OpenOrders = () => {
             .map(([marketPk, orders]) => {
               return orders.map((o) => {
                 const group = mangoStore.getState().group
+                const market = group?.getSerum3MarketByPk(
+                  new PublicKey(marketPk)
+                )
                 return (
                   <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
-                    <td className="">
-                      {
-                        group?.getSerum3MarketByPk(new PublicKey(marketPk))
-                          ?.name
-                      }
-                    </td>
+                    <td>{market?.name}</td>
                     <td className="text-right">
                       <SideBadge side={o.side} />
                     </td>
                     <td className="text-right">{o.size}</td>
-                    <td className="text-right">{o.price}</td>
                     <td className="text-right">
-                      <Button size="small" onClick={() => handleCancelOrder(o)}>
-                        Cancel
-                      </Button>
+                      <span>
+                        {o.price}{' '}
+                        <span className="text-th-fgd-4">
+                          {market
+                            ? group?.getFirstBankByTokenIndex(
+                                market.quoteTokenIndex
+                              ).name
+                            : ''}
+                        </span>
+                      </span>
+                    </td>
+                    <td className="text-right">
+                      {formatFixedDecimals(o.size * o.price, true)}
+                    </td>
+                    <td>
+                      <div className="flex justify-end">
+                        <Tooltip content={t('cancel')}>
+                          <IconButton
+                            onClick={() => handleCancelOrder(o)}
+                            size="small"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </IconButton>
+                        </Tooltip>
+                      </div>
                     </td>
                   </tr>
                 )
