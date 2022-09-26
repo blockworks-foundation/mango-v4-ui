@@ -93,20 +93,30 @@ const TokenList = () => {
               <th className="text-right">{t('price')}</th>
               <th className="text-right">{t('total-deposits')}</th>
               <th className="text-right">{t('total-borrows')}</th>
-              <th className="text-right">
-                <Tooltip content="The deposit rate (green) will automatically be paid on positive balances and the borrow rate (red) will automatically be charged on negative balances.">
-                  <span className="tooltip-underline">{t('rates')}</span>
-                </Tooltip>
+              <th>
+                <div className="flex justify-end">
+                  <Tooltip content="The deposit rate (green) will automatically be paid on positive balances and the borrow rate (red) will automatically be charged on negative balances.">
+                    <span className="tooltip-underline">{t('rates')}</span>
+                  </Tooltip>
+                </div>
               </th>
-              <th className="text-right">
-                <Tooltip content="The percentage of deposits that have been lent out.">
-                  <span className="tooltip-underline">{t('utilization')}</span>
-                </Tooltip>
+              <th>
+                <div className="flex justify-end">
+                  <Tooltip content="The percentage of deposits that have been lent out.">
+                    <span className="tooltip-underline">
+                      {t('utilization')}
+                    </span>
+                  </Tooltip>
+                </div>
               </th>
-              <th className="text-right">
-                <Tooltip content={t('asset-weight-desc')}>
-                  <span className="tooltip-underline">{t('asset-weight')}</span>
-                </Tooltip>
+              <th>
+                <div className="flex justify-end">
+                  <Tooltip content={t('asset-weight-desc')}>
+                    <span className="tooltip-underline">
+                      {t('asset-weight')}
+                    </span>
+                  </Tooltip>
+                </div>
               </th>
               <th>
                 <div className="flex items-center justify-end">

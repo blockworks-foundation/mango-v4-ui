@@ -141,7 +141,7 @@ const AccountPage = () => {
           <div id="step-two">
             <Tooltip
               maxWidth="20rem"
-              placement="bottom"
+              placement="bottom-start"
               content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
             >
               <p className="tooltip-underline mb-1.5">{t('account-value')}</p>
@@ -233,7 +233,7 @@ const AccountPage = () => {
           <div id="step-three">
             <Tooltip
               maxWidth="20rem"
-              placement="bottom"
+              placement="bottom-start"
               content={
                 <div className="flex-col space-y-2 text-sm">
                   <p className="text-xs">
@@ -277,7 +277,7 @@ const AccountPage = () => {
             <Tooltip
               content="The amount of capital you have to trade or borrow against. When your free collateral reaches $0 you won't be able to make withdrawals."
               maxWidth="20rem"
-              placement="bottom"
+              placement="bottom-start"
             >
               <p className="tooltip-underline text-th-fgd-3">
                 {t('free-collateral')}
@@ -299,7 +299,7 @@ const AccountPage = () => {
           <div>
             <Tooltip
               content="The amount your account has made or lost."
-              placement="bottom"
+              placement="bottom-start"
             >
               <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
             </Tooltip>
@@ -321,7 +321,7 @@ const AccountPage = () => {
             <Tooltip
               content="The value of interest earned (deposits) minus interest paid (borrows)."
               maxWidth="20rem"
-              placement="bottom"
+              placement="bottom-end"
             >
               <p className="tooltip-underline text-th-fgd-3">
                 {t('total-interest-value')}
