@@ -10,7 +10,7 @@ import {
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
 import { TOKEN_LIST_URL } from '@jup-ag/core'
-import { Order } from '@project-serum/serum/lib/market'
+import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Wallet } from '@solana/wallet-adapter-react'
 import {
   MangoClient,
@@ -37,11 +37,14 @@ import {
   OUTPUT_TOKEN_DEFAULT,
 } from '../utils/constants'
 import { retryFn } from '../utils'
+import { Orderbook, SpotBalances } from 'types'
+import spotBalancesUpdater from './spotBalancesUpdater'
+import shallow from 'zustand/shallow'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
 export const connection = new web3.Connection(
-  'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
+  'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
   'processed'
 )
 const options = AnchorProvider.defaultOptions()
@@ -120,7 +123,9 @@ export type MangoStore = {
     current: MangoAccount | undefined
     initialLoad: boolean
     lastUpdatedAt: string
-    openOrders: Order[]
+    openOrderAccounts: OpenOrders[]
+    openOrders: Record<string, Order[]>
+    spotBalances: SpotBalances
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
       performance: { data: PerformanceDataItem[]; loading: boolean }
@@ -138,10 +143,7 @@ export type MangoStore = {
   selectedMarket: {
     name: string
     current: Serum3Market | undefined
-    orderbook: {
-      bids: number[][]
-      asks: number[][]
-    }
+    orderbook: Orderbook
   }
   serumMarkets: Serum3Market[]
   serumOrders: Order[] | undefined
@@ -187,7 +189,7 @@ export type MangoStore = {
     reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (wallet: AnchorWallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
-    fetchOpenOrdersForMarket: (market: Serum3Market) => Promise<void>
+    fetchSerumOpenOrders: (ma?: MangoAccount) => Promise<void>
     fetchProfilePicture: (wallet: AnchorWallet) => void
     fetchProfileDetails: (walletPk: string) => void
     fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
@@ -213,7 +215,9 @@ const mangoStore = create<MangoStore>()(
         current: undefined,
         initialLoad: true,
         lastUpdatedAt: '',
-        openOrders: [],
+        openOrderAccounts: [],
+        openOrders: {},
+        spotBalances: {},
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
@@ -469,6 +473,7 @@ const mangoStore = create<MangoStore>()(
               await retryFn(() =>
                 newSelectedMangoAccount!.reloadAccountData(client, group)
               )
+              await actions.fetchSerumOpenOrders(newSelectedMangoAccount)
             }
 
             set((state) => {
@@ -503,21 +508,37 @@ const mangoStore = create<MangoStore>()(
           }
           return []
         },
-        fetchOpenOrdersForMarket: async (market) => {
+        fetchSerumOpenOrders: async (providedMangoAccount) => {
           const set = get().set
           const client = get().client
           const group = await client.getGroup(GROUP)
-          const mangoAccount = get().mangoAccount.current
+          const mangoAccount =
+            providedMangoAccount || get().mangoAccount.current
 
           if (!mangoAccount) return
+          console.log('mangoAccount', mangoAccount)
+
           try {
-            const orders = await mangoAccount.loadSerum3OpenOrdersForMarket(
-              client,
-              group,
-              market.serumMarketExternal
-            )
+            let openOrders: Record<string, Order[]> = {}
+            for (const serum3Orders of mangoAccount.serum3) {
+              const market = group.getSerum3MarketByIndex(
+                serum3Orders.marketIndex
+              )
+              if (market) {
+                const orders = await mangoAccount.loadSerum3OpenOrdersForMarket(
+                  client,
+                  group,
+                  market.serumMarketExternal
+                )
+                openOrders[market.serumMarketExternal.toString()] = orders
+              }
+            }
+            const serumOpenOrderAccounts =
+              await mangoAccount.loadSerum3OpenOrdersAccounts(client)
+
             set((s) => {
-              s.mangoAccount.openOrders = orders
+              s.mangoAccount.openOrders = openOrders
+              s.mangoAccount.openOrderAccounts = serumOpenOrderAccounts
             })
           } catch (e) {
             console.error('Failed loading open orders ', e)
@@ -695,7 +716,7 @@ const mangoStore = create<MangoStore>()(
             })
           } catch (e) {
             notify({ type: 'error', title: 'Failed to load profile details' })
-            console.log(e)
+            console.error(e)
             set((state) => {
               state.profile.loadDetails = false
             })
@@ -705,6 +726,8 @@ const mangoStore = create<MangoStore>()(
     }
   })
 )
+
+mangoStore.subscribe((state) => state.mangoAccount.current, spotBalancesUpdater)
 
 const getDefaultSelectedMarket = (markets: Serum3Market[]): Serum3Market => {
   return markets.find((m) => m.name === DEFAULT_MARKET_NAME) || markets[0]

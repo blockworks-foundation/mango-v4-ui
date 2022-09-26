@@ -5,27 +5,18 @@ import TabButtons from '@components/shared/TabButtons'
 import { LinkIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { notify } from 'utils/notifications'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import { formatDecimal } from 'utils/numbers'
 
 const TABS = ['Balances', 'Orders']
 
 const BalanceAndOpenOrders = () => {
   const [selectedTab, setSelectedTab] = useState('Balances')
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
-
-  useEffect(() => {
-    const actions = mangoStore.getState().actions
-
-    if (mangoAccount && selectedMarket) {
-      actions.fetchOpenOrdersForMarket(selectedMarket)
-    }
-  }, [mangoAccount, selectedMarket])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
@@ -46,6 +37,7 @@ const BalanceAndOpenOrders = () => {
 const Balances = () => {
   const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const group = mangoStore((s) => s.group)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
@@ -124,8 +116,12 @@ const Balances = () => {
                     : 0}
                 </div>
               </td>
-              <td className="text-right font-mono">0.00</td>
-              <td className="text-right font-mono">0.00</td>
+              <td className="text-right font-mono">
+                {spotBalances[bank.mint.toString()]?.inOrders || 0.0}
+              </td>
+              <td className="text-right font-mono">
+                {spotBalances[bank.mint.toString()]?.unsettled || 0.0}
+              </td>
             </tr>
           )
         })}
@@ -145,6 +141,7 @@ const OpenOrders = () => {
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const selectedMarket = mangoStore.getState().selectedMarket.current
+      const actions = mangoStore.getState().actions
 
       if (!group || !mangoAccount) return
 
@@ -156,6 +153,7 @@ const OpenOrders = () => {
           o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
           o.orderId
         )
+        actions.fetchSerumOpenOrders()
         notify({
           type: 'success',
           title: 'Transaction successful',
@@ -175,10 +173,11 @@ const OpenOrders = () => {
   )
 
   return connected ? (
-    openOrders.length ? (
+    Object.values(openOrders).flat().length ? (
       <table>
         <thead>
           <tr className="">
+            <th className="text-left">Token</th>
             <th className="text-right">Side</th>
             <th className="text-right">Size</th>
             <th className="text-right">Price</th>
@@ -186,22 +185,33 @@ const OpenOrders = () => {
           </tr>
         </thead>
         <tbody>
-          {openOrders.map((o) => {
-            return (
-              <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
-                <td className="text-right">
-                  <SideBadge side={o.side} />
-                </td>
-                <td className="text-right">{o.size}</td>
-                <td className="text-right">{o.price}</td>
-                <td className="text-right">
-                  <Button size="small" onClick={() => handleCancelOrder(o)}>
-                    Cancel
-                  </Button>
-                </td>
-              </tr>
-            )
-          })}
+          {Object.entries(openOrders)
+            .map(([marketPk, orders]) => {
+              return orders.map((o) => {
+                const group = mangoStore.getState().group
+                return (
+                  <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
+                    <td className="">
+                      {
+                        group?.getSerum3MarketByPk(new PublicKey(marketPk))
+                          ?.name
+                      }
+                    </td>
+                    <td className="text-right">
+                      <SideBadge side={o.side} />
+                    </td>
+                    <td className="text-right">{o.size}</td>
+                    <td className="text-right">{o.price}</td>
+                    <td className="text-right">
+                      <Button size="small" onClick={() => handleCancelOrder(o)}>
+                        Cancel
+                      </Button>
+                    </td>
+                  </tr>
+                )
+              })
+            })
+            .flat()}
         </tbody>
       </table>
     ) : (
