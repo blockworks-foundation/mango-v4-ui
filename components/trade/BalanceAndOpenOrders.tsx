@@ -183,7 +183,7 @@ const OpenOrders = () => {
       <table>
         <thead>
           <tr>
-            <th className="text-left">{t('token')}</th>
+            <th className="text-left">{t('market')}</th>
             <th className="text-right">{t('side')}</th>
             <th className="text-right">{t('size')}</th>
             <th className="text-right">{t('price')}</th>
@@ -217,12 +217,14 @@ const OpenOrders = () => {
                 }
                 return (
                   <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
-                    <td className="flex items-center">
-                      <MarketLogos
-                        baseURI={baseLogoURI}
-                        quoteURI={quoteLogoURI}
-                      />
-                      {market?.name}
+                    <td>
+                      <div className="flex items-center">
+                        <MarketLogos
+                          baseURI={baseLogoURI}
+                          quoteURI={quoteLogoURI}
+                        />
+                        {market?.name}
+                      </div>
                     </td>
                     <td className="text-right">
                       <SideBadge side={o.side} />
