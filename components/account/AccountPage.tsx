@@ -1,8 +1,6 @@
 import {
   HealthType,
-  I80F48,
   toUiDecimalsForQuote,
-  ZERO_I80F48,
 } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -13,7 +11,6 @@ import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
-import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 import SimpleAreaChart from '../shared/SimpleAreaChart'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
@@ -75,6 +72,7 @@ const AccountPage = () => {
       const pubKey = mangoAccount.publicKey.toString()
       actions.fetchAccountPerformance(pubKey, 1)
       actions.fetchAccountInterestTotals(pubKey)
+      actions.fetchActivityFeed(pubKey)
     }
   }, [actions, mangoAccount])
 

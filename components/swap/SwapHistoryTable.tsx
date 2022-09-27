@@ -15,7 +15,7 @@ import { IconButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { TradeHistoryItem } from '@store/mangoStore'
+import { SwapHistoryItem } from '@store/mangoStore'
 import {
   countLeadingZeros,
   formatFixedDecimals,
@@ -23,10 +23,10 @@ import {
 } from '../../utils/numbers'
 
 const SwapHistoryTable = ({
-  tradeHistory,
+  swapHistory,
   loading,
 }: {
-  tradeHistory: Array<TradeHistoryItem>
+  swapHistory: Array<SwapHistoryItem>
   loading: boolean
 }) => {
   const { t } = useTranslation('common')
@@ -41,7 +41,7 @@ const SwapHistoryTable = ({
 
   return connected ? (
     !loading ? (
-      tradeHistory.length ? (
+      swapHistory.length ? (
         showTableView ? (
           <table className="min-w-full">
             <thead>
@@ -54,7 +54,7 @@ const SwapHistoryTable = ({
               </tr>
             </thead>
             <tbody>
-              {tradeHistory.map((h, index) => {
+              {swapHistory.map((h, index) => {
                 const {
                   block_datetime,
                   signature,
@@ -184,7 +184,7 @@ const SwapHistoryTable = ({
           </table>
         ) : (
           <div>
-            {tradeHistory.map((h) => {
+            {swapHistory.map((h) => {
               const {
                 block_datetime,
                 signature,

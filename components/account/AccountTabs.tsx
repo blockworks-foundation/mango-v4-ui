@@ -4,18 +4,17 @@ import TabButtons from '../shared/TabButtons'
 import TokenList from '../TokenList'
 import SwapHistoryTable from '../swap/SwapHistoryTable'
 import { useRouter } from 'next/router'
+import ActivityFeed from './ActivityFeed'
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
   const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const tradeHistory = mangoStore((s) => s.mangoAccount.stats.tradeHistory.data)
-  const loading = mangoStore((s) => s.mangoAccount.stats.tradeHistory.loading)
   const { pathname } = useRouter()
 
   useEffect(() => {
     if (mangoAccount) {
-      actions.fetchTradeHistory(mangoAccount.publicKey.toString())
+      actions.fetchSwapHistory(mangoAccount.publicKey.toString())
     }
   }, [actions, mangoAccount])
 
@@ -24,16 +23,27 @@ const AccountTabs = () => {
       <TabButtons
         activeValue={activeTab}
         onChange={(v) => setActiveTab(v)}
-        values={['balances', 'swap:swap-history']}
+        values={['balances', 'activity', 'swap:swap-history']}
         showBorders
       />
-      {activeTab === 'balances' ? (
-        <TokenList />
-      ) : (
-        <SwapHistoryTable tradeHistory={tradeHistory} loading={loading} />
-      )}
+      <TabContent activeTab={activeTab} />
     </>
   )
+}
+
+const TabContent = ({ activeTab }: { activeTab: string }) => {
+  const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
+  const loading = mangoStore((s) => s.mangoAccount.stats.swapHistory.loading)
+  switch (activeTab) {
+    case 'balances':
+      return <TokenList />
+    case 'activity':
+      return <ActivityFeed />
+    case 'swap:swap-history':
+      return <SwapHistoryTable swapHistory={swapHistory} loading={loading} />
+    default:
+      return <TokenList />
+  }
 }
 
 export default AccountTabs

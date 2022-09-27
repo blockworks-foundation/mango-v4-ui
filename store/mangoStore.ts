@@ -81,7 +81,22 @@ export interface PerformanceDataItem {
   transfer_balance: number
 }
 
-export interface TradeHistoryItem {
+export interface ActivityFeedItem {
+  activity_details: {
+    block_datetime: string
+    mango_account: string
+    quantity: number
+    signature: string
+    symbol: string
+    usd_equivalent: number
+    wallet_pk: string
+  }
+  activity_type: string
+  block_datetime: string
+  symbol: string
+}
+
+export interface SwapHistoryItem {
   block_datetime: string
   mango_account: string
   signature: string
@@ -110,6 +125,10 @@ interface ProfileDetails {
 }
 
 export type MangoStore = {
+  activityFeed: {
+    feed: ActivityFeedItem[]
+    loading: boolean
+  }
   coingeckoPrices: {
     data: any[]
     loading: boolean
@@ -129,7 +148,7 @@ export type MangoStore = {
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
       performance: { data: PerformanceDataItem[]; loading: boolean }
-      tradeHistory: { data: TradeHistoryItem[]; loading: boolean }
+      swapHistory: { data: SwapHistoryItem[]; loading: boolean }
     }
   }
   mangoAccounts: { accounts: MangoAccount[] }
@@ -179,6 +198,10 @@ export type MangoStore = {
   }
   actions: {
     fetchAccountInterestTotals: (mangoAccountPk: string) => Promise<void>
+    fetchActivityFeed: (
+      mangoAccountPk: string,
+      offset?: number
+    ) => Promise<void>
     fetchAccountPerformance: (
       mangoAccountPk: string,
       range: number
@@ -192,7 +215,7 @@ export type MangoStore = {
     fetchSerumOpenOrders: (ma?: MangoAccount) => Promise<void>
     fetchProfilePicture: (wallet: AnchorWallet) => void
     fetchProfileDetails: (walletPk: string) => void
-    fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
+    fetchSwapHistory: (mangoAccountPk: string) => Promise<void>
     fetchWalletTokens: (wallet: AnchorWallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: Wallet) => Promise<void>
     reloadGroup: () => Promise<void>
@@ -202,6 +225,10 @@ export type MangoStore = {
 const mangoStore = create<MangoStore>()(
   subscribeWithSelector((_set, get) => {
     return {
+      activityFeed: {
+        feed: [],
+        loading: false,
+      },
       coingeckoPrices: {
         data: [],
         loading: false,
@@ -221,7 +248,7 @@ const mangoStore = create<MangoStore>()(
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
-          tradeHistory: { data: [], loading: false },
+          swapHistory: { data: [], loading: false },
         },
       },
       mangoAccounts: { accounts: [] },
@@ -343,6 +370,48 @@ const mangoStore = create<MangoStore>()(
             notify({
               title: 'Failed to load account performance data',
               type: 'error',
+            })
+          }
+        },
+        fetchActivityFeed: async (mangoAccountPk: string, offset = 0) => {
+          const set = get().set
+          const currentFeed = mangoStore.getState().activityFeed.feed
+          set((state) => {
+            state.activityFeed.loading = true
+          })
+          try {
+            const response = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25`
+            )
+            const parsedResponse = await response.json()
+            const entries: any = Object.entries(parsedResponse).sort((a, b) =>
+              b[0].localeCompare(a[0])
+            )
+
+            const feed = currentFeed.concat(
+              entries
+                .map(([key, value]: Array<{ key: string; value: number }>) => {
+                  return { ...value, symbol: key }
+                })
+                .filter((x: string) => x)
+                .sort(
+                  (a: ActivityFeedItem, b: ActivityFeedItem) =>
+                    dayjs(b.block_datetime).unix() -
+                    dayjs(a.block_datetime).unix()
+                )
+            )
+
+            set((state) => {
+              state.activityFeed.feed = feed
+            })
+          } catch {
+            notify({
+              title: 'Failed to account activity feed',
+              type: 'error',
+            })
+          } finally {
+            set((state) => {
+              state.activityFeed.loading = false
             })
           }
         },
@@ -544,10 +613,10 @@ const mangoStore = create<MangoStore>()(
             console.error('Failed loading open orders ', e)
           }
         },
-        fetchTradeHistory: async (mangoAccountPk: string) => {
+        fetchSwapHistory: async (mangoAccountPk: string) => {
           const set = get().set
           set((state) => {
-            state.mangoAccount.stats.tradeHistory.loading = true
+            state.mangoAccount.stats.swapHistory.loading = true
           })
           try {
             const history = await fetch(
@@ -557,19 +626,19 @@ const mangoStore = create<MangoStore>()(
             const sortedHistory =
               parsedHistory && parsedHistory.length
                 ? parsedHistory.sort(
-                    (a: TradeHistoryItem, b: TradeHistoryItem) =>
+                    (a: SwapHistoryItem, b: SwapHistoryItem) =>
                       dayjs(b.block_datetime).unix() -
                       dayjs(a.block_datetime).unix()
                   )
                 : []
 
             set((state) => {
-              state.mangoAccount.stats.tradeHistory.data = sortedHistory
-              state.mangoAccount.stats.tradeHistory.loading = false
+              state.mangoAccount.stats.swapHistory.data = sortedHistory
+              state.mangoAccount.stats.swapHistory.loading = false
             })
           } catch {
             set((state) => {
-              state.mangoAccount.stats.tradeHistory.loading = false
+              state.mangoAccount.stats.swapHistory.loading = false
             })
             notify({
               title: 'Failed to load account performance data',
