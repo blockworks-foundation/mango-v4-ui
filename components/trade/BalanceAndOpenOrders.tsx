@@ -202,14 +202,16 @@ const OpenOrders = () => {
                   jupiterTokens,
                   new PublicKey(marketPk)
                 )
+                const { baseLogoURI, marketName, quoteLogoURI, quoteSymbol } =
+                  marketInfo
                 return (
                   <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
                     <td className="flex items-center">
                       <MarketLogos
-                        baseURI={marketInfo.baseLogoURI}
-                        quoteURI={marketInfo.quoteLogoURI}
+                        baseURI={baseLogoURI}
+                        quoteURI={quoteLogoURI}
                       />
-                      {marketInfo.marketName}
+                      {marketName}
                     </td>
                     <td className="text-right">
                       <SideBadge side={o.side} />
@@ -218,9 +220,7 @@ const OpenOrders = () => {
                     <td className="text-right">
                       <span>
                         {o.price}{' '}
-                        <span className="text-th-fgd-4">
-                          {marketInfo.quoteSymbol}
-                        </span>
+                        <span className="text-th-fgd-4">{quoteSymbol}</span>
                       </span>
                     </td>
                     <td className="text-right">
