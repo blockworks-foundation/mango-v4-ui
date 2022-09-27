@@ -29,7 +29,6 @@ const Tooltip = ({
         appendTo={() => document.body}
         maxWidth={maxWidth}
         interactive
-        inlinePositioning
         delay={delay}
         content={
           content ? (
