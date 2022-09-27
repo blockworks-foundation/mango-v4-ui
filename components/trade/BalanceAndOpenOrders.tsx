@@ -17,6 +17,7 @@ import Image from 'next/image'
 import { useCallback, useMemo, useState } from 'react'
 import { notify } from 'utils/notifications'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import { getJupiterLogosAndInfoForMarket } from 'utils/tokens'
 import MarketLogos from './MarketLogos'
 
 const TABS = ['Balances', 'Orders']
@@ -196,33 +197,19 @@ const OpenOrders = () => {
             .map(([marketPk, orders]) => {
               return orders.map((o) => {
                 const group = mangoStore.getState().group
-                const market = group?.getSerum3MarketByPk(
+                const marketInfo = getJupiterLogosAndInfoForMarket(
+                  group!,
+                  jupiterTokens,
                   new PublicKey(marketPk)
                 )
-                let baseLogoURI = ''
-                let quoteLogoURI = ''
-                const baseSymbol = group?.getFirstBankByTokenIndex(
-                  market!.baseTokenIndex
-                ).name
-                const quoteSymbol = group?.getFirstBankByTokenIndex(
-                  market!.quoteTokenIndex
-                ).name
-                if (jupiterTokens.length) {
-                  baseLogoURI = jupiterTokens.find(
-                    (t) => t.symbol === baseSymbol
-                  )!.logoURI
-                  quoteLogoURI = jupiterTokens.find(
-                    (t) => t.symbol === quoteSymbol
-                  )!.logoURI
-                }
                 return (
                   <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
                     <td className="flex items-center">
                       <MarketLogos
-                        baseURI={baseLogoURI}
-                        quoteURI={quoteLogoURI}
+                        baseURI={marketInfo.baseLogoURI}
+                        quoteURI={marketInfo.quoteLogoURI}
                       />
-                      {market?.name}
+                      {marketInfo.marketName}
                     </td>
                     <td className="text-right">
                       <SideBadge side={o.side} />
@@ -231,7 +218,9 @@ const OpenOrders = () => {
                     <td className="text-right">
                       <span>
                         {o.price}{' '}
-                        <span className="text-th-fgd-4">{quoteSymbol}</span>
+                        <span className="text-th-fgd-4">
+                          {marketInfo.quoteSymbol}
+                        </span>
                       </span>
                     </td>
                     <td className="text-right">
