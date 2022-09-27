@@ -15,7 +15,8 @@ import Decimal from 'decimal.js'
 import OrderbookIcon from '@components/icons/OrderbookIcon'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
-import SheenLoader from '@components/shared/SheenLoader'
+import { breakpoints } from '../../utils/theme'
+import { useViewport } from 'hooks/useViewport'
 
 function decodeBookL2(
   market: Market,
@@ -166,10 +167,13 @@ const Orderbook = () => {
   const nextOrderbookData = useRef<any>(null)
   const orderbookElRef = useRef<HTMLDivElement>(null)
   const previousGrouping = usePrevious(grouping)
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
 
   const depthArray = useMemo(() => {
-    return Array(depth).fill(0)
-  }, [depth])
+    const bookDepth = !isMobile ? depth : 7
+    return Array(bookDepth).fill(0)
+  }, [depth, isMobile])
 
   const serum3MarketExternal = useMemo(() => {
     const group = mangoStore.getState().group
