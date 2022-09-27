@@ -184,7 +184,7 @@ const OpenOrders = () => {
       <table>
         <thead>
           <tr>
-            <th className="text-left">{t('token')}</th>
+            <th className="text-left">{t('market')}</th>
             <th className="text-right">{t('side')}</th>
             <th className="text-right">{t('size')}</th>
             <th className="text-right">{t('price')}</th>
