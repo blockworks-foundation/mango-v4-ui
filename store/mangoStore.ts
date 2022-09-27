@@ -2,16 +2,12 @@ import dayjs from 'dayjs'
 import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import {
-  AnchorProvider,
-  Wallet as AnchorWallet,
-  web3,
-} from '@project-serum/anchor'
+import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { getProfilePicture, ProfilePicture } from '@solflare-wallet/pfp'
 import { TOKEN_LIST_URL } from '@jup-ag/core'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
-import { Wallet } from '@solana/wallet-adapter-react'
+import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
 import {
   MangoClient,
   Group,
@@ -39,7 +35,6 @@ import {
 import { retryFn } from '../utils'
 import { Orderbook, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
-import shallow from 'zustand/shallow'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
@@ -49,11 +44,8 @@ export const connection = new web3.Connection(
 )
 const options = AnchorProvider.defaultOptions()
 export const CLUSTER = 'mainnet-beta'
-const DEFAULT_PROVIDER = new AnchorProvider(
-  connection,
-  new EmptyWallet(Keypair.generate()),
-  options
-)
+const wallet = new EmptyWallet(Keypair.generate())
+const DEFAULT_PROVIDER = new AnchorProvider(connection, wallet, options)
 DEFAULT_PROVIDER.opts.skipPreflight = true
 const DEFAULT_CLIENT = MangoClient.connect(
   DEFAULT_PROVIDER,
@@ -117,6 +109,7 @@ export type MangoStore = {
   connected: boolean
   connection: Connection
   group: Group | undefined
+  groupLoaded: boolean
   client: MangoClient
   jupiterTokens: Token[]
   mangoAccount: {
@@ -187,14 +180,14 @@ export type MangoStore = {
     fetchGroup: () => Promise<void>
     fetchJupiterTokens: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
-    fetchMangoAccounts: (wallet: AnchorWallet) => Promise<void>
+    fetchMangoAccounts: (wallet: Wallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchSerumOpenOrders: (ma?: MangoAccount) => Promise<void>
-    fetchProfilePicture: (wallet: AnchorWallet) => void
+    fetchProfilePicture: (wallet: Wallet) => void
     fetchProfileDetails: (walletPk: string) => void
     fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
-    fetchWalletTokens: (wallet: AnchorWallet) => Promise<void>
-    connectMangoClientWithWallet: (wallet: Wallet) => Promise<void>
+    fetchWalletTokens: (wallet: Wallet) => Promise<void>
+    connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     reloadGroup: () => Promise<void>
   }
 }
@@ -209,6 +202,7 @@ const mangoStore = create<MangoStore>()(
       connected: false,
       connection,
       group: undefined,
+      groupLoaded: false,
       client: DEFAULT_CLIENT,
       jupiterTokens: [],
       mangoAccount: {
@@ -392,6 +386,7 @@ const mangoStore = create<MangoStore>()(
 
             set((state) => {
               state.group = group
+              state.groupLoaded = true
               state.serumMarkets = serumMarkets
               state.selectedMarket.current =
                 state.selectedMarket.current ||
@@ -577,7 +572,7 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        fetchWalletTokens: async (wallet: AnchorWallet) => {
+        fetchWalletTokens: async (wallet: Wallet) => {
           const set = get().set
           const connection = get().connection
 
@@ -628,12 +623,12 @@ const mangoStore = create<MangoStore>()(
               })
             })
         },
-        connectMangoClientWithWallet: async (wallet: Wallet) => {
+        connectMangoClientWithWallet: async (wallet: WalletAdapter) => {
           const set = get().set
           try {
             const provider = new AnchorProvider(
               connection,
-              wallet.adapter as unknown as AnchorWallet,
+              wallet.adapter as unknown as Wallet,
               options
             )
             provider.opts.skipPreflight = true
@@ -679,7 +674,7 @@ const mangoStore = create<MangoStore>()(
             console.error('Error fetching group', e)
           }
         },
-        async fetchProfilePicture(wallet: AnchorWallet) {
+        async fetchProfilePicture(wallet: Wallet) {
           const set = get().set
           const walletPk = wallet?.publicKey
           const connection = get().connection

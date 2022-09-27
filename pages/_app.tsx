@@ -1,5 +1,6 @@
+import '../styles/globals.css'
 import type { AppProps } from 'next/app'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { ConnectionProvider } from '@solana/wallet-adapter-react'
 import {
@@ -8,41 +9,16 @@ import {
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
-
-import '../styles/globals.css'
-import mangoStore from '@store/mangoStore'
-import useInterval from '../components/shared/useInterval'
 import Notifications from '../components/shared/Notification'
 import { ThemeProvider } from 'next-themes'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/Layout'
 import { ViewportProvider } from '../hooks/useViewport'
 import { WalletProvider } from '../components/wallet/WalletProvider'
+import MangoProvider from '@components/MangoProvider'
 
-const rehydrateStore = async () => {
-  const actions = mangoStore.getState().actions
-  actions.fetchGroup()
-  const mangoAccount = mangoStore.getState().mangoAccount.current
-  if (mangoAccount) {
-    // actions.reloadMangoAccount()
-  }
-}
-
-const HydrateStore = () => {
-  useInterval(() => {
-    rehydrateStore()
-  }, 5000)
-
-  useEffect(() => {
-    const actions = mangoStore.getState().actions
-    actions.fetchGroup().then(() => {
-      actions.fetchJupiterTokens()
-    })
-    actions.fetchCoingeckoPrices()
-  }, [])
-
-  return null
-}
+// Do not add hooks to this component that will cause unnecessary rerenders
+// Top level state hydrating/updating should go in MangoProvider
 
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Devnet
@@ -58,7 +34,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <>
-      <HydrateStore />
+      <MangoProvider />
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets}>
           <ThemeProvider defaultTheme="Dark">
