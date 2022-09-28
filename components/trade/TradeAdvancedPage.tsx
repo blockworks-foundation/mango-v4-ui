@@ -156,6 +156,8 @@ const TradeAdvancedPage = () => {
   }, [])
 
   const onBreakpointChange = useCallback((newBreakpoint: string) => {
+    console.log('newBreakpoints', newBreakpoint)
+
     setCurrentBreakpoint(newBreakpoint)
   }, [])
 
