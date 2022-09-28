@@ -1,7 +1,8 @@
 import LeverageSlider from '@components/swap/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
+import { notify } from 'utils/notifications'
 
 const SpotSlider = () => {
   const side = mangoStore((s) => s.tradeForm.side)
@@ -11,22 +12,26 @@ const SpotSlider = () => {
 
   const leverageMax = useMemo(() => {
     const group = mangoStore.getState().group
-    const set = mangoStore.getState().set
     if (!mangoAccount || !group || !selectedMarket) return 100
 
-    if (side === 'buy') {
-      const maxQuote = mangoAccount.getMaxQuoteForSerum3BidUi(
-        group,
-        selectedMarket.serumMarketExternal
-      )
-      return new Decimal(maxQuote.toString()).toNumber()
-    } else {
-      const maxBase = mangoAccount.getMaxBaseForSerum3AskUi(
-        group,
-        selectedMarket.serumMarketExternal
-      )
-
-      return new Decimal(maxBase.toString()).toNumber()
+    try {
+      if (side === 'buy') {
+        return mangoAccount.getMaxQuoteForSerum3BidUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+      } else {
+        return mangoAccount.getMaxBaseForSerum3AskUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+      }
+    } catch (e) {
+      notify({
+        type: 'error',
+        title: 'Error calculating max leverage.',
+      })
+      return 0
     }
   }, [side, selectedMarket, mangoAccount])
 

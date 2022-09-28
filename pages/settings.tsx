@@ -6,9 +6,11 @@ import { useRouter } from 'next/router'
 import ButtonGroup from '../components/forms/ButtonGroup'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import dayjs from 'dayjs'
-import { ORDERBOOK_FLASH_KEY } from 'utils/constants'
+import { ORDERBOOK_FLASH_KEY, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import Switch from '@components/forms/Switch'
 import { useCallback, useMemo } from 'react'
+import { CheckCircleIcon } from '@heroicons/react/20/solid'
+import Image from 'next/image'
 
 require('dayjs/locale/en')
 require('dayjs/locale/es')
@@ -38,6 +40,13 @@ export const LANGS = [
   { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
 ]
 
+export const EXPLORERS = [
+  { name: 'solana-explorer', url: 'https://explorer.solana.com/tx/' },
+  { name: 'solscan', url: 'https://solscan.io/tx/' },
+  { name: 'solana-beach', url: 'https://solanabeach.io/transaction/' },
+  { name: 'solanafm', url: 'https://solana.fm/tx/' },
+]
+
 const Settings: NextPage = () => {
   const { t } = useTranslation('common')
   const { theme, setTheme } = useTheme()
@@ -47,6 +56,10 @@ const Settings: NextPage = () => {
   const [showOrderbookFlash, setShowOrderbookFlash] = useLocalStorageState(
     ORDERBOOK_FLASH_KEY,
     true
+  )
+  const [preferredExplorer, setPreferredExplorer] = useLocalStorageState(
+    PREFERRED_EXPLORER_KEY,
+    EXPLORERS[0]
   )
   const themes = useMemo(() => {
     return [t('settings:light'), t('settings:dark'), t('settings:mango')]
@@ -95,6 +108,31 @@ const Settings: NextPage = () => {
               checked={showOrderbookFlash}
               onChange={(checked) => setShowOrderbookFlash(checked)}
             />
+          </div>
+        </div>
+        <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-8 lg:col-start-3">
+          <h2 className="mb-4 text-base">{t('settings:preferred-explorer')}</h2>
+          <div className="space-y-2">
+            {EXPLORERS.map((ex) => (
+              <button
+                className="default-transition flex w-full items-center justify-between rounded-md bg-th-bkg-2 p-4 hover:bg-th-bkg-3"
+                onClick={() => setPreferredExplorer(ex)}
+                key={ex.name}
+              >
+                <div className="flex items-center space-x-2">
+                  <Image
+                    alt=""
+                    width="24"
+                    height="24"
+                    src={`/explorer-logos/${ex.name}.png`}
+                  />
+                  <p>{t(`settings:${ex.name}`)}</p>
+                </div>
+                {preferredExplorer.url === ex.url ? (
+                  <CheckCircleIcon className="h-5 w-5 text-th-green" />
+                ) : null}
+              </button>
+            ))}
           </div>
         </div>
       </div>
