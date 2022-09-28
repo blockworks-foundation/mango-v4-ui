@@ -174,7 +174,7 @@ const SwapHistoryTable = ({
                       </div>
                     </td>
                     <td>
-                      <div className="h-6 w-6">
+                      <div className="flex items-center justify-end">
                         <Tooltip
                           content={`View on ${t(
                             `settings:${preferredExplorer.name}`
@@ -186,12 +186,14 @@ const SwapHistoryTable = ({
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            <Image
-                              alt=""
-                              width="24"
-                              height="24"
-                              src={`/explorer-logos/${preferredExplorer.name}.png`}
-                            />
+                            <div className="h-6 w-6">
+                              <Image
+                                alt=""
+                                width="24"
+                                height="24"
+                                src={`/explorer-logos/${preferredExplorer.name}.png`}
+                              />
+                            </div>
                           </a>
                         </Tooltip>
                       </div>
