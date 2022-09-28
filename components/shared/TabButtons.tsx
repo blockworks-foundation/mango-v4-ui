@@ -4,7 +4,7 @@ import { FunctionComponent } from 'react'
 interface TabButtonsProps {
   activeValue: string
   onChange: (x: any) => void
-  values: Array<any>
+  values: [string, number][]
   showBorders?: boolean
   rounded?: boolean
   fillWidth?: boolean
@@ -26,20 +26,20 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
         showBorders ? 'border-b border-th-bkg-3' : ''
       }`}
     >
-      {values.map((v, i) => (
-        <div className={fillWidth ? 'flex-1' : ''} key={v + i}>
+      {values.map(([label, count], i) => (
+        <div className={fillWidth ? 'flex-1' : ''} key={label + i}>
           <button
             className={`default-transition h-12 w-full px-6 font-bold ${
               rounded ? 'rounded-md' : 'rounded-none'
             } ${showBorders ? 'border-r border-th-bkg-3' : ''} ${
-              v === activeValue
+              label === activeValue
                 ? 'bg-th-bkg-2 text-th-primary'
                 : 'hover:cursor-pointer hover:text-th-fgd-2'
             }`}
-            key={`${v}${i}`}
-            onClick={() => onChange(v)}
+            key={`${label}${i}`}
+            onClick={() => onChange(label)}
           >
-            {t(v)}
+            {t(label)} {count ? ` (${count})` : null}
           </button>
         </div>
       ))}

@@ -1,18 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-// import { useTranslation } from 'next-i18next'
-import dynamic from 'next/dynamic'
-import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
-
-import mangoStore from '@store/mangoStore'
-import { GRID_LAYOUT_KEY } from 'utils/constants'
-import useLocalStorageState from 'hooks/useLocalStorageState'
-import { breakpoints } from 'utils/theme'
-import { useViewport } from 'hooks/useViewport'
 import Orderbook from './Orderbook'
 import AdvancedMarketHeader from './AdvancedMarketHeader'
 import AdvancedTradeForm from './AdvancedTradeForm'
-import BalanceAndOpenOrders from './BalanceAndOpenOrders'
-import TradingViewChart from './TradingViewChart'
+import TradeInfoTabs from './TradeInfoTabs'
 
 const MobileTradeAdvancedPage = () => {
   return (
@@ -30,7 +20,7 @@ const MobileTradeAdvancedPage = () => {
         <Orderbook />
       </div>
       <div className="col-span-2 border-t border-th-bkg-3 sm:col-span-3">
-        <BalanceAndOpenOrders />
+        <TradeInfoTabs />
       </div>
     </div>
   )

@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-// import { useTranslation } from 'next-i18next'
+import { useCallback, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
 
@@ -8,10 +7,9 @@ import { GRID_LAYOUT_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { breakpoints } from 'utils/theme'
 import { useViewport } from 'hooks/useViewport'
-import Orderbook from './Orderbook'
 import AdvancedMarketHeader from './AdvancedMarketHeader'
 import AdvancedTradeForm from './AdvancedTradeForm'
-import BalanceAndOpenOrders from './BalanceAndOpenOrders'
+import TradeInfoTabs from './TradeInfoTabs'
 import MobileTradeAdvancedPage from './MobileTradeAdvancedPage'
 import OrderbookAndTrades from './OrderbookAndTrades'
 
@@ -195,7 +193,7 @@ const TradeAdvancedPage = () => {
         </div>
       </div>
       <div key="balances">
-        <BalanceAndOpenOrders />
+        <TradeInfoTabs />
       </div>
       <div
         key="trade-form"

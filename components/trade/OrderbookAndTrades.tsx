@@ -3,6 +3,11 @@ import { useState } from 'react'
 import Orderbook from './Orderbook'
 import RecentTrades from './RecentTrades'
 
+const TABS: [string, number][] = [
+  ['book', 0],
+  ['trades', 0],
+]
+
 const OrderbookAndTrades = () => {
   const [activeTab, setActiveTab] = useState('book')
   return (
@@ -11,7 +16,7 @@ const OrderbookAndTrades = () => {
         <TabButtons
           activeValue={activeTab}
           onChange={(tab: string) => setActiveTab(tab)}
-          values={['book', 'trades']}
+          values={TABS}
           fillWidth
         />
       </div>
