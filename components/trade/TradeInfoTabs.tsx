@@ -3,15 +3,19 @@ import TabButtons from '@components/shared/TabButtons'
 import OpenOrders from './OpenOrders'
 import Balances from './TradeBalances'
 import UnsettledTrades from './UnsettledTrades'
-
-const TABS = ['Balances', 'Orders', 'Unsettled P&L']
+import mangoStore from '@store/mangoStore'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('Balances')
+  const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
 
   const tabsWithCount: [string, number][] = useMemo(() => {
-    return TABS.map((t) => [t, 0])
-  }, [])
+    return [
+      ['Balances', 0],
+      ['Orders', Object.values(openOrders).flat().length],
+      ['Unsettled P&L', 0],
+    ]
+  }, [openOrders])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
