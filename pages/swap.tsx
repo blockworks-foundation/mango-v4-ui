@@ -5,7 +5,12 @@ import SwapPage from '../components/swap/SwapPage'
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common', 'profile', 'swap'])),
+      ...(await serverSideTranslations(locale, [
+        'common',
+        'profile',
+        'swap',
+        'settings',
+      ])),
     },
   }
 }

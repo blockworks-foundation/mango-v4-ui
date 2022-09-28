@@ -21,6 +21,10 @@ import {
   formatFixedDecimals,
   trimDecimals,
 } from '../../utils/numbers'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
+import { EXPLORERS } from 'pages/settings'
+import Tooltip from '@components/shared/Tooltip'
 
 const SwapHistoryTable = ({
   tradeHistory,
@@ -29,11 +33,15 @@ const SwapHistoryTable = ({
   tradeHistory: Array<TradeHistoryItem>
   loading: boolean
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'settings'])
   const { connected } = useWallet()
   const [showSwapDetails, setSwapDetails] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const [preferredExplorer] = useLocalStorageState(
+    PREFERRED_EXPLORER_KEY,
+    EXPLORERS[0]
+  )
 
   const handleShowSwapDetails = (signature: string) => {
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
@@ -166,15 +174,26 @@ const SwapHistoryTable = ({
                       </div>
                     </td>
                     <td>
-                      <div className="flex flex-col text-right">
-                        <a
-                          className="text-th-primary"
-                          href={`https://explorer.solana.com/tx/${signature}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      <div className="h-6 w-6">
+                        <Tooltip
+                          content={`View on ${t(
+                            `settings:${preferredExplorer.name}`
+                          )}`}
+                          placement="top-end"
                         >
-                          <ArrowTopRightOnSquareIcon className="h-5 w-5 text-th-fgd-4" />
-                        </a>
+                          <a
+                            href={`${preferredExplorer.url}${signature}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Image
+                              alt=""
+                              width="24"
+                              height="24"
+                              src={`/explorer-logos/${preferredExplorer.name}.png`}
+                            />
+                          </a>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>
@@ -320,16 +339,22 @@ const SwapHistoryTable = ({
                         <p className="text-xs text-th-fgd-3">
                           {t('transaction')}
                         </p>
-                        <p className="text-th-fgd-1">
-                          <a
-                            className="text-th-primary"
-                            href={`https://solscan.io/tx/${signature}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View on Solscan
-                          </a>
-                        </p>
+                        <a
+                          className="default-transition flex items-center text-th-fgd-1 hover:text-th-fgd-3"
+                          href={`${preferredExplorer.url}${signature}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Image
+                            alt=""
+                            width="20"
+                            height="20"
+                            src={`/explorer-logos/${preferredExplorer.name}.png`}
+                          />
+                          <span className="ml-1.5 text-base">{`View on ${t(
+                            `settings:${preferredExplorer.name}`
+                          )}`}</span>
+                        </a>
                       </div>
                     </div>
                   </Transition>

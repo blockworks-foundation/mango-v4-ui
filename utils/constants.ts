@@ -16,6 +16,8 @@ export const SIDEBAR_COLLAPSE_KEY = 'sidebar-0.1'
 
 export const ONBOARDING_TOUR_KEY = 'showOnboardingTour'
 
+export const PREFERRED_EXPLORER_KEY = 'preferredExplorer'
+
 export const PROFILE_CATEGORIES = [
   'borrower',
   'day-trader',
