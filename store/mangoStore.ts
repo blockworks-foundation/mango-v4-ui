@@ -73,7 +73,7 @@ export interface PerformanceDataItem {
   transfer_balance: number
 }
 
-export interface ActivityFeedItem {
+export interface DepositWithdrawFeedItem {
   activity_details: {
     block_datetime: string
     mango_account: string
@@ -82,6 +82,25 @@ export interface ActivityFeedItem {
     symbol: string
     usd_equivalent: number
     wallet_pk: string
+  }
+  activity_type: string
+  block_datetime: string
+  symbol: string
+}
+
+export interface LiquidationFeedItem {
+  activity_details: {
+    asset_amount: number
+    asset_price: number
+    asset_symbol: string
+    block_datetime: string
+    liab_amount: number
+    liab_price: number
+    liab_symbol: string
+    mango_account: string
+    mango_group: string
+    side: string
+    signature: string
   }
   activity_type: string
   block_datetime: string
@@ -118,7 +137,7 @@ interface ProfileDetails {
 
 export type MangoStore = {
   activityFeed: {
-    feed: ActivityFeedItem[]
+    feed: Array<DepositWithdrawFeedItem | LiquidationFeedItem>
     loading: boolean
   }
   coingeckoPrices: {
@@ -375,7 +394,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25`
+              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=8nHXz5wvZw6mVySbgXLfc9tx68ep9aGSy44ZaNiY9Viv&offset=${offset}&limit=25`
             )
             const parsedResponse = await response.json()
             const entries: any = Object.entries(parsedResponse).sort((a, b) =>
@@ -389,7 +408,10 @@ const mangoStore = create<MangoStore>()(
                 })
                 .filter((x: string) => x)
                 .sort(
-                  (a: ActivityFeedItem, b: ActivityFeedItem) =>
+                  (
+                    a: DepositWithdrawFeedItem | LiquidationFeedItem,
+                    b: DepositWithdrawFeedItem | LiquidationFeedItem
+                  ) =>
                     dayjs(b.block_datetime).unix() -
                     dayjs(a.block_datetime).unix()
                 )

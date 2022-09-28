@@ -1,76 +1,129 @@
-import { LinkButton } from '@components/shared/Button'
-import mangoStore from '@store/mangoStore'
+import { IconButton } from '@components/shared/Button'
+import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import mangoStore, {
+  DepositWithdrawFeedItem,
+  LiquidationFeedItem,
+} from '@store/mangoStore'
 import dayjs from 'dayjs'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useState } from 'react'
-import { formatFixedDecimals } from 'utils/numbers'
+import Image from 'next/image'
+import { EXPLORERS } from 'pages/settings'
+import { useState } from 'react'
+import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
+import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import ActivityFeedTable from './ActivityFeedTable'
 
 const ActivityFeed = () => {
-  const { t } = useTranslation(['common', 'activity'])
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
-  const actions = mangoStore((s) => s.actions)
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
-  const [offset, setOffset] = useState(0)
+  const [showActivityDetail, setShowActivityDetail] = useState(null)
 
-  const handleShowMore = useCallback(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount) return
-    setOffset(offset + 25)
-    actions.fetchActivityFeed(mangoAccount.publicKey.toString(), offset + 25)
-  }, [actions, offset])
+  const handleShowActivityDetails = (activity: any) => {
+    setShowActivityDetail(activity)
+  }
 
-  return (
-    <>
-      <table className="min-w-full">
-        <thead>
-          <tr>
-            <th className="bg-th-bkg-1 text-left">{t('date')}</th>
-            <th className="bg-th-bkg-1 text-right">{t('activity:activity')}</th>
-            <th className="bg-th-bkg-1 text-right">{t('activity:credit')}</th>
-            <th className="bg-th-bkg-1 text-right">{t('activity:debit')}</th>
-            <th className="bg-th-bkg-1 text-right">
-              {t('activity:activity-value')}
-            </th>
-            {/* <th className="bg-th-bkg-1 text-right">{t('account-value')}</th> */}
-          </tr>
-        </thead>
-        <tbody>
-          {activityFeed.map((activity, i) => {
-            const { activity_type, block_datetime } = activity
-            const { symbol, quantity, usd_equivalent } =
-              activity.activity_details
-            const credit =
-              activity_type === 'Deposit' ? `${quantity} ${symbol}` : '0'
-            const debit =
-              activity_type === 'Withdraw' ? `${quantity} ${symbol}` : '0'
-            return (
-              <tr key={block_datetime + i} className="text-sm">
-                <td>
-                  <p className="font-body tracking-wide">
-                    {dayjs(block_datetime).format('ddd D MMM')}
-                  </p>
-                  <p className="text-xs text-th-fgd-3">
-                    {dayjs(block_datetime).format('h:mma')}
-                  </p>
-                </td>
-                <td className="text-right">{activity_type}</td>
-                <td className="text-right">{credit}</td>
-                <td className="text-right">{debit}</td>
-                <td className="text-right">
-                  {formatFixedDecimals(usd_equivalent, true)}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-      {activityFeed.length % 25 === 0 ? (
-        <div className="flex justify-center pt-6">
-          <LinkButton onClick={handleShowMore}>Show More</LinkButton>
-        </div>
-      ) : null}
-    </>
+  return !showActivityDetail ? (
+    <ActivityFeedTable
+      activityFeed={activityFeed}
+      handleShowActivityDetails={handleShowActivityDetails}
+    />
+  ) : (
+    <ActivityDetails
+      activity={showActivityDetail}
+      setShowActivityDetail={setShowActivityDetail}
+    />
   )
 }
 
 export default ActivityFeed
+
+const ActivityDetails = ({
+  activity,
+  setShowActivityDetail,
+}: {
+  activity: LiquidationFeedItem
+  setShowActivityDetail: (x: any) => void
+}) => {
+  console.log(activity)
+  const { t } = useTranslation(['common', 'activity'])
+  const [preferredExplorer] = useLocalStorageState(
+    PREFERRED_EXPLORER_KEY,
+    EXPLORERS[0]
+  )
+  const { block_datetime } = activity
+  const {
+    asset_amount,
+    asset_price,
+    asset_symbol,
+    liab_amount,
+    liab_price,
+    liab_symbol,
+    signature,
+  } = activity.activity_details
+  return (
+    <div>
+      <div className="flex items-center p-6">
+        <IconButton
+          className="mr-4"
+          onClick={() => setShowActivityDetail(null)}
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+        </IconButton>
+        <h2 className="text-lg">Liquidation Details</h2>
+      </div>
+      <div className="grid grid-cols-3 gap-6 px-6">
+        <div className="col-span-1">
+          <p className="mb-0.5 text-sm">{t('date')}</p>
+          <p className="text-th-fgd-1">
+            {dayjs(block_datetime).format('ddd D MMM')}
+          </p>
+          <p className="text-xs text-th-fgd-3">
+            {dayjs(block_datetime).format('h:mma')}
+          </p>
+        </div>
+        <div className="col-span-1">
+          <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
+          <p className="text-th-fgd-1">
+            {`${formatDecimal(
+              asset_amount
+            )} ${asset_symbol} at ${formatFixedDecimals(asset_price, true)}`}
+          </p>
+          <p className="text-xs text-th-fgd-3">
+            {formatFixedDecimals(asset_price * asset_amount, true)}
+          </p>
+        </div>
+        <div className="col-span-1">
+          <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
+          <p className="text-th-fgd-1">
+            {`${formatDecimal(
+              liab_amount
+            )} ${liab_symbol} at ${formatFixedDecimals(liab_price, true)}`}
+          </p>
+          <p className="text-xs text-th-fgd-3">
+            {formatFixedDecimals(liab_price * liab_amount, true)}
+          </p>
+        </div>
+      </div>
+      <div className="col-span-3 mt-8 flex justify-center border-y border-th-bkg-3 py-3">
+        {/* <p className="mb-0.5 text-sm">{t('transaction')}</p> */}
+        <a
+          className="default-transition flex items-center text-th-fgd-1 hover:text-th-fgd-3"
+          href={`${preferredExplorer.url}${signature}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            alt=""
+            width="20"
+            height="20"
+            src={`/explorer-logos/${preferredExplorer.name}.png`}
+          />
+          <span className="ml-2 text-base">{`View on ${t(
+            `settings:${preferredExplorer.name}`
+          )}`}</span>
+        </a>
+      </div>
+    </div>
+  )
+}
