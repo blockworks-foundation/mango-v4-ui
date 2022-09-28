@@ -1,0 +1,12 @@
+{
+    "activity": "Activity",
+    "activity-value": "Activity Value",
+    "asset-liquidated": "Asset Liquidated",
+    "asset-returned": "Asset Returned",
+    "credit": "Credit",
+    "debit": "Debit",
+    "deposit": "Deposit",
+    "liquidation": "Liquidation",
+    "liquidation-details": "Liquidation Details",
+    "withdraw": "Withdraw"
+}

@@ -23,7 +23,7 @@ const AccountTabs = () => {
       <TabButtons
         activeValue={activeTab}
         onChange={(v) => setActiveTab(v)}
-        values={['balances', 'activity', 'swap:swap-history']}
+        values={['balances', 'activity:activity', 'swap:swap-history']}
         showBorders
       />
       <TabContent activeTab={activeTab} />
@@ -37,7 +37,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case 'balances':
       return <TokenList />
-    case 'activity':
+    case 'activity:activity':
       return <ActivityFeed />
     case 'swap:swap-history':
       return <SwapHistoryTable swapHistory={swapHistory} loading={loading} />

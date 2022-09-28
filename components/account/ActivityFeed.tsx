@@ -1,9 +1,6 @@
 import { IconButton } from '@components/shared/Button'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
-import mangoStore, {
-  DepositWithdrawFeedItem,
-  LiquidationFeedItem,
-} from '@store/mangoStore'
+import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
@@ -45,8 +42,7 @@ const ActivityDetails = ({
   activity: LiquidationFeedItem
   setShowActivityDetail: (x: any) => void
 }) => {
-  console.log(activity)
-  const { t } = useTranslation(['common', 'activity'])
+  const { t } = useTranslation(['common', 'activity', 'settings'])
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
@@ -70,9 +66,9 @@ const ActivityDetails = ({
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
-        <h2 className="text-lg">Liquidation Details</h2>
+        <h2 className="text-lg">{t('activity:liquidation-details')}</h2>
       </div>
-      <div className="grid grid-cols-3 gap-6 px-6">
+      <div className="grid grid-cols-1 gap-4 px-6 lg:grid-cols-3">
         <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('date')}</p>
           <p className="text-th-fgd-1">
@@ -84,29 +80,34 @@ const ActivityDetails = ({
         </div>
         <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
-          <p className="text-th-fgd-1">
-            {`${formatDecimal(
-              asset_amount
-            )} ${asset_symbol} at ${formatFixedDecimals(asset_price, true)}`}
+          <p className="font-mono text-th-fgd-1">
+            {formatDecimal(asset_amount)}{' '}
+            <span className="font-body tracking-wide">{asset_symbol}</span>
+            <span className="ml-2 font-body tracking-wide text-th-fgd-3">
+              at
+            </span>{' '}
+            {formatFixedDecimals(asset_price, true)}
           </p>
-          <p className="text-xs text-th-fgd-3">
+          <p className="font-mono text-xs text-th-fgd-3">
             {formatFixedDecimals(asset_price * asset_amount, true)}
           </p>
         </div>
         <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
-          <p className="text-th-fgd-1">
-            {`${formatDecimal(
-              liab_amount
-            )} ${liab_symbol} at ${formatFixedDecimals(liab_price, true)}`}
+          <p className="font-mono text-th-fgd-1">
+            {formatDecimal(liab_amount)}{' '}
+            <span className="font-body tracking-wide">{liab_symbol}</span>
+            <span className="ml-2 font-body tracking-wide text-th-fgd-3">
+              at
+            </span>{' '}
+            {formatFixedDecimals(liab_price, true)}
           </p>
-          <p className="text-xs text-th-fgd-3">
+          <p className="font-mono text-xs text-th-fgd-3">
             {formatFixedDecimals(liab_price * liab_amount, true)}
           </p>
         </div>
       </div>
       <div className="col-span-3 mt-8 flex justify-center border-y border-th-bkg-3 py-3">
-        {/* <p className="mb-0.5 text-sm">{t('transaction')}</p> */}
         <a
           className="default-transition flex items-center text-th-fgd-1 hover:text-th-fgd-3"
           href={`${preferredExplorer.url}${signature}`}

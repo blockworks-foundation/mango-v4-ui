@@ -10,6 +10,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'close-account',
         'profile',
         'swap',
+        'activity',
       ])),
     },
   }
