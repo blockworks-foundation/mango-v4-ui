@@ -62,7 +62,7 @@ const Settings: NextPage = () => {
     EXPLORERS[0]
   )
   const themes = useMemo(() => {
-    return [t('settings:light'), t('settings:dark'), t('settings:mango')]
+    return [t('settings:light'), t('settings:mango'), t('settings:dark')]
   }, [t])
 
   const handleLangChange = useCallback(
