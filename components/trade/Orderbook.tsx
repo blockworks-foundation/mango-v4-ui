@@ -611,7 +611,9 @@ const OrderbookRow = ({
           className={`absolute left-0 opacity-70 ${
             side === 'buy' ? `bg-th-green` : `bg-th-red`
           }`}
-          data-width={(cumulativeSizePercent / 100) * sizePercent + '%'}
+          data-width={
+            Math.max((cumulativeSizePercent / 100) * sizePercent, 0.1) + '%'
+          }
         />
       </>
     </div>
