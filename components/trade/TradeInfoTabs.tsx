@@ -13,7 +13,7 @@ const TradeInfoTabs = () => {
     return [
       ['Balances', 0],
       ['Orders', Object.values(openOrders).flat().length],
-      ['Unsettled P&L', 0],
+      ['Unsettled', 0],
     ]
   }, [openOrders])
 
