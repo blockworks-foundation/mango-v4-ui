@@ -1,4 +1,5 @@
 import { IconButton, LinkButton } from '@components/shared/Button'
+import SheenLoader from '@components/shared/SheenLoader'
 import Tooltip from '@components/shared/Tooltip'
 import { Transition } from '@headlessui/react'
 import {
@@ -23,13 +24,16 @@ import { breakpoints } from 'utils/theme'
 const ActivityFeedTable = ({
   activityFeed,
   handleShowActivityDetails,
+  params,
 }: {
   activityFeed: any
   handleShowActivityDetails: (x: LiquidationFeedItem) => void
+  params: string[]
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const { connected } = useWallet()
   const actions = mangoStore((s) => s.actions)
+  const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
   const [offset, setOffset] = useState(0)
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
@@ -40,10 +44,18 @@ const ActivityFeedTable = ({
 
   const handleShowMore = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const set = mangoStore.getState().set
+    set((s) => {
+      s.activityFeed.loading = true
+    })
     if (!mangoAccount) return
     setOffset(offset + 25)
-    actions.fetchActivityFeed(mangoAccount.publicKey.toString(), offset + 25)
-  }, [actions, offset])
+    actions.fetchActivityFeed(
+      mangoAccount.publicKey.toString(),
+      offset + 25,
+      'activity-type=' + params.toString()
+    )
+  }, [actions, offset, params])
 
   const getCreditAndDebit = (activity: any) => {
     const { activity_type } = activity
@@ -97,7 +109,7 @@ const ActivityFeedTable = ({
   }
 
   return connected ? (
-    activityFeed.length ? (
+    activityFeed.length || loadActivityFeed ? (
       <>
         {showTableView ? (
           <table className="min-w-full">
@@ -215,7 +227,16 @@ const ActivityFeedTable = ({
             ))}
           </div>
         )}
-        {activityFeed.length % 25 === 0 ? (
+        {loadActivityFeed ? (
+          <div className="mt-2 space-y-2">
+            {[...Array(4)].map((i) => (
+              <SheenLoader className="flex flex-1" key={i}>
+                <div className="h-8 w-full rounded bg-th-bkg-2" />
+              </SheenLoader>
+            ))}
+          </div>
+        ) : null}
+        {activityFeed.length && activityFeed.length % 25 === 0 ? (
           <div className="flex justify-center pt-6">
             <LinkButton onClick={handleShowMore}>Show More</LinkButton>
           </div>

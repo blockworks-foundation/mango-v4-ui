@@ -373,18 +373,11 @@ const SwapHistoryTable = ({
       )
     ) : (
       <div className="mt-8 space-y-2">
-        <SheenLoader className="flex flex-1">
-          <div className="h-8 w-full rounded bg-th-bkg-2" />
-        </SheenLoader>
-        <SheenLoader className="flex flex-1">
-          <div className="h-16 w-full rounded bg-th-bkg-2" />
-        </SheenLoader>
-        <SheenLoader className="flex flex-1">
-          <div className="h-16 w-full rounded bg-th-bkg-2" />
-        </SheenLoader>
-        <SheenLoader className="flex flex-1">
-          <div className="h-16 w-full rounded bg-th-bkg-2" />
-        </SheenLoader>
+        {[...Array(4)].map((i) => (
+          <SheenLoader className="flex flex-1" key={i}>
+            <div className="h-8 w-full rounded bg-th-bkg-2" />
+          </SheenLoader>
+        ))}
       </div>
     )
   ) : (

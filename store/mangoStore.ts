@@ -212,7 +212,8 @@ export type MangoStore = {
     fetchAccountInterestTotals: (mangoAccountPk: string) => Promise<void>
     fetchActivityFeed: (
       mangoAccountPk: string,
-      offset?: number
+      offset?: number,
+      params?: string
     ) => Promise<void>
     fetchAccountPerformance: (
       mangoAccountPk: string,
@@ -239,7 +240,7 @@ const mangoStore = create<MangoStore>()(
     return {
       activityFeed: {
         feed: [],
-        loading: false,
+        loading: true,
       },
       coingeckoPrices: {
         data: [],
@@ -386,15 +387,19 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        fetchActivityFeed: async (mangoAccountPk: string, offset = 0) => {
+        fetchActivityFeed: async (
+          mangoAccountPk: string,
+          offset = 0,
+          params = ''
+        ) => {
           const set = get().set
           const currentFeed = mangoStore.getState().activityFeed.feed
-          set((state) => {
-            state.activityFeed.loading = true
-          })
+          // set((state) => {
+          //   state.activityFeed.loading = true
+          // })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=8nHXz5wvZw6mVySbgXLfc9tx68ep9aGSy44ZaNiY9Viv&offset=${offset}&limit=25`
+              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25&${params}`
             )
             const parsedResponse = await response.json()
             const entries: any = Object.entries(parsedResponse).sort((a, b) =>

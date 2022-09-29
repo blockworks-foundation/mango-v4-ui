@@ -33,7 +33,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
               rounded ? 'rounded-md' : 'rounded-none'
             } ${showBorders ? 'border-r border-th-bkg-3' : ''} ${
               v === activeValue
-                ? 'bg-th-bkg-2 text-th-primary'
+                ? 'bg-th-bkg-3 text-th-primary'
                 : 'hover:cursor-pointer hover:text-th-fgd-2'
             }`}
             key={`${v}${i}`}
