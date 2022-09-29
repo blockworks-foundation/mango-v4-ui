@@ -58,13 +58,13 @@ const TradeAdvancedPage = () => {
     return {
       xxxl: [
         { i: 'market-header', x: 0, y: 0, w: 16, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 16, h: 676 },
+        { i: 'tv-chart', x: 0, y: 1, w: 16, h: 640 },
         {
           i: 'balances',
           x: 0,
           y: 2,
           w: 16,
-          h: getHeight(innerHeight, 300, 676 + marketHeaderHeight),
+          h: getHeight(innerHeight, 300, 640 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
@@ -77,13 +77,13 @@ const TradeAdvancedPage = () => {
       ],
       xxl: [
         { i: 'market-header', x: 0, y: 0, w: 15, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 15, h: 576 },
+        { i: 'tv-chart', x: 0, y: 1, w: 15, h: 536 },
         {
           i: 'balances',
           x: 0,
           y: 2,
           w: 15,
-          h: getHeight(innerHeight, 300, 576 + marketHeaderHeight),
+          h: getHeight(innerHeight, 300, 536 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
@@ -96,13 +96,13 @@ const TradeAdvancedPage = () => {
       ],
       xl: [
         { i: 'market-header', x: 0, y: 0, w: 14, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
+        { i: 'tv-chart', x: 0, y: 1, w: 14, h: 488 },
         {
           i: 'balances',
           x: 0,
           y: 2,
           w: 14,
-          h: getHeight(innerHeight, 300, 520 + marketHeaderHeight),
+          h: getHeight(innerHeight, 300, 488 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
@@ -115,13 +115,13 @@ const TradeAdvancedPage = () => {
       ],
       lg: [
         { i: 'market-header', x: 0, y: 0, w: 14, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 14, h: 520 },
+        { i: 'tv-chart', x: 0, y: 1, w: 14, h: 488 },
         {
           i: 'balances',
           x: 0,
           y: 2,
           w: 14,
-          h: getHeight(innerHeight, 300, 520 + marketHeaderHeight),
+          h: getHeight(innerHeight, 300, 488 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
@@ -134,10 +134,10 @@ const TradeAdvancedPage = () => {
       ],
       md: [
         { i: 'market-header', x: 0, y: 0, w: 18, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 18, h: 520 },
+        { i: 'tv-chart', x: 0, y: 1, w: 18, h: 488 },
         { i: 'balances', x: 0, y: 2, w: 18, h: 488 },
-        { i: 'orderbook', x: 18, y: 2, w: 6, h: 489 },
-        { i: 'trade-form', x: 18, y: 1, w: 6, h: 568 },
+        { i: 'orderbook', x: 18, y: 2, w: 6, h: 488 },
+        { i: 'trade-form', x: 18, y: 1, w: 6, h: 488 },
       ],
     }
   }, [height])
