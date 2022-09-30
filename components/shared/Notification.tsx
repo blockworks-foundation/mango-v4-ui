@@ -106,8 +106,10 @@ const Notification = ({ notification }: { notification: Notification }) => {
           hideNotification()
         }
       },
-      parsedTitle || type === 'confirm' || type === 'error'
+      parsedTitle || type === 'confirm'
         ? CLIENT_TX_TIMEOUT
+        : type === 'error'
+        ? 30000
         : 8000
     )
 
@@ -151,7 +153,9 @@ const Notification = ({ notification }: { notification: Notification }) => {
               {parsedTitle || title}
             </p>
             {description ? (
-              <p className={`mb-0 mt-0.5 leading-tight text-th-fgd-3`}>
+              <p
+                className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-3`}
+              >
                 {description}
               </p>
             ) : null}

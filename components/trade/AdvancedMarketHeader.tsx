@@ -52,7 +52,7 @@ const MarketSelectDropdown = () => {
         <div className="relative flex flex-col overflow-visible">
           <Popover.Button className="default-transition flex w-full items-center justify-between hover:text-th-primary">
             <MarketLogos baseURI={baseLogoURI} quoteURI={quoteLogoURI} />
-            <div className="text-xl font-bold md:text-base">
+            <div className="text-xl font-bold text-th-fgd-1 md:text-base">
               {selectedMarket?.name || DEFAULT_MARKET_NAME}
             </div>
             <ChevronDownIcon
@@ -122,7 +122,7 @@ const OraclePrice = () => {
   )
 
   return (
-    <div className="font-mono text-xs text-th-fgd-1">
+    <div className="font-mono text-xs text-th-fgd-2">
       $
       {baseTokenBank.uiPrice
         ? formatFixedDecimals(baseTokenBank.uiPrice)

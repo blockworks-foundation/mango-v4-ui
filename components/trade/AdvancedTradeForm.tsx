@@ -19,6 +19,11 @@ import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
 import { calculateMarketPrice } from 'utils/tradeForm'
 
+const TABS: [string, number][] = [
+  ['Limit', 0],
+  ['Market', 0],
+]
+
 const AdvancedTradeForm = () => {
   const { t } = useTranslation('common')
   const set = mangoStore.getState().set
@@ -201,7 +206,7 @@ const AdvancedTradeForm = () => {
         <TabButtons
           activeValue={tradeForm.tradeType}
           onChange={(tab: 'Limit' | 'Market') => setTradeType(tab)}
-          values={['Limit', 'Market']}
+          values={TABS}
           fillWidth
         />
       </div>

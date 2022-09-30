@@ -1,16 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import TabButtons from '../shared/TabButtons'
 import TokenList from '../TokenList'
 import SwapHistoryTable from '../swap/SwapHistoryTable'
-import { useRouter } from 'next/router'
 import ActivityFeed from './ActivityFeed'
+
+const TABS = ['balances', 'activity:activity', 'swap:swap-history']
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
   const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const { pathname } = useRouter()
+
+  const tabsWithCount: [string, number][] = useMemo(() => {
+    return TABS.map((t) => [t, 0])
+  }, [])
 
   useEffect(() => {
     if (mangoAccount) {
@@ -23,7 +27,7 @@ const AccountTabs = () => {
       <TabButtons
         activeValue={activeTab}
         onChange={(v) => setActiveTab(v)}
-        values={['balances', 'activity:activity', 'swap:swap-history']}
+        values={tabsWithCount}
         showBorders
       />
       <TabContent activeTab={activeTab} />

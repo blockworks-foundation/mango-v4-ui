@@ -30,17 +30,21 @@ const RecentTrades = () => {
   const fetchTradesForChart = useCallback(async () => {
     if (!selectedMarketPk) return
 
-    const response = await fetch(
-      `https://event-history-api-candles.herokuapp.com/trades/address/${selectedMarketPk}`
-    )
-    const parsedResp = await response.json()
-    const newTrades = parsedResp.data
-    if (!newTrades) return null
+    try {
+      const response = await fetch(
+        `https://event-history-api-candles.herokuapp.com/trades/address/${selectedMarketPk}`
+      )
+      const parsedResp = await response.json()
+      const newTrades = parsedResp.data
+      if (!newTrades) return null
 
-    if (newTrades.length && trades.length === 0) {
-      setTrades(newTrades)
-    } else if (newTrades?.length && !isEqual(newTrades[0], trades[0])) {
-      setTrades(newTrades)
+      if (newTrades.length && trades.length === 0) {
+        setTrades(newTrades)
+      } else if (newTrades?.length && !isEqual(newTrades[0], trades[0])) {
+        setTrades(newTrades)
+      }
+    } catch (e) {
+      console.error('Unable to fetch recent trades', e)
     }
   }, [selectedMarketPk, trades])
 
@@ -92,7 +96,7 @@ const RecentTrades = () => {
                 <div className={`text-right text-th-fgd-2`}>
                   {formattedSize.toFixed()}
                 </div>
-                <div className={`text-right text-th-fgd-4`}>
+                <div className={`text-right tracking-tighter text-th-fgd-4`}>
                   {trade.time && new Date(trade.time).toLocaleTimeString()}
                 </div>
               </div>

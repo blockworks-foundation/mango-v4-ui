@@ -35,7 +35,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   }, [width])
 
   useEffect(() => {
-    const animationFrames = 5
+    const animationFrames = 15
 
     for (let x = 1; x <= animationFrames; x++) {
       setTimeout(() => {
@@ -55,7 +55,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <BounceLoader />
         </div>
       ) : null}
-      <div className="flex-grow bg-th-bkg-1 text-th-fgd-1 transition-all">
+      <div className="flex-grow bg-th-bkg-1 text-th-fgd-2 transition-all">
         <div className="flex">
           <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
             <BottomBar />

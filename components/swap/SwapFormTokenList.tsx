@@ -106,19 +106,19 @@ const SwapFormTokenList = ({
   const [search, setSearch] = useState('')
   const tokens = mangoStore.getState().jupiterTokens
   const walletTokens = mangoStore((s) => s.wallet.tokens)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  // const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const group = mangoStore((s) => s.group)
 
-  const popularTokens = useMemo(() => {
-    return tokens.filter((token) => {
-      return !token?.name || !token?.symbol
-        ? false
-        : popularTokenSymbols.includes(token.symbol)
-    })
-  }, [tokens])
+  // const popularTokens = useMemo(() => {
+  //   return tokens.filter((token) => {
+  //     return !token?.name || !token?.symbol
+  //       ? false
+  //       : popularTokenSymbols.includes(token.symbol)
+  //   })
+  // }, [tokens])
 
   useEffect(() => {
     function onEscape(e: any) {
@@ -170,11 +170,12 @@ const SwapFormTokenList = ({
     }
   }, [tokens, walletTokens, inputBank, outputBank, mangoAccount, group])
 
-  const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value)
-  }
+  // const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
+  //   setSearch(e.target.value)
+  // }
 
-  const sortedTokens = search ? startSearch(tokenInfos, search) : tokenInfos
+  // const sortedTokens = search ? startSearch(tokenInfos, search) : tokenInfos
+  const sortedTokens = tokenInfos
 
   return (
     <>
@@ -184,7 +185,7 @@ const SwapFormTokenList = ({
           : `${t('swap')} ${t('swap:to')}`}
       </p>
       <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
-        <XMarkIcon className="h-5 w-5" />
+        <XMarkIcon className="h-6 w-6" />
       </IconButton>
       {/* No need for search/popular tokens until we have more tokens */}
 

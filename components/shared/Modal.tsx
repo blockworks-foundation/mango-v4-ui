@@ -26,7 +26,7 @@ function Modal({
     >
       <div className="min-h-screen px-4 text-center">
         <Dialog.Overlay
-          className={`fixed inset-0 bg-black opacity-50 ${
+          className={`fixed inset-0 backdrop-blur-sm ${
             disableOutsideClose ? 'pointer-events-none' : ''
           }`}
         />
@@ -39,7 +39,7 @@ function Modal({
               onClick={onClose}
               className={`absolute right-4 top-4 z-50 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-primary`}
             >
-              <XMarkIcon className={`h-5 w-5`} />
+              <XMarkIcon className={`h-6 w-6`} />
             </button>
           ) : null}
           <Dialog.Title>{title}</Dialog.Title>
