@@ -156,11 +156,11 @@ const ActivityFilters = ({
     }
   }, [actions])
 
-  const hasFilters = useMemo(() => {
+  const hasAdvancedFilters = useMemo(() => {
     return Object.values(advancedFilters).find((v: any) => v.length > 0)
   }, [advancedFilters])
 
-  return (connected && activityFeed.length) || (connected && hasFilters) ? (
+  return connected ? (
     <>
       <div className="flex items-center justify-between border-b border-th-bkg-3 pl-6">
         <div className="grid flex-1 grid-cols-5">
@@ -198,7 +198,7 @@ const ActivityFilters = ({
             >
               Advanced Filters
             </LinkButton>
-            {hasFilters ? (
+            {hasAdvancedFilters ? (
               <Tooltip content={t('activity:reset-advanced-filters')}>
                 <IconButton
                   className={loadActivityFeed ? 'animate-spin' : ''}
