@@ -19,8 +19,6 @@ import { ModalProps } from 'types/modal'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import ActivityFeedTable from './ActivityFeedTable'
-const utc = require('dayjs/plugin/utc')
-dayjs.extend(utc)
 
 const DEFAULT_FILTERS = {
   deposit: true,
@@ -125,7 +123,6 @@ const ActivityFilters = ({
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const actions = mangoStore((s) => s.actions)
-  const activityFeed = mangoStore((s) => s.activityFeed.feed)
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
   const { connected } = useWallet()
   const [showAdvancedFiltersModal, setShowAdvancedFiltersModal] =
@@ -162,38 +159,40 @@ const ActivityFilters = ({
 
   return connected ? (
     <>
-      <div className="flex items-center justify-between border-b border-th-bkg-3 pl-6">
-        <div className="grid flex-1 grid-cols-5">
-          <h3 className="col-span-1 flex items-center text-sm">
-            Filter Results
-          </h3>
-          <div className="col-span-1 flex h-12 items-center border-l border-th-bkg-4 p-4">
+      <div className="flex flex-col items-center justify-between border-b border-th-bkg-3 bg-th-bkg-2 pt-4 md:flex-row md:pt-0 md:pl-6">
+        <h3 className="mb-2 flex items-center text-sm md:mb-0 md:pr-6">
+          Filter Results
+        </h3>
+        <div className="grid w-full flex-1 grid-cols-2 pb-2 md:grid-cols-4 md:pb-0">
+          <div className="col-span-1 flex h-8 items-center p-6 md:h-12 md:border-l md:border-th-bkg-4 md:p-4">
             <Checkbox
               checked={filters.deposit}
               onChange={(e) => updateFilters(e, 'deposit')}
             >
-              <span className="text-sm">Deposits</span>
+              <span className="text-sm md:text-xs lg:text-sm">Deposits</span>
             </Checkbox>
           </div>
-          <div className="col-span-1 flex h-12 items-center border-l border-th-bkg-4 p-4">
+          <div className="col-span-1 flex h-8 items-center p-6 md:h-12 md:border-l md:border-th-bkg-4 md:p-4">
             <Checkbox
               checked={filters.withdraw}
               onChange={(e) => updateFilters(e, 'withdraw')}
             >
-              <span className="text-sm">Withdrawals</span>
+              <span className="text-sm md:text-xs lg:text-sm">Withdrawals</span>
             </Checkbox>
           </div>
-          <div className="col-span-1 flex h-12 items-center border-l border-th-bkg-4 p-4">
+          <div className="col-span-1 flex h-8 items-center p-6 md:h-12 md:border-l md:border-th-bkg-4 md:p-4">
             <Checkbox
               checked={filters.liquidate_token_with_token}
               onChange={(e) => updateFilters(e, 'liquidate_token_with_token')}
             >
-              <span className="text-sm">Liquidations</span>
+              <span className="text-sm md:text-xs lg:text-sm">
+                Liquidations
+              </span>
             </Checkbox>
           </div>
-          <div className="col-span-1 flex h-12 items-center justify-between border-l border-th-bkg-4 p-4">
+          <div className="col-span-1 flex h-8 items-center justify-between p-6 md:h-12 md:border-l md:border-th-bkg-4 md:p-4">
             <LinkButton
-              className="text-sm"
+              className="text-sm md:text-xs lg:text-sm"
               onClick={() => setShowAdvancedFiltersModal(true)}
             >
               Advanced Filters
@@ -211,7 +210,10 @@ const ActivityFilters = ({
             ) : null}
           </div>
         </div>
-        <Button className="h-12 rounded-none" onClick={handleUpdateResults}>
+        <Button
+          className="h-12 w-full rounded-none bg-th-bkg-4 md:w-auto"
+          onClick={handleUpdateResults}
+        >
           Update
         </Button>
       </div>
@@ -284,13 +286,13 @@ const AdvancedFiltersModal = ({
       setAdvancedFilters({
         ...advancedFilters,
         'start-date':
-          dayjs(dateFrom).set('hour', 0).format('YYYY-MM-DDThh:mm:ss.000') +
+          dayjs(dateFrom).set('hour', 0).format('YYYY-MM-DDTHH:mm:ss.000') +
           'Z',
         'end-date':
           dayjs(dateTo)
             .set('hour', 23)
             .set('minute', 59)
-            .format('YYYY-MM-DDThh:mm:ss.000') + 'Z',
+            .format('YYYY-MM-DDTHH:mm:ss.000') + 'Z',
       })
     } else {
       setAdvancedFilters({
