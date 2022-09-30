@@ -1,6 +1,6 @@
 export const LAST_ACCOUNT_KEY = 'mangoAccount-0.1'
 
-export const CLIENT_TX_TIMEOUT = 60000
+export const CLIENT_TX_TIMEOUT = 90000
 
 export const INPUT_TOKEN_DEFAULT = 'USDC'
 

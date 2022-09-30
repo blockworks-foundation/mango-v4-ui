@@ -96,7 +96,7 @@ const RecentTrades = () => {
                 <div className={`text-right text-th-fgd-2`}>
                   {formattedSize.toFixed()}
                 </div>
-                <div className={`text-right text-th-fgd-4`}>
+                <div className={`text-right tracking-tighter text-th-fgd-4`}>
                   {trade.time && new Date(trade.time).toLocaleTimeString()}
                 </div>
               </div>
