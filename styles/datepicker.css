@@ -1,0 +1,53 @@
+/* Range Picker */
+
+.nice-dates .nice-dates-popover {
+  @apply max-w-[384px] bg-th-bkg-4;
+}
+
+.nice-dates .nice-dates-navigation {
+  @apply font-bold text-th-fgd-1;
+}
+
+.nice-dates .nice-dates-navigation_next:before {
+  @apply border-th-fgd-2 hover:border-th-primary;
+}
+
+.nice-dates .nice-dates-navigation_next:hover:before {
+  @apply border-th-primary;
+}
+
+.nice-dates .nice-dates-navigation_previous:before {
+  @apply border-th-fgd-2 hover:border-th-primary;
+}
+
+.nice-dates .nice-dates-navigation_previous:hover:before {
+  @apply border-th-primary;
+}
+
+.nice-dates .nice-dates-week-header_day {
+  @apply text-th-fgd-2;
+}
+
+.nice-dates .nice-dates-day_date {
+  @apply text-th-fgd-3;
+}
+
+.nice-dates .-outside .nice-dates-day_date {
+  @apply text-th-fgd-4;
+}
+
+.nice-dates .nice-dates-day_month {
+  @apply text-th-fgd-4;
+}
+
+.nice-dates .nice-dates-day:after {
+  @apply border-th-fgd-4;
+}
+
+.nice-dates .nice-dates-day:before {
+  @apply bg-th-bkg-1;
+}
+
+.nice-dates .nice-dates-day.-selected:hover:after {
+  @apply bg-th-bkg-3;
+}

@@ -394,12 +394,11 @@ const mangoStore = create<MangoStore>()(
         ) => {
           const set = get().set
           const currentFeed = mangoStore.getState().activityFeed.feed
-          // set((state) => {
-          //   state.activityFeed.loading = true
-          // })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25&${params}`
+              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
+                params ? params : ''
+              }`
             )
             const parsedResponse = await response.json()
             const entries: any = Object.entries(parsedResponse).sort((a, b) =>

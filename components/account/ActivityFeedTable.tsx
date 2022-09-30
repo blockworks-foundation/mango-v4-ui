@@ -28,7 +28,7 @@ const ActivityFeedTable = ({
 }: {
   activityFeed: any
   handleShowActivityDetails: (x: LiquidationFeedItem) => void
-  params: string[]
+  params: string
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const { connected } = useWallet()
@@ -53,7 +53,7 @@ const ActivityFeedTable = ({
     actions.fetchActivityFeed(
       mangoAccount.publicKey.toString(),
       offset + 25,
-      'activity-type=' + params.toString()
+      params
     )
   }, [actions, offset, params])
 
