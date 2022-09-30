@@ -1,47 +1,74 @@
 import LeverageSlider from '@components/swap/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
+import { notify } from 'utils/notifications'
 
 const SpotSlider = () => {
-  const [amount, setAmount] = useState<string>()
   const side = mangoStore((s) => s.tradeForm.side)
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const tradeForm = mangoStore((s) => s.tradeForm)
 
   const leverageMax = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
     const group = mangoStore.getState().group
-    const set = mangoStore.getState().set
     if (!mangoAccount || !group || !selectedMarket) return 100
 
-    if (side === 'buy') {
-      const maxQuote = mangoAccount.getMaxQuoteForSerum3BidUi(
-        group,
-        selectedMarket.serumMarketExternal
-      )
-      return new Decimal(maxQuote.toString()).toNumber()
-    } else {
-      const maxBase = mangoAccount.getMaxBaseForSerum3AskUi(
-        group,
-        selectedMarket.serumMarketExternal
-      )
-
-      return new Decimal(maxBase.toString()).toNumber()
+    try {
+      if (side === 'buy') {
+        return mangoAccount.getMaxQuoteForSerum3BidUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+      } else {
+        return mangoAccount.getMaxBaseForSerum3AskUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+      }
+    } catch (e) {
+      notify({
+        type: 'error',
+        title: 'Error calculating max leverage.',
+      })
+      return 0
     }
-  }, [side, selectedMarket])
+  }, [side, selectedMarket, mangoAccount])
 
   const handleSlide = useCallback((val: string) => {
     const set = mangoStore.getState().set
 
     set((s) => {
-      s.tradeForm.baseSize = val
+      if (s.tradeForm.side === 'buy') {
+        s.tradeForm.quoteSize = val
+
+        if (Number(s.tradeForm.price)) {
+          s.tradeForm.baseSize = (
+            parseFloat(val) / parseFloat(s.tradeForm.price)
+          ).toString()
+        } else {
+          s.tradeForm.baseSize = ''
+        }
+      } else if (s.tradeForm.side === 'sell') {
+        s.tradeForm.baseSize = val
+
+        if (Number(s.tradeForm.price)) {
+          s.tradeForm.quoteSize = (
+            parseFloat(val) * parseFloat(s.tradeForm.price)
+          ).toString()
+        }
+      }
     })
   }, [])
 
   return (
     <div className="w-full px-4">
       <LeverageSlider
-        amount={0}
+        amount={
+          tradeForm.side === 'buy'
+            ? parseFloat(tradeForm.quoteSize)
+            : parseFloat(tradeForm.baseSize)
+        }
         leverageMax={leverageMax}
         onChange={handleSlide}
       />

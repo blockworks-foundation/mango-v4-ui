@@ -13,8 +13,8 @@ import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import { IconButton } from '../shared/Button'
 import ContentBox from '../shared/ContentBox'
-import InfoTooltip from '../shared/InfoTooltip'
 import FlipNumbers from 'react-flip-numbers'
+import Tooltip from '@components/shared/Tooltip'
 
 const TokenList = () => {
   const { t } = useTranslation('common')
@@ -94,29 +94,28 @@ const TokenList = () => {
               <th className="text-right">{t('total-deposits')}</th>
               <th className="text-right">{t('total-borrows')}</th>
               <th>
-                <div className="flex items-center justify-center">
-                  <span>{t('rates')}</span>
-                  <InfoTooltip
-                    content={
-                      'The deposit rate (green) will automatically be paid on positive balances and the borrow rate (red) will automatically be charged on negative balances.  '
-                    }
-                  />
+                <div className="flex justify-end">
+                  <Tooltip content="The deposit rate (green) will automatically be paid on positive balances and the borrow rate (red) will automatically be charged on negative balances.">
+                    <span className="tooltip-underline">{t('rates')}</span>
+                  </Tooltip>
                 </div>
               </th>
               <th>
-                <div className="flex items-center justify-end">
-                  <span>{t('utilization')}</span>
-                  <InfoTooltip
-                    content={
-                      'The percentage of deposits that have been lent out.'
-                    }
-                  />
+                <div className="flex justify-end">
+                  <Tooltip content="The percentage of deposits that have been lent out.">
+                    <span className="tooltip-underline">
+                      {t('utilization')}
+                    </span>
+                  </Tooltip>
                 </div>
               </th>
               <th>
-                <div className="flex items-center justify-end">
-                  <span className="text-right">{t('asset-weight')}</span>
-                  <InfoTooltip content={t('asset-weight-desc')} />
+                <div className="flex justify-end">
+                  <Tooltip content={t('asset-weight-desc')}>
+                    <span className="tooltip-underline">
+                      {t('asset-weight')}
+                    </span>
+                  </Tooltip>
                 </div>
               </th>
               <th>
@@ -169,7 +168,7 @@ const TokenList = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="flex justify-center space-x-2">
+                    <div className="flex justify-end space-x-2">
                       <p className="text-th-green">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
                           fixed: true,

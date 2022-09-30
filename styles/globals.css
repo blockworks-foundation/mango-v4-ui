@@ -266,13 +266,12 @@ table th {
 }
 
 table p {
-  @apply font-mono text-sm tracking-tight text-th-fgd-1;
+  @apply font-mono text-sm tracking-tight text-th-fgd-2;
 }
 
 /* Scrollbars */
 
 .font-mono {
-  @apply tracking-tight;
   -webkit-font-feature-settings: 'zero' 1;
   font-feature-settings: 'zero' 1;
 }

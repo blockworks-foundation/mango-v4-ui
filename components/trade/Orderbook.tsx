@@ -15,6 +15,8 @@ import Decimal from 'decimal.js'
 import OrderbookIcon from '@components/icons/OrderbookIcon'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
+import { breakpoints } from '../../utils/theme'
+import { useViewport } from 'hooks/useViewport'
 
 function decodeBookL2(
   market: Market,
@@ -70,6 +72,7 @@ type cumOrderbookSide = {
   cumulativeSize: number
   sizePercent: number
   maxSizePercent: number
+  cumulativeSizePercent: number
 }
 
 const getCumulativeOrderbookSide = (
@@ -77,7 +80,7 @@ const getCumulativeOrderbookSide = (
   totalSize: number,
   maxSize: number,
   depth: number,
-  backwards = false
+  isBids = true
 ): cumOrderbookSide[] => {
   let cumulative = orders
     .slice(0, depth)
@@ -88,13 +91,15 @@ const getCumulativeOrderbookSide = (
         size,
         cumulativeSize,
         sizePercent: Math.round((cumulativeSize / (totalSize || 1)) * 100),
+        cumulativeSizePercent: Math.round((size / (cumulativeSize || 1)) * 100),
         maxSizePercent: Math.round((size / (maxSize || 1)) * 100),
       })
       return cumulative
     }, [])
-  if (backwards) {
-    cumulative = cumulative.reverse()
+  if (!isBids) {
+    console.log('cumulative', cumulative)
   }
+
   return cumulative
 }
 
@@ -148,7 +153,7 @@ const groupBy = (
   return sortedGroups
 }
 
-const depth = 60
+const depth = 40
 
 const Orderbook = () => {
   const { t } = useTranslation('common')
@@ -157,8 +162,6 @@ const Orderbook = () => {
   // const [openOrderPrices, setOpenOrderPrices] = useState<any[]>([])
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)
-  const [defaultLayout, setDefaultLayout] = useState(true)
-  const [displayCumulativeSize, setDisplayCumulativeSize] = useState(false)
   const [grouping, setGrouping] = useState(0.01)
   const [showBuys, setShowBuys] = useState(true)
   const [showSells, setShowSells] = useState(true)
@@ -166,12 +169,14 @@ const Orderbook = () => {
   const currentOrderbookData = useRef<any>(null)
   const nextOrderbookData = useRef<any>(null)
   const orderbookElRef = useRef<HTMLDivElement>(null)
-  const previousDepth = usePrevious(depth)
   const previousGrouping = usePrevious(grouping)
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
 
   const depthArray = useMemo(() => {
-    return Array(depth).fill(0)
-  }, [depth])
+    const bookDepth = !isMobile ? depth : 7
+    return Array(bookDepth).fill(0)
+  }, [depth, isMobile])
 
   const serum3MarketExternal = useMemo(() => {
     const group = mangoStore.getState().group
@@ -220,7 +225,6 @@ const Orderbook = () => {
     if (
       nextOrderbookData?.current &&
       (!isEqual(currentOrderbookData.current, nextOrderbookData.current) ||
-        previousDepth !== depth ||
         previousGrouping !== grouping)
     ) {
       // check if user has open orders so we can highlight them on orderbook
@@ -245,30 +249,32 @@ const Orderbook = () => {
       const sum = (total: number, [, size]: number[], index: number) =>
         index < depth ? total + size : total
       const totalSize = bids.reduce(sum, 0) + asks.reduce(sum, 0)
+
       const maxSize =
-        Math.max(
-          ...asks.map((a: number[]) => {
-            return a[1]
-          })
-        ) +
         Math.max(
           ...bids.map((b: number[]) => {
             return b[1]
           })
+        ) +
+        Math.max(
+          ...asks.map((a: number[]) => {
+            return a[1]
+          })
         )
 
-      const bidsToDisplay = defaultLayout
-        ? getCumulativeOrderbookSide(bids, totalSize, maxSize, depth, false)
-        : getCumulativeOrderbookSide(bids, totalSize, maxSize, depth / 2, false)
-      const asksToDisplay = defaultLayout
-        ? getCumulativeOrderbookSide(asks, totalSize, maxSize, depth, false)
-        : getCumulativeOrderbookSide(
-            asks,
-            totalSize,
-            maxSize,
-            (depth + 1) / 2,
-            true
-          )
+      const bidsToDisplay = getCumulativeOrderbookSide(
+        bids,
+        totalSize,
+        maxSize,
+        depth
+      )
+      const asksToDisplay = getCumulativeOrderbookSide(
+        asks,
+        totalSize,
+        maxSize,
+        depth,
+        false
+      )
 
       currentOrderbookData.current = {
         bids: orderbook?.bids,
@@ -276,9 +282,7 @@ const Orderbook = () => {
       }
       if (bidsToDisplay[0] || asksToDisplay[0]) {
         const bid = bidsToDisplay[0]?.price
-        const ask = defaultLayout
-          ? asksToDisplay[0]?.price
-          : asksToDisplay[asksToDisplay.length - 1]?.price
+        const ask = asksToDisplay[0]?.price
         let spread = 0,
           spreadPercentage = 0
         if (bid && ask) {
@@ -360,11 +364,9 @@ const Orderbook = () => {
   }, [serum3MarketExternal])
 
   useEffect(() => {
-    function handleResize() {
-      verticallyCenterOrderbook()
-    }
-
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', verticallyCenterOrderbook)
+    // const id = setTimeout(verticallyCenterOrderbook, 400)
+    // return () => clearTimeout(id)
   }, [verticallyCenterOrderbook])
 
   const onGroupSizeChange = useCallback((groupSize: number) => {
@@ -374,8 +376,6 @@ const Orderbook = () => {
   const handleScroll = useCallback(() => {
     setIsScrolled(true)
   }, [])
-
-  if (!serum3MarketExternal) return null
 
   return (
     <div className="flex h-full flex-col">
@@ -410,15 +410,17 @@ const Orderbook = () => {
             </button>
           </Tooltip>
         </div>
-        <div id="trade-step-four">
-          <Tooltip content="Grouping" placement="top">
-            <GroupSize
-              tickSize={serum3MarketExternal.tickSize}
-              onChange={onGroupSizeChange}
-              value={grouping}
-            />
-          </Tooltip>
-        </div>
+        {serum3MarketExternal ? (
+          <div id="trade-step-four">
+            <Tooltip content="Grouping" placement="top">
+              <GroupSize
+                tickSize={serum3MarketExternal.tickSize}
+                onChange={onGroupSizeChange}
+                value={grouping}
+              />
+            </Tooltip>
+          </div>
+        ) : null}
       </div>
       <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">
         <div className="col-span-1 text-right">{t('size')}</div>
@@ -429,11 +431,11 @@ const Orderbook = () => {
         ref={orderbookElRef}
         onScroll={handleScroll}
       >
-        {showSells && orderbookData?.asks?.length
+        {showSells
           ? depthArray.map((_x, index) => {
               return (
-                <div key={index}>
-                  {orderbookData?.asks[index] ? (
+                <div className="h-[24px]" key={index}>
+                  {!!orderbookData?.asks[index] && serum3MarketExternal ? (
                     <MemoizedOrderbookRow
                       minOrderSize={serum3MarketExternal.minOrderSize}
                       tickSize={serum3MarketExternal.tickSize}
@@ -444,16 +446,11 @@ const Orderbook = () => {
                       // )}
                       key={orderbookData?.asks[index].price}
                       price={orderbookData?.asks[index].price}
-                      size={
-                        displayCumulativeSize
-                          ? orderbookData?.asks[index].cumulativeSize
-                          : orderbookData?.asks[index].size
-                      }
+                      size={orderbookData?.asks[index].size}
                       side="sell"
-                      sizePercent={
-                        displayCumulativeSize
-                          ? orderbookData?.asks[index].maxSizePercent
-                          : orderbookData?.asks[index].sizePercent
+                      sizePercent={orderbookData?.asks[index].sizePercent}
+                      cumulativeSizePercent={
+                        orderbookData?.asks[index].cumulativeSizePercent
                       }
                       grouping={grouping}
                     />
@@ -478,10 +475,10 @@ const Orderbook = () => {
             </div>
           </div>
         ) : null}
-        {showBuys && orderbookData?.bids?.length
+        {showBuys
           ? depthArray.map((_x, index) => (
-              <div key={index}>
-                {orderbookData?.bids[index] ? (
+              <div className="h-[24px]" key={index}>
+                {!!orderbookData?.bids[index] && serum3MarketExternal ? (
                   <MemoizedOrderbookRow
                     minOrderSize={serum3MarketExternal.minOrderSize}
                     tickSize={serum3MarketExternal.tickSize}
@@ -491,16 +488,11 @@ const Orderbook = () => {
                     //   grouping
                     // )}
                     price={orderbookData?.bids[index].price}
-                    size={
-                      displayCumulativeSize
-                        ? orderbookData?.bids[index].cumulativeSize
-                        : orderbookData?.bids[index].size
-                    }
+                    size={orderbookData?.bids[index].size}
                     side="buy"
-                    sizePercent={
-                      displayCumulativeSize
-                        ? orderbookData?.bids[index].maxSizePercent
-                        : orderbookData?.bids[index].sizePercent
+                    sizePercent={orderbookData?.bids[index].sizePercent}
+                    cumulativeSizePercent={
+                      orderbookData?.bids[index].cumulativeSizePercent
                     }
                     grouping={grouping}
                   />
@@ -521,6 +513,7 @@ const OrderbookRow = ({
   // invert,
   // hasOpenOrder,
   minOrderSize,
+  cumulativeSizePercent,
   tickSize,
   grouping,
 }: {
@@ -528,6 +521,7 @@ const OrderbookRow = ({
   price: number
   size: number
   sizePercent: number
+  cumulativeSizePercent: number
   // hasOpenOrder: boolean
   // invert: boolean
   grouping: number
@@ -547,26 +541,29 @@ const OrderbookRow = ({
       () =>
         element.current?.classList.contains(`${flashClassName}`) &&
         element.current?.classList.remove(`${flashClassName}`),
-      250
+      500
     )
     return () => clearTimeout(id)
   }, [price, size])
 
-  const formattedSize =
-    minOrderSize && !isNaN(size)
+  const formattedSize = useMemo(() => {
+    return minOrderSize && !isNaN(size)
       ? floorToDecimal(size, getDecimalCount(minOrderSize))
       : new Decimal(size)
+  }, [size, minOrderSize])
 
-  const formattedPrice =
-    tickSize && !isNaN(price)
+  const formattedPrice = useMemo(() => {
+    return tickSize && !isNaN(price)
       ? floorToDecimal(price, getDecimalCount(tickSize))
       : new Decimal(price)
+  }, [price, tickSize])
 
-  // const handlePriceClick = () => {
-  //   set((state) => {
-  //     state.tradeForm.price = Number(formattedPrice)
-  //   })
-  // }
+  const handlePriceClick = useCallback(() => {
+    const set = mangoStore.getState().set
+    set((state) => {
+      state.tradeForm.price = formattedPrice.toFixed()
+    })
+  }, [formattedPrice])
 
   // const handleSizeClick = () => {
   //   set((state) => {
@@ -589,13 +586,14 @@ const OrderbookRow = ({
     <div
       className={`relative flex h-[24px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
       ref={element}
+      onClick={handlePriceClick}
     >
       <>
-        <div className="flex w-full items-center justify-between hover:bg-th-bkg-2">
+        <div className="flex w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">
           <div className="flex w-full justify-start pl-2">
             <div
               style={{ fontFeatureSettings: 'zero 1' }}
-              className={`z-10 w-full text-right font-mono text-xs leading-5 md:leading-6 ${
+              className={`z-10 w-full text-right font-mono text-xs ${
                 /*hasOpenOrder*/ false ? 'text-th-primary' : ''
               }`}
               // onClick={handleSizeClick}
@@ -603,19 +601,24 @@ const OrderbookRow = ({
               {formattedSize.toFixed(minOrderSizeDecimals)}
             </div>
           </div>
-          <div
-            className={`z-10 w-full pr-4 text-right font-mono text-xs leading-5 md:leading-6`}
-            // onClick={handlePriceClick}
-          >
+          <div className={`z-10 w-full pr-4 text-right font-mono text-xs`}>
             {formattedPrice.toFixed(groupingDecimalCount)}
           </div>
         </div>
 
         <Line
-          className={`absolute left-0 opacity-90 ${
+          className={`absolute left-0 opacity-40 brightness-125 ${
             side === 'buy' ? `bg-th-green-muted` : `bg-th-red-muted`
           }`}
-          data-width={sizePercent + '%'}
+          data-width={Math.max(sizePercent, 0.5) + '%'}
+        />
+        <Line
+          className={`absolute left-0 opacity-70 ${
+            side === 'buy' ? `bg-th-green` : `bg-th-red`
+          }`}
+          data-width={
+            Math.max((cumulativeSizePercent / 100) * sizePercent, 0.1) + '%'
+          }
         />
       </>
     </div>

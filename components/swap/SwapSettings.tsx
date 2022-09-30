@@ -34,7 +34,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
     <>
       <h3 className="mb-3">{t('settings')}</h3>
       <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
-        <XMarkIcon className="h-5 w-5" />
+        <XMarkIcon className="h-6 w-6" />
       </IconButton>
 
       <div className="mt-4">

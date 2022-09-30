@@ -8,3 +8,13 @@ export interface ChartTradeType {
   feeCost: number
   marketAddress: string
 }
+
+export interface Orderbook {
+  bids: number[][]
+  asks: number[][]
+}
+
+export type SpotBalances = Record<
+  string,
+  { inOrders: number; unsettled: number }
+>

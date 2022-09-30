@@ -76,7 +76,7 @@ const MangoAccountsList = ({
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <Popover.Panel className="absolute top-[13.5px] -right-5 z-10 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-3 bg-th-bkg-1 p-4">
+                <Popover.Panel className="absolute top-[13.5px] -right-5 z-10 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-2 bg-th-bkg-3 p-4 text-th-fgd-3">
                   {loading ? (
                     <Loading />
                   ) : mangoAccounts.length ? (
@@ -84,7 +84,7 @@ const MangoAccountsList = ({
                       <div key={acc.publicKey.toString()}>
                         <button
                           onClick={() => handleSelectMangoAccount(acc)}
-                          className="mb-3 flex w-full items-center justify-between border-b border-th-bkg-3 pb-3"
+                          className="mb-3 flex w-full items-center justify-between border-b border-th-bkg-4 pb-3 hover:text-th-fgd-1"
                         >
                           {acc.name}
                           {acc.publicKey.toString() ===

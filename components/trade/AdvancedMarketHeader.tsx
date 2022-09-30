@@ -7,10 +7,13 @@ import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import { formatFixedDecimals } from 'utils/numbers'
+import MarketLogos from './MarketLogos'
 
 const MarketSelectDropdown = () => {
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const serumMarkets = mangoStore((s) => s.serumMarkets)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const group = mangoStore((s) => s.group)
   const set = mangoStore((s) => s.set)
 
   const handleSelectMarket = useCallback(
@@ -23,6 +26,26 @@ const MarketSelectDropdown = () => {
     [set]
   )
 
+  const [baseLogoURI, quoteLogoURI] = useMemo(() => {
+    if (jupiterTokens.length && selectedMarket && group) {
+      const baseSymbol = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex
+      ).name
+      const quoteSymbol = group.getFirstBankByTokenIndex(
+        selectedMarket.quoteTokenIndex
+      ).name
+      const baseURI = jupiterTokens.find(
+        (t) => t.symbol === baseSymbol
+      )!.logoURI
+      const quoteURI = jupiterTokens.find(
+        (t) => t.symbol === quoteSymbol
+      )!.logoURI
+      return [baseURI, quoteURI]
+    } else {
+      return ['', '']
+    }
+  }, [jupiterTokens, selectedMarket])
+
   return (
     <Popover>
       {({ close, open }) => (
@@ -30,8 +53,9 @@ const MarketSelectDropdown = () => {
           className="relative flex flex-col overflow-visible"
           id="trade-step-one"
         >
-          <Popover.Button className="default-transition flex w-full items-center hover:text-th-primary">
-            <div className="text-xl font-bold md:text-base">
+          <Popover.Button className="default-transition flex w-full items-center justify-between hover:text-th-primary">
+            <MarketLogos baseURI={baseLogoURI} quoteURI={quoteLogoURI} />
+            <div className="text-xl font-bold text-th-fgd-1 md:text-base">
               {selectedMarket?.name || DEFAULT_MARKET_NAME}
             </div>
             <ChevronDownIcon
@@ -41,17 +65,47 @@ const MarketSelectDropdown = () => {
             />
           </Popover.Button>
 
-          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen border border-l-0 border-th-bkg-3 bg-th-bkg-1 sm:w-56 md:top-[37px]">
+          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen border border-l-0 border-th-bkg-3 bg-th-bkg-1 py-2 sm:w-56 md:top-[37px]">
             {serumMarkets?.length
-              ? serumMarkets.map((m) => (
-                  <div
-                    key={m.publicKey.toString()}
-                    className="bg-th-bkg-1 py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
-                    onClick={() => handleSelectMarket(m, close)}
-                  >
-                    {m.name}
-                  </div>
-                ))
+              ? serumMarkets.map((m) => {
+                  let baseLogoURI = ''
+                  let quoteLogoURI = ''
+                  const baseSymbol = group?.getFirstBankByTokenIndex(
+                    m.baseTokenIndex
+                  ).name
+                  const quoteSymbol = group?.getFirstBankByTokenIndex(
+                    m.quoteTokenIndex
+                  ).name
+                  if (jupiterTokens.length) {
+                    baseLogoURI = jupiterTokens.find(
+                      (t) => t.symbol === baseSymbol
+                    )!.logoURI
+                    quoteLogoURI = jupiterTokens.find(
+                      (t) => t.symbol === quoteSymbol
+                    )!.logoURI
+                  }
+                  return (
+                    <div
+                      key={m.publicKey.toString()}
+                      className="flex items-center bg-th-bkg-1 py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
+                      onClick={() => handleSelectMarket(m, close)}
+                    >
+                      <MarketLogos
+                        baseURI={baseLogoURI}
+                        quoteURI={quoteLogoURI}
+                      />
+                      <span
+                        className={
+                          m.name === selectedMarket?.name
+                            ? 'text-th-primary'
+                            : ''
+                        }
+                      >
+                        {m.name}
+                      </span>
+                    </div>
+                  )
+                })
               : null}
           </Popover.Panel>
         </div>
@@ -71,7 +125,7 @@ const OraclePrice = () => {
   )
 
   return (
-    <div className="font-mono text-xs text-th-fgd-1">
+    <div className="font-mono text-xs text-th-fgd-2">
       $
       {baseTokenBank.uiPrice
         ? formatFixedDecimals(baseTokenBank.uiPrice)

@@ -10,10 +10,19 @@ import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useMemo, useState } from 'react'
-import NumberFormat, { NumberFormatValues } from 'react-number-format'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import NumberFormat, {
+  NumberFormatValues,
+  SourceInfo,
+} from 'react-number-format'
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
+import { calculateMarketPrice } from 'utils/tradeForm'
+
+const TABS: [string, number][] = [
+  ['Limit', 0],
+  ['Market', 0],
+]
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation('common')
@@ -40,18 +49,51 @@ const AdvancedTradeForm = () => {
   )
 
   const handlePriceChange = useCallback(
-    (e: NumberFormatValues) => {
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
       set((s) => {
         s.tradeForm.price = e.value
+        if (s.tradeForm.baseSize && Number(e.value)) {
+          s.tradeForm.quoteSize = (
+            parseFloat(e.value) * parseFloat(s.tradeForm.baseSize)
+          ).toString()
+        }
       })
     },
     [set]
   )
 
   const handleBaseSizeChange = useCallback(
-    (e: NumberFormatValues) => {
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
+      console.log('ho')
+
       set((s) => {
         s.tradeForm.baseSize = e.value
+
+        if (s.tradeForm.price && Number(e.value)) {
+          s.tradeForm.quoteSize = (
+            parseFloat(s.tradeForm.price) * parseFloat(e.value)
+          ).toString()
+        }
+      })
+    },
+    [set]
+  )
+
+  const handleQuoteSizeChange = useCallback(
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
+      console.log('hi')
+
+      set((s) => {
+        s.tradeForm.quoteSize = e.value
+
+        if (Number(s.tradeForm.price)) {
+          s.tradeForm.baseSize = (
+            parseFloat(e.value) / parseFloat(s.tradeForm.price)
+          ).toString()
+        }
       })
     },
     [set]
@@ -90,12 +132,27 @@ const AdvancedTradeForm = () => {
     [set]
   )
 
+  useEffect(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return
+    const baseBank = group?.getFirstBankByTokenIndex(
+      selectedMarket.baseTokenIndex
+    )
+    if (baseBank.uiPrice) {
+      const price = baseBank.uiPrice.toString()
+      set((s) => {
+        s.tradeForm.price = price
+      })
+    }
+  }, [set, selectedMarket])
+
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const tradeForm = mangoStore.getState().tradeForm
     const actions = mangoStore.getState().actions
+    const selectedMarket = mangoStore.getState().selectedMarket.current
 
     if (!group || !mangoAccount) return
 
@@ -106,19 +163,27 @@ const AdvancedTradeForm = () => {
         ? Serum3OrderType.postOnly
         : Serum3OrderType.limit
 
+      let baseSize = new Decimal(tradeForm.baseSize).toNumber()
+      let price = new Decimal(tradeForm.price).toNumber()
+      if (tradeForm.tradeType === 'Market') {
+        const orderbook = mangoStore.getState().selectedMarket.orderbook
+        price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
+      }
+
       const tx = await client.serum3PlaceOrder(
         group,
         mangoAccount,
         selectedMarket!.serumMarketExternal,
         tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-        new Decimal(tradeForm.price).toNumber(),
-        new Decimal(tradeForm.baseSize).toNumber(),
+        price,
+        baseSize,
         Serum3SelfTradeBehavior.decrementTake,
         orderType,
         Date.now(),
         10
       )
       actions.reloadMangoAccount()
+      actions.fetchSerumOpenOrders()
       notify({
         type: 'success',
         title: 'Transaction successful',
@@ -126,14 +191,14 @@ const AdvancedTradeForm = () => {
       })
     } catch (e: any) {
       notify({
-        title: t('order-error'),
+        title: 'There was an issue.',
         description: e.message,
-        txid: e.txid,
+        txid: e?.txid,
         type: 'error',
       })
       console.error('Place trade error:', e)
     }
-  }, [])
+  }, [t])
 
   return (
     <div>
@@ -141,7 +206,7 @@ const AdvancedTradeForm = () => {
         <TabButtons
           activeValue={tradeForm.tradeType}
           onChange={(tab: 'Limit' | 'Market') => setTradeType(tab)}
-          values={['Limit', 'Market']}
+          values={TABS}
           fillWidth
         />
       </div>
@@ -192,7 +257,7 @@ const AdvancedTradeForm = () => {
             <div className="mb-2 mt-4 flex items-center justify-between">
               <p className="text-xs text-th-fgd-3">Limit Price</p>
             </div>
-            <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
+            <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
               <NumberFormat
                 inputMode="decimal"
                 thousandSeparator=","
@@ -201,12 +266,12 @@ const AdvancedTradeForm = () => {
                 decimalScale={6}
                 name="amountIn"
                 id="amountIn"
-                className="w-full bg-th-bkg-1 font-mono focus:outline-none"
+                className="w-full bg-transparent font-mono focus:outline-none"
                 placeholder="0.00"
                 value={tradeForm.price}
                 onValueChange={handlePriceChange}
               />
-              <div className="ml-2 text-sm font-normal text-th-fgd-4">
+              <div className="text-xs font-normal text-th-fgd-4">
                 {quoteSymbol}
               </div>
             </div>
@@ -215,22 +280,42 @@ const AdvancedTradeForm = () => {
         <div className="my-2 flex items-center justify-between">
           <p className="text-xs text-th-fgd-3">{t('amount')}</p>
         </div>
-        <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-3 text-sm font-bold text-th-fgd-1 md:py-2 md:text-lg md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2">
-          <NumberFormat
-            inputMode="decimal"
-            thousandSeparator=","
-            allowNegative={false}
-            isNumericString={true}
-            decimalScale={6}
-            name="amountIn"
-            id="amountIn"
-            className="w-full bg-transparent font-mono focus:outline-none"
-            placeholder="0.00"
-            value={tradeForm.baseSize}
-            onValueChange={handleBaseSizeChange}
-          />
-          <div className="ml-2 text-sm font-normal text-th-fgd-4">
-            {baseSymbol}
+        <div className="flex flex-col">
+          <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+            <NumberFormat
+              inputMode="decimal"
+              thousandSeparator=","
+              allowNegative={false}
+              isNumericString={true}
+              decimalScale={6}
+              name="amountIn"
+              id="amountIn"
+              className="w-full bg-transparent font-mono focus:outline-none"
+              placeholder="0.00"
+              value={tradeForm.baseSize}
+              onValueChange={handleBaseSizeChange}
+            />
+            <div className="text-xs font-normal text-th-fgd-4">
+              {baseSymbol}
+            </div>
+          </div>
+          <div className="default-transition mt-1 flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+            <NumberFormat
+              inputMode="decimal"
+              thousandSeparator=","
+              allowNegative={false}
+              isNumericString={true}
+              decimalScale={6}
+              name="amountIn"
+              id="amountIn"
+              className="w-full bg-transparent font-mono focus:outline-none"
+              placeholder="0.00"
+              value={tradeForm.quoteSize}
+              onValueChange={handleQuoteSizeChange}
+            />
+            <div className="text-xs font-normal text-th-fgd-4">
+              {quoteSymbol}
+            </div>
           </div>
         </div>
       </div>

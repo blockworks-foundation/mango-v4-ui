@@ -32,7 +32,6 @@ export interface ChartContainerProps {
 const TradingViewChart = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
-  const { publicKey } = useWallet()
 
   const [chartReady, setChartReady] = useState(false)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
@@ -50,8 +49,8 @@ const TradingViewChart = () => {
       fullscreen: false,
       autosize: true,
       studiesOverrides: {
-        'volume.volume.color.0': theme === 'Mango' ? '#E54033' : '#CC2929',
-        'volume.volume.color.1': theme === 'Mango' ? '#AFD803' : '#5EBF4D',
+        'volume.volume.color.0': COLORS.RED[theme],
+        'volume.volume.color.1': COLORS.GREEN[theme],
         'volume.precision': 4,
       },
     }),
@@ -77,37 +76,25 @@ const TradingViewChart = () => {
     'haStyle',
     'barStyle',
   ]
+
   mainSeriesProperties.forEach((prop) => {
     chartStyleOverrides = {
       ...chartStyleOverrides,
       [`mainSeriesProperties.${prop}.barColorsOnPrevClose`]: true,
       [`mainSeriesProperties.${prop}.drawWick`]: true,
       [`mainSeriesProperties.${prop}.drawBorder`]: true,
-      [`mainSeriesProperties.${prop}.upColor`]:
-        theme === 'Mango' ? '#AFD803' : '#5EBF4D',
-      [`mainSeriesProperties.${prop}.downColor`]:
-        theme === 'Mango' ? '#E54033' : '#CC2929',
-      [`mainSeriesProperties.${prop}.borderColor`]:
-        theme === 'Mango' ? '#AFD803' : '#5EBF4D',
-      [`mainSeriesProperties.${prop}.borderUpColor`]:
-        theme === 'Mango' ? '#AFD803' : '#5EBF4D',
-      [`mainSeriesProperties.${prop}.borderDownColor`]:
-        theme === 'Mango' ? '#E54033' : '#CC2929',
-      [`mainSeriesProperties.${prop}.wickUpColor`]:
-        theme === 'Mango' ? '#AFD803' : '#5EBF4D',
-      [`mainSeriesProperties.${prop}.wickDownColor`]:
-        theme === 'Mango' ? '#E54033' : '#CC2929',
+      [`mainSeriesProperties.${prop}.upColor`]: COLORS.GREEN[theme],
+      [`mainSeriesProperties.${prop}.downColor`]: COLORS.RED[theme],
+      [`mainSeriesProperties.${prop}.borderColor`]: COLORS.GREEN[theme],
+      [`mainSeriesProperties.${prop}.borderUpColor`]: COLORS.GREEN[theme],
+      [`mainSeriesProperties.${prop}.borderDownColor`]: COLORS.RED[theme],
+      [`mainSeriesProperties.${prop}.wickUpColor`]: COLORS.GREEN[theme],
+      [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.RED[theme],
     }
   })
 
   useEffect(() => {
     if (tvWidgetRef.current && chartReady && selectedMarketName) {
-      console.log('selectedMarketName', selectedMarketName)
-      console.log(
-        'tvWidgetRef.current?.activeChart()?.symbol()',
-        tvWidgetRef.current?.activeChart()?.symbol()
-      )
-
       tvWidgetRef.current.setSymbol(
         selectedMarketName!,
         tvWidgetRef.current.activeChart().resolution(),
@@ -146,11 +133,12 @@ const TradingViewChart = () => {
           'header_screenshot',
           // 'header_widget_dom_node',
           // 'header_widget',
-          !publicKey ? 'header_saveload' : '',
+          'header_saveload',
           'header_undo_redo',
           'header_interval_dialog_button',
           'show_interval_dialog_on_key_press',
           'header_symbol_search',
+          'popup_hints',
         ],
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
@@ -180,7 +168,7 @@ const TradingViewChart = () => {
       })
       //eslint-disable-next-line
     }
-  }, [theme, isMobile, publicKey, defaultProps])
+  }, [theme, isMobile, defaultProps])
 
   return (
     <div id={defaultProps.container as string} className="tradingview-chart" />

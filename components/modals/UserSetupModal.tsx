@@ -36,7 +36,7 @@ import ButtonGroup from '../forms/ButtonGroup'
 import Decimal from 'decimal.js'
 import WalletIcon from '../icons/WalletIcon'
 import EditProfileForm from '@components/profile/EditProfileForm'
-import EditNftProfilePic from '@components/EditNftProfilePic'
+import EditNftProfilePic from '@components/profile/EditNftProfilePic'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()

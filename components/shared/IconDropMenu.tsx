@@ -49,15 +49,15 @@ const IconDropMenu = ({
             }`}
             disabled={disabled}
           >
-            {open ? <XMarkIcon className="h-5 w-5" /> : icon}
+            {open ? <XMarkIcon className="h-6 w-6" /> : icon}
           </Popover.Button>
           <Transition
             appear={true}
             show={open}
             as={Fragment}
             enter="transition ease-in duration-100"
-            enterFrom="opacity-0 scale-90"
-            enterTo="opacity-100 scale-100"
+            enterFrom="scale-90"
+            enterTo="scale-100"
             leave="transition ease-out duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
