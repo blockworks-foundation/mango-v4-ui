@@ -6,19 +6,39 @@ import MultiSelectDropdown from '@components/forms/MultiSelectDropdown'
 import Button, { IconButton, LinkButton } from '@components/shared/Button'
 import Modal from '@components/shared/Modal'
 import Tooltip from '@components/shared/Tooltip'
-import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/20/solid'
+import { Disclosure, Transition } from '@headlessui/react'
+import {
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { EXPLORERS } from 'pages/settings'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
-import { ModalProps } from 'types/modal'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import { breakpoints } from 'utils/theme'
 import ActivityFeedTable from './ActivityFeedTable'
+
+interface Filters {
+  deposit: boolean
+  liquidate_token_with_token: boolean
+  withdraw: boolean
+}
+
+interface AdvancedFilters {
+  symbol: string[]
+  'start-date': string
+  'end-date': string
+  'usd-lower': string
+  'usd-upper': string
+}
 
 const DEFAULT_FILTERS = {
   deposit: true,
@@ -39,8 +59,8 @@ const DEFAULT_PARAMS = ['deposit', 'liquidate_token_with_token', 'withdraw']
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
   const [showActivityDetail, setShowActivityDetail] = useState(null)
-  const [filters, setFilters] = useState(DEFAULT_FILTERS)
-  const [advancedFilters, setAdvancedFilters] = useState(
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(
     DEFAULT_ADVANCED_FILTERS
   )
   const [params, setParams] = useState<string[]>(DEFAULT_PARAMS)
@@ -115,11 +135,11 @@ const ActivityFilters = ({
   advancedFilters,
   setAdvancedFilters,
 }: {
-  filters: any
-  updateFilters: any
+  filters: Filters
+  updateFilters: (e: ChangeEvent<HTMLInputElement>, filter: string) => void
   params: string
-  advancedFilters: any
-  setAdvancedFilters: (x: any) => void
+  advancedFilters: AdvancedFilters
+  setAdvancedFilters: (x: AdvancedFilters) => void
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const actions = mangoStore((s) => s.actions)
@@ -127,6 +147,9 @@ const ActivityFilters = ({
   const { connected } = useWallet()
   const [showAdvancedFiltersModal, setShowAdvancedFiltersModal] =
     useState(false)
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.lg : false
+  const [showFilters, setShowFilters] = useState(false)
 
   const handleUpdateResults = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -157,42 +180,25 @@ const ActivityFilters = ({
     return Object.values(advancedFilters).find((v: any) => v.length > 0)
   }, [advancedFilters])
 
+  const handleUpdateAdvancedResults = () => {
+    handleUpdateResults()
+    setShowAdvancedFiltersModal(false)
+  }
+
   return connected ? (
-    <>
-      <div className="flex flex-col items-center justify-between border-b border-th-bkg-3 bg-th-bkg-2 pt-4 md:flex-row md:pt-0 md:pl-6">
-        <h3 className="mb-2 flex items-center text-sm md:mb-0 md:pr-6">
-          Filter Results
-        </h3>
-        <div className="grid w-full flex-1 grid-cols-2 pb-2 md:grid-cols-4 md:pb-0">
-          <div className="col-span-1 flex h-8 items-center p-6 md:h-12 md:border-l md:border-th-bkg-4 md:p-4">
-            <Checkbox
-              checked={filters.deposit}
-              onChange={(e) => updateFilters(e, 'deposit')}
-            >
-              <span className="text-sm md:text-xs lg:text-sm">Deposits</span>
-            </Checkbox>
-          </div>
-          <div className="col-span-1 flex h-8 items-center p-6 md:h-12 md:border-l md:border-th-bkg-4 md:p-4">
-            <Checkbox
-              checked={filters.withdraw}
-              onChange={(e) => updateFilters(e, 'withdraw')}
-            >
-              <span className="text-sm md:text-xs lg:text-sm">Withdrawals</span>
-            </Checkbox>
-          </div>
-          <div className="col-span-1 flex h-8 items-center p-6 md:h-12 md:border-l md:border-th-bkg-4 md:p-4">
-            <Checkbox
-              checked={filters.liquidate_token_with_token}
-              onChange={(e) => updateFilters(e, 'liquidate_token_with_token')}
-            >
-              <span className="text-sm md:text-xs lg:text-sm">
-                Liquidations
-              </span>
-            </Checkbox>
-          </div>
-          <div className="col-span-1 flex h-8 items-center justify-between p-6 md:h-12 md:border-l md:border-th-bkg-4 md:p-4">
+    !isMobile ? (
+      <>
+        <div className="flex items-center justify-between border-b border-th-bkg-3 bg-th-bkg-2 pl-6">
+          <h3 className="flex items-center whitespace-nowrap pr-6 text-sm">
+            Filter Results
+          </h3>
+          <ActivityTypeFiltersForm
+            filters={filters}
+            updateFilters={updateFilters}
+          />
+          <div className="flex h-12 items-center justify-between border-l border-th-bkg-4 p-6">
             <LinkButton
-              className="text-sm md:text-xs lg:text-sm"
+              className="whitespace-nowrap text-sm"
               onClick={() => setShowAdvancedFiltersModal(true)}
             >
               Advanced Filters
@@ -200,7 +206,7 @@ const ActivityFilters = ({
             {hasAdvancedFilters ? (
               <Tooltip content={t('activity:reset-advanced-filters')}>
                 <IconButton
-                  className={loadActivityFeed ? 'animate-spin' : ''}
+                  className={`ml-4 ${loadActivityFeed ? 'animate-spin' : ''}`}
                   onClick={() => handleResetAdvancedFilters()}
                   size="small"
                 >
@@ -209,42 +215,148 @@ const ActivityFilters = ({
               </Tooltip>
             ) : null}
           </div>
+          <Button className="h-12 rounded-none" onClick={handleUpdateResults}>
+            Update
+          </Button>
         </div>
-        <Button
-          className="h-12 w-full rounded-none bg-th-bkg-4 md:w-auto"
-          onClick={handleUpdateResults}
+        {showAdvancedFiltersModal ? (
+          <Modal
+            isOpen={showAdvancedFiltersModal}
+            onClose={() => setShowAdvancedFiltersModal(false)}
+          >
+            <h2 className="mb-2 text-center">
+              {t('activity:advanced-filters')}
+            </h2>
+            <AdvancedFiltersForm
+              advancedFilters={advancedFilters}
+              setAdvancedFilters={setAdvancedFilters}
+            />
+            <Button
+              className="w-full"
+              size="large"
+              onClick={handleUpdateAdvancedResults}
+            >
+              Update
+            </Button>
+          </Modal>
+        ) : null}
+      </>
+    ) : (
+      <Disclosure>
+        <div className="relative">
+          {hasAdvancedFilters ? (
+            <div className="absolute right-14 top-3">
+              <Tooltip content={t('activity:reset-advanced-filters')}>
+                <IconButton
+                  className={`${loadActivityFeed ? 'animate-spin' : ''}`}
+                  onClick={() => handleResetAdvancedFilters()}
+                  size="small"
+                >
+                  <ArrowPathIcon className="h-5 w-5" />
+                </IconButton>
+              </Tooltip>
+            </div>
+          ) : null}
+          <div
+            onClick={() => setShowFilters(!showFilters)}
+            role="button"
+            className={`w-full border-b border-th-bkg-3 bg-th-bkg-2 px-6 py-4`}
+          >
+            <Disclosure.Button
+              className={`flex h-full w-full items-center justify-between rounded-none`}
+            >
+              <span className="text-th-fgd-1">Filters Results</span>
+
+              <ChevronDownIcon
+                className={`${
+                  showFilters ? 'rotate-180' : 'rotate-360'
+                } h-6 w-6 flex-shrink-0`}
+              />
+            </Disclosure.Button>
+          </div>
+        </div>
+        <Transition
+          appear={true}
+          show={showFilters}
+          enter="transition-all ease-in duration-300"
+          enterFrom="opacity-100 max-h-0"
+          enterTo="opacity-100 max-h-full"
+          leave="transition-all ease-out duration-300"
+          leaveFrom="opacity-100 max-h-full"
+          leaveTo="opacity-0 max-h-0"
         >
-          Update
-        </Button>
-      </div>
-      {showAdvancedFiltersModal ? (
-        <AdvancedFiltersModal
-          advancedFilters={advancedFilters}
-          setAdvancedFilters={setAdvancedFilters}
-          isOpen={showAdvancedFiltersModal}
-          onClose={() => setShowAdvancedFiltersModal(false)}
-          handleUpdateResults={handleUpdateResults}
-        />
-      ) : null}
-    </>
+          <Disclosure.Panel className="bg-th-bkg-2 px-6 pb-6">
+            <div className="py-4">
+              <Label text={t('activity:activity-type')} />
+              <ActivityTypeFiltersForm
+                filters={filters}
+                updateFilters={updateFilters}
+              />
+            </div>
+            <AdvancedFiltersForm
+              advancedFilters={advancedFilters}
+              setAdvancedFilters={setAdvancedFilters}
+            />
+            <Button
+              className="w-full"
+              size="large"
+              onClick={handleUpdateAdvancedResults}
+            >
+              Update
+            </Button>
+          </Disclosure.Panel>
+        </Transition>
+      </Disclosure>
+    )
   ) : null
 }
 
-interface AdvancedFiltersModalProps {
-  advancedFilters: any
-  setAdvancedFilters: (x: any) => void
-  handleUpdateResults: () => void
+const ActivityTypeFiltersForm = ({
+  filters,
+  updateFilters,
+}: {
+  filters: Filters
+  updateFilters: (e: ChangeEvent<HTMLInputElement>, filter: string) => void
+}) => {
+  return (
+    <div className="flex w-full flex-col space-y-2 md:flex-row md:space-y-0">
+      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
+        <Checkbox
+          checked={filters.deposit}
+          onChange={(e) => updateFilters(e, 'deposit')}
+        >
+          <span className="text-sm">Deposits</span>
+        </Checkbox>
+      </div>
+      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
+        <Checkbox
+          checked={filters.withdraw}
+          onChange={(e) => updateFilters(e, 'withdraw')}
+        >
+          <span className="text-sm">Withdrawals</span>
+        </Checkbox>
+      </div>
+      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
+        <Checkbox
+          checked={filters.liquidate_token_with_token}
+          onChange={(e) => updateFilters(e, 'liquidate_token_with_token')}
+        >
+          <span className="text-sm">Liquidations</span>
+        </Checkbox>
+      </div>
+    </div>
+  )
 }
 
-type ModalCombinedProps = ModalProps & AdvancedFiltersModalProps
+interface AdvancedFiltersFormProps {
+  advancedFilters: any
+  setAdvancedFilters: (x: any) => void
+}
 
-const AdvancedFiltersModal = ({
-  isOpen,
-  onClose,
+const AdvancedFiltersForm = ({
   advancedFilters,
   setAdvancedFilters,
-  handleUpdateResults,
-}: ModalCombinedProps) => {
+}: AdvancedFiltersFormProps) => {
   const { t } = useTranslation(['common', 'activity'])
   const group = mangoStore((s) => s.group)
   const [dateFrom, setDateFrom] = useState<Date | null>(null)
@@ -319,14 +431,8 @@ const AdvancedFiltersModal = ({
     }
   }, [valueFrom, valueTo])
 
-  const handleUpdateAdvancedResults = () => {
-    handleUpdateResults()
-    onClose()
-  }
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <h2 className="mb-2 text-center">{t('activity:advanced-filters')}</h2>
+    <>
       <Label text={t('tokens')} />
       <MultiSelectDropdown
         options={symbols}
@@ -365,14 +471,7 @@ const AdvancedFiltersModal = ({
           />
         </div>
       </div>
-      <Button
-        className="w-full"
-        size="large"
-        onClick={handleUpdateAdvancedResults}
-      >
-        Update
-      </Button>
-    </Modal>
+    </>
   )
 }
 

@@ -1,7 +1,7 @@
 /* Range Picker */
 
 .nice-dates .nice-dates-popover {
-  @apply max-w-[384px] bg-th-bkg-4;
+  @apply z-20 max-w-[384px] bg-th-bkg-4;
 }
 
 .nice-dates .nice-dates-navigation {
