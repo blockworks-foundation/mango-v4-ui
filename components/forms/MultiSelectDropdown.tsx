@@ -24,7 +24,13 @@ const MultiSelectDropdown = ({
             }`}
           >
             <div className={`flex items-center justify-between`}>
-              <span>{selected.toString().replace(/,/g, ', ')}</span>
+              {selected.length ? (
+                <span>{selected.toString().replace(/,/g, ', ')}</span>
+              ) : (
+                <span className="text-th-fgd-4">
+                  {t('activity:select-tokens')}
+                </span>
+              )}
               <ChevronDownIcon
                 className={`default-transition ml-0.5 h-6 w-6 ${
                   open ? 'rotate-180 transform' : 'rotate-360 transform'

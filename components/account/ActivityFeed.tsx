@@ -153,6 +153,11 @@ const ActivityFilters = ({
   const handleUpdateResults = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const set = mangoStore.getState().set
+    if (params) {
+      setHasFilters(true)
+    } else {
+      setHasFilters(false)
+    }
     set((s) => {
       s.activityFeed.feed = []
       s.activityFeed.loading = true
@@ -180,13 +185,11 @@ const ActivityFilters = ({
   const handleUpdateModalResults = () => {
     handleUpdateResults()
     setShowAdvancedFiltersModal(false)
-    setHasFilters(true)
   }
 
   const handleUpdateMobileResults = () => {
     handleUpdateResults()
     setShowMobileFilters(false)
-    setHasFilters(true)
   }
 
   return connected ? (
@@ -264,12 +267,12 @@ const ActivityFilters = ({
           <div
             onClick={() => setShowMobileFilters(!showMobileFilters)}
             role="button"
-            className={`w-full border-b border-th-bkg-3 bg-th-bkg-2 px-6 py-4`}
+            className={`default-transition w-full border-b border-th-bkg-3 bg-th-bkg-2 px-6 py-4 hover:bg-th-bkg-3`}
           >
             <Disclosure.Button
               className={`flex h-full w-full items-center justify-between rounded-none`}
             >
-              <span className="text-th-fgd-1">
+              <span className="font-bold text-th-fgd-1">
                 {t('activity:filter-results')}
               </span>
 
