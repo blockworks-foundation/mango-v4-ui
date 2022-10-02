@@ -34,6 +34,8 @@
   "cumulative-interest-value": "Cumulative Interest Value",
   "daily-volume": "24h Volume",
   "date": "Date",
+  "date-from": "Date From",
+  "date-to": "Date To",
   "deposit": "Deposit",
   "deposit-rate": "Deposit Rate (APR)",
   "deposit-value": "Deposit Value",

@@ -24,13 +24,7 @@ const MultiSelectDropdown = ({
             }`}
           >
             <div className={`flex items-center justify-between`}>
-              <span>
-                {selected.length === 1
-                  ? selected[0]
-                  : t('activity:filters-selected', {
-                      selectedFilters: selected.length,
-                    })}
-              </span>
+              <span>{selected.toString().replace(/,/g, ', ')}</span>
               <ChevronDownIcon
                 className={`default-transition ml-0.5 h-6 w-6 ${
                   open ? 'rotate-180 transform' : 'rotate-360 transform'
