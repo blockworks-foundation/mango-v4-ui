@@ -17,6 +17,7 @@
     "order-error": "Failed to place order",
     "post": "Post",
     "place-order": "Place {{side}} Order",
+    "placing-order": "Placing Order",
     "quote": "Quote",
     "show-asks": "Show Asks",
     "show-bids": "Show Bids",

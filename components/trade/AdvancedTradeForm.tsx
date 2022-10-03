@@ -20,6 +20,7 @@ import SpotSlider from './SpotSlider'
 import { calculateMarketPrice } from 'utils/tradeForm'
 import Image from 'next/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import Loading from '@components/shared/Loading'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -33,6 +34,7 @@ const AdvancedTradeForm = () => {
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const [useMargin, setUseMargin] = useState(true)
+  const [placingOrder, setPlacingOrder] = useState(false)
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split('/')[0]
@@ -174,7 +176,7 @@ const AdvancedTradeForm = () => {
     const selectedMarket = mangoStore.getState().selectedMarket.current
 
     if (!group || !mangoAccount) return
-
+    setPlacingOrder(true)
     try {
       const orderType = tradeForm.ioc
         ? Serum3OrderType.immediateOrCancel
@@ -216,6 +218,8 @@ const AdvancedTradeForm = () => {
         type: 'error',
       })
       console.error('Place trade error:', e)
+    } finally {
+      setPlacingOrder(false)
     }
   }, [t])
 
@@ -426,9 +430,16 @@ const AdvancedTradeForm = () => {
           disabled={false}
           size="large"
         >
-          <span className="capitalize">
-            {t('trade:place-order', { side: tradeForm.side })}
-          </span>
+          {!placingOrder ? (
+            <span className="capitalize">
+              {t('trade:place-order', { side: tradeForm.side })}
+            </span>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <Loading />
+              <span>{t('trade:placing-order')}</span>
+            </div>
+          )}
         </Button>
       </div>
     </div>
