@@ -6,7 +6,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
@@ -133,6 +133,19 @@ const AccountPage = () => {
   const maintHealth = useMemo(() => {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
   }, [mangoAccount])
+
+  const handleChartToShow = (chartName: string) => {
+    if (chartName === 'cumulative-interest-value') {
+      if (interestTotalValue > 1 || interestTotalValue < -1) {
+        setChartToShow(chartName)
+      }
+    }
+    if (chartName === 'pnl') {
+      if (performanceData.length > 4) {
+        setChartToShow(chartName)
+      }
+    }
+  }
 
   return !chartToShow ? (
     <>
@@ -295,51 +308,59 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
-          <div>
-            <Tooltip
-              content="The amount your account has made or lost."
-              placement="bottom-start"
-            >
-              <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
-            </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
-              {formatFixedDecimals(accountPnl, true)}
-            </p>
-          </div>
-          {performanceData.length > 4 ? (
-            <IconButton
-              onClick={() => setChartToShow('pnl')}
-              size={!isMobile ? 'small' : 'medium'}
-            >
-              <ChevronRightIcon className="h-5 w-5" />
-            </IconButton>
-          ) : null}
-        </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
-          <div id="step-five">
-            <Tooltip
-              content="The value of interest earned (deposits) minus interest paid (borrows)."
-              maxWidth="20rem"
-              placement="bottom-end"
-            >
-              <p className="tooltip-underline text-th-fgd-3">
-                {t('total-interest-value')}
+        <button
+          className={`col-span-4 border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0 ${
+            performanceData.length > 4
+              ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
+              : 'cursor-default'
+          }`}
+          onClick={() => handleChartToShow('pnl')}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <Tooltip
+                content="The amount your account has made or lost."
+                placement="bottom-start"
+              >
+                <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
+              </Tooltip>
+              <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+                {formatFixedDecimals(accountPnl, true)}
               </p>
-            </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
-              {formatFixedDecimals(interestTotalValue, true)}
-            </p>
+            </div>
+            {performanceData.length > 4 ? (
+              <ChevronRightIcon className="h-6 w-6" />
+            ) : null}
           </div>
-          {interestTotalValue > 1 || interestTotalValue < -1 ? (
-            <IconButton
-              onClick={() => setChartToShow('cumulative-interest-value')}
-              size={!isMobile ? 'small' : 'medium'}
-            >
-              <ChevronRightIcon className="h-5 w-5" />
-            </IconButton>
-          ) : null}
-        </div>
+        </button>
+        <button
+          className={`col-span-4 border-t border-th-bkg-3 py-3 pl-6 text-left md:col-span-1 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0 ${
+            interestTotalValue > 1 || interestTotalValue < -1
+              ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
+              : 'cursor-default'
+          }`}
+          onClick={() => handleChartToShow('cumulative-interest-value')}
+        >
+          <div className="flex items-center justify-between">
+            <div id="step-five">
+              <Tooltip
+                content="The value of interest earned (deposits) minus interest paid (borrows)."
+                maxWidth="20rem"
+                placement="bottom-end"
+              >
+                <p className="tooltip-underline text-th-fgd-3">
+                  {t('total-interest-value')}
+                </p>
+              </Tooltip>
+              <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+                {formatFixedDecimals(interestTotalValue, true)}
+              </p>
+            </div>
+            {interestTotalValue > 1 || interestTotalValue < -1 ? (
+              <ChevronRightIcon className="h-6 w-6" />
+            ) : null}
+          </div>
+        </button>
       </div>
       <AccountTabs />
       {showDepositModal ? (
