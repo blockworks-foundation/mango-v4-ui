@@ -229,7 +229,7 @@ const AccountPage = () => {
         </div>
       </div>
       <div className="grid grid-cols-4 border-b border-th-bkg-3">
-        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
           <div id="step-three">
             <Tooltip
               maxWidth="20rem"
@@ -272,7 +272,7 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
           <div id="step-four">
             <Tooltip
               content="The amount of capital you have to trade or borrow against. When your free collateral reaches $0 you won't be able to make withdrawals."
@@ -295,7 +295,7 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
           <div>
             <Tooltip
               content="The amount your account has made or lost."

@@ -28,7 +28,7 @@ const OnboardingTour = () => {
           onClick={handleClose}
           className={`absolute right-4 top-4 z-50 text-th-bkg-3 focus:outline-none md:right-2 md:top-2 md:hover:text-th-primary`}
         >
-          <XMarkIcon className={`h-5 w-5`} />
+          <XMarkIcon className={`h-6 w-6`} />
         </button>
         <h3 className="text-th-bkg-1">{title}</h3>
         <p className="text-sm text-th-bkg-1">{description}</p>

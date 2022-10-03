@@ -138,6 +138,7 @@ const TradingViewChart = () => {
           'header_interval_dialog_button',
           'show_interval_dialog_on_key_press',
           'header_symbol_search',
+          'popup_hints',
         ],
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,

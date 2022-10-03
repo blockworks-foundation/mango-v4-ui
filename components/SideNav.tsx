@@ -42,7 +42,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
 
   return (
     <div
-      className={`transition-all duration-500 ${
+      className={`transition-all duration-300 ${
         collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
       } border-r border-th-bkg-3 bg-th-bkg-1`}
     >
@@ -50,7 +50,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
         <div className="my-2">
           <Link href={'/'} shallow={true} passHref>
             <div
-              className={`h-14 items-center transition-all duration-500 ease-in-out ${
+              className={`h-14 items-center transition-all duration-300 ease-in-out ${
                 collapsed ? '' : 'justify-start'
               } pb-1 pt-2 pl-4`}
             >
@@ -323,26 +323,16 @@ export const ExpandableMenuItem = ({
             {icon}
           </div>
         </Popover.Button>
-        <Transition
-          show={showMenu}
-          as={Fragment}
-          enter="transition ease-in duration-300"
-          enterFrom="opacity-0 scale-90"
-          enterTo="opacity-100 scale-100"
-          leave="transition ease-out duration-300"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
+
+        <Popover.Panel
+          className={`absolute z-20 w-56 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
+            alignBottom
+              ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
+              : 'top-1/2 left-[63px] -translate-y-1/2'
+          }`}
         >
-          <Popover.Panel
-            className={`absolute z-20 w-56 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
-              alignBottom
-                ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
-                : 'top-1/2 left-[63px] -translate-y-1/2'
-            }`}
-          >
-            {children}
-          </Popover.Panel>
-        </Transition>
+          {children}
+        </Popover.Panel>
       </div>
     </Popover>
   ) : (

@@ -12,6 +12,7 @@ import {
   ChevronRightIcon,
   CurrencyDollarIcon as FeesIcon,
   LightBulbIcon,
+  ArrowsRightLeftIcon,
 } from '@heroicons/react/20/solid'
 
 const StyledBarItemLabel = ({
@@ -58,18 +59,18 @@ const BottomBar = () => {
               asPath === '/swap' ? 'text-th-primary' : 'text-th-fgd-3'
             } col-span-1 flex cursor-pointer flex-col items-center`}
           >
-            <TradeIcon className="mb-1 h-4 w-4" />
-            <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
+            <ArrowsRightLeftIcon className="mb-1 h-4 w-4" />
+            <StyledBarItemLabel>{t('swap')}</StyledBarItemLabel>
           </a>
         </Link>
-        <Link href="/stats" shallow={true}>
+        <Link href="/trade" shallow={true}>
           <a
             className={`${
-              asPath === '/stats' ? 'text-th-primary' : 'text-th-fgd-3'
+              asPath === '/trade' ? 'text-th-primary' : 'text-th-fgd-3'
             } col-span-1 flex cursor-pointer flex-col items-center`}
           >
-            <ChartBarIcon className="mb-1 h-4 w-4" />
-            <StyledBarItemLabel>{t('stats')}</StyledBarItemLabel>
+            <TradeIcon className="mb-1 h-4 w-4" />
+            <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
           </a>
         </Link>
         <a
@@ -99,19 +100,24 @@ const MoreMenuPanel = ({
   const { t } = useTranslation('common')
   return (
     <div
-      className={`fixed bottom-0 z-30 h-96 w-full overflow-hidden bg-th-bkg-2 px-4 transition duration-500 ease-in-out ${
+      className={`fixed bottom-0 z-30 h-96 w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
         showPanel ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
       <div className="flex justify-end py-4">
         <IconButton onClick={() => setShowPanel(false)} hideBg>
-          <XMarkIcon className="h-5 w-5" />
+          <XMarkIcon className="h-6 w-6" />
         </IconButton>
       </div>
       <div
         className="border-b border-th-bkg-4"
         onClick={() => setShowPanel(false)}
       >
+        <MoreMenuItem
+          title={t('stats')}
+          path="/stats"
+          icon={<ChartBarIcon className="h-5 w-5" />}
+        />
         <MoreMenuItem
           title={t('fees')}
           path="/fees"
@@ -140,7 +146,7 @@ const MoreMenuItem = ({
   isExternal?: boolean
 }) => {
   const classNames =
-    'default-transition flex w-full items-center justify-between border-t border-th-bkg-4 px-2 py-3 text-th-fgd-2 hover:text-th-fgd-1'
+    'default-transition flex w-full items-center justify-between border-t border-th-bkg-4 px-2 py-4 text-th-fgd-2 hover:text-th-fgd-1'
   return isExternal ? (
     <a
       className={classNames}

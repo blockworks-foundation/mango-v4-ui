@@ -15,7 +15,8 @@ import Decimal from 'decimal.js'
 import OrderbookIcon from '@components/icons/OrderbookIcon'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
-import SheenLoader from '@components/shared/SheenLoader'
+import { breakpoints } from '../../utils/theme'
+import { useViewport } from 'hooks/useViewport'
 
 function decodeBookL2(
   market: Market,
@@ -71,6 +72,7 @@ type cumOrderbookSide = {
   cumulativeSize: number
   sizePercent: number
   maxSizePercent: number
+  cumulativeSizePercent: number
 }
 
 const getCumulativeOrderbookSide = (
@@ -78,7 +80,7 @@ const getCumulativeOrderbookSide = (
   totalSize: number,
   maxSize: number,
   depth: number,
-  backwards = false
+  isBids = true
 ): cumOrderbookSide[] => {
   let cumulative = orders
     .slice(0, depth)
@@ -89,13 +91,15 @@ const getCumulativeOrderbookSide = (
         size,
         cumulativeSize,
         sizePercent: Math.round((cumulativeSize / (totalSize || 1)) * 100),
+        cumulativeSizePercent: Math.round((size / (cumulativeSize || 1)) * 100),
         maxSizePercent: Math.round((size / (maxSize || 1)) * 100),
       })
       return cumulative
     }, [])
-  if (backwards) {
-    cumulative = cumulative.reverse()
+  if (!isBids) {
+    console.log('cumulative', cumulative)
   }
+
   return cumulative
 }
 
@@ -166,10 +170,13 @@ const Orderbook = () => {
   const nextOrderbookData = useRef<any>(null)
   const orderbookElRef = useRef<HTMLDivElement>(null)
   const previousGrouping = usePrevious(grouping)
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
 
   const depthArray = useMemo(() => {
-    return Array(depth).fill(0)
-  }, [depth])
+    const bookDepth = !isMobile ? depth : 7
+    return Array(bookDepth).fill(0)
+  }, [depth, isMobile])
 
   const serum3MarketExternal = useMemo(() => {
     const group = mangoStore.getState().group
@@ -241,30 +248,30 @@ const Orderbook = () => {
 
       const sum = (total: number, [, size]: number[], index: number) =>
         index < depth ? total + size : total
-      const totalBidSize = bids.reduce(sum, 0)
-      const totalAskSize = asks.reduce(sum, 0)
-      const maxBidSize = Math.max(
-        ...bids.map((b: number[]) => {
-          return b[1]
-        })
-      )
-      const maxAskSize = Math.max(
-        ...asks.map((a: number[]) => {
-          return a[1]
-        })
-      )
+      const totalSize = bids.reduce(sum, 0) + asks.reduce(sum, 0)
+
+      const maxSize =
+        Math.max(
+          ...bids.map((b: number[]) => {
+            return b[1]
+          })
+        ) +
+        Math.max(
+          ...asks.map((a: number[]) => {
+            return a[1]
+          })
+        )
 
       const bidsToDisplay = getCumulativeOrderbookSide(
         bids,
-        totalBidSize,
-        maxBidSize,
-        depth,
-        false
+        totalSize,
+        maxSize,
+        depth
       )
       const asksToDisplay = getCumulativeOrderbookSide(
         asks,
-        totalAskSize,
-        maxAskSize,
+        totalSize,
+        maxSize,
         depth,
         false
       )
@@ -440,6 +447,9 @@ const Orderbook = () => {
                       size={orderbookData?.asks[index].size}
                       side="sell"
                       sizePercent={orderbookData?.asks[index].sizePercent}
+                      cumulativeSizePercent={
+                        orderbookData?.asks[index].cumulativeSizePercent
+                      }
                       grouping={grouping}
                     />
                   ) : null}
@@ -476,6 +486,9 @@ const Orderbook = () => {
                     size={orderbookData?.bids[index].size}
                     side="buy"
                     sizePercent={orderbookData?.bids[index].sizePercent}
+                    cumulativeSizePercent={
+                      orderbookData?.bids[index].cumulativeSizePercent
+                    }
                     grouping={grouping}
                   />
                 ) : null}
@@ -495,6 +508,7 @@ const OrderbookRow = ({
   // invert,
   // hasOpenOrder,
   minOrderSize,
+  cumulativeSizePercent,
   tickSize,
   grouping,
 }: {
@@ -502,6 +516,7 @@ const OrderbookRow = ({
   price: number
   size: number
   sizePercent: number
+  cumulativeSizePercent: number
   // hasOpenOrder: boolean
   // invert: boolean
   grouping: number
@@ -569,11 +584,11 @@ const OrderbookRow = ({
       onClick={handlePriceClick}
     >
       <>
-        <div className="flex w-full items-center justify-between hover:bg-th-bkg-2">
+        <div className="flex w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">
           <div className="flex w-full justify-start pl-2">
             <div
               style={{ fontFeatureSettings: 'zero 1' }}
-              className={`z-10 w-full text-right font-mono text-xs leading-5 md:leading-6 ${
+              className={`z-10 w-full text-right font-mono text-xs ${
                 /*hasOpenOrder*/ false ? 'text-th-primary' : ''
               }`}
               // onClick={handleSizeClick}
@@ -581,18 +596,24 @@ const OrderbookRow = ({
               {formattedSize.toFixed(minOrderSizeDecimals)}
             </div>
           </div>
-          <div
-            className={`z-10 w-full pr-4 text-right font-mono text-xs leading-5 md:leading-6`}
-          >
+          <div className={`z-10 w-full pr-4 text-right font-mono text-xs`}>
             {formattedPrice.toFixed(groupingDecimalCount)}
           </div>
         </div>
 
         <Line
-          className={`absolute left-0 opacity-90 ${
+          className={`absolute left-0 opacity-40 brightness-125 ${
             side === 'buy' ? `bg-th-green-muted` : `bg-th-red-muted`
           }`}
-          data-width={sizePercent + '%'}
+          data-width={Math.max(sizePercent, 0.5) + '%'}
+        />
+        <Line
+          className={`absolute left-0 opacity-70 ${
+            side === 'buy' ? `bg-th-green` : `bg-th-red`
+          }`}
+          data-width={
+            Math.max((cumulativeSizePercent / 100) * sizePercent, 0.1) + '%'
+          }
         />
       </>
     </div>
