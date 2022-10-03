@@ -18,6 +18,8 @@ import NumberFormat, {
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
 import { calculateMarketPrice } from 'utils/tradeForm'
+import Image from 'next/image'
+import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -28,6 +30,7 @@ const AdvancedTradeForm = () => {
   const { t } = useTranslation('common')
   const set = mangoStore.getState().set
   const tradeForm = mangoStore((s) => s.tradeForm)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const [useMargin, setUseMargin] = useState(true)
 
@@ -35,9 +38,27 @@ const AdvancedTradeForm = () => {
     return selectedMarket?.name.split('/')[0]
   }, [selectedMarket])
 
+  const baseLogoURI = useMemo(() => {
+    if (!baseSymbol || !jupiterTokens.length) return ''
+    const token = jupiterTokens.find((t) => t.symbol === baseSymbol)
+    if (token) {
+      return token.logoURI
+    }
+    return ''
+  }, [baseSymbol, jupiterTokens])
+
   const quoteSymbol = useMemo(() => {
     return selectedMarket?.name.split('/')[1]
   }, [selectedMarket])
+
+  const quoteLogoURI = useMemo(() => {
+    if (!quoteSymbol || !jupiterTokens.length) return ''
+    const token = jupiterTokens.find((t) => t.symbol === quoteSymbol)
+    if (token) {
+      return token.logoURI
+    }
+    return ''
+  }, [quoteSymbol, jupiterTokens])
 
   const setTradeType = useCallback(
     (tradeType: 'Limit' | 'Market') => {
@@ -66,7 +87,6 @@ const AdvancedTradeForm = () => {
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
-      console.log('ho')
 
       set((s) => {
         s.tradeForm.baseSize = e.value
@@ -84,7 +104,6 @@ const AdvancedTradeForm = () => {
   const handleQuoteSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
-      console.log('hi')
 
       set((s) => {
         s.tradeForm.quoteSize = e.value
@@ -281,7 +300,18 @@ const AdvancedTradeForm = () => {
           <p className="text-xs text-th-fgd-3">{t('amount')}</p>
         </div>
         <div className="flex flex-col">
-          <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+          <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+            {baseLogoURI ? (
+              <Image
+                className="rounded-full"
+                alt=""
+                width="24"
+                height="24"
+                src={baseLogoURI}
+              />
+            ) : (
+              <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+            )}
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
@@ -290,7 +320,7 @@ const AdvancedTradeForm = () => {
               decimalScale={6}
               name="amountIn"
               id="amountIn"
-              className="w-full bg-transparent font-mono focus:outline-none"
+              className="ml-2 w-full bg-transparent font-mono focus:outline-none"
               placeholder="0.00"
               value={tradeForm.baseSize}
               onValueChange={handleBaseSizeChange}
@@ -299,7 +329,18 @@ const AdvancedTradeForm = () => {
               {baseSymbol}
             </div>
           </div>
-          <div className="default-transition mt-1 flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+          <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+            {quoteLogoURI ? (
+              <Image
+                className="rounded-full"
+                alt=""
+                width="24"
+                height="24"
+                src={quoteLogoURI}
+              />
+            ) : (
+              <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+            )}
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
@@ -308,7 +349,7 @@ const AdvancedTradeForm = () => {
               decimalScale={6}
               name="amountIn"
               id="amountIn"
-              className="w-full bg-transparent font-mono focus:outline-none"
+              className="ml-2 w-full bg-transparent font-mono focus:outline-none"
               placeholder="0.00"
               value={tradeForm.quoteSize}
               onValueChange={handleQuoteSizeChange}
