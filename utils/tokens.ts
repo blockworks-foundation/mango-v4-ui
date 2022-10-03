@@ -102,30 +102,3 @@ export const fetchNftsFromHolaplexIndexer = async (owner: PublicKey) => {
   const body = await result.json()
   return body.data
 }
-
-export const getJupiterLogosAndInfoForMarket = (
-  group: Group,
-  jupiterTokens: Token[],
-  marketPk?: PublicKey,
-  serumMarket?: Serum3Market
-) => {
-  const market = serumMarket
-    ? serumMarket
-    : group.getSerum3MarketByPk(marketPk!)
-  const baseBank = group.getFirstBankByTokenIndex(market!.baseTokenIndex)
-  const quoteBank = group.getFirstBankByTokenIndex(market!.quoteTokenIndex)
-  const baseLogoURI = jupiterTokens.find(
-    (t) => t.address === baseBank.mint.toString()
-  )!.logoURI
-  const quoteLogoURI = jupiterTokens.find(
-    (t) => t.address === quoteBank.mint.toString()
-  )!.logoURI
-  const marketName = market?.name
-  return {
-    baseLogoURI,
-    baseSymbol: baseBank.name,
-    marketName,
-    quoteLogoURI,
-    quoteSymbol: quoteBank.name,
-  }
-}

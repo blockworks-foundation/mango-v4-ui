@@ -10,7 +10,6 @@ import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import { useCallback } from 'react'
 import { notify } from 'utils/notifications'
-import { getJupiterLogosAndInfoForMarket } from 'utils/tokens'
 import { formatFixedDecimals } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 
@@ -18,7 +17,6 @@ const OpenOrders = () => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const handleCancelOrder = useCallback(
     async (o: Order) => {
@@ -75,21 +73,19 @@ const OpenOrders = () => {
             .map(([marketPk, orders]) => {
               return orders.map((o) => {
                 const group = mangoStore.getState().group
-                const marketInfo = getJupiterLogosAndInfoForMarket(
-                  group!,
-                  jupiterTokens,
+                const serumMarket = group?.getSerum3MarketByPk(
                   new PublicKey(marketPk)
                 )
-                const { baseLogoURI, marketName, quoteLogoURI, quoteSymbol } =
-                  marketInfo
+                const quoteTokenBank = group?.getFirstBankByTokenIndex(
+                  serumMarket!.quoteTokenIndex
+                )
                 return (
                   <tr key={`${o.side}${o.size}${o.price}`} className="my-1 p-2">
-                    <td className="flex items-center">
-                      <MarketLogos
-                        baseURI={baseLogoURI}
-                        quoteURI={quoteLogoURI}
-                      />
-                      {marketName}
+                    <td>
+                      <div className="flex items-center">
+                        <MarketLogos serumMarket={serumMarket!} />
+                        {serumMarket?.name}
+                      </div>
                     </td>
                     <td className="text-right">
                       <SideBadge side={o.side} />
@@ -98,7 +94,9 @@ const OpenOrders = () => {
                     <td className="text-right">
                       <span>
                         {o.price}{' '}
-                        <span className="text-th-fgd-4">{quoteSymbol}</span>
+                        <span className="text-th-fgd-4">
+                          {quoteTokenBank?.name}
+                        </span>
                       </span>
                     </td>
                     <td className="text-right">
