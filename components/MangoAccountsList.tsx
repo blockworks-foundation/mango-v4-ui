@@ -14,6 +14,7 @@ import { LAST_ACCOUNT_KEY } from '../utils/constants'
 import { useTranslation } from 'next-i18next'
 import { retryFn } from '../utils'
 import Loading from './shared/Loading'
+import ActionTokenList from './account/ActionTokenList'
 
 const MangoAccountsList = ({
   mangoAccount,
@@ -22,6 +23,7 @@ const MangoAccountsList = ({
 }) => {
   const { t } = useTranslation('common')
   const mangoAccounts = mangoStore((s) => s.mangoAccounts.accounts)
+  const actions = mangoStore((s) => s.actions)
   const loading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [showNewAccountModal, setShowNewAccountModal] = useState(false)
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
@@ -41,6 +43,7 @@ const MangoAccountsList = ({
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()
       })
       setLastAccountViewed(acc.publicKey.toString())
+      actions.fetchSerumOpenOrders(acc)
     } catch (e) {
       console.warn('Error selecting account', e)
     }

@@ -10,7 +10,7 @@ import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import { useCallback } from 'react'
 import { notify } from 'utils/notifications'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 
 const OpenOrders = () => {
@@ -107,14 +107,22 @@ const OpenOrders = () => {
                     <td className="text-right">
                       <SideBadge side={o.side} />
                     </td>
-                    <td className="text-right">{o.size}</td>
-                    <td className="text-right">
-                      <span>
-                        {o.price}{' '}
-                        <span className="text-th-fgd-4">{quoteSymbol}</span>
-                      </span>
+                    <td className="text-right font-mono">
+                      {o.size.toLocaleString(undefined, {
+                        maximumFractionDigits: getDecimalCount(o.size),
+                      })}
                     </td>
                     <td className="text-right">
+                      <span className="font-mono">
+                        {o.price.toLocaleString(undefined, {
+                          maximumFractionDigits: getDecimalCount(o.price),
+                        })}{' '}
+                        <span className="font-body tracking-wide text-th-fgd-4">
+                          {quoteSymbol}
+                        </span>
+                      </span>
+                    </td>
+                    <td className="text-right font-mono">
                       {formatFixedDecimals(o.size * o.price, true)}
                     </td>
                     <td>
