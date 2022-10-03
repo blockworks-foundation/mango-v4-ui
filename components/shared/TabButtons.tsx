@@ -44,7 +44,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
               <div
                 className={`ml-1.5 rounded ${
                   label === activeValue ? 'bg-th-bkg-4' : 'bg-th-bkg-3'
-                } px-1.5 font-mono text-xxs text-th-fgd-1`}
+                } px-1.5 font-mono text-xxs text-th-fgd-2`}
               >
                 {count}
               </div>
