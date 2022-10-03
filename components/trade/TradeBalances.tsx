@@ -6,7 +6,7 @@ import { useMemo } from 'react'
 import { formatDecimal } from 'utils/numbers'
 
 const Balances = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const group = mangoStore((s) => s.group)
@@ -47,8 +47,8 @@ const Balances = () => {
         <tr>
           <th className="bg-th-bkg-1 text-left">{t('token')}</th>
           <th className="bg-th-bkg-1 text-right">{t('balance')}</th>
-          <th className="bg-th-bkg-1 text-right">{t('in-orders')}</th>
-          <th className="bg-th-bkg-1 text-right">{t('unsettled')}</th>
+          <th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</th>
+          <th className="bg-th-bkg-1 text-right">{t('trade:unsettled')}</th>
         </tr>
       </thead>
       <tbody>

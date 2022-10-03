@@ -13,7 +13,7 @@ const UnsettledTrades = ({
 }: {
   unsettledSpotBalances: any
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const { connected } = useWallet()
   const group = mangoStore((s) => s.group)
   // const jupiterTokens = mangoStore((s) => s.jupiterTokens)
@@ -58,8 +58,8 @@ const UnsettledTrades = ({
         <thead>
           <tr>
             <th className="bg-th-bkg-1 text-left">{t('market')}</th>
-            <th className="bg-th-bkg-1 text-right">{t('base')}</th>
-            <th className="bg-th-bkg-1 text-right">{t('quote')}</th>
+            <th className="bg-th-bkg-1 text-right">{t('trade:base')}</th>
+            <th className="bg-th-bkg-1 text-right">{t('trade:quote')}</th>
             <th className="bg-th-bkg-1 text-right" />
           </tr>
         </thead>
@@ -112,13 +112,13 @@ const UnsettledTrades = ({
       </table>
     ) : (
       <div className="flex flex-col items-center p-8">
-        <p>No unsettled funds...</p>
+        <p>{t('trade:no-unsettled')}</p>
       </div>
     )
   ) : (
     <div className="flex flex-col items-center p-8">
       <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>Connect to view your unsettled trades</p>
+      <p>{t('trade:connect-unsettled')}</p>
     </div>
   )
 }

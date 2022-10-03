@@ -132,7 +132,7 @@ const OraclePrice = () => {
 }
 
 const AdvancedMarketHeader = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
 
@@ -161,7 +161,7 @@ const AdvancedMarketHeader = () => {
         </div>
       </div>
       <div className="ml-6 flex-col">
-        <div className="text-xs text-th-fgd-4">{t('oracle-price')}</div>
+        <div className="text-xs text-th-fgd-4">{t('trade:oracle-price')}</div>
         <OraclePrice />
       </div>
       <div className="ml-6 flex-col">

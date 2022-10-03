@@ -27,7 +27,7 @@ const TABS: [string, number][] = [
 ]
 
 const AdvancedTradeForm = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const set = mangoStore.getState().set
   const tradeForm = mangoStore((s) => s.tradeForm)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
@@ -274,7 +274,7 @@ const AdvancedTradeForm = () => {
         {tradeForm.tradeType === 'Limit' ? (
           <>
             <div className="mb-2 mt-4 flex items-center justify-between">
-              <p className="text-xs text-th-fgd-3">Limit Price</p>
+              <p className="text-xs text-th-fgd-3">{t('trade:limit-price')}</p>
             </div>
             <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
               <NumberFormat
@@ -297,7 +297,7 @@ const AdvancedTradeForm = () => {
           </>
         ) : null}
         <div className="my-2 flex items-center justify-between">
-          <p className="text-xs text-th-fgd-3">{t('amount')}</p>
+          <p className="text-xs text-th-fgd-3">{t('trade:amount')}</p>
         </div>
         <div className="flex flex-col">
           <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
@@ -371,13 +371,13 @@ const AdvancedTradeForm = () => {
                 className="hidden md:block"
                 delay={250}
                 placement="left"
-                content={t('tooltip-post')}
+                content={t('trade:tooltip-post')}
               >
                 <Checkbox
                   checked={tradeForm.postOnly}
                   onChange={(e) => handlePostOnlyChange(e.target.checked)}
                 >
-                  Post
+                  {t('trade:post')}
                 </Checkbox>
               </Tooltip>
             </div>
@@ -385,8 +385,8 @@ const AdvancedTradeForm = () => {
               <Tooltip
                 className="hidden md:block"
                 delay={250}
-                placement="top"
-                content={t('tooltip-ioc')}
+                placement="left"
+                content={t('trade:tooltip-ioc')}
               >
                 <div className="flex items-center text-xs text-th-fgd-3">
                   <Checkbox
@@ -404,13 +404,13 @@ const AdvancedTradeForm = () => {
           <Tooltip
             delay={250}
             placement="left"
-            content={t('tooltip-enable-margin')}
+            content={t('trade:tooltip-enable-margin')}
           >
             <Checkbox
               checked={useMargin}
               onChange={(e) => setUseMargin(e.target.checked)}
             >
-              {t('margin')}
+              {t('trade:margin')}
             </Checkbox>
           </Tooltip>
         </div>
@@ -426,7 +426,9 @@ const AdvancedTradeForm = () => {
           disabled={false}
           size="large"
         >
-          <span className="capitalize">Place {tradeForm.side} Order</span>
+          <span className="capitalize">
+            {t('trade:place-order', { side: tradeForm.side })}
+          </span>
         </Button>
       </div>
     </div>

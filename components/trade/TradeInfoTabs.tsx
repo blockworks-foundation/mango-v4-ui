@@ -7,7 +7,7 @@ import mangoStore from '@store/mangoStore'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 
 const TradeInfoTabs = () => {
-  const [selectedTab, setSelectedTab] = useState('Balances')
+  const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const openOrdersAccounts =
@@ -52,9 +52,9 @@ const TradeInfoTabs = () => {
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     return [
-      ['Balances', 0],
-      ['Orders', Object.values(openOrders).flat().length],
-      ['Unsettled', Object.values(unsettledSpotBalances).flat().length],
+      ['balances', 0],
+      ['trade:orders', Object.values(openOrders).flat().length],
+      ['trade:unsettled', Object.values(unsettledSpotBalances).flat().length],
     ]
   }, [openOrders, mangoAccount])
 
@@ -68,9 +68,9 @@ const TradeInfoTabs = () => {
           showBorders
         />
       </div>
-      {selectedTab === 'Balances' ? <Balances /> : null}
-      {selectedTab === 'Orders' ? <OpenOrders /> : null}
-      {selectedTab === 'Unsettled' ? (
+      {selectedTab === 'balances' ? <Balances /> : null}
+      {selectedTab === 'trade:orders' ? <OpenOrders /> : null}
+      {selectedTab === 'trade:unsettled' ? (
         <UnsettledTrades unsettledSpotBalances={unsettledSpotBalances} />
       ) : null}
     </div>

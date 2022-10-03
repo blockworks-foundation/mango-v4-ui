@@ -14,7 +14,7 @@ import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 
 const OpenOrders = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const { connected } = useWallet()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
@@ -46,7 +46,7 @@ const OpenOrders = () => {
       } catch (e: any) {
         console.error('Error canceling', e)
         notify({
-          title: t('order-error'),
+          title: t('trade:order-error'),
           description: e.message,
           txid: e.txid,
           type: 'error',
@@ -62,8 +62,8 @@ const OpenOrders = () => {
         <thead>
           <tr>
             <th className="text-left">{t('market')}</th>
-            <th className="text-right">{t('side')}</th>
-            <th className="text-right">{t('size')}</th>
+            <th className="text-right">{t('trade:side')}</th>
+            <th className="text-right">{t('trade:size')}</th>
             <th className="text-right">{t('price')}</th>
             <th className="text-right">{t('value')}</th>
             <th className="text-right"></th>
@@ -146,13 +146,13 @@ const OpenOrders = () => {
       </table>
     ) : (
       <div className="flex flex-col items-center p-8">
-        <p>No open orders...</p>
+        <p>{t('trade:no-orders')}</p>
       </div>
     )
   ) : (
     <div className="flex flex-col items-center p-8">
       <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>Connect to view your open orders</p>
+      <p>{t('trade:connect-orders')}</p>
     </div>
   )
 }
