@@ -5,7 +5,12 @@ import {
   AccountInfo,
 } from '@solana/web3.js'
 import { TokenInstructions } from '@project-serum/serum'
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import {
+  Group,
+  Serum3Market,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
+import { Token } from 'types/jupiter'
 
 export class TokenAccount {
   publicKey!: PublicKey

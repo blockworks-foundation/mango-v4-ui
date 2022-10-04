@@ -26,26 +26,6 @@ const MarketSelectDropdown = () => {
     [set]
   )
 
-  const [baseLogoURI, quoteLogoURI] = useMemo(() => {
-    if (jupiterTokens.length && selectedMarket && group) {
-      const baseSymbol = group.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
-      ).name
-      const quoteSymbol = group.getFirstBankByTokenIndex(
-        selectedMarket.quoteTokenIndex
-      ).name
-      const baseURI = jupiterTokens.find(
-        (t) => t.symbol === baseSymbol
-      )!.logoURI
-      const quoteURI = jupiterTokens.find(
-        (t) => t.symbol === quoteSymbol
-      )!.logoURI
-      return [baseURI, quoteURI]
-    } else {
-      return ['', '']
-    }
-  }, [jupiterTokens, selectedMarket])
-
   return (
     <Popover>
       {({ close, open }) => (
@@ -54,7 +34,7 @@ const MarketSelectDropdown = () => {
           id="trade-step-one"
         >
           <Popover.Button className="default-transition flex w-full items-center justify-between hover:text-th-primary">
-            <MarketLogos baseURI={baseLogoURI} quoteURI={quoteLogoURI} />
+            <MarketLogos serumMarket={selectedMarket!} />
             <div className="text-xl font-bold text-th-fgd-1 md:text-base">
               {selectedMarket?.name || DEFAULT_MARKET_NAME}
             </div>
@@ -68,32 +48,13 @@ const MarketSelectDropdown = () => {
           <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen border border-l-0 border-th-bkg-3 bg-th-bkg-1 py-2 sm:w-56 md:top-[37px]">
             {serumMarkets?.length
               ? serumMarkets.map((m) => {
-                  let baseLogoURI = ''
-                  let quoteLogoURI = ''
-                  const baseSymbol = group?.getFirstBankByTokenIndex(
-                    m.baseTokenIndex
-                  ).name
-                  const quoteSymbol = group?.getFirstBankByTokenIndex(
-                    m.quoteTokenIndex
-                  ).name
-                  if (jupiterTokens.length) {
-                    baseLogoURI = jupiterTokens.find(
-                      (t) => t.symbol === baseSymbol
-                    )!.logoURI
-                    quoteLogoURI = jupiterTokens.find(
-                      (t) => t.symbol === quoteSymbol
-                    )!.logoURI
-                  }
                   return (
                     <div
                       key={m.publicKey.toString()}
                       className="flex items-center bg-th-bkg-1 py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
                       onClick={() => handleSelectMarket(m, close)}
                     >
-                      <MarketLogos
-                        baseURI={baseLogoURI}
-                        quoteURI={quoteLogoURI}
-                      />
+                      <MarketLogos serumMarket={m} />
                       <span
                         className={
                           m.name === selectedMarket?.name
