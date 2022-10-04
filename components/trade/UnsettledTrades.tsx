@@ -1,12 +1,13 @@
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { IconButton } from '@components/shared/Button'
 import { notify } from 'utils/notifications'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { CheckIcon, LinkIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
+import Loading from '@components/shared/Loading'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -17,6 +18,7 @@ const UnsettledTrades = ({
   const { connected } = useWallet()
   const group = mangoStore((s) => s.group)
   // const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const [settleMktAddress, setSettleMktAddress] = useState<string>('')
 
   const handleSettleFunds = useCallback(async (mktAddress: string) => {
     const client = mangoStore.getState().client
@@ -25,7 +27,7 @@ const UnsettledTrades = ({
     const actions = mangoStore.getState().actions
 
     if (!group || !mangoAccount) return
-
+    setSettleMktAddress(mktAddress)
     try {
       const txid = await client.serum3SettleFunds(
         group,
@@ -42,11 +44,13 @@ const UnsettledTrades = ({
     } catch (e: any) {
       notify({
         type: 'error',
-        title: 'Settle transaction failed',
+        title: t('trade:settle-funds-error'),
         description: e?.message,
         txid: e?.txid,
       })
       console.error('Settle funds error:', e)
+    } finally {
+      setSettleMktAddress('')
     }
   }, [])
 
@@ -94,12 +98,16 @@ const UnsettledTrades = ({
                   </td>
                   <td>
                     <div className="flex justify-end">
-                      <Tooltip content={t('settle-funds')}>
+                      <Tooltip content={t('trade:settle-funds')}>
                         <IconButton
                           onClick={() => handleSettleFunds(mktAddress)}
                           size="small"
                         >
-                          <CheckIcon className="h-4 w-4" />
+                          {settleMktAddress === mktAddress ? (
+                            <Loading className="h-4 w-4" />
+                          ) : (
+                            <CheckIcon className="h-4 w-4" />
+                          )}
                         </IconButton>
                       </Tooltip>
                     </div>
