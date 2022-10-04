@@ -1,19 +1,16 @@
 import {
   HealthType,
-  I80F48,
   toUiDecimalsForQuote,
-  ZERO_I80F48,
 } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
-import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 import SimpleAreaChart from '../shared/SimpleAreaChart'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
@@ -31,6 +28,10 @@ import { breakpoints } from '../../utils/theme'
 import useMangoAccount from '../shared/useMangoAccount'
 import PercentageChange from '../shared/PercentageChange'
 import Tooltip from '@components/shared/Tooltip'
+import { IS_ONBOARDED_KEY } from 'utils/constants'
+import { useWallet } from '@solana/wallet-adapter-react'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -46,7 +47,8 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const AccountPage = () => {
   const { t } = useTranslation('common')
-  const { mangoAccount, lastUpdatedAt } = useMangoAccount()
+  const { connected } = useWallet()
+  const { mangoAccount } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
   const loadPerformanceData = mangoStore(
     (s) => s.mangoAccount.stats.performance.loading
@@ -69,6 +71,8 @@ const AccountPage = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
+  const tourSettings = mangoStore((s) => s.settings.tours)
+  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   useEffect(() => {
     if (mangoAccount) {
@@ -134,11 +138,24 @@ const AccountPage = () => {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
   }, [mangoAccount])
 
+  const handleChartToShow = (chartName: string) => {
+    if (chartName === 'cumulative-interest-value') {
+      if (interestTotalValue > 1 || interestTotalValue < -1) {
+        setChartToShow(chartName)
+      }
+    }
+    if (chartName === 'pnl') {
+      if (performanceData.length > 4) {
+        setChartToShow(chartName)
+      }
+    }
+  }
+
   return !chartToShow ? (
     <>
       <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 pt-3 pb-0 md:border-b md:pb-3">
         <div className="flex items-center space-x-6">
-          <div id="step-two">
+          <div id="account-step-three">
             <Tooltip
               maxWidth="20rem"
               placement="bottom-start"
@@ -230,7 +247,7 @@ const AccountPage = () => {
       </div>
       <div className="grid grid-cols-4 border-b border-th-bkg-3">
         <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
-          <div id="step-three">
+          <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
               placement="bottom-start"
@@ -273,7 +290,7 @@ const AccountPage = () => {
           </div>
         </div>
         <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
-          <div id="step-four">
+          <div id="account-step-five">
             <Tooltip
               content="The amount of capital you have to trade or borrow against. When your free collateral reaches $0 you won't be able to make withdrawals."
               maxWidth="20rem"
@@ -295,51 +312,59 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
-          <div>
-            <Tooltip
-              content="The amount your account has made or lost."
-              placement="bottom-start"
-            >
-              <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
-            </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
-              {formatFixedDecimals(accountPnl, true)}
-            </p>
-          </div>
-          {performanceData.length > 4 ? (
-            <IconButton
-              onClick={() => setChartToShow('pnl')}
-              size={!isMobile ? 'small' : 'medium'}
-            >
-              <ChevronRightIcon className="h-5 w-5" />
-            </IconButton>
-          ) : null}
-        </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
-          <div id="step-five">
-            <Tooltip
-              content="The value of interest earned (deposits) minus interest paid (borrows)."
-              maxWidth="20rem"
-              placement="bottom-end"
-            >
-              <p className="tooltip-underline text-th-fgd-3">
-                {t('total-interest-value')}
+        <button
+          className={`col-span-4 border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0 ${
+            performanceData.length > 4
+              ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
+              : 'cursor-default'
+          }`}
+          onClick={() => handleChartToShow('pnl')}
+        >
+          <div className="flex items-center justify-between">
+            <div id="account-step-six">
+              <Tooltip
+                content="The amount your account has made or lost."
+                placement="bottom-start"
+              >
+                <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
+              </Tooltip>
+              <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+                {formatFixedDecimals(accountPnl, true)}
               </p>
-            </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
-              {formatFixedDecimals(interestTotalValue, true)}
-            </p>
+            </div>
+            {performanceData.length > 4 ? (
+              <ChevronRightIcon className="h-6 w-6" />
+            ) : null}
           </div>
-          {interestTotalValue > 1 || interestTotalValue < -1 ? (
-            <IconButton
-              onClick={() => setChartToShow('cumulative-interest-value')}
-              size={!isMobile ? 'small' : 'medium'}
-            >
-              <ChevronRightIcon className="h-5 w-5" />
-            </IconButton>
-          ) : null}
-        </div>
+        </button>
+        <button
+          className={`col-span-4 border-t border-th-bkg-3 py-3 pl-6 text-left md:col-span-1 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0 ${
+            interestTotalValue > 1 || interestTotalValue < -1
+              ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
+              : 'cursor-default'
+          }`}
+          onClick={() => handleChartToShow('cumulative-interest-value')}
+        >
+          <div className="flex items-center justify-between">
+            <div id="account-step-seven">
+              <Tooltip
+                content="The value of interest earned (deposits) minus interest paid (borrows)."
+                maxWidth="20rem"
+                placement="bottom-end"
+              >
+                <p className="tooltip-underline text-th-fgd-3">
+                  {t('total-interest-value')}
+                </p>
+              </Tooltip>
+              <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+                {formatFixedDecimals(interestTotalValue, true)}
+              </p>
+            </div>
+            {interestTotalValue > 1 || interestTotalValue < -1 ? (
+              <ChevronRightIcon className="h-6 w-6" />
+            ) : null}
+          </div>
+        </button>
       </div>
       <AccountTabs />
       {showDepositModal ? (
@@ -353,6 +378,9 @@ const AccountPage = () => {
           isOpen={showWithdrawModal}
           onClose={() => setShowWithdrawModal(false)}
         />
+      ) : null}
+      {!tourSettings?.account_tour_seen && isOnboarded && connected ? (
+        <AccountOnboardingTour />
       ) : null}
     </>
   ) : (

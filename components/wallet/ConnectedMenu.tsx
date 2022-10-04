@@ -17,7 +17,6 @@ import EditProfileModal from '@components/modals/EditProfileModal'
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
-  // const [showProfileImageModal, setShowProfileImageModal] = useState(false)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const set = mangoStore((s) => s.set)
   const { publicKey, disconnect, wallet } = useWallet()
@@ -31,6 +30,7 @@ const ConnectedMenu = () => {
     set((state) => {
       state.mangoAccount.current = undefined
       state.connected = false
+      state.mangoAccount.openOrders = {}
     })
     disconnect()
     wallet?.adapter.disconnect()
@@ -54,27 +54,29 @@ const ConnectedMenu = () => {
         {({ open }) => (
           <div className="relative">
             <Menu.Button
-              className={`default-transition flex h-16 ${
+              className={`default-transition h-16 ${
                 !isMobile ? 'w-48 border-l border-th-bkg-3 px-3' : ''
-              } items-center hover:bg-th-bkg-2 focus:outline-none`}
+              } hover:bg-th-bkg-2 focus:outline-none`}
             >
-              <ProfileImage
-                imageSize="40"
-                placeholderSize="24"
-                isOwnerProfile
-              />
-              {!loadProfileDetails && !isMobile ? (
-                <div className="ml-2.5 w-32 text-left">
-                  <p className="text-xs text-th-fgd-3">
-                    {wallet_pk
-                      ? abbreviateAddress(new PublicKey(wallet_pk))
-                      : ''}
-                  </p>
-                  <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
-                    {profile_name}
-                  </p>
-                </div>
-              ) : null}
+              <div className="flex items-center" id="account-step-one">
+                <ProfileImage
+                  imageSize="40"
+                  placeholderSize="24"
+                  isOwnerProfile
+                />
+                {!loadProfileDetails && !isMobile ? (
+                  <div className="ml-2.5 w-32 text-left">
+                    <p className="text-xs text-th-fgd-3">
+                      {wallet_pk
+                        ? abbreviateAddress(new PublicKey(wallet_pk))
+                        : ''}
+                    </p>
+                    <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
+                      {profile_name}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
             </Menu.Button>
             <Transition
               appear={true}

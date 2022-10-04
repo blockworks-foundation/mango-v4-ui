@@ -29,7 +29,10 @@ const MarketSelectDropdown = () => {
   return (
     <Popover>
       {({ close, open }) => (
-        <div className="relative flex flex-col overflow-visible">
+        <div
+          className="relative flex flex-col overflow-visible"
+          id="trade-step-one"
+        >
           <Popover.Button className="default-transition flex w-full items-center justify-between hover:text-th-primary">
             <MarketLogos serumMarket={selectedMarket!} />
             <div className="text-xl font-bold text-th-fgd-1 md:text-base">
@@ -93,7 +96,7 @@ const OraclePrice = () => {
 }
 
 const AdvancedMarketHeader = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
 
@@ -121,8 +124,8 @@ const AdvancedMarketHeader = () => {
           <MarketSelectDropdown />
         </div>
       </div>
-      <div className="ml-6 flex-col">
-        <div className="text-xs text-th-fgd-4">{t('oracle-price')}</div>
+      <div id="trade-step-two" className="ml-6 flex-col">
+        <div className="text-xs text-th-fgd-4">{t('trade:oracle-price')}</div>
         <OraclePrice />
       </div>
       <div className="ml-6 flex-col">
