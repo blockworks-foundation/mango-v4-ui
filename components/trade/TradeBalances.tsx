@@ -115,7 +115,7 @@ const Balances = () => {
 
         return (
           <div
-            className="flex items-center justify-between border-t border-th-bkg-3 p-4"
+            className="flex items-center justify-between border-b border-th-bkg-3 p-4"
             key={key}
           >
             <div className="flex items-center">
