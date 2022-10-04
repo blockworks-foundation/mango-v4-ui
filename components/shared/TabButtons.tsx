@@ -29,7 +29,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
       {values.map(([label, count], i) => (
         <div className={fillWidth ? 'flex-1' : ''} key={label + i}>
           <button
-            className={`default-transition flex h-12 w-full items-center justify-center px-6 font-bold ${
+            className={`default-transition flex h-12 w-full items-center justify-center px-4 font-bold md:px-6 ${
               rounded ? 'rounded-md' : 'rounded-none'
             } ${showBorders ? 'border-r border-th-bkg-3' : ''} ${
               label === activeValue
