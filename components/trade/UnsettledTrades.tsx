@@ -1,6 +1,6 @@
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { IconButton } from '@components/shared/Button'
 import { notify } from 'utils/notifications'
@@ -73,7 +73,6 @@ const UnsettledTrades = ({
               const market = group.getSerum3MarketByPk(
                 new PublicKey(mktAddress)
               )
-              console.log('market', mktAddress)
               const base = market?.name.split('/')[0]
               const quote = market?.name.split('/')[1]
 
