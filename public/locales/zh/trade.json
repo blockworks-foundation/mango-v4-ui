@@ -2,6 +2,7 @@
     "amount": "Amount",
     "base": "Base",
     "book": "Book",
+    "cancel-order-error": "Failed to cancel order",
     "connect-orders": "Connect to view your open orders",
     "connect-unsettled": "Connect to view your unsettled trades",
     "grouping": "Grouping",

@@ -1,5 +1,6 @@
 import { Serum3Side } from '@blockworks-foundation/mango-v4'
 import { IconButton } from '@components/shared/Button'
+import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
 import Tooltip from '@components/shared/Tooltip'
 import { LinkIcon, TrashIcon } from '@heroicons/react/20/solid'
@@ -8,7 +9,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { notify } from 'utils/notifications'
 import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
@@ -18,6 +19,7 @@ const OpenOrders = () => {
   const { connected } = useWallet()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const [cancelId, setCancelId] = useState<string>('')
 
   const handleCancelOrder = useCallback(
     async (o: Order) => {
@@ -28,7 +30,7 @@ const OpenOrders = () => {
       const actions = mangoStore.getState().actions
 
       if (!group || !mangoAccount) return
-
+      setCancelId(o.orderId.toString())
       try {
         const tx = await client.serum3CancelOrder(
           group,
@@ -46,11 +48,13 @@ const OpenOrders = () => {
       } catch (e: any) {
         console.error('Error canceling', e)
         notify({
-          title: t('trade:order-error'),
+          title: t('trade:cancel-order-error'),
           description: e.message,
           txid: e.txid,
           type: 'error',
         })
+      } finally {
+        setCancelId('')
       }
     },
     [t]
@@ -129,10 +133,15 @@ const OpenOrders = () => {
                       <div className="flex justify-end">
                         <Tooltip content={t('cancel')}>
                           <IconButton
+                            disabled={cancelId === o.orderId.toString()}
                             onClick={() => handleCancelOrder(o)}
                             size="small"
                           >
-                            <TrashIcon className="h-4 w-4" />
+                            {cancelId === o.orderId.toString() ? (
+                              <Loading className="h-4 w-4" />
+                            ) : (
+                              <TrashIcon className="h-4 w-4" />
+                            )}
                           </IconButton>
                         </Tooltip>
                       </div>
