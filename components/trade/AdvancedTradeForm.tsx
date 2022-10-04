@@ -370,7 +370,7 @@ const AdvancedTradeForm = () => {
       <div className="flex flex-wrap px-5">
         {tradeForm.tradeType === 'Limit' ? (
           <div className="flex">
-            <div className="mr-4 mt-4">
+            <div className="mr-4 mt-4" id="trade-step-six">
               <Tooltip
                 className="hidden md:block"
                 delay={250}
@@ -385,7 +385,7 @@ const AdvancedTradeForm = () => {
                 </Checkbox>
               </Tooltip>
             </div>
-            <div className="mr-4 mt-4">
+            <div className="mr-4 mt-4" id="trade-step-seven">
               <Tooltip
                 className="hidden md:block"
                 delay={250}
@@ -404,7 +404,7 @@ const AdvancedTradeForm = () => {
             </div>
           </div>
         ) : null}
-        <div className="mt-4">
+        <div className="mt-4" id="trade-step-eight">
           <Tooltip
             delay={250}
             placement="left"

@@ -130,7 +130,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       })
 
       await actions.reloadMangoAccount()
-      setShowSetupStep(4)
+      onClose()
       setSubmitDeposit(false)
     } catch (e: any) {
       notify({
@@ -379,7 +379,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       </Button>
                       <LinkButton
                         className="flex w-full justify-center"
-                        onClick={() => setShowSetupStep(4)}
+                        onClick={onClose}
                       >
                         <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                           Skip for now
@@ -506,7 +506,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                         Deposit
                       </div>
                     </Button>
-                    <LinkButton onClick={() => setShowSetupStep(4)}>
+                    <LinkButton onClick={onClose}>
                       <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                         Skip for now
                       </span>

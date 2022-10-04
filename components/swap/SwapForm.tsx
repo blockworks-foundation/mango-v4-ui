@@ -237,7 +237,7 @@ const SwapForm = () => {
         </EnterBottomExitBottom>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base text-th-fgd-2">{t('swap')}</h2>
-          <div id="step-eight">
+          <div id="swap-step-one">
             <IconButton
               className="text-th-fgd-2"
               hideBg
@@ -248,7 +248,10 @@ const SwapForm = () => {
             </IconButton>
           </div>
         </div>
-        <div id="step-nine" className="mb-2 flex items-center justify-between">
+        <div
+          id="swap-step-two"
+          className="mb-2 flex items-center justify-between"
+        >
           <p className="text-th-fgd-3">{t('swap:from')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
@@ -303,7 +306,7 @@ const SwapForm = () => {
           </button>
         </div>
         <p className="mb-2 text-th-fgd-3">{t('swap:to')}</p>
-        <div className="mb-3 grid grid-cols-2">
+        <div id="swap-step-three" className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
               tokenSymbol={outputTokenInfo?.symbol || OUTPUT_TOKEN_DEFAULT}
@@ -348,7 +351,7 @@ const SwapForm = () => {
         />
       </div>
       <div
-        id="step-ten"
+        id="swap-step-four"
         className={`border-t border-th-bkg-3 px-6 transition-all ${
           showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
         }`}
