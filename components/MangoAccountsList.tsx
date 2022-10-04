@@ -14,6 +14,7 @@ import { LAST_ACCOUNT_KEY } from '../utils/constants'
 import { useTranslation } from 'next-i18next'
 import { retryFn } from '../utils'
 import Loading from './shared/Loading'
+import ActionTokenList from './account/ActionTokenList'
 
 const MangoAccountsList = ({
   mangoAccount,
@@ -22,6 +23,7 @@ const MangoAccountsList = ({
 }) => {
   const { t } = useTranslation('common')
   const mangoAccounts = mangoStore((s) => s.mangoAccounts.accounts)
+  const actions = mangoStore((s) => s.actions)
   const loading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [showNewAccountModal, setShowNewAccountModal] = useState(false)
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
@@ -41,6 +43,7 @@ const MangoAccountsList = ({
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()
       })
       setLastAccountViewed(acc.publicKey.toString())
+      actions.fetchSerumOpenOrders(acc)
     } catch (e) {
       console.warn('Error selecting account', e)
     }
@@ -76,7 +79,7 @@ const MangoAccountsList = ({
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <Popover.Panel className="absolute top-[13.5px] -right-5 z-10 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-2 bg-th-bkg-3 p-4 text-th-fgd-3">
+                <Popover.Panel className="absolute top-[13.5px] -right-5 z-20 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-2 bg-th-bkg-3 p-4 text-th-fgd-3">
                   {loading ? (
                     <Loading />
                   ) : mangoAccounts.length ? (
@@ -84,7 +87,7 @@ const MangoAccountsList = ({
                       <div key={acc.publicKey.toString()}>
                         <button
                           onClick={() => handleSelectMangoAccount(acc)}
-                          className="mb-3 flex w-full items-center justify-between border-b border-th-bkg-4 pb-3 hover:text-th-fgd-1"
+                          className="default-transition mb-3 flex w-full items-center justify-between border-b border-th-bkg-4 pb-3 hover:text-th-fgd-1"
                         >
                           {acc.name}
                           {acc.publicKey.toString() ===

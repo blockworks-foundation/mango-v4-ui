@@ -156,7 +156,7 @@ const groupBy = (
 const depth = 40
 
 const Orderbook = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
 
   // const [openOrderPrices, setOpenOrderPrices] = useState<any[]>([])
@@ -382,7 +382,7 @@ const Orderbook = () => {
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
         <div id="trade-step-three" className="flex items-center space-x-2">
           <Tooltip
-            content={showBuys ? 'Hide Buys' : 'Show Buys'}
+            content={showBuys ? t('trade:hide-bids') : t('trade:show-bids')}
             placement="top"
           >
             <button
@@ -396,7 +396,7 @@ const Orderbook = () => {
             </button>
           </Tooltip>
           <Tooltip
-            content={showSells ? 'Hide Sells' : 'Show Sells'}
+            content={showSells ? t('trade:hide-asks') : t('trade:show-asks')}
             placement="top"
           >
             <button
@@ -412,7 +412,7 @@ const Orderbook = () => {
         </div>
         {serum3MarketExternal ? (
           <div id="trade-step-four">
-            <Tooltip content="Grouping" placement="top">
+            <Tooltip content={t('trade:grouping')} placement="top">
               <GroupSize
                 tickSize={serum3MarketExternal.tickSize}
                 onChange={onGroupSizeChange}
@@ -423,7 +423,7 @@ const Orderbook = () => {
         ) : null}
       </div>
       <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">
-        <div className="col-span-1 text-right">{t('size')}</div>
+        <div className="col-span-1 text-right">{t('trade:size')}</div>
         <div className="col-span-1 text-right">{t('price')}</div>
       </div>
       <div
@@ -465,7 +465,7 @@ const Orderbook = () => {
             id="trade-step-nine"
           >
             <div className="col-span-1 flex justify-between">
-              <div className="text-xxs">{t('spread')}</div>
+              <div className="text-xxs">{t('trade:spread')}</div>
               <div className="font-mono">
                 {orderbookData?.spreadPercentage.toFixed(2)}%
               </div>

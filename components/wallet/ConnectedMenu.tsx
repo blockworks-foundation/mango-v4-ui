@@ -17,7 +17,6 @@ import EditProfileModal from '@components/modals/EditProfileModal'
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
-  // const [showProfileImageModal, setShowProfileImageModal] = useState(false)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const set = mangoStore((s) => s.set)
   const { publicKey, disconnect, wallet } = useWallet()
@@ -31,6 +30,7 @@ const ConnectedMenu = () => {
     set((state) => {
       state.mangoAccount.current = undefined
       state.connected = false
+      state.mangoAccount.openOrders = {}
     })
     disconnect()
     wallet?.adapter.disconnect()
