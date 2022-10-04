@@ -79,8 +79,7 @@ const getCumulativeOrderbookSide = (
   orders: any[],
   totalSize: number,
   maxSize: number,
-  depth: number,
-  isBids = true
+  depth: number
 ): cumOrderbookSide[] => {
   let cumulative = orders
     .slice(0, depth)
@@ -96,9 +95,6 @@ const getCumulativeOrderbookSide = (
       })
       return cumulative
     }, [])
-  if (!isBids) {
-    console.log('cumulative', cumulative)
-  }
 
   return cumulative
 }
@@ -272,8 +268,7 @@ const Orderbook = () => {
         asks,
         totalSize,
         maxSize,
-        depth,
-        false
+        depth
       )
 
       currentOrderbookData.current = {
