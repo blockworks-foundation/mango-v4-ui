@@ -230,7 +230,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   allowNegative={false}
                   isNumericString={true}
                   decimalScale={bank?.mintDecimals || 6}
-                  className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+                  className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:outline-none"
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) =>
@@ -242,6 +242,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <div className="col-span-2 mt-2">
                 <ButtonGroup
                   activeValue={sizePercentage}
+                  className="font-mono"
                   onChange={(p) => handleSizePercentage(p)}
                   values={['10', '25', '50', '75', '100']}
                   unit="%"
@@ -255,7 +256,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
               <div className="flex justify-between">
                 <p>{t('withdrawal-value')}</p>
-                <p className="text-th-fgd-1">
+                <p className="font-mono text-th-fgd-1">
                   {formatFixedDecimals(
                     bank?.uiPrice! * Number(inputAmount),
                     true
