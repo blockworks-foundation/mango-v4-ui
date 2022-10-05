@@ -144,6 +144,20 @@ const AccountPage = () => {
     return 0.0
   }, [accountPnl, oneDayPerformanceData])
 
+  const oneDayInterestChange = useMemo(() => {
+    if (oneDayPerformanceData.length) {
+      return (
+        oneDayPerformanceData[oneDayPerformanceData.length - 1]
+          .borrow_interest_cumulative_usd +
+        oneDayPerformanceData[oneDayPerformanceData.length - 1]
+          .deposit_interest_cumulative_usd -
+        oneDayPerformanceData[0].borrow_interest_cumulative_usd +
+        oneDayPerformanceData[0].deposit_interest_cumulative_usd
+      )
+    }
+    return 0.0
+  }, [oneDayPerformanceData])
+
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
       return totalInterestData.reduce(
@@ -158,17 +172,10 @@ const AccountPage = () => {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
   }, [mangoAccount])
 
-  const handleChartToShow = (chartName: string) => {
-    if (chartName === 'cumulative-interest-value') {
-      if (interestTotalValue > 1 || interestTotalValue < -1) {
-        setChartToShow(chartName)
-      }
-    }
-    if (chartName === 'pnl') {
-      if (performanceData.length > 4) {
-        setChartToShow(chartName)
-      }
-    }
+  const handleChartToShow = (
+    chartName: 'pnl' | 'account-value' | 'cumulative-interest-value'
+  ) => {
+    setChartToShow(chartName)
   }
 
   return !chartToShow ? (
@@ -372,14 +379,14 @@ const AccountPage = () => {
           </div>
         </div>
         <button
-          className={`col-span-5 flex border-t border-th-bkg-3 py-3 px-6 lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
             performanceData.length > 4
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
-              : 'cursor-default'
+              : 'pointer-events-none cursor-default'
           }`}
           onClick={() => handleChartToShow('pnl')}
         >
-          <div className="flex w-full items-start justify-between">
+          <div className="flex w-full items-center justify-between">
             <div id="account-step-six">
               <Tooltip
                 content="The amount your account has made or lost."
@@ -395,19 +402,19 @@ const AccountPage = () => {
               <PercentageChange change={oneDayPnlChange} size="small" />
             </div>
             {performanceData.length > 4 ? (
-              <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
+              <ChevronRightIcon className="h-6 w-6" />
             ) : null}
           </div>
         </button>
         <button
-          className={`col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
             interestTotalValue > 1 || interestTotalValue < -1
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
-              : 'cursor-default'
+              : 'pointer-events-none cursor-default'
           }`}
           onClick={() => handleChartToShow('cumulative-interest-value')}
         >
-          <div className="flex w-full items-start justify-between">
+          <div className="flex w-full items-center justify-between">
             <div id="account-step-seven">
               <Tooltip
                 content="The value of interest earned (deposits) minus interest paid (borrows)."
@@ -418,8 +425,15 @@ const AccountPage = () => {
                   {t('total-interest-value')}
                 </p>
               </Tooltip>
-              <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
                 {formatFixedDecimals(interestTotalValue, true)}
+              </p>
+              <p
+                className={`font-mono text-xs ${
+                  oneDayInterestChange >= 0 ? 'text-th-green' : 'text-th-red'
+                }`}
+              >
+                {formatFixedDecimals(oneDayInterestChange, true)}
               </p>
             </div>
             {interestTotalValue > 1 || interestTotalValue < -1 ? (
