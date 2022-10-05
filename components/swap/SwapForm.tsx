@@ -33,7 +33,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
-import { getTokenInMax, useTokenMax } from './useTokenMax'
+import { useTokenMax } from './useTokenMax'
 import WalletIcon from '../icons/WalletIcon'
 import Tooltip from '@components/shared/Tooltip'
 
@@ -248,10 +248,7 @@ const SwapForm = () => {
             </IconButton>
           </div>
         </div>
-        <div
-          id="swap-step-two"
-          className="mb-2 flex items-center justify-between"
-        >
+        <div id="swap-step-two" className="mb-2 flex items-end justify-between">
           <p className="text-th-fgd-3">{t('swap:from')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
@@ -478,22 +475,31 @@ const MaxSwapAmount = ({
     decimals,
   } = useTokenMax(useMargin)
 
-  const setMaxInputAmount = () => {
-    const amountIn = useMargin ? amountWithBorrow : tokenMax
-    setAmountIn(amountIn.toFixed(decimals))
-  }
-
   if (mangoAccountLoading) return null
 
-  const maxAmount = useMargin ? amountWithBorrow : tokenMax
-
   return (
-    <LinkButton className="no-underline" onClick={setMaxInputAmount}>
-      <span className="font-normal text-th-fgd-4">{t('max')}:</span>
-      <span className="mx-1 font-mono text-th-fgd-3 underline">
-        {maxAmount.toFixed()}
-      </span>
-    </LinkButton>
+    <div className="flex flex-wrap justify-end pl-6 text-xs">
+      <LinkButton
+        className="mb-0.5 no-underline"
+        onClick={() => setAmountIn(tokenMax.toFixed(decimals))}
+      >
+        <span className="font-normal text-th-fgd-4">Bal:</span>
+        <span className="mx-1 font-mono text-th-fgd-3 underline">
+          {tokenMax.toFixed()}
+        </span>
+      </LinkButton>
+      {useMargin ? (
+        <LinkButton
+          className="mb-0.5 no-underline"
+          onClick={() => setAmountIn(amountWithBorrow.toFixed(decimals))}
+        >
+          <span className="ml-2 font-normal text-th-fgd-4">{t('max')}:</span>
+          <span className="mx-1 font-mono text-th-fgd-3 underline">
+            {amountWithBorrow.toFixed()}
+          </span>
+        </LinkButton>
+      ) : null}
+    </div>
   )
 }
 
