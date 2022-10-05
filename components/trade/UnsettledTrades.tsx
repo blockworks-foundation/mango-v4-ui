@@ -10,6 +10,7 @@ import Tooltip from '@components/shared/Tooltip'
 import Loading from '@components/shared/Loading'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import MarketLogos from './MarketLogos'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -85,6 +86,7 @@ const UnsettledTrades = ({
                   <tr key={mktAddress} className="text-sm">
                     <td>
                       <div className="flex items-center">
+                        <MarketLogos serumMarket={market!} />
                         <span>{market ? market.name : ''}</span>
                       </div>
                     </td>
@@ -138,6 +140,7 @@ const UnsettledTrades = ({
                   className="flex items-center justify-between border-b border-th-bkg-3 p-4"
                 >
                   <div className="flex items-center">
+                    <MarketLogos serumMarket={market!} />
                     <span>{market ? market.name : ''}</span>
                   </div>
                   <div className="flex items-center space-x-3">
