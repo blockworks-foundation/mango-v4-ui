@@ -274,7 +274,7 @@ const AccountPage = () => {
         </div>
       </div>
       <div className="grid grid-cols-5 border-b border-th-bkg-3">
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1 lg:border-l">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
