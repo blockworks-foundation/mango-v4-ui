@@ -84,6 +84,7 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
         <div>
           <p className="text-sm text-th-fgd-3">
             <Tooltip
+              placement="right"
               content={'Total position size divided by total collateral'}
             >
               Leverage
