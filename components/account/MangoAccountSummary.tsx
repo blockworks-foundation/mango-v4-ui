@@ -5,7 +5,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { formatDecimal } from '../../utils/numbers'
 import Button from '../shared/Button'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
@@ -13,6 +13,7 @@ import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import HealthHeart from './HealthHeart'
 import { ExpandableMenuItem } from '../SideNav'
+import Tooltip from '@components/shared/Tooltip'
 
 const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
@@ -20,6 +21,15 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+
+  const leverage = useMemo(() => {
+    if (!mangoAccount) return 0
+    const liabsValue = mangoAccount.getLiabsValue(HealthType.init)!.toNumber()
+    const totalCollateral = mangoAccount
+      .getAssetsValue(HealthType.init)!
+      .toNumber()
+    return liabsValue / totalCollateral
+  }, [mangoAccount])
 
   return (
     <>
@@ -32,7 +42,7 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
           </p>
         </div>
         <div>
-          <p className="text-sm text-th-fgd-3">{t('account-value')}</p>
+          <p className="text-sm text-th-fgd-3">Net {t('account-value')}</p>
           <p className="text-sm font-bold text-th-fgd-1">
             $
             {mangoAccount
@@ -69,6 +79,18 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
                   2
                 )
               : (0).toFixed(2)}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm text-th-fgd-3">
+            <Tooltip
+              content={'Total position size divided by total collateral'}
+            >
+              Leverage
+            </Tooltip>
+          </p>
+          <p className="text-sm font-bold text-th-fgd-1">
+            {leverage.toFixed(2)}x
           </p>
         </div>
       </div>
