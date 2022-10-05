@@ -74,6 +74,15 @@ const AccountPage = () => {
   const tourSettings = mangoStore((s) => s.settings.tours)
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
+  const leverage = useMemo(() => {
+    if (!mangoAccount) return 0
+    const liabsValue = mangoAccount.getLiabsValue(HealthType.init)!.toNumber()
+    const totalCollateral = mangoAccount
+      .getAssetsValue(HealthType.init)!
+      .toNumber()
+    return liabsValue / totalCollateral
+  }, [mangoAccount])
+
   useEffect(() => {
     if (mangoAccount) {
       const pubKey = mangoAccount.publicKey.toString()
@@ -245,8 +254,8 @@ const AccountPage = () => {
           <AccountActions />
         </div>
       </div>
-      <div className="grid grid-cols-4 border-b border-th-bkg-3">
-        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
+      <div className="grid grid-cols-5 border-b border-th-bkg-3">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1 lg:border-l">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
@@ -282,25 +291,27 @@ const AccountPage = () => {
                 </div>
               }
             >
-              <p className="tooltip-underline text-th-fgd-3">{t('health')}</p>
+              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+                {t('health')}
+              </p>
             </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {maintHealth}%
             </p>
           </div>
         </div>
-        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-five">
             <Tooltip
-              content="The amount of capital you have to trade or borrow against. When your free collateral reaches $0 you won't be able to make withdrawals."
+              content="The value of collateral you have to open new trades or borrows. When your free collateral reaches $0 you won't be able to make withdrawals."
               maxWidth="20rem"
               placement="bottom-start"
             >
-              <p className="tooltip-underline text-th-fgd-3">
+              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                 {t('free-collateral')}
               </p>
             </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {mangoAccount
                 ? formatFixedDecimals(
                     toUiDecimalsForQuote(
@@ -310,58 +321,97 @@ const AccountPage = () => {
                   )
                 : (0).toFixed(2)}
             </p>
+            <span className="text-xs font-normal text-th-fgd-4">
+              <Tooltip
+                content="Total value of collateral for trading and borrowing (including unsettled PnL)."
+                maxWidth="20rem"
+                placement="bottom-start"
+              >
+                <span className="tooltip-underline">Total:</span>{' '}
+                <span className="font-mono text-th-fgd-2">
+                  {mangoAccount
+                    ? formatFixedDecimals(
+                        toUiDecimalsForQuote(
+                          mangoAccount
+                            .getAssetsValue(HealthType.init)!
+                            .toNumber()
+                        ),
+                        true
+                      )
+                    : `$${(0).toFixed(2)}`}
+                </span>
+              </Tooltip>
+            </span>
+          </div>
+        </div>
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+          <div>
+            <Tooltip
+              content="Total position size divided by total collateral."
+              maxWidth="20rem"
+              placement="bottom-start"
+            >
+              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+                {t('leverage')}
+              </p>
+            </Tooltip>
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              {leverage.toFixed(2)}x
+            </p>
           </div>
         </div>
         <button
-          className={`col-span-4 border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0 ${
+          className={`col-span-5 flex border-t border-th-bkg-3 py-3 px-6 lg:col-span-1 lg:border-l lg:border-t-0 ${
             performanceData.length > 4
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'cursor-default'
           }`}
           onClick={() => handleChartToShow('pnl')}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex w-full items-start justify-between">
             <div id="account-step-six">
               <Tooltip
                 content="The amount your account has made or lost."
                 placement="bottom-start"
               >
-                <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
+                <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+                  {t('pnl')}
+                </p>
               </Tooltip>
-              <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+              <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
                 {formatFixedDecimals(accountPnl, true)}
               </p>
             </div>
             {performanceData.length > 4 ? (
-              <ChevronRightIcon className="h-6 w-6" />
+              <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
             ) : null}
           </div>
         </button>
         <button
-          className={`col-span-4 border-t border-th-bkg-3 py-3 pl-6 text-left md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0 ${
+          className={`col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
             interestTotalValue > 1 || interestTotalValue < -1
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'cursor-default'
           }`}
           onClick={() => handleChartToShow('cumulative-interest-value')}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex w-full items-start justify-between">
             <div id="account-step-seven">
               <Tooltip
                 content="The value of interest earned (deposits) minus interest paid (borrows)."
                 maxWidth="20rem"
                 placement="bottom-end"
               >
-                <p className="tooltip-underline text-th-fgd-3">
+                <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                   {t('total-interest-value')}
                 </p>
               </Tooltip>
-              <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+              <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
                 {formatFixedDecimals(interestTotalValue, true)}
               </p>
             </div>
             {interestTotalValue > 1 || interestTotalValue < -1 ? (
-              <ChevronRightIcon className="h-6 w-6" />
+              <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
             ) : null}
           </div>
         </button>

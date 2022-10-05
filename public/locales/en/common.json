@@ -78,6 +78,7 @@
   "token-collateral-multiplier": "{{token}} Collateral Multiplier",
   "total-borrows": "Total Borrows",
   "total-borrow-value": "Total Borrow Value",
+  "total-collateral": "Total Collateral",
   "total-deposits": "Total Deposits",
   "total-deposit-value": "Total Deposit Value",
   "total-interest-value": "Total Interest Value",

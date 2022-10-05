@@ -176,7 +176,7 @@ const TokenList = () => {
                     </div>
                   </td>
                   <td className="pt-4 text-right">
-                    <p>
+                    <p className="text-th-fgd-1">
                       {mangoAccount
                         ? formatDecimal(
                             mangoAccount.getTokenBalanceUi(bank),
@@ -195,7 +195,9 @@ const TokenList = () => {
                   </td>
                   <td>
                     <div className="flex flex-col text-right">
-                      <p>{formatDecimal(interestAmount)}</p>
+                      <p className="text-th-fgd-1">
+                        {formatDecimal(interestAmount)}
+                      </p>
                       <p className="text-sm text-th-fgd-4">
                         {formatFixedDecimals(interestValue, true)}
                       </p>

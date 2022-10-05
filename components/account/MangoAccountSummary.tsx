@@ -3,7 +3,7 @@ import {
   HealthType,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
-import { formatDecimal } from '../../utils/numbers'
+import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import Button from '../shared/Button'
 import { useMemo, useState } from 'react'
 import DepositModal from '../modals/DepositModal'
@@ -11,8 +11,6 @@ import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
 import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
-import HealthHeart from './HealthHeart'
-import { ExpandableMenuItem } from '../SideNav'
 import Tooltip from '@components/shared/Tooltip'
 
 const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
@@ -42,7 +40,7 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
           </p>
         </div>
         <div>
-          <p className="text-sm text-th-fgd-3">Net {t('account-value')}</p>
+          <p className="text-sm text-th-fgd-3">{t('account-value')}</p>
           <p className="text-sm font-bold text-th-fgd-1">
             $
             {mangoAccount
@@ -54,42 +52,33 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
           </p>
         </div>
         <div>
-          <p className="text-sm text-th-fgd-3">Total Collateral</p>
-          <p className="text-sm font-bold text-th-fgd-1">
-            $
-            {mangoAccount
-              ? formatDecimal(
-                  toUiDecimalsForQuote(
-                    mangoAccount.getAssetsValue(HealthType.init)!.toNumber()
-                  ),
-                  2
-                )
-              : (0).toFixed(2)}
-          </p>
-        </div>
-        <div>
           <p className="text-sm text-th-fgd-3">{t('free-collateral')}</p>
           <p className="text-sm font-bold text-th-fgd-1">
-            $
             {mangoAccount
-              ? formatDecimal(
+              ? formatFixedDecimals(
                   toUiDecimalsForQuote(
                     mangoAccount.getCollateralValue()!.toNumber()
                   ),
-                  2
+                  true
                 )
-              : (0).toFixed(2)}
+              : `$${(0).toFixed(2)}`}
           </p>
         </div>
         <div>
-          <p className="text-sm text-th-fgd-3">
-            <Tooltip
-              placement="right"
-              content={'Total position size divided by total collateral'}
-            >
-              Leverage
-            </Tooltip>
+          <p className="text-sm text-th-fgd-3">{t('total-collateral')}</p>
+          <p className="text-sm font-bold text-th-fgd-1">
+            {mangoAccount
+              ? formatFixedDecimals(
+                  toUiDecimalsForQuote(
+                    mangoAccount.getAssetsValue(HealthType.init)!.toNumber()
+                  ),
+                  true
+                )
+              : `$${(0).toFixed(2)}`}
           </p>
+        </div>
+        <div>
+          <p className="text-sm text-th-fgd-3">{t('leverage')}</p>
           <p className="text-sm font-bold text-th-fgd-1">
             {leverage.toFixed(2)}x
           </p>
