@@ -44,6 +44,20 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
           </p>
         </div>
         <div>
+          <p className="text-sm text-th-fgd-3">Total Collateral</p>
+          <p className="text-sm font-bold text-th-fgd-1">
+            $
+            {mangoAccount
+              ? formatDecimal(
+                  toUiDecimalsForQuote(
+                    mangoAccount.getAssetsValue(HealthType.init)!.toNumber()
+                  ),
+                  2
+                )
+              : (0).toFixed(2)}
+          </p>
+        </div>
+        <div>
           <p className="text-sm text-th-fgd-3">{t('free-collateral')}</p>
           <p className="text-sm font-bold text-th-fgd-1">
             $
