@@ -35,6 +35,7 @@ import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 import { withValueLimit } from '../swap/SwapForm'
+import MaxAmountButton from '@components/shared/MaxAmountButton'
 
 interface DepositModalProps {
   token?: string
@@ -258,17 +259,15 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           <div className="mt-4 grid grid-cols-2 pb-6">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
-              <LinkButton className="mb-2 no-underline" onClick={setMax}>
-                <span className="mr-1 text-sm font-normal text-th-fgd-4">
-                  {t('wallet-balance')}:
-                </span>
-                <span className="text-th-fgd-1 underline">
-                  {floorToDecimal(
-                    tokenMax.maxAmount,
-                    tokenMax.maxDecimals
-                  ).toFixed()}
-                </span>
-              </LinkButton>
+              <MaxAmountButton
+                className="mb-2"
+                label={t('wallet-balance')}
+                onClick={setMax}
+                value={floorToDecimal(
+                  tokenMax.maxAmount,
+                  tokenMax.maxDecimals
+                ).toFixed()}
+              />
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
               <button

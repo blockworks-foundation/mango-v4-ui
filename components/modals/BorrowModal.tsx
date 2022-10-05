@@ -25,6 +25,7 @@ import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 import { withValueLimit } from '../swap/SwapForm'
 import { getMaxWithdrawForBank } from '../swap/useTokenMax'
+import MaxAmountButton from '@components/shared/MaxAmountButton'
 
 interface BorrowModalProps {
   token?: string
@@ -190,12 +191,12 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
           <div className="grid grid-cols-2 pb-6">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
-              <LinkButton className="mb-2 no-underline" onClick={setMax}>
-                <span className="font-normal text-th-fgd-4">{t('max')}:</span>
-                <span className="mx-1 text-th-fgd-1 underline">
-                  {tokenMax.toFixed()}
-                </span>
-              </LinkButton>
+              <MaxAmountButton
+                className="mb-2"
+                label={t('max')}
+                onClick={setMax}
+                value={tokenMax.toFixed()}
+              />
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
               <button

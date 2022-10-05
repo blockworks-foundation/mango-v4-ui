@@ -34,14 +34,14 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
       <div className="mb-4 space-y-2">
         <div>
           <p className="text-sm text-th-fgd-3">{t('health')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
+          <p className="font-mono text-sm text-th-fgd-1">
             {mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0}
             %
           </p>
         </div>
         <div>
           <p className="text-sm text-th-fgd-3">{t('account-value')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
+          <p className="font-mono text-sm text-th-fgd-1">
             $
             {mangoAccount
               ? formatDecimal(
@@ -53,7 +53,7 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
         </div>
         <div>
           <p className="text-sm text-th-fgd-3">{t('free-collateral')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
+          <p className="font-mono text-sm text-th-fgd-1">
             {mangoAccount
               ? formatFixedDecimals(
                   toUiDecimalsForQuote(
@@ -66,7 +66,7 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
         </div>
         <div>
           <p className="text-sm text-th-fgd-3">{t('total-collateral')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
+          <p className="font-mono text-sm text-th-fgd-1">
             {mangoAccount
               ? formatFixedDecimals(
                   toUiDecimalsForQuote(
@@ -79,7 +79,7 @@ const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
         </div>
         <div>
           <p className="text-sm text-th-fgd-3">{t('leverage')}</p>
-          <p className="text-sm font-bold text-th-fgd-1">
+          <p className="font-mono text-sm text-th-fgd-1">
             {leverage.toFixed(2)}x
           </p>
         </div>

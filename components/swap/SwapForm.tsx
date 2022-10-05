@@ -36,6 +36,7 @@ import {
 import { useTokenMax } from './useTokenMax'
 import WalletIcon from '../icons/WalletIcon'
 import Tooltip from '@components/shared/Tooltip'
+import MaxAmountButton from '@components/shared/MaxAmountButton'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -479,25 +480,19 @@ const MaxSwapAmount = ({
 
   return (
     <div className="flex flex-wrap justify-end pl-6 text-xs">
-      <LinkButton
-        className="mb-0.5 no-underline"
+      <MaxAmountButton
+        className="mb-0.5"
+        label="Bal"
         onClick={() => setAmountIn(tokenMax.toFixed(decimals))}
-      >
-        <span className="font-normal text-th-fgd-4">Bal:</span>
-        <span className="mx-1 font-mono text-th-fgd-3 underline">
-          {tokenMax.toFixed()}
-        </span>
-      </LinkButton>
+        value={tokenMax.toFixed()}
+      />
       {useMargin ? (
-        <LinkButton
-          className="mb-0.5 no-underline"
+        <MaxAmountButton
+          className="mb-0.5 ml-2"
+          label={t('max')}
           onClick={() => setAmountIn(amountWithBorrow.toFixed(decimals))}
-        >
-          <span className="ml-2 font-normal text-th-fgd-4">{t('max')}:</span>
-          <span className="mx-1 font-mono text-th-fgd-3 underline">
-            {amountWithBorrow.toFixed()}
-          </span>
-        </LinkButton>
+          value={amountWithBorrow.toFixed()}
+        />
       ) : null}
     </div>
   )
