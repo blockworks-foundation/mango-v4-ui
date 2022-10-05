@@ -52,7 +52,9 @@ const Balances = () => {
           <th className="bg-th-bkg-1 text-left">{t('token')}</th>
           <th className="bg-th-bkg-1 text-right">{t('balance')}</th>
           <th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</th>
-          <th className="bg-th-bkg-1 text-right">{t('trade:unsettled')}</th>
+          <th className="bg-th-bkg-1 text-right" id="trade-step-ten">
+            {t('trade:unsettled')}
+          </th>
         </tr>
       </thead>
       <tbody>
