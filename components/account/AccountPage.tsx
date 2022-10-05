@@ -133,6 +133,17 @@ const AccountPage = () => {
     return { accountPnl: 0, accountValueChange: 0 }
   }, [performanceData, mangoAccount])
 
+  const oneDayPnlChange = useMemo(() => {
+    if (accountPnl && oneDayPerformanceData.length) {
+      return (
+        ((accountPnl - oneDayPerformanceData[0].pnl) /
+          Math.abs(oneDayPerformanceData[0].pnl)) *
+        100
+      )
+    }
+    return 0.0
+  }, [accountPnl, oneDayPerformanceData])
+
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
       return totalInterestData.reduce(
@@ -378,9 +389,10 @@ const AccountPage = () => {
                   {t('pnl')}
                 </p>
               </Tooltip>
-              <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
                 {formatFixedDecimals(accountPnl, true)}
               </p>
+              <PercentageChange change={oneDayPnlChange} size="small" />
             </div>
             {performanceData.length > 4 ? (
               <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
