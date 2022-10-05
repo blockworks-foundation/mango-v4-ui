@@ -7,16 +7,15 @@ import {
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import React, { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
-import { floorToDecimal } from '../../utils/numbers'
+import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
-import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import HealthImpact from '../shared/HealthImpact'
@@ -26,7 +25,6 @@ import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 import { withValueLimit } from '../swap/SwapForm'
 import { getMaxWithdrawForBank } from '../swap/useTokenMax'
-// import { BorrowLeverageSlider } from '../swap/LeverageSlider'
 
 interface BorrowModalProps {
   token?: string
@@ -261,6 +259,15 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
               mintPk={bank!.mint}
               uiAmount={parseFloat(inputAmount)}
             />
+            <div className="flex justify-between">
+              <p>{t('borrow-value')}</p>
+              <p className="text-th-fgd-1">
+                {formatFixedDecimals(
+                  bank?.uiPrice! * Number(inputAmount),
+                  true
+                )}
+              </p>
+            </div>
           </div>
         </div>
         <Button

@@ -7,17 +7,16 @@ import {
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 
 import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
-import { floorToDecimal } from '../../utils/numbers'
+import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
-import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import HealthImpact from '../shared/HealthImpact'
@@ -258,6 +257,15 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 mintPk={bank!.mint}
                 uiAmount={parseFloat(inputAmount)}
               />
+              <div className="flex justify-between">
+                <p>{t('withdrawal-value')}</p>
+                <p className="text-th-fgd-1">
+                  {formatFixedDecimals(
+                    bank?.uiPrice! * Number(inputAmount),
+                    true
+                  )}
+                </p>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex justify-center">
