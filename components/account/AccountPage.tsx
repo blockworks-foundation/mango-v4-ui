@@ -187,6 +187,7 @@ const AccountPage = () => {
               maxWidth="20rem"
               placement="bottom-start"
               content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
+              delay={250}
             >
               <p className="tooltip-underline mb-1.5">{t('account-value')}</p>
             </Tooltip>
@@ -278,6 +279,7 @@ const AccountPage = () => {
             <Tooltip
               maxWidth="20rem"
               placement="bottom-start"
+              delay={250}
               content={
                 <div className="flex-col space-y-2 text-sm">
                   <p className="text-xs">
@@ -324,6 +326,7 @@ const AccountPage = () => {
               content="The value of collateral you have to open new trades or borrows. When your free collateral reaches $0 you won't be able to make withdrawals."
               maxWidth="20rem"
               placement="bottom-start"
+              delay={250}
             >
               <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                 {t('free-collateral')}
@@ -344,9 +347,10 @@ const AccountPage = () => {
                 content="Total value of collateral for trading and borrowing (including unsettled PnL)."
                 maxWidth="20rem"
                 placement="bottom-start"
+                delay={250}
               >
-                <span className="tooltip-underline">Total:</span>{' '}
-                <span className="font-mono text-th-fgd-2">
+                <span className="tooltip-underline">Total</span>:
+                <span className="ml-1 font-mono text-th-fgd-2">
                   {mangoAccount
                     ? formatFixedDecimals(
                         toUiDecimalsForQuote(
@@ -368,6 +372,7 @@ const AccountPage = () => {
               content="Total position size divided by total collateral."
               maxWidth="20rem"
               placement="bottom-start"
+              delay={250}
             >
               <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                 {t('leverage')}
@@ -391,6 +396,7 @@ const AccountPage = () => {
               <Tooltip
                 content="The amount your account has made or lost."
                 placement="bottom-start"
+                delay={250}
               >
                 <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                   {t('pnl')}
@@ -420,6 +426,7 @@ const AccountPage = () => {
                 content="The value of interest earned (deposits) minus interest paid (borrows)."
                 maxWidth="20rem"
                 placement="bottom-end"
+                delay={250}
               >
                 <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                   {t('total-interest-value')}
