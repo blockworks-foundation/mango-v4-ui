@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Area, AreaChart, XAxis, YAxis } from 'recharts'
 
 const SimpleAreaChart = ({
@@ -17,12 +18,23 @@ const SimpleAreaChart = ({
   xKey: string
   yKey: string
 }) => {
+  const flipGradientCoords = useMemo(
+    () => data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey],
+    [data]
+  )
+
   return (
     <AreaChart width={width} height={height} data={data}>
       <defs>
-        <linearGradient id={`gradientArea-${name}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.6} />
-          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        <linearGradient
+          id={`gradientArea-${name}`}
+          x1="0"
+          y1={flipGradientCoords ? '0' : '1'}
+          x2="0"
+          y2={flipGradientCoords ? '1' : '0'}
+        >
+          <stop offset="0%" stopColor={color} stopOpacity={0} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.6} />
         </linearGradient>
       </defs>
       <Area

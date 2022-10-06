@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode, useState } from 'react'
+import { FunctionComponent, ReactNode, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -88,6 +88,11 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     }
   }
 
+  const flipGradientCoords = useMemo(
+    () => data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey],
+    [data]
+  )
+
   return (
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
@@ -176,9 +181,9 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       <linearGradient
                         id="gradientArea"
                         x1="0"
-                        y1="0"
+                        y1={flipGradientCoords ? '1' : '0'}
                         x2="0"
-                        y2="1"
+                        y2={flipGradientCoords ? '0' : '1'}
                       >
                         <stop
                           offset="0%"
