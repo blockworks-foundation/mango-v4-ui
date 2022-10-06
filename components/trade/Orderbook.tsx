@@ -6,7 +6,6 @@ import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
 import useInterval from '@components/shared/useInterval'
 import isEqual from 'lodash/isEqual'
 import usePrevious from '@components/shared/usePrevious'
-import { PerpMarket } from '@blockworks-foundation/mango-v4/dist/types/src/accounts/perp'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { floorToDecimal, formatDecimal, getDecimalCount } from 'utils/numbers'
 import { ORDERBOOK_FLASH_KEY } from 'utils/constants'
@@ -407,7 +406,7 @@ const Orderbook = () => {
         </div>
         {serum3MarketExternal ? (
           <div id="trade-step-four">
-            <Tooltip content={t('trade:grouping')} placement="top">
+            <Tooltip content={t('trade:grouping')} placement="top" delay={250}>
               <GroupSize
                 tickSize={serum3MarketExternal.tickSize}
                 onChange={onGroupSizeChange}

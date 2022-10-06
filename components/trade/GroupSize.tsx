@@ -47,7 +47,7 @@ const GroupSize = ({
             {open ? (
               <Listbox.Options
                 static
-                className={`thin-scroll absolute right-0 top-7 z-20 w-20 space-y-2 overflow-auto rounded border border-th-bkg-3 bg-th-bkg-1 p-2 text-th-fgd-2 outline-none`}
+                className={`thin-scroll absolute right-0 top-7 z-20 w-20 space-y-2 overflow-auto rounded bg-th-bkg-2 p-2 text-th-fgd-2 outline-none`}
               >
                 {sizes.map((size) => (
                   <Listbox.Option key={size} value={size}>
