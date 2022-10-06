@@ -106,17 +106,19 @@ const TokenList = () => {
                   </Tooltip>
                 </div>
               </th>
-              <th className="text-right" id="account-step-eight">
+              <th className="flex justify-end" id="account-step-eight">
                 <Tooltip content="The sum of interest earned and interest paid for each token.">
                   <span className="tooltip-underline">
                     {t('interest-earned-paid')}
                   </span>
                 </Tooltip>
               </th>
-              <th className="text-right" id="account-step-nine">
-                <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right).">
-                  <span className="tooltip-underline">{t('rates')}</span>
-                </Tooltip>
+              <th id="account-step-nine">
+                <div className="flex justify-end">
+                  <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right).">
+                    <span className="tooltip-underline">{t('rates')}</span>
+                  </Tooltip>
+                </div>
               </th>
               <th className="text-right">{t('price')}</th>
               <th className="hidden text-right lg:block"></th>

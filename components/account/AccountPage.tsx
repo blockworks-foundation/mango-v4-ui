@@ -169,9 +169,17 @@ const AccountPage = () => {
   }, [mangoAccount])
 
   const handleChartToShow = (
-    chartName: 'pnl' | 'account-value' | 'cumulative-interest-value'
+    chartName: 'pnl' | 'cumulative-interest-value'
   ) => {
-    setChartToShow(chartName)
+    if (
+      (chartName === 'cumulative-interest-value' && interestTotalValue > 1) ||
+      interestTotalValue < -1
+    ) {
+      setChartToShow(chartName)
+    }
+    if (chartName === 'pnl' && performanceData.length > 4) {
+      setChartToShow(chartName)
+    }
   }
 
   return !chartToShow ? (
@@ -321,7 +329,7 @@ const AccountPage = () => {
             <Tooltip
               content="The value of collateral you have to open new trades or borrows. When your free collateral reaches $0 you won't be able to make withdrawals."
               maxWidth="20rem"
-              placement="bottom-start"
+              placement="bottom"
               delay={250}
             >
               <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
@@ -342,7 +350,7 @@ const AccountPage = () => {
               <Tooltip
                 content="Total value of collateral for trading and borrowing (including unsettled PnL)."
                 maxWidth="20rem"
-                placement="bottom-start"
+                placement="bottom"
                 delay={250}
               >
                 <span className="tooltip-underline">Total</span>:
@@ -367,7 +375,7 @@ const AccountPage = () => {
             <Tooltip
               content="Total position size divided by total collateral."
               maxWidth="20rem"
-              placement="bottom-start"
+              placement="bottom"
               delay={250}
             >
               <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
@@ -380,63 +388,59 @@ const AccountPage = () => {
           </div>
         </div>
         <button
-          className={`col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
             performanceData.length > 4
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
-              : 'pointer-events-none cursor-default'
+              : 'cursor-default'
           }`}
           onClick={() => handleChartToShow('pnl')}
         >
-          <div className="flex w-full items-center justify-between">
-            <div id="account-step-six">
-              <Tooltip
-                content="The amount your account has made or lost."
-                placement="bottom-start"
-                delay={250}
-              >
-                <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
-                  {t('pnl')}
-                </p>
-              </Tooltip>
-              <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-                {formatFixedDecimals(accountPnl, true)}
+          <div id="account-step-six" className="flex flex-col items-start">
+            <Tooltip
+              content="The amount your account has made or lost."
+              placement="bottom"
+              delay={250}
+            >
+              <p className="tooltip-underline inline text-sm text-th-fgd-3 xl:text-base">
+                {t('pnl')}
               </p>
-              <Change change={oneDayPnlChange} size="small" />
-            </div>
-            {performanceData.length > 4 ? (
-              <ChevronRightIcon className="h-6 w-6" />
-            ) : null}
+            </Tooltip>
+            <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              {formatFixedDecimals(accountPnl, true)}
+            </p>
+            <Change change={oneDayPnlChange} size="small" />
           </div>
+          {performanceData.length > 4 ? (
+            <ChevronRightIcon className="h-6 w-6" />
+          ) : null}
         </button>
         <button
-          className={`col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
             interestTotalValue > 1 || interestTotalValue < -1
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
-              : 'pointer-events-none cursor-default'
+              : 'cursor-default'
           }`}
           onClick={() => handleChartToShow('cumulative-interest-value')}
         >
-          <div className="flex w-full items-center justify-between">
-            <div id="account-step-seven">
-              <Tooltip
-                content="The value of interest earned (deposits) minus interest paid (borrows)."
-                maxWidth="20rem"
-                placement="bottom-end"
-                delay={250}
-              >
-                <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
-                  {t('total-interest-value')}
-                </p>
-              </Tooltip>
-              <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-                {formatFixedDecimals(interestTotalValue, true)}
+          <div id="account-step-seven">
+            <Tooltip
+              content="The value of interest earned (deposits) minus interest paid (borrows)."
+              maxWidth="20rem"
+              placement="bottom-end"
+              delay={250}
+            >
+              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+                {t('total-interest-value')}
               </p>
-              <Change change={oneDayInterestChange} isCurrency size="small" />
-            </div>
-            {interestTotalValue > 1 || interestTotalValue < -1 ? (
-              <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
-            ) : null}
+            </Tooltip>
+            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              {formatFixedDecimals(interestTotalValue, true)}
+            </p>
+            <Change change={oneDayInterestChange} isCurrency size="small" />
           </div>
+          {interestTotalValue > 1 || interestTotalValue < -1 ? (
+            <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
+          ) : null}
         </button>
       </div>
       <AccountTabs />
