@@ -350,9 +350,7 @@ const SwapForm = () => {
       </div>
       <div
         id="swap-step-four"
-        className={`border-t border-th-bkg-3 px-6 transition-all ${
-          showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
-        }`}
+        className={`border-t border-th-bkg-3 px-6 py-4 transition-all`}
       >
         <div className="flex justify-between">
           <div className="flex items-center">
