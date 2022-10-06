@@ -26,7 +26,7 @@ function Modal({
     >
       <div className="min-h-screen px-4 text-center">
         <Dialog.Overlay
-          className={`fixed inset-0 backdrop-blur-sm ${
+          className={`fixed inset-0 backdrop-blur-sm backdrop-brightness-75 ${
             disableOutsideClose ? 'pointer-events-none' : ''
           }`}
         />
