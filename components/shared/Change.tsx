@@ -1,11 +1,14 @@
 import { MinusSmallIcon } from '@heroicons/react/20/solid'
+import { formatFixedDecimals } from 'utils/numbers'
 import { DownTriangle, UpTriangle } from './DirectionTriangles'
 
-const PercentageChange = ({
+const Change = ({
   change,
+  isCurrency,
   size,
 }: {
   change: number | typeof NaN
+  isCurrency?: boolean
   size?: 'small'
 }) => {
   return (
@@ -36,10 +39,14 @@ const PercentageChange = ({
             : 'text-th-fgd-4'
         }`}
       >
-        {isNaN(change) ? '0.00' : Math.abs(change).toFixed(2)}%
+        {isCurrency ? '$' : ''}
+        {isNaN(change)
+          ? '0.00'
+          : formatFixedDecimals(Math.abs(change), false, true)}
+        {!isCurrency ? '%' : ''}
       </p>
     </div>
   )
 }
 
-export default PercentageChange
+export default Change

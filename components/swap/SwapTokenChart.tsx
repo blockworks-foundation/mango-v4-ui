@@ -24,7 +24,7 @@ import { formatFixedDecimals } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
-import PercentageChange from '../shared/PercentageChange'
+import Change from '../shared/Change'
 import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
 import { formatTokenSymbol } from 'utils/tokens'
@@ -283,7 +283,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      <PercentageChange change={calculateChartChange()} />
+                      <Change change={calculateChartChange()} />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
@@ -304,7 +304,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      <PercentageChange change={calculateChartChange()} />
+                      <Change change={calculateChartChange()} />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">

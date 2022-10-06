@@ -1,5 +1,5 @@
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
-import PercentageChange from '@components/shared/PercentageChange'
+import Change from '@components/shared/Change'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
@@ -128,7 +128,7 @@ const AdvancedMarketHeader = () => {
       </div>
       <div className="ml-6 flex-col">
         <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
-        <PercentageChange change={change} size="small" />
+        <Change change={change} size="small" />
         {/* <div
           className={`font-mono text-xs ${
             change < 0 ? 'text-th-red' : 'text-th-gree'

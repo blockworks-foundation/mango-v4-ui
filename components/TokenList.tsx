@@ -26,7 +26,7 @@ import WithdrawModal from './modals/WithdrawModal'
 import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
-import PercentageChange from './shared/PercentageChange'
+import Change from './shared/Change'
 import SimpleAreaChart from './shared/SimpleAreaChart'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
@@ -249,7 +249,7 @@ const TokenList = () => {
                   </td>
                   <td>
                     <div className="flex flex-col items-end">
-                      <PercentageChange change={change} />
+                      <Change change={change} />
                     </div>
                   </td>
                   <td>
@@ -394,7 +394,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('rolling-change')}</p>
-            <PercentageChange change={change} />
+            <Change change={change} />
           </div>
         </div>
       </Transition>

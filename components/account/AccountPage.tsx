@@ -4,7 +4,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
@@ -23,10 +23,8 @@ import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
 import SheenLoader from '../shared/SheenLoader'
 import AccountChart from './AccountChart'
-import { useViewport } from '../../hooks/useViewport'
-import { breakpoints } from '../../utils/theme'
 import useMangoAccount from '../shared/useMangoAccount'
-import PercentageChange from '../shared/PercentageChange'
+import Change from '../shared/Change'
 import Tooltip from '@components/shared/Tooltip'
 import { IS_ONBOARDED_KEY } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -69,8 +67,6 @@ const AccountPage = () => {
   >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
   const tourSettings = mangoStore((s) => s.settings.tours)
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
@@ -92,10 +88,10 @@ const AccountPage = () => {
   }, [actions, mangoAccount])
 
   useEffect(() => {
-    if (!oneDayPerformanceData.length && performanceData.length) {
+    if (mangoAccount && performanceData.length && !chartToShow) {
       setOneDayPerformanceData(performanceData)
     }
-  }, [oneDayPerformanceData, performanceData])
+  }, [mangoAccount, performanceData, chartToShow])
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -144,20 +140,6 @@ const AccountPage = () => {
     return 0.0
   }, [accountPnl, oneDayPerformanceData])
 
-  const oneDayInterestChange = useMemo(() => {
-    if (oneDayPerformanceData.length) {
-      return (
-        oneDayPerformanceData[oneDayPerformanceData.length - 1]
-          .borrow_interest_cumulative_usd +
-        oneDayPerformanceData[oneDayPerformanceData.length - 1]
-          .deposit_interest_cumulative_usd -
-        oneDayPerformanceData[0].borrow_interest_cumulative_usd +
-        oneDayPerformanceData[0].deposit_interest_cumulative_usd
-      )
-    }
-    return 0.0
-  }, [oneDayPerformanceData])
-
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
       return totalInterestData.reduce(
@@ -167,6 +149,20 @@ const AccountPage = () => {
     }
     return 0
   }, [totalInterestData])
+
+  const oneDayInterestChange = useMemo(() => {
+    if (oneDayPerformanceData.length) {
+      return (
+        oneDayPerformanceData[oneDayPerformanceData.length - 1]
+          .borrow_interest_cumulative_usd +
+        oneDayPerformanceData[oneDayPerformanceData.length - 1]
+          .deposit_interest_cumulative_usd -
+        (oneDayPerformanceData[0].borrow_interest_cumulative_usd +
+          oneDayPerformanceData[0].deposit_interest_cumulative_usd)
+      )
+    }
+    return 0.0
+  }, [oneDayPerformanceData])
 
   const maintHealth = useMemo(() => {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
@@ -216,7 +212,7 @@ const AccountPage = () => {
                 />
               )}
             </div>
-            <PercentageChange change={accountValueChange} />
+            <Change change={accountValueChange} />
           </div>
           {!loadPerformanceData ? (
             mangoAccount && performanceData.length ? (
@@ -402,10 +398,10 @@ const AccountPage = () => {
                   {t('pnl')}
                 </p>
               </Tooltip>
-              <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
                 {formatFixedDecimals(accountPnl, true)}
               </p>
-              <PercentageChange change={oneDayPnlChange} size="small" />
+              <Change change={oneDayPnlChange} size="small" />
             </div>
             {performanceData.length > 4 ? (
               <ChevronRightIcon className="h-6 w-6" />
@@ -414,7 +410,7 @@ const AccountPage = () => {
         </button>
         <button
           className={`col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
-            interestTotalValue > 1 || interestTotalValue < -1
+            interestTotalValue > 0.001 || interestTotalValue < -0.001
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'pointer-events-none cursor-default'
           }`}
@@ -435,15 +431,9 @@ const AccountPage = () => {
               <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
                 {formatFixedDecimals(interestTotalValue, true)}
               </p>
-              <p
-                className={`font-mono text-xs ${
-                  oneDayInterestChange >= 0 ? 'text-th-green' : 'text-th-red'
-                }`}
-              >
-                {formatFixedDecimals(oneDayInterestChange, true)}
-              </p>
+              <Change change={oneDayInterestChange} isCurrency size="small" />
             </div>
-            {interestTotalValue > 1 || interestTotalValue < -1 ? (
+            {interestTotalValue > 0.001 || interestTotalValue < -0.001 ? (
               <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
             ) : null}
           </div>

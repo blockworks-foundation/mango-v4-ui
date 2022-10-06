@@ -21,7 +21,7 @@ import { IconButton } from './Button'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
-import PercentageChange from './PercentageChange'
+import Change from './Change'
 
 dayjs.extend(relativeTime)
 
@@ -116,7 +116,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                         />
                         {!hideChange ? (
                           <span className="ml-3">
-                            <PercentageChange change={calculateChartChange()} />
+                            <Change change={calculateChartChange()} />
                           </span>
                         ) : null}
                       </div>
@@ -136,7 +136,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                         />
                         {!hideChange ? (
                           <span className="ml-3">
-                            <PercentageChange change={calculateChartChange()} />
+                            <Change change={calculateChartChange()} />
                           </span>
                         ) : null}
                       </div>
