@@ -3,7 +3,6 @@ import {
   ArrowRightIcon,
   ChevronDownIcon,
   ClockIcon,
-  ArrowTopRightOnSquareIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
@@ -15,8 +14,7 @@ import { IconButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { SwapHistoryItem } from '@store/mangoStore'
-import mangoStore, { TradeHistoryItem, SwapHistoryItem } from '@store/mangoStore'
+import mangoStore, { SwapHistoryItem } from '@store/mangoStore'
 import {
   countLeadingZeros,
   formatFixedDecimals,

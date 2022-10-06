@@ -249,7 +249,6 @@ export type MangoStore = {
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (mangoAccountPk: string) => Promise<void>
     fetchTourSettings: (walletPk: string) => void
-    fetchTradeHistory: (mangoAccountPk: string) => Promise<void>
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     reloadGroup: () => Promise<void>

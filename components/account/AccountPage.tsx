@@ -148,11 +148,11 @@ const AccountPage = () => {
         0
       )
     }
-    return 0
+    return 0.0
   }, [totalInterestData])
 
   const oneDayInterestChange = useMemo(() => {
-    if (oneDayPerformanceData.length) {
+    if (oneDayPerformanceData.length && mangoAccount) {
       return (
         oneDayPerformanceData[oneDayPerformanceData.length - 1]
           .borrow_interest_cumulative_usd +
@@ -163,7 +163,7 @@ const AccountPage = () => {
       )
     }
     return 0.0
-  }, [oneDayPerformanceData])
+  }, [oneDayPerformanceData, mangoAccount])
 
   const maintHealth = useMemo(() => {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0

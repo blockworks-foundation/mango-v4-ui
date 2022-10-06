@@ -31,6 +31,8 @@ const ConnectedMenu = () => {
       state.mangoAccount.current = undefined
       state.connected = false
       state.mangoAccount.openOrders = {}
+      state.mangoAccount.stats.interestTotals = { data: [], loading: false }
+      state.mangoAccount.stats.performance = { data: [], loading: false }
     })
     disconnect()
     wallet?.adapter.disconnect()
