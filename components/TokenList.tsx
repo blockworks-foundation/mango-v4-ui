@@ -29,6 +29,7 @@ import IconDropMenu from './shared/IconDropMenu'
 import PercentageChange from './shared/PercentageChange'
 import SimpleAreaChart from './shared/SimpleAreaChart'
 import Tooltip from './shared/Tooltip'
+import { formatTokenSymbol } from 'utils/tokens'
 
 const TokenList = () => {
   const { t } = useTranslation('common')
@@ -456,6 +457,12 @@ const ActionsMenu = ({
     }
   }, [router, asPath, set, bank, jupiterTokens])
 
+  const logoURI = useMemo(() => {
+    if (!bank || !jupiterTokens.length) return ''
+    return jupiterTokens.find((t) => t.address === bank.mint.toString())
+      ?.logoURI
+  }, [bank, jupiterTokens])
+
   return (
     <>
       <IconDropMenu
@@ -464,14 +471,11 @@ const ActionsMenu = ({
       >
         <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
           <div className="mr-2 flex flex-shrink-0 items-center">
-            <Image
-              alt=""
-              width="20"
-              height="20"
-              src={`/icons/${bank.name.toLowerCase()}.svg`}
-            />
+            <Image alt="" width="20" height="20" src={logoURI || ''} />
           </div>
-          <p className="font-body tracking-wide">{bank.name}</p>
+          <p className="font-body tracking-wide">
+            {formatTokenSymbol(bank.name)}
+          </p>
         </div>
         <LinkButton
           className="w-full text-left"

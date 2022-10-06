@@ -25,6 +25,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { EXPLORERS } from 'pages/settings'
 import Tooltip from '@components/shared/Tooltip'
+import { formatTokenSymbol } from 'utils/tokens'
 
 const SwapHistoryTable = ({
   tradeHistory,
@@ -91,12 +92,15 @@ const SwapHistoryTable = ({
                 let baseLogoURI
                 let quoteLogoURI
 
+                const inSymbol = formatTokenSymbol(swap_in_symbol)
+                const outSymbol = formatTokenSymbol(swap_out_symbol)
+
                 if (jupiterTokens.length) {
                   baseLogoURI = jupiterTokens.find(
-                    (t) => t.symbol === swap_in_symbol
+                    (t) => t.symbol === inSymbol
                   )?.logoURI
                   quoteLogoURI = jupiterTokens.find(
-                    (t) => t.symbol === swap_out_symbol
+                    (t) => t.symbol === outSymbol
                   )?.logoURI
                 }
 
@@ -127,7 +131,7 @@ const SwapHistoryTable = ({
                             <p className="mb-1.5 whitespace-nowrap leading-none">
                               {`${trimDecimals(swap_in_amount, inDecimals)}`}
                               <span className="ml-1 font-body tracking-wide text-th-fgd-4">
-                                {swap_in_symbol}
+                                {inSymbol}
                               </span>
                             </p>
                             <p className="text-xs leading-none text-th-fgd-4">
@@ -156,7 +160,7 @@ const SwapHistoryTable = ({
                             <p className="mb-1.5 whitespace-nowrap leading-none">
                               {`${trimDecimals(swap_out_amount, outDecimals)}`}
                               <span className="ml-1 font-body tracking-wide text-th-fgd-4">
-                                {swap_out_symbol}
+                                {outSymbol}
                               </span>
                             </p>
                             <p className="text-xs leading-none text-th-fgd-4">
@@ -176,7 +180,7 @@ const SwapHistoryTable = ({
                         <p>
                           {borrowAmount}
                           <span className="ml-1 font-body tracking-wide text-th-fgd-4">
-                            {swap_in_symbol}
+                            {inSymbol}
                           </span>
                         </p>
                       </div>
@@ -248,12 +252,15 @@ const SwapHistoryTable = ({
               let baseLogoURI
               let quoteLogoURI
 
+              const inSymbol = formatTokenSymbol(swap_in_symbol)
+              const outSymbol = formatTokenSymbol(swap_out_symbol)
+
               if (jupiterTokens.length) {
                 baseLogoURI = jupiterTokens.find(
-                  (t) => t.symbol === swap_in_symbol
+                  (t) => t.symbol === inSymbol
                 )?.logoURI
                 quoteLogoURI = jupiterTokens.find(
-                  (t) => t.symbol === swap_out_symbol
+                  (t) => t.symbol === outSymbol
                 )?.logoURI
               }
 
@@ -273,7 +280,7 @@ const SwapHistoryTable = ({
                         <div>
                           <p className="mb-1.5 whitespace-nowrap font-mono leading-none text-th-fgd-1">
                             {swap_in_amount.toFixed(2)}{' '}
-                            <span className="font-body">{swap_in_symbol}</span>
+                            <span className="font-body">{inSymbol}</span>
                           </p>
                           <p className="font-mono text-xs leading-none text-th-fgd-3">
                             {formatFixedDecimals(swap_in_price_usd, true)}
@@ -302,7 +309,7 @@ const SwapHistoryTable = ({
                         <div>
                           <p className="mb-1.5 whitespace-nowrap leading-none text-th-fgd-1">
                             {swap_out_amount.toFixed(2)}{' '}
-                            <span className="font-body">{swap_out_symbol}</span>
+                            <span className="font-body">{outSymbol}</span>
                           </p>
                           <p className="font-mono text-xs leading-none text-th-fgd-3">
                             {formatFixedDecimals(swap_out_price_usd, true)}
@@ -354,7 +361,7 @@ const SwapHistoryTable = ({
                         <p className="text-xs text-th-fgd-3">{t('borrow')}</p>
                         <p className="font-mono text-th-fgd-1">
                           {borrowAmount}{' '}
-                          <span className="font-body">{swap_in_symbol}</span>
+                          <span className="font-body">{inSymbol}</span>
                         </p>
                       </div>
                       <div className="col-span-1">
