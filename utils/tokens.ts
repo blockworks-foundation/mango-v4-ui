@@ -5,7 +5,12 @@ import {
   AccountInfo,
 } from '@solana/web3.js'
 import { TokenInstructions } from '@project-serum/serum'
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import {
+  Group,
+  Serum3Market,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
+import { Token } from 'types/jupiter'
 
 export class TokenAccount {
   publicKey!: PublicKey
@@ -97,3 +102,6 @@ export const fetchNftsFromHolaplexIndexer = async (owner: PublicKey) => {
   const body = await result.json()
   return body.data
 }
+
+export const formatTokenSymbol = (symbol: string) =>
+  symbol === 'MSOL' ? 'mSOL' : symbol === 'SOETH' ? 'soETH' : symbol

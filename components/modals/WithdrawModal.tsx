@@ -7,17 +7,16 @@ import {
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 
 import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
-import { floorToDecimal } from '../../utils/numbers'
+import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
-import Input from '../forms/Input'
 import Label from '../forms/Label'
 import Button, { LinkButton } from '../shared/Button'
 import HealthImpact from '../shared/HealthImpact'
@@ -27,6 +26,7 @@ import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 import { withValueLimit } from '../swap/SwapForm'
 import { getMaxWithdrawForBank } from '../swap/useTokenMax'
+import MaxAmountButton from '@components/shared/MaxAmountButton'
 
 interface WithdrawModalProps {
   token?: string
@@ -193,17 +193,12 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="grid grid-cols-2 pb-6">
               <div className="col-span-2 flex justify-between">
                 <Label text={t('token')} />
-                <LinkButton
-                  className="mb-2 no-underline"
+                <MaxAmountButton
+                  className="mb-2"
+                  label={t('max')}
                   onClick={() => handleSizePercentage('100')}
-                >
-                  <span className="mr-1 font-normal text-th-fgd-4">
-                    {t('max')}:
-                  </span>
-                  <span className="text-th-fgd-1 underline">
-                    {tokenMax.toFixed()}
-                  </span>
-                </LinkButton>
+                  value={tokenMax.toFixed()}
+                />
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
                 <button
@@ -235,7 +230,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   allowNegative={false}
                   isNumericString={true}
                   decimalScale={bank?.mintDecimals || 6}
-                  className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+                  className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:outline-none"
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) =>
@@ -247,6 +242,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <div className="col-span-2 mt-2">
                 <ButtonGroup
                   activeValue={sizePercentage}
+                  className="font-mono"
                   onChange={(p) => handleSizePercentage(p)}
                   values={['10', '25', '50', '75', '100']}
                   unit="%"
@@ -258,6 +254,15 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 mintPk={bank!.mint}
                 uiAmount={parseFloat(inputAmount)}
               />
+              <div className="flex justify-between">
+                <p>{t('withdrawal-value')}</p>
+                <p className="font-mono text-th-fgd-1">
+                  {formatFixedDecimals(
+                    bank?.uiPrice! * Number(inputAmount),
+                    true
+                  )}
+                </p>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex justify-center">

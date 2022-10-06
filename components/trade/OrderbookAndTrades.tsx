@@ -4,12 +4,12 @@ import Orderbook from './Orderbook'
 import RecentTrades from './RecentTrades'
 
 const TABS: [string, number][] = [
-  ['book', 0],
-  ['trades', 0],
+  ['trade:book', 0],
+  ['trade:trades', 0],
 ]
 
 const OrderbookAndTrades = () => {
-  const [activeTab, setActiveTab] = useState('book')
+  const [activeTab, setActiveTab] = useState('trade:book')
   return (
     <div className="hide-scroll h-full">
       <div className="border-b border-r border-th-bkg-3">
@@ -20,11 +20,17 @@ const OrderbookAndTrades = () => {
           fillWidth
         />
       </div>
-      <div className={`h-full ${activeTab === 'book' ? 'visible' : 'hidden'}`}>
+      <div
+        className={`h-full ${
+          activeTab === 'trade:book' ? 'visible' : 'hidden'
+        }`}
+      >
         <Orderbook />
       </div>
       <div
-        className={`h-full ${activeTab === 'trades' ? 'visible' : 'hidden'}`}
+        className={`h-full ${
+          activeTab === 'trade:trades' ? 'visible' : 'hidden'
+        }`}
       >
         <RecentTrades />
       </div>

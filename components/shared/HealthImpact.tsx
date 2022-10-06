@@ -39,27 +39,10 @@ const HealthImpact = ({
       : Math.trunc(projectedHealth!)
   }, [mangoAccount, mintPk, uiAmount, isDeposit])
 
-  const initProjectedHealth = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !mangoAccount) return 0
-    const projectedHealth =
-      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
-        group,
-        [{ mintPk, uiTokenAmount: isDeposit ? uiAmount : uiAmount * -1 }],
-        HealthType.init
-      )
-
-    return projectedHealth! > 100
-      ? 100
-      : projectedHealth! < 0
-      ? 0
-      : projectedHealth
-  }, [mangoAccount, mintPk, uiAmount, isDeposit])
-
   return (
     <div className="flex justify-between">
       <p>{t('health-impact')}</p>
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 font-mono">
         <p className="text-th-fgd-1">{currentMaintHealth}%</p>
         <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
         <p

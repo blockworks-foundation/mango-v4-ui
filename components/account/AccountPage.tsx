@@ -23,11 +23,13 @@ import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
 import SheenLoader from '../shared/SheenLoader'
 import AccountChart from './AccountChart'
-import { useViewport } from '../../hooks/useViewport'
-import { breakpoints } from '../../utils/theme'
 import useMangoAccount from '../shared/useMangoAccount'
-import PercentageChange from '../shared/PercentageChange'
+import Change from '../shared/Change'
 import Tooltip from '@components/shared/Tooltip'
+import { IS_ONBOARDED_KEY } from 'utils/constants'
+import { useWallet } from '@solana/wallet-adapter-react'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -43,7 +45,8 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const AccountPage = () => {
   const { t } = useTranslation('common')
-  const { mangoAccount, lastUpdatedAt } = useMangoAccount()
+  const { connected } = useWallet()
+  const { mangoAccount } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
   const loadPerformanceData = mangoStore(
     (s) => s.mangoAccount.stats.performance.loading
@@ -64,8 +67,17 @@ const AccountPage = () => {
   >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const tourSettings = mangoStore((s) => s.settings.tours)
+  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+
+  const leverage = useMemo(() => {
+    if (!mangoAccount) return 0
+    const liabsValue = mangoAccount.getLiabsValue(HealthType.init)!.toNumber()
+    const totalCollateral = mangoAccount
+      .getAssetsValue(HealthType.init)!
+      .toNumber()
+    return liabsValue / totalCollateral
+  }, [mangoAccount])
 
   useEffect(() => {
     if (mangoAccount) {
@@ -77,10 +89,10 @@ const AccountPage = () => {
   }, [actions, mangoAccount])
 
   useEffect(() => {
-    if (!oneDayPerformanceData.length && performanceData.length) {
+    if (mangoAccount && performanceData.length && !chartToShow) {
       setOneDayPerformanceData(performanceData)
     }
-  }, [oneDayPerformanceData, performanceData])
+  }, [mangoAccount, performanceData, chartToShow])
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -118,6 +130,17 @@ const AccountPage = () => {
     return { accountPnl: 0, accountValueChange: 0 }
   }, [performanceData, mangoAccount])
 
+  const oneDayPnlChange = useMemo(() => {
+    if (accountPnl && oneDayPerformanceData.length) {
+      return (
+        ((accountPnl - oneDayPerformanceData[0].pnl) /
+          Math.abs(oneDayPerformanceData[0].pnl)) *
+        100
+      )
+    }
+    return 0.0
+  }, [accountPnl, oneDayPerformanceData])
+
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
       return totalInterestData.reduce(
@@ -128,19 +151,48 @@ const AccountPage = () => {
     return 0
   }, [totalInterestData])
 
+  const oneDayInterestChange = useMemo(() => {
+    if (oneDayPerformanceData.length) {
+      return (
+        oneDayPerformanceData[oneDayPerformanceData.length - 1]
+          .borrow_interest_cumulative_usd +
+        oneDayPerformanceData[oneDayPerformanceData.length - 1]
+          .deposit_interest_cumulative_usd -
+        (oneDayPerformanceData[0].borrow_interest_cumulative_usd +
+          oneDayPerformanceData[0].deposit_interest_cumulative_usd)
+      )
+    }
+    return 0.0
+  }, [oneDayPerformanceData])
+
   const maintHealth = useMemo(() => {
     return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
   }, [mangoAccount])
+
+  const handleChartToShow = (
+    chartName: 'pnl' | 'cumulative-interest-value'
+  ) => {
+    if (
+      (chartName === 'cumulative-interest-value' && interestTotalValue > 1) ||
+      interestTotalValue < -1
+    ) {
+      setChartToShow(chartName)
+    }
+    if (chartName === 'pnl' && performanceData.length > 4) {
+      setChartToShow(chartName)
+    }
+  }
 
   return !chartToShow ? (
     <>
       <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 pt-3 pb-0 md:border-b md:pb-3">
         <div className="flex items-center space-x-6">
-          <div id="step-two">
+          <div id="account-step-three">
             <Tooltip
               maxWidth="20rem"
               placement="bottom-start"
               content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
+              delay={250}
             >
               <p className="tooltip-underline mb-1.5">{t('account-value')}</p>
             </Tooltip>
@@ -169,7 +221,7 @@ const AccountPage = () => {
                 />
               )}
             </div>
-            <PercentageChange change={accountValueChange} />
+            <Change change={accountValueChange} />
           </div>
           {!loadPerformanceData ? (
             mangoAccount && performanceData.length ? (
@@ -226,12 +278,13 @@ const AccountPage = () => {
           <AccountActions />
         </div>
       </div>
-      <div className="grid grid-cols-4 border-b border-th-bkg-3">
-        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
-          <div id="step-three">
+      <div className="grid grid-cols-5 border-b border-th-bkg-3">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1">
+          <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
               placement="bottom-start"
+              delay={250}
               content={
                 <div className="flex-col space-y-2 text-sm">
                   <p className="text-xs">
@@ -263,25 +316,28 @@ const AccountPage = () => {
                 </div>
               }
             >
-              <p className="tooltip-underline text-th-fgd-3">{t('health')}</p>
+              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+                {t('health')}
+              </p>
             </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {maintHealth}%
             </p>
           </div>
         </div>
-        <div className="col-span-4 border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l md:border-t-0 lg:col-span-1">
-          <div id="step-four">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+          <div id="account-step-five">
             <Tooltip
-              content="The amount of capital you have to trade or borrow against. When your free collateral reaches $0 you won't be able to make withdrawals."
+              content="The value of collateral you have to open new trades or borrows. When your free collateral reaches $0 you won't be able to make withdrawals."
               maxWidth="20rem"
-              placement="bottom-start"
+              placement="bottom"
+              delay={250}
             >
-              <p className="tooltip-underline text-th-fgd-3">
+              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                 {t('free-collateral')}
               </p>
             </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {mangoAccount
                 ? formatFixedDecimals(
                     toUiDecimalsForQuote(
@@ -291,53 +347,102 @@ const AccountPage = () => {
                   )
                 : (0).toFixed(2)}
             </p>
+            <span className="text-xs font-normal text-th-fgd-4">
+              <Tooltip
+                content="Total value of collateral for trading and borrowing (including unsettled PnL)."
+                maxWidth="20rem"
+                placement="bottom"
+                delay={250}
+              >
+                <span className="tooltip-underline">Total</span>:
+                <span className="ml-1 font-mono text-th-fgd-2">
+                  {mangoAccount
+                    ? formatFixedDecimals(
+                        toUiDecimalsForQuote(
+                          mangoAccount
+                            .getAssetsValue(HealthType.init)!
+                            .toNumber()
+                        ),
+                        true
+                      )
+                    : `$${(0).toFixed(2)}`}
+                </span>
+              </Tooltip>
+            </span>
           </div>
         </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 px-6 md:col-span-2 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div>
             <Tooltip
-              content="The amount your account has made or lost."
-              placement="bottom-start"
+              content="Total position size divided by total collateral."
+              maxWidth="20rem"
+              placement="bottom"
+              delay={250}
             >
-              <p className="tooltip-underline text-th-fgd-3">{t('pnl')}</p>
+              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+                {t('leverage')}
+              </p>
             </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
-              {formatFixedDecimals(accountPnl, true)}
+            <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              {leverage.toFixed(2)}x
             </p>
           </div>
-          {performanceData.length > 4 ? (
-            <IconButton
-              onClick={() => setChartToShow('pnl')}
-              size={!isMobile ? 'small' : 'medium'}
-            >
-              <ChevronRightIcon className="h-5 w-5" />
-            </IconButton>
-          ) : null}
         </div>
-        <div className="col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 md:col-span-1 md:col-span-2 md:border-l lg:col-span-1 lg:border-t-0">
-          <div id="step-five">
+        <button
+          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
+            performanceData.length > 4
+              ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
+              : 'cursor-default'
+          }`}
+          onClick={() => handleChartToShow('pnl')}
+        >
+          <div id="account-step-six" className="flex flex-col items-start">
+            <Tooltip
+              content="The amount your account has made or lost."
+              placement="bottom"
+              delay={250}
+            >
+              <p className="tooltip-underline inline text-sm text-th-fgd-3 xl:text-base">
+                {t('pnl')}
+              </p>
+            </Tooltip>
+            <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              {formatFixedDecimals(accountPnl, true)}
+            </p>
+            <Change change={oneDayPnlChange} size="small" />
+          </div>
+          {performanceData.length > 4 ? (
+            <ChevronRightIcon className="h-6 w-6" />
+          ) : null}
+        </button>
+        <button
+          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
+            interestTotalValue > 1 || interestTotalValue < -1
+              ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
+              : 'cursor-default'
+          }`}
+          onClick={() => handleChartToShow('cumulative-interest-value')}
+        >
+          <div id="account-step-seven">
             <Tooltip
               content="The value of interest earned (deposits) minus interest paid (borrows)."
               maxWidth="20rem"
               placement="bottom-end"
+              delay={250}
             >
-              <p className="tooltip-underline text-th-fgd-3">
+              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                 {t('total-interest-value')}
               </p>
             </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1">
+            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {formatFixedDecimals(interestTotalValue, true)}
             </p>
+            <Change change={oneDayInterestChange} isCurrency size="small" />
           </div>
           {interestTotalValue > 1 || interestTotalValue < -1 ? (
-            <IconButton
-              onClick={() => setChartToShow('cumulative-interest-value')}
-              size={!isMobile ? 'small' : 'medium'}
-            >
-              <ChevronRightIcon className="h-5 w-5" />
-            </IconButton>
+            <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
           ) : null}
-        </div>
+        </button>
       </div>
       <AccountTabs />
       {showDepositModal ? (
@@ -351,6 +456,9 @@ const AccountPage = () => {
           isOpen={showWithdrawModal}
           onClose={() => setShowWithdrawModal(false)}
         />
+      ) : null}
+      {!tourSettings?.account_tour_seen && isOnboarded && connected ? (
+        <AccountOnboardingTour />
       ) : null}
     </>
   ) : (

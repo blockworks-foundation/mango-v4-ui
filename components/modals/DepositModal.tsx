@@ -20,7 +20,7 @@ import { TokenAccount } from '../../utils/tokens'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Label from '../forms/Label'
-import Button, { LinkButton } from '../shared/Button'
+import Button from '../shared/Button'
 import HealthImpact from '../shared/HealthImpact'
 import InfoTooltip from '../shared/InfoTooltip'
 import InlineNotification from '../shared/InlineNotification'
@@ -28,6 +28,8 @@ import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 import { withValueLimit } from '../swap/SwapForm'
+import MaxAmountButton from '@components/shared/MaxAmountButton'
+import Tooltip from '@components/shared/Tooltip'
 
 interface DepositModalProps {
   token?: string
@@ -251,17 +253,15 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           <div className="mt-4 grid grid-cols-2 pb-6">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
-              <LinkButton className="mb-2 no-underline" onClick={setMax}>
-                <span className="mr-1 text-sm font-normal text-th-fgd-4">
-                  {t('wallet-balance')}:
-                </span>
-                <span className="text-th-fgd-1 underline">
-                  {floorToDecimal(
-                    tokenMax.maxAmount,
-                    tokenMax.maxDecimals
-                  ).toFixed()}
-                </span>
-              </LinkButton>
+              <MaxAmountButton
+                className="mb-2"
+                label={t('wallet-balance')}
+                onClick={setMax}
+                value={floorToDecimal(
+                  tokenMax.maxAmount,
+                  tokenMax.maxDecimals
+                ).toFixed()}
+              />
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
               <button
@@ -291,7 +291,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 allowNegative={false}
                 isNumericString={true}
                 decimalScale={bank?.mintDecimals || 6}
-                className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
+                className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:outline-none"
                 placeholder="0.00"
                 value={inputAmount}
                 onValueChange={(e: NumberFormatValues) =>
@@ -303,6 +303,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="col-span-2 mt-2">
               <ButtonGroup
                 activeValue={sizePercentage}
+                className="font-mono"
                 onChange={(p) => handleSizePercentage(p)}
                 values={['10', '25', '50', '75', '100']}
                 unit="%"
@@ -317,7 +318,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             />
             <div className="flex justify-between">
               <p>{t('deposit-value')}</p>
-              <p className="text-th-fgd-1">
+              <p className="font-mono text-th-fgd-1">
                 {formatFixedDecimals(
                   bank?.uiPrice! * Number(inputAmount),
                   true
@@ -326,16 +327,17 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             </div>
             <div className="flex justify-between">
               <div className="flex items-center">
-                <p>{t('asset-weight')}</p>
-                <InfoTooltip content={t('asset-weight-desc')} />
+                <Tooltip content={t('asset-weight-desc')}>
+                  <p className="tooltip-underline">{t('asset-weight')}</p>
+                </Tooltip>
               </div>
-              <p className="text-th-fgd-1">
+              <p className="font-mono text-th-fgd-1">
                 {bank!.initAssetWeight.toFixed(2)}x
               </p>
             </div>
             <div className="flex justify-between">
               <p>{t('collateral-value')}</p>
-              <p className="text-th-fgd-1">
+              <p className="font-mono text-th-fgd-1">
                 {formatFixedDecimals(
                   bank!.uiPrice! *
                     Number(inputAmount) *

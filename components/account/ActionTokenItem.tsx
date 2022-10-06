@@ -48,21 +48,21 @@ const ActionTokenItem = ({
         <p className="text-th-fgd-1">{name}</p>
       </div>
       {showDepositRates ? (
-        <div className="text-right">
+        <div className="text-right font-mono">
           <p className="text-th-green">
             {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
           </p>
         </div>
       ) : null}
       {showBorrowRates ? (
-        <div className="text-right">
+        <div className="text-right font-mono">
           <p className="text-th-red">
             {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
           </p>
         </div>
       ) : null}
       <div className="text-right">
-        <p className="text-th-fgd-1">{formatDecimal(customValue)}</p>
+        <p className="font-mono text-th-fgd-1">{formatDecimal(customValue)}</p>
       </div>
     </button>
   )

@@ -26,9 +26,10 @@ import WithdrawModal from './modals/WithdrawModal'
 import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
-import PercentageChange from './shared/PercentageChange'
+import Change from './shared/Change'
 import SimpleAreaChart from './shared/SimpleAreaChart'
 import Tooltip from './shared/Tooltip'
+import { formatTokenSymbol } from 'utils/tokens'
 
 const TokenList = () => {
   const { t } = useTranslation('common')
@@ -105,18 +106,16 @@ const TokenList = () => {
                   </Tooltip>
                 </div>
               </th>
-              <th>
-                <div className="flex justify-end">
-                  <Tooltip content="The sum of interest earned and interest paid for each token.">
-                    <span className="tooltip-underline">
-                      {t('interest-earned-paid')}
-                    </span>
-                  </Tooltip>
-                </div>
+              <th className="flex justify-end" id="account-step-eight">
+                <Tooltip content="The sum of interest earned and interest paid for each token.">
+                  <span className="tooltip-underline">
+                    {t('interest-earned-paid')}
+                  </span>
+                </Tooltip>
               </th>
-              <th>
+              <th id="account-step-nine">
                 <div className="flex justify-end">
-                  <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right)">
+                  <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right).">
                     <span className="tooltip-underline">{t('rates')}</span>
                   </Tooltip>
                 </div>
@@ -127,7 +126,7 @@ const TokenList = () => {
             </tr>
           </thead>
           <tbody>
-            {banks.map(({ key, value }) => {
+            {banks.map(({ key, value }, i) => {
               const bank = value[0]
               const oraclePrice = bank.uiPrice
 
@@ -252,11 +251,14 @@ const TokenList = () => {
                   </td>
                   <td>
                     <div className="flex flex-col items-end">
-                      <PercentageChange change={change} />
+                      <Change change={change} />
                     </div>
                   </td>
                   <td>
-                    <div className="flex justify-end space-x-2">
+                    <div
+                      className="flex justify-end space-x-2"
+                      id={i === 0 ? 'account-step-ten' : ''}
+                    >
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
                     </div>
                   </td>
@@ -394,7 +396,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('rolling-change')}</p>
-            <PercentageChange change={change} />
+            <Change change={change} />
           </div>
         </div>
       </Transition>
@@ -457,6 +459,12 @@ const ActionsMenu = ({
     }
   }, [router, asPath, set, bank, jupiterTokens])
 
+  const logoURI = useMemo(() => {
+    if (!bank || !jupiterTokens.length) return ''
+    return jupiterTokens.find((t) => t.address === bank.mint.toString())
+      ?.logoURI
+  }, [bank, jupiterTokens])
+
   return (
     <>
       <IconDropMenu
@@ -465,14 +473,11 @@ const ActionsMenu = ({
       >
         <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
           <div className="mr-2 flex flex-shrink-0 items-center">
-            <Image
-              alt=""
-              width="20"
-              height="20"
-              src={`/icons/${bank.name.toLowerCase()}.svg`}
-            />
+            <Image alt="" width="20" height="20" src={logoURI || ''} />
           </div>
-          <p className="font-body tracking-wide">{bank.name}</p>
+          <p className="font-body tracking-wide">
+            {formatTokenSymbol(bank.name)}
+          </p>
         </div>
         <LinkButton
           className="w-full text-left"

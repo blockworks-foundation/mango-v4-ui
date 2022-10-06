@@ -16,6 +16,7 @@ import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { SwapHistoryItem } from '@store/mangoStore'
+import mangoStore, { TradeHistoryItem, SwapHistoryItem } from '@store/mangoStore'
 import {
   countLeadingZeros,
   formatFixedDecimals,
@@ -25,6 +26,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { EXPLORERS } from 'pages/settings'
 import Tooltip from '@components/shared/Tooltip'
+import { formatTokenSymbol } from 'utils/tokens'
 
 const SwapHistoryTable = ({
   swapHistory,
@@ -34,6 +36,7 @@ const SwapHistoryTable = ({
   loading: boolean
 }) => {
   const { t } = useTranslation(['common', 'settings'])
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const { connected } = useWallet()
   const [showSwapDetails, setSwapDetails] = useState('')
   const { width } = useViewport()
@@ -87,6 +90,21 @@ const SwapHistoryTable = ({
                     ? loan_origination_fee.toFixed(4)
                     : 0
 
+                let baseLogoURI
+                let quoteLogoURI
+
+                const inSymbol = formatTokenSymbol(swap_in_symbol)
+                const outSymbol = formatTokenSymbol(swap_out_symbol)
+
+                if (jupiterTokens.length) {
+                  baseLogoURI = jupiterTokens.find(
+                    (t) => t.symbol === inSymbol
+                  )?.logoURI
+                  quoteLogoURI = jupiterTokens.find(
+                    (t) => t.symbol === outSymbol
+                  )?.logoURI
+                }
+
                 const inDecimals = countLeadingZeros(swap_in_amount) + 2
                 const outDecimals = countLeadingZeros(swap_out_amount) + 2
                 return (
@@ -95,7 +113,7 @@ const SwapHistoryTable = ({
                       <p className="font-body tracking-wide">
                         {dayjs(block_datetime).format('ddd D MMM')}
                       </p>
-                      <p className="text-xs text-th-fgd-3">
+                      <p className="font-body text-xs tracking-wide text-th-fgd-3">
                         {dayjs(block_datetime).format('h:mma')}
                       </p>
                     </td>
@@ -107,17 +125,17 @@ const SwapHistoryTable = ({
                               alt=""
                               width="24"
                               height="24"
-                              src={`/icons/${swap_in_symbol.toLowerCase()}.svg`}
+                              src={baseLogoURI || ''}
                             />
                           </div>
                           <div>
                             <p className="mb-1.5 whitespace-nowrap leading-none">
                               {`${trimDecimals(swap_in_amount, inDecimals)}`}
-                              <span className="ml-1 font-body tracking-wide">
-                                {swap_in_symbol}
+                              <span className="ml-1 font-body tracking-wide text-th-fgd-4">
+                                {inSymbol}
                               </span>
                             </p>
-                            <p className="text-xs leading-none text-th-fgd-3">
+                            <p className="text-xs leading-none text-th-fgd-4">
                               {formatFixedDecimals(swap_in_price_usd, true)}
                               <span className="mx-1 text-th-fgd-4">|</span>
                               {formatFixedDecimals(
@@ -136,17 +154,17 @@ const SwapHistoryTable = ({
                               alt=""
                               width="24"
                               height="24"
-                              src={`/icons/${swap_out_symbol.toLowerCase()}.svg`}
+                              src={quoteLogoURI || ''}
                             />
                           </div>
                           <div>
                             <p className="mb-1.5 whitespace-nowrap leading-none">
                               {`${trimDecimals(swap_out_amount, outDecimals)}`}
-                              <span className="ml-1 font-body tracking-wide">
-                                {swap_out_symbol}
+                              <span className="ml-1 font-body tracking-wide text-th-fgd-4">
+                                {outSymbol}
                               </span>
                             </p>
-                            <p className="text-xs leading-none text-th-fgd-3">
+                            <p className="text-xs leading-none text-th-fgd-4">
                               {formatFixedDecimals(swap_out_price_usd, true)}
                               <span className="mx-1 text-th-fgd-4">|</span>
                               {formatFixedDecimals(
@@ -162,8 +180,8 @@ const SwapHistoryTable = ({
                       <div className="flex flex-col text-right">
                         <p>
                           {borrowAmount}
-                          <span className="ml-1 font-body tracking-wide">
-                            {swap_in_symbol}
+                          <span className="ml-1 font-body tracking-wide text-th-fgd-4">
+                            {inSymbol}
                           </span>
                         </p>
                       </div>
@@ -231,6 +249,22 @@ const SwapHistoryTable = ({
                   : loan_origination_fee > 0
                   ? loan_origination_fee.toFixed(4)
                   : 0
+
+              let baseLogoURI
+              let quoteLogoURI
+
+              const inSymbol = formatTokenSymbol(swap_in_symbol)
+              const outSymbol = formatTokenSymbol(swap_out_symbol)
+
+              if (jupiterTokens.length) {
+                baseLogoURI = jupiterTokens.find(
+                  (t) => t.symbol === inSymbol
+                )?.logoURI
+                quoteLogoURI = jupiterTokens.find(
+                  (t) => t.symbol === outSymbol
+                )?.logoURI
+              }
+
               return (
                 <div key={signature} className="border-b border-th-bkg-3 p-4">
                   <div className="flex items-center justify-between">
@@ -241,13 +275,13 @@ const SwapHistoryTable = ({
                             alt=""
                             width="24"
                             height="24"
-                            src={`/icons/${swap_in_symbol.toLowerCase()}.svg`}
+                            src={baseLogoURI || ''}
                           />
                         </div>
                         <div>
                           <p className="mb-1.5 whitespace-nowrap font-mono leading-none text-th-fgd-1">
                             {swap_in_amount.toFixed(2)}{' '}
-                            <span className="font-body">{swap_in_symbol}</span>
+                            <span className="font-body">{inSymbol}</span>
                           </p>
                           <p className="font-mono text-xs leading-none text-th-fgd-3">
                             {formatFixedDecimals(swap_in_price_usd, true)}
@@ -270,13 +304,13 @@ const SwapHistoryTable = ({
                             alt=""
                             width="24"
                             height="24"
-                            src={`/icons/${swap_out_symbol.toLowerCase()}.svg`}
+                            src={quoteLogoURI || ''}
                           />
                         </div>
                         <div>
                           <p className="mb-1.5 whitespace-nowrap leading-none text-th-fgd-1">
                             {swap_out_amount.toFixed(2)}{' '}
-                            <span className="font-body">{swap_out_symbol}</span>
+                            <span className="font-body">{outSymbol}</span>
                           </p>
                           <p className="font-mono text-xs leading-none text-th-fgd-3">
                             {formatFixedDecimals(swap_out_price_usd, true)}
@@ -328,7 +362,7 @@ const SwapHistoryTable = ({
                         <p className="text-xs text-th-fgd-3">{t('borrow')}</p>
                         <p className="font-mono text-th-fgd-1">
                           {borrowAmount}{' '}
-                          <span className="font-body">{swap_in_symbol}</span>
+                          <span className="font-body">{inSymbol}</span>
                         </p>
                       </div>
                       <div className="col-span-1">

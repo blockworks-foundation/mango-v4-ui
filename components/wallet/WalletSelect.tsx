@@ -33,7 +33,7 @@ const WalletSelect = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Menu.Items className="absolute top-16 right-0 z-20 w-44 rounded-md rounded-t-none border border-t-0 border-th-bkg-3 bg-th-bkg-1 px-4 py-2.5 outline-none">
+            <Menu.Items className="absolute top-16 right-0 z-20 w-44 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 outline-none">
               {wallets?.map((wallet, index) => (
                 <Menu.Item key={index}>
                   <button

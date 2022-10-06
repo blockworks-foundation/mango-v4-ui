@@ -41,7 +41,7 @@ const IconDropMenu = ({
         <div className="relative">
           <Popover.Button
             className={`flex ${
-              large ? 'h-12 w-12' : 'h-10 w-10'
+              large ? 'h-12 w-12' : 'h-8 w-8'
             } default-transition items-center justify-center rounded-full border border-th-button md:hover:border-th-button-hover ${
               theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
             } md:hover:text-th-fgd-1 ${
@@ -63,7 +63,7 @@ const IconDropMenu = ({
             leaveTo="opacity-0"
           >
             <Popover.Panel
-              className={`absolute ${panelPosition[postion]} z-20 w-48 space-y-3 rounded-md border border-th-bkg-3 bg-th-bkg-2 p-4`}
+              className={`absolute ${panelPosition[postion]} z-20 w-48 space-y-3 rounded-md bg-th-bkg-2 p-4`}
             >
               {children}
             </Popover.Panel>

@@ -20,25 +20,15 @@ import MangoAccountSummary from './account/MangoAccountSummary'
 import Tooltip from './shared/Tooltip'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
-import useLocalStorageState from '../hooks/useLocalStorageState'
-import { ONBOARDING_TOUR_KEY } from '../utils/constants'
 import mangoStore from '@store/mangoStore'
 import HealthHeart from './account/HealthHeart'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
-  const [, setShowOnboardingTour] = useLocalStorageState(ONBOARDING_TOUR_KEY)
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const router = useRouter()
   const { pathname } = router
-
-  const handleTakeTour = () => {
-    if (pathname !== '/') {
-      router.push('/')
-    }
-    setShowOnboardingTour(true)
-  }
 
   return (
     <div
@@ -144,15 +134,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 isExternal
                 showTooltip={false}
               />
-              {connected ? (
-                <button
-                  className="default-transition mt-1 flex items-center px-4 text-th-fgd-2 md:hover:text-th-primary"
-                  onClick={handleTakeTour}
-                >
-                  <InformationCircleIcon className="mr-3 h-5 w-5" />
-                  <span className="text-base">Take UI Tour</span>
-                </button>
-              ) : null}
             </ExpandableMenuItem>
           </div>
         </div>
@@ -185,7 +166,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             hideIconBg
           >
             <div className="px-4 pb-4 pt-2">
-              <MangoAccountSummary collapsed={collapsed} />
+              <MangoAccountSummary />
             </div>
           </ExpandableMenuItem>
         </div>
@@ -325,7 +306,7 @@ export const ExpandableMenuItem = ({
         </Popover.Button>
 
         <Popover.Panel
-          className={`absolute z-20 w-56 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
+          className={`absolute z-20 w-56 rounded-md rounded-l-none bg-th-bkg-2 py-2 ${
             alignBottom
               ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
               : 'top-1/2 left-[63px] -translate-y-1/2'

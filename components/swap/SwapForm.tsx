@@ -33,9 +33,10 @@ import {
   INPUT_TOKEN_DEFAULT,
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
-import { getTokenInMax, useTokenMax } from './useTokenMax'
+import { useTokenMax } from './useTokenMax'
 import WalletIcon from '../icons/WalletIcon'
 import Tooltip from '@components/shared/Tooltip'
+import MaxAmountButton from '@components/shared/MaxAmountButton'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -237,7 +238,7 @@ const SwapForm = () => {
         </EnterBottomExitBottom>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base text-th-fgd-2">{t('swap')}</h2>
-          <div id="step-eight">
+          <div id="swap-step-one">
             <IconButton
               className="text-th-fgd-2"
               hideBg
@@ -248,7 +249,7 @@ const SwapForm = () => {
             </IconButton>
           </div>
         </div>
-        <div id="step-nine" className="mb-2 flex items-center justify-between">
+        <div id="swap-step-two" className="mb-2 flex items-end justify-between">
           <p className="text-th-fgd-3">{t('swap:from')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
@@ -303,7 +304,7 @@ const SwapForm = () => {
           </button>
         </div>
         <p className="mb-2 text-th-fgd-3">{t('swap:to')}</p>
-        <div className="mb-3 grid grid-cols-2">
+        <div id="swap-step-three" className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
               tokenSymbol={outputTokenInfo?.symbol || OUTPUT_TOKEN_DEFAULT}
@@ -348,10 +349,8 @@ const SwapForm = () => {
         />
       </div>
       <div
-        id="step-ten"
-        className={`border-t border-th-bkg-3 px-6 transition-all ${
-          showHealthImpact ? 'max-h-40 py-4 ' : 'h-0'
-        }`}
+        id="swap-step-four"
+        className={`border-t border-th-bkg-3 px-6 py-4 transition-all`}
       >
         <div className="flex justify-between">
           <div className="flex items-center">
@@ -475,22 +474,25 @@ const MaxSwapAmount = ({
     decimals,
   } = useTokenMax(useMargin)
 
-  const setMaxInputAmount = () => {
-    const amountIn = useMargin ? amountWithBorrow : tokenMax
-    setAmountIn(amountIn.toFixed(decimals))
-  }
-
   if (mangoAccountLoading) return null
 
-  const maxAmount = useMargin ? amountWithBorrow : tokenMax
-
   return (
-    <LinkButton className="no-underline" onClick={setMaxInputAmount}>
-      <span className="font-normal text-th-fgd-4">{t('max')}:</span>
-      <span className="mx-1 font-mono text-th-fgd-3 underline">
-        {maxAmount.toFixed()}
-      </span>
-    </LinkButton>
+    <div className="flex flex-wrap justify-end pl-6 text-xs">
+      <MaxAmountButton
+        className="mb-0.5"
+        label="Bal"
+        onClick={() => setAmountIn(tokenMax.toFixed(decimals))}
+        value={tokenMax.toFixed()}
+      />
+      {useMargin ? (
+        <MaxAmountButton
+          className="mb-0.5 ml-2"
+          label={t('max')}
+          onClick={() => setAmountIn(amountWithBorrow.toFixed(decimals))}
+          value={amountWithBorrow.toFixed()}
+        />
+      ) : null}
+    </div>
   )
 }
 

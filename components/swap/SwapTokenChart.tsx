@@ -24,9 +24,10 @@ import { formatFixedDecimals } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
-import PercentageChange from '../shared/PercentageChange'
+import Change from '../shared/Change'
 import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
+import { formatTokenSymbol } from 'utils/tokens'
 
 dayjs.extend(relativeTime)
 
@@ -229,7 +230,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="h-full px-6 py-3 md:pb-6">
+    <ContentBox hideBorder hidePadding className="h-full px-6 py-3">
       {loadChartData ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
@@ -253,8 +254,14 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                 <div className="mb-0.5 flex items-center">
                   <p className="text-base text-th-fgd-3">
                     {['usd-coin', 'tether'].includes(inputTokenId || '')
-                      ? `${outputTokenInfo?.symbol?.toUpperCase()}/${inputTokenInfo?.symbol?.toUpperCase()}`
-                      : `${inputTokenInfo?.symbol?.toUpperCase()}/${outputTokenInfo?.symbol?.toUpperCase()}`}
+                      ? `${formatTokenSymbol(
+                          outputTokenInfo?.symbol?.toUpperCase()
+                        )}/${inputTokenInfo?.symbol?.toUpperCase()}`
+                      : `${formatTokenSymbol(
+                          inputTokenInfo?.symbol?.toUpperCase()
+                        )}/${formatTokenSymbol(
+                          outputTokenInfo?.symbol?.toUpperCase()
+                        )}`}
                   </p>
                   {/* <div
                     className="px-2 hover:cursor-pointer hover:text-th-primary"
@@ -276,7 +283,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      <PercentageChange change={calculateChartChange()} />
+                      <Change change={calculateChartChange()} />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
@@ -297,7 +304,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      <PercentageChange change={calculateChartChange()} />
+                      <Change change={calculateChartChange()} />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">

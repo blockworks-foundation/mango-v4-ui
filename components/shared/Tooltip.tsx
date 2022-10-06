@@ -33,7 +33,7 @@ const Tooltip = ({
         content={
           content ? (
             <div
-              className={`rounded-md border border-th-bkg-3 bg-th-bkg-2 p-3 text-xs leading-4 text-th-fgd-3 shadow-md outline-none focus:outline-none ${className}`}
+              className={`rounded-md border border-th-bkg-3 bg-th-bkg-1 p-3 text-xs leading-4 text-th-fgd-3 shadow-md outline-none focus:outline-none ${className}`}
             >
               {content}
             </div>

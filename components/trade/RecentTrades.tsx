@@ -8,7 +8,7 @@ import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
 
 const RecentTrades = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const [trades, setTrades] = useState<any[]>([])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const selectedMarketPk = selectedMarket?.serumMarketExternal.toBase58()
@@ -60,11 +60,11 @@ const RecentTrades = () => {
     }
   }, 5000)
   return (
-    <div className="h-full overflow-y-scroll ">
+    <div className="thin-scroll h-full overflow-y-scroll">
       <div className={`mb-1 grid grid-cols-3 px-4 pt-2 text-xxs text-th-fgd-4`}>
         <div className="text-right">{`${t('price')} (${quoteSymbol})`} </div>
         <div className={`text-right`}>
-          {t('size')} ({baseSymbol})
+          {t('trade:size')} ({baseSymbol})
         </div>
         <div className={`text-right`}>{t('time')}</div>
       </div>

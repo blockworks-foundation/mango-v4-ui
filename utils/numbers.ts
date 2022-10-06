@@ -79,23 +79,37 @@ const numberFormatter6 = Intl.NumberFormat('en', {
 
 export const formatFixedDecimals = (
   value: number,
-  isCurrency?: boolean
+  isCurrency?: boolean,
+  isPercentage?: boolean
 ): string => {
   let formattedValue
   if (value === 0) {
     formattedValue = isCurrency ? '$0.00' : '0'
+  } else if (isPercentage) {
+    formattedValue = Number(floorToDecimal(value, 2)).toLocaleString(
+      undefined,
+      {
+        maximumFractionDigits: 2,
+      }
+    )
   } else if (value >= 1000) {
     formattedValue = isCurrency
       ? usdFormatter0.format(value)
-      : floorToDecimal(value, 0).toFixed(0)
+      : Number(floorToDecimal(value, 0)).toLocaleString(undefined, {
+          maximumFractionDigits: 0,
+        })
   } else if (value >= 1) {
     formattedValue = isCurrency
       ? usdFormatter2.format(value)
-      : floorToDecimal(value, 3).toFixed(3)
+      : Number(floorToDecimal(value, 3)).toLocaleString(undefined, {
+          maximumFractionDigits: 3,
+        })
   } else {
     formattedValue = isCurrency
       ? usdFormatter2.format(value)
-      : floorToDecimal(value, 4).toFixed(4)
+      : Number(floorToDecimal(value, 4)).toLocaleString(undefined, {
+          maximumFractionDigits: 4,
+        })
   }
 
   if (formattedValue === '-$0.00') return '$0.00'

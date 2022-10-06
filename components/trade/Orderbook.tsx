@@ -6,7 +6,6 @@ import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
 import useInterval from '@components/shared/useInterval'
 import isEqual from 'lodash/isEqual'
 import usePrevious from '@components/shared/usePrevious'
-import { PerpMarket } from '@blockworks-foundation/mango-v4/dist/types/src/accounts/perp'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { floorToDecimal, formatDecimal, getDecimalCount } from 'utils/numbers'
 import { ORDERBOOK_FLASH_KEY } from 'utils/constants'
@@ -79,8 +78,7 @@ const getCumulativeOrderbookSide = (
   orders: any[],
   totalSize: number,
   maxSize: number,
-  depth: number,
-  isBids = true
+  depth: number
 ): cumOrderbookSide[] => {
   let cumulative = orders
     .slice(0, depth)
@@ -96,9 +94,6 @@ const getCumulativeOrderbookSide = (
       })
       return cumulative
     }, [])
-  if (!isBids) {
-    console.log('cumulative', cumulative)
-  }
 
   return cumulative
 }
@@ -156,7 +151,7 @@ const groupBy = (
 const depth = 40
 
 const Orderbook = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
 
   // const [openOrderPrices, setOpenOrderPrices] = useState<any[]>([])
@@ -272,8 +267,7 @@ const Orderbook = () => {
         asks,
         totalSize,
         maxSize,
-        depth,
-        false
+        depth
       )
 
       currentOrderbookData.current = {
@@ -380,9 +374,9 @@ const Orderbook = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-        <div className="flex items-center space-x-2">
+        <div id="trade-step-three" className="flex items-center space-x-2">
           <Tooltip
-            content={showBuys ? 'Hide Buys' : 'Show Buys'}
+            content={showBuys ? t('trade:hide-bids') : t('trade:show-bids')}
             placement="top"
           >
             <button
@@ -396,7 +390,7 @@ const Orderbook = () => {
             </button>
           </Tooltip>
           <Tooltip
-            content={showSells ? 'Hide Sells' : 'Show Sells'}
+            content={showSells ? t('trade:hide-asks') : t('trade:show-asks')}
             placement="top"
           >
             <button
@@ -411,17 +405,19 @@ const Orderbook = () => {
           </Tooltip>
         </div>
         {serum3MarketExternal ? (
-          <Tooltip content="Grouping" placement="top">
-            <GroupSize
-              tickSize={serum3MarketExternal.tickSize}
-              onChange={onGroupSizeChange}
-              value={grouping}
-            />
-          </Tooltip>
+          <div id="trade-step-four">
+            <Tooltip content={t('trade:grouping')} placement="top" delay={250}>
+              <GroupSize
+                tickSize={serum3MarketExternal.tickSize}
+                onChange={onGroupSizeChange}
+                value={grouping}
+              />
+            </Tooltip>
+          </div>
         ) : null}
       </div>
       <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">
-        <div className="col-span-1 text-right">{t('size')}</div>
+        <div className="col-span-1 text-right">{t('trade:size')}</div>
         <div className="col-span-1 text-right">{t('price')}</div>
       </div>
       <div
@@ -458,9 +454,12 @@ const Orderbook = () => {
             })
           : null}
         {showBuys && showSells ? (
-          <div className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4">
+          <div
+            className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4"
+            id="trade-step-nine"
+          >
             <div className="col-span-1 flex justify-between">
-              <div className="text-xxs">{t('spread')}</div>
+              <div className="text-xxs">{t('trade:spread')}</div>
               <div className="font-mono">
                 {orderbookData?.spreadPercentage.toFixed(2)}%
               </div>
