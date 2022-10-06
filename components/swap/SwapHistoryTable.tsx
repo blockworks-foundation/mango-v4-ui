@@ -15,7 +15,8 @@ import { IconButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
 import { useWallet } from '@solana/wallet-adapter-react'
-import mangoStore, { TradeHistoryItem } from '@store/mangoStore'
+import { SwapHistoryItem } from '@store/mangoStore'
+import mangoStore, { TradeHistoryItem, SwapHistoryItem } from '@store/mangoStore'
 import {
   countLeadingZeros,
   formatFixedDecimals,
@@ -28,10 +29,10 @@ import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 
 const SwapHistoryTable = ({
-  tradeHistory,
+  swapHistory,
   loading,
 }: {
-  tradeHistory: Array<TradeHistoryItem>
+  swapHistory: Array<SwapHistoryItem>
   loading: boolean
 }) => {
   const { t } = useTranslation(['common', 'settings'])
@@ -51,7 +52,7 @@ const SwapHistoryTable = ({
 
   return connected ? (
     !loading ? (
-      tradeHistory.length ? (
+      swapHistory.length ? (
         showTableView ? (
           <table className="min-w-full">
             <thead>
@@ -64,7 +65,7 @@ const SwapHistoryTable = ({
               </tr>
             </thead>
             <tbody>
-              {tradeHistory.map((h, index) => {
+              {swapHistory.map((h, index) => {
                 const {
                   block_datetime,
                   signature,
@@ -222,7 +223,7 @@ const SwapHistoryTable = ({
           </table>
         ) : (
           <div>
-            {tradeHistory.map((h) => {
+            {swapHistory.map((h) => {
               const {
                 block_datetime,
                 signature,
@@ -406,18 +407,11 @@ const SwapHistoryTable = ({
       )
     ) : (
       <div className="mt-8 space-y-2">
-        <SheenLoader className="flex flex-1">
-          <div className="h-8 w-full rounded bg-th-bkg-2" />
-        </SheenLoader>
-        <SheenLoader className="flex flex-1">
-          <div className="h-16 w-full rounded bg-th-bkg-2" />
-        </SheenLoader>
-        <SheenLoader className="flex flex-1">
-          <div className="h-16 w-full rounded bg-th-bkg-2" />
-        </SheenLoader>
-        <SheenLoader className="flex flex-1">
-          <div className="h-16 w-full rounded bg-th-bkg-2" />
-        </SheenLoader>
+        {[...Array(4)].map((i) => (
+          <SheenLoader className="flex flex-1" key={i}>
+            <div className="h-8 w-full rounded bg-th-bkg-2" />
+          </SheenLoader>
+        ))}
       </div>
     )
   ) : (

@@ -33,7 +33,10 @@ const MangoAccountsList = ({
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     if (!group) return
-
+    set((s) => {
+      s.activityFeed.feed = []
+      s.activityFeed.loading = true
+    })
     try {
       const reloadedMangoAccount = await retryFn(() =>
         acc.reload(client, group)

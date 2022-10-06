@@ -7,6 +7,7 @@ interface CheckboxProps {
   onChange: (x: ChangeEvent<HTMLInputElement>) => void
   disabled?: boolean
   halfState?: boolean
+  labelClass?: string
 }
 
 const Checkbox = ({
@@ -14,6 +15,7 @@ const Checkbox = ({
   children,
   disabled = false,
   halfState = false,
+  labelClass,
   ...props
 }: CheckboxProps) => (
   <label className="default-transition flex cursor-pointer items-center text-th-fgd-3 hover:text-th-fgd-2">
@@ -51,7 +53,7 @@ const Checkbox = ({
       )}
     </div>
     <span
-      className={`ml-2 whitespace-nowrap text-xs ${
+      className={`ml-2 whitespace-nowrap text-xs ${labelClass} ${
         checked && !disabled ? 'text-th-fgd-2' : ''
       }`}
     >

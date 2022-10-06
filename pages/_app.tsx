@@ -1,4 +1,6 @@
 import '../styles/globals.css'
+import 'react-nice-dates/build/style.css'
+import '../styles/datepicker.css'
 import type { AppProps } from 'next/app'
 import { useMemo } from 'react'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'

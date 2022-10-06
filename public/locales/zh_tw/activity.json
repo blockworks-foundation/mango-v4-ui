@@ -1,0 +1,23 @@
+{
+    "activity": "Activity",
+    "activity-type": "Activity Type",
+    "activity-value": "Activity Value",
+    "advanced-filters": "Advanced Filters",
+    "asset-liquidated": "Asset Liquidated",
+    "asset-returned": "Asset Returned",
+    "credit": "Credit",
+    "debit": "Debit",
+    "deposit": "Deposit",
+    "deposits": "Deposits",
+    "filter-results": "Filter Results",
+    "liquidation": "Liquidation",
+    "liquidations": "Liquidations",
+    "liquidation-details": "Liquidation Details",
+    "reset-filters": "Reset Filters",
+    "select-tokens": "Select Tokens",
+    "update": "Update",
+    "value-from": "Value From",
+    "value-to": "Value To",
+    "withdraw": "Withdraw",
+    "withdrawals": "Withdrawals"
+}
