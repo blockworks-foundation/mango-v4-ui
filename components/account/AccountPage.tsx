@@ -410,7 +410,7 @@ const AccountPage = () => {
         </button>
         <button
           className={`col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
-            interestTotalValue > 0.001 || interestTotalValue < -0.001
+            interestTotalValue > 1 || interestTotalValue < -1
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'pointer-events-none cursor-default'
           }`}
@@ -433,7 +433,7 @@ const AccountPage = () => {
               </p>
               <Change change={oneDayInterestChange} isCurrency size="small" />
             </div>
-            {interestTotalValue > 0.001 || interestTotalValue < -0.001 ? (
+            {interestTotalValue > 1 || interestTotalValue < -1 ? (
               <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
             ) : null}
           </div>
