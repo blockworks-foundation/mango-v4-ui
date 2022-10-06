@@ -245,6 +245,18 @@ const SwapHistoryTable = ({
                   ? loan_origination_fee.toFixed(4)
                   : 0
 
+              let baseLogoURI
+              let quoteLogoURI
+
+              if (jupiterTokens.length) {
+                baseLogoURI = jupiterTokens.find(
+                  (t) => t.symbol === swap_in_symbol
+                )?.logoURI
+                quoteLogoURI = jupiterTokens.find(
+                  (t) => t.symbol === swap_out_symbol
+                )?.logoURI
+              }
+
               return (
                 <div key={signature} className="border-b border-th-bkg-3 p-4">
                   <div className="flex items-center justify-between">
@@ -255,7 +267,7 @@ const SwapHistoryTable = ({
                             alt=""
                             width="24"
                             height="24"
-                            src={`/icons/${swap_in_symbol.toLowerCase()}.svg`}
+                            src={baseLogoURI || ''}
                           />
                         </div>
                         <div>
@@ -284,7 +296,7 @@ const SwapHistoryTable = ({
                             alt=""
                             width="24"
                             height="24"
-                            src={`/icons/${swap_out_symbol.toLowerCase()}.svg`}
+                            src={quoteLogoURI || ''}
                           />
                         </div>
                         <div>
