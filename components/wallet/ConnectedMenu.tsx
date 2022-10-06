@@ -66,7 +66,7 @@ const ConnectedMenu = () => {
                 />
                 {!loadProfileDetails && !isMobile ? (
                   <div className="ml-2.5 w-32 text-left">
-                    <p className="text-xs text-th-fgd-3">
+                    <p className="font-mono text-xs text-th-fgd-3">
                       {wallet_pk
                         ? abbreviateAddress(new PublicKey(wallet_pk))
                         : ''}
@@ -89,7 +89,7 @@ const ConnectedMenu = () => {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <Menu.Items className="absolute right-0 top-[61px] z-20 mt-1 w-48 space-y-1.5 rounded-md rounded-t-none border border-t-0 border-th-bkg-3 bg-th-bkg-1 px-4 py-2.5 md:rounded-r-none">
+              <Menu.Items className="absolute right-0 top-[61px] z-20 mt-1 w-48 space-y-1.5 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 md:rounded-r-none">
                 <Menu.Item>
                   <button
                     className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer hover:text-th-primary focus:outline-none"
@@ -130,7 +130,7 @@ const ConnectedMenu = () => {
                     <div className="pl-2 text-left">
                       <div className="pb-0.5">{t('disconnect')}</div>
                       {publicKey ? (
-                        <div className="text-xs text-th-fgd-4">
+                        <div className="font-mono text-xs text-th-fgd-4">
                           {abbreviateAddress(publicKey)}
                         </div>
                       ) : null}

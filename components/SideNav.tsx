@@ -166,7 +166,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             hideIconBg
           >
             <div className="px-4 pb-4 pt-2">
-              <MangoAccountSummary collapsed={collapsed} />
+              <MangoAccountSummary />
             </div>
           </ExpandableMenuItem>
         </div>
@@ -306,7 +306,7 @@ export const ExpandableMenuItem = ({
         </Popover.Button>
 
         <Popover.Panel
-          className={`absolute z-20 w-56 rounded-md rounded-l-none border border-th-bkg-3 bg-th-bkg-1 py-2 ${
+          className={`absolute z-20 w-56 rounded-md rounded-l-none bg-th-bkg-2 py-2 ${
             alignBottom
               ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
               : 'top-1/2 left-[63px] -translate-y-1/2'

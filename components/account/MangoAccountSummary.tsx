@@ -11,9 +11,8 @@ import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
 import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
-import Tooltip from '@components/shared/Tooltip'
 
-const MangoAccountSummary = ({ collapsed }: { collapsed: boolean }) => {
+const MangoAccountSummary = () => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)

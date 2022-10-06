@@ -12,8 +12,6 @@ import MarketLogos from './MarketLogos'
 const MarketSelectDropdown = () => {
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const serumMarkets = mangoStore((s) => s.serumMarkets)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-  const group = mangoStore((s) => s.group)
   const set = mangoStore((s) => s.set)
 
   const handleSelectMarket = useCallback(
@@ -45,13 +43,13 @@ const MarketSelectDropdown = () => {
             />
           </Popover.Button>
 
-          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen border border-l-0 border-th-bkg-3 bg-th-bkg-1 py-2 sm:w-56 md:top-[37px]">
+          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen bg-th-bkg-2 py-2 sm:w-56 md:top-[37px]">
             {serumMarkets?.length
               ? serumMarkets.map((m) => {
                   return (
                     <div
                       key={m.publicKey.toString()}
-                      className="flex items-center bg-th-bkg-1 py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
+                      className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-3"
                       onClick={() => handleSelectMarket(m, close)}
                     >
                       <MarketLogos serumMarket={m} />

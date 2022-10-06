@@ -79,7 +79,7 @@ const MangoAccountsList = ({
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <Popover.Panel className="absolute top-[13.5px] -right-5 z-20 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-2 bg-th-bkg-3 p-4 text-th-fgd-3">
+                <Popover.Panel className="absolute top-[13.5px] -right-7 z-20 mr-4 w-56 rounded-md rounded-t-none border border-th-bkg-2 bg-th-bkg-2 p-4 text-th-fgd-3">
                   {loading ? (
                     <Loading />
                   ) : mangoAccounts.length ? (
