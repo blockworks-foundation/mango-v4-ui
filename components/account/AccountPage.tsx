@@ -73,8 +73,10 @@ const AccountPage = () => {
   const leverage = useMemo(() => {
     if (!mangoAccount) return 0
     const liabsValue = mangoAccount.getLiabsValue(HealthType.init)!.toNumber()
-    const accountValue = mangoAccount.getEquity()!.toNumber()
-    return liabsValue / accountValue
+    const totalCollateral = mangoAccount
+      .getAssetsValue(HealthType.init)!
+      .toNumber()
+    return liabsValue / totalCollateral
   }, [mangoAccount])
 
   useEffect(() => {
@@ -372,7 +374,7 @@ const AccountPage = () => {
         <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div>
             <Tooltip
-              content="Total position size divided by account value."
+              content="Total position size divided by total collateral."
               maxWidth="20rem"
               placement="bottom"
               delay={250}

@@ -22,8 +22,10 @@ const MangoAccountSummary = () => {
   const leverage = useMemo(() => {
     if (!mangoAccount) return 0
     const liabsValue = mangoAccount.getLiabsValue(HealthType.init)!.toNumber()
-    const accountValue = mangoAccount.getEquity()!.toNumber()
-    return liabsValue / accountValue
+    const totalCollateral = mangoAccount
+      .getAssetsValue(HealthType.init)!
+      .toNumber()
+    return liabsValue / totalCollateral
   }, [mangoAccount])
 
   return (
