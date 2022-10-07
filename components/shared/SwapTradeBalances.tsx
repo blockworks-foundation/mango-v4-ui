@@ -4,7 +4,7 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { useMemo } from 'react'
-import { formatDecimal } from 'utils/numbers'
+import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 
 const SwapTradeBalances = () => {
@@ -68,6 +68,9 @@ const SwapTradeBalances = () => {
             )!.logoURI
           }
 
+          const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
+          const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0.0
+
           return (
             <tr key={key} className="text-sm">
               <td>
@@ -82,21 +85,35 @@ const SwapTradeBalances = () => {
                   <span>{bank.name}</span>
                 </div>
               </td>
-              <td className="pt-4 text-right font-mono">
-                <div>
+              <td className="text-right">
+                <p>
                   {mangoAccount
                     ? formatDecimal(
                         mangoAccount.getTokenBalanceUi(bank),
                         bank.mintDecimals
                       )
                     : 0}
-                </div>
+                </p>
+                <p className="text-sm text-th-fgd-4">
+                  {mangoAccount
+                    ? `${formatFixedDecimals(
+                        mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice!,
+                        true
+                      )}`
+                    : '$0.00'}
+                </p>
               </td>
               <td className="text-right font-mono">
-                {spotBalances[bank.mint.toString()]?.inOrders || 0.0}
+                <p>{formatDecimal(inOrders)}</p>
+                <p className="text-sm text-th-fgd-4">
+                  {formatFixedDecimals(inOrders * bank.uiPrice!, true)}
+                </p>
               </td>
               <td className="text-right font-mono">
-                {spotBalances[bank.mint.toString()]?.unsettled || 0.0}
+                <p>{formatDecimal(unsettled)}</p>
+                <p className="text-sm text-th-fgd-4">
+                  {formatFixedDecimals(unsettled * bank.uiPrice!, true)}
+                </p>
               </td>
             </tr>
           )
@@ -114,6 +131,9 @@ const SwapTradeBalances = () => {
             (t) => t.address === bank.mint.toString()
           )!.logoURI
         }
+
+        const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
+        const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0.0
 
         return (
           <div
@@ -137,19 +157,29 @@ const SwapTradeBalances = () => {
                       mangoAccount.getTokenBalanceUi(bank),
                       bank.mintDecimals
                     )
-                  : 0}
+                  : 0}{' '}
+                <span className="text-sm text-th-fgd-4">
+                  (
+                  {mangoAccount
+                    ? `${formatFixedDecimals(
+                        mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice!,
+                        true
+                      )}`
+                    : '$0.00'}
+                  )
+                </span>
               </p>
               <div className="flex space-x-3">
                 <p className="text-xs text-th-fgd-4">
                   {t('trade:in-orders')}:{' '}
                   <span className="font-mono text-th-fgd-3">
-                    {spotBalances[bank.mint.toString()]?.inOrders || 0.0}
+                    {formatDecimal(inOrders)}
                   </span>
                 </p>
                 <p className="text-xs text-th-fgd-4">
                   {t('trade:unsettled')}:{' '}
                   <span className="font-mono text-th-fgd-3">
-                    {spotBalances[bank.mint.toString()]?.unsettled || 0.0}
+                    {formatDecimal(unsettled)}
                   </span>
                 </p>
               </div>

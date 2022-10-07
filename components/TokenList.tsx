@@ -251,23 +251,11 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.stats.interestTotals.data
   )
   const symbol = bank.name
   const oraclePrice = bank.uiPrice
-
-  const coingeckoData = coingeckoPrices.find((asset) =>
-    symbol === 'soETH' ? asset.symbol === 'ETH' : asset.symbol === symbol
-  )
-
-  const change = coingeckoData
-    ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
-        coingeckoData.prices[0][1]) /
-        coingeckoData.prices[0][1]) *
-      100
-    : 0
 
   let logoURI
   if (jupiterTokens.length) {
