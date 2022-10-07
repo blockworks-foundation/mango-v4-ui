@@ -30,7 +30,6 @@ import { IS_ONBOARDED_KEY } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
-import { group } from 'console'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -81,7 +80,7 @@ const AccountPage = () => {
       .getAssetsValue(group, HealthType.init)!
       .toNumber()
     return liabsValue / totalCollateral
-  }, [mangoAccount])
+  }, [mangoAccount, group])
 
   useEffect(() => {
     if (mangoAccount) {
@@ -132,7 +131,7 @@ const AccountPage = () => {
       }
     }
     return { accountPnl: 0, accountValueChange: 0 }
-  }, [performanceData, mangoAccount])
+  }, [performanceData, mangoAccount, group])
 
   const oneDayPnlChange = useMemo(() => {
     if (accountPnl && oneDayPerformanceData.length) {
@@ -173,7 +172,7 @@ const AccountPage = () => {
     return group && mangoAccount
       ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
       : 0
-  }, [mangoAccount])
+  }, [mangoAccount, group])
 
   const handleChartToShow = (
     chartName: 'pnl' | 'cumulative-interest-value'

@@ -37,7 +37,6 @@ import { useTokenMax } from './useTokenMax'
 import WalletIcon from '../icons/WalletIcon'
 import Tooltip from '@components/shared/Tooltip'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
-import { group } from 'console'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {

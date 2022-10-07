@@ -295,7 +295,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 placeholder="0.00"
                 value={inputAmount}
                 onValueChange={(e: NumberFormatValues) =>
-                  setInputAmount(e.value)
+                  setInputAmount(Number(e.value) ? e.value : '')
                 }
                 isAllowed={withValueLimit}
               />
@@ -313,7 +313,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           <div className="space-y-2 border-y border-th-bkg-3 px-2 py-4">
             <HealthImpact
               mintPk={bank!.mint}
-              uiAmount={parseFloat(inputAmount)}
+              uiAmount={Number(inputAmount)}
               isDeposit
             />
             <div className="flex justify-between">

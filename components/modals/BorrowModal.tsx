@@ -232,7 +232,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 placeholder="0.00"
                 value={inputAmount}
                 onValueChange={(e: NumberFormatValues) =>
-                  setInputAmount(e.value)
+                  setInputAmount(Number(e.value) ? e.value : '')
                 }
                 isAllowed={withValueLimit}
               />

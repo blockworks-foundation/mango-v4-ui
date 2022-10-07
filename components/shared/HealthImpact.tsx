@@ -4,7 +4,6 @@ import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
-import { group } from 'console'
 
 const HealthImpact = ({
   uiAmount,
@@ -27,10 +26,15 @@ const HealthImpact = ({
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !mangoAccount) return 0
+    const uiTokenAmount = isDeposit ? uiAmount : uiAmount * -1
+    console.log('uiAmount')
+
+    console.log('uiTokenAmount', uiTokenAmount)
+
     const projectedHealth =
       mangoAccount.simHealthRatioWithTokenPositionUiChanges(
         group,
-        [{ mintPk, uiTokenAmount: isDeposit ? uiAmount : uiAmount * -1 }],
+        [{ mintPk, uiTokenAmount }],
         HealthType.maint
       )
 
