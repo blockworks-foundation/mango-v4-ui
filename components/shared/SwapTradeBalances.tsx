@@ -7,7 +7,7 @@ import { useMemo } from 'react'
 import { formatDecimal } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 
-const Balances = () => {
+const SwapTradeBalances = () => {
   const { t } = useTranslation(['common', 'trade'])
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
@@ -161,4 +161,4 @@ const Balances = () => {
   )
 }
 
-export default Balances
+export default SwapTradeBalances

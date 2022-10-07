@@ -1,9 +1,9 @@
 import Swap from './SwapForm'
 import SwapTokenChart from './SwapTokenChart'
 import mangoStore from '@store/mangoStore'
-import AccountTabs from '../account/AccountTabs'
 import SwapOnboardingTour from '@components/tours/SwapOnboardingTour'
 import { useWallet } from '@solana/wallet-adapter-react'
+import SwapInfoTabs from './SwapInfoTabs'
 
 const SwapPage = () => {
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
@@ -24,7 +24,7 @@ const SwapPage = () => {
           <Swap />
         </div>
         <div className="col-span-12">
-          <AccountTabs />
+          <SwapInfoTabs />
         </div>
       </div>
       {!tourSettings?.swap_tour_seen && connected ? (
