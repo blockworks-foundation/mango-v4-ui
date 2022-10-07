@@ -62,8 +62,8 @@ const AccountOnboardingTour = () => {
     },
     {
       selector: '#account-step-seven',
-      title: t('total-interest-value'),
-      description: t('total-interest-value-desc'),
+      title: t('total-interest-earned'),
+      description: t('total-interest-earned-desc'),
       orientationPreferences: [CardinalOrientation.SOUTHWEST],
       movingTarget: true,
     },

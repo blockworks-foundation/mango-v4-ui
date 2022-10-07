@@ -431,7 +431,7 @@ const AccountPage = () => {
               delay={250}
             >
               <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
-                {t('total-interest-value')}
+                {t('total-interest-earned')}
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
