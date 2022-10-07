@@ -141,7 +141,9 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   }, [mangoAccount, group])
 
   const initHealth = useMemo(() => {
-    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.init) : 100
+    return group && mangoAccount
+      ? mangoAccount.getHealthRatioUi(group, HealthType.init)
+      : 100
   }, [mangoAccount])
 
   const showInsufficientBalance = Number(inputAmount)

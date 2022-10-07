@@ -538,10 +538,7 @@ const mangoStore = create<MangoStore>()(
             if (!mangoAccount)
               throw new Error('No mango account exists for reload')
 
-            const reloadedMangoAccount = await mangoAccount.reload(
-              client,
-              group
-            )
+            const reloadedMangoAccount = await mangoAccount.reload(client)
             set((state) => {
               state.mangoAccount.current = reloadedMangoAccount
               state.mangoAccount.lastUpdatedAt = new Date().toISOString()
@@ -586,7 +583,7 @@ const mangoStore = create<MangoStore>()(
 
             if (newSelectedMangoAccount) {
               await retryFn(() =>
-                newSelectedMangoAccount!.reloadAccountData(client, group)
+                newSelectedMangoAccount!.reloadAccountData(client)
               )
               await actions.fetchSerumOpenOrders(newSelectedMangoAccount)
             }
@@ -636,7 +633,7 @@ const mangoStore = create<MangoStore>()(
           try {
             let openOrders: Record<string, Order[]> = {}
             for (const serum3Orders of mangoAccount.serum3) {
-              const market = group.getSerum3MarketByIndex(
+              const market = group.getSerum3MarketByMarketIndex(
                 serum3Orders.marketIndex
               )
               if (market) {

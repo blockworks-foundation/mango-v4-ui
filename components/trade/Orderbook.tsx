@@ -176,7 +176,7 @@ const Orderbook = () => {
   const serum3MarketExternal = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
-    return group.serum3MarketExternalsMap.get(
+    return group.serum3ExternalMarketsMap.get(
       selectedMarket.serumMarketExternal.toBase58()
     )
   }, [selectedMarket])
@@ -214,7 +214,7 @@ const Orderbook = () => {
     const orderbook = mangoStore.getState().selectedMarket.orderbook
     const group = mangoStore.getState().group
     if (!selectedMarket || !group) return
-    const serum3MarketExternal = group.serum3MarketExternalsMap.get(
+    const serum3MarketExternal = group.serum3ExternalMarketsMap.get(
       selectedMarket.serumMarketExternal.toBase58()
     )
     if (

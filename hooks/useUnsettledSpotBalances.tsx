@@ -12,7 +12,7 @@ export function useUnsettledSpotBalances() {
     const unsettledBalances: Record<string, { base: number; quote: number }> =
       {}
     mangoAccount.serum3Active().forEach((serumMarket) => {
-      const market = group.getSerum3MarketByIndex(serumMarket.marketIndex)!
+      const market = group.getSerum3MarketByMarketIndex(serumMarket.marketIndex)!
       const openOrdersAccForMkt = openOrdersAccounts.find((oo) =>
         oo.market.equals(market.serumMarketExternal)
       )

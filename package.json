@@ -12,7 +12,7 @@
     "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz"
   },
   "dependencies": {
-    "@blockworks-foundation/mango-v4": "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#main",
+    "@blockworks-foundation/mango-v4": "git+https://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:x-oauth-basic@github.com/blockworks-foundation/mango-v4.git#dev",
     "@headlessui/react": "^1.6.6",
     "@heroicons/react": "^2.0.10",
     "@jup-ag/core": "^2.0.0-beta.3",

@@ -14,7 +14,7 @@ const spotBalancesUpdater = (_newState: any, _prevState: any) => {
   const balances: SpotBalances = {}
 
   for (const serumMarket of mangoAccount.serum3Active()) {
-    const market = group.getSerum3MarketByIndex(serumMarket.marketIndex)
+    const market = group.getSerum3MarketByMarketIndex(serumMarket.marketIndex)
     if (!market) continue
     const openOrdersAccForMkt = openOrdersAccounts.find((oo) =>
       oo.market.equals(market.serumMarketExternal)
@@ -52,11 +52,15 @@ const spotBalancesUpdater = (_newState: any, _prevState: any) => {
 
     let quoteBalances =
       balances[
-        market.getSerum3ExternalMarket(group)!.quoteMintAddress.toString()
+        group
+          .getSerum3ExternalMarket(market.serumMarketExternal)
+          .quoteMintAddress.toString()
       ]
     if (!quoteBalances) {
       quoteBalances = balances[
-        market.getSerum3ExternalMarket(group)!.quoteMintAddress.toString()
+        group
+          .getSerum3ExternalMarket(market.serumMarketExternal)
+          .quoteMintAddress.toString()
       ] = { inOrders: 0, unsettled: 0 }
     }
     quoteBalances.inOrders += quoteTokenLockedInOrder || 0
@@ -64,11 +68,15 @@ const spotBalancesUpdater = (_newState: any, _prevState: any) => {
 
     let baseBalances =
       balances[
-        market.getSerum3ExternalMarket(group)!.baseMintAddress.toString()
+        group
+          .getSerum3ExternalMarket(market.serumMarketExternal)
+          .baseMintAddress.toString()
       ]
     if (!baseBalances) {
       baseBalances = balances[
-        market.getSerum3ExternalMarket(group)!.baseMintAddress.toString()
+        group
+          .getSerum3ExternalMarket(market.serumMarketExternal)
+          .baseMintAddress.toString()
       ] = { inOrders: 0, unsettled: 0 }
     }
     baseBalances.inOrders += baseTokenLockedInOrder

@@ -26,6 +26,7 @@ import HealthHeart from './account/HealthHeart'
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
+  const group = mangoStore.getState().group
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const router = useRouter()
   const { pathname } = router
@@ -143,8 +144,8 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             icon={
               <HealthHeart
                 health={
-                  mangoAccount
-                    ? mangoAccount.getHealthRatioUi(HealthType.maint)
+                  group && mangoAccount
+                    ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
                     : undefined
                 }
                 size={32}

@@ -46,7 +46,7 @@ const ReadOnlyMangoAccount = () => {
         const client = mangoStore.getState().client
         const pk = new PublicKey(ma)
         const readOnlyMangoAccount = await client.getMangoAccount(pk)
-        await readOnlyMangoAccount.reloadAccountData(client, group)
+        await readOnlyMangoAccount.reloadAccountData(client)
         // set((state) => {
         //   state.mangoAccount.current = readOnlyMangoAccount
         //   state.mangoAccount.initialLoad = false
