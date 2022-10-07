@@ -27,6 +27,7 @@ const SpotSlider = () => {
         )
       }
     } catch (e) {
+      console.error('SpotSlider: ', e)
       notify({
         type: 'error',
         title: 'Error calculating max leverage.',
