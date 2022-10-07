@@ -2,7 +2,6 @@ import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
-import { useWallet } from '@solana/wallet-adapter-react'
 import Button from '../shared/Button'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
@@ -12,14 +11,13 @@ import { TrashIcon } from '@heroicons/react/20/solid'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
-  const { wallet } = useWallet()
   const [loading, setLoading] = useState(false)
   const set = mangoStore((s) => s.set)
 
   const handleCloseMangoAccount = async () => {
     const client = mangoStore.getState().client
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    const mangoAccounts = mangoStore.getState().mangoAccounts.accounts
+    const mangoAccounts = mangoStore.getState().mangoAccounts
     const group = mangoStore.getState().group
     if (!mangoAccount || !group) return
     setLoading(true)
@@ -42,7 +40,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           txid: tx,
         })
         set((state) => {
-          state.mangoAccounts.accounts = newMangoAccounts
+          state.mangoAccounts = newMangoAccounts
           state.mangoAccount.current = newCurrentAccount
           state.mangoAccount.lastUpdatedAt = new Date().toISOString()
         })

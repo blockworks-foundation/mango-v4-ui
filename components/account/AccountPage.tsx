@@ -197,7 +197,6 @@ const AccountPage = () => {
               <p className="tooltip-underline mb-1.5">{t('account-value')}</p>
             </Tooltip>
             <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
-              $
               {mangoAccount ? (
                 <FlipNumbers
                   height={48}
@@ -205,9 +204,9 @@ const AccountPage = () => {
                   play
                   delay={0.05}
                   duration={1}
-                  numbers={formatDecimal(
+                  numbers={formatFixedDecimals(
                     toUiDecimalsForQuote(mangoAccount.getEquity()!.toNumber()),
-                    2
+                    true
                   )}
                 />
               ) : (
@@ -217,7 +216,7 @@ const AccountPage = () => {
                   play
                   delay={0.05}
                   duration={1}
-                  numbers={'0.00'}
+                  numbers={'$0.00'}
                 />
               )}
             </div>
