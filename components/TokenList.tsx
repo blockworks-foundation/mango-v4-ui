@@ -7,7 +7,6 @@ import {
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
-import { useTheme } from 'next-themes'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
@@ -15,8 +14,6 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '@store/mangoStore'
-import { COLORS } from '../styles/colors'
-// import { SHOW_ZERO_BALANCES_KEY } from '../utils/constants'
 import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
@@ -27,23 +24,20 @@ import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
 import Change from './shared/Change'
-import SimpleAreaChart from './shared/SimpleAreaChart'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 
 const TokenList = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const { connected } = useWallet()
   const [showZeroBalances, setShowZeroBalances] = useState(true)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
-  const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
+  const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const group = mangoStore((s) => s.group)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.stats.interestTotals.data
   )
-  const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
@@ -106,6 +100,8 @@ const TokenList = () => {
                   </Tooltip>
                 </div>
               </th>
+              <th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</th>
+              <th className="bg-th-bkg-1 text-right">{t('trade:unsettled')}</th>
               <th className="flex justify-end" id="account-step-eight">
                 <Tooltip content="The sum of interest earned and interest paid for each token.">
                   <span className="tooltip-underline">
@@ -120,28 +116,12 @@ const TokenList = () => {
                   </Tooltip>
                 </div>
               </th>
-              <th className="text-right">{t('price')}</th>
-              <th className="hidden text-right lg:block"></th>
-              <th className="text-right">{t('rolling-change')}</th>
             </tr>
           </thead>
           <tbody>
             {banks.map(({ key, value }, i) => {
               const bank = value[0]
               const oraclePrice = bank.uiPrice
-
-              const coingeckoData = coingeckoPrices.find((asset) =>
-                key === 'soETH' ? asset.symbol === 'ETH' : asset.symbol === key
-              )
-
-              const change = coingeckoData
-                ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
-                    coingeckoData.prices[0][1]) /
-                    coingeckoData.prices[0][1]) *
-                  100
-                : 0
-
-              const chartData = coingeckoData ? coingeckoData.prices : undefined
 
               let logoURI
               if (jupiterTokens.length) {
@@ -164,6 +144,12 @@ const TokenList = () => {
                   hasInterestEarned.deposit_interest_usd
                 : 0.0
 
+              const inOrders =
+                spotBalances[bank.mint.toString()]?.inOrders || 0.0
+
+              const unsettled =
+                spotBalances[bank.mint.toString()]?.unsettled || 0.0
+
               return (
                 <tr key={key}>
                   <td>
@@ -178,7 +164,7 @@ const TokenList = () => {
                       <p className="font-body tracking-wide">{bank.name}</p>
                     </div>
                   </td>
-                  <td className="pt-4 text-right">
+                  <td className="text-right">
                     <p>
                       {mangoAccount
                         ? formatDecimal(
@@ -194,6 +180,18 @@ const TokenList = () => {
                             true
                           )}`
                         : '$0.00'}
+                    </p>
+                  </td>
+                  <td className="text-right">
+                    <p>{formatDecimal(inOrders)}</p>
+                    <p className="text-sm text-th-fgd-4">
+                      {formatFixedDecimals(inOrders * oraclePrice!, true)}
+                    </p>
+                  </td>
+                  <td className="text-right">
+                    <p>{formatDecimal(unsettled)}</p>
+                    <p className="text-sm text-th-fgd-4">
+                      {formatFixedDecimals(unsettled * oraclePrice!, true)}
                     </p>
                   </td>
                   <td>
@@ -219,39 +217,6 @@ const TokenList = () => {
                         })}
                         %
                       </p>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(oraclePrice!, true)}</p>
-                    </div>
-                  </td>
-                  <td className="hidden lg:table-cell">
-                    {!loadingCoingeckoPrices ? (
-                      chartData !== undefined ? (
-                        <SimpleAreaChart
-                          color={
-                            change >= 0
-                              ? COLORS.GREEN[theme]
-                              : COLORS.RED[theme]
-                          }
-                          data={chartData}
-                          height={40}
-                          name={key}
-                          width={104}
-                          xKey="0"
-                          yKey="1"
-                        />
-                      ) : key === 'USDC' || key === 'USDT' ? null : (
-                        <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-                      )
-                    ) : (
-                      <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
-                    )}
-                  </td>
-                  <td>
-                    <div className="flex flex-col items-end">
-                      <Change change={change} />
                     </div>
                   </td>
                   <td>
@@ -284,6 +249,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation('common')
   const [showTokenDetails, setShowTokenDetails] = useState(false)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
   const totalInterestData = mangoStore(
@@ -322,6 +288,10 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
     ? hasInterestEarned.borrow_interest_usd +
       hasInterestEarned.deposit_interest_usd
     : 0.0
+
+  const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
+
+  const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0.0
 
   return (
     <div key={symbol} className="border-b border-th-bkg-3 px-6 py-4">
@@ -370,9 +340,27 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
       >
         <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
           <div className="col-span-1">
+            <p className="text-xs text-th-fgd-3">{t('trade:in-orders')}</p>
+            <div className="flex font-mono">
+              <p className="text-th-fgd-2">{formatDecimal(inOrders)}</p>
+              <p className="ml-1 text-th-fgd-4">
+                ({formatFixedDecimals(inOrders * oraclePrice!, true)})
+              </p>
+            </div>
+          </div>
+          <div className="col-span-1">
+            <p className="text-xs text-th-fgd-3">{t('trade:unsettled')}</p>
+            <div className="flex font-mono">
+              <p className="text-th-fgd-2">{formatDecimal(unsettled)}</p>
+              <p className="ml-1 text-th-fgd-4">
+                ({formatFixedDecimals(unsettled * oraclePrice!, true)})
+              </p>
+            </div>
+          </div>
+          <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('interest-earned-paid')}</p>
-            <div className="flex">
-              <p>{formatDecimal(interestAmount)}</p>
+            <div className="flex font-mono">
+              <p className="text-th-fgd-2">{formatDecimal(interestAmount)}</p>
               <p className="ml-1 text-th-fgd-4">
                 ({formatFixedDecimals(interestValue, true)})
               </p>
@@ -380,7 +368,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('rates')}</p>
-            <p className="space-x-2">
+            <p className="space-x-2 font-mono">
               <span className="text-th-green">
                 {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
               </span>
@@ -389,14 +377,6 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
                 {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
               </span>
             </p>
-          </div>
-          <div className="col-span-1">
-            <p className="text-xs text-th-fgd-3">{t('price')}</p>
-            <p>{formatFixedDecimals(oraclePrice!, true)}</p>
-          </div>
-          <div className="col-span-1">
-            <p className="text-xs text-th-fgd-3">{t('rolling-change')}</p>
-            <Change change={change} />
           </div>
         </div>
       </Transition>

@@ -11,6 +11,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'profile',
         'onboarding-tours',
         'swap',
+        'trade',
         'activity',
       ])),
     },
