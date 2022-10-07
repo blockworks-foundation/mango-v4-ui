@@ -59,7 +59,9 @@ const TokenList = () => {
     <ContentBox hideBorder hidePadding>
       <div className="grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-[40px]">
         <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-t-0 ">
-          <p className="mb-2.5 leading-none">{t('total-deposit-value')}</p>
+          <p className="mb-2.5 text-base leading-none">
+            {t('total-deposit-value')}
+          </p>
           <div className="flex items-center font-bold">
             <FlipNumbers
               height={40}
@@ -72,7 +74,9 @@ const TokenList = () => {
           </div>
         </div>
         <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
-          <p className="mb-2.5 leading-none">{t('total-borrow-value')}</p>
+          <p className="mb-2.5 text-base leading-none">
+            {t('total-borrow-value')}
+          </p>
           <div className="flex items-center font-bold">
             <FlipNumbers
               height={40}

@@ -18,9 +18,13 @@ import Layout from '../components/Layout'
 import { ViewportProvider } from '../hooks/useViewport'
 import { WalletProvider } from '../components/wallet/WalletProvider'
 import MangoProvider from '@components/MangoProvider'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Do not add hooks to this component that will cause unnecessary rerenders
 // Top level state hydrating/updating should go in MangoProvider
+
+// Create a client
+const queryClient = new QueryClient()
 
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Devnet
@@ -37,18 +41,20 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <MangoProvider />
-      <ConnectionProvider endpoint={endpoint}>
-        <WalletProvider wallets={wallets}>
-          <ThemeProvider defaultTheme="Dark">
-            <ViewportProvider>
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-            </ViewportProvider>
-            <Notifications />
-          </ThemeProvider>
-        </WalletProvider>
-      </ConnectionProvider>
+      <QueryClientProvider client={queryClient}>
+        <ConnectionProvider endpoint={endpoint}>
+          <WalletProvider wallets={wallets}>
+            <ThemeProvider defaultTheme="Dark">
+              <ViewportProvider>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </ViewportProvider>
+              <Notifications />
+            </ThemeProvider>
+          </WalletProvider>
+        </ConnectionProvider>
+      </QueryClientProvider>
     </>
   )
 }
