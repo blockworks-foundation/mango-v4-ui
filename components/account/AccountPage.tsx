@@ -199,7 +199,9 @@ const AccountPage = () => {
               content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
               delay={250}
             >
-              <p className="tooltip-underline mb-1.5">{t('account-value')}</p>
+              <p className="tooltip-underline mb-1.5 text-base">
+                {t('account-value')}
+              </p>
             </Tooltip>
             <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
               $
