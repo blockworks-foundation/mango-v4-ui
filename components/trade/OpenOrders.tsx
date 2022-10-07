@@ -82,7 +82,7 @@ const OpenOrders = () => {
               .map(([marketPk, orders]) => {
                 return orders.map((o) => {
                   const group = mangoStore.getState().group
-                  const serumMarket = group?.getSerum3MarketByPk(
+                  const serumMarket = group?.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
                   )
                   const quoteSymbol = group?.getFirstBankByTokenIndex(
@@ -149,7 +149,7 @@ const OpenOrders = () => {
           {Object.entries(openOrders).map(([marketPk, orders]) => {
             return orders.map((o) => {
               const group = mangoStore.getState().group
-              const serumMarket = group?.getSerum3MarketByPk(
+              const serumMarket = group?.getSerum3MarketByExternalMarket(
                 new PublicKey(marketPk)
               )
               const quoteSymbol = group?.getFirstBankByTokenIndex(
