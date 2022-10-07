@@ -30,6 +30,7 @@ import { IS_ONBOARDED_KEY } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
+import { group } from 'console'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -46,6 +47,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 const AccountPage = () => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
+  const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
   const loadPerformanceData = mangoStore(
@@ -71,10 +73,12 @@ const AccountPage = () => {
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const leverage = useMemo(() => {
-    if (!mangoAccount) return 0
-    const liabsValue = mangoAccount.getLiabsValue(HealthType.init)!.toNumber()
+    if (!group || !mangoAccount) return 0
+    const liabsValue = mangoAccount
+      .getLiabsValue(group, HealthType.init)!
+      .toNumber()
     const totalCollateral = mangoAccount
-      .getAssetsValue(HealthType.init)!
+      .getAssetsValue(group, HealthType.init)!
       .toNumber()
     return liabsValue / totalCollateral
   }, [mangoAccount])
@@ -117,11 +121,11 @@ const AccountPage = () => {
   }
 
   const { accountPnl, accountValueChange } = useMemo(() => {
-    if (performanceData.length && mangoAccount) {
+    if (group && performanceData.length && mangoAccount) {
       return {
         accountPnl: performanceData[performanceData.length - 1].pnl,
         accountValueChange:
-          ((toUiDecimalsForQuote(mangoAccount.getEquity()!.toNumber()) -
+          ((toUiDecimalsForQuote(mangoAccount.getEquity(group)!.toNumber()) -
             performanceData[0].account_equity) /
             performanceData[0].account_equity) *
           100,
@@ -166,7 +170,9 @@ const AccountPage = () => {
   }, [oneDayPerformanceData, mangoAccount])
 
   const maintHealth = useMemo(() => {
-    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
+    return group && mangoAccount
+      ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
+      : 0
   }, [mangoAccount])
 
   const handleChartToShow = (
@@ -198,7 +204,7 @@ const AccountPage = () => {
             </Tooltip>
             <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
               $
-              {mangoAccount ? (
+              {group && mangoAccount ? (
                 <FlipNumbers
                   height={48}
                   width={32}
@@ -206,7 +212,9 @@ const AccountPage = () => {
                   delay={0.05}
                   duration={1}
                   numbers={formatDecimal(
-                    toUiDecimalsForQuote(mangoAccount.getEquity()!.toNumber()),
+                    toUiDecimalsForQuote(
+                      mangoAccount.getEquity(group)!.toNumber()
+                    ),
                     2
                   )}
                 />
@@ -338,10 +346,10 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {mangoAccount
+              {group && mangoAccount
                 ? formatFixedDecimals(
                     toUiDecimalsForQuote(
-                      mangoAccount.getCollateralValue()!.toNumber()
+                      mangoAccount.getCollateralValue(group)!.toNumber()
                     ),
                     true
                   )
@@ -356,11 +364,11 @@ const AccountPage = () => {
               >
                 <span className="tooltip-underline">Total</span>:
                 <span className="ml-1 font-mono text-th-fgd-2">
-                  {mangoAccount
+                  {group && mangoAccount
                     ? formatFixedDecimals(
                         toUiDecimalsForQuote(
                           mangoAccount
-                            .getAssetsValue(HealthType.init)!
+                            .getAssetsValue(group, HealthType.init)!
                             .toNumber()
                         ),
                         true

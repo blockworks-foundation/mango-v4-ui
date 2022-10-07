@@ -38,9 +38,7 @@ const MangoAccountsList = ({
       s.activityFeed.loading = true
     })
     try {
-      const reloadedMangoAccount = await retryFn(() =>
-        acc.reload(client, group)
-      )
+      const reloadedMangoAccount = await retryFn(() => acc.reload(client))
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()

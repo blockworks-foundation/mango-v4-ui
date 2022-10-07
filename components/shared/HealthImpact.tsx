@@ -4,6 +4,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
+import { group } from 'console'
 
 const HealthImpact = ({
   uiAmount,
@@ -15,11 +16,12 @@ const HealthImpact = ({
   mintPk: PublicKey
 }) => {
   const { t } = useTranslation('common')
+  const group = mangoStore.getState().group
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   const currentMaintHealth = useMemo(() => {
-    if (!mangoAccount) return 0
-    return mangoAccount.getHealthRatioUi(HealthType.maint)
+    if (!group || !mangoAccount) return 0
+    return mangoAccount.getHealthRatioUi(group, HealthType.maint)
   }, [mangoAccount])
 
   const maintProjectedHealth = useMemo(() => {

@@ -16,7 +16,7 @@ const RecentTrades = () => {
   const serum3MarketExternal = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarketPk) return
-    return group.serum3MarketExternalsMap.get(selectedMarketPk)
+    return group.serum3ExternalMarketsMap.get(selectedMarketPk)
   }, [selectedMarketPk])
 
   const baseSymbol = useMemo(() => {
