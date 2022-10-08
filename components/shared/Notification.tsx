@@ -131,30 +131,34 @@ const Notification = ({ notification }: { notification: Notification }) => {
       leaveTo="-translate-y-2 sm:translate-y-0 sm:-translate-x-48"
     >
       <div
-        className={`pointer-events-auto mt-2 w-full max-w-sm overflow-hidden rounded-md border border-th-bkg-4 bg-th-bkg-3 shadow-lg ring-1 ring-black ring-opacity-5`}
+        className={`pointer-events-auto mt-2 w-full max-w-sm rounded-md border bg-th-bkg-2 shadow-lg ${
+          type === 'success'
+            ? 'border-th-green'
+            : type === 'error'
+            ? 'border-th-red'
+            : 'border-th-bkg-4'
+        }`}
       >
-        <div className={`relative flex items-center px-2 py-2.5`}>
-          <div className={`flex-shrink-0`}>
+        <div className={`relative flex items-center p-3.5`}>
+          <div className={`mr-1 flex-shrink-0`}>
             {type === 'success' ? (
-              <CheckCircleIcon className={`mr-1 h-7 w-7 text-th-green`} />
+              <CheckCircleIcon className={`h-6 w-6 text-th-green`} />
             ) : null}
             {type === 'info' && (
-              <InformationCircleIcon className={`mr-1 h-7 w-7 text-th-fgd-3`} />
+              <InformationCircleIcon className={`h-6 w-6 text-th-fgd-3`} />
             )}
             {type === 'error' && (
-              <XCircleIcon className={`mr-1 h-7 w-7 text-th-red`} />
+              <XCircleIcon className={`h-6 w-6 text-th-red`} />
             )}
             {type === 'confirm' && (
-              <Loading className="mr-1 h-7 w-7 text-th-fgd-3" />
+              <Loading className="mr-0.5 h-5 w-5 text-th-primary" />
             )}
           </div>
           <div className={`ml-2 flex-1`}>
-            <p className={`text-normal font-bold text-th-fgd-1`}>
-              {parsedTitle || title}
-            </p>
+            <p className={`text-th-fgd-1`}>{parsedTitle || title}</p>
             {description ? (
               <p
-                className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-3`}
+                className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-4`}
               >
                 {description}
               </p>
@@ -167,11 +171,11 @@ const Notification = ({ notification }: { notification: Notification }) => {
                   '?cluster=' +
                   CLUSTER
                 }
-                className="mt-1 flex items-center text-sm text-th-primary"
+                className="default-transition mt-1 flex items-center text-xs text-th-fgd-3 hover:text-th-fgd-2"
                 target="_blank"
                 rel="noreferrer"
               >
-                <div className="break-all text-th-primary">
+                <div className="break-all">
                   {type === 'error'
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}
@@ -183,7 +187,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
           <div className={`absolute right-2 top-2 flex-shrink-0`}>
             <button
               onClick={hideNotification}
-              className={`text-th-fgd-4 focus:outline-none md:hover:text-th-primary`}
+              className={`default-transition text-th-fgd-4 focus:outline-none md:hover:text-th-fgd-3`}
             >
               <span className={`sr-only`}>Close</span>
               <svg
