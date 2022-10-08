@@ -152,9 +152,9 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               />
             }
             title={
-              <div className="text-left">
+              <div className="w-24 text-left">
                 <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
-                <p className="whitespace-nowrap text-sm font-bold text-th-fgd-1">
+                <p className="truncate whitespace-nowrap text-sm font-bold text-th-fgd-1">
                   {mangoAccount
                     ? mangoAccount.name
                     : connected
@@ -350,7 +350,7 @@ export const ExpandableMenuItem = ({
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <span className="ml-3 lg:text-base">{title}</span>
+              <span className="ml-3 truncate lg:text-base">{title}</span>
             </Transition>
           </div>
           <ChevronDownIcon
