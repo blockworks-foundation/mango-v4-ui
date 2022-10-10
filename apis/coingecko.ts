@@ -3,8 +3,6 @@ export const fetchChartData = async (
   quoteTokenId: string,
   daysToShow: number
 ) => {
-  console.log('okkk')
-
   const [inputResponse, outputResponse] = await Promise.all([
     fetch(
       `https://api.coingecko.com/api/v3/coins/${baseTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`
