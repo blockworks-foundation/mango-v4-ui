@@ -16,12 +16,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Fail the job on critical vulnerabiliies with fix available
+      # Fail the job on high/critical vulnerabiliies with fix available
       - name: Scan Dependencies and secrets
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           ignore-unfixed: true
           format: 'table'
-          severity: 'CRITICAL'
+          severity: 'HIGH,CRITICAL'
           exit-code: '1'
