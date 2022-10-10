@@ -38,7 +38,7 @@ import spotBalancesUpdater from './spotBalancesUpdater'
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
 export const connection = new web3.Connection(
-  'https://mango.rpcpool.com',
+  'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
   'processed'
 )
 const options = AnchorProvider.defaultOptions()

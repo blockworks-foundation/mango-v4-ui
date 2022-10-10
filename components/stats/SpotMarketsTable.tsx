@@ -9,8 +9,12 @@ import { formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
-import SimpleAreaChart from '../shared/SimpleAreaChart'
 import MarketLogos from '@components/trade/MarketLogos'
+import dynamic from 'next/dynamic'
+const SimpleAreaChart = dynamic(
+  () => import('@components/shared/SimpleAreaChart'),
+  { ssr: false }
+)
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
