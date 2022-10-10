@@ -1,0 +1,27 @@
+name: Dependency Security Scan
+
+on:
+  pull_request: 
+    branches: 'main'
+  push:
+
+jobs:
+  trivy:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+
+    if: (github.actor != 'dependabot[bot]')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Fail the job on critical vulnerabiliies with fix available
+      - name: Scan Dependencies and secrets
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'table'
+          severity: 'CRITICAL'
+          exit-code: '1'
