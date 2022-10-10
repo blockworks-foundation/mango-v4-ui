@@ -384,9 +384,9 @@ const ActionsMenu = ({
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [selectedToken, setSelectedToken] = useState('')
-  const set = mangoStore.getState().set
+  // const set = mangoStore.getState().set
   const router = useRouter()
-  const { asPath } = router
+  // const { asPath } = router
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const handleShowActionModals = useCallback(
@@ -401,31 +401,31 @@ const ActionsMenu = ({
     []
   )
 
-  const handleBuy = useCallback(() => {
-    const outputTokenInfo = jupiterTokens.find(
-      (t: any) => t.address === bank.mint.toString()
-    )
-    set((s) => {
-      s.swap.outputBank = bank
-      s.swap.outputTokenInfo = outputTokenInfo
-    })
-    if (asPath === '/') {
-      router.push('/swap', undefined, { shallow: true })
-    }
-  }, [bank, router, asPath, set, jupiterTokens])
+  // const handleBuy = useCallback(() => {
+  //   const outputTokenInfo = jupiterTokens.find(
+  //     (t: any) => t.address === bank.mint.toString()
+  //   )
+  //   set((s) => {
+  //     s.swap.outputBank = bank
+  //     s.swap.outputTokenInfo = outputTokenInfo
+  //   })
+  //   if (asPath === '/') {
+  //     router.push('/swap', undefined, { shallow: true })
+  //   }
+  // }, [bank, router, asPath, set, jupiterTokens])
 
-  const handleSell = useCallback(() => {
-    const inputTokenInfo = jupiterTokens.find(
-      (t: any) => t.address === bank.mint.toString()
-    )
-    set((s) => {
-      s.swap.inputBank = bank
-      s.swap.inputTokenInfo = inputTokenInfo
-    })
-    if (asPath === '/') {
-      router.push('/swap', undefined, { shallow: true })
-    }
-  }, [router, asPath, set, bank, jupiterTokens])
+  // const handleSell = useCallback(() => {
+  //   const inputTokenInfo = jupiterTokens.find(
+  //     (t: any) => t.address === bank.mint.toString()
+  //   )
+  //   set((s) => {
+  //     s.swap.inputBank = bank
+  //     s.swap.inputTokenInfo = inputTokenInfo
+  //   })
+  //   if (asPath === '/') {
+  //     router.push('/swap', undefined, { shallow: true })
+  //   }
+  // }, [router, asPath, set, bank, jupiterTokens])
 
   const logoURI = useMemo(() => {
     if (!bank || !jupiterTokens.length) return ''
@@ -468,7 +468,7 @@ const ActionsMenu = ({
         >
           {t('borrow')}
         </LinkButton>
-        <LinkButton
+        {/* <LinkButton
           className="w-full text-left"
           disabled={!mangoAccount}
           onClick={handleBuy}
@@ -481,7 +481,7 @@ const ActionsMenu = ({
           onClick={handleSell}
         >
           {t('sell')}
-        </LinkButton>
+        </LinkButton> */}
       </IconDropMenu>
       {showDepositModal ? (
         <DepositModal
