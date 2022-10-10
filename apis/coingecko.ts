@@ -43,12 +43,3 @@ export const fetchChartData = async (
   formattedData[formattedData.length - 1].time = Date.now()
   return formattedData.filter((d: any) => d.price)
 }
-
-export const fetchTokenInfo = async (tokenId: string) => {
-  const response = await fetch(
-    `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=false&developer_data=false&sparkline=false
-    `
-  )
-  const data = await response.json()
-  return data
-}

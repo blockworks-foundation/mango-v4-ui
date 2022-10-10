@@ -29,7 +29,8 @@ import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
 import { formatTokenSymbol } from 'utils/tokens'
 import { useQuery } from '@tanstack/react-query'
-import { fetchChartData, fetchTokenInfo } from 'apis/coingecko'
+import { fetchChartData } from 'apis/coingecko'
+import mangoStore from '@store/mangoStore'
 
 dayjs.extend(relativeTime)
 
@@ -80,11 +81,10 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   inputTokenId,
   outputTokenId,
 }) => {
-  const [loadChartData, setLoadChartData] = useState(true)
+  const inputBank = mangoStore((s) => s.swap.inputBank)
+  const outputBank = mangoStore((s) => s.swap.outputBank)
   const [baseTokenId, setBaseTokenId] = useState(inputTokenId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputTokenId)
-  const [inputTokenInfo, setInputTokenInfo] = useState<any>(null)
-  const [outputTokenInfo, setOutputTokenInfo] = useState<any>(null)
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState(1)
   const { theme } = useTheme()
@@ -122,31 +122,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   //   setBaseTokenId(quoteTokenId)
   //   setQuoteTokenId(baseTokenId)
   // }, [baseTokenId, quoteTokenId])
-
-  const getInputTokenInfo = useCallback(async () => {
-    if (!inputTokenId) return
-    try {
-      const response = await fetchTokenInfo(inputTokenId)
-      setInputTokenInfo(response)
-    } catch (e) {
-      console.error(e)
-    }
-  }, [inputTokenId])
-
-  const getOutputTokenInfo = useCallback(async () => {
-    if (!outputTokenId) return
-    try {
-      const response = await fetchTokenInfo(outputTokenId)
-      setOutputTokenInfo(response)
-    } catch (e) {
-      console.error(e)
-    }
-  }, [outputTokenId])
-
-  useEffect(() => {
-    getInputTokenInfo()
-    getOutputTokenInfo()
-  }, [getInputTokenInfo, getOutputTokenInfo])
 
   const calculateChartChange = () => {
     if (chartData.length) {
@@ -188,17 +163,17 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
         <div className="relative">
           <div className="flex items-start justify-between">
             <div>
-              {inputTokenInfo && outputTokenInfo ? (
+              {inputBank && outputBank ? (
                 <div className="mb-0.5 flex items-center">
                   <p className="text-base text-th-fgd-3">
                     {['usd-coin', 'tether'].includes(inputTokenId || '')
                       ? `${formatTokenSymbol(
-                          outputTokenInfo?.symbol?.toUpperCase()
-                        )}/${inputTokenInfo?.symbol?.toUpperCase()}`
+                          outputBank?.name?.toUpperCase()
+                        )}/${inputBank?.name?.toUpperCase()}`
                       : `${formatTokenSymbol(
-                          inputTokenInfo?.symbol?.toUpperCase()
+                          inputBank?.name?.toUpperCase()
                         )}/${formatTokenSymbol(
-                          outputTokenInfo?.symbol?.toUpperCase()
+                          outputBank?.name?.toUpperCase()
                         )}`}
                   </p>
                   {/* <div
