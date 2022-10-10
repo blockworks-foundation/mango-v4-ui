@@ -37,6 +37,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 export const LANGS = [
   { locale: 'en', name: 'english', description: 'english' },
+  { locale: 'ru', name: 'russian', description: 'russian' },
   { locale: 'es', name: 'spanish', description: 'spanish' },
   {
     locale: 'zh_tw',
@@ -111,7 +112,7 @@ const Settings: NextPage = () => {
           </div>
           <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:language')}</p>
-            <div className="w-full min-w-[330px] md:w-auto">
+            <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
               <ButtonGroup
                 activeValue={savedLanguage}
                 onChange={(l) => handleLangChange(l)}
