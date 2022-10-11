@@ -161,7 +161,7 @@ const Token: NextPage = () => {
                 <h1 className="text-xl">
                   {coingeckoData.name}{' '}
                   <span className="text-lg font-normal text-th-fgd-4">
-                    ({bank!.name})
+                    ({bank.name})
                   </span>
                 </h1>
               </div>
@@ -173,24 +173,26 @@ const Token: NextPage = () => {
                   play
                   delay={0.05}
                   duration={1}
-                  numbers={formatDecimal(bank!.uiPrice, 2)}
+                  numbers={formatDecimal(bank.uiPrice, 2)}
                 />
                 <Change change={price_change_percentage_24h} />
               </div>
               <DailyRange
                 high={high_24h.usd}
                 low={low_24h.usd}
-                price={bank!.uiPrice}
+                price={bank.uiPrice}
               />
             </div>
             <div className="mb-2 w-full rounded-md bg-th-bkg-2 p-4 md:w-[343px]">
               <div className="mb-4 flex justify-between">
-                <p>{t('balance')}</p>
+                <p>
+                  {bank.name} {t('balance')}
+                </p>
                 <p className="font-mono text-th-fgd-2">
                   {mangoAccount
                     ? formatDecimal(
-                        mangoAccount.getTokenBalanceUi(bank!),
-                        bank!.mintDecimals
+                        mangoAccount.getTokenBalanceUi(bank),
+                        bank.mintDecimals
                       )
                     : 0}
                 </p>
@@ -236,22 +238,19 @@ const Token: NextPage = () => {
               <div className="flex justify-between border-t border-th-bkg-3 py-4">
                 <p>{t('total-deposits')}</p>
                 <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(bank!.uiDeposits())}
+                  {formatFixedDecimals(bank.uiDeposits())}
                 </p>
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 py-4">
                 <p>{t('value')}</p>
                 <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(
-                    bank!.uiDeposits() * bank!.uiPrice,
-                    true
-                  )}
+                  {formatFixedDecimals(bank.uiDeposits() * bank.uiPrice, true)}
                 </p>
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 pt-4">
                 <p>{t('deposit-rate')}</p>
                 <p className="font-mono text-th-green">
-                  {formatDecimal(bank!.getDepositRateUi(), 2, {
+                  {formatDecimal(bank.getDepositRateUi(), 2, {
                     fixed: true,
                   })}
                   %
@@ -263,19 +262,19 @@ const Token: NextPage = () => {
               <div className="flex justify-between border-t border-th-bkg-3 py-4">
                 <p>{t('total-borrows')}</p>
                 <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(bank!.uiBorrows())}
+                  {formatFixedDecimals(bank.uiBorrows())}
                 </p>
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 py-4">
                 <p>{t('value')}</p>
                 <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(bank!.uiBorrows() * bank!.uiPrice, true)}
+                  {formatFixedDecimals(bank.uiBorrows() * bank.uiPrice, true)}
                 </p>
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 pt-4">
                 <p>{t('borrow-rate')}</p>
                 <p className="font-mono text-th-red">
-                  {formatDecimal(bank!.getBorrowRateUi(), 2, {
+                  {formatDecimal(bank.getBorrowRateUi(), 2, {
                     fixed: true,
                   })}
                   %
@@ -286,9 +285,9 @@ const Token: NextPage = () => {
           <div className="border-y border-th-bkg-3 px-6 py-4 text-center">
             <p>
               Utilization:{' '}
-              {bank!.uiDeposits() > 0
+              {bank.uiDeposits() > 0
                 ? formatDecimal(
-                    (bank!.uiBorrows() / bank!.uiDeposits()) * 100,
+                    (bank.uiBorrows() / bank.uiDeposits()) * 100,
                     1,
                     { fixed: true }
                   )
@@ -297,7 +296,7 @@ const Token: NextPage = () => {
             </p>
           </div>
           <div className="border-b border-th-bkg-3 py-4 px-6">
-            <h2 className="mb-1 text-xl">About {bank!.name}</h2>
+            <h2 className="mb-1 text-xl">About {bank.name}</h2>
             <div className="flex items-end">
               <p
                 className={`${
@@ -322,7 +321,7 @@ const Token: NextPage = () => {
           </div>
           <div className="grid grid-cols-1 border-b border-th-bkg-3 sm:grid-cols-2">
             <div className="col-span-1 border-b border-th-bkg-3 px-6 py-4 sm:col-span-2">
-              <h2 className="text-base">{bank!.name} Stats</h2>
+              <h2 className="text-base">{bank.name} Stats</h2>
             </div>
             <div className="col-span-1 border-r border-th-bkg-3 px-6 py-4">
               <div className="flex justify-between pb-4">
