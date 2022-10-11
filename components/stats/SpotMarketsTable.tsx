@@ -64,7 +64,7 @@ const SpotMarketsTable = () => {
                 <tr key={market.publicKey.toString()}>
                   <td>
                     <div className="flex items-center">
-                      <MarketLogos serumMarket={market} />
+                      <MarketLogos market={market} />
                       <p className="font-body tracking-wide">{market.name}</p>
                     </div>
                   </td>
@@ -167,7 +167,7 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
     <div className="border-b border-th-bkg-3 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <MarketLogos serumMarket={market} />
+          <MarketLogos market={market} />
           <div>
             <p className="text-th-fgd-1">{market.name}</p>
             <div className="flex items-center space-x-3">

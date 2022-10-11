@@ -1,4 +1,5 @@
 import {
+  Serum3Market,
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
@@ -21,6 +22,7 @@ import { calculateMarketPrice } from 'utils/tradeForm'
 import Image from 'next/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
+import { Market } from '@project-serum/serum'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -156,13 +158,19 @@ const AdvancedTradeForm = () => {
   useEffect(() => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
-    const baseBank = group?.getFirstBankByTokenIndex(
-      selectedMarket.baseTokenIndex
-    )
-    if (baseBank.uiPrice) {
-      const price = baseBank.uiPrice.toString()
+    if (selectedMarket instanceof Serum3Market) {
+      const baseBank = group?.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex
+      )
+      if (baseBank.uiPrice) {
+        const price = baseBank.uiPrice.toString()
+        set((s) => {
+          s.tradeForm.price = price
+        })
+      }
+    } else {
       set((s) => {
-        s.tradeForm.price = price
+        s.tradeForm.price = selectedMarket._uiPrice.toString()
       })
     }
   }, [set, selectedMarket])
@@ -191,25 +199,27 @@ const AdvancedTradeForm = () => {
         price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
       }
 
-      const tx = await client.serum3PlaceOrder(
-        group,
-        mangoAccount,
-        selectedMarket!.serumMarketExternal,
-        tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-        price,
-        baseSize,
-        Serum3SelfTradeBehavior.decrementTake,
-        orderType,
-        Date.now(),
-        10
-      )
-      actions.reloadMangoAccount()
-      actions.fetchSerumOpenOrders()
-      notify({
-        type: 'success',
-        title: 'Transaction successful',
-        txid: tx,
-      })
+      if (selectedMarket instanceof Serum3Market) {
+        const tx = await client.serum3PlaceOrder(
+          group,
+          mangoAccount,
+          selectedMarket!.serumMarketExternal,
+          tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+          price,
+          baseSize,
+          Serum3SelfTradeBehavior.decrementTake,
+          orderType,
+          Date.now(),
+          10
+        )
+        actions.reloadMangoAccount()
+        actions.fetchSerumOpenOrders()
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      }
     } catch (e: any) {
       notify({
         title: 'There was an issue.',
