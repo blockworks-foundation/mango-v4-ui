@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v3
 
       # Report all vulnerabilities in CI output
-      - name: Scan Dependencies and secrets
+      - name: Report on all vulnerabilities
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
@@ -25,7 +25,7 @@ jobs:
           format: 'table'
           
       # Fail the job on critical vulnerabiliies with fix available
-      - name: Scan Dependencies and secrets
+      - name: Fail on critical vulnerabilities
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
