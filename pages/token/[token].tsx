@@ -12,7 +12,7 @@ import FlipNumbers from 'react-flip-numbers'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import Button, { IconButton, LinkButton } from '@components/shared/Button'
+import Button from '@components/shared/Button'
 import { ArrowSmallUpIcon } from '@heroicons/react/20/solid'
 import DepositModal from '@components/modals/DepositModal'
 import BorrowModal from '@components/modals/BorrowModal'
@@ -20,6 +20,13 @@ import parse from 'html-react-parser'
 import Link from 'next/link'
 import SheenLoader from '@components/shared/SheenLoader'
 import Tooltip from '@components/shared/Tooltip'
+import { COLORS } from 'styles/colors'
+import DetailedAreaChart, {
+  formatDateAxis,
+} from '@components/shared/DetailedAreaChart'
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import { useTheme } from 'next-themes'
+import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 dayjs.extend(relativeTime)
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -67,6 +74,12 @@ const Token: NextPage = () => {
   const group = mangoStore((s) => s.group)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { theme } = useTheme()
+  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
+  const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
+  const [loadChartData, setLoadChartData] = useState(true)
+  const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
+  const [daysToShow, setDaysToShow] = useState<number>(1)
 
   const bank = useMemo(() => {
     if (group && token) {
@@ -142,6 +155,53 @@ const Token: NextPage = () => {
     total_supply,
     total_volume,
   } = coingeckoData ? coingeckoData.market_data : DEFAULT_COINGECKO_VALUES
+
+  const loadingChart = useMemo(() => {
+    return daysToShow == 1 ? loadingCoingeckoPrices : loadChartData
+  }, [loadChartData, loadingCoingeckoPrices])
+
+  const coingeckoTokenPrices = useMemo(() => {
+    if (daysToShow === 1 && coingeckoPrices.length && bank) {
+      const tokenPriceData = coingeckoPrices.find((asset) =>
+        bank?.name === 'soETH'
+          ? asset.symbol === 'ETH'
+          : asset.symbol === bank.name
+      )
+      if (tokenPriceData) {
+        return tokenPriceData.prices
+      }
+    } else {
+      if (chartData && !loadingChart) {
+        return chartData.prices
+      }
+    }
+    return []
+  }, [coingeckoPrices, bank, daysToShow, chartData, loadingChart])
+
+  const change = useMemo(() => {
+    return coingeckoTokenPrices.length
+      ? ((coingeckoTokenPrices[coingeckoTokenPrices.length - 1][1] -
+          coingeckoTokenPrices[0][1]) /
+          coingeckoTokenPrices[0][1]) *
+          100
+      : 0
+  }, [coingeckoTokenPrices])
+
+  const handleDaysToShow = async (days: number) => {
+    if (days !== 1) {
+      try {
+        const response = await fetch(
+          `https://api.coingecko.com/api/v3/coins/${coingeckoId}/market_chart?vs_currency=usd&days=${days}`
+        )
+        const data = await response.json()
+        setLoadChartData(false)
+        setChartData(data)
+      } catch {
+        setLoadChartData(false)
+      }
+    }
+    setDaysToShow(days)
+  }
 
   return (
     <div className="pb-20 md:pb-16">
@@ -313,8 +373,105 @@ const Token: NextPage = () => {
               </span>
             </div>
           </div>
+          {!loadingChart ? (
+            coingeckoTokenPrices.length ? (
+              <>
+                <div className="mt-4 flex w-full items-center justify-between px-6">
+                  <h2 className="text-base">{bank.name} Price Chart</h2>
+                  <ChartRangeButtons
+                    activeValue={daysToShow}
+                    names={['24H', '7D', '30D']}
+                    values={[1, 7, 30]}
+                    onChange={(v) => handleDaysToShow(v)}
+                  />
+                </div>
+                <div className="relative -mt-1 h-96 w-auto">
+                  <div className="-mx-6 mt-6 h-full px-10">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={coingeckoTokenPrices}>
+                        <defs>
+                          <linearGradient
+                            id="gradientArea"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor={
+                                change >= 0
+                                  ? COLORS.GREEN[theme]
+                                  : COLORS.RED[theme]
+                              }
+                              stopOpacity={0.15}
+                            />
+                            <stop
+                              offset="99%"
+                              stopColor={
+                                change >= 0
+                                  ? COLORS.GREEN[theme]
+                                  : COLORS.RED[theme]
+                              }
+                              stopOpacity={0}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <Area
+                          isAnimationActive={false}
+                          type="monotone"
+                          dataKey="1"
+                          stroke={
+                            change >= 0
+                              ? COLORS.GREEN[theme]
+                              : COLORS.RED[theme]
+                          }
+                          strokeWidth={1.5}
+                          fill="url(#gradientArea)"
+                        />
+                        <XAxis
+                          axisLine={false}
+                          dataKey="0"
+                          padding={{ left: 20, right: 20 }}
+                          tick={{
+                            fill:
+                              theme === 'Light'
+                                ? 'rgba(0,0,0,0.4)'
+                                : 'rgba(255,255,255,0.6)',
+                            fontSize: 10,
+                          }}
+                          tickLine={false}
+                          tickFormatter={(d) => formatDateAxis(d, daysToShow)}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          dataKey={'1'}
+                          type="number"
+                          domain={['dataMin', 'dataMax']}
+                          padding={{ top: 20, bottom: 20 }}
+                          tick={{
+                            fill:
+                              theme === 'Light'
+                                ? 'rgba(0,0,0,0.4)'
+                                : 'rgba(255,255,255,0.6)',
+                            fontSize: 10,
+                          }}
+                          tickFormatter={(x) => `$${x.toFixed(2)}`}
+                          tickLine={false}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </>
+            ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
+              <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
+            )
+          ) : (
+            <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+          )}
           <div className="grid grid-cols-1 border-b border-th-bkg-3 sm:grid-cols-2">
-            <div className="col-span-1 border-b border-th-bkg-3 px-6 py-4 sm:col-span-2">
+            <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 sm:col-span-2">
               <h2 className="text-base">{bank.name} Stats</h2>
             </div>
             <div className="col-span-1 border-r border-th-bkg-3 px-6 py-4">

@@ -38,6 +38,14 @@ interface DetailedAreaChartProps {
   yKey: string
 }
 
+export const formatDateAxis = (date: string, days: number) => {
+  if (days === 1) {
+    return dayjs(date).format('h:mma')
+  } else {
+    return dayjs(date).format('D MMM')
+  }
+}
+
 const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   data,
   daysToShow = 1,
@@ -78,14 +86,6 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
         )
     }
     return 0
-  }
-
-  const formatDateAxis = (date: string) => {
-    if (daysToShow === 1) {
-      return dayjs(date).format('h:mma')
-    } else {
-      return dayjs(date).format('D MMM')
-    }
   }
 
   const flipGradientCoords = useMemo(
@@ -229,7 +229,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                         fontSize: 10,
                       }}
                       tickLine={false}
-                      tickFormatter={(d) => formatDateAxis(d)}
+                      tickFormatter={(d) => formatDateAxis(d, daysToShow)}
                     />
                     <YAxis
                       axisLine={false}
