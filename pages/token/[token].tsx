@@ -13,12 +13,13 @@ import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import Button, { IconButton, LinkButton } from '@components/shared/Button'
-import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import { ArrowSmallUpIcon } from '@heroicons/react/20/solid'
 import DepositModal from '@components/modals/DepositModal'
 import BorrowModal from '@components/modals/BorrowModal'
 import parse from 'html-react-parser'
 import Link from 'next/link'
 import SheenLoader from '@components/shared/SheenLoader'
+import Tooltip from '@components/shared/Tooltip'
 dayjs.extend(relativeTime)
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -147,22 +148,12 @@ const Token: NextPage = () => {
       {coingeckoData && bank ? (
         <>
           <div className="flex flex-col border-b border-th-bkg-3 px-6 py-3 md:flex-row md:items-end md:justify-between">
-            <div className="mb-4 md:mb-0">
-              <IconButton
-                className="mb-2"
-                onClick={() => router.back()}
-                hideBg
-                size="small"
-              >
-                <ArrowLeftIcon className="h-6 w-6" />
-              </IconButton>
+            <div className="mb-4 md:mb-1">
               <div className="mb-1.5 flex items-center space-x-2">
-                <Image src={logoURI!} height="24" width="24" />
-                <h1 className="text-xl">
+                <Image src={logoURI!} height="20" width="20" />
+                <h1 className="text-lg font-normal">
                   {coingeckoData.name}{' '}
-                  <span className="text-lg font-normal text-th-fgd-4">
-                    ({bank.name})
-                  </span>
+                  <span className="text-th-fgd-4">({bank.name})</span>
                 </h1>
               </div>
               <div className="mb-2 flex items-end space-x-3 text-5xl font-bold text-th-fgd-1">
@@ -186,7 +177,7 @@ const Token: NextPage = () => {
             <div className="mb-2 w-full rounded-md bg-th-bkg-2 p-4 md:w-[343px]">
               <div className="mb-4 flex justify-between">
                 <p>
-                  {bank.name} {t('balance')}
+                  {bank.name} {t('balance')}:
                 </p>
                 <p className="font-mono text-th-fgd-2">
                   {mangoAccount
@@ -242,7 +233,7 @@ const Token: NextPage = () => {
                 </p>
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 py-4">
-                <p>{t('value')}</p>
+                <p>{t('token:total-value')}</p>
                 <p className="font-mono text-th-fgd-2">
                   {formatFixedDecimals(bank.uiDeposits() * bank.uiPrice, true)}
                 </p>
@@ -266,7 +257,7 @@ const Token: NextPage = () => {
                 </p>
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 py-4">
-                <p>{t('value')}</p>
+                <p>{t('token:total-value')}</p>
                 <p className="font-mono text-th-fgd-2">
                   {formatFixedDecimals(bank.uiBorrows() * bank.uiPrice, true)}
                 </p>
@@ -282,9 +273,13 @@ const Token: NextPage = () => {
               </div>
             </div>
           </div>
-          <div className="border-y border-th-bkg-3 px-6 py-4 text-center">
-            <p>
-              Utilization:{' '}
+          <div className="flex items-center justify-center border-y border-th-bkg-3 px-6 py-4 text-center">
+            <Tooltip
+              content={'The percentage of deposits that have been lent out.'}
+            >
+              <p className="tooltip-underline mr-1">{t('utilization')}:</p>
+            </Tooltip>
+            <span className="font-mono text-th-fgd-2 no-underline">
               {bank.uiDeposits() > 0
                 ? formatDecimal(
                     (bank.uiBorrows() / bank.uiDeposits()) * 100,
@@ -292,8 +287,8 @@ const Token: NextPage = () => {
                     { fixed: true }
                   )
                 : '0.0'}
-              % of deposits have been lent out
-            </p>
+              %
+            </span>
           </div>
           <div className="border-b border-th-bkg-3 py-4 px-6">
             <h2 className="mb-1 text-xl">About {bank.name}</h2>
@@ -304,18 +299,17 @@ const Token: NextPage = () => {
                 } max-w-[720px] overflow-hidden`}
               >
                 {parse(coingeckoData.description.en)}
-                {/* {showFullDesc
-                ? parse(coingeckoData.description.en)
-                : `${coingeckoData.description.en.substr(
-                    0,
-                    100
-                  )}...`} */}{' '}
               </p>
               <span
-                className="default-transition cursor-pointer font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
+                className="default-transition flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
                 onClick={() => setShowFullDesc(!showFullDesc)}
               >
                 {showFullDesc ? 'Less' : 'More'}
+                <ArrowSmallUpIcon
+                  className={`h-5 w-5 ${
+                    showFullDesc ? 'rotate-360' : 'rotate-180'
+                  } default-transition`}
+                />
               </span>
             </div>
           </div>
