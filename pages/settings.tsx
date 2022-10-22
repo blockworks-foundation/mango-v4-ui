@@ -146,7 +146,7 @@ const Settings: NextPage = () => {
             />
           </div>
         </div>
-        <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-8 lg:col-start-3">
+        <div className="col-span-12 pt-8 lg:col-span-8 lg:col-start-3">
           <h2 className="mb-4 text-base">{t('settings:preferred-explorer')}</h2>
           <div className="space-y-2">
             {EXPLORERS.map((ex) => (
