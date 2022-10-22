@@ -21,9 +21,7 @@ import Link from 'next/link'
 import SheenLoader from '@components/shared/SheenLoader'
 import Tooltip from '@components/shared/Tooltip'
 import { COLORS } from 'styles/colors'
-import DetailedAreaChart, {
-  formatDateAxis,
-} from '@components/shared/DetailedAreaChart'
+import { formatDateAxis } from '@components/shared/DetailedAreaChart'
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { useTheme } from 'next-themes'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
@@ -74,7 +72,6 @@ const Token: NextPage = () => {
   const group = mangoStore((s) => s.group)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-  const { theme } = useTheme()
   const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
   const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
   const [loadChartData, setLoadChartData] = useState(true)
@@ -177,15 +174,6 @@ const Token: NextPage = () => {
     }
     return []
   }, [coingeckoPrices, bank, daysToShow, chartData, loadingChart])
-
-  const change = useMemo(() => {
-    return coingeckoTokenPrices.length
-      ? ((coingeckoTokenPrices[coingeckoTokenPrices.length - 1][1] -
-          coingeckoTokenPrices[0][1]) /
-          coingeckoTokenPrices[0][1]) *
-          100
-      : 0
-  }, [coingeckoTokenPrices])
 
   const handleDaysToShow = async (days: number) => {
     if (days !== 1) {
@@ -385,84 +373,10 @@ const Token: NextPage = () => {
                     onChange={(v) => handleDaysToShow(v)}
                   />
                 </div>
-                <div className="relative -mt-1 h-96 w-auto">
-                  <div className="-mx-6 mt-6 h-full px-10">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={coingeckoTokenPrices}>
-                        <defs>
-                          <linearGradient
-                            id="gradientArea"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                          >
-                            <stop
-                              offset="0%"
-                              stopColor={
-                                change >= 0
-                                  ? COLORS.GREEN[theme]
-                                  : COLORS.RED[theme]
-                              }
-                              stopOpacity={0.15}
-                            />
-                            <stop
-                              offset="99%"
-                              stopColor={
-                                change >= 0
-                                  ? COLORS.GREEN[theme]
-                                  : COLORS.RED[theme]
-                              }
-                              stopOpacity={0}
-                            />
-                          </linearGradient>
-                        </defs>
-                        <Area
-                          isAnimationActive={false}
-                          type="monotone"
-                          dataKey="1"
-                          stroke={
-                            change >= 0
-                              ? COLORS.GREEN[theme]
-                              : COLORS.RED[theme]
-                          }
-                          strokeWidth={1.5}
-                          fill="url(#gradientArea)"
-                        />
-                        <XAxis
-                          axisLine={false}
-                          dataKey="0"
-                          padding={{ left: 20, right: 20 }}
-                          tick={{
-                            fill:
-                              theme === 'Light'
-                                ? 'rgba(0,0,0,0.4)'
-                                : 'rgba(255,255,255,0.6)',
-                            fontSize: 10,
-                          }}
-                          tickLine={false}
-                          tickFormatter={(d) => formatDateAxis(d, daysToShow)}
-                        />
-                        <YAxis
-                          axisLine={false}
-                          dataKey={'1'}
-                          type="number"
-                          domain={['dataMin', 'dataMax']}
-                          padding={{ top: 20, bottom: 20 }}
-                          tick={{
-                            fill:
-                              theme === 'Light'
-                                ? 'rgba(0,0,0,0.4)'
-                                : 'rgba(255,255,255,0.6)',
-                            fontSize: 10,
-                          }}
-                          tickFormatter={(x) => `$${x.toFixed(2)}`}
-                          tickLine={false}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+                <PriceChart
+                  daysToShow={daysToShow}
+                  prices={coingeckoTokenPrices}
+                />
               </>
             ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
               <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
@@ -603,3 +517,84 @@ const Token: NextPage = () => {
 }
 
 export default Token
+
+const PriceChart = ({
+  prices,
+  daysToShow,
+}: {
+  prices: number[][]
+  daysToShow: number
+}) => {
+  const { theme } = useTheme()
+
+  const change = useMemo(() => {
+    return prices[prices.length - 1][1] - prices[0][1]
+  }, [prices])
+
+  return (
+    <div className="relative -mt-1 h-96 w-auto">
+      <div className="-mx-6 mt-6 h-full px-10">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={prices}>
+            <defs>
+              <linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor={
+                    change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]
+                  }
+                  stopOpacity={0.15}
+                />
+                <stop
+                  offset="99%"
+                  stopColor={
+                    change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]
+                  }
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
+            <Area
+              isAnimationActive={false}
+              type="monotone"
+              dataKey="1"
+              stroke={change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]}
+              strokeWidth={1.5}
+              fill="url(#gradientArea)"
+            />
+            <XAxis
+              axisLine={false}
+              dataKey="0"
+              padding={{ left: 20, right: 20 }}
+              tick={{
+                fill:
+                  theme === 'Light'
+                    ? 'rgba(0,0,0,0.4)'
+                    : 'rgba(255,255,255,0.6)',
+                fontSize: 10,
+              }}
+              tickLine={false}
+              tickFormatter={(d) => formatDateAxis(d, daysToShow)}
+            />
+            <YAxis
+              axisLine={false}
+              dataKey={'1'}
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              padding={{ top: 20, bottom: 20 }}
+              tick={{
+                fill:
+                  theme === 'Light'
+                    ? 'rgba(0,0,0,0.4)'
+                    : 'rgba(255,255,255,0.6)',
+                fontSize: 10,
+              }}
+              tickFormatter={(x) => `$${x.toFixed(2)}`}
+              tickLine={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
