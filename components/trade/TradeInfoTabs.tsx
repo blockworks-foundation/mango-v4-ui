@@ -21,7 +21,7 @@ const TradeInfoTabs = () => {
   }, [openOrders, mangoAccount])
 
   return (
-    <div className="hide-scroll h-full overflow-y-scroll">
+    <div className="hide-scroll h-full overflow-y-scroll pb-5">
       <div className="sticky top-0 z-10">
         <TabButtons
           activeValue={selectedTab}
