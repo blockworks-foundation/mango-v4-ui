@@ -59,7 +59,9 @@ const TokenList = () => {
     <ContentBox hideBorder hidePadding>
       <div className="grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-[40px]">
         <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-t-0 ">
-          <p className="mb-2.5 leading-none">{t('total-deposit-value')}</p>
+          <p className="mb-2.5 text-base leading-none">
+            {t('total-deposit-value')}
+          </p>
           <div className="flex items-center font-bold">
             <FlipNumbers
               height={40}
@@ -67,12 +69,14 @@ const TokenList = () => {
               play
               delay={0.05}
               duration={1}
-              numbers={formatFixedDecimals(totalDepositValue!, true)}
+              numbers={formatFixedDecimals(totalDepositValue || 0.0, true)}
             />
           </div>
         </div>
         <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
-          <p className="mb-2.5 leading-none">{t('total-borrow-value')}</p>
+          <p className="mb-2.5 text-base leading-none">
+            {t('total-borrow-value')}
+          </p>
           <div className="flex items-center font-bold">
             <FlipNumbers
               height={40}
@@ -80,7 +84,7 @@ const TokenList = () => {
               play
               delay={0.05}
               duration={1}
-              numbers={formatFixedDecimals(totalBorrowValue!, true)}
+              numbers={formatFixedDecimals(totalBorrowValue || 0.0, true)}
             />
           </div>
         </div>
@@ -90,7 +94,6 @@ const TokenList = () => {
           <thead>
             <tr>
               <th className="text-left">{t('token')}</th>
-              <th className="text-right">{t('price')}</th>
               <th className="text-right">{t('total-deposits')}</th>
               <th className="text-right">{t('total-borrows')}</th>
               <th>
@@ -128,7 +131,6 @@ const TokenList = () => {
           <tbody>
             {banks.map(({ key, value }) => {
               const bank = value[0]
-              const oraclePrice = bank.uiPrice
 
               let logoURI
               if (jupiterTokens.length) {
@@ -151,12 +153,6 @@ const TokenList = () => {
                       <p className="font-body tracking-wide">{bank.name}</p>
                     </div>
                   </td>
-                  <td>
-                    <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(oraclePrice!, true)}</p>
-                    </div>
-                  </td>
-
                   <td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(bank.uiDeposits())}</p>
@@ -217,7 +213,6 @@ const TokenList = () => {
         <div>
           {banks.map(({ key, value }) => {
             const bank = value[0]
-            const oraclePrice = bank.uiPrice
             let logoURI
             if (jupiterTokens.length) {
               logoURI = jupiterTokens.find(
@@ -277,12 +272,6 @@ const TokenList = () => {
                   leaveTo="opacity-0"
                 >
                   <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
-                    <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">{t('price')}</p>
-                      <p className="font-mono text-th-fgd-1">
-                        ${formatDecimal(oraclePrice!, 2)}
-                      </p>
-                    </div>
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                       <p className="space-x-2">

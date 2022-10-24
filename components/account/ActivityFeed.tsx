@@ -222,7 +222,11 @@ const ActivityFilters = ({
               </Tooltip>
             ) : null}
           </div>
-          <Button className="h-12 rounded-none" onClick={handleUpdateResults}>
+          <Button
+            className="rounded-none"
+            size="large"
+            onClick={handleUpdateResults}
+          >
             {t('activity:update')}
           </Button>
         </div>

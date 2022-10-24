@@ -2,7 +2,11 @@ import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
 import mangoStore from '@store/mangoStore'
-import DetailedAreaChart from '../shared/DetailedAreaChart'
+import dynamic from 'next/dynamic'
+const DetailedAreaChart = dynamic(
+  () => import('@components/shared/DetailedAreaChart'),
+  { ssr: false }
+)
 
 const AccountChart = ({
   chartToShow,

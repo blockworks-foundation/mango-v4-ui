@@ -7,6 +7,7 @@ import {
   MagnifyingGlassIcon,
   ExclamationCircleIcon,
   HeartIcon,
+  LinkIcon,
 } from '@heroicons/react/20/solid'
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
@@ -21,7 +22,7 @@ import { SwapLeverageSlider } from './LeverageSlider'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
-import Button, { IconButton, LinkButton } from '../shared/Button'
+import Button, { IconButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
@@ -34,7 +35,6 @@ import {
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
 import { useTokenMax } from './useTokenMax'
-import WalletIcon from '../icons/WalletIcon'
 import Tooltip from '@components/shared/Tooltip'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 
@@ -53,6 +53,8 @@ const SwapForm = () => {
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+
+  const group = mangoStore.getState().group
 
   const set = mangoStore.getState().set
   const useMargin = mangoStore((s) => s.swap.margin)
@@ -143,8 +145,8 @@ const SwapForm = () => {
   }, [inputTokenInfo, outputTokenInfo, set, amountOut, amountIn])
 
   const currentMaintHealth = useMemo(() => {
-    if (!mangoAccount) return 0
-    return mangoAccount.getHealthRatioUi(HealthType.maint)
+    if (!group || !mangoAccount) return 0
+    return mangoAccount.getHealthRatioUi(group, HealthType.maint)
   }, [mangoAccount])
 
   const maintProjectedHealth = useMemo(() => {
@@ -196,7 +198,7 @@ const SwapForm = () => {
     >
       <div className="p-6 pt-3">
         <Transition
-          className="thin-scroll absolute top-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
+          className="thin-scroll absolute top-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={showConfirm}
           enter="transition ease-in duration-300"
           enterFrom="translate-x-full"
@@ -216,7 +218,7 @@ const SwapForm = () => {
           />
         </Transition>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={!!showTokenSelect}
         >
           <SwapFormTokenList
@@ -231,7 +233,7 @@ const SwapForm = () => {
           />
         </EnterBottomExitBottom>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={showSettings}
         >
           <SwapSettings onClose={() => setShowSettings(false)} />
@@ -240,7 +242,7 @@ const SwapForm = () => {
           <h2 className="text-base text-th-fgd-2">{t('swap')}</h2>
           <div id="swap-step-one">
             <IconButton
-              className="text-th-fgd-2"
+              className="text-th-fgd-3"
               hideBg
               onClick={() => setShowSettings(true)}
               size="small"
@@ -451,7 +453,7 @@ const SwapFormSubmitButton = ({
         )
       ) : (
         <div className="flex items-center">
-          <WalletIcon className="mr-2 h-5 w-5" />
+          <LinkIcon className="mr-2 h-5 w-5" />
           {t('connect')}
         </div>
       )}

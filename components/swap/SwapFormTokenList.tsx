@@ -61,7 +61,7 @@ const TokenItem = ({
     <div>
       <button
         key={address}
-        className="flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2"
+        className="default-transition flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2"
         onClick={() => onSubmit(address)}
         disabled={isDisabled}
       >
@@ -184,7 +184,11 @@ const SwapFormTokenList = ({
           ? `${t('swap')} ${t('swap:from')}`
           : `${t('swap')} ${t('swap:to')}`}
       </p>
-      <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
+      <IconButton
+        className="absolute top-2 right-2 text-th-fgd-3 hover:text-th-fgd-2"
+        onClick={onClose}
+        hideBg
+      >
         <XMarkIcon className="h-6 w-6" />
       </IconButton>
       {/* No need for search/popular tokens until we have more tokens */}
@@ -232,7 +236,7 @@ const SwapFormTokenList = ({
         </div>
       ) : null} */}
       {/* <div className="my-2 border-t border-th-bkg-4"></div> */}
-      <div className="mb-2 flex justify-between rounded bg-th-bkg-3 p-2">
+      <div className="mb-2 flex justify-between rounded bg-th-bkg-2 p-2">
         <p className="text-xs text-th-fgd-4">{t('token')}</p>
         {type === 'input' ? (
           <p className="text-xs text-th-fgd-4">{t('max')}</p>

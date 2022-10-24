@@ -1,0 +1,16 @@
+{
+    "confirm-swap": "Confirm Swap",
+    "est-liq-price": "Est. Liq Price",
+    "fees-paid-to": "Fees Paid to {{route}}",
+    "from": "From",
+    "health-impact": "Health Impact",
+    "insufficient-balance": "Insufficient {{symbol}} Balance",
+    "insufficient-collateral": "Insufficient Collateral",
+    "minimum-received": "Minimum Received",
+    "rate": "Rate",
+    "review-swap": "Review Swap",
+    "slippage": "Slippage",
+    "swap-history": "Swap History",
+    "to": "To",
+    "use-margin": "Allow Margin"
+}

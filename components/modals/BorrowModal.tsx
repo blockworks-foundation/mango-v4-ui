@@ -99,7 +99,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         group,
         mangoAccount,
         bank!.mint,
-        parseFloat(inputAmount),
+        Number(inputAmount),
         true
       )
       notify({
@@ -141,7 +141,9 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   }, [mangoAccount, group])
 
   const initHealth = useMemo(() => {
-    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.init) : 100
+    return group && mangoAccount
+      ? mangoAccount.getHealthRatioUi(group, HealthType.init)
+      : 100
   }, [mangoAccount])
 
   const showInsufficientBalance = Number(inputAmount)
@@ -174,12 +176,9 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
           valueKey="maxAmount"
         />
       </EnterBottomExitBottom>
-      <FadeInFadeOut
-        className="flex h-[420px] flex-col justify-between"
-        show={isOpen}
-      >
+      <FadeInFadeOut className="flex flex-col justify-between" show={isOpen}>
         <div>
-          <h2 className="mb-4 text-center">{t('borrow')}</h2>
+          <h2 className="text-center">{t('borrow')}</h2>
           {initHealth && initHealth <= 0 ? (
             <div className="mb-4">
               <InlineNotification
@@ -188,7 +187,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
             </div>
           ) : null}
-          <div className="grid grid-cols-2 pb-6">
+          <div className="grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
               <MaxAmountButton
@@ -230,7 +229,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 placeholder="0.00"
                 value={inputAmount}
                 onValueChange={(e: NumberFormatValues) =>
-                  setInputAmount(e.value)
+                  setInputAmount(Number(e.value) ? e.value : '')
                 }
                 isAllowed={withValueLimit}
               />
@@ -250,17 +249,14 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 <p className="text-th-fgd-3">0.00x</p>
               </div>
               <BorrowLeverageSlider
-                amount={parseFloat(inputAmount) || 0}
+                amount={Number(inputAmount) || 0}
                 tokenMax={tokenMax}
                 onChange={(x) => setInputAmount(x)}
               />
             </div> */}
           </div>
-          <div className="space-y-2 border-y border-th-bkg-3 px-2 py-4">
-            <HealthImpact
-              mintPk={bank!.mint}
-              uiAmount={parseFloat(inputAmount)}
-            />
+          <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
+            <HealthImpact mintPk={bank!.mint} uiAmount={Number(inputAmount)} />
             <div className="flex justify-between">
               <p>{t('borrow-value')}</p>
               <p className="font-mono text-th-fgd-1">

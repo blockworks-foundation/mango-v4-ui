@@ -30,7 +30,7 @@ const Change = ({
       )}
       <p
         className={`font-mono font-normal ${
-          size === 'small' ? 'text-xs' : ''
+          size === 'small' ? 'text-xs' : 'text-sm'
         } ${
           change > 0
             ? 'text-th-green'

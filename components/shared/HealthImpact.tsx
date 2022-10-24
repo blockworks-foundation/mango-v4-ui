@@ -15,20 +15,26 @@ const HealthImpact = ({
   mintPk: PublicKey
 }) => {
   const { t } = useTranslation('common')
+  const group = mangoStore.getState().group
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   const currentMaintHealth = useMemo(() => {
-    if (!mangoAccount) return 0
-    return mangoAccount.getHealthRatioUi(HealthType.maint)
+    if (!group || !mangoAccount) return 0
+    return mangoAccount.getHealthRatioUi(group, HealthType.maint)
   }, [mangoAccount])
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !mangoAccount) return 0
+    const uiTokenAmount = isDeposit ? uiAmount : uiAmount * -1
+    console.log('uiAmount')
+
+    console.log('uiTokenAmount', uiTokenAmount)
+
     const projectedHealth =
       mangoAccount.simHealthRatioWithTokenPositionUiChanges(
         group,
-        [{ mintPk, uiTokenAmount: isDeposit ? uiAmount : uiAmount * -1 }],
+        [{ mintPk, uiTokenAmount }],
         HealthType.maint
       )
 

@@ -76,7 +76,7 @@ const UnsettledTrades = ({
           <tbody>
             {Object.entries(unsettledSpotBalances).map(
               ([mktAddress, balance]) => {
-                const market = group.getSerum3MarketByPk(
+                const market = group.getSerum3MarketByExternalMarket(
                   new PublicKey(mktAddress)
                 )
                 const base = market?.name.split('/')[0]
@@ -86,7 +86,7 @@ const UnsettledTrades = ({
                   <tr key={mktAddress} className="text-sm">
                     <td>
                       <div className="flex items-center">
-                        <MarketLogos serumMarket={market!} />
+                        <MarketLogos market={market!} />
                         <span>{market ? market.name : ''}</span>
                       </div>
                     </td>
@@ -128,7 +128,7 @@ const UnsettledTrades = ({
         <div className="pb-20">
           {Object.entries(unsettledSpotBalances).map(
             ([mktAddress, balance]) => {
-              const market = group.getSerum3MarketByPk(
+              const market = group.getSerum3MarketByExternalMarket(
                 new PublicKey(mktAddress)
               )
               const base = market?.name.split('/')[0]
@@ -140,7 +140,7 @@ const UnsettledTrades = ({
                   className="flex items-center justify-between border-b border-th-bkg-3 p-4"
                 >
                   <div className="flex items-center">
-                    <MarketLogos serumMarket={market!} />
+                    <MarketLogos market={market!} />
                     <span>{market ? market.name : ''}</span>
                   </div>
                   <div className="flex items-center space-x-3">

@@ -1,4 +1,4 @@
-import { Serum3Side } from '@blockworks-foundation/mango-v4'
+import { Serum3Market, Serum3Side } from '@blockworks-foundation/mango-v4'
 import { IconButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
@@ -35,19 +35,21 @@ const OpenOrders = () => {
       if (!group || !mangoAccount) return
       setCancelId(o.orderId.toString())
       try {
-        const tx = await client.serum3CancelOrder(
-          group,
-          mangoAccount,
-          selectedMarket!.serumMarketExternal,
-          o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-          o.orderId
-        )
-        actions.fetchSerumOpenOrders()
-        notify({
-          type: 'success',
-          title: 'Transaction successful',
-          txid: tx,
-        })
+        if (selectedMarket instanceof Serum3Market) {
+          const tx = await client.serum3CancelOrder(
+            group,
+            mangoAccount,
+            selectedMarket!.serumMarketExternal,
+            o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+            o.orderId
+          )
+          actions.fetchSerumOpenOrders()
+          notify({
+            type: 'success',
+            title: 'Transaction successful',
+            txid: tx,
+          })
+        }
       } catch (e: any) {
         console.error('Error canceling', e)
         notify({
@@ -82,7 +84,7 @@ const OpenOrders = () => {
               .map(([marketPk, orders]) => {
                 return orders.map((o) => {
                   const group = mangoStore.getState().group
-                  const serumMarket = group?.getSerum3MarketByPk(
+                  const serumMarket = group?.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
                   )
                   const quoteSymbol = group?.getFirstBankByTokenIndex(
@@ -95,7 +97,7 @@ const OpenOrders = () => {
                     >
                       <td>
                         <div className="flex items-center">
-                          <MarketLogos serumMarket={serumMarket!} />
+                          <MarketLogos market={serumMarket!} />
                           {serumMarket?.name}
                         </div>
                       </td>
@@ -149,7 +151,7 @@ const OpenOrders = () => {
           {Object.entries(openOrders).map(([marketPk, orders]) => {
             return orders.map((o) => {
               const group = mangoStore.getState().group
-              const serumMarket = group?.getSerum3MarketByPk(
+              const serumMarket = group?.getSerum3MarketByExternalMarket(
                 new PublicKey(marketPk)
               )
               const quoteSymbol = group?.getFirstBankByTokenIndex(
@@ -161,7 +163,7 @@ const OpenOrders = () => {
                   key={`${o.side}${o.size}${o.price}`}
                 >
                   <div className="flex items-center">
-                    <MarketLogos serumMarket={serumMarket!} />
+                    <MarketLogos market={serumMarket!} />
                     <div>
                       <p className="text-sm text-th-fgd-1">
                         {serumMarket?.name}

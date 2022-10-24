@@ -11,7 +11,11 @@ import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
-import SimpleAreaChart from '../shared/SimpleAreaChart'
+import dynamic from 'next/dynamic'
+const SimpleAreaChart = dynamic(
+  () => import('@components/shared/SimpleAreaChart'),
+  { ssr: false }
+)
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../shared/Button'
@@ -46,6 +50,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 const AccountPage = () => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
+  const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
   const loadPerformanceData = mangoStore(
@@ -71,13 +76,15 @@ const AccountPage = () => {
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const leverage = useMemo(() => {
-    if (!mangoAccount) return 0
-    const liabsValue = mangoAccount.getLiabsValue(HealthType.init)!.toNumber()
+    if (!group || !mangoAccount) return 0
+    const liabsValue = mangoAccount
+      .getLiabsValue(group, HealthType.init)!
+      .toNumber()
     const totalCollateral = mangoAccount
-      .getAssetsValue(HealthType.init)!
+      .getAssetsValue(group, HealthType.init)!
       .toNumber()
     return liabsValue / totalCollateral
-  }, [mangoAccount])
+  }, [mangoAccount, group])
 
   useEffect(() => {
     if (mangoAccount) {
@@ -117,18 +124,18 @@ const AccountPage = () => {
   }
 
   const { accountPnl, accountValueChange } = useMemo(() => {
-    if (performanceData.length && mangoAccount) {
+    if (group && performanceData.length && mangoAccount) {
       return {
         accountPnl: performanceData[performanceData.length - 1].pnl,
         accountValueChange:
-          ((toUiDecimalsForQuote(mangoAccount.getEquity()!.toNumber()) -
+          ((toUiDecimalsForQuote(mangoAccount.getEquity(group)!.toNumber()) -
             performanceData[0].account_equity) /
             performanceData[0].account_equity) *
           100,
       }
     }
     return { accountPnl: 0, accountValueChange: 0 }
-  }, [performanceData, mangoAccount])
+  }, [performanceData, mangoAccount, group])
 
   const oneDayPnlChange = useMemo(() => {
     if (accountPnl && oneDayPerformanceData.length) {
@@ -166,8 +173,10 @@ const AccountPage = () => {
   }, [oneDayPerformanceData, mangoAccount])
 
   const maintHealth = useMemo(() => {
-    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0
-  }, [mangoAccount])
+    return group && mangoAccount
+      ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
+      : 0
+  }, [mangoAccount, group])
 
   const handleChartToShow = (
     chartName: 'pnl' | 'cumulative-interest-value'
@@ -194,10 +203,13 @@ const AccountPage = () => {
               content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
               delay={250}
             >
-              <p className="tooltip-underline mb-1.5">{t('account-value')}</p>
+              <p className="tooltip-underline mb-1.5 text-base">
+                {t('account-value')}
+              </p>
             </Tooltip>
             <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
-              {mangoAccount ? (
+              $
+              {group && mangoAccount ? (
                 <FlipNumbers
                   height={48}
                   width={32}
@@ -205,7 +217,7 @@ const AccountPage = () => {
                   delay={0.05}
                   duration={1}
                   numbers={formatFixedDecimals(
-                    toUiDecimalsForQuote(mangoAccount.getEquity()!.toNumber()),
+                    toUiDecimalsForQuote(mangoAccount.getEquity(group)!.toNumber()),
                     true
                   )}
                 />
@@ -337,10 +349,10 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {mangoAccount
+              {group && mangoAccount
                 ? formatFixedDecimals(
                     toUiDecimalsForQuote(
-                      mangoAccount.getCollateralValue()!.toNumber()
+                      mangoAccount.getCollateralValue(group)!.toNumber()
                     ),
                     true
                   )
@@ -355,11 +367,11 @@ const AccountPage = () => {
               >
                 <span className="tooltip-underline">Total</span>:
                 <span className="ml-1 font-mono text-th-fgd-2">
-                  {mangoAccount
+                  {group && mangoAccount
                     ? formatFixedDecimals(
                         toUiDecimalsForQuote(
                           mangoAccount
-                            .getAssetsValue(HealthType.init)!
+                            .getAssetsValue(group, HealthType.init)!
                             .toNumber()
                         ),
                         true

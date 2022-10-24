@@ -6,18 +6,23 @@ import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import Decimal from 'decimal.js'
 import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
+import { Serum3Market } from '@blockworks-foundation/mango-v4'
 
 const RecentTrades = () => {
   const { t } = useTranslation(['common', 'trade'])
   const [trades, setTrades] = useState<any[]>([])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
-  const selectedMarketPk = selectedMarket?.serumMarketExternal.toBase58()
 
-  const serum3MarketExternal = useMemo(() => {
+  const market = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !selectedMarketPk) return
-    return group.serum3MarketExternalsMap.get(selectedMarketPk)
-  }, [selectedMarketPk])
+    if (!group || !selectedMarket) return
+
+    if (selectedMarket instanceof Serum3Market) {
+      return group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+    } else {
+      return selectedMarket
+    }
+  }, [selectedMarket])
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split('/')[0]
@@ -28,11 +33,11 @@ const RecentTrades = () => {
   }, [selectedMarket])
 
   const fetchTradesForChart = useCallback(async () => {
-    if (!selectedMarketPk) return
+    if (!market) return
 
     try {
       const response = await fetch(
-        `https://event-history-api-candles.herokuapp.com/trades/address/${selectedMarketPk}`
+        `https://event-history-api-candles.herokuapp.com/trades/address/${market.publicKey}`
       )
       const parsedResp = await response.json()
       const newTrades = parsedResp.data
@@ -46,7 +51,7 @@ const RecentTrades = () => {
     } catch (e) {
       console.error('Unable to fetch recent trades', e)
     }
-  }, [selectedMarketPk, trades])
+  }, [market, trades])
 
   useEffect(() => {
     if (CLUSTER === 'mainnet-beta') {
@@ -71,18 +76,12 @@ const RecentTrades = () => {
       {!!trades.length && (
         <div className="px-4 font-mono text-xs">
           {trades.map((trade: ChartTradeType, i: number) => {
-            const formattedPrice = serum3MarketExternal?.tickSize
-              ? floorToDecimal(
-                  trade.price,
-                  getDecimalCount(serum3MarketExternal.tickSize)
-                )
+            const formattedPrice = market?.tickSize
+              ? floorToDecimal(trade.price, getDecimalCount(market.tickSize))
               : new Decimal(trade?.price || 0)
 
-            const formattedSize = serum3MarketExternal?.minOrderSize
-              ? floorToDecimal(
-                  trade.size,
-                  getDecimalCount(serum3MarketExternal.minOrderSize)
-                )
+            const formattedSize = market?.minOrderSize
+              ? floorToDecimal(trade.size, getDecimalCount(market.minOrderSize))
               : new Decimal(trade?.size || 0)
             return (
               <div key={i} className={`grid grid-cols-3 leading-6`}>

@@ -6,11 +6,17 @@ import { useRouter } from 'next/router'
 import ButtonGroup from '../components/forms/ButtonGroup'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import dayjs from 'dayjs'
-import { ORDERBOOK_FLASH_KEY, PREFERRED_EXPLORER_KEY } from 'utils/constants'
+import {
+  NOTIFICATION_POSITION_KEY,
+  ORDERBOOK_FLASH_KEY,
+  PREFERRED_EXPLORER_KEY,
+} from 'utils/constants'
 import Switch from '@components/forms/Switch'
 import { useCallback, useMemo } from 'react'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import Image from 'next/image'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 require('dayjs/locale/en')
 require('dayjs/locale/es')
@@ -31,6 +37,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 export const LANGS = [
   { locale: 'en', name: 'english', description: 'english' },
+  { locale: 'ru', name: 'russian', description: 'russian' },
   { locale: 'es', name: 'spanish', description: 'spanish' },
   {
     locale: 'zh_tw',
@@ -47,10 +54,23 @@ export const EXPLORERS = [
   { name: 'solanafm', url: 'https://solana.fm/tx/' },
 ]
 
+const NOTIFICATION_POSITIONS = [
+  'bottom-left',
+  'bottom-right',
+  'top-left',
+  'top-right',
+]
+
 const Settings: NextPage = () => {
   const { t } = useTranslation('common')
   const { theme, setTheme } = useTheme()
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
   const [savedLanguage, setSavedLanguage] = useLocalStorageState('language', '')
+  const [notificationPosition, setNotificationPosition] = useLocalStorageState(
+    NOTIFICATION_POSITION_KEY,
+    'bottom-left'
+  )
   const router = useRouter()
   const { pathname, asPath, query } = router
   const [showOrderbookFlash, setShowOrderbookFlash] = useLocalStorageState(
@@ -79,30 +99,46 @@ const Settings: NextPage = () => {
       <div className="grid grid-cols-12">
         <div className="col-span-12 border-b border-th-bkg-3 lg:col-span-8 lg:col-start-3">
           <h2 className="mb-4 text-base">{t('settings:display')}</h2>
-          <div className="flex flex-col border-t border-th-bkg-3 p-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:theme')}</p>
             <div className="w-full min-w-[220px] md:w-auto">
               <ButtonGroup
                 activeValue={theme}
                 onChange={(t) => setTheme(t)}
                 values={themes}
-                large
+                large={!isMobile}
               />
             </div>
           </div>
-          <div className="flex flex-col border-t border-th-bkg-3 p-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:language')}</p>
-            <div className="w-full min-w-[330px] md:w-auto">
+            <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
               <ButtonGroup
                 activeValue={savedLanguage}
                 onChange={(l) => handleLangChange(l)}
                 values={LANGS.map((val) => val.locale)}
                 names={LANGS.map((val) => t(`settings:${val.name}`))}
-                large
+                large={!isMobile}
               />
             </div>
           </div>
-          <div className="flex flex-col border-t border-th-bkg-3 p-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
+            <p className="mb-2 lg:mb-0">
+              {t('settings:notification-position')}
+            </p>
+            <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
+              <ButtonGroup
+                activeValue={notificationPosition}
+                onChange={(p) => setNotificationPosition(p)}
+                values={NOTIFICATION_POSITIONS}
+                names={NOTIFICATION_POSITIONS.map((val) =>
+                  t(`settings:${val}`)
+                )}
+                large={!isMobile}
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:orderbook-flash')}</p>
             <Switch
               checked={showOrderbookFlash}
@@ -110,7 +146,7 @@ const Settings: NextPage = () => {
             />
           </div>
         </div>
-        <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-8 lg:col-start-3">
+        <div className="col-span-12 pt-8 lg:col-span-8 lg:col-start-3">
           <h2 className="mb-4 text-base">{t('settings:preferred-explorer')}</h2>
           <div className="space-y-2">
             {EXPLORERS.map((ex) => (

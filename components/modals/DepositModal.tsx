@@ -188,14 +188,14 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount) return
+    if (!group || !mangoAccount) return
     if (
       mangoAccount.owner.toString() ===
       '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
     )
       return false
     const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity()!.toNumber()
+      mangoAccount.getEquity(group)!.toNumber()
     )
     return (
       parseFloat(inputAmount) > ALPHA_DEPOSIT_LIMIT ||
@@ -250,7 +250,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
             </div>
           ) : null}
-          <div className="mt-4 grid grid-cols-2 pb-6">
+          <div className="mt-4 grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
               <MaxAmountButton
@@ -295,7 +295,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 placeholder="0.00"
                 value={inputAmount}
                 onValueChange={(e: NumberFormatValues) =>
-                  setInputAmount(e.value)
+                  setInputAmount(Number(e.value) ? e.value : '')
                 }
                 isAllowed={withValueLimit}
               />
@@ -310,15 +310,15 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
             </div>
           </div>
-          <div className="space-y-2 border-y border-th-bkg-3 px-2 py-4">
+          <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
             <HealthImpact
               mintPk={bank!.mint}
-              uiAmount={parseFloat(inputAmount)}
+              uiAmount={Number(inputAmount)}
               isDeposit
             />
             <div className="flex justify-between">
               <p>{t('deposit-value')}</p>
-              <p className="font-mono text-th-fgd-1">
+              <p className="font-mono">
                 {formatFixedDecimals(
                   bank?.uiPrice! * Number(inputAmount),
                   true
@@ -331,13 +331,11 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   <p className="tooltip-underline">{t('asset-weight')}</p>
                 </Tooltip>
               </div>
-              <p className="font-mono text-th-fgd-1">
-                {bank!.initAssetWeight.toFixed(2)}x
-              </p>
+              <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
             </div>
             <div className="flex justify-between">
               <p>{t('collateral-value')}</p>
-              <p className="font-mono text-th-fgd-1">
+              <p className="font-mono">
                 {formatFixedDecimals(
                   bank!.uiPrice! *
                     Number(inputAmount) *
@@ -349,7 +347,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           </div>
           <Button
             onClick={handleDeposit}
-            className="mt-6 flex w-full items-center justify-center"
+            className="flex w-full items-center justify-center"
             disabled={
               !inputAmount || exceedsAlphaMax || showInsufficientBalance
             }

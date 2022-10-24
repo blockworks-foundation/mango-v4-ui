@@ -15,15 +15,18 @@ import { useWallet } from '@solana/wallet-adapter-react'
 const MangoAccountSummary = () => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
+  const group = mangoStore.getState().group
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
 
   const leverage = useMemo(() => {
-    if (!mangoAccount) return 0
-    const liabsValue = mangoAccount.getLiabsValue(HealthType.init)!.toNumber()
+    if (!group || !mangoAccount) return 0
+    const liabsValue = mangoAccount
+      .getLiabsValue(group, HealthType.init)!
+      .toNumber()
     const totalCollateral = mangoAccount
-      .getAssetsValue(HealthType.init)!
+      .getAssetsValue(group, HealthType.init)!
       .toNumber()
     return liabsValue / totalCollateral
   }, [mangoAccount])
@@ -34,7 +37,9 @@ const MangoAccountSummary = () => {
         <div>
           <p className="text-sm text-th-fgd-3">{t('health')}</p>
           <p className="font-mono text-sm text-th-fgd-1">
-            {mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.maint) : 0}
+            {group && mangoAccount
+              ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
+              : 0}
             %
           </p>
         </div>
@@ -42,9 +47,11 @@ const MangoAccountSummary = () => {
           <p className="text-sm text-th-fgd-3">{t('account-value')}</p>
           <p className="font-mono text-sm text-th-fgd-1">
             $
-            {mangoAccount
+            {group && mangoAccount
               ? formatDecimal(
-                  toUiDecimalsForQuote(mangoAccount.getEquity()!.toNumber()),
+                  toUiDecimalsForQuote(
+                    mangoAccount.getEquity(group)!.toNumber()
+                  ),
                   2
                 )
               : (0).toFixed(2)}
@@ -53,10 +60,10 @@ const MangoAccountSummary = () => {
         <div>
           <p className="text-sm text-th-fgd-3">{t('free-collateral')}</p>
           <p className="font-mono text-sm text-th-fgd-1">
-            {mangoAccount
+            {group && mangoAccount
               ? formatFixedDecimals(
                   toUiDecimalsForQuote(
-                    mangoAccount.getCollateralValue()!.toNumber()
+                    mangoAccount.getCollateralValue(group)!.toNumber()
                   ),
                   true
                 )
@@ -66,10 +73,12 @@ const MangoAccountSummary = () => {
         <div>
           <p className="text-sm text-th-fgd-3">{t('total-collateral')}</p>
           <p className="font-mono text-sm text-th-fgd-1">
-            {mangoAccount
+            {group && mangoAccount
               ? formatFixedDecimals(
                   toUiDecimalsForQuote(
-                    mangoAccount.getAssetsValue(HealthType.init)!.toNumber()
+                    mangoAccount
+                      .getAssetsValue(group, HealthType.init)!
+                      .toNumber()
                   ),
                   true
                 )

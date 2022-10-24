@@ -1,3 +1,4 @@
+import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/swap/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -13,6 +14,7 @@ const SpotSlider = () => {
   const leverageMax = useMemo(() => {
     const group = mangoStore.getState().group
     if (!mangoAccount || !group || !selectedMarket) return 100
+    if (!(selectedMarket instanceof Serum3Market)) return 100
 
     try {
       if (side === 'buy') {

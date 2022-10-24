@@ -1,0 +1,23 @@
+name: Code Review - TypeScript
+
+on:
+  pull_request: 
+    branches: ['main']
+  push:
+
+jobs:
+  semgrep:
+    name: Code Scan
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+
+    if: (github.actor != 'dependabot[bot]')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - run: semgrep ci --exclude 'public/charting_library'
+        env:
+           SEMGREP_RULES: p/typescript

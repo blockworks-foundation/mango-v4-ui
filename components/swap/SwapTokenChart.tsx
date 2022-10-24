@@ -28,60 +28,15 @@ import Change from '../shared/Change'
 import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
 import { formatTokenSymbol } from 'utils/tokens'
+import { useQuery } from '@tanstack/react-query'
+import { fetchChartData } from 'apis/coingecko'
+import mangoStore from '@store/mangoStore'
 
 dayjs.extend(relativeTime)
 
 interface SwapTokenChartProps {
-  inputTokenId?: string
-  outputTokenId?: string
-}
-
-const fetchChartData = async (
-  baseTokenId: string,
-  quoteTokenId: string,
-  daysToShow: number
-) => {
-  const inputResponse = await fetch(
-    `https://api.coingecko.com/api/v3/coins/${baseTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`
-  )
-  const outputResponse = await fetch(
-    `https://api.coingecko.com/api/v3/coins/${quoteTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`
-  )
-  const inputData = await inputResponse.json()
-  const outputData = await outputResponse.json()
-
-  let data: any[] = []
-  if (Array.isArray(inputData)) {
-    data = data.concat(inputData)
-  }
-  if (Array.isArray(outputData)) {
-    data = data.concat(outputData)
-  }
-
-  const formattedData = data.reduce((a, c) => {
-    const found = a.find((price: any) => price.time === c[0])
-    if (found) {
-      if (['usd-coin', 'tether'].includes(quoteTokenId)) {
-        found.price = found.inputPrice / c[4]
-      } else {
-        found.price = c[4] / found.inputPrice
-      }
-    } else {
-      a.push({ time: c[0], inputPrice: c[4] })
-    }
-    return a
-  }, [])
-  formattedData[formattedData.length - 1].time = Date.now()
-  return formattedData.filter((d: any) => d.price)
-}
-
-const fetchTokenInfo = async (tokenId: string) => {
-  const response = await fetch(
-    `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=false&developer_data=false&sparkline=false
-    `
-  )
-  const data = await response.json()
-  return data
+  inputTokenId: string
+  outputTokenId: string
 }
 
 const CustomizedLabel = ({
@@ -126,15 +81,19 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   inputTokenId,
   outputTokenId,
 }) => {
-  const [chartData, setChartData] = useState([])
-  const [loadChartData, setLoadChartData] = useState(true)
-  const [baseTokenId, setBaseTokenId] = useState('')
-  const [quoteTokenId, setQuoteTokenId] = useState('')
-  const [inputTokenInfo, setInputTokenInfo] = useState<any>(null)
-  const [outputTokenInfo, setOutputTokenInfo] = useState<any>(null)
+  const inputBank = mangoStore((s) => s.swap.inputBank)
+  const outputBank = mangoStore((s) => s.swap.outputBank)
+  const [baseTokenId, setBaseTokenId] = useState(inputTokenId)
+  const [quoteTokenId, setQuoteTokenId] = useState(outputTokenId)
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState(1)
   const { theme } = useTheme()
+  const chartDataQuery = useQuery(
+    ['chart-data', baseTokenId, quoteTokenId, daysToShow],
+    () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
+    { staleTime: 120000 }
+  )
+  const chartData = chartDataQuery.data
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -164,52 +123,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   //   setQuoteTokenId(baseTokenId)
   // }, [baseTokenId, quoteTokenId])
 
-  // Use ohlc data
-  const getChartData = useCallback(async () => {
-    if (!baseTokenId || !quoteTokenId) return
-    try {
-      const chartData = await fetchChartData(
-        baseTokenId,
-        quoteTokenId,
-        daysToShow
-      )
-      setChartData(chartData)
-      setLoadChartData(false)
-    } catch (e) {
-      console.warn('Unable to load chart data')
-      setLoadChartData(false)
-    }
-  }, [baseTokenId, quoteTokenId, daysToShow])
-
-  const getInputTokenInfo = useCallback(async () => {
-    if (!inputTokenId) return
-    try {
-      const response = await fetchTokenInfo(inputTokenId)
-      setInputTokenInfo(response)
-    } catch (e) {
-      console.error(e)
-    }
-  }, [inputTokenId])
-
-  const getOutputTokenInfo = useCallback(async () => {
-    if (!outputTokenId) return
-    try {
-      const response = await fetchTokenInfo(outputTokenId)
-      setOutputTokenInfo(response)
-    } catch (e) {
-      console.error(e)
-    }
-  }, [outputTokenId])
-
-  useEffect(() => {
-    getChartData()
-  }, [getChartData])
-
-  useEffect(() => {
-    getInputTokenInfo()
-    getOutputTokenInfo()
-  }, [getInputTokenInfo, getOutputTokenInfo])
-
   const calculateChartChange = () => {
     if (chartData.length) {
       if (mouseData) {
@@ -231,7 +144,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
 
   return (
     <ContentBox hideBorder hidePadding className="h-full px-6 py-3">
-      {loadChartData ? (
+      {chartDataQuery?.isLoading ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />
@@ -250,17 +163,17 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
         <div className="relative">
           <div className="flex items-start justify-between">
             <div>
-              {inputTokenInfo && outputTokenInfo ? (
+              {inputBank && outputBank ? (
                 <div className="mb-0.5 flex items-center">
                   <p className="text-base text-th-fgd-3">
                     {['usd-coin', 'tether'].includes(inputTokenId || '')
                       ? `${formatTokenSymbol(
-                          outputTokenInfo?.symbol?.toUpperCase()
-                        )}/${inputTokenInfo?.symbol?.toUpperCase()}`
+                          outputBank?.name?.toUpperCase()
+                        )}/${inputBank?.name?.toUpperCase()}`
                       : `${formatTokenSymbol(
-                          inputTokenInfo?.symbol?.toUpperCase()
+                          inputBank?.name?.toUpperCase()
                         )}/${formatTokenSymbol(
-                          outputTokenInfo?.symbol?.toUpperCase()
+                          outputBank?.name?.toUpperCase()
                         )}`}
                   </p>
                   {/* <div

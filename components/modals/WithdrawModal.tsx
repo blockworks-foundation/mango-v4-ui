@@ -140,13 +140,15 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
             }
           })
         : []
-      return banks.filter((b) => b.accountBalance > 0)
+      return banks
     }
     return []
   }, [mangoAccount, group])
 
   const initHealth = useMemo(() => {
-    return mangoAccount ? mangoAccount.getHealthRatioUi(HealthType.init) : 100
+    return group && mangoAccount
+      ? mangoAccount.getHealthRatioUi(group, HealthType.init)
+      : 100
   }, [mangoAccount])
 
   const showInsufficientBalance = Number(inputAmount)
@@ -155,7 +157,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="h-[420px]">
+      <div className="">
         <EnterBottomExitBottom
           className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6"
           show={showTokenList}
@@ -190,7 +192,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 />
               </div>
             ) : null}
-            <div className="grid grid-cols-2 pb-6">
+            <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={t('token')} />
                 <MaxAmountButton
@@ -234,7 +236,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) =>
-                    setInputAmount(e.value)
+                    setInputAmount(Number(e.value) ? e.value : '')
                   }
                   isAllowed={withValueLimit}
                 />
@@ -249,10 +251,10 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 />
               </div>
             </div>
-            <div className="space-y-2 border-y border-th-bkg-3 px-2 py-4">
+            <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
               <HealthImpact
                 mintPk={bank!.mint}
-                uiAmount={parseFloat(inputAmount)}
+                uiAmount={Number(inputAmount)}
               />
               <div className="flex justify-between">
                 <p>{t('withdrawal-value')}</p>
@@ -265,7 +267,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </div>
             </div>
           </div>
-          <div className="mt-4 flex justify-center">
+          <div className="flex justify-center">
             <Button
               onClick={handleWithdraw}
               className="flex w-full items-center justify-center"

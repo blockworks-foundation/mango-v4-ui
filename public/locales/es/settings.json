@@ -1,4 +1,6 @@
 {
+    "bottom-left": "Bottom-Left",
+    "bottom-right": "Bottom-Right",
     "chinese": "简体中文",
     "chinese-traditional": "繁體中文",
     "dark": "Dark",
@@ -7,12 +9,16 @@
     "language": "Language",
     "light": "Light",
     "mango": "Mango",
+    "notification-position": "Notification Position",
     "orderbook-flash": "Orderbook Flash",
     "preferred-explorer": "Preferred Explorer",
+    "russian": "Русский",
     "solana-beach": "Solana Beach",
     "solana-explorer": "Solana Explorer",
     "solanafm": "SolanaFM",
     "solscan": "Solscan",
     "spanish": "Español",
-    "theme": "Theme"
+    "theme": "Theme",
+    "top-left": "Top-Left",
+    "top-right": "Top-Right"
 }

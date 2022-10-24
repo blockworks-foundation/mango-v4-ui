@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from 'react'
+import { Fragment, useEffect, useMemo } from 'react'
 import {
   CheckCircleIcon,
   ArrowTopRightOnSquareIcon,
@@ -10,7 +10,11 @@ import { Notification, notify } from '../../utils/notifications'
 import Loading from './Loading'
 import { Transition } from '@headlessui/react'
 import { TokenInstructions } from '@project-serum/serum'
-import { CLIENT_TX_TIMEOUT } from '../../utils/constants'
+import {
+  CLIENT_TX_TIMEOUT,
+  NOTIFICATION_POSITION_KEY,
+} from '../../utils/constants'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 
 const setMangoStore = mangoStore.getState().set
 
@@ -18,6 +22,10 @@ const NotificationList = () => {
   const notifications = mangoStore((s) => s.notifications)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const notEnoughSoLMessage = 'Not enough SOL'
+  const [notificationPosition] = useLocalStorageState(
+    NOTIFICATION_POSITION_KEY,
+    'bottom-left'
+  )
 
   // if a notification is shown with {"InstructionError":[0,{"Custom":1}]} then
   // add a notification letting the user know they may not have enough SOL
@@ -49,20 +57,37 @@ const NotificationList = () => {
 
   const reversedNotifications = [...notifications].reverse()
 
+  const position: string = useMemo(() => {
+    switch (notificationPosition) {
+      case 'bottom-left':
+        return 'bottom-0 left-0'
+      case 'bottom-right':
+        return 'bottom-0 right-0'
+      case 'top-left':
+        return 'top-0 left-0'
+      case 'top-right':
+        return 'top-0 right-0'
+      default:
+        return 'bottom-0 left-0'
+    }
+  }, [notificationPosition])
+
   return (
     <div
-      className={`pointer-events-none fixed bottom-0 left-0 z-50 flex w-full items-end px-4 py-6 text-th-fgd-1 sm:p-6`}
+      className={`pointer-events-none fixed ${position} z-50 w-full space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6`}
     >
-      <div className={`flex w-full flex-col`}>
-        {reversedNotifications.map((n) => (
-          <Notification key={n.id} notification={n} />
-        ))}
-      </div>
+      {reversedNotifications.map((n) => (
+        <Notification key={n.id} notification={n} />
+      ))}
     </div>
   )
 }
 
 const Notification = ({ notification }: { notification: Notification }) => {
+  const [notificationPosition] = useLocalStorageState(
+    NOTIFICATION_POSITION_KEY,
+    'bottom-left'
+  )
   const { type, title, description, txid, show, id } = notification
 
   // overwrite the title if of the error message if it is a time out error
@@ -118,43 +143,84 @@ const Notification = ({ notification }: { notification: Notification }) => {
     }
   })
 
+  const {
+    enterFromClass,
+    enterToClass,
+    leaveFromClass,
+    leaveToClass,
+  }: {
+    enterFromClass: string
+    enterToClass: string
+    leaveFromClass: string
+    leaveToClass: string
+  } = useMemo(() => {
+    const fromLeft = {
+      enterFromClass: 'md:-translate-x-48',
+      enterToClass: 'md:translate-x-100',
+      leaveFromClass: 'md:translate-x-0',
+      leaveToClass: 'md:-translate-x-48',
+    }
+    const fromRight = {
+      enterFromClass: 'md:translate-x-48',
+      enterToClass: 'md:-translate-x-100',
+      leaveFromClass: 'md:translate-x-0',
+      leaveToClass: 'md:translate-x-48',
+    }
+    switch (notificationPosition) {
+      case 'bottom-left':
+        return fromLeft
+      case 'bottom-right':
+        return fromRight
+      case 'top-left':
+        return fromLeft
+      case 'top-right':
+        return fromRight
+      default:
+        return fromLeft
+    }
+  }, [notificationPosition])
+
   return (
     <Transition
       show={show}
       as={Fragment}
       appear={true}
       enter="ease-out duration-500 transition"
-      enterFrom="translate-y-2 opacity-0 sm:translate-y-0 sm:-translate-x-48"
-      enterTo="translate-y-0 opacity-100 sm:translate-x-0"
+      enterFrom={`-translate-y-2 opacity-0 md:translate-y-0 ${enterFromClass}`}
+      enterTo={`translate-y-0 opacity-100 ${enterToClass}`}
       leave="ease-in duration-200 transition"
-      leaveFrom="translate-y-0 sm:translate-x-0"
-      leaveTo="-translate-y-2 sm:translate-y-0 sm:-translate-x-48"
+      leaveFrom={`translate-y-0 ${leaveFromClass}`}
+      leaveTo={`-translate-y-2 md:translate-y-0 ${leaveToClass}`}
     >
       <div
-        className={`pointer-events-auto mt-2 w-full max-w-sm overflow-hidden rounded-md border border-th-bkg-4 bg-th-bkg-3 shadow-lg ring-1 ring-black ring-opacity-5`}
+        className={`pointer-events-auto w-full rounded-md border bg-th-bkg-2 shadow-lg md:w-auto ${
+          type === 'success'
+            ? 'border-th-green'
+            : type === 'error'
+            ? 'border-th-red'
+            : 'border-th-bkg-4'
+        }`}
       >
-        <div className={`relative flex items-center px-2 py-2.5`}>
-          <div className={`flex-shrink-0`}>
+        <div className={`relative flex w-full items-center p-3.5 md:w-96`}>
+          <div className={`mr-1 flex-shrink-0`}>
             {type === 'success' ? (
-              <CheckCircleIcon className={`mr-1 h-7 w-7 text-th-green`} />
+              <CheckCircleIcon className={`h-6 w-6 text-th-green`} />
             ) : null}
             {type === 'info' && (
-              <InformationCircleIcon className={`mr-1 h-7 w-7 text-th-fgd-3`} />
+              <InformationCircleIcon className={`h-6 w-6 text-th-fgd-3`} />
             )}
             {type === 'error' && (
-              <XCircleIcon className={`mr-1 h-7 w-7 text-th-red`} />
+              <XCircleIcon className={`h-6 w-6 text-th-red`} />
             )}
             {type === 'confirm' && (
-              <Loading className="mr-1 h-7 w-7 text-th-fgd-3" />
+              <Loading className="mr-0.5 h-5 w-5 text-th-primary" />
             )}
           </div>
           <div className={`ml-2 flex-1`}>
-            <p className={`text-normal font-bold text-th-fgd-1`}>
-              {parsedTitle || title}
-            </p>
+            <p className={`text-th-fgd-1`}>{parsedTitle || title}</p>
             {description ? (
               <p
-                className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-3`}
+                className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-4`}
               >
                 {description}
               </p>
@@ -167,11 +233,11 @@ const Notification = ({ notification }: { notification: Notification }) => {
                   '?cluster=' +
                   CLUSTER
                 }
-                className="mt-1 flex items-center text-sm text-th-primary"
+                className="default-transition mt-1 flex items-center text-xs text-th-fgd-3 hover:text-th-fgd-2"
                 target="_blank"
                 rel="noreferrer"
               >
-                <div className="break-all text-th-primary">
+                <div className="break-all">
                   {type === 'error'
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}
@@ -183,7 +249,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
           <div className={`absolute right-2 top-2 flex-shrink-0`}>
             <button
               onClick={hideNotification}
-              className={`text-th-fgd-4 focus:outline-none md:hover:text-th-primary`}
+              className={`default-transition text-th-fgd-4 focus:outline-none md:hover:text-th-fgd-3`}
             >
               <span className={`sr-only`}>Close</span>
               <svg

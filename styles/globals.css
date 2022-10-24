@@ -184,7 +184,7 @@ h3 {
 }
 
 p {
-  @apply text-base text-th-fgd-3;
+  @apply text-th-fgd-3;
 }
 
 li {
@@ -250,7 +250,7 @@ table caption {
 }
 
 tbody tr {
-  @apply border-y border-th-bkg-2 p-2;
+  @apply border-y border-th-bkg-3 p-2;
 }
 
 thead tr {
@@ -258,11 +258,11 @@ thead tr {
 }
 
 table td {
-  @apply px-6 py-4;
+  @apply px-6 py-3;
 }
 
 table th {
-  @apply px-6 py-4 text-xs font-normal text-th-fgd-3;
+  @apply px-6 py-3 text-xs font-normal text-th-fgd-3;
 }
 
 table p {

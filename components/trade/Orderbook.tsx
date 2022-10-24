@@ -16,54 +16,64 @@ import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
 import { breakpoints } from '../../utils/theme'
 import { useViewport } from 'hooks/useViewport'
+import {
+  BookSide,
+  BookSideType,
+  MangoClient,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 
 function decodeBookL2(
-  market: Market,
-  accInfo: AccountInfo<Buffer>
+  client: MangoClient,
+  market: Market | PerpMarket,
+  accInfo: AccountInfo<Buffer>,
+  side: 'bids' | 'asks'
 ): number[][] {
   if (market && accInfo?.data) {
     const depth = 40
     if (market instanceof Market) {
       const book = SpotOrderBook.decode(market, accInfo.data)
       return book.getL2(depth).map(([price, size]) => [price, size])
+    } else if (market instanceof PerpMarket) {
+      // FIXME: Review the null being passed here
+      const decodedAcc = client.program.coder.accounts.decode(
+        'bookSide',
+        accInfo.data
+      )
+      const book = BookSide.from(
+        client,
+        market,
+        side === 'bids' ? BookSideType.bids : BookSideType.asks,
+        decodedAcc
+      )
+      return book.getL2Ui(depth)
     }
-    // else if (market instanceof PerpMarket) {
-    //   // FIXME: Review the null being passed here
-    //   const book = new BookSide(
-    //     // @ts-ignore
-    //     null,
-    //     market,
-    //     BookSideLayout.decode(accInfo.data),
-    //     undefined,
-    //     100000
-    //   )
-    //   return book.getL2Ui(depth)
-    // }
   }
   return []
 }
 
-export function decodeBook(
-  market: Market,
-  accInfo: AccountInfo<Buffer>
-): SpotOrderBook | undefined {
-  if (market && accInfo?.data) {
-    if (market instanceof Market) {
-      return SpotOrderBook.decode(market, accInfo.data)
-    }
-    // else if (market instanceof PerpMarket) {
-    //   // FIXME: Review the null being passed here
-    //   return new BookSide(
-    //     // @ts-ignore
-    //     null,
-    //     market,
-    //     BookSideLayout.decode(accInfo.data),
-    //     undefined,
-    //     100000
-    //   )
-    // }
-  }
-}
+// export function decodeBook(
+//   market: Market,
+//   accInfo: AccountInfo<Buffer>
+// ): SpotOrderBook | undefined {
+//   if (market && accInfo?.data) {
+//     if (market instanceof Market) {
+//       return SpotOrderBook.decode(market, accInfo.data)
+//     }
+//     else if (market instanceof PerpMarket) {
+//       // FIXME: Review the null being passed here
+//       return new BookSide(
+//         // @ts-ignore
+//         null,
+//         market,
+//         BookSideLayout.decode(accInfo.data),
+//         undefined,
+//         100000
+//       )
+//     }
+//   }
+// }
 
 type cumOrderbookSide = {
   price: number
@@ -100,7 +110,7 @@ const getCumulativeOrderbookSide = (
 
 const groupBy = (
   ordersArray: number[][],
-  market: Market,
+  market: PerpMarket | Market,
   grouping: number,
   isBids: boolean
 ) => {
@@ -171,21 +181,23 @@ const Orderbook = () => {
   const depthArray = useMemo(() => {
     const bookDepth = !isMobile ? depth : 7
     return Array(bookDepth).fill(0)
-  }, [depth, isMobile])
+  }, [isMobile])
 
-  const serum3MarketExternal = useMemo(() => {
+  const market = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
-    return group.serum3MarketExternalsMap.get(
-      selectedMarket.serumMarketExternal.toBase58()
-    )
+
+    if (selectedMarket instanceof Serum3Market) {
+      return group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+    } else {
+      return selectedMarket
+    }
   }, [selectedMarket])
 
   useEffect(() => {
-    if (serum3MarketExternal) {
-      setGrouping(serum3MarketExternal.tickSize)
-    }
-  }, [serum3MarketExternal])
+    if (!market) return
+    setGrouping(market.tickSize)
+  }, [market])
 
   useEffect(
     () =>
@@ -213,10 +225,8 @@ const Orderbook = () => {
   useInterval(() => {
     const orderbook = mangoStore.getState().selectedMarket.orderbook
     const group = mangoStore.getState().group
-    if (!selectedMarket || !group) return
-    const serum3MarketExternal = group.serum3MarketExternalsMap.get(
-      selectedMarket.serumMarketExternal.toBase58()
-    )
+    if (!market || !group) return
+
     if (
       nextOrderbookData?.current &&
       (!isEqual(currentOrderbookData.current, nextOrderbookData.current) ||
@@ -236,10 +246,8 @@ const Orderbook = () => {
       // }
 
       // updated orderbook data
-      const bids =
-        groupBy(orderbook?.bids, serum3MarketExternal!, grouping, true) || []
-      const asks =
-        groupBy(orderbook?.asks, serum3MarketExternal!, grouping, false) || []
+      const bids = groupBy(orderbook?.bids, market!, grouping, true) || []
+      const asks = groupBy(orderbook?.asks, market!, grouping, false) || []
 
       const sum = (total: number, [, size]: number[], index: number) =>
         index < depth ? total + size : total
@@ -303,13 +311,26 @@ const Orderbook = () => {
     const connection = mangoStore.getState().connection
     const group = mangoStore.getState().group
     const set = mangoStore.getState().set
+    const client = mangoStore.getState().client
 
     let previousBidInfo: AccountInfo<Buffer> | null = null
     let previousAskInfo: AccountInfo<Buffer> | null = null
-    if (!serum3MarketExternal || !group) return
+    if (!market || !group) return
     console.log('in orderbook WS useEffect')
-
-    const bidsPk = serum3MarketExternal['_decoded'].bids
+    const bidsPk =
+      market instanceof Market ? market['_decoded'].bids : market.bids
+    connection.getAccountInfo(bidsPk).then((info) => {
+      if (!info) return
+      set((state) => {
+        // state.accountInfos[bidsPk.toString()] = info
+        state.selectedMarket.orderbook.bids = decodeBookL2(
+          client,
+          market,
+          info,
+          'bids'
+        )
+      })
+    })
     const bidSubscriptionId = connection.onAccountChange(
       bidsPk,
       (info, context) => {
@@ -323,14 +344,29 @@ const Orderbook = () => {
           set((state) => {
             // state.accountInfos[bidsPk.toString()] = info
             state.selectedMarket.orderbook.bids = decodeBookL2(
-              serum3MarketExternal,
-              info
+              client,
+              market,
+              info,
+              'bids'
             )
           })
         }
       }
     )
-    const asksPk = serum3MarketExternal['_decoded'].asks
+    const asksPk =
+      market instanceof Market ? market['_decoded'].asks : market.asks
+    connection.getAccountInfo(asksPk).then((info) => {
+      if (!info) return
+      set((state) => {
+        // state.accountInfos[bidsPk.toString()] = info
+        state.selectedMarket.orderbook.asks = decodeBookL2(
+          client,
+          market,
+          info,
+          'bids'
+        )
+      })
+    })
     const askSubscriptionId = connection.onAccountChange(
       asksPk,
       (info, context) => {
@@ -344,8 +380,10 @@ const Orderbook = () => {
           set((state) => {
             // state.accountInfos[asksPk.toString()] = info
             state.selectedMarket.orderbook.asks = decodeBookL2(
-              serum3MarketExternal,
-              info
+              client,
+              market,
+              info,
+              'asks'
             )
           })
         }
@@ -355,7 +393,7 @@ const Orderbook = () => {
       connection.removeAccountChangeListener(bidSubscriptionId)
       connection.removeAccountChangeListener(askSubscriptionId)
     }
-  }, [serum3MarketExternal])
+  }, [market])
 
   useEffect(() => {
     window.addEventListener('resize', verticallyCenterOrderbook)
@@ -404,11 +442,11 @@ const Orderbook = () => {
             </button>
           </Tooltip>
         </div>
-        {serum3MarketExternal ? (
+        {market ? (
           <div id="trade-step-four">
             <Tooltip content={t('trade:grouping')} placement="top" delay={250}>
               <GroupSize
-                tickSize={serum3MarketExternal.tickSize}
+                tickSize={market.tickSize}
                 onChange={onGroupSizeChange}
                 value={grouping}
               />
@@ -429,10 +467,10 @@ const Orderbook = () => {
           ? depthArray.map((_x, index) => {
               return (
                 <div className="h-[24px]" key={index}>
-                  {!!orderbookData?.asks[index] && serum3MarketExternal ? (
+                  {!!orderbookData?.asks[index] && market ? (
                     <MemoizedOrderbookRow
-                      minOrderSize={serum3MarketExternal.minOrderSize}
-                      tickSize={serum3MarketExternal.tickSize}
+                      minOrderSize={market.minOrderSize}
+                      tickSize={market.tickSize}
                       // hasOpenOrder={hasOpenOrderForPriceGroup(
                       //   openOrderPrices,
                       //   price,
@@ -472,10 +510,10 @@ const Orderbook = () => {
         {showBuys
           ? depthArray.map((_x, index) => (
               <div className="h-[24px]" key={index}>
-                {!!orderbookData?.bids[index] && serum3MarketExternal ? (
+                {!!orderbookData?.bids[index] && market ? (
                   <MemoizedOrderbookRow
-                    minOrderSize={serum3MarketExternal.minOrderSize}
-                    tickSize={serum3MarketExternal.tickSize}
+                    minOrderSize={market.minOrderSize}
+                    tickSize={market.tickSize}
                     // hasOpenOrder={hasOpenOrderForPriceGroup(
                     //   openOrderPrices,
                     //   price,
