@@ -12,7 +12,7 @@ const OrderbookAndTrades = () => {
   const [activeTab, setActiveTab] = useState('trade:book')
   return (
     <div className="hide-scroll h-full">
-      <div className="border-b border-r border-th-bkg-3">
+      <div className="border-b border-th-bkg-3">
         <TabButtons
           activeValue={activeTab}
           onChange={(tab: string) => setActiveTab(tab)}

@@ -11,7 +11,11 @@ import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
-import SimpleAreaChart from '../shared/SimpleAreaChart'
+import dynamic from 'next/dynamic'
+const SimpleAreaChart = dynamic(
+  () => import('@components/shared/SimpleAreaChart'),
+  { ssr: false }
+)
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../shared/Button'

@@ -86,7 +86,7 @@ const UnsettledTrades = ({
                   <tr key={mktAddress} className="text-sm">
                     <td>
                       <div className="flex items-center">
-                        <MarketLogos serumMarket={market!} />
+                        <MarketLogos market={market!} />
                         <span>{market ? market.name : ''}</span>
                       </div>
                     </td>
@@ -140,7 +140,7 @@ const UnsettledTrades = ({
                   className="flex items-center justify-between border-b border-th-bkg-3 p-4"
                 >
                   <div className="flex items-center">
-                    <MarketLogos serumMarket={market!} />
+                    <MarketLogos market={market!} />
                     <span>{market ? market.name : ''}</span>
                   </div>
                   <div className="flex items-center space-x-3">

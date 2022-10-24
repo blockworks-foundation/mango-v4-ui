@@ -34,11 +34,12 @@ import {
 import { retryFn } from '../utils'
 import { Orderbook, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
+import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
 export const connection = new web3.Connection(
-  'https://mango.rpcpool.com/',
+  'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
   'processed'
 )
 const options = AnchorProvider.defaultOptions()
@@ -187,13 +188,14 @@ export type MangoStore = {
   markets: Serum3Market[] | undefined
   notificationIdCounter: number
   notifications: Array<Notification>
+  perpMarkets: PerpMarket[]
   profile: {
     details: ProfileDetails
     loadDetails: boolean
   }
   selectedMarket: {
     name: string
-    current: Serum3Market | undefined
+    current: Serum3Market | PerpMarket | undefined
     orderbook: Orderbook
   }
   serumMarkets: Serum3Market[]
@@ -289,6 +291,7 @@ const mangoStore = create<MangoStore>()(
       markets: undefined,
       notificationIdCounter: 0,
       notifications: [],
+      perpMarkets: [],
       profile: {
         loadDetails: false,
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
@@ -503,11 +506,14 @@ const mangoStore = create<MangoStore>()(
             const serumMarkets = Array.from(
               group.serum3MarketsMapByExternal.values()
             )
+            const perpMarkets = Array.from(group.perpMarketsMapByName.values())
+            console.log('perpmarkets', perpMarkets)
 
             set((state) => {
               state.group = group
               state.groupLoaded = true
               state.serumMarkets = serumMarkets
+              state.perpMarkets = perpMarkets
               state.selectedMarket.current =
                 state.selectedMarket.current ||
                 getDefaultSelectedMarket(serumMarkets)
@@ -763,7 +769,8 @@ const mangoStore = create<MangoStore>()(
                     txid: txid,
                   })
                 },
-              }
+              },
+              'get-program-accounts'
             )
             set((s) => {
               s.client = client

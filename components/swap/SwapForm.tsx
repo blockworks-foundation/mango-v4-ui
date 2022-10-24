@@ -7,6 +7,7 @@ import {
   MagnifyingGlassIcon,
   ExclamationCircleIcon,
   HeartIcon,
+  LinkIcon,
 } from '@heroicons/react/20/solid'
 import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
@@ -21,7 +22,7 @@ import { SwapLeverageSlider } from './LeverageSlider'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
-import Button, { IconButton, LinkButton } from '../shared/Button'
+import Button, { IconButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
@@ -34,7 +35,6 @@ import {
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
 import { useTokenMax } from './useTokenMax'
-import WalletIcon from '../icons/WalletIcon'
 import Tooltip from '@components/shared/Tooltip'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 
@@ -453,7 +453,7 @@ const SwapFormSubmitButton = ({
         )
       ) : (
         <div className="flex items-center">
-          <WalletIcon className="mr-2 h-5 w-5" />
+          <LinkIcon className="mr-2 h-5 w-5" />
           {t('connect')}
         </div>
       )}

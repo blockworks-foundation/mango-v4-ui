@@ -203,7 +203,7 @@ const MenuItem = ({
         <a
           className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
             active ? 'text-th-primary' : 'text-th-fgd-1'
-          } ${hideIconBg ? 'py-1' : 'py-2'}`}
+          } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
         >
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center">
@@ -226,7 +226,7 @@ const MenuItem = ({
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <span className="ml-3 lg:text-base">{title}</span>
+                <span className="ml-3 xl:text-base">{title}</span>
               </Transition>
             </div>
             {isExternal ? (
@@ -350,7 +350,7 @@ export const ExpandableMenuItem = ({
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <span className="ml-3 truncate lg:text-base">{title}</span>
+              <span className="ml-3 truncate xl:text-base">{title}</span>
             </Transition>
           </div>
           <ChevronDownIcon

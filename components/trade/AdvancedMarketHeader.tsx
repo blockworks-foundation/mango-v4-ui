@@ -1,4 +1,4 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import { Serum3Market, PerpMarket } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -12,10 +12,11 @@ import MarketLogos from './MarketLogos'
 const MarketSelectDropdown = () => {
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const serumMarkets = mangoStore((s) => s.serumMarkets)
+  const perpMarkets = mangoStore((s) => s.perpMarkets)
   const set = mangoStore((s) => s.set)
 
   const handleSelectMarket = useCallback(
-    (market: Serum3Market, close: any) => {
+    (market: Serum3Market | PerpMarket, close: any) => {
       set((s) => {
         s.selectedMarket.current = market
       })
@@ -32,7 +33,9 @@ const MarketSelectDropdown = () => {
           id="trade-step-one"
         >
           <Popover.Button className="default-transition flex w-full items-center justify-between hover:text-th-primary">
-            <MarketLogos serumMarket={selectedMarket!} />
+            <>
+              {selectedMarket ? <MarketLogos market={selectedMarket} /> : null}
+            </>
             <div className="text-xl font-bold text-th-fgd-1 md:text-base">
               {selectedMarket?.name || DEFAULT_MARKET_NAME}
             </div>
@@ -44,28 +47,58 @@ const MarketSelectDropdown = () => {
           </Popover.Button>
 
           <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen bg-th-bkg-2 py-2 sm:w-56 md:top-[37px]">
-            {serumMarkets?.length
-              ? serumMarkets.map((m) => {
-                  return (
-                    <div
-                      key={m.publicKey.toString()}
-                      className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-3"
-                      onClick={() => handleSelectMarket(m, close)}
-                    >
-                      <MarketLogos serumMarket={m} />
-                      <span
-                        className={
-                          m.name === selectedMarket?.name
-                            ? 'text-th-primary'
-                            : ''
-                        }
-                      >
-                        {m.name}
-                      </span>
-                    </div>
-                  )
-                })
-              : null}
+            <div className="grid grid-cols-2">
+              <div>
+                <div className="font-lg text-center text-th-fgd-4">Spot</div>
+                {serumMarkets?.length
+                  ? serumMarkets.map((m) => {
+                      return (
+                        <div
+                          key={m.publicKey.toString()}
+                          className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
+                          onClick={() => handleSelectMarket(m, close)}
+                        >
+                          <MarketLogos market={m} />
+                          <span
+                            className={
+                              m.name === selectedMarket?.name
+                                ? 'text-th-primary'
+                                : ''
+                            }
+                          >
+                            {m.name}
+                          </span>
+                        </div>
+                      )
+                    })
+                  : null}
+              </div>
+              <div>
+                <div className="font-lg text-center text-th-fgd-4">Perp</div>
+                {perpMarkets?.length
+                  ? perpMarkets.map((m) => {
+                      return (
+                        <div
+                          key={m.publicKey.toString()}
+                          className="flex items-center bg-th-bkg-1 py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
+                          onClick={() => handleSelectMarket(m, close)}
+                        >
+                          <MarketLogos market={m} />
+                          <span
+                            className={
+                              m.name === selectedMarket?.name
+                                ? 'text-th-primary'
+                                : ''
+                            }
+                          >
+                            {m.name}
+                          </span>
+                        </div>
+                      )
+                    })
+                  : null}
+              </div>
+            </div>
           </Popover.Panel>
         </div>
       )}
@@ -79,16 +112,18 @@ const OraclePrice = () => {
 
   if (!group || !selectedMarket) return null
 
-  const baseTokenBank = group.getFirstBankByTokenIndex(
-    selectedMarket?.baseTokenIndex
-  )
+  let price
+  if (selectedMarket instanceof Serum3Market) {
+    price = group.getFirstBankByTokenIndex(
+      selectedMarket?.baseTokenIndex
+    ).uiPrice
+  } else {
+    price = selectedMarket.uiPrice
+  }
 
   return (
     <div className="font-mono text-xs text-th-fgd-2">
-      $
-      {baseTokenBank.uiPrice
-        ? formatFixedDecimals(baseTokenBank.uiPrice)
-        : null}
+      ${price ? formatFixedDecimals(price) : null}
     </div>
   )
 }

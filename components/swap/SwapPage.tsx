@@ -1,9 +1,10 @@
 import Swap from './SwapForm'
-import SwapTokenChart from './SwapTokenChart'
 import mangoStore from '@store/mangoStore'
 import SwapOnboardingTour from '@components/tours/SwapOnboardingTour'
 import { useWallet } from '@solana/wallet-adapter-react'
 import SwapInfoTabs from './SwapInfoTabs'
+import dynamic from 'next/dynamic'
+const SwapTokenChart = dynamic(() => import('./SwapTokenChart'), { ssr: false })
 
 const SwapPage = () => {
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)

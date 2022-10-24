@@ -50,7 +50,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
         ) : (
           <ButtonGroup
             activeValue={slippage.toString()}
-            className="h-10"
+            className="h-10 font-mono"
             onChange={(v) => handleSetSlippage(v)}
             unit="%"
             values={slippagePresets}
