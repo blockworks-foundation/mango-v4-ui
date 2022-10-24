@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode, useMemo, useState } from 'react'
+import { FunctionComponent, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -13,7 +13,6 @@ import FlipNumbers from 'react-flip-numbers'
 
 import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
-import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
