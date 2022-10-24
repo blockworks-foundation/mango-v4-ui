@@ -111,7 +111,7 @@ export const LISTED_TOKENS: string[] = [
   'ETH',
   'soETH',
   'SOL',
-  'mSOL',
+  'MSOL',
   'USDC',
   'USDT',
 ]
