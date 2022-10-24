@@ -1,7 +1,7 @@
 import Change from '@components/shared/Change'
 import DailyRange from '@components/shared/DailyRange'
 import mangoStore from '@store/mangoStore'
-import type { GetStaticPaths, NextPage } from 'next'
+import type { NextPage } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Image from 'next/image'
@@ -21,6 +21,7 @@ import SheenLoader from '@components/shared/SheenLoader'
 import Tooltip from '@components/shared/Tooltip'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import dynamic from 'next/dynamic'
+import { LISTED_TOKENS } from 'utils/tokens'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
 })
@@ -34,11 +35,12 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
-export const getStaticPaths: GetStaticPaths<{ slug: string }> = async () => {
-  return {
-    paths: [],
-    fallback: 'blocking',
-  }
+export const getStaticPaths = async () => {
+  const paths = LISTED_TOKENS.map((token) => ({
+    params: { token: token },
+  }))
+
+  return { paths, fallback: false }
 }
 
 const DEFAULT_COINGECKO_VALUES = {
