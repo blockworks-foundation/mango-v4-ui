@@ -29,6 +29,7 @@ const ConnectedMenu = () => {
   const handleDisconnect = useCallback(() => {
     set((state) => {
       state.mangoAccount.current = undefined
+      state.mangoAccounts = []
       state.connected = false
       state.mangoAccount.openOrders = {}
       state.mangoAccount.stats.interestTotals = { data: [], loading: false }

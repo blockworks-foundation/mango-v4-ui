@@ -216,11 +216,9 @@ const AccountPage = () => {
                   play
                   delay={0.05}
                   duration={1}
-                  numbers={formatDecimal(
-                    toUiDecimalsForQuote(
-                      mangoAccount.getEquity(group)!.toNumber()
-                    ),
-                    2
+                  numbers={formatFixedDecimals(
+                    toUiDecimalsForQuote(mangoAccount.getEquity(group)!.toNumber()),
+                    true
                   )}
                 />
               ) : (
@@ -230,7 +228,7 @@ const AccountPage = () => {
                   play
                   delay={0.05}
                   duration={1}
-                  numbers={'0.00'}
+                  numbers={'$0.00'}
                 />
               )}
             </div>
