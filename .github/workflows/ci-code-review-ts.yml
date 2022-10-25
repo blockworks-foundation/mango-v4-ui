@@ -1,8 +1,8 @@
-name: Code Security Scan
+name: Code Review - TypeScript
 
 on:
   pull_request: 
-    branches: 'main'
+    branches: ['main']
   push:
 
 jobs:

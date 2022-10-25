@@ -22,7 +22,7 @@ const MangoAccountsList = ({
   mangoAccount: MangoAccount | undefined
 }) => {
   const { t } = useTranslation('common')
-  const mangoAccounts = mangoStore((s) => s.mangoAccounts.accounts)
+  const mangoAccounts = mangoStore((s) => s.mangoAccounts)
   const actions = mangoStore((s) => s.actions)
   const loading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [showNewAccountModal, setShowNewAccountModal] = useState(false)

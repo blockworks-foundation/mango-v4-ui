@@ -184,7 +184,7 @@ export type MangoStore = {
       swapHistory: { data: SwapHistoryItem[]; loading: boolean }
     }
   }
-  mangoAccounts: { accounts: MangoAccount[] }
+  mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
   notificationIdCounter: number
   notifications: Array<Notification>
@@ -287,7 +287,7 @@ const mangoStore = create<MangoStore>()(
           swapHistory: { data: [], loading: false },
         },
       },
-      mangoAccounts: { accounts: [] },
+      mangoAccounts: [],
       markets: undefined,
       notificationIdCounter: 0,
       notifications: [],
@@ -595,7 +595,7 @@ const mangoStore = create<MangoStore>()(
             }
 
             set((state) => {
-              state.mangoAccounts.accounts = mangoAccounts
+              state.mangoAccounts = mangoAccounts
               state.mangoAccount.current = newSelectedMangoAccount
               state.mangoAccount.lastUpdatedAt = new Date().toISOString()
             })

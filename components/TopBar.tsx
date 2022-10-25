@@ -12,6 +12,7 @@ import { IS_ONBOARDED_KEY } from '../utils/constants'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import UserSetupModal from './modals/UserSetupModal'
 import CreateAccountModal from './modals/CreateAccountModal'
+import MangoAccountsListModal from './modals/MangoAccountsListModal'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -20,6 +21,7 @@ const TopBar = () => {
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetupModal, setShowUserSetupModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
+  const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
 
   const handleCloseModal = useCallback(() => {
     setShowUserSetupModal(false)
@@ -50,7 +52,16 @@ const TopBar = () => {
         </span>
         {connected ? (
           <div className="flex items-center space-x-4 pr-4 md:pr-0">
-            <MangoAccountsList mangoAccount={mangoAccount} />
+            {/* <MangoAccountsList mangoAccount={mangoAccount} /> */}
+            <button
+              className="mr-2"
+              onClick={() => setShowMangoAccountsModal(true)}
+            >
+              <p className="text-right text-xs">{t('accounts')}</p>
+              <p className="text-left text-sm font-bold text-th-fgd-1">
+                {mangoAccount ? mangoAccount.name : 'No Accounts'}
+              </p>
+            </button>
             <ConnectedMenu />
           </div>
         ) : isOnboarded ? (
@@ -65,6 +76,13 @@ const TopBar = () => {
           </button>
         )}
       </div>
+      {showMangoAccountsModal ? (
+        <MangoAccountsListModal
+          isOpen={showMangoAccountsModal}
+          onClose={() => setShowMangoAccountsModal(false)}
+          mangoAccount={mangoAccount}
+        />
+      ) : null}
       {showUserSetupModal ? (
         <UserSetupModal
           isOpen={showUserSetupModal}
@@ -75,7 +93,6 @@ const TopBar = () => {
         <CreateAccountModal
           isOpen={showCreateAccountModal}
           onClose={() => setShowCreateAccountModal(false)}
-          isFirstAccount
         />
       ) : null}
     </>
