@@ -208,7 +208,6 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
-              $
               {group && mangoAccount ? (
                 <FlipNumbers
                   height={48}
@@ -217,7 +216,9 @@ const AccountPage = () => {
                   delay={0.05}
                   duration={1}
                   numbers={formatFixedDecimals(
-                    toUiDecimalsForQuote(mangoAccount.getEquity(group)!.toNumber()),
+                    toUiDecimalsForQuote(
+                      mangoAccount.getEquity(group)!.toNumber()
+                    ),
                     true
                   )}
                 />

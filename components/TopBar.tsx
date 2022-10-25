@@ -39,7 +39,7 @@ const TopBar = () => {
         <span className="mb-0 flex items-center">
           {query.token ? (
             <div
-              className={`mr-4 hidden h-16 items-center pr-6 md:flex ${
+              className={`mr-2 flex h-16 items-center pr-4 md:mr-4 md:pr-6 ${
                 !connected || !mangoAccount ? 'border-r border-th-bkg-3' : ''
               }`}
             >
@@ -48,6 +48,11 @@ const TopBar = () => {
               </IconButton>
             </div>
           ) : null}
+          <img
+            className="mr-4 ml-2 h-8 w-auto md:hidden"
+            src="/logos/logo-mark.svg"
+            alt="next"
+          />
           {!connected ? (
             <span className="hidden items-center md:flex">
               <WalletIcon className="h-5 w-5 text-th-fgd-3" />
@@ -65,9 +70,8 @@ const TopBar = () => {
         </span>
         {connected ? (
           <div className="flex items-center space-x-4 pr-4 md:pr-0">
-            {/* <MangoAccountsList mangoAccount={mangoAccount} /> */}
             <button
-              className="mr-2"
+              className="mr-2 hidden md:block"
               onClick={() => setShowMangoAccountsModal(true)}
             >
               <p className="text-right text-xs">{t('accounts')}</p>
@@ -93,7 +97,6 @@ const TopBar = () => {
         <MangoAccountsListModal
           isOpen={showMangoAccountsModal}
           onClose={() => setShowMangoAccountsModal(false)}
-          mangoAccount={mangoAccount}
         />
       ) : null}
       {showUserSetupModal ? (
