@@ -30,7 +30,7 @@ dayjs.extend(relativeTime)
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common', 'token'])),
+      ...(await serverSideTranslations(locale, ['common', 'profile', 'token'])),
     },
   }
 }
@@ -205,11 +205,11 @@ const Token: NextPage = () => {
     <div className="pb-20 md:pb-16">
       {coingeckoData && bank ? (
         <>
-          <div className="flex flex-col border-b border-th-bkg-3 px-6 py-3 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col border-b border-th-bkg-3 px-6 py-3 md:flex-row md:items-center md:justify-between">
             <div className="mb-4 md:mb-1">
               <div className="mb-1.5 flex items-center space-x-2">
                 <Image src={logoURI!} height="20" width="20" />
-                <h1 className="text-lg font-normal">
+                <h1 className="text-base font-normal">
                   {coingeckoData.name}{' '}
                   <span className="text-th-fgd-4">({bank.name})</span>
                 </h1>
@@ -232,7 +232,7 @@ const Token: NextPage = () => {
                 price={bank.uiPrice}
               />
             </div>
-            <div className="mb-2 w-full rounded-md bg-th-bkg-2 p-4 md:w-[343px]">
+            <div className="w-full rounded-md bg-th-bkg-2 p-4 md:w-[343px]">
               <div className="mb-4 flex justify-between">
                 <p>
                   {bank.name} {t('balance')}:

@@ -29,6 +29,7 @@ const MangoAccountsListModal = ({
   const { t } = useTranslation('common')
   const mangoAccounts = mangoStore((s) => s.mangoAccounts)
   const actions = mangoStore((s) => s.actions)
+  const group = mangoStore((s) => s.group)
   const loading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [showNewAccountForm, setShowNewAccountForm] = useState(false)
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
@@ -36,16 +37,13 @@ const MangoAccountsListModal = ({
   const handleSelectMangoAccount = async (acc: MangoAccount) => {
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
-    const group = mangoStore.getState().group
     if (!group) return
     set((s) => {
       s.activityFeed.feed = []
       s.activityFeed.loading = true
     })
     try {
-      const reloadedMangoAccount = await retryFn(() =>
-        acc.reload(client, group)
-      )
+      const reloadedMangoAccount = await retryFn(() => acc.reload(client))
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()
@@ -70,10 +68,13 @@ const MangoAccountsListModal = ({
             <div className="thin-scroll mt-4 max-h-[280px] space-y-2 overflow-y-auto">
               {mangoAccounts.map((acc) => {
                 const accountValue = formatFixedDecimals(
-                  toUiDecimalsForQuote(Number(acc.getEquity())),
+                  toUiDecimalsForQuote(Number(acc.getEquity(group!))),
                   true
                 )
-                const maintHealth = acc.getHealthRatioUi(HealthType.maint)
+                const maintHealth = acc.getHealthRatioUi(
+                  group!,
+                  HealthType.maint
+                )
                 return (
                   <div key={acc.publicKey.toString()}>
                     <button
