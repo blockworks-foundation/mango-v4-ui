@@ -7,7 +7,6 @@ import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Wallet } from '@project-serum/anchor'
 import InlineNotification from '../shared/InlineNotification'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
@@ -38,12 +37,11 @@ const CreateAccountForm = ({
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const { wallet } = useWallet()
-  const mangoAccounts = mangoStore((s) => s.mangoAccounts)
 
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
-    const actions = mangoStore.getState().actions
+    const mangoAccounts = mangoStore.getState().mangoAccounts
     const set = mangoStore.getState().set
     if (!group || !wallet) return
     setLoading(true)
@@ -55,12 +53,14 @@ const CreateAccountForm = ({
         name || `Account ${newAccountNum + 1}`
       )
       if (tx) {
-        await actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
+        const pk = wallet!.adapter.publicKey
+        const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
         const newAccount = mangoAccounts.find(
           (acc) => acc.accountNum === newAccountNum
         )
         set((s) => {
           s.mangoAccount.current = newAccount
+          s.mangoAccounts = mangoAccounts
         })
         setLoading(false)
         notify({
