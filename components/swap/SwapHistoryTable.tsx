@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/image'
+import Image from "next/legacy/image";
 import { breakpoints } from '../../utils/theme'
 import { useViewport } from '../../hooks/useViewport'
 import { IconButton } from '../shared/Button'

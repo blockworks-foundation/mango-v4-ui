@@ -19,7 +19,7 @@ import NumberFormat, {
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
 import { calculateMarketPrice } from 'utils/tradeForm'
-import Image from 'next/image'
+import Image from "next/legacy/image";
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
 import { Market } from '@project-serum/serum'
