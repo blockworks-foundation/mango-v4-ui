@@ -9,7 +9,7 @@ import AccountActions from './AccountActions'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
-import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
+import { formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import dynamic from 'next/dynamic'
 const SimpleAreaChart = dynamic(
@@ -83,7 +83,10 @@ const AccountPage = () => {
     const totalCollateral = mangoAccount
       .getAssetsValue(group, HealthType.init)!
       .toNumber()
-    return liabsValue / totalCollateral
+
+    if (isNaN(liabsValue / totalCollateral)) {
+      return 0
+    } else return liabsValue / totalCollateral
   }, [mangoAccount, group])
 
   useEffect(() => {
