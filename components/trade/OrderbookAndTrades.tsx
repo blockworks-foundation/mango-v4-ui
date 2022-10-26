@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Orderbook from './Orderbook'
 import RecentTrades from './RecentTrades'
 
-const TABS: [string, number][] = [
+export const TABS: [string, number][] = [
   ['trade:book', 0],
   ['trade:trades', 0],
 ]
