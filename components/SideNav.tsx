@@ -39,7 +39,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     >
       <div className="flex min-h-screen flex-col justify-between">
         <div className="my-2">
-          <Link href={'/'} shallow={true} passHref>
+          <Link href={'/'} shallow={true} passHref legacyBehavior>
             <div
               className={`h-14 items-center transition-all duration-300 ease-in-out ${
                 collapsed ? '' : 'justify-start'
@@ -173,7 +173,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default SideNav
@@ -199,44 +199,45 @@ const MenuItem = ({
 }) => {
   return (
     <Tooltip content={title} placement="right" show={collapsed && showTooltip}>
-      <Link href={pagePath} shallow={true}>
-        <a
-          className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
-            active ? 'text-th-primary' : 'text-th-fgd-1'
-          } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
-        >
-          <div className="flex w-full items-center justify-between">
-            <div className="flex items-center">
-              <div
-                className={
-                  hideIconBg
-                    ? ''
-                    : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
-                }
-              >
-                {icon}
-              </div>
-              <Transition
-                show={!collapsed}
-                as={Fragment}
-                enter="transition ease-in duration-300"
-                enterFrom="opacity-50"
-                enterTo="opacity-100"
-                leave="transition ease-out duration-300"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <span className="ml-3 xl:text-base">{title}</span>
-              </Transition>
+      <Link
+        href={pagePath}
+        shallow={true}
+        className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
+          active ? 'text-th-primary' : 'text-th-fgd-1'
+        } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}>
+
+        <div className="flex w-full items-center justify-between">
+          <div className="flex items-center">
+            <div
+              className={
+                hideIconBg
+                  ? ''
+                  : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
+              }
+            >
+              {icon}
             </div>
-            {isExternal ? (
-              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-            ) : null}
+            <Transition
+              show={!collapsed}
+              as={Fragment}
+              enter="transition ease-in duration-300"
+              enterFrom="opacity-50"
+              enterTo="opacity-100"
+              leave="transition ease-out duration-300"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <span className="ml-3 xl:text-base">{title}</span>
+            </Transition>
           </div>
-        </a>
+          {isExternal ? (
+            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+          ) : null}
+        </div>
+
       </Link>
     </Tooltip>
-  )
+  );
 }
 
 export const ExpandableMenuItem = ({
