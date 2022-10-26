@@ -42,7 +42,7 @@ const IconDropMenu = ({
           <Popover.Button
             className={`flex ${
               large ? 'h-12 w-12' : 'h-10 w-10'
-            } default-transition items-center justify-center rounded-full border border-th-button md:hover:border-th-button-hover ${
+            } default-transition items-center justify-center rounded-full border border-th-fgd-4 md:hover:border-th-bkg-4 ${
               theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
             } md:hover:text-th-fgd-1 ${
               disabled ? 'cursor-not-allowed opacity-60' : ''

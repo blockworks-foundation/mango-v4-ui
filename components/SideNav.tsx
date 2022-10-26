@@ -298,7 +298,7 @@ export const ExpandableMenuItem = ({
                 : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
             } ${
               alignBottom
-                ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
+                ? 'default-transition flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
                 : ''
             }`}
           >

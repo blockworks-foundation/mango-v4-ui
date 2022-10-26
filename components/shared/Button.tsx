@@ -31,7 +31,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       disabled={disabled}
       className={`whitespace-nowrap rounded-md ${
         secondary
-          ? `border border-th-button md:hover:border-th-button-hover ${
+          ? `border border-th-fgd-4 md:hover:border-th-bkg-4 ${
               theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
             }`
           : `bg-th-button md:hover:bg-th-button-hover ${
