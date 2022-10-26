@@ -10,7 +10,6 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-// import useLocalStorageState from '../hooks/useLocalStorageState'
 import { useViewport } from '../hooks/useViewport'
 
 import mangoStore from '@store/mangoStore'
@@ -23,7 +22,6 @@ import WithdrawModal from './modals/WithdrawModal'
 import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
-import Change from './shared/Change'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 
@@ -77,16 +75,19 @@ const TokenList = () => {
   }, [connected])
 
   return (
-    <ContentBox hideBorder hidePadding className="-mt-[36px]">
-      <div className="mb-5 flex items-center justify-end pr-6">
-        <Switch
-          className="text-th-fgd-3"
-          checked={showZeroBalances}
-          disabled={!mangoAccount}
-          onChange={() => setShowZeroBalances(!showZeroBalances)}
-        >
-          {t('show-zero-balances')}
-        </Switch>
+    <ContentBox hideBorder hidePadding className="md:-mt-[36px]">
+      <div className="flex items-center justify-end md:mb-5">
+        <div className="flex w-full items-center justify-between border-b border-th-bkg-3 py-3 px-6 md:w-auto md:border-0 md:py-0">
+          {!showTableView ? <p>{t('show-zero-balances')}</p> : null}
+          <Switch
+            className="text-th-fgd-3"
+            checked={showZeroBalances}
+            disabled={!mangoAccount}
+            onChange={() => setShowZeroBalances(!showZeroBalances)}
+          >
+            {showTableView ? t('show-zero-balances') : ''}
+          </Switch>
+        </div>
       </div>
       {showTableView ? (
         <table className="-mt-1 min-w-full">
