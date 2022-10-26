@@ -1,10 +1,11 @@
 import { Serum3Market, PerpMarket } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
+import TabUnderline from '@components/shared/TabUnderline'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import { formatFixedDecimals } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
@@ -14,6 +15,7 @@ const MarketSelectDropdown = () => {
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const set = mangoStore((s) => s.set)
+  const [activeTab, setActiveTab] = useState('perp')
 
   const handleSelectMarket = useCallback(
     (market: Serum3Market | PerpMarket, close: any) => {
@@ -45,60 +47,61 @@ const MarketSelectDropdown = () => {
               } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
             />
           </Popover.Button>
-
-          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen bg-th-bkg-2 py-2 sm:w-56 md:top-[37px]">
-            <div className="grid grid-cols-2">
-              <div>
-                <div className="font-lg text-center text-th-fgd-4">Spot</div>
-                {serumMarkets?.length
-                  ? serumMarkets.map((m) => {
-                      return (
-                        <div
-                          key={m.publicKey.toString()}
-                          className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
-                          onClick={() => handleSelectMarket(m, close)}
+          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen bg-th-bkg-2 pb-2 pt-4 sm:w-56 md:top-[37px]">
+            <TabUnderline
+              activeValue={activeTab}
+              onChange={(v) => setActiveTab(v)}
+              small
+              values={['perp', 'spot']}
+            />
+            {activeTab === 'spot'
+              ? serumMarkets?.length
+                ? serumMarkets.map((m) => {
+                    return (
+                      <div
+                        key={m.publicKey.toString()}
+                        className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
+                        onClick={() => handleSelectMarket(m, close)}
+                      >
+                        <MarketLogos market={m} />
+                        <span
+                          className={
+                            m.name === selectedMarket?.name
+                              ? 'text-th-primary'
+                              : ''
+                          }
                         >
-                          <MarketLogos market={m} />
-                          <span
-                            className={
-                              m.name === selectedMarket?.name
-                                ? 'text-th-primary'
-                                : ''
-                            }
-                          >
-                            {m.name}
-                          </span>
-                        </div>
-                      )
-                    })
-                  : null}
-              </div>
-              <div>
-                <div className="font-lg text-center text-th-fgd-4">Perp</div>
-                {perpMarkets?.length
-                  ? perpMarkets.map((m) => {
-                      return (
-                        <div
-                          key={m.publicKey.toString()}
-                          className="flex items-center bg-th-bkg-1 py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
-                          onClick={() => handleSelectMarket(m, close)}
+                          {m.name}
+                        </span>
+                      </div>
+                    )
+                  })
+                : null
+              : null}
+            {activeTab === 'perp'
+              ? perpMarkets?.length
+                ? perpMarkets.map((m) => {
+                    return (
+                      <div
+                        key={m.publicKey.toString()}
+                        className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
+                        onClick={() => handleSelectMarket(m, close)}
+                      >
+                        <MarketLogos market={m} />
+                        <span
+                          className={
+                            m.name === selectedMarket?.name
+                              ? 'text-th-primary'
+                              : ''
+                          }
                         >
-                          <MarketLogos market={m} />
-                          <span
-                            className={
-                              m.name === selectedMarket?.name
-                                ? 'text-th-primary'
-                                : ''
-                            }
-                          >
-                            {m.name}
-                          </span>
-                        </div>
-                      )
-                    })
-                  : null}
-              </div>
-            </div>
+                          {m.name}
+                        </span>
+                      </div>
+                    )
+                  })
+                : null
+              : null}
           </Popover.Panel>
         </div>
       )}

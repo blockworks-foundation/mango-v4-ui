@@ -4,12 +4,14 @@ const TabUnderline = ({
   activeValue,
   values,
   onChange,
+  small,
 }: {
   activeValue: string
   onChange: (x: any) => void
   values: string[]
+  small?: boolean
 }) => {
-  const { t } = useTranslation(['common', 'swap', 'trade'])
+  const { t } = useTranslation('common')
   return (
     <div
       className={`relative mb-3 pb-1 md:-mt-2.5 md:border-b md:border-th-bkg-3`}
@@ -35,7 +37,9 @@ const TabUnderline = ({
           <button
             onClick={() => onChange(value)}
             className={`default-transition relative flex h-10 w-1/2 
-            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 text-sm font-bold md:h-auto md:rounded-none md:hover:opacity-100 lg:text-base
+            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 font-bold md:h-auto md:rounded-none md:hover:opacity-100 ${
+              small ? 'text-sm' : 'text-sm lg:text-base'
+            }
             ${
               activeValue === value
                 ? activeValue === 'buy'
