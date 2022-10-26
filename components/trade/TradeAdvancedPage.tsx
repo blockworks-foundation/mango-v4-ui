@@ -212,14 +212,14 @@ const TradeAdvancedPage = () => {
           <TradeInfoTabs />
         </div>
         <div
+          className="border-l border-b border-th-bkg-3 lg:border-l-0 lg:border-b-0"
           key="trade-form"
-          className="border border-t-0 border-r-0 border-th-bkg-3 md:border-b lg:border-b-0"
         >
           <AdvancedTradeForm />
         </div>
         <div
           key="orderbook"
-          className="overflow-hidden border border-y-0 border-r-0 border-th-bkg-3"
+          className="overflow-hidden border-l border-th-bkg-3 lg:border-r"
         >
           <OrderbookAndTrades />
         </div>
