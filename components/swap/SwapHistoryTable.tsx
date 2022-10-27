@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
-import Image from "next/legacy/image";
+import Image from 'next/legacy/image'
 import { breakpoints } from '../../utils/theme'
 import { useViewport } from '../../hooks/useViewport'
 import { IconButton } from '../shared/Button'
@@ -35,7 +35,7 @@ const SwapHistoryTable = ({
 }) => {
   const { t } = useTranslation(['common', 'settings'])
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-  const { connected } = useWallet()
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showSwapDetails, setSwapDetails] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -48,7 +48,7 @@ const SwapHistoryTable = ({
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
   }
 
-  return connected ? (
+  return mangoAccount ? (
     !loading ? (
       swapHistory.length ? (
         showTableView ? (

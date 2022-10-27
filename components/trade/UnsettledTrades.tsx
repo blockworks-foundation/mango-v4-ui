@@ -18,7 +18,7 @@ const UnsettledTrades = ({
   unsettledSpotBalances: any
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const { connected } = useWallet()
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const group = mangoStore((s) => s.group)
   // const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const [settleMktAddress, setSettleMktAddress] = useState<string>('')
@@ -61,7 +61,7 @@ const UnsettledTrades = ({
 
   if (!group) return null
 
-  return connected ? (
+  return mangoAccount ? (
     Object.values(unsettledSpotBalances).flat().length ? (
       showTableView ? (
         <table className="min-w-full">

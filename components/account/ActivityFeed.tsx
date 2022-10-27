@@ -18,7 +18,7 @@ import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
-import Image from "next/legacy/image";
+import Image from 'next/legacy/image'
 import { EXPLORERS } from 'pages/settings'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
@@ -142,7 +142,7 @@ const ActivityFilters = ({
   const { t } = useTranslation(['common', 'activity'])
   const actions = mangoStore((s) => s.actions)
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
-  const { connected } = useWallet()
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showAdvancedFiltersModal, setShowAdvancedFiltersModal] =
     useState(false)
   const { width } = useViewport()
@@ -192,7 +192,7 @@ const ActivityFilters = ({
     setShowMobileFilters(false)
   }
 
-  return connected ? (
+  return mangoAccount ? (
     !isMobile ? (
       <>
         <div className="flex items-center justify-between border-b border-th-bkg-3 bg-th-bkg-2 pl-6">
