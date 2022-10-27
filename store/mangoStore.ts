@@ -573,6 +573,8 @@ const mangoStore = create<MangoStore>()(
             )
             if (!mangoAccounts?.length) return
 
+            mangoAccounts.forEach((ma) => ma.reloadAccountData(client))
+
             let newSelectedMangoAccount = selectedMangoAccount
             if (!selectedMangoAccount) {
               const lastAccount = localStorage.getItem(LAST_ACCOUNT_KEY)
@@ -587,9 +589,6 @@ const mangoStore = create<MangoStore>()(
             }
 
             if (newSelectedMangoAccount) {
-              await retryFn(() =>
-                newSelectedMangoAccount!.reloadAccountData(client)
-              )
               await actions.fetchSerumOpenOrders(newSelectedMangoAccount)
             }
 
@@ -638,6 +637,7 @@ const mangoStore = create<MangoStore>()(
           try {
             let openOrders: Record<string, Order[]> = {}
             for (const serum3Orders of mangoAccount.serum3) {
+              if (serum3Orders.marketIndex === 65535) continue
               const market = group.getSerum3MarketByMarketIndex(
                 serum3Orders.marketIndex
               )
@@ -650,13 +650,14 @@ const mangoStore = create<MangoStore>()(
                 openOrders[market.serumMarketExternal.toString()] = orders
               }
             }
-            const serumOpenOrderAccounts =
-              await mangoAccount.loadSerum3OpenOrdersAccounts(client)
-
-            set((s) => {
-              s.mangoAccount.openOrders = openOrders
-              s.mangoAccount.openOrderAccounts = serumOpenOrderAccounts
-            })
+            if (Object.keys(openOrders).length) {
+              const serumOpenOrderAccounts =
+                await mangoAccount.loadSerum3OpenOrdersAccounts(client)
+              set((s) => {
+                s.mangoAccount.openOrders = openOrders
+                s.mangoAccount.openOrderAccounts = serumOpenOrderAccounts
+              })
+            }
           } catch (e) {
             console.error('Failed loading open orders ', e)
           }
