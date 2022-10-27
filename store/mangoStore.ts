@@ -507,7 +507,6 @@ const mangoStore = create<MangoStore>()(
               group.serum3MarketsMapByExternal.values()
             )
             const perpMarkets = Array.from(group.perpMarketsMapByName.values())
-            console.log('perpmarkets', perpMarkets)
 
             set((state) => {
               state.group = group
