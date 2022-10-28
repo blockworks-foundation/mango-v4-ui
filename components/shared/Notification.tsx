@@ -57,24 +57,25 @@ const NotificationList = () => {
 
   const reversedNotifications = [...notifications].reverse()
 
-  const position: string = useMemo(() => {
+  const position = useMemo(() => {
     switch (notificationPosition) {
       case 'bottom-left':
-        return 'bottom-0 left-0'
+        return { bottom: 0, left: 0 }
       case 'bottom-right':
-        return 'bottom-0 right-0'
+        return { bottom: 0, right: 0 }
       case 'top-left':
-        return 'top-0 left-0'
+        return { top: 0, left: 0 }
       case 'top-right':
-        return 'top-0 right-0'
+        return { top: 0, right: 0 }
       default:
-        return 'bottom-0 left-0'
+        return { bottom: 0, left: 0 }
     }
   }, [notificationPosition])
 
   return (
     <div
-      className={`pointer-events-none fixed ${position} z-50 w-full space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6`}
+      className={`pointer-events-none fixed z-50 w-full space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6`}
+      style={position}
     >
       {reversedNotifications.map((n) => (
         <Notification key={n.id} notification={n} />
