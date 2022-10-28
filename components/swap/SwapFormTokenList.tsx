@@ -1,5 +1,5 @@
 import { memo, useMemo, useState, useEffect, ChangeEvent } from 'react'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import { Token } from '../../types/jupiter'
 import mangoStore from '@store/mangoStore'
 import Input from '../forms/Input'

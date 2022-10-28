@@ -69,10 +69,12 @@ const HydrateStore = () => {
         // newMangoAccount.spotOpenOrdersAccounts =
         //   mangoAccount.spotOpenOrdersAccounts
         // newMangoAccount.advancedOrders = mangoAccount.advancedOrders
-
-        mangoStore((state) => {
+        mangoStore.setState({
           // state.mangoAccount.lastSlot = context.slot
-          state.mangoAccount.current = newMangoAccount
+          mangoAccount: {
+            ...mangoStore.getState().mangoAccount,
+            current: newMangoAccount,
+          },
           // state.mangoAccount.lastUpdatedAt =
           //   newUpdatedAt.toISOString()
         })

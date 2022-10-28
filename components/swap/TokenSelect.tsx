@@ -2,7 +2,7 @@ import {
   ChevronDownIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import mangoStore from '@store/mangoStore'
 
 type TokenSelectProps = {
