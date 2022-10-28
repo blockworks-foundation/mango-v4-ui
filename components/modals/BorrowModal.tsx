@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
@@ -153,7 +153,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <EnterBottomExitBottom
-        className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6"
+        className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
         show={showTokenList}
       >
         <h2 className="mb-4 text-center">{t('select-token')}</h2>

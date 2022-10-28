@@ -1,5 +1,5 @@
 import { memo, useMemo, useState, useEffect, ChangeEvent } from 'react'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import { Token } from '../../types/jupiter'
 import mangoStore from '@store/mangoStore'
 import Input from '../forms/Input'
@@ -61,7 +61,11 @@ const TokenItem = ({
     <div>
       <button
         key={address}
-        className="default-transition flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2"
+        className={`default-transition flex w-full items-center justify-between rounded-md p-2 font-normal  ${
+          isDisabled
+            ? 'opacity-50'
+            : 'cursor-pointer focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2'
+        }`}
         onClick={() => onSubmit(address)}
         disabled={isDisabled}
       >

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import {
   CheckCircleIcon,
   ArrowTopRightOnSquareIcon,
@@ -26,6 +26,7 @@ const NotificationList = () => {
     NOTIFICATION_POSITION_KEY,
     'bottom-left'
   )
+  const [mounted, setMounted] = useState(false)
 
   // if a notification is shown with {"InstructionError":[0,{"Custom":1}]} then
   // add a notification letting the user know they may not have enough SOL
@@ -72,9 +73,12 @@ const NotificationList = () => {
     }
   }, [notificationPosition])
 
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
+
   return (
     <div
-      className={`pointer-events-none fixed ${position} z-50 w-full space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6`}
+      className={`pointer-events-none fixed z-50 w-full space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6 ${position}`}
     >
       {reversedNotifications.map((n) => (
         <Notification key={n.id} notification={n} />

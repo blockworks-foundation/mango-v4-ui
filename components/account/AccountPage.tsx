@@ -9,7 +9,7 @@ import AccountActions from './AccountActions'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
-import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
+import { formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import dynamic from 'next/dynamic'
 const SimpleAreaChart = dynamic(
@@ -83,7 +83,10 @@ const AccountPage = () => {
     const totalCollateral = mangoAccount
       .getAssetsValue(group, HealthType.init)!
       .toNumber()
-    return liabsValue / totalCollateral
+
+    if (isNaN(liabsValue / totalCollateral)) {
+      return 0
+    } else return liabsValue / totalCollateral
   }, [mangoAccount, group])
 
   useEffect(() => {
@@ -91,7 +94,6 @@ const AccountPage = () => {
       const pubKey = mangoAccount.publicKey.toString()
       actions.fetchAccountPerformance(pubKey, 1)
       actions.fetchAccountInterestTotals(pubKey)
-      actions.fetchActivityFeed(pubKey)
     }
   }, [actions, mangoAccount])
 
@@ -194,7 +196,7 @@ const AccountPage = () => {
 
   return !chartToShow ? (
     <>
-      <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 pt-3 pb-0 md:border-b md:pb-3">
+      <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 py-3 md:border-b">
         <div className="flex items-center space-x-6">
           <div id="account-step-three">
             <Tooltip
@@ -286,7 +288,7 @@ const AccountPage = () => {
             </SheenLoader>
           )}
         </div>
-        <div className="my-3 lg:my-0">
+        <div className="mt-3 mb-1 lg:mt-0 lg:mb-0">
           <AccountActions />
         </div>
       </div>

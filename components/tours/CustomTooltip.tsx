@@ -54,21 +54,21 @@ const CustomTooltip = ({
   }
 
   return (
-    <div className="relative w-72 rounded-lg bg-gradient-to-b from-gradient-start via-gradient-mid to-gradient-end p-4">
+    <div className="relative w-72 rounded-lg bg-th-bkg-2 p-4">
       {!loading ? (
         <>
           <button
             onClick={onClose}
-            className={`absolute right-4 top-4 z-50 text-th-bkg-3 focus:outline-none md:right-2 md:top-2 md:hover:text-th-primary`}
+            className={`absolute right-4 top-4 z-50 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-primary`}
           >
             <XMarkIcon className={`h-5 w-5`} />
           </button>
-          <h3 className="text-th-bkg-1">{title}</h3>
-          <p className="text-sm text-th-bkg-1">{description}</p>
+          <h3 className="mb-1 text-base text-th-fgd-1">{title}</h3>
+          <p className="text-sm text-th-fgd-3">{description}</p>
           <div className="mt-4 flex items-center justify-between">
             {stepIndex !== 0 ? (
               <button
-                className="default-transition h-8 rounded-md border border-th-bkg-1 px-3 font-bold text-th-bkg-1 focus:outline-none md:hover:border-th-bkg-3 md:hover:text-th-bkg-3"
+                className="default-transition h-8 rounded-md border border-th-fgd-4 px-3 font-bold text-th-fgd-3 focus:outline-none md:hover:border-th-fgd-3 md:hover:text-th-fgd-2"
                 onClick={() => prev()}
               >
                 Back
@@ -80,7 +80,7 @@ const CustomTooltip = ({
               {allSteps.map((s, i) => (
                 <div
                   className={`h-1 w-1 rounded-full ${
-                    i === stepIndex ? 'bg-th-primary' : 'bg-[rgba(0,0,0,0.2)]'
+                    i === stepIndex ? 'bg-th-primary' : 'bg-th-bkg-4'
                   }`}
                   key={s.title}
                 />
@@ -88,7 +88,7 @@ const CustomTooltip = ({
             </div>
             {stepIndex !== allSteps.length - 1 ? (
               <button
-                className="default-transition h-8 rounded-md bg-th-bkg-1 px-3 font-bold text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-3"
+                className="default-transition h-8 rounded-md bg-th-button px-3 font-bold text-th-fgd-1 focus:outline-none md:hover:bg-th-button-hover"
                 onClick={() => next()}
               >
                 Next

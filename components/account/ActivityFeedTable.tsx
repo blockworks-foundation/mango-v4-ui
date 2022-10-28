@@ -14,7 +14,7 @@ import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import { EXPLORERS } from 'pages/settings'
 import { Fragment, useCallback, useState } from 'react'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
@@ -31,7 +31,7 @@ const ActivityFeedTable = ({
   params: string
 }) => {
   const { t } = useTranslation(['common', 'activity'])
-  const { connected } = useWallet()
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const actions = mangoStore((s) => s.actions)
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
   const [offset, setOffset] = useState(0)
@@ -108,7 +108,7 @@ const ActivityFeedTable = ({
     return value
   }
 
-  return connected ? (
+  return mangoAccount ? (
     activityFeed.length || loadActivityFeed ? (
       <>
         {showTableView ? (
@@ -229,7 +229,7 @@ const ActivityFeedTable = ({
         )}
         {loadActivityFeed ? (
           <div className="mt-2 space-y-0.5">
-            {[...Array(4)].map((i) => (
+            {[...Array(4)].map((x, i) => (
               <SheenLoader className="flex flex-1" key={i}>
                 <div className="h-16 w-full bg-th-bkg-2" />
               </SheenLoader>

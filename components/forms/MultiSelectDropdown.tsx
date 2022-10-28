@@ -71,7 +71,7 @@ const MultiSelectDropdown = ({
         </div>
       )}
     </Popover>
-  )
+  );
 }
 
 export default MultiSelectDropdown

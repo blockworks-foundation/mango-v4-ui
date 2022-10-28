@@ -1,5 +1,5 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
-import Image from 'next/image'
+import Image from "next/legacy/image";
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
 import { formatDecimal } from '../../utils/numbers'

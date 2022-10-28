@@ -18,7 +18,7 @@ import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import { EXPLORERS } from 'pages/settings'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
@@ -58,12 +58,22 @@ const DEFAULT_PARAMS = ['deposit', 'liquidate_token_with_token', 'withdraw']
 
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
+  const initialLoad = mangoStore((s) => s.activityFeed.initialLoad)
+  const actions = mangoStore((s) => s.actions)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showActivityDetail, setShowActivityDetail] = useState(null)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(
     DEFAULT_ADVANCED_FILTERS
   )
   const [params, setParams] = useState<string[]>(DEFAULT_PARAMS)
+
+  useEffect(() => {
+    if (mangoAccount && !initialLoad) {
+      const pubKey = mangoAccount.publicKey.toString()
+      actions.fetchActivityFeed(pubKey)
+    }
+  }, [actions, initialLoad, mangoAccount])
 
   const handleShowActivityDetails = (activity: any) => {
     setShowActivityDetail(activity)
@@ -142,7 +152,7 @@ const ActivityFilters = ({
   const { t } = useTranslation(['common', 'activity'])
   const actions = mangoStore((s) => s.actions)
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
-  const { connected } = useWallet()
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showAdvancedFiltersModal, setShowAdvancedFiltersModal] =
     useState(false)
   const { width } = useViewport()
@@ -192,7 +202,7 @@ const ActivityFilters = ({
     setShowMobileFilters(false)
   }
 
-  return connected ? (
+  return mangoAccount ? (
     !isMobile ? (
       <>
         <div className="flex items-center justify-between border-b border-th-bkg-3 bg-th-bkg-2 pl-6">

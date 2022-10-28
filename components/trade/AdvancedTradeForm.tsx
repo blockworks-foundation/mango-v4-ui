@@ -19,10 +19,11 @@ import NumberFormat, {
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
 import { calculateMarketPrice } from 'utils/tradeForm'
-import Image from 'next/image'
+import Image from "next/legacy/image";
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
 import { Market } from '@project-serum/serum'
+import TabUnderline from '@components/shared/TabUnderline'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -244,45 +245,11 @@ const AdvancedTradeForm = () => {
         />
       </div>
       <div className="mt-6 px-4">
-        <div
-          className={`relative mb-3 pb-1 md:-mt-2.5 md:border-b md:border-th-bkg-3`}
-        >
-          <div
-            className={`absolute hidden md:block ${
-              tradeForm.side === 'buy'
-                ? 'translate-x-0 bg-th-green'
-                : 'translate-x-full bg-th-red'
-            } default-transition bottom-[-1px] left-0 h-0.5 w-1/2 transform`}
-          />
-          <nav className="-mb-px flex space-x-2" aria-label="Tabs">
-            <button
-              onClick={() => handleSetSide('buy')}
-              className={`default-transition relative flex h-10 w-1/2 
-            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 text-sm font-semibold md:h-auto md:rounded-none md:text-base md:hover:opacity-100
-            ${
-              tradeForm.side === 'buy'
-                ? `border border-th-green text-th-green md:border-0`
-                : `border border-th-fgd-4 text-th-fgd-4 md:border-0 md:hover:border-th-green md:hover:text-th-green`
-            }
-          `}
-            >
-              {t('buy')}
-            </button>
-            <button
-              onClick={() => handleSetSide('sell')}
-              className={`default-transition relative flex h-10 w-1/2 cursor-pointer items-center justify-center whitespace-nowrap 
-            rounded py-1 text-sm font-semibold md:h-auto md:rounded-none md:text-base md:hover:opacity-100
-            ${
-              tradeForm.side === 'sell'
-                ? `border border-th-red text-th-red md:border-0`
-                : `border border-th-fgd-4 text-th-fgd-4 md:border-0 md:hover:border-th-red md:hover:text-th-red`
-            }
-          `}
-            >
-              {t('sell')}
-            </button>
-          </nav>
-        </div>
+        <TabUnderline
+          activeValue={tradeForm.side}
+          values={['buy', 'sell']}
+          onChange={(v) => handleSetSide(v)}
+        />
       </div>
       <div className="mt-4 px-4">
         {tradeForm.tradeType === 'Limit' ? (

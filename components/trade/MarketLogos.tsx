@@ -1,8 +1,7 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
-import { PerpMarket } from '@blockworks-foundation/mango-v4/dist/types/src/accounts/perp'
+import { Serum3Market, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
-import Image from 'next/image'
+import Image from "next/legacy/image";
 import { useMemo } from 'react'
 
 const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
@@ -26,7 +25,7 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
       )
     } else {
       jupiterBaseToken = jupiterTokens.find(
-        (t) => t.address === market.name.split('-')[0]
+        (t) => t.symbol === market.name.split('-')[0]
       )
     }
     const baseLogoURI = jupiterBaseToken ? jupiterBaseToken.logoURI : ''
@@ -38,7 +37,11 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
   }, [group, jupiterTokens, market])
 
   return (
-    <div className="relative mr-1.5 h-5 w-[34px]">
+    <div
+      className={`relative mr-1.5 h-5 ${
+        market instanceof Serum3Market ? 'w-[34px]' : 'w-[20px]'
+      }`}
+    >
       <div className="absolute left-0 top-0">
         {logos.baseLogoURI ? (
           <Image
@@ -61,7 +64,7 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
             height="20"
             src={logos.quoteLogoURI}
           />
-        ) : (
+        ) : market instanceof PerpMarket ? null : (
           <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
         )}
       </div>

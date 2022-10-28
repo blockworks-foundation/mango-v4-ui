@@ -31,6 +31,8 @@ const ConnectedMenu = () => {
 
   const handleDisconnect = useCallback(() => {
     set((state) => {
+      state.activityFeed.feed = []
+      state.activityFeed.initialLoad = false
       state.mangoAccount.current = undefined
       state.mangoAccounts = []
       state.connected = false

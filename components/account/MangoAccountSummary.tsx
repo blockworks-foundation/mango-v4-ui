@@ -28,7 +28,9 @@ const MangoAccountSummary = () => {
     const totalCollateral = mangoAccount
       .getAssetsValue(group, HealthType.init)!
       .toNumber()
-    return liabsValue / totalCollateral
+    if (isNaN(liabsValue / totalCollateral)) {
+      return 0
+    } else return liabsValue / totalCollateral
   }, [mangoAccount])
 
   return (
