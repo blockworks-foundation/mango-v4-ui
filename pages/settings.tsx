@@ -14,7 +14,7 @@ import {
 import Switch from '@components/forms/Switch'
 import { useCallback, useMemo } from 'react'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
-import Image from "next/legacy/image";
+import Image from 'next/image'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
-import useInterval from '../components/shared/useInterval'
+import useInterval from '@components/shared/useInterval'
 import { PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
@@ -39,7 +39,7 @@ const HydrateStore = () => {
 
     const subscriptionId = connection.onAccountChange(
       mangoAccount.publicKey,
-      (info, context) => {
+      async (info, context) => {
         if (info?.lamports === 0) return
 
         // const lastSeenSlot =
@@ -56,13 +56,16 @@ const HydrateStore = () => {
         // only updated mango account if it's been more than 1 second since last update
         // if (Math.abs(timeDiff) >= 500 && context.slot > lastSeenSlot) {
         const decodedMangoAccount = client.program.coder.accounts.decode(
-          'bookSide',
+          'mangoAccount',
           info?.data
         )
         const newMangoAccount = MangoAccount.from(
           mangoAccount.publicKey,
           decodedMangoAccount
         )
+        await newMangoAccount.reloadAccountData(client)
+        console.log('WEBSOCKET ma:', newMangoAccount)
+
         // newMangoAccount.spotOpenOrdersAccounts =
         //   mangoAccount.spotOpenOrdersAccounts
         // newMangoAccount.advancedOrders = mangoAccount.advancedOrders

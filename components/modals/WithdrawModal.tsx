@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
+import Image from 'next/image'
 import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 
@@ -66,8 +66,9 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const tokenMax = useMemo(() => {
     if (!bank || !mangoAccount || !group) return new Decimal(0)
     const amount = getMaxWithdrawForBank(group, bank, mangoAccount)
+
     return amount && amount.gt(0)
-      ? floorToDecimal(amount, bank.mintDecimals)
+      ? amount.toDecimalPlaces(bank.mintDecimals)
       : new Decimal(0)
   }, [mangoAccount, bank, group])
 
@@ -199,7 +200,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   className="mb-2"
                   label={t('max')}
                   onClick={() => handleSizePercentage('100')}
-                  value={tokenMax.toFixed()}
+                  value={tokenMax.toString()}
                 />
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">

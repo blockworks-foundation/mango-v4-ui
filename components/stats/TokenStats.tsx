@@ -5,7 +5,7 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import Image from "next/legacy/image";
+import Image from 'next/image'
 import { Fragment, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 

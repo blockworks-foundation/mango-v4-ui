@@ -8,7 +8,7 @@ import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
+import Image from 'next/image'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
@@ -151,7 +151,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         txid: tx,
       })
 
-      await actions.reloadMangoAccount()
+      // await actions.reloadMangoAccount()
       actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
       setSubmitting(false)
     } catch (e: any) {

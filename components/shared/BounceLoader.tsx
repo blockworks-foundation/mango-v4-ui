@@ -1,4 +1,4 @@
-import Image from "next/legacy/image";
+import Image from 'next/image'
 
 const BounceLoader = ({ loadingMessage }: { loadingMessage?: string }) => (
   <div className="flex h-full flex-col items-center justify-center">

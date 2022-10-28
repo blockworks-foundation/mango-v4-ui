@@ -1,7 +1,7 @@
 import { Serum3Market, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
-import Image from "next/legacy/image";
+import Image from 'next/image'
 import { useMemo } from 'react'
 
 const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {

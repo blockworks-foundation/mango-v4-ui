@@ -22,7 +22,7 @@ import {
   EnterRightExitLeft,
   FadeInFadeOut,
 } from '../shared/Transitions'
-import Image from "next/legacy/image";
+import Image from 'next/image'
 import BounceLoader from '../shared/BounceLoader'
 import { notify } from '../../utils/notifications'
 import { Wallet } from '@project-serum/anchor'
