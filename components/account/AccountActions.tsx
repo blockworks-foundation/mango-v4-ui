@@ -1,4 +1,3 @@
-import { useWallet } from '@solana/wallet-adapter-react'
 import { useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import DepositModal from '../modals/DepositModal'
@@ -14,10 +13,11 @@ import { useTranslation } from 'next-i18next'
 import IconDropMenu from '../shared/IconDropMenu'
 import CloseAccountModal from '../modals/CloseAccountModal'
 import AccountNameModal from '../modals/AccountNameModal'
+import mangoStore from '@store/mangoStore'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
-  const { connected } = useWallet()
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
@@ -28,7 +28,7 @@ const AccountActions = () => {
       <div className="flex space-x-3">
         <Button
           className="flex items-center"
-          disabled={!connected}
+          disabled={!mangoAccount}
           onClick={() => setShowDepositModal(true)}
           size="large"
         >
@@ -37,7 +37,7 @@ const AccountActions = () => {
         </Button>
         <Button
           className="flex items-center"
-          disabled={!connected}
+          disabled={!mangoAccount}
           onClick={() => setShowWithdrawModal(true)}
           secondary
           size="large"
@@ -51,7 +51,7 @@ const AccountActions = () => {
         >
           <LinkButton
             className="whitespace-nowrap"
-            disabled={!connected}
+            disabled={!mangoAccount}
             onClick={() => setShowEditAccountModal(true)}
           >
             <PencilIcon className="h-5 w-5" />
@@ -59,7 +59,7 @@ const AccountActions = () => {
           </LinkButton>
           <LinkButton
             className="whitespace-nowrap"
-            disabled={!connected}
+            disabled={!mangoAccount}
             onClick={() => setShowCloseAccountModal(true)}
           >
             <TrashIcon className="h-5 w-5" />
