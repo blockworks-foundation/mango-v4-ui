@@ -58,12 +58,22 @@ const DEFAULT_PARAMS = ['deposit', 'liquidate_token_with_token', 'withdraw']
 
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
+  const initialLoad = mangoStore((s) => s.activityFeed.initialLoad)
+  const actions = mangoStore((s) => s.actions)
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showActivityDetail, setShowActivityDetail] = useState(null)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(
     DEFAULT_ADVANCED_FILTERS
   )
   const [params, setParams] = useState<string[]>(DEFAULT_PARAMS)
+
+  useEffect(() => {
+    if (mangoAccount && !initialLoad) {
+      const pubKey = mangoAccount.publicKey.toString()
+      actions.fetchActivityFeed(pubKey)
+    }
+  }, [actions, initialLoad, mangoAccount])
 
   const handleShowActivityDetails = (activity: any) => {
     setShowActivityDetail(activity)

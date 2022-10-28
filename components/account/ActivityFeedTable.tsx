@@ -229,7 +229,7 @@ const ActivityFeedTable = ({
         )}
         {loadActivityFeed ? (
           <div className="mt-2 space-y-0.5">
-            {[...Array(4)].map((i) => (
+            {[...Array(4)].map((x, i) => (
               <SheenLoader className="flex flex-1" key={i}>
                 <div className="h-16 w-full bg-th-bkg-2" />
               </SheenLoader>

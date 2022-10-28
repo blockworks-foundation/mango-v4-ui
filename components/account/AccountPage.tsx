@@ -94,7 +94,6 @@ const AccountPage = () => {
       const pubKey = mangoAccount.publicKey.toString()
       actions.fetchAccountPerformance(pubKey, 1)
       actions.fetchAccountInterestTotals(pubKey)
-      actions.fetchActivityFeed(pubKey)
     }
   }, [actions, mangoAccount])
 

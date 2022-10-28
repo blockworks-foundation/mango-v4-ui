@@ -159,6 +159,7 @@ interface TourSettings {
 export type MangoStore = {
   activityFeed: {
     feed: Array<DepositWithdrawFeedItem | LiquidationFeedItem>
+    initialLoad: boolean
     loading: boolean
   }
   coingeckoPrices: {
@@ -262,6 +263,7 @@ const mangoStore = create<MangoStore>()(
     return {
       activityFeed: {
         feed: [],
+        initialLoad: false,
         loading: true,
       },
       coingeckoPrices: {
@@ -458,6 +460,12 @@ const mangoStore = create<MangoStore>()(
               type: 'error',
             })
           } finally {
+            const initialLoad = mangoStore.getState().activityFeed.initialLoad
+            if (!initialLoad) {
+              set((state) => {
+                state.activityFeed.initialLoad = true
+              })
+            }
             set((state) => {
               state.activityFeed.loading = false
             })
