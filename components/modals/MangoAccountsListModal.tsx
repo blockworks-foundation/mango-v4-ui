@@ -18,15 +18,16 @@ import CreateAccountForm from '@components/account/CreateAccountForm'
 import { EnterRightExitLeft } from '@components/shared/Transitions'
 
 const MangoAccountsListModal = ({
-  mangoAccount,
+  // mangoAccount,
   isOpen,
   onClose,
 }: {
-  mangoAccount: MangoAccount | undefined
+  // mangoAccount: MangoAccount | undefined
   isOpen: boolean
   onClose: () => void
 }) => {
   const { t } = useTranslation('common')
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const mangoAccounts = mangoStore((s) => s.mangoAccounts)
   const actions = mangoStore((s) => s.actions)
   const group = mangoStore((s) => s.group)

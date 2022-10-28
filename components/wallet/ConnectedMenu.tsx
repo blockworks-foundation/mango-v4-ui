@@ -1,6 +1,7 @@
 import { Menu, Transition } from '@headlessui/react'
 import {
   ArrowRightOnRectangleIcon,
+  CurrencyDollarIcon,
   UserCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -14,10 +15,12 @@ import { PublicKey } from '@solana/web3.js'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import EditProfileModal from '@components/modals/EditProfileModal'
+import MangoAccountsListModal from '@components/modals/MangoAccountsListModal'
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
+  const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
   const set = mangoStore((s) => s.set)
   const { publicKey, disconnect, wallet } = useWallet()
   const actions = mangoStore((s) => s.actions)
@@ -106,15 +109,17 @@ const ConnectedMenu = () => {
                     </div>
                   </button>
                 </Menu.Item>
-                {/* <Menu.Item>
+                {isMobile ? (
+                  <Menu.Item>
                     <button
                       className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer hover:text-th-primary focus:outline-none"
-                      onClick={() => setShowAccountsModal(true)}
+                      onClick={() => setShowMangoAccountsModal(true)}
                     >
                       <CurrencyDollarIcon className="h-4 w-4" />
                       <div className="pl-2 text-left">{t('accounts')}</div>
                     </button>
-                  </Menu.Item> */}
+                  </Menu.Item>
+                ) : null}
                 {/* <Menu.Item>
                   <button
                     className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer hover:text-th-primary focus:outline-none"
@@ -151,6 +156,13 @@ const ConnectedMenu = () => {
         <EditProfileModal
           isOpen={showEditProfileModal}
           onClose={() => setShowEditProfileModal(false)}
+        />
+      ) : null}
+
+      {showMangoAccountsModal ? (
+        <MangoAccountsListModal
+          isOpen={showMangoAccountsModal}
+          onClose={() => setShowMangoAccountsModal(false)}
         />
       ) : null}
     </>

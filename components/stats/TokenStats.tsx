@@ -1,6 +1,7 @@
 import { Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
+  ChevronRightIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
@@ -11,18 +12,21 @@ import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
-import { IconButton } from '../shared/Button'
+import { IconButton, LinkButton } from '../shared/Button'
 import ContentBox from '../shared/ContentBox'
 import FlipNumbers from 'react-flip-numbers'
 import Tooltip from '@components/shared/Tooltip'
+import { Bank } from '@blockworks-foundation/mango-v4'
+import { useRouter } from 'next/router'
 
-const TokenList = () => {
-  const { t } = useTranslation('common')
+const TokenStats = () => {
+  const { t } = useTranslation(['common', 'token'])
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const group = mangoStore((s) => s.group)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const router = useRouter()
 
   const banks = useMemo(() => {
     if (group) {
@@ -54,6 +58,10 @@ const TokenList = () => {
     }
     return []
   }, [banks])
+
+  const goToTokenPage = (bank: Bank) => {
+    router.push(`/token/${bank.name}`, undefined, { shallow: true })
+  }
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -113,7 +121,7 @@ const TokenList = () => {
                 </div>
               </th>
               <th>
-                <div className="flex justify-end">
+                <div className="flex justify-end text-right">
                   <Tooltip content={t('asset-weight-desc')}>
                     <span className="tooltip-underline">
                       {t('asset-weight')}
@@ -202,6 +210,13 @@ const TokenList = () => {
                   <td>
                     <div className="text-right">
                       <p>{bank.initLiabWeight.toFixed(2)}</p>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex justify-end">
+                      <IconButton onClick={() => goToTokenPage(bank)}>
+                        <ChevronRightIcon className="h-5 w-5" />
+                      </IconButton>
                     </div>
                   </td>
                 </tr>
@@ -315,6 +330,15 @@ const TokenList = () => {
                         {bank.initLiabWeight.toFixed(2)}
                       </p>
                     </div>
+                    <div className="col-span-1">
+                      <LinkButton
+                        className="flex items-center"
+                        onClick={() => goToTokenPage(bank)}
+                      >
+                        {t('token:token-details')}
+                        <ChevronRightIcon className="ml-2 h-5 w-5" />
+                      </LinkButton>
+                    </div>
                   </div>
                 </Transition>
               </div>
@@ -326,4 +350,4 @@ const TokenList = () => {
   )
 }
 
-export default TokenList
+export default TokenStats

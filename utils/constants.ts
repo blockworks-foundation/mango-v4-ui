@@ -44,7 +44,8 @@ export const COINGECKO_IDS = [
   // { id: 'cope', symbol: 'COPE' },
   // { id: 'cardano', symbol: 'ADA' },
   { id: 'msol', symbol: 'MSOL' },
-  // { id: 'tether', symbol: 'USDT' },
+  { id: 'usd-coin', symbol: 'USDC' },
+  { id: 'tether', symbol: 'USDT' },
   // { id: 'stepn', symbol: 'GMT' },
 ]
 

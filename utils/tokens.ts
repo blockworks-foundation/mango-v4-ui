@@ -105,3 +105,13 @@ export const fetchNftsFromHolaplexIndexer = async (owner: PublicKey) => {
 
 export const formatTokenSymbol = (symbol: string) =>
   symbol === 'MSOL' ? 'mSOL' : symbol === 'SOETH' ? 'soETH' : symbol
+
+export const LISTED_TOKENS: string[] = [
+  'BTC',
+  'ETH',
+  'soETH',
+  'SOL',
+  'MSOL',
+  'USDC',
+  'USDT',
+]

@@ -1,11 +1,10 @@
 import { useCallback, useState } from 'react'
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 
 import mangoStore from '@store/mangoStore'
 import WalletIcon from './icons/WalletIcon'
-import MangoAccountsList from './MangoAccountsList'
-import { LinkButton } from './shared/Button'
+import { IconButton, LinkButton } from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../utils/constants'
@@ -13,6 +12,7 @@ import useLocalStorageState from '../hooks/useLocalStorageState'
 import UserSetupModal from './modals/UserSetupModal'
 import CreateAccountModal from './modals/CreateAccountModal'
 import MangoAccountsListModal from './modals/MangoAccountsListModal'
+import { useRouter } from 'next/router'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -22,6 +22,8 @@ const TopBar = () => {
   const [showUserSetupModal, setShowUserSetupModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
+  const router = useRouter()
+  const { query } = router
 
   const handleCloseModal = useCallback(() => {
     setShowUserSetupModal(false)
@@ -34,7 +36,23 @@ const TopBar = () => {
   return (
     <>
       <div className="flex w-full items-center justify-between space-x-4">
-        <span className="mb-0">
+        <span className="mb-0 flex items-center">
+          {query.token ? (
+            <div
+              className={`mr-2 flex h-16 items-center pr-4 md:mr-4 md:pr-6 ${
+                !connected || !mangoAccount ? 'border-r border-th-bkg-3' : ''
+              }`}
+            >
+              <IconButton onClick={() => router.back()} hideBg size="small">
+                <ArrowLeftIcon className="h-6 w-6" />
+              </IconButton>
+            </div>
+          ) : null}
+          <img
+            className="mr-4 ml-2 h-8 w-auto md:hidden"
+            src="/logos/logo-mark.svg"
+            alt="next"
+          />
           {!connected ? (
             <span className="hidden items-center md:flex">
               <WalletIcon className="h-5 w-5 text-th-fgd-3" />
@@ -52,9 +70,8 @@ const TopBar = () => {
         </span>
         {connected ? (
           <div className="flex items-center space-x-4 pr-4 md:pr-0">
-            {/* <MangoAccountsList mangoAccount={mangoAccount} /> */}
             <button
-              className="mr-2"
+              className="mr-2 hidden md:block"
               onClick={() => setShowMangoAccountsModal(true)}
             >
               <p className="text-right text-xs">{t('accounts')}</p>
@@ -80,7 +97,6 @@ const TopBar = () => {
         <MangoAccountsListModal
           isOpen={showMangoAccountsModal}
           onClose={() => setShowMangoAccountsModal(false)}
-          mangoAccount={mangoAccount}
         />
       ) : null}
       {showUserSetupModal ? (

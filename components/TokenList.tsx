@@ -2,6 +2,7 @@ import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
+  ChevronRightIcon,
   EllipsisHorizontalIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
@@ -11,7 +12,6 @@ import Image from "next/legacy/image";
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
-
 import mangoStore from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
@@ -38,6 +38,7 @@ const TokenList = () => {
   )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const router = useRouter()
 
   const banks = useMemo(() => {
     if (group) {
@@ -73,6 +74,10 @@ const TokenList = () => {
       setShowZeroBalances(true)
     }
   }, [connected])
+
+  const goToTokenPage = (bank: Bank) => {
+    router.push(`/token/${bank.name}`, undefined, { shallow: true })
+  }
 
   return (
     <ContentBox hideBorder hidePadding className="md:-mt-[36px]">
@@ -226,6 +231,9 @@ const TokenList = () => {
                       id={i === 0 ? 'account-step-ten' : ''}
                     >
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
+                      <IconButton onClick={() => goToTokenPage(bank)}>
+                        <ChevronRightIcon className="h-5 w-5" />
+                      </IconButton>
                     </div>
                   </td>
                 </tr>
@@ -247,7 +255,7 @@ const TokenList = () => {
 export default TokenList
 
 const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'token'])
   const [showTokenDetails, setShowTokenDetails] = useState(false)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
@@ -257,6 +265,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   )
   const symbol = bank.name
   const oraclePrice = bank.uiPrice
+  const router = useRouter()
 
   let logoURI
   if (jupiterTokens.length) {
@@ -281,6 +290,10 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
 
   const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0.0
+
+  const goToTokenPage = (bank: Bank) => {
+    router.push(`/token/${bank.name}`, undefined, { shallow: true })
+  }
 
   return (
     <div key={symbol} className="border-b border-th-bkg-3 px-6 py-4">
@@ -367,6 +380,15 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
               </span>
             </p>
           </div>
+          <div className="col-span-1">
+            <LinkButton
+              className="flex items-center"
+              onClick={() => goToTokenPage(bank)}
+            >
+              {t('token:token-details')}
+              <ChevronRightIcon className="ml-2 h-5 w-5" />
+            </LinkButton>
+          </div>
         </div>
       </Transition>
     </div>
@@ -386,7 +408,7 @@ const ActionsMenu = ({
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [selectedToken, setSelectedToken] = useState('')
   // const set = mangoStore.getState().set
-  const router = useRouter()
+  // const router = useRouter()
   // const { asPath } = router
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 

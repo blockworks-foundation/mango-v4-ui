@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode, useMemo, useState } from 'react'
+import { FunctionComponent, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -13,7 +13,6 @@ import FlipNumbers from 'react-flip-numbers'
 
 import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
-import { DownTriangle, UpTriangle } from '../shared/DirectionTriangles'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
@@ -36,6 +35,14 @@ interface DetailedAreaChartProps {
   title?: string
   xKey: string
   yKey: string
+}
+
+export const formatDateAxis = (date: string, days: number) => {
+  if (days === 1) {
+    return dayjs(date).format('h:mma')
+  } else {
+    return dayjs(date).format('D MMM')
+  }
 }
 
 const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
@@ -78,14 +85,6 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
         )
     }
     return 0
-  }
-
-  const formatDateAxis = (date: string) => {
-    if (daysToShow === 1) {
-      return dayjs(date).format('h:mma')
-    } else {
-      return dayjs(date).format('D MMM')
-    }
   }
 
   const flipGradientCoords = useMemo(
@@ -229,7 +228,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                         fontSize: 10,
                       }}
                       tickLine={false}
-                      tickFormatter={(d) => formatDateAxis(d)}
+                      tickFormatter={(d) => formatDateAxis(d, daysToShow)}
                     />
                     <YAxis
                       axisLine={false}

@@ -75,12 +75,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
               isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-48 xl:pl-52'
             }`}
           >
-            <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 pl-6">
-              <img
-                className="mr-4 h-8 w-auto md:hidden"
-                src="/logos/logo-mark.svg"
-                alt="next"
-              />
+            <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 pl-4 md:pl-6">
               <TopBar />
             </div>
             {children}
