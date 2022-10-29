@@ -77,10 +77,10 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
           : size === 'small'
           ? 'h-7 w-7'
           : 'h-10 w-10'
-      } items-center justify-center rounded-full ${
-        hideBg ? '' : 'bg-th-bkg-4'
+      } default-transition items-center justify-center rounded-full ${
+        hideBg ? 'md:hover:text-th-primary' : 'bg-th-bkg-4 md:hover:bg-th-bkg-3'
       } text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:bg-th-bkg-4 
-      disabled:text-th-fgd-4 md:hover:text-th-primary md:disabled:hover:text-th-fgd-4 ${className}`}
+      disabled:text-th-fgd-4 md:disabled:hover:text-th-fgd-4 ${className}`}
       {...props}
     >
       {children}
