@@ -12,7 +12,10 @@ import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import Button from '@components/shared/Button'
-import { ArrowSmallUpIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowSmallUpIcon,
+  ArrowTrendingUpIcon,
+} from '@heroicons/react/20/solid'
 import DepositModal from '@components/modals/DepositModal'
 import BorrowModal from '@components/modals/BorrowModal'
 import parse from 'html-react-parser'
@@ -203,18 +206,22 @@ const Token: NextPage = () => {
 
   return (
     <div className="pb-20 md:pb-16">
-      {coingeckoData && bank ? (
+      {bank ? (
         <>
           <div className="flex flex-col border-b border-th-bkg-3 px-6 py-3 md:flex-row md:items-center md:justify-between">
             <div className="mb-4 md:mb-1">
               <div className="mb-1.5 flex items-center space-x-2">
                 <Image src={logoURI!} height="20" width="20" />
-                <h1 className="text-base font-normal">
-                  {coingeckoData.name}{' '}
-                  <span className="text-th-fgd-4">({bank.name})</span>
-                </h1>
+                {coingeckoData ? (
+                  <h1 className="text-base font-normal">
+                    {coingeckoData.name}{' '}
+                    <span className="text-th-fgd-4">({bank.name})</span>
+                  </h1>
+                ) : (
+                  <h1 className="text-base font-normal">{bank.name}</h1>
+                )}
               </div>
-              <div className="mb-2 flex items-end space-x-3 text-5xl font-bold text-th-fgd-1">
+              <div className="flex items-end space-x-3 text-5xl font-bold text-th-fgd-1">
                 $
                 <FlipNumbers
                   height={48}
@@ -224,13 +231,19 @@ const Token: NextPage = () => {
                   duration={1}
                   numbers={formatDecimal(bank.uiPrice, 2)}
                 />
-                <Change change={price_change_percentage_24h} />
+                {coingeckoData ? (
+                  <Change change={price_change_percentage_24h} />
+                ) : null}
               </div>
-              <DailyRange
-                high={high_24h.usd}
-                low={low_24h.usd}
-                price={bank.uiPrice}
-              />
+              {coingeckoData ? (
+                <div className="mt-2">
+                  <DailyRange
+                    high={high_24h.usd}
+                    low={low_24h.usd}
+                    price={bank.uiPrice}
+                  />
+                </div>
+              ) : null}
             </div>
             <div className="w-full rounded-md bg-th-bkg-2 p-4 md:w-[343px]">
               <div className="mb-4 flex justify-between">
@@ -348,144 +361,158 @@ const Token: NextPage = () => {
               %
             </span>
           </div>
-          <div className="border-b border-th-bkg-3 py-4 px-6">
-            <h2 className="mb-1 text-xl">About {bank.name}</h2>
-            <div className="flex items-end">
-              <p
-                className={`${
-                  showFullDesc ? 'h-full' : 'h-5'
-                } max-w-[720px] overflow-hidden`}
-              >
-                {parse(coingeckoData.description.en)}
-              </p>
-              <span
-                className="default-transition flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
-                onClick={() => setShowFullDesc(!showFullDesc)}
-              >
-                {showFullDesc ? 'Less' : 'More'}
-                <ArrowSmallUpIcon
-                  className={`h-5 w-5 ${
-                    showFullDesc ? 'rotate-360' : 'rotate-180'
-                  } default-transition`}
-                />
-              </span>
-            </div>
-          </div>
-          {!loadingChart ? (
-            coingeckoTokenPrices.length ? (
-              <>
-                <div className="mt-4 flex w-full items-center justify-between px-6">
-                  <h2 className="text-base">{bank.name} Price Chart</h2>
-                  <ChartRangeButtons
-                    activeValue={daysToShow}
-                    names={['24H', '7D', '30D']}
-                    values={[1, 7, 30]}
-                    onChange={(v) => handleDaysToShow(v)}
-                  />
-                </div>
-                <PriceChart
-                  daysToShow={daysToShow}
-                  prices={coingeckoTokenPrices}
-                />
-              </>
-            ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
-              <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-            )
-          ) : (
-            <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
-          )}
-          <div className="grid grid-cols-1 border-b border-th-bkg-3 sm:grid-cols-2">
-            <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 sm:col-span-2">
-              <h2 className="text-base">{bank.name} Stats</h2>
-            </div>
-            <div className="col-span-1 border-r border-th-bkg-3 px-6 py-4">
-              <div className="flex justify-between pb-4">
-                <p>{t('token:market-cap')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(market_cap.usd, true)}{' '}
-                  <span className="text-th-fgd-4">
-                    #{coingeckoData.market_cap_rank}
+          {coingeckoData ? (
+            <>
+              <div className="border-b border-th-bkg-3 py-4 px-6">
+                <h2 className="mb-1 text-xl">About {bank.name}</h2>
+                <div className="flex items-end">
+                  <p
+                    className={`${
+                      showFullDesc ? 'h-full' : 'h-5'
+                    } max-w-[720px] overflow-hidden`}
+                  >
+                    {parse(coingeckoData.description.en)}
+                  </p>
+                  <span
+                    className="default-transition flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
+                    onClick={() => setShowFullDesc(!showFullDesc)}
+                  >
+                    {showFullDesc ? 'Less' : 'More'}
+                    <ArrowSmallUpIcon
+                      className={`h-5 w-5 ${
+                        showFullDesc ? 'rotate-360' : 'rotate-180'
+                      } default-transition`}
+                    />
                   </span>
-                </p>
+                </div>
               </div>
-              <div className="flex justify-between border-t border-th-bkg-3 py-4">
-                <p>{t('token:volume')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(total_volume.usd, true)}
-                </p>
-              </div>
-              <div className="flex justify-between border-t border-th-bkg-3 py-4">
-                <p>{t('token:all-time-high')}</p>
-                <div className="flex flex-col items-end">
-                  <div className="flex items-center font-mono text-th-fgd-2">
-                    <span className="mr-2">
-                      {formatFixedDecimals(ath.usd, true)}
-                    </span>
-                    <Change change={ath_change_percentage.usd} />
+              {!loadingChart ? (
+                coingeckoTokenPrices.length ? (
+                  <>
+                    <div className="mt-4 flex w-full items-center justify-between px-6">
+                      <h2 className="text-base">{bank.name} Price Chart</h2>
+                      <ChartRangeButtons
+                        activeValue={daysToShow}
+                        names={['24H', '7D', '30D']}
+                        values={[1, 7, 30]}
+                        onChange={(v) => handleDaysToShow(v)}
+                      />
+                    </div>
+                    <PriceChart
+                      daysToShow={daysToShow}
+                      prices={coingeckoTokenPrices}
+                    />
+                  </>
+                ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
+                  <div className="flex flex-col items-center p-6">
+                    <ArrowTrendingUpIcon className="h-5 w-5 text-th-fgd-3" />
+                    <p className="mb-0 text-th-fgd-4">
+                      {t('token:chart-unavailable')}
+                    </p>
                   </div>
-                  <p className="text-xs text-th-fgd-4">
-                    {dayjs(ath_date.usd).format('MMM, D, YYYY')} (
-                    {dayjs(ath_date.usd).fromNow()})
-                  </p>
+                )
+              ) : (
+                <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+              )}
+              <div className="grid grid-cols-1 border-b border-th-bkg-3 sm:grid-cols-2">
+                <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 sm:col-span-2">
+                  <h2 className="text-base">{bank.name} Stats</h2>
                 </div>
-              </div>
-              <div className="flex justify-between border-b border-t border-th-bkg-3 py-4 sm:border-b-0 sm:pb-0">
-                <p>{t('token:all-time-low')}</p>
-                <div className="flex flex-col items-end">
-                  <div className="flex items-center font-mono text-th-fgd-2">
-                    <span className="mr-2">
-                      {formatFixedDecimals(atl.usd, true)}
-                    </span>
-                    <Change change={atl_change_percentage.usd} />
+                <div className="col-span-1 border-r border-th-bkg-3 px-6 py-4">
+                  <div className="flex justify-between pb-4">
+                    <p>{t('token:market-cap')}</p>
+                    <p className="font-mono text-th-fgd-2">
+                      {formatFixedDecimals(market_cap.usd, true)}{' '}
+                      <span className="text-th-fgd-4">
+                        #{coingeckoData.market_cap_rank}
+                      </span>
+                    </p>
                   </div>
-                  <p className="text-xs text-th-fgd-4">
-                    {dayjs(atl_date.usd).format('MMM, D, YYYY')} (
-                    {dayjs(atl_date.usd).fromNow()})
-                  </p>
+                  <div className="flex justify-between border-t border-th-bkg-3 py-4">
+                    <p>{t('token:volume')}</p>
+                    <p className="font-mono text-th-fgd-2">
+                      {formatFixedDecimals(total_volume.usd, true)}
+                    </p>
+                  </div>
+                  <div className="flex justify-between border-t border-th-bkg-3 py-4">
+                    <p>{t('token:all-time-high')}</p>
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-center font-mono text-th-fgd-2">
+                        <span className="mr-2">
+                          {formatFixedDecimals(ath.usd, true)}
+                        </span>
+                        <Change change={ath_change_percentage.usd} />
+                      </div>
+                      <p className="text-xs text-th-fgd-4">
+                        {dayjs(ath_date.usd).format('MMM, D, YYYY')} (
+                        {dayjs(ath_date.usd).fromNow()})
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between border-b border-t border-th-bkg-3 py-4 sm:border-b-0 sm:pb-0">
+                    <p>{t('token:all-time-low')}</p>
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-center font-mono text-th-fgd-2">
+                        <span className="mr-2">
+                          {formatFixedDecimals(atl.usd, true)}
+                        </span>
+                        <Change change={atl_change_percentage.usd} />
+                      </div>
+                      <p className="text-xs text-th-fgd-4">
+                        {dayjs(atl_date.usd).format('MMM, D, YYYY')} (
+                        {dayjs(atl_date.usd).fromNow()})
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-span-1 px-6 pb-4 sm:pt-4">
+                  {fully_diluted_valuation.usd ? (
+                    <div className="flex justify-between pb-4">
+                      <p>{t('token:fdv')}</p>
+                      <p className="font-mono text-th-fgd-2">
+                        {formatFixedDecimals(fully_diluted_valuation.usd, true)}
+                      </p>
+                    </div>
+                  ) : null}
+                  <div
+                    className={`flex justify-between ${
+                      fully_diluted_valuation.usd
+                        ? 'border-t border-th-bkg-3 py-4'
+                        : 'pb-4'
+                    }`}
+                  >
+                    <p>{t('token:circulating-supply')}</p>
+                    <p className="font-mono text-th-fgd-2">
+                      {formatFixedDecimals(circulating_supply)}
+                    </p>
+                  </div>
+                  <div
+                    className={`flex justify-between border-t border-th-bkg-3 ${
+                      max_supply ? 'py-4' : 'border-b pt-4 sm:pb-4'
+                    }`}
+                  >
+                    <p>{t('token:total-supply')}</p>
+                    <p className="font-mono text-th-fgd-2">
+                      {formatFixedDecimals(total_supply)}
+                    </p>
+                  </div>
+                  {max_supply ? (
+                    <div className="flex justify-between border-t border-th-bkg-3 pt-4">
+                      <p>{t('token:max-supply')}</p>
+                      <p className="font-mono text-th-fgd-2">
+                        {formatFixedDecimals(max_supply)}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center p-6">
+              <span className="mb-0.5 text-2xl">🦎</span>
+              <p>No CoinGecko data...</p>
             </div>
-            <div className="col-span-1 px-6 pb-4 sm:pt-4">
-              {fully_diluted_valuation.usd ? (
-                <div className="flex justify-between pb-4">
-                  <p>{t('token:fdv')}</p>
-                  <p className="font-mono text-th-fgd-2">
-                    {formatFixedDecimals(fully_diluted_valuation.usd, true)}
-                  </p>
-                </div>
-              ) : null}
-              <div
-                className={`flex justify-between ${
-                  fully_diluted_valuation.usd
-                    ? 'border-t border-th-bkg-3 py-4'
-                    : 'pb-4'
-                }`}
-              >
-                <p>{t('token:circulating-supply')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(circulating_supply)}
-                </p>
-              </div>
-              <div
-                className={`flex justify-between border-t border-th-bkg-3 ${
-                  max_supply ? 'py-4' : 'border-b pt-4 sm:pb-4'
-                }`}
-              >
-                <p>{t('token:total-supply')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(total_supply)}
-                </p>
-              </div>
-              {max_supply ? (
-                <div className="flex justify-between border-t border-th-bkg-3 pt-4">
-                  <p>{t('token:max-supply')}</p>
-                  <p className="font-mono text-th-fgd-2">
-                    {formatFixedDecimals(max_supply)}
-                  </p>
-                </div>
-              ) : null}
-            </div>
-          </div>
+          )}
         </>
       ) : loading ? (
         <div className="space-y-3 px-6 py-4">

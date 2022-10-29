@@ -108,7 +108,9 @@ export const formatTokenSymbol = (symbol: string) =>
 
 export const LISTED_TOKENS: string[] = [
   'BTC',
+  'DUST',
   'ETH',
+  'RAY',
   'soETH',
   'SOL',
   'MSOL',

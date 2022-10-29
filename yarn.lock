@@ -50,9 +50,9 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@blockworks-foundation/mango-v4@https://tylersssss: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@github.com/blockworks-foundation/mango-v4.git#main":
+"@blockworks-foundation/mango-v4@git+https://mschneider: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@github.com/blockworks-foundation/mango-v4.git#main":
   version "0.0.1-beta.5"
-  resolved "https://tylersssss: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@github.com/blockworks-foundation/mango-v4.git#73792dd6ea1a899bc18848db5e13edeed22dcfa4"
+  resolved "git+https://mschneider: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@github.com/blockworks-foundation/mango-v4.git#6ea338df6dfbb14fb238d3157fbd6f4c5d5a1709"
   dependencies:
     "@project-serum/anchor" "^0.25.0"
     "@project-serum/serum" "^0.13.65"
