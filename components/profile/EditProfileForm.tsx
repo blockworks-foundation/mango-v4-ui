@@ -128,7 +128,7 @@ const EditProfileForm = ({
       <div className="my-6 flex justify-center">
         <div className="relative ">
           <IconButton
-            className="absolute -top-1 -right-1"
+            className="absolute -top-2 -right-2"
             size="small"
             onClick={onEditProfileImage}
           >

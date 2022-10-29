@@ -226,7 +226,6 @@ const JupiterRouteInfo = ({
           className="absolute mr-3 text-th-fgd-2"
           onClick={onClose}
           size="small"
-          hideBg
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>

@@ -98,7 +98,7 @@ const TokenStats = () => {
         </div>
       </div>
       {showTableView ? (
-        <table className="-mt-1 min-w-full">
+        <table className="min-w-full">
           <thead>
             <tr>
               <th className="text-left">{t('token')}</th>
@@ -214,7 +214,10 @@ const TokenStats = () => {
                   </td>
                   <td>
                     <div className="flex justify-end">
-                      <IconButton onClick={() => goToTokenPage(bank)}>
+                      <IconButton
+                        onClick={() => goToTokenPage(bank)}
+                        size="small"
+                      >
                         <ChevronRightIcon className="h-5 w-5" />
                       </IconButton>
                     </div>

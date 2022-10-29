@@ -41,7 +41,7 @@ const IconDropMenu = ({
         <div className="relative">
           <Popover.Button
             className={`flex ${
-              large ? 'h-12 w-12' : 'h-10 w-10'
+              large ? 'h-12 w-12' : 'h-8 w-8'
             } default-transition items-center justify-center rounded-full border border-th-fgd-4 md:hover:border-th-bkg-4 ${
               theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
             } md:hover:text-th-fgd-1 ${

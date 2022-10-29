@@ -29,7 +29,7 @@ const SpotMarketsTable = () => {
   return (
     <ContentBox hideBorder hidePadding>
       {showTableView ? (
-        <table className="-mt-1 min-w-full">
+        <table className="min-w-full">
           <thead>
             <tr>
               <th className="text-left">{t('market')}</th>

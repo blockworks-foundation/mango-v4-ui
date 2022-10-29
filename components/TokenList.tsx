@@ -26,7 +26,7 @@ import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 
 const TokenList = () => {
-  const { t } = useTranslation(['common', 'trade'])
+  const { t } = useTranslation(['common', 'token', 'trade'])
   const { connected } = useWallet()
   const [showZeroBalances, setShowZeroBalances] = useState(true)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
@@ -81,7 +81,7 @@ const TokenList = () => {
 
   return (
     <ContentBox hideBorder hidePadding className="md:-mt-[36px]">
-      <div className="flex items-center justify-end md:mb-5">
+      <div className="flex items-center justify-end md:mb-4">
         <div className="flex w-full items-center justify-between border-b border-th-bkg-3 py-3 px-6 md:w-auto md:border-0 md:py-0">
           {!showTableView ? <p>{t('show-zero-balances')}</p> : null}
           <Switch
@@ -95,7 +95,7 @@ const TokenList = () => {
         </div>
       </div>
       {showTableView ? (
-        <table className="-mt-1 min-w-full">
+        <table className="min-w-full">
           <thead>
             <tr>
               <th className="text-left">{t('token')}</th>
@@ -231,7 +231,10 @@ const TokenList = () => {
                       id={i === 0 ? 'account-step-ten' : ''}
                     >
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
-                      <IconButton onClick={() => goToTokenPage(bank)}>
+                      <IconButton
+                        onClick={() => goToTokenPage(bank)}
+                        size="small"
+                      >
                         <ChevronRightIcon className="h-5 w-5" />
                       </IconButton>
                     </div>
@@ -320,7 +323,10 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
         </div>
         <div className="flex items-center space-x-3">
           <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
-          <IconButton onClick={() => setShowTokenDetails((prev) => !prev)}>
+          <IconButton
+            onClick={() => setShowTokenDetails((prev) => !prev)}
+            size="small"
+          >
             <ChevronDownIcon
               className={`${
                 showTokenDetails ? 'rotate-180' : 'rotate-360'

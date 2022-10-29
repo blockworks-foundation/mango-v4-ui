@@ -242,7 +242,7 @@ const SwapForm = () => {
           <h2 className="text-base text-th-fgd-2">{t('swap')}</h2>
           <div id="swap-step-one">
             <IconButton
-              className="text-th-fgd-3"
+              className="-mr-2 text-th-fgd-3"
               hideBg
               onClick={() => setShowSettings(true)}
               size="small"
