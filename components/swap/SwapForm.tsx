@@ -22,7 +22,7 @@ import { SwapLeverageSlider } from './LeverageSlider'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
-import Button, { IconButton } from '../shared/Button'
+import Button, { IconButton, LinkButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
@@ -246,8 +246,15 @@ const SwapForm = () => {
               onClick={() => setShowSettings(true)}
               size="small"
             >
-              <Cog8ToothIcon className="h-5 w-5" />
+              <Cog8ToothIcon className="h-4 w-4" />
             </IconButton>
+            {/* <LinkButton
+              className="flex items-center text-xs font-normal text-th-fgd-3 no-underline"
+              onClick={() => setShowSettings(true)}
+            >
+              <Cog8ToothIcon className="mr-1 h-3 w-3" />
+              <span className="text-th-fgd-4">{t('settings')}</span>
+            </LinkButton> */}
           </div>
         </div>
         <div id="swap-step-two" className="mb-2 flex items-end justify-between">

@@ -156,7 +156,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
             <div className="h-[18px] bg-th-bkg-2" />
           </SheenLoader>
           <SheenLoader className="mt-4 w-full rounded-md">
-            <div className="h-[328px] bg-th-bkg-2" />
+            <div className="h-[308px] bg-th-bkg-2" />
           </SheenLoader>
         </>
       ) : chartData.length && baseTokenId && quoteTokenId ? (
@@ -229,7 +229,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
               )}
             </div>
           </div>
-          <div className="mt-2 h-40 w-auto md:h-80">
+          <div className="mt-2 h-40 w-auto md:h-72">
             <div className="absolute top-[2px] right-0 -mb-2 flex justify-end">
               <ChartRangeButtons
                 activeValue={daysToShow}
