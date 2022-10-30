@@ -33,6 +33,14 @@ const TopBar = () => {
     setShowUserSetupModal(true)
   }, [])
 
+  const handleShowAccounts = useCallback(() => {
+    if (mangoAccount) {
+      setShowMangoAccountsModal(true)
+    } else {
+      setShowCreateAccountModal(true)
+    }
+  }, [mangoAccount])
+
   return (
     <>
       <div className="flex w-full items-center justify-between space-x-4">
@@ -59,24 +67,24 @@ const TopBar = () => {
               <span className="ml-2">{t('connect-helper')}</span>
               <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
             </span>
-          ) : !mangoAccount ? (
-            <div className="hidden items-center md:flex">
-              🥭
-              <LinkButton onClick={() => setShowCreateAccountModal(true)}>
-                <span className="ml-2">{t('create-account')}</span>
-              </LinkButton>
-            </div>
           ) : null}
         </span>
         {connected ? (
           <div className="flex items-center space-x-4 pr-4 md:pr-0">
             <button
               className="mr-2 hidden md:block"
-              onClick={() => setShowMangoAccountsModal(true)}
+              onClick={handleShowAccounts}
             >
               <p className="text-right text-xs">{t('accounts')}</p>
               <p className="text-left text-sm font-bold text-th-fgd-1">
-                {mangoAccount ? mangoAccount.name : 'No Accounts'}
+                {mangoAccount ? (
+                  mangoAccount.name
+                ) : (
+                  <span>
+                    <span className="mr-1.5">🥭</span>
+                    {t('create-account')}
+                  </span>
+                )}
               </p>
             </button>
             <ConnectedMenu />
