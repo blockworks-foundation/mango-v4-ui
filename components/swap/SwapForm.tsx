@@ -238,8 +238,7 @@ const SwapForm = () => {
         >
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base text-th-fgd-2">{t('swap')}</h2>
+        <div className="flex items-center justify-end">
           <div id="swap-step-one">
             <IconButton
               className="-mr-2 text-th-fgd-3"
@@ -252,7 +251,7 @@ const SwapForm = () => {
           </div>
         </div>
         <div id="swap-step-two" className="mb-2 flex items-end justify-between">
-          <p className="text-th-fgd-3">{t('swap:from')}</p>
+          <p className="text-th-fgd-3">Trade</p>
           <MaxSwapAmount
             useMargin={useMargin}
             setAmountIn={setAmountInFormValue}
@@ -305,7 +304,7 @@ const SwapForm = () => {
             />
           </button>
         </div>
-        <p className="mb-2 text-th-fgd-3">{t('swap:to')}</p>
+        <p className="mb-2 text-th-fgd-3">For</p>
         <div id="swap-step-three" className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
