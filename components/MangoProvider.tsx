@@ -42,8 +42,7 @@ const HydrateStore = () => {
       async (info, context) => {
         if (info?.lamports === 0) return
 
-        // const lastSeenSlot =
-        //   mangoStore.getState().mangoAccount.lastSlot
+        const lastSeenSlot = mangoStore.getState().mangoAccount.lastSlot
         // const mangoAccountLastUpdated = new Date(
         //   mangoStore.getState().mangoAccount.lastUpdatedAt
         // )
@@ -55,30 +54,29 @@ const HydrateStore = () => {
 
         // only updated mango account if it's been more than 1 second since last update
         // if (Math.abs(timeDiff) >= 500 && context.slot > lastSeenSlot) {
-        const decodedMangoAccount = client.program.coder.accounts.decode(
-          'mangoAccount',
-          info?.data
-        )
-        const newMangoAccount = MangoAccount.from(
-          mangoAccount.publicKey,
-          decodedMangoAccount
-        )
-        await newMangoAccount.reloadAccountData(client)
-        console.log('WEBSOCKET ma:', newMangoAccount)
+        if (context.slot > lastSeenSlot) {
+          const decodedMangoAccount = client.program.coder.accounts.decode(
+            'mangoAccount',
+            info?.data
+          )
+          const newMangoAccount = MangoAccount.from(
+            mangoAccount.publicKey,
+            decodedMangoAccount
+          )
+          await newMangoAccount.reloadAccountData(client)
+          console.log('WEBSOCKET ma:', newMangoAccount)
 
-        // newMangoAccount.spotOpenOrdersAccounts =
-        //   mangoAccount.spotOpenOrdersAccounts
-        // newMangoAccount.advancedOrders = mangoAccount.advancedOrders
-        mangoStore.setState({
-          // state.mangoAccount.lastSlot = context.slot
-          mangoAccount: {
-            ...mangoStore.getState().mangoAccount,
-            current: newMangoAccount,
-          },
-          // state.mangoAccount.lastUpdatedAt =
-          //   newUpdatedAt.toISOString()
-        })
-        // }
+          // newMangoAccount.spotOpenOrdersAccounts =
+          //   mangoAccount.spotOpenOrdersAccounts
+          // newMangoAccount.advancedOrders = mangoAccount.advancedOrders
+          mangoStore.setState({
+            mangoAccount: {
+              ...mangoStore.getState().mangoAccount,
+              current: newMangoAccount,
+              lastSlot: context.slot,
+            },
+          })
+        }
       }
     )
 

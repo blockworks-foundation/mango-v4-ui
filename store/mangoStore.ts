@@ -176,6 +176,7 @@ export type MangoStore = {
     current: MangoAccount | undefined
     initialLoad: boolean
     lastUpdatedAt: string
+    lastSlot: number
     openOrderAccounts: OpenOrders[]
     openOrders: Record<string, Order[]>
     spotBalances: SpotBalances
@@ -279,6 +280,7 @@ const mangoStore = create<MangoStore>()(
       mangoAccount: {
         current: undefined,
         initialLoad: true,
+        lastSlot: 0,
         lastUpdatedAt: '',
         openOrderAccounts: [],
         openOrders: {},
@@ -547,15 +549,20 @@ const mangoStore = create<MangoStore>()(
             const group = get().group
             const client = get().client
             const mangoAccount = get().mangoAccount.current
+            const lastSlot = get().mangoAccount.lastSlot
             if (!group) throw new Error('Group not loaded')
             if (!mangoAccount)
               throw new Error('No mango account exists for reload')
 
-            const reloadedMangoAccount = await mangoAccount.reload(client)
-            set((state) => {
-              state.mangoAccount.current = reloadedMangoAccount
-              state.mangoAccount.lastUpdatedAt = new Date().toISOString()
-            })
+            const { value: reloadedMangoAccount, slot } =
+              await mangoAccount.reloadWithSlot(client)
+            if (slot > lastSlot) {
+              set((state) => {
+                state.mangoAccount.current = reloadedMangoAccount
+                state.mangoAccount.lastUpdatedAt = new Date().toISOString()
+                state.mangoAccount.lastSlot = slot
+              })
+            }
           } catch (e) {
             console.error('Error reloading mango acct', e)
             actions.reloadMangoAccount()
