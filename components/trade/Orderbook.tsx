@@ -224,6 +224,8 @@ const Orderbook = () => {
 
   useInterval(() => {
     const orderbook = mangoStore.getState().selectedMarket.orderbook
+    console.log('orderbook', orderbook)
+
     const group = mangoStore.getState().group
     if (!market || !group) return
 
@@ -464,9 +466,16 @@ const Orderbook = () => {
         onScroll={handleScroll}
       >
         {showSells
-          ? depthArray.map((_x, index) => {
+          ? depthArray.map((_x, idx) => {
+              let index = idx
+              if (orderbookData?.asks) {
+                const lengthDiff = depthArray.length - orderbookData.asks.length
+                if (lengthDiff > 0) {
+                  index = index < lengthDiff ? -1 : Math.abs(lengthDiff - index)
+                }
+              }
               return (
-                <div className="h-[24px]" key={index}>
+                <div className="h-[24px]" key={idx}>
                   {!!orderbookData?.asks[index] && market ? (
                     <MemoizedOrderbookRow
                       minOrderSize={market.minOrderSize}

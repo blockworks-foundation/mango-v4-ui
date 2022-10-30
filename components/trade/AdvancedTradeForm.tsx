@@ -62,7 +62,7 @@ const AdvancedTradeForm = () => {
     if (!group || !selectedMarket) return
     const tokenIdx =
       selectedMarket instanceof Serum3Market
-        ? selectedMarket.baseTokenIndex
+        ? selectedMarket.quoteTokenIndex
         : selectedMarket?.settleTokenIndex
     return group?.getFirstBankByTokenIndex(tokenIdx)
   }, [selectedMarket])
