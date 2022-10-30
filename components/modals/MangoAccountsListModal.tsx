@@ -45,12 +45,12 @@ const MangoAccountsListModal = ({
     })
     try {
       const reloadedMangoAccount = await retryFn(() => acc.reload(client))
+      actions.fetchSerumOpenOrders(reloadedMangoAccount)
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()
       })
       setLastAccountViewed(acc.publicKey.toString())
-      actions.fetchSerumOpenOrders(acc)
     } catch (e) {
       console.warn('Error selecting account', e)
     } finally {
@@ -136,7 +136,7 @@ const MangoAccountsListModal = ({
               onClick={() => setShowNewAccountForm(true)}
             >
               <PlusCircleIcon className="h-5 w-5" />
-              <span className="ml-2">New Sub-account</span>
+              <span className="ml-2">New Subaccount</span>
             </LinkButton>
           </div>
           <EnterRightExitLeft

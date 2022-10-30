@@ -84,7 +84,11 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       const tx = await client.createMangoAccount(
         group,
         0,
-        accountName || 'Account 1'
+        accountName || 'Account 1',
+        undefined, // tokenCount
+        undefined, // serum3Count
+        8, // perpCount
+        8 // perpOoCount
       )
       actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
       if (tx) {

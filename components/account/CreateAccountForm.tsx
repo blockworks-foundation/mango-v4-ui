@@ -50,7 +50,11 @@ const CreateAccountForm = ({
       const tx = await client.createMangoAccount(
         group,
         newAccountNum,
-        name || `Account ${newAccountNum + 1}`
+        name || `Account ${newAccountNum + 1}`,
+        undefined, // tokenCount
+        undefined, // serum3Count
+        8, // perpCount
+        8 // perpOoCount
       )
       if (tx) {
         const pk = wallet!.adapter.publicKey
