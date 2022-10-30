@@ -2,6 +2,7 @@
     "confirm-swap": "Confirm Swap",
     "est-liq-price": "Est. Liq Price",
     "fees-paid-to": "Fees Paid to {{route}}",
+    "for": "For",
     "from": "From",
     "health-impact": "Health Impact",
     "insufficient-balance": "Insufficient {{symbol}} Balance",

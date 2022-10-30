@@ -248,17 +248,10 @@ const SwapForm = () => {
             >
               <Cog8ToothIcon className="h-4 w-4" />
             </IconButton>
-            {/* <LinkButton
-              className="flex items-center text-xs font-normal text-th-fgd-3 no-underline"
-              onClick={() => setShowSettings(true)}
-            >
-              <Cog8ToothIcon className="mr-1 h-3 w-3" />
-              <span className="text-th-fgd-4">{t('settings')}</span>
-            </LinkButton> */}
           </div>
         </div>
         <div id="swap-step-two" className="mb-2 flex items-end justify-between">
-          <p className="text-th-fgd-3">Trade</p>
+          <p className="text-th-fgd-3">{t('trade')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
             setAmountIn={setAmountInFormValue}
@@ -311,7 +304,7 @@ const SwapForm = () => {
             />
           </button>
         </div>
-        <p className="mb-2 text-th-fgd-3">For</p>
+        <p className="mb-2 text-th-fgd-3">{t('swap:for')}</p>
         <div id="swap-step-three" className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
