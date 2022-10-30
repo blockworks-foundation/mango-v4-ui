@@ -1,4 +1,7 @@
 import {
+  PerpMarket,
+  PerpOrderSide,
+  PerpOrderType,
   Serum3Market,
   Serum3OrderType,
   Serum3SelfTradeBehavior,
@@ -24,6 +27,8 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
 import { Market } from '@project-serum/serum'
 import TabUnderline from '@components/shared/TabUnderline'
+import { group } from 'console'
+import PerpSlider from './PerpSlider'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -40,7 +45,7 @@ const AdvancedTradeForm = () => {
   const [placingOrder, setPlacingOrder] = useState(false)
 
   const baseSymbol = useMemo(() => {
-    return selectedMarket?.name.split('/')[0]
+    return selectedMarket?.name.split(/-|\//)[0]
   }, [selectedMarket])
 
   const baseLogoURI = useMemo(() => {
@@ -52,9 +57,19 @@ const AdvancedTradeForm = () => {
     return ''
   }, [baseSymbol, jupiterTokens])
 
-  const quoteSymbol = useMemo(() => {
-    return selectedMarket?.name.split('/')[1]
+  const quoteBank = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return
+    const tokenIdx =
+      selectedMarket instanceof Serum3Market
+        ? selectedMarket.baseTokenIndex
+        : selectedMarket?.settleTokenIndex
+    return group?.getFirstBankByTokenIndex(tokenIdx)
   }, [selectedMarket])
+
+  const quoteSymbol = useMemo(() => {
+    return quoteBank?.name
+  }, [quoteBank])
 
   const quoteLogoURI = useMemo(() => {
     if (!quoteSymbol || !jupiterTokens.length) return ''
@@ -187,12 +202,6 @@ const AdvancedTradeForm = () => {
     if (!group || !mangoAccount) return
     setPlacingOrder(true)
     try {
-      const orderType = tradeForm.ioc
-        ? Serum3OrderType.immediateOrCancel
-        : tradeForm.postOnly
-        ? Serum3OrderType.postOnly
-        : Serum3OrderType.limit
-
       let baseSize = new Decimal(tradeForm.baseSize).toNumber()
       let price = new Decimal(tradeForm.price).toNumber()
       if (tradeForm.tradeType === 'Market') {
@@ -201,6 +210,11 @@ const AdvancedTradeForm = () => {
       }
 
       if (selectedMarket instanceof Serum3Market) {
+        const spotOrderType = tradeForm.ioc
+          ? Serum3OrderType.immediateOrCancel
+          : tradeForm.postOnly
+          ? Serum3OrderType.postOnly
+          : Serum3OrderType.limit
         const tx = await client.serum3PlaceOrder(
           group,
           mangoAccount,
@@ -209,9 +223,38 @@ const AdvancedTradeForm = () => {
           price,
           baseSize,
           Serum3SelfTradeBehavior.decrementTake,
-          orderType,
+          spotOrderType,
           Date.now(),
           10
+        )
+        actions.reloadMangoAccount()
+        actions.fetchSerumOpenOrders()
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      } else if (selectedMarket instanceof PerpMarket) {
+        const perpOrderType =
+          tradeForm.tradeType === 'Market'
+            ? PerpOrderType.market
+            : tradeForm.ioc
+            ? PerpOrderType.immediateOrCancel
+            : tradeForm.postOnly
+            ? PerpOrderType.postOnly
+            : PerpOrderType.limit
+        const tx = await client.perpPlaceOrder(
+          group,
+          mangoAccount,
+          selectedMarket.perpMarketIndex,
+          tradeForm.side === 'buy' ? PerpOrderSide.bid : PerpOrderSide.ask,
+          price,
+          baseSize,
+          undefined, // maxQuoteQuantity
+          Date.now(),
+          perpOrderType,
+          undefined,
+          undefined
         )
         actions.reloadMangoAccount()
         actions.fetchSerumOpenOrders()
@@ -342,7 +385,11 @@ const AdvancedTradeForm = () => {
         </div>
       </div>
       <div className="mt-4 flex">
-        <SpotSlider />
+        {selectedMarket instanceof Serum3Market ? (
+          <SpotSlider />
+        ) : (
+          <PerpSlider />
+        )}
       </div>
       <div className="flex flex-wrap px-5">
         {tradeForm.tradeType === 'Limit' ? (
@@ -381,20 +428,22 @@ const AdvancedTradeForm = () => {
             </div>
           </div>
         ) : null}
-        <div className="mt-4" id="trade-step-eight">
-          <Tooltip
-            delay={250}
-            placement="left"
-            content={t('trade:tooltip-enable-margin')}
-          >
-            <Checkbox
-              checked={useMargin}
-              onChange={(e) => setUseMargin(e.target.checked)}
+        {selectedMarket instanceof Serum3Market ? (
+          <div className="mt-4" id="trade-step-eight">
+            <Tooltip
+              delay={250}
+              placement="left"
+              content={t('trade:tooltip-enable-margin')}
             >
-              {t('trade:margin')}
-            </Checkbox>
-          </Tooltip>
-        </div>
+              <Checkbox
+                checked={useMargin}
+                onChange={(e) => setUseMargin(e.target.checked)}
+              >
+                {t('trade:margin')}
+              </Checkbox>
+            </Tooltip>
+          </div>
+        ) : null}
       </div>
       <div className="mt-6 flex px-4">
         <Button
