@@ -194,7 +194,7 @@ const SwapForm = () => {
     <ContentBox
       hidePadding
       // showBackground
-      className="relative overflow-hidden border-x-0 bg-th-bkg-2 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
+      className="relative overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
     >
       <div className="p-6 pt-3">
         <Transition
@@ -274,7 +274,7 @@ const SwapForm = () => {
               decimalScale={inputTokenInfo?.decimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none xl:text-xl"
+              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -332,7 +332,7 @@ const SwapForm = () => {
                 decimalScale={inputTokenInfo?.decimals || 6}
                 name="amountIn"
                 id="amountIn"
-                className="w-full bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none xl:text-xl"
+                className="w-full bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
                 placeholder="0.00"
                 disabled
                 value={
