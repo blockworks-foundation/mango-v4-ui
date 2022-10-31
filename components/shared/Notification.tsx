@@ -13,8 +13,10 @@ import { TokenInstructions } from '@project-serum/serum'
 import {
   CLIENT_TX_TIMEOUT,
   NOTIFICATION_POSITION_KEY,
+  PREFERRED_EXPLORER_KEY,
 } from '../../utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { EXPLORERS } from 'pages/settings'
 
 const setMangoStore = mangoStore.getState().set
 
@@ -91,6 +93,10 @@ const Notification = ({ notification }: { notification: Notification }) => {
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
     'bottom-left'
+  )
+  const [preferredExplorer] = useLocalStorageState(
+    PREFERRED_EXPLORER_KEY,
+    EXPLORERS[0]
   )
   const { type, title, description, txid, show, id } = notification
 
@@ -231,12 +237,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
             ) : null}
             {txid ? (
               <a
-                href={
-                  'https://explorer.solana.com/tx/' +
-                  txid +
-                  '?cluster=' +
-                  CLUSTER
-                }
+                href={preferredExplorer.url + txid + '?cluster=' + CLUSTER}
                 className="default-transition mt-1 flex items-center text-xs text-th-fgd-3 hover:text-th-fgd-2"
                 target="_blank"
                 rel="noreferrer"
