@@ -228,7 +228,7 @@ const AdvancedTradeForm = () => {
           10
         )
         actions.reloadMangoAccount()
-        actions.fetchSerumOpenOrders()
+        actions.fetchOpenOrders()
         notify({
           type: 'success',
           title: 'Transaction successful',
@@ -257,7 +257,7 @@ const AdvancedTradeForm = () => {
           undefined
         )
         actions.reloadMangoAccount()
-        actions.fetchSerumOpenOrders()
+        actions.fetchOpenOrders()
         notify({
           type: 'success',
           title: 'Transaction successful',

@@ -14,6 +14,7 @@ import {
   Serum3Market,
   MANGO_V4_ID,
   Bank,
+  PerpOrder,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -178,7 +179,7 @@ export type MangoStore = {
     lastUpdatedAt: string
     lastSlot: number
     openOrderAccounts: OpenOrders[]
-    openOrders: Record<string, Order[]>
+    openOrders: Record<string, Order[] | PerpOrder[]>
     spotBalances: SpotBalances
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
@@ -249,7 +250,7 @@ export type MangoStore = {
     reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (wallet: Wallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
-    fetchSerumOpenOrders: (ma?: MangoAccount) => Promise<void>
+    fetchOpenOrders: (ma?: MangoAccount) => Promise<void>
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (mangoAccountPk: string) => Promise<void>
     fetchTourSettings: (walletPk: string) => void
@@ -604,7 +605,7 @@ const mangoStore = create<MangoStore>()(
             }
 
             if (newSelectedMangoAccount) {
-              await actions.fetchSerumOpenOrders(newSelectedMangoAccount)
+              await actions.fetchOpenOrders(newSelectedMangoAccount)
             }
 
             set((state) => {
@@ -639,7 +640,7 @@ const mangoStore = create<MangoStore>()(
           }
           return []
         },
-        fetchSerumOpenOrders: async (providedMangoAccount) => {
+        fetchOpenOrders: async (providedMangoAccount) => {
           const set = get().set
           const client = get().client
           const group = await client.getGroup(GROUP)
@@ -650,8 +651,10 @@ const mangoStore = create<MangoStore>()(
           console.log('mangoAccount', mangoAccount)
 
           try {
-            let openOrders: Record<string, Order[]> = {}
-            for (const serum3Orders of mangoAccount.serum3) {
+            let openOrders: Record<string, Order[] | PerpOrder[]> = {}
+            let serumOpenOrderAccounts: OpenOrders[] = []
+
+            for (const serum3Orders of mangoAccount.serum3Active()) {
               if (serum3Orders.marketIndex === 65535) continue
               const market = group.getSerum3MarketByMarketIndex(
                 serum3Orders.marketIndex
@@ -665,14 +668,30 @@ const mangoStore = create<MangoStore>()(
                 openOrders[market.serumMarketExternal.toString()] = orders
               }
             }
-            if (Object.keys(openOrders).length) {
-              const serumOpenOrderAccounts =
+            if (
+              mangoAccount.serum3Active().length &&
+              Object.keys(openOrders).length
+            ) {
+              serumOpenOrderAccounts =
                 await mangoAccount.loadSerum3OpenOrdersAccounts(client)
-              set((s) => {
-                s.mangoAccount.openOrders = openOrders
-                s.mangoAccount.openOrderAccounts = serumOpenOrderAccounts
-              })
             }
+
+            for (const perpOrder of mangoAccount.perpOrdersActive()) {
+              const market = group.getPerpMarketByMarketIndex(
+                perpOrder.orderMarket
+              )
+              const orders = await mangoAccount.loadPerpOpenOrdersForMarket(
+                client,
+                group,
+                perpOrder.orderMarket
+              )
+              openOrders[market.publicKey.toString()] = orders
+            }
+
+            set((s) => {
+              s.mangoAccount.openOrders = openOrders
+              s.mangoAccount.openOrderAccounts = serumOpenOrderAccounts
+            })
           } catch (e) {
             console.error('Failed loading open orders ', e)
           }
