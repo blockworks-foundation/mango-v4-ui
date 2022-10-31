@@ -98,7 +98,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       selectedToken === 'SOL' ? tokenMax.maxAmount - 0.05 : tokenMax.maxAmount
     setInputAmount(max.toString())
     setSizePercentage('100')
-  }, [tokenMax])
+  }, [tokenMax, selectedToken])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -113,7 +113,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
       setInputAmount(amount.toString())
     },
-    [tokenMax]
+    [tokenMax, selectedToken]
   )
 
   useEffect(() => {
@@ -294,9 +294,9 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:outline-none"
                 placeholder="0.00"
                 value={inputAmount}
-                onValueChange={(e: NumberFormatValues) =>
-                  setInputAmount(Number(e.value) ? e.value : '')
-                }
+                onValueChange={(e: NumberFormatValues) => {
+                  setInputAmount(!Number.isNaN(Number(e.value)) ? e.value : '')
+                }}
                 isAllowed={withValueLimit}
               />
             </div>

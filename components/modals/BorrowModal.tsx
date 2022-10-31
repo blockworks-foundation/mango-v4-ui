@@ -229,7 +229,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 placeholder="0.00"
                 value={inputAmount}
                 onValueChange={(e: NumberFormatValues) =>
-                  setInputAmount(Number(e.value) ? e.value : '')
+                  setInputAmount(!Number.isNaN(Number(e.value)) ? e.value : '')
                 }
                 isAllowed={withValueLimit}
               />

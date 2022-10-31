@@ -94,7 +94,7 @@ const AdvancedTradeForm = () => {
       if (info.source !== 'event') return
       set((s) => {
         s.tradeForm.price = e.value
-        if (s.tradeForm.baseSize && Number(e.value)) {
+        if (s.tradeForm.baseSize && !Number.isNaN(Number(e.value))) {
           s.tradeForm.quoteSize = (
             parseFloat(e.value) * parseFloat(s.tradeForm.baseSize)
           ).toString()
@@ -111,7 +111,7 @@ const AdvancedTradeForm = () => {
       set((s) => {
         s.tradeForm.baseSize = e.value
 
-        if (s.tradeForm.price && Number(e.value)) {
+        if (s.tradeForm.price && !Number.isNaN(Number(e.value))) {
           s.tradeForm.quoteSize = (
             parseFloat(s.tradeForm.price) * parseFloat(e.value)
           ).toString()
