@@ -22,35 +22,37 @@ const CustomTooltip = ({
   const [loading, setLoading] = useState(false)
 
   const onClose = async () => {
-    if (!publicKey || !tourSettings) return
-    setLoading(true)
-    try {
-      const settings = {
-        ...tourSettings,
+    if (!publicKey) return
+    if (tourSettings) {
+      setLoading(true)
+      try {
+        const settings = {
+          ...tourSettings,
+        }
+        settings[hasSeenKey] = true
+        const message = JSON.stringify(settings)
+        const requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: message,
+        }
+        const response = await fetch(
+          'https://mango-transaction-log.herokuapp.com/v4/user-data/settings-unsigned',
+          requestOptions
+        )
+        if (response.status === 200) {
+          await actions.fetchTourSettings(publicKey.toString())
+        }
+      } catch (e) {
+        console.log(e)
+      } finally {
+        if (customOnClose) {
+          customOnClose()
+        }
+        setLoading(false)
+        close()
       }
-      settings[hasSeenKey] = true
-      const message = JSON.stringify(settings)
-      const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: message,
-      }
-      const response = await fetch(
-        'https://mango-transaction-log.herokuapp.com/v4/user-data/settings-unsigned',
-        requestOptions
-      )
-      if (response.status === 200) {
-        await actions.fetchTourSettings(publicKey.toString())
-      }
-    } catch (e) {
-      console.log(e)
-    } finally {
-      if (customOnClose) {
-        customOnClose()
-      }
-      setLoading(false)
-      close()
-    }
+    } else close()
   }
 
   return (
@@ -95,7 +97,7 @@ const CustomTooltip = ({
               </button>
             ) : (
               <button
-                className="default-transition h-8 rounded-md bg-th-bkg-1 px-3 font-bold text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-3"
+                className="default-transition h-8 rounded-md bg-th-button px-3 font-bold text-th-fgd-1 focus:outline-none md:hover:bg-th-button-hover"
                 onClick={onClose}
               >
                 Finish
