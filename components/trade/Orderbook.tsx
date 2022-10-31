@@ -224,8 +224,6 @@ const Orderbook = () => {
 
   useInterval(() => {
     const orderbook = mangoStore.getState().selectedMarket.orderbook
-    console.log('orderbook', orderbook)
-
     const group = mangoStore.getState().group
     if (!market || !group) return
 

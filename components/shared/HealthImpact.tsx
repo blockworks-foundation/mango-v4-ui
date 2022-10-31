@@ -27,10 +27,6 @@ const HealthImpact = ({
     const group = mangoStore.getState().group
     if (!group || !mangoAccount) return 0
     const uiTokenAmount = isDeposit ? uiAmount : uiAmount * -1
-    console.log('uiAmount')
-
-    console.log('uiTokenAmount', uiTokenAmount)
-
     const projectedHealth =
       mangoAccount.simHealthRatioWithTokenPositionUiChanges(
         group,
