@@ -37,7 +37,7 @@ export const COINGECKO_IDS = [
   { id: 'mango-markets', symbol: 'MNGO' },
   // { id: 'binancecoin', symbol: 'BNB' },
   // { id: 'serum', symbol: 'SRM' },
-  // { id: 'raydium', symbol: 'RAY' },
+  { id: 'raydium', symbol: 'RAY' },
   // { id: 'ftx-token', symbol: 'FTT' },
   // { id: 'avalanche-2', symbol: 'AVAX' },
   // { id: 'terra-luna', symbol: 'LUNA' },
