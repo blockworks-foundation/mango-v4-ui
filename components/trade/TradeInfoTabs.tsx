@@ -19,7 +19,7 @@ const TradeInfoTabs = () => {
       ['balances', 0],
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', Object.values(unsettledSpotBalances).flat().length],
-      ['Perp Positions', perpPositions.length],
+      ['Positions', perpPositions.length],
     ]
   }, [openOrders, perpPositions, unsettledSpotBalances])
 
@@ -38,7 +38,7 @@ const TradeInfoTabs = () => {
       {selectedTab === 'trade:unsettled' ? (
         <UnsettledTrades unsettledSpotBalances={unsettledSpotBalances} />
       ) : null}
-      {selectedTab === 'Perp Positions' ? <PerpPositions /> : null}
+      {selectedTab === 'Positions' ? <PerpPositions /> : null}
     </div>
   )
 }
