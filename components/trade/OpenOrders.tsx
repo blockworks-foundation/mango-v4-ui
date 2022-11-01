@@ -84,11 +84,11 @@ const OpenOrders = () => {
       setCancelId(o.orderId.toString())
       try {
         if (selectedMarket instanceof Serum3Market) {
-          const tx = await client.perpCancelAllOrders(
+          const tx = await client.perpCancelOrder(
             group,
             mangoAccount,
             o.perpMarketIndex,
-            1
+            o.orderId
           )
           actions.fetchOpenOrders()
           notify({

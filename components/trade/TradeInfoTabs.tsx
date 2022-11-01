@@ -10,7 +10,6 @@ import PerpPositions from './PerpPositions'
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const unsettledSpotBalances = useUnsettledSpotBalances()
 
