@@ -13,7 +13,7 @@ const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
   return (
     <div
       className={`inline-block rounded uppercase ${
-        side === 'buy' || side === PerpOrderSide.bid
+        side === 'buy' || side === 'long' || side === PerpOrderSide.bid
           ? 'border border-th-green text-th-green'
           : 'border border-th-red text-th-red'
       }
