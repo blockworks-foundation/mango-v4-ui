@@ -652,7 +652,6 @@ const mangoStore = create<MangoStore>()(
             providedMangoAccount || get().mangoAccount.current
 
           if (!mangoAccount) return
-          console.log('mangoAccount', mangoAccount)
 
           try {
             let openOrders: Record<string, Order[] | PerpOrder[]> = {}
@@ -852,7 +851,7 @@ const mangoStore = create<MangoStore>()(
             })
           } catch (e) {
             notify({ type: 'error', title: 'Failed to load profile details' })
-            console.log(e)
+            console.error(e)
             set((state) => {
               state.profile.loadDetails = false
             })

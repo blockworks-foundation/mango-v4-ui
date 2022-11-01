@@ -35,7 +35,6 @@ const HydrateStore = () => {
     const client = mangoStore.getState().client
 
     if (!mangoAccount) return
-    console.log('mangoAccount.publicKey', mangoAccount.publicKey.toString())
 
     const subscriptionId = connection.onAccountChange(
       mangoAccount.publicKey,
@@ -64,7 +63,6 @@ const HydrateStore = () => {
             decodedMangoAccount
           )
           await newMangoAccount.reloadAccountData(client)
-          console.log('WEBSOCKET ma:', newMangoAccount)
 
           // newMangoAccount.spotOpenOrdersAccounts =
           //   mangoAccount.spotOpenOrdersAccounts
@@ -111,7 +109,7 @@ const ReadOnlyMangoAccount = () => {
           state.mangoAccount.initialLoad = false
         })
       } catch (error) {
-        console.log('error', error)
+        console.error('error', error)
       }
     }
 

@@ -8,7 +8,6 @@ type SideBadgeProps = {
 
 const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
   const { t } = useTranslation('common')
-  console.log(side, typeof side, side instanceof PerpOrderSide)
 
   return (
     <div
