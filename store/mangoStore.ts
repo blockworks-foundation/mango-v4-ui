@@ -15,6 +15,7 @@ import {
   MANGO_V4_ID,
   Bank,
   PerpOrder,
+  PerpPosition,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -36,6 +37,7 @@ import { retryFn } from '../utils'
 import { Orderbook, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
+import perpPositionsUpdater from './perpPositionsUpdater'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
@@ -180,6 +182,7 @@ export type MangoStore = {
     lastSlot: number
     openOrderAccounts: OpenOrders[]
     openOrders: Record<string, Order[] | PerpOrder[]>
+    perpPositions: PerpPosition[]
     spotBalances: SpotBalances
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
@@ -285,6 +288,7 @@ const mangoStore = create<MangoStore>()(
         lastUpdatedAt: '',
         openOrderAccounts: [],
         openOrders: {},
+        perpPositions: [],
         spotBalances: {},
         stats: {
           interestTotals: { data: [], loading: false },
@@ -882,6 +886,10 @@ const mangoStore = create<MangoStore>()(
 )
 
 mangoStore.subscribe((state) => state.mangoAccount.current, spotBalancesUpdater)
+mangoStore.subscribe(
+  (state) => state.mangoAccount.current,
+  perpPositionsUpdater
+)
 
 const getDefaultSelectedMarket = (markets: Serum3Market[]): Serum3Market => {
   return markets.find((m) => m.name === DEFAULT_MARKET_NAME) || markets[0]
