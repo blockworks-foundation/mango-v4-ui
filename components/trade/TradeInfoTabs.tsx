@@ -11,6 +11,7 @@ const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const unsettledSpotBalances = useUnsettledSpotBalances()
 
   const tabsWithCount: [string, number][] = useMemo(() => {
@@ -18,9 +19,9 @@ const TradeInfoTabs = () => {
       ['balances', 0],
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', Object.values(unsettledSpotBalances).flat().length],
-      ['Perp Positions', 0],
+      ['Perp Positions', perpPositions.length],
     ]
-  }, [openOrders, mangoAccount])
+  }, [openOrders, perpPositions, unsettledSpotBalances])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll pb-5">
