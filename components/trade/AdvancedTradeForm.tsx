@@ -107,14 +107,18 @@ const AdvancedTradeForm = () => {
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
-
       set((s) => {
         s.tradeForm.baseSize = e.value
-
-        if (s.tradeForm.price && !Number.isNaN(Number(e.value))) {
+        if (
+          s.tradeForm.price &&
+          e.value !== '' &&
+          !Number.isNaN(Number(e.value))
+        ) {
           s.tradeForm.quoteSize = (
             parseFloat(s.tradeForm.price) * parseFloat(e.value)
           ).toString()
+        } else {
+          s.tradeForm.quoteSize = ''
         }
       })
     },
@@ -128,10 +132,16 @@ const AdvancedTradeForm = () => {
       set((s) => {
         s.tradeForm.quoteSize = e.value
 
-        if (Number(s.tradeForm.price)) {
+        if (
+          s.tradeForm.price &&
+          e.value !== '' &&
+          !Number.isNaN(Number(e.value))
+        ) {
           s.tradeForm.baseSize = (
             parseFloat(e.value) / parseFloat(s.tradeForm.price)
           ).toString()
+        } else {
+          s.tradeForm.baseSize = ''
         }
       })
     },
