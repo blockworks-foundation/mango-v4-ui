@@ -27,7 +27,6 @@ import {
 } from '../utils/tokens'
 import { Token } from '../types/jupiter'
 import {
-  COINGECKO_IDS,
   DEFAULT_MARKET_NAME,
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
@@ -484,23 +483,32 @@ const mangoStore = create<MangoStore>()(
             state.coingeckoPrices.loading = true
           })
           try {
-            const promises: any = []
-            for (const asset of COINGECKO_IDS) {
-              promises.push(
-                fetch(
-                  `https://api.coingecko.com/api/v3/coins/${asset.id}/market_chart?vs_currency=usd&days=1`
-                ).then((res) => res.json())
-              )
-            }
+            const jupiterTokens = mangoStore.getState().jupiterTokens
+            if (jupiterTokens.length) {
+              const coingeckoIds = jupiterTokens.map((token) => ({
+                id: token.extensions?.coingeckoId,
+                symbol: token.symbol,
+              }))
+              const promises: any = []
+              for (const token of coingeckoIds) {
+                if (token.id) {
+                  promises.push(
+                    fetch(
+                      `https://api.coingecko.com/api/v3/coins/${token.id}/market_chart?vs_currency=usd&days=1`
+                    ).then((res) => res.json())
+                  )
+                }
+              }
 
-            const data = await Promise.all(promises)
-            for (let i = 0; i < data.length; i++) {
-              data[i].symbol = COINGECKO_IDS[i].symbol
+              const data = await Promise.all(promises)
+              for (let i = 0; i < data.length; i++) {
+                data[i].symbol = coingeckoIds[i].symbol
+              }
+              set((state) => {
+                state.coingeckoPrices.data = data
+                state.coingeckoPrices.loading = false
+              })
             }
-            set((state) => {
-              state.coingeckoPrices.data = data
-              state.coingeckoPrices.loading = false
-            })
           } catch (e) {
             console.warn('Unable to load Coingecko prices')
             set((state) => {

@@ -15,19 +15,27 @@ const rehydrateStore = async () => {
 }
 
 const HydrateStore = () => {
+  const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   useInterval(() => {
     rehydrateStore()
   }, 5000)
 
   useEffect(() => {
-    const actions = mangoStore.getState().actions
-    actions.fetchGroup().then(() => {
+    const fetchData = async () => {
+      await actions.fetchGroup()
       actions.fetchJupiterTokens()
-    })
-    actions.fetchCoingeckoPrices()
+    }
+    fetchData()
   }, [])
+
+  useEffect(() => {
+    if (jupiterTokens.length) {
+      actions.fetchCoingeckoPrices()
+    }
+  }, [jupiterTokens])
 
   // watch selected Mango Account for changes
   useEffect(() => {

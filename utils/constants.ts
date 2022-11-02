@@ -30,25 +30,6 @@ export const PROFILE_CATEGORIES = [
   'yolo',
 ]
 
-export const COINGECKO_IDS = [
-  { id: 'bitcoin', symbol: 'BTC' },
-  { id: 'ethereum', symbol: 'ETH' },
-  { id: 'solana', symbol: 'SOL' },
-  { id: 'mango-markets', symbol: 'MNGO' },
-  // { id: 'binancecoin', symbol: 'BNB' },
-  // { id: 'serum', symbol: 'SRM' },
-  { id: 'raydium', symbol: 'RAY' },
-  // { id: 'ftx-token', symbol: 'FTT' },
-  // { id: 'avalanche-2', symbol: 'AVAX' },
-  // { id: 'terra-luna', symbol: 'LUNA' },
-  // { id: 'cope', symbol: 'COPE' },
-  // { id: 'cardano', symbol: 'ADA' },
-  { id: 'msol', symbol: 'MSOL' },
-  { id: 'usd-coin', symbol: 'USDC' },
-  { id: 'tether', symbol: 'USDT' },
-  // { id: 'stepn', symbol: 'GMT' },
-]
-
 const baseUrl = 'https://event-history-api-candles.herokuapp.com'
 
 export const CHART_DATA_FEED = `${baseUrl}/tv`
