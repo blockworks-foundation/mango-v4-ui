@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   CheckCircleIcon,
   ArrowTopRightOnSquareIcon,
@@ -58,6 +58,16 @@ const NotificationList = () => {
     }
   }, [notifications, walletTokens])
 
+  const clearAll = useCallback(() => {
+    setMangoStore((s) => {
+      const newNotifications = s.notifications.map((n) => ({
+        ...n,
+        show: false,
+      }))
+      s.notifications = newNotifications
+    })
+  }, [notifications])
+
   const reversedNotifications = [...notifications].reverse()
 
   const position: string = useMemo(() => {
@@ -82,6 +92,14 @@ const NotificationList = () => {
     <div
       className={`pointer-events-none fixed z-50 w-full space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6 ${position}`}
     >
+      {notifications.filter((n) => n.show).length > 1 ? (
+        <button
+          className="default-transition pointer-events-auto rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
+          onClick={clearAll}
+        >
+          Clear All
+        </button>
+      ) : null}
       {reversedNotifications.map((n) => (
         <Notification key={n.id} notification={n} />
       ))}
