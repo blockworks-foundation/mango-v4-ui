@@ -18,10 +18,12 @@ import {
 } from '../../utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { EXPLORERS } from 'pages/settings'
+import { useTranslation } from 'next-i18next'
 
 const setMangoStore = mangoStore.getState().set
 
 const NotificationList = () => {
+  const { t } = useTranslation()
   const notifications = mangoStore((s) => s.notifications)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const notEnoughSoLMessage = 'Not enough SOL'
@@ -99,7 +101,7 @@ const NotificationList = () => {
           onClick={clearAll}
         >
           <XMarkIcon className="mr-1 h-3.5 w-3.5" />
-          Clear All
+          {t('clear-all')}
         </button>
       ) : null}
       {reversedNotifications.map((n) => (
