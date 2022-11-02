@@ -62,10 +62,13 @@ const CreateAccountForm = ({
         const newAccount = mangoAccounts.find(
           (acc) => acc.accountNum === newAccountNum
         )
-        set((s) => {
-          s.mangoAccount.current = newAccount
-          s.mangoAccounts = mangoAccounts
-        })
+        if (newAccount) {
+          await newAccount.reloadAccountData(client)
+          set((s) => {
+            s.mangoAccount.current = newAccount
+            s.mangoAccounts = mangoAccounts
+          })
+        }
         setLoading(false)
         notify({
           title: t('new-account-success'),

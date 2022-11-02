@@ -274,7 +274,7 @@ const SwapForm = () => {
               decimalScale={inputTokenInfo?.decimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl font-bold text-th-fgd-1 focus:outline-none"
+              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -313,7 +313,7 @@ const SwapForm = () => {
               type="output"
             />
           </div>
-          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-xl font-bold text-th-fgd-3">
+          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
             {loadingSwapDetails ? (
               <div className="w-full">
                 <SheenLoader className="flex flex-1 rounded-l-none">
@@ -321,9 +321,24 @@ const SwapForm = () => {
                 </SheenLoader>
               </div>
             ) : (
-              <span className="p-3 font-mono">
-                {amountOut ? numberFormat.format(amountOut.toNumber()) : ''}
-              </span>
+              // <span className="p-3 font-mono">
+              //   {amountOut ? numberFormat.format(amountOut.toNumber()) : ''}
+              // </span>
+              <NumberFormat
+                inputMode="decimal"
+                thousandSeparator=","
+                allowNegative={false}
+                isNumericString={true}
+                decimalScale={inputTokenInfo?.decimals || 6}
+                name="amountIn"
+                id="amountIn"
+                className="w-full bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+                placeholder="0.00"
+                disabled
+                value={
+                  amountOut ? numberFormat.format(amountOut.toNumber()) : ''
+                }
+              />
             )}
           </div>
         </div>

@@ -15,19 +15,27 @@ const rehydrateStore = async () => {
 }
 
 const HydrateStore = () => {
+  const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   useInterval(() => {
     rehydrateStore()
   }, 5000)
 
   useEffect(() => {
-    const actions = mangoStore.getState().actions
-    actions.fetchGroup().then(() => {
+    const fetchData = async () => {
+      await actions.fetchGroup()
       actions.fetchJupiterTokens()
-    })
-    actions.fetchCoingeckoPrices()
+    }
+    fetchData()
   }, [])
+
+  useEffect(() => {
+    if (jupiterTokens.length) {
+      actions.fetchCoingeckoPrices()
+    }
+  }, [jupiterTokens])
 
   // watch selected Mango Account for changes
   useEffect(() => {
@@ -35,7 +43,6 @@ const HydrateStore = () => {
     const client = mangoStore.getState().client
 
     if (!mangoAccount) return
-    console.log('mangoAccount.publicKey', mangoAccount.publicKey.toString())
 
     const subscriptionId = connection.onAccountChange(
       mangoAccount.publicKey,
@@ -64,7 +71,6 @@ const HydrateStore = () => {
             decodedMangoAccount
           )
           await newMangoAccount.reloadAccountData(client)
-          console.log('WEBSOCKET ma:', newMangoAccount)
 
           // newMangoAccount.spotOpenOrdersAccounts =
           //   mangoAccount.spotOpenOrdersAccounts
@@ -111,7 +117,7 @@ const ReadOnlyMangoAccount = () => {
           state.mangoAccount.initialLoad = false
         })
       } catch (error) {
-        console.log('error', error)
+        console.error('error', error)
       }
     }
 

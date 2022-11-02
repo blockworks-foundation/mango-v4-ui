@@ -16,13 +16,12 @@ import Modal from '@components/shared/Modal'
 import { formatFixedDecimals } from 'utils/numbers'
 import CreateAccountForm from '@components/account/CreateAccountForm'
 import { EnterRightExitLeft } from '@components/shared/Transitions'
+import { useRouter } from 'next/router'
 
 const MangoAccountsListModal = ({
-  // mangoAccount,
   isOpen,
   onClose,
 }: {
-  // mangoAccount: MangoAccount | undefined
   isOpen: boolean
   onClose: () => void
 }) => {
@@ -34,6 +33,8 @@ const MangoAccountsListModal = ({
   const loading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [showNewAccountForm, setShowNewAccountForm] = useState(false)
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
+  const router = useRouter()
+  const { asPath } = useRouter()
 
   const handleSelectMangoAccount = async (acc: MangoAccount) => {
     const set = mangoStore.getState().set
@@ -45,7 +46,7 @@ const MangoAccountsListModal = ({
     })
     try {
       const reloadedMangoAccount = await retryFn(() => acc.reload(client))
-      actions.fetchSerumOpenOrders(reloadedMangoAccount)
+      actions.fetchOpenOrders(reloadedMangoAccount)
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()
@@ -56,6 +57,13 @@ const MangoAccountsListModal = ({
     } finally {
       onClose()
     }
+  }
+
+  const handleClose = () => {
+    if (asPath !== '/') {
+      router.push('/')
+    }
+    onClose()
   }
 
   return (
@@ -144,7 +152,7 @@ const MangoAccountsListModal = ({
             show={showNewAccountForm}
           >
             <CreateAccountForm
-              customClose={() => setShowNewAccountForm(false)}
+              customClose={handleClose}
               handleBack={() => setShowNewAccountForm(false)}
             />
           </EnterRightExitLeft>

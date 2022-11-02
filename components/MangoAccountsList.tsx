@@ -44,7 +44,7 @@ const MangoAccountsList = ({
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()
       })
       setLastAccountViewed(acc.publicKey.toString())
-      actions.fetchSerumOpenOrders(acc)
+      actions.fetchOpenOrders(acc)
     } catch (e) {
       console.warn('Error selecting account', e)
     }

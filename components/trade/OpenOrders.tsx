@@ -1,4 +1,10 @@
-import { Serum3Market, Serum3Side } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  PerpMarket,
+  PerpOrder,
+  Serum3Market,
+  Serum3Side,
+} from '@blockworks-foundation/mango-v4'
 import { IconButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
@@ -8,6 +14,7 @@ import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
+import Decimal from 'decimal.js'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
@@ -18,13 +25,13 @@ import MarketLogos from './MarketLogos'
 
 const OpenOrders = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { connected } = useWallet()
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [cancelId, setCancelId] = useState<string>('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
-  const handleCancelOrder = useCallback(
+  const handleCancelSerumOrder = useCallback(
     async (o: Order) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
@@ -43,7 +50,7 @@ const OpenOrders = () => {
             o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
             o.orderId
           )
-          actions.fetchSerumOpenOrders()
+          actions.fetchOpenOrders()
           notify({
             type: 'success',
             title: 'Transaction successful',
@@ -65,7 +72,47 @@ const OpenOrders = () => {
     [t]
   )
 
-  return connected ? (
+  const handleCancelPerpOrder = useCallback(
+    async (o: PerpOrder) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const selectedMarket = mangoStore.getState().selectedMarket.current
+      const actions = mangoStore.getState().actions
+
+      if (!group || !mangoAccount) return
+      setCancelId(o.orderId.toString())
+      try {
+        if (selectedMarket instanceof Serum3Market) {
+          const tx = await client.perpCancelOrder(
+            group,
+            mangoAccount,
+            o.perpMarketIndex,
+            o.orderId
+          )
+          actions.fetchOpenOrders()
+          notify({
+            type: 'success',
+            title: 'Transaction successful',
+            txid: tx,
+          })
+        }
+      } catch (e: any) {
+        console.error('Error canceling', e)
+        notify({
+          title: t('trade:cancel-order-error'),
+          description: e.message,
+          txid: e.txid,
+          type: 'error',
+        })
+      } finally {
+        setCancelId('')
+      }
+    },
+    [t]
+  )
+
+  return mangoAccount ? (
     Object.values(openOrders).flat().length ? (
       showTableView ? (
         <table>
@@ -83,13 +130,22 @@ const OpenOrders = () => {
             {Object.entries(openOrders)
               .map(([marketPk, orders]) => {
                 return orders.map((o) => {
-                  const group = mangoStore.getState().group
-                  const serumMarket = group?.getSerum3MarketByExternalMarket(
-                    new PublicKey(marketPk)
-                  )
-                  const quoteSymbol = group?.getFirstBankByTokenIndex(
-                    serumMarket!.quoteTokenIndex
-                  ).name
+                  const group = mangoStore.getState().group!
+                  let market: PerpMarket | Serum3Market
+                  let quoteSymbol
+                  if (o instanceof PerpOrder) {
+                    market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
+                    quoteSymbol = group.getFirstBankByTokenIndex(
+                      market.settleTokenIndex
+                    ).name
+                  } else {
+                    market = group.getSerum3MarketByExternalMarket(
+                      new PublicKey(marketPk)
+                    )
+                    quoteSymbol = group.getFirstBankByTokenIndex(
+                      market!.quoteTokenIndex
+                    ).name
+                  }
                   return (
                     <tr
                       key={`${o.side}${o.size}${o.price}`}
@@ -97,8 +153,8 @@ const OpenOrders = () => {
                     >
                       <td>
                         <div className="flex items-center">
-                          <MarketLogos market={serumMarket!} />
-                          {serumMarket?.name}
+                          <MarketLogos market={market!} />
+                          {market?.name}
                         </div>
                       </td>
                       <td className="text-right">
@@ -127,7 +183,11 @@ const OpenOrders = () => {
                           <Tooltip content={t('cancel')}>
                             <IconButton
                               disabled={cancelId === o.orderId.toString()}
-                              onClick={() => handleCancelOrder(o)}
+                              onClick={() =>
+                                o instanceof PerpOrder
+                                  ? handleCancelPerpOrder(o)
+                                  : handleCancelSerumOrder(o)
+                              }
                               size="small"
                             >
                               {cancelId === o.orderId.toString() ? (
@@ -173,7 +233,7 @@ const OpenOrders = () => {
                           o.side === 'buy' ? 'text-th-green' : 'text-th-red'
                         }`}
                       >
-                        {o.side}
+                        <SideBadge side={o.side} />
                       </span>{' '}
                       <span className="font-mono">
                         {o.size.toLocaleString(undefined, {
@@ -193,7 +253,11 @@ const OpenOrders = () => {
                     <span>{formatFixedDecimals(o.size * o.price, true)}</span>
                     <IconButton
                       disabled={cancelId === o.orderId.toString()}
-                      onClick={() => handleCancelOrder(o)}
+                      onClick={() =>
+                        o instanceof PerpOrder
+                          ? handleCancelPerpOrder(o)
+                          : handleCancelSerumOrder(o)
+                      }
                     >
                       {cancelId === o.orderId.toString() ? (
                         <Loading className="h-4 w-4" />

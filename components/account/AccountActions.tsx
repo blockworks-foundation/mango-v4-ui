@@ -5,6 +5,7 @@ import WithdrawModal from '../modals/WithdrawModal'
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
+  DocumentDuplicateIcon,
   EllipsisHorizontalIcon,
   PencilIcon,
   TrashIcon,
@@ -14,6 +15,8 @@ import IconDropMenu from '../shared/IconDropMenu'
 import CloseAccountModal from '../modals/CloseAccountModal'
 import AccountNameModal from '../modals/AccountNameModal'
 import mangoStore from '@store/mangoStore'
+import { copyToClipboard } from 'utils'
+import { notify } from 'utils/notifications'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
@@ -23,9 +26,17 @@ const AccountActions = () => {
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
 
+  const handleCopyAddress = (address: string) => {
+    copyToClipboard(address)
+    notify({
+      title: t('copy-address-success'),
+      type: 'success',
+    })
+  }
+
   return (
     <>
-      <div className="flex space-x-3">
+      <div className="flex items-center space-x-2 md:space-x-3">
         <Button
           className="flex items-center"
           disabled={!mangoAccount}
@@ -52,9 +63,19 @@ const AccountActions = () => {
           <LinkButton
             className="whitespace-nowrap"
             disabled={!mangoAccount}
+            onClick={() =>
+              handleCopyAddress(mangoAccount!.publicKey.toString())
+            }
+          >
+            <DocumentDuplicateIcon className="h-4 w-4" />
+            <span className="ml-2">{t('copy-address')}</span>
+          </LinkButton>
+          <LinkButton
+            className="whitespace-nowrap"
+            disabled={!mangoAccount}
             onClick={() => setShowEditAccountModal(true)}
           >
-            <PencilIcon className="h-5 w-5" />
+            <PencilIcon className="h-4 w-4" />
             <span className="ml-2">{t('edit-account')}</span>
           </LinkButton>
           <LinkButton
@@ -62,7 +83,7 @@ const AccountActions = () => {
             disabled={!mangoAccount}
             onClick={() => setShowCloseAccountModal(true)}
           >
-            <TrashIcon className="h-5 w-5" />
+            <TrashIcon className="h-4 w-4" />
             <span className="ml-2">{t('close-account')}</span>
           </LinkButton>
         </IconDropMenu>

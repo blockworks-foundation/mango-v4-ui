@@ -158,18 +158,30 @@ const groupBy = (
   return sortedGroups
 }
 
+const hasOpenOrderForPriceGroup = (
+  openOrderPrices: number[],
+  price: string,
+  grouping: number
+) => {
+  return !!openOrderPrices.find((ooPrice) => {
+    return (
+      ooPrice >= parseFloat(price) && ooPrice < parseFloat(price) + grouping
+    )
+  })
+}
+
 const depth = 40
 
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
 
-  // const [openOrderPrices, setOpenOrderPrices] = useState<any[]>([])
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)
   const [grouping, setGrouping] = useState(0.01)
   const [showBuys, setShowBuys] = useState(true)
   const [showSells, setShowSells] = useState(true)
+  const [userOpenOrderPrices, setUserOpenOrderPrices] = useState<number[]>([])
 
   const currentOrderbookData = useRef<any>(null)
   const nextOrderbookData = useRef<any>(null)
@@ -224,8 +236,6 @@ const Orderbook = () => {
 
   useInterval(() => {
     const orderbook = mangoStore.getState().selectedMarket.orderbook
-    console.log('orderbook', orderbook)
-
     const group = mangoStore.getState().group
     if (!market || !group) return
 
@@ -235,17 +245,19 @@ const Orderbook = () => {
         previousGrouping !== grouping)
     ) {
       // check if user has open orders so we can highlight them on orderbook
-      // const openOrders = mangoStore.getState().mangoAccount.openOrders
-      // const newOpenOrderPrices = openOrders?.length
-      //   ? openOrders
-      //       .filter(({ market }) =>
-      //         market.account.publicKey.equals(marketConfig.publicKey)
-      //       )
-      //       .map(({ order }) => order.price)
-      //   : []
-      // if (!isEqual(newOpenOrderPrices, openOrderPrices)) {
-      //   setOpenOrderPrices(newOpenOrderPrices)
-      // }
+      const openOrders = mangoStore.getState().mangoAccount.openOrders
+      const marketPk =
+        selectedMarket && selectedMarket instanceof PerpMarket
+          ? selectedMarket.publicKey
+          : selectedMarket?.serumMarketExternal
+      const newUserOpenOrderPrices =
+        marketPk && openOrders[marketPk.toString()]?.length
+          ? openOrders[marketPk.toString()]?.map((order) => order.price)
+          : []
+
+      if (!isEqual(newUserOpenOrderPrices, userOpenOrderPrices)) {
+        setUserOpenOrderPrices(newUserOpenOrderPrices)
+      }
 
       // updated orderbook data
       const bids = groupBy(orderbook?.bids, market!, grouping, true) || []
@@ -480,11 +492,11 @@ const Orderbook = () => {
                     <MemoizedOrderbookRow
                       minOrderSize={market.minOrderSize}
                       tickSize={market.tickSize}
-                      // hasOpenOrder={hasOpenOrderForPriceGroup(
-                      //   openOrderPrices,
-                      //   price,
-                      //   grouping
-                      // )}
+                      hasOpenOrder={hasOpenOrderForPriceGroup(
+                        userOpenOrderPrices,
+                        orderbookData?.asks[index].price,
+                        grouping
+                      )}
                       key={orderbookData?.asks[index].price}
                       price={orderbookData?.asks[index].price}
                       size={orderbookData?.asks[index].size}
@@ -523,11 +535,11 @@ const Orderbook = () => {
                   <MemoizedOrderbookRow
                     minOrderSize={market.minOrderSize}
                     tickSize={market.tickSize}
-                    // hasOpenOrder={hasOpenOrderForPriceGroup(
-                    //   openOrderPrices,
-                    //   price,
-                    //   grouping
-                    // )}
+                    hasOpenOrder={hasOpenOrderForPriceGroup(
+                      userOpenOrderPrices,
+                      orderbookData?.bids[index].price,
+                      grouping
+                    )}
                     price={orderbookData?.bids[index].price}
                     size={orderbookData?.bids[index].size}
                     side="buy"
@@ -552,7 +564,7 @@ const OrderbookRow = ({
   size,
   sizePercent,
   // invert,
-  // hasOpenOrder,
+  hasOpenOrder,
   minOrderSize,
   cumulativeSizePercent,
   tickSize,
@@ -563,7 +575,7 @@ const OrderbookRow = ({
   size: number
   sizePercent: number
   cumulativeSizePercent: number
-  // hasOpenOrder: boolean
+  hasOpenOrder: boolean
   // invert: boolean
   grouping: number
   minOrderSize: number
@@ -623,6 +635,10 @@ const OrderbookRow = ({
 
   if (!minOrderSize) return null
 
+  if (hasOpenOrder) {
+    console.log('HAS OPEN ORDER')
+  }
+
   return (
     <div
       className={`relative flex h-[24px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
@@ -635,7 +651,7 @@ const OrderbookRow = ({
             <div
               style={{ fontFeatureSettings: 'zero 1' }}
               className={`z-10 w-full text-right font-mono text-xs ${
-                /*hasOpenOrder*/ false ? 'text-th-primary' : ''
+                hasOpenOrder ? 'text-th-primary' : ''
               }`}
               // onClick={handleSizeClick}
             >

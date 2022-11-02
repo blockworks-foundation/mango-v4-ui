@@ -44,7 +44,7 @@ const CustomTooltip = ({
           await actions.fetchTourSettings(publicKey.toString())
         }
       } catch (e) {
-        console.log(e)
+        console.error(e)
       } finally {
         if (customOnClose) {
           customOnClose()

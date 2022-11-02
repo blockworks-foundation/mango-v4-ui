@@ -84,7 +84,7 @@ const EditProfileForm = ({
         const messageString = JSON.stringify({
           profile_name: name,
           trader_category: profile?.trader_category,
-          profile_image_url: profile?.profile_image_url,
+          profile_image_url: profile?.profile_image_url || '',
         })
         const message = new TextEncoder().encode(messageString)
         const signature = await signMessage(message)

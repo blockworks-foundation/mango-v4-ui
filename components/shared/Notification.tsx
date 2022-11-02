@@ -1,9 +1,10 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   CheckCircleIcon,
   ArrowTopRightOnSquareIcon,
   InformationCircleIcon,
   XCircleIcon,
+  XMarkIcon,
 } from '@heroicons/react/20/solid'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Notification, notify } from '../../utils/notifications'
@@ -13,12 +14,16 @@ import { TokenInstructions } from '@project-serum/serum'
 import {
   CLIENT_TX_TIMEOUT,
   NOTIFICATION_POSITION_KEY,
+  PREFERRED_EXPLORER_KEY,
 } from '../../utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { EXPLORERS } from 'pages/settings'
+import { useTranslation } from 'next-i18next'
 
 const setMangoStore = mangoStore.getState().set
 
 const NotificationList = () => {
+  const { t } = useTranslation()
   const notifications = mangoStore((s) => s.notifications)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const notEnoughSoLMessage = 'Not enough SOL'
@@ -56,6 +61,16 @@ const NotificationList = () => {
     }
   }, [notifications, walletTokens])
 
+  const clearAll = useCallback(() => {
+    setMangoStore((s) => {
+      const newNotifications = s.notifications.map((n) => ({
+        ...n,
+        show: false,
+      }))
+      s.notifications = newNotifications
+    })
+  }, [notifications])
+
   const reversedNotifications = [...notifications].reverse()
 
   const position: string = useMemo(() => {
@@ -78,8 +93,17 @@ const NotificationList = () => {
 
   return (
     <div
-      className={`pointer-events-none fixed z-50 w-full space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6 ${position}`}
+      className={`pointer-events-none fixed z-50 flex w-full flex-col items-end space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6 ${position}`}
     >
+      {notifications.filter((n) => n.show).length > 1 ? (
+        <button
+          className="default-transition pointer-events-auto flex items-center rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
+          onClick={clearAll}
+        >
+          <XMarkIcon className="mr-1 h-3.5 w-3.5" />
+          {t('clear-all')}
+        </button>
+      ) : null}
       {reversedNotifications.map((n) => (
         <Notification key={n.id} notification={n} />
       ))}
@@ -91,6 +115,10 @@ const Notification = ({ notification }: { notification: Notification }) => {
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
     'bottom-left'
+  )
+  const [preferredExplorer] = useLocalStorageState(
+    PREFERRED_EXPLORER_KEY,
+    EXPLORERS[0]
   )
   const { type, title, description, txid, show, id } = notification
 
@@ -231,12 +259,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
             ) : null}
             {txid ? (
               <a
-                href={
-                  'https://explorer.solana.com/tx/' +
-                  txid +
-                  '?cluster=' +
-                  CLUSTER
-                }
+                href={preferredExplorer.url + txid + '?cluster=' + CLUSTER}
                 className="default-transition mt-1 flex items-center text-xs text-th-fgd-3 hover:text-th-fgd-2"
                 target="_blank"
                 rel="noreferrer"

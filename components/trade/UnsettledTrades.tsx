@@ -39,7 +39,7 @@ const UnsettledTrades = ({
         mangoAccount,
         new PublicKey(mktAddress)
       )
-      actions.fetchSerumOpenOrders()
+      actions.fetchOpenOrders()
       actions.reloadMangoAccount()
       notify({
         type: 'success',
