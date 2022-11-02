@@ -19,7 +19,7 @@ const EditProfileModal = ({ isOpen, onClose }: ModalProps) => {
           onEditProfileImage={() => setShowEditProfilePic(true)}
         />
         <EnterBottomExitBottom
-          className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6"
+          className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
           show={showEditProfilePic}
         >
           <EditNftProfilePic onClose={() => setShowEditProfilePic(false)} />

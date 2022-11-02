@@ -138,7 +138,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       <div className="mb-3 flex w-full flex-col items-center sm:mt-3 sm:flex-row sm:justify-between">
         <button
           onClick={onClose}
-          className={`absolute left-2 top-2 z-50 text-th-fgd-2 focus:outline-none md:hover:text-th-primary`}
+          className={`absolute left-2 top-3 z-50 text-th-fgd-4 focus:outline-none md:hover:text-th-primary`}
         >
           <ArrowLeftIcon className={`h-5 w-5`} />
         </button>
@@ -148,7 +148,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
             {t('save')}
           </Button>
           {profile.profile_image_url ? (
-            <LinkButton className="text-xs" onClick={removeProfileImage}>
+            <LinkButton className="text-sm" onClick={removeProfileImage}>
               {t('profile:remove')}
             </LinkButton>
           ) : null}
@@ -156,10 +156,10 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       </div>
       {nfts.length > 0 ? (
         <div className="flex flex-col items-center">
-          <div className="mb-4 grid w-full grid-flow-row grid-cols-3 gap-4">
+          <div className="mb-4 grid w-full grid-flow-row grid-cols-3 gap-3">
             {nfts.map((n) => (
               <button
-                className={`default-transitions col-span-1 flex items-center justify-center rounded-md border bg-th-bkg-3 py-3 sm:py-4 md:hover:bg-th-bkg-4 ${
+                className={`default-transition col-span-1 flex items-center justify-center rounded-md border bg-th-bkg-2 py-3 sm:py-4 md:hover:bg-th-bkg-3 ${
                   selectedProfile === n.image
                     ? 'border-th-primary'
                     : 'border-th-bkg-3'
