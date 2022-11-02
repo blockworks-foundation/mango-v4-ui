@@ -4,6 +4,7 @@ import {
   ArrowTopRightOnSquareIcon,
   InformationCircleIcon,
   XCircleIcon,
+  XMarkIcon,
 } from '@heroicons/react/20/solid'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Notification, notify } from '../../utils/notifications'
@@ -90,13 +91,14 @@ const NotificationList = () => {
 
   return (
     <div
-      className={`pointer-events-none fixed z-50 w-full space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6 ${position}`}
+      className={`pointer-events-none fixed z-50 flex w-full flex-col items-end space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6 ${position}`}
     >
       {notifications.filter((n) => n.show).length > 1 ? (
         <button
-          className="default-transition pointer-events-auto rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
+          className="default-transition pointer-events-auto flex items-center rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
           onClick={clearAll}
         >
+          <XMarkIcon className="mr-1 h-3.5 w-3.5" />
           Clear All
         </button>
       ) : null}
