@@ -6,7 +6,7 @@ const MaxAmountButton = ({
   onClick,
   value,
 }: {
-  className: string
+  className?: string
   label: string
   onClick: () => void
   value: string

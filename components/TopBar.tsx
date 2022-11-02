@@ -13,6 +13,7 @@ import UserSetupModal from './modals/UserSetupModal'
 import CreateAccountModal from './modals/CreateAccountModal'
 import MangoAccountsListModal from './modals/MangoAccountsListModal'
 import { useRouter } from 'next/router'
+import UserSetup from './UserSetup'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -108,8 +109,8 @@ const TopBar = () => {
         />
       ) : null}
       {showUserSetupModal ? (
-        <UserSetupModal
-          isOpen={showUserSetupModal}
+        <UserSetup
+          // isOpen={showUserSetupModal}
           onClose={handleCloseModal}
         />
       ) : null}
