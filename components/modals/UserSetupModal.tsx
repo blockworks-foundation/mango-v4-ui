@@ -52,7 +52,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const [showEditProfilePic, setShowEditProfilePic] = useState(false)
-  const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [, setIsOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const handleNextStep = () => {
@@ -64,7 +64,7 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
       try {
         await handleWalletConnect(wallet)
         setShowSetupStep(2)
-        setIsOnboarded(true)
+        setIsOnBoarded(true)
       } catch (e) {
         notify({
           title: 'Setup failed. Refresh and try again.',

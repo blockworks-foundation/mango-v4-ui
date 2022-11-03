@@ -73,7 +73,7 @@ const AccountPage = () => {
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
   const tourSettings = mangoStore((s) => s.settings.tours)
-  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const leverage = useMemo(() => {
     if (!group || !mangoAccount) return 0
@@ -471,7 +471,7 @@ const AccountPage = () => {
           onClose={() => setShowWithdrawModal(false)}
         />
       ) : null}
-      {!tourSettings?.account_tour_seen && isOnboarded && connected ? (
+      {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
         <AccountOnboardingTour />
       ) : null}
     </>

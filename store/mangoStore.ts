@@ -599,12 +599,24 @@ const mangoStore = create<MangoStore>()(
               group,
               wallet.publicKey
             )
-            if (!mangoAccounts?.length) return
+            const selectedAccountIsNotInAccountsList = mangoAccounts.find(
+              (x) =>
+                x.publicKey.toBase58() ===
+                selectedMangoAccount?.publicKey.toBase58()
+            )
+            if (!mangoAccounts?.length) {
+              set((state) => {
+                state.mangoAccounts = []
+                state.mangoAccount.current = undefined
+                state.mangoAccount.lastUpdatedAt = new Date().toISOString()
+              })
+              return
+            }
 
             mangoAccounts.forEach((ma) => ma.reloadAccountData(client))
 
             let newSelectedMangoAccount = selectedMangoAccount
-            if (!selectedMangoAccount) {
+            if (!selectedMangoAccount || !selectedAccountIsNotInAccountsList) {
               const lastAccount = localStorage.getItem(LAST_ACCOUNT_KEY)
               newSelectedMangoAccount = mangoAccounts[0]
 
