@@ -21,8 +21,6 @@ import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Label from '../forms/Label'
 import Button from '../shared/Button'
-import HealthImpact from '../shared/HealthImpact'
-import InfoTooltip from '../shared/InfoTooltip'
 import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
@@ -30,6 +28,7 @@ import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 import { withValueLimit } from '../swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
+import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 
 interface DepositModalProps {
   token?: string
@@ -311,7 +310,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             </div>
           </div>
           <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
-            <HealthImpact
+            <HealthImpactTokenChange
               mintPk={bank!.mint}
               uiAmount={Number(inputAmount)}
               isDeposit

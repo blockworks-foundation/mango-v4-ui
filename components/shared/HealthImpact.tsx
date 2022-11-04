@@ -1,18 +1,14 @@
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
+import Tooltip from './Tooltip'
 
 const HealthImpact = ({
-  uiAmount,
-  isDeposit,
-  mintPk,
+  maintProjectedHealth,
 }: {
-  uiAmount: number
-  isDeposit?: boolean
-  mintPk: PublicKey
+  maintProjectedHealth: number
 }) => {
   const { t } = useTranslation('common')
   const group = mangoStore.getState().group
@@ -23,27 +19,13 @@ const HealthImpact = ({
     return mangoAccount.getHealthRatioUi(group, HealthType.maint)
   }, [mangoAccount])
 
-  const maintProjectedHealth = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !mangoAccount) return 0
-    const uiTokenAmount = isDeposit ? uiAmount : uiAmount * -1
-    const projectedHealth =
-      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
-        group,
-        [{ mintPk, uiTokenAmount }],
-        HealthType.maint
-      )
-
-    return projectedHealth! > 100
-      ? 100
-      : projectedHealth! < 0
-      ? 0
-      : Math.trunc(projectedHealth!)
-  }, [mangoAccount, mintPk, uiAmount, isDeposit])
-
   return (
-    <div className="flex justify-between">
-      <p>{t('health-impact')}</p>
+    <div className="flex flex-wrap items-start justify-between">
+      <Tooltip content="Projects the health of your account before you make a trade. The first value is your current account health and the second, your projected account health.">
+        <p className="tooltip-underline mr-4 mb-1 text-sm">
+          {t('health-impact')}
+        </p>
+      </Tooltip>
       <div className="flex items-center space-x-2 font-mono">
         <p className="text-th-fgd-1">{currentMaintHealth}%</p>
         <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
