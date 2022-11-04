@@ -265,7 +265,7 @@ const SwapForm = () => {
               type="input"
             />
           </div>
-          <div className="col-span-1">
+          <div className="col-span-1 flex h-[54px]">
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
