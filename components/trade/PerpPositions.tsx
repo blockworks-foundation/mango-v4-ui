@@ -11,7 +11,7 @@ const PerpPositions = () => {
 
   if (!group) return null
 
-  return (
+  return Object.entries(perpPositions).length ? (
     <div>
       <table>
         <thead>
@@ -52,6 +52,10 @@ const PerpPositions = () => {
           })}
         </tbody>
       </table>
+    </div>
+  ) : (
+    <div className="flex flex-col items-center p-8">
+      <p>{t('trade:no-positions')}</p>
     </div>
   )
 }
