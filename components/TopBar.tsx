@@ -13,6 +13,7 @@ import UserSetupModal from './modals/UserSetupModal'
 import CreateAccountModal from './modals/CreateAccountModal'
 import MangoAccountsListModal from './modals/MangoAccountsListModal'
 import { useRouter } from 'next/router'
+import SolanaTps from './SolanaTps'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -44,6 +45,7 @@ const TopBar = () => {
   return (
     <>
       <div className="flex w-full items-center justify-between space-x-4">
+        {connected ? <SolanaTps /> : null}
         <span className="mb-0 flex items-center">
           {query.token ? (
             <div
