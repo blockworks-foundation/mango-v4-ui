@@ -52,7 +52,7 @@
   "governance": "Governance",
   "health": "Health",
   "health-impact": "Health Impact",
-  "insufficient-sol": "Solana requires 0.00757 SOL rent to create a Mango Account. This will be returned if you close your account.",
+  "insufficient-sol": "Solana requires 0.0294 SOL rent to create a Mango Account. This will be returned if you close your account.",
   "interest-earned": "Interest Earned",
   "interest-earned-paid": "Interest Earned",
   "learn": "Learn",
