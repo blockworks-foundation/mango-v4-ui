@@ -1,10 +1,4 @@
-import {
-  FunctionComponent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { FunctionComponent, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -29,14 +23,14 @@ import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
 import { formatTokenSymbol } from 'utils/tokens'
 import { useQuery } from '@tanstack/react-query'
-import { fetchChartData } from 'apis/coingecko'
 import mangoStore from '@store/mangoStore'
+import { fetchChartData, USDC_MINT, USDT_MINT } from 'apis/birdeye'
 
 dayjs.extend(relativeTime)
 
 interface SwapTokenChartProps {
-  inputTokenId: string
-  outputTokenId: string
+  inputMint: string
+  outputMint: string
 }
 
 const CustomizedLabel = ({
@@ -78,19 +72,18 @@ const CustomizedLabel = ({
 }
 
 const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
-  inputTokenId,
-  outputTokenId,
+  inputMint,
+  outputMint,
 }) => {
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
-  const [baseTokenId, setBaseTokenId] = useState(inputTokenId)
-  const [quoteTokenId, setQuoteTokenId] = useState(outputTokenId)
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState(1)
   const { theme } = useTheme()
+
   const chartDataQuery = useQuery(
-    ['chart-data', baseTokenId, quoteTokenId, daysToShow],
-    () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
+    ['chart-data', inputMint, outputMint, daysToShow],
+    () => fetchChartData(inputMint, outputMint, daysToShow),
     { staleTime: 120000 }
   )
   const chartData = chartDataQuery.data
@@ -104,24 +97,6 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   const handleMouseLeave = () => {
     setMouseData(null)
   }
-
-  useEffect(() => {
-    if (!inputTokenId || !outputTokenId) return
-
-    if (['usd-coin', 'tether'].includes(outputTokenId)) {
-      setBaseTokenId(inputTokenId)
-      setQuoteTokenId(outputTokenId)
-    } else {
-      setBaseTokenId(outputTokenId)
-      setQuoteTokenId(inputTokenId)
-    }
-  }, [inputTokenId, outputTokenId])
-
-  // const handleFlipChart = useCallback(() => {
-  //   if (!baseTokenId || !quoteTokenId) return
-  //   setBaseTokenId(quoteTokenId)
-  //   setQuoteTokenId(baseTokenId)
-  // }, [baseTokenId, quoteTokenId])
 
   const calculateChartChange = () => {
     if (chartData.length) {
@@ -159,14 +134,14 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
             <div className="h-[308px] bg-th-bkg-2" />
           </SheenLoader>
         </>
-      ) : chartData.length && baseTokenId && quoteTokenId ? (
+      ) : chartData.length && inputMint && outputMint ? (
         <div className="relative">
           <div className="flex items-start justify-between">
             <div>
               {inputBank && outputBank ? (
                 <div className="mb-0.5 flex items-center">
                   <p className="text-base text-th-fgd-3">
-                    {['usd-coin', 'tether'].includes(inputTokenId || '')
+                    {[USDC_MINT, USDT_MINT].includes(inputMint || '')
                       ? `${formatTokenSymbol(
                           outputBank?.name?.toUpperCase()
                         )}/${inputBank?.name?.toUpperCase()}`
@@ -176,17 +151,11 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                           outputBank?.name?.toUpperCase()
                         )}`}
                   </p>
-                  {/* <div
-                    className="px-2 hover:cursor-pointer hover:text-th-primary"
-                    onClick={handleFlipChart}
-                  >
-                    <SwitchHorizontalIcon className="h-4 w-4" />
-                  </div> */}
                 </div>
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     <FlipNumbers
                       height={48}
                       width={32}
@@ -200,7 +169,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
-                    {dayjs(mouseData['time']).format('DD MMM YY, h:mma')}
+                    {dayjs(mouseData.time * 1000).format('DD MMM YY, h:mma')}
                   </p>
                 </>
               ) : (
@@ -221,9 +190,9 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
-                    {dayjs(chartData[chartData.length - 1]['time']).format(
-                      'DD MMM YY, h:mma'
-                    )}
+                    {dayjs(
+                      chartData[chartData.length - 1]['time'] * 1000
+                    ).format('DD MMM YY, h:mma')}
                   </p>
                 </>
               )}
