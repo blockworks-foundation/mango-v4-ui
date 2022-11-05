@@ -4,8 +4,9 @@ import TabUnderline from '@components/shared/TabUnderline'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
+import { group } from 'console'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import { formatFixedDecimals } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
@@ -134,24 +135,30 @@ const OraclePrice = () => {
 const AdvancedMarketHeader = () => {
   const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
-  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
+  const serumMarketPrices = mangoStore((s) => s.serumMarketPrices.data)
 
-  const baseSymbol = useMemo(() => {
-    return selectedMarket?.name.split('/')[0]
+  const marketPrices = useMemo(() => {
+    if (selectedMarket instanceof Serum3Market) {
+      const prices = serumMarketPrices.find(
+        (m) =>
+          m.length &&
+          m[0].address === selectedMarket.serumMarketExternal.toString()
+      )
+      return prices
+    }
+    // need to handle perp
   }, [selectedMarket])
 
-  const coingeckoData = coingeckoPrices.find((asset) =>
-    baseSymbol === 'soETH'
-      ? asset.symbol === 'ETH'
-      : asset.symbol === baseSymbol
-  )
-
-  const change = coingeckoData
-    ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
-        coingeckoData.prices[0][1]) /
-        coingeckoData.prices[0][1]) *
-      100
-    : 0
+  const change = useMemo(() => {
+    if (marketPrices) {
+      return (
+        ((marketPrices[marketPrices.length - 1].value - marketPrices[0].value) /
+          marketPrices[0].value) *
+        100
+      )
+    }
+    return 0
+  }, [marketPrices])
 
   return (
     <div className="flex h-16 items-center bg-th-bkg-1 px-5 md:h-12">
@@ -166,14 +173,11 @@ const AdvancedMarketHeader = () => {
       </div>
       <div className="ml-6 flex-col">
         <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
-        <Change change={change} size="small" />
-        {/* <div
-          className={`font-mono text-xs ${
-            change < 0 ? 'text-th-red' : 'text-th-gree'
-          }`}
-        >
-          {isNaN(change) ? '0.00' : change.toFixed(2)}%
-        </div> */}
+        {change ? (
+          <Change change={change} size="small" />
+        ) : (
+          <div className="font-mono text-xs">{t('unavailable')}</div>
+        )}
       </div>
     </div>
   )

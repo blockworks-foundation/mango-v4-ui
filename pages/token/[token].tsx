@@ -1,6 +1,6 @@
 import Change from '@components/shared/Change'
 import DailyRange from '@components/shared/DailyRange'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { BirdeyePrice } from '@store/mangoStore'
 import type { NextPage } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -25,6 +25,7 @@ import Tooltip from '@components/shared/Tooltip'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import dynamic from 'next/dynamic'
 import { LISTED_TOKENS } from 'utils/tokens'
+import { BIRDEYE_REQUEST_HEADER } from 'apis/birdeye'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
 })
@@ -73,14 +74,21 @@ const Token: NextPage = () => {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const { token } = router.query
+  const actions = mangoStore((s) => s.actions)
   const group = mangoStore((s) => s.group)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
-  const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
+  const birdeyePrices = mangoStore((s) => s.birdeyePrices.data)
+  const loadingBirdeyePrices = mangoStore((s) => s.birdeyePrices.loading)
+  const [chartData, setChartData] = useState<BirdeyePrice[]>([])
   const [loadChartData, setLoadChartData] = useState(true)
-  const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
   const [daysToShow, setDaysToShow] = useState<number>(1)
+
+  useEffect(() => {
+    if (jupiterTokens.length) {
+      actions.fetchBirdeyePrices()
+    }
+  }, [jupiterTokens])
 
   const bank = useMemo(() => {
     if (group && token) {
@@ -167,36 +175,37 @@ const Token: NextPage = () => {
   } = coingeckoData ? coingeckoData.market_data : DEFAULT_COINGECKO_VALUES
 
   const loadingChart = useMemo(() => {
-    return daysToShow == 1 ? loadingCoingeckoPrices : loadChartData
-  }, [loadChartData, loadingCoingeckoPrices])
+    return daysToShow == 1 ? loadingBirdeyePrices : loadChartData
+  }, [loadChartData, loadingBirdeyePrices])
 
   const coingeckoTokenPrices = useMemo(() => {
-    if (daysToShow === 1 && coingeckoPrices.length && bank) {
-      const tokenPriceData = coingeckoPrices.find((asset) =>
-        bank?.name === 'soETH'
-          ? asset.symbol === 'ETH'
-          : asset.symbol === bank.name
-      )
-      if (tokenPriceData) {
-        return tokenPriceData.prices
-      }
+    if (daysToShow === 1 && birdeyePrices.length && bank) {
+      const tokenPriceData = birdeyePrices.find((asset) => {
+        return asset[0].address === bank.mint.toString()
+      })
+      return tokenPriceData
     } else {
       if (chartData && !loadingChart) {
-        return chartData.prices
+        return chartData
       }
     }
     return []
-  }, [coingeckoPrices, bank, daysToShow, chartData, loadingChart])
+  }, [birdeyePrices, bank, daysToShow, chartData, loadingChart])
 
   const handleDaysToShow = async (days: number) => {
     if (days !== 1) {
+      const timeTo = Math.trunc(Date.now() / 1000)
+      const timeFrom = timeTo - days * 86400
       try {
         const response = await fetch(
-          `https://api.coingecko.com/api/v3/coins/${coingeckoId}/market_chart?vs_currency=usd&days=${days}`
+          `https://public-api.birdeye.so/defi/history_price?address=${bank?.mint.toString()}&address_type=token&type=4H&time_from=${timeFrom}&time_to=${timeTo}`,
+          {
+            headers: BIRDEYE_REQUEST_HEADER,
+          }
         )
         const data = await response.json()
         setLoadChartData(false)
-        setChartData(data)
+        setChartData(data.data.items)
       } catch {
         setLoadChartData(false)
       }
@@ -387,7 +396,7 @@ const Token: NextPage = () => {
                 </div>
               </div>
               {!loadingChart ? (
-                coingeckoTokenPrices.length ? (
+                coingeckoTokenPrices ? (
                   <>
                     <div className="mt-4 flex w-full items-center justify-between px-6">
                       <h2 className="text-base">{bank.name} Price Chart</h2>
@@ -530,9 +539,7 @@ const Token: NextPage = () => {
           <p className="mb-2">
             {t('token:token-not-found-desc', { token: token })}
           </p>
-          <Link href="/">
-            <a>{t('token:go-to-account')}</a>
-          </Link>
+          <Link href="/">{t('token:go-to-account')}</Link>
         </div>
       )}
       {showDepositModal ? (

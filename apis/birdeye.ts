@@ -1,6 +1,11 @@
 export const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 export const USDT_MINT = 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
 
+const apiKey: string = process.env.NEXT_PUBLIC_BIRDEYE_KEY as string
+export const BIRDEYE_REQUEST_HEADER = {
+  'X-API-KEY': apiKey,
+}
+
 export const fetchChartData = async (
   baseTokenMint: string,
   quoteTokenMint: string,
@@ -9,22 +14,18 @@ export const fetchChartData = async (
   try {
     const timeTo = Math.trunc(Date.now() / 1000)
     const timeFrom = timeTo - daysToShow * 86400
-    const apiKey: string = process.env.NEXT_PUBLIC_BIRDEYE_KEY as string
-    const requestHeader = {
-      'X-API-KEY': apiKey,
-    }
     const interval = daysToShow === 1 ? '30m' : '4H'
     const [inputResponse, outputResponse] = await Promise.all([
       fetch(
         `https://public-api.birdeye.so/defi/history_price?address=${baseTokenMint}&address_type=token&type=${interval}&time_from=${timeFrom}&time_to=${timeTo}`,
         {
-          headers: requestHeader,
+          headers: BIRDEYE_REQUEST_HEADER,
         }
       ),
       fetch(
         `https://public-api.birdeye.so/defi/history_price?address=${quoteTokenMint}&address_type=token&type=${interval}&time_from=${timeFrom}&time_to=${timeTo}`,
         {
-          headers: requestHeader,
+          headers: BIRDEYE_REQUEST_HEADER,
         }
       ),
     ])

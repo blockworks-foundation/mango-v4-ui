@@ -37,7 +37,7 @@ interface DetailedAreaChartProps {
   yKey: string
 }
 
-export const formatDateAxis = (date: string, days: number) => {
+export const formatDateAxis = (date: string | number, days: number) => {
   if (days === 1) {
     return dayjs(date).format('h:mma')
   } else {
