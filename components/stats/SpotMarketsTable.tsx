@@ -11,6 +11,7 @@ import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
 import dynamic from 'next/dynamic'
+import SheenLoader from '@components/shared/SheenLoader'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -63,7 +64,7 @@ const SpotMarketsTable = () => {
                     chartData[0].value) /
                     chartData[0].value) *
                   100
-                : 0
+                : 'unavailable'
 
               return (
                 <tr key={market.publicKey.toString()}>
@@ -103,8 +104,14 @@ const SpotMarketsTable = () => {
                   </td>
                   <td>
                     <div className="flex flex-col items-end">
-                      {change ? (
-                        <Change change={change} />
+                      {change !== 'unavailable' ? (
+                        loadingSerumMarketPrices ? (
+                          <SheenLoader>
+                            <div className="h-5 w-12 rounded bg-th-bkg-2" />
+                          </SheenLoader>
+                        ) : (
+                          <Change change={change} />
+                        )
                       ) : (
                         <p className="text-th-fgd-4">{t('unavailable')}</p>
                       )}

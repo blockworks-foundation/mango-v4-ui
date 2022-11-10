@@ -136,6 +136,14 @@ const AdvancedMarketHeader = () => {
   const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const serumMarketPrices = mangoStore((s) => s.serumMarketPrices.data)
+  const actions = mangoStore((s) => s.actions)
+  const serumMarkets = mangoStore((s) => s.serumMarkets)
+
+  useEffect(() => {
+    if (serumMarkets.length) {
+      actions.fetchSerumMarketPrices()
+    }
+  }, [actions, serumMarkets])
 
   const marketPrices = useMemo(() => {
     if (selectedMarket instanceof Serum3Market) {
@@ -147,7 +155,7 @@ const AdvancedMarketHeader = () => {
       return prices
     }
     // need to handle perp
-  }, [selectedMarket])
+  }, [selectedMarket, serumMarketPrices])
 
   const change = useMemo(() => {
     if (marketPrices) {

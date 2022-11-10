@@ -17,13 +17,6 @@ const rehydrateStore = async () => {
 const HydrateStore = () => {
   const actions = mangoStore((s) => s.actions)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const serumMarkets = mangoStore((s) => s.serumMarkets)
-
-  useEffect(() => {
-    if (serumMarkets.length) {
-      actions.fetchSerumMarketPrices()
-    }
-  }, [actions, serumMarkets])
 
   useInterval(() => {
     rehydrateStore()
