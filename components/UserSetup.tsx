@@ -190,12 +190,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <div className="fixed inset-0 z-30 grid grid-cols-2 overflow-hidden">
-      <div className="absolute top-6 right-6 z-10" id="repulse">
-        <IconButton hideBg onClick={() => onClose()}>
-          <XMarkIcon className="h-6 w-6 text-th-fgd-2" />
-        </IconButton>
-      </div>
-      <div className="col-span-1 flex flex-col items-center justify-center bg-th-bkg-1 p-6 pt-12">
+      <div className="col-span-1 flex flex-col items-center justify-center bg-th-bkg-1 p-6 pt-24">
         <Transition
           appear={true}
           className="h-full w-full max-w-md"
@@ -506,8 +501,23 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
           )}
         </Transition>
       </div>
-      <div className="col-span-1 bg-th-bkg-2">
-        {/* <ParticlesBackground /> */}
+      <div className="radial-gradient-bg relative col-span-1 h-screen">
+        <div className="absolute top-6 right-6 z-10" id="repulse">
+          <IconButton hideBg onClick={() => onClose()}>
+            <XMarkIcon className="h-6 w-6 text-th-fgd-3" />
+          </IconButton>
+        </div>
+        <div
+          className="absolute left-1/2 top-1/2 z-10 flex-shrink-0 -translate-x-1/2 -translate-y-1/2"
+          // id="repulse"
+        >
+          <img
+            className="h-96 w-96 flex-shrink-0"
+            src="/logos/logo-mark.svg"
+            alt="next"
+          />
+        </div>
+        <ParticlesBackground />
       </div>
     </div>
   )
