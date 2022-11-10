@@ -31,7 +31,7 @@
   "connect": "Connect",
   "connect-helper": "Connect to get started",
   "copy-address": "Copy Address",
-  "copy-address-success": "Copied Mango Account address",
+  "copy-address-success": "Copied address: {{pk}}",
   "create-account": "Create Account",
   "creating-account": "Creating Account...",
   "cumulative-interest-value": "Cumulative Interest Value",
