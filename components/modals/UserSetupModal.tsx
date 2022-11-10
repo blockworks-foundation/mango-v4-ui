@@ -30,13 +30,14 @@ import ActionTokenList from '../account/ActionTokenList'
 import { walletBalanceForToken } from './DepositModal'
 import { floorToDecimal } from '../../utils/numbers'
 import { handleWalletConnect } from '../wallet/ConnectWalletButton'
-import { IS_ONBOARDED_KEY } from '../../utils/constants'
+import { IS_ONBOARDED_KEY, MIN_SOL_BALANCE } from '../../utils/constants'
 import ParticlesBackground from '../ParticlesBackground'
 import ButtonGroup from '../forms/ButtonGroup'
 import Decimal from 'decimal.js'
 import WalletIcon from '../icons/WalletIcon'
 import EditProfileForm from '@components/profile/EditProfileForm'
 import EditNftProfilePic from '@components/profile/EditNftProfilePic'
+import { TokenInstructions } from '@project-serum/serum'
 
 const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation()
@@ -54,6 +55,14 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
   const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
+
+  const solBalance = useMemo(() => {
+    return (
+      walletTokens.find((t) =>
+        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
+      )?.uiAmount || 0
+    )
+  }, [walletTokens])
 
   const handleNextStep = () => {
     setShowSetupStep(showSetupStep + 1)
@@ -370,9 +379,10 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                       type="info"
                       desc={t('insufficient-sol')}
                     />
-                    <div className="">
+                    <div className="space-y-4">
                       <Button
-                        className="mb-4 w-full"
+                        className="w-full"
+                        disabled={solBalance < MIN_SOL_BALANCE}
                         onClick={() => handleCreateAccount()}
                         size="large"
                       >
@@ -381,6 +391,12 @@ const UserSetupModal = ({ isOpen, onClose }: ModalProps) => {
                           Create Account
                         </div>
                       </Button>
+                      {solBalance < MIN_SOL_BALANCE ? (
+                        <InlineNotification
+                          type="error"
+                          desc={t('deposit-more-sol')}
+                        />
+                      ) : null}
                       <LinkButton
                         className="flex w-full justify-center"
                         onClick={onClose}
