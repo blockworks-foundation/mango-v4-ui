@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useMemo, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
@@ -10,6 +10,8 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import InlineNotification from '../shared/InlineNotification'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import { TokenInstructions } from '@project-serum/serum'
+import { MIN_SOL_BALANCE } from 'utils/constants'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -37,6 +39,15 @@ const CreateAccountForm = ({
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const { wallet } = useWallet()
+  const walletTokens = mangoStore((s) => s.wallet.tokens)
+
+  const solBalance = useMemo(() => {
+    return (
+      walletTokens.find((t) =>
+        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
+      )?.uiAmount || 0
+    )
+  }, [walletTokens])
 
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
@@ -122,11 +133,19 @@ const CreateAccountForm = ({
           }
         />
       </div>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <InlineNotification type="info" desc={t('insufficient-sol')} />
-        <Button className="w-full" onClick={handleNewAccount} size="large">
+        <Button
+          className="w-full"
+          disabled={solBalance < MIN_SOL_BALANCE}
+          onClick={handleNewAccount}
+          size="large"
+        >
           {t('create-account')}
         </Button>
+        {solBalance < MIN_SOL_BALANCE ? (
+          <InlineNotification type="error" desc={t('deposit-more-sol')} />
+        ) : null}
       </div>
     </div>
   )

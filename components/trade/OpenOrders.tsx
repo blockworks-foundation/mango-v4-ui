@@ -79,11 +79,10 @@ const OpenOrders = () => {
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const selectedMarket = mangoStore.getState().selectedMarket.current
       const actions = mangoStore.getState().actions
-
       if (!group || !mangoAccount) return
       setCancelId(o.orderId.toString())
       try {
-        if (selectedMarket instanceof Serum3Market) {
+        if (selectedMarket instanceof PerpMarket) {
           const tx = await client.perpCancelOrder(
             group,
             mangoAccount,

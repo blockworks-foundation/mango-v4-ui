@@ -8,12 +8,14 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { Wallet } from '@project-serum/anchor'
+import { TokenInstructions } from '@project-serum/serum'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { MIN_SOL_BALANCE } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import { floorToDecimal } from 'utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
@@ -44,6 +46,14 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const [sizePercentage, setSizePercentage] = useState('')
   // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
+
+  const solBalance = useMemo(() => {
+    return (
+      walletTokens.find((t) =>
+        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
+      )?.uiAmount || 0
+    )
+  }, [walletTokens])
 
   const connectWallet = async () => {
     if (wallet) {
@@ -366,6 +376,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                 <div className="mt-10">
                   <Button
                     className="mb-6 flex w-44 items-center justify-center"
+                    disabled={solBalance < MIN_SOL_BALANCE}
                     onClick={handleCreateAccount}
                     size="large"
                   >
@@ -378,6 +389,14 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                       </div>
                     )}
                   </Button>
+                  {solBalance < MIN_SOL_BALANCE ? (
+                    <div className="mb-6">
+                      <InlineNotification
+                        type="error"
+                        desc={t('deposit-more-sol')}
+                      />
+                    </div>
+                  ) : null}
                   <LinkButton onClick={onClose}>
                     <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                       Skip for now

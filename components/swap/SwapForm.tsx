@@ -251,7 +251,7 @@ const SwapForm = () => {
           </div>
         </div>
         <div id="swap-step-two" className="mb-2 flex items-end justify-between">
-          <p className="text-th-fgd-3">{t('trade')}</p>
+          <p className="text-th-fgd-3">{t('swap:pay')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
             setAmountIn={setAmountInFormValue}
@@ -265,7 +265,7 @@ const SwapForm = () => {
               type="input"
             />
           </div>
-          <div className="col-span-1">
+          <div className="col-span-1 flex h-[54px]">
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
@@ -274,7 +274,7 @@ const SwapForm = () => {
               decimalScale={inputTokenInfo?.decimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+              className="w-full rounded-r-lg border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -304,7 +304,7 @@ const SwapForm = () => {
             />
           </button>
         </div>
-        <p className="mb-2 text-th-fgd-3">{t('swap:for')}</p>
+        <p className="mb-2 text-th-fgd-3">{t('swap:receive')}</p>
         <div id="swap-step-three" className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
@@ -329,10 +329,10 @@ const SwapForm = () => {
                 thousandSeparator=","
                 allowNegative={false}
                 isNumericString={true}
-                decimalScale={inputTokenInfo?.decimals || 6}
-                name="amountIn"
-                id="amountIn"
-                className="w-full bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+                decimalScale={outputTokenInfo?.decimals || 6}
+                name="amountOut"
+                id="amountOut"
+                className="w-full rounded-r-lg bg-th-bkg-3 p-3 text-right font-mono text-base font-bold text-th-fgd-3 focus:outline-none lg:text-lg xl:text-xl"
                 placeholder="0.00"
                 disabled
                 value={
