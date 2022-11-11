@@ -9,7 +9,6 @@ import ConnectedMenu from './wallet/ConnectedMenu'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../utils/constants'
 import useLocalStorageState from '../hooks/useLocalStorageState'
-import UserSetupModal from './modals/UserSetupModal'
 import CreateAccountModal from './modals/CreateAccountModal'
 import MangoAccountsListModal from './modals/MangoAccountsListModal'
 import { useRouter } from 'next/router'
@@ -19,19 +18,20 @@ const TopBar = () => {
   const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const connected = mangoStore((s) => s.connected)
-  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
-  const [showUserSetupModal, setShowUserSetupModal] = useState(false)
+  const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [showUserSetup, setShowUserSetup] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
   const router = useRouter()
   const { query } = router
 
-  const handleCloseModal = useCallback(() => {
-    setShowUserSetupModal(false)
+  const handleCloseSetup = useCallback(() => {
+    setShowUserSetup(false)
+    setIsOnboarded(true)
   }, [])
 
-  const handleShowModal = useCallback(() => {
-    setShowUserSetupModal(true)
+  const handleShowSetup = useCallback(() => {
+    setShowUserSetup(true)
   }, [])
 
   const handleShowAccounts = useCallback(() => {
@@ -95,7 +95,7 @@ const TopBar = () => {
         ) : (
           <button
             className="relative flex h-16 items-center justify-center rounded-none bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark px-6 text-base font-bold text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100"
-            onClick={handleShowModal}
+            onClick={handleShowSetup}
           >
             <WalletIcon className="mr-2 h-5 w-5 flex-shrink-0" />
             {t('connect')}
@@ -108,12 +108,7 @@ const TopBar = () => {
           onClose={() => setShowMangoAccountsModal(false)}
         />
       ) : null}
-      {showUserSetupModal ? (
-        <UserSetup
-          // isOpen={showUserSetupModal}
-          onClose={handleCloseModal}
-        />
-      ) : null}
+      {showUserSetup ? <UserSetup onClose={handleCloseSetup} /> : null}
       {showCreateAccountModal ? (
         <CreateAccountModal
           isOpen={showCreateAccountModal}

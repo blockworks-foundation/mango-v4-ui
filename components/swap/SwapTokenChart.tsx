@@ -91,7 +91,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   const chartDataQuery = useQuery(
     ['chart-data', baseTokenId, quoteTokenId, daysToShow],
     () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
-    { staleTime: 120000 }
+    { staleTime: 0 }
   )
   const chartData = chartDataQuery.data
 

@@ -32,7 +32,7 @@ const ActionTokenItem = ({
 
   return (
     <button
-      className="default-transition grid w-full auto-cols-fr grid-flow-col rounded-md border border-th-bkg-4 px-4 py-3 disabled:cursor-not-allowed disabled:opacity-30 md:hover:border-th-fgd-4 md:disabled:hover:border-th-bkg-4"
+      className="default-transition flex grid w-full auto-cols-fr grid-flow-col items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 px-4 py-3 disabled:cursor-not-allowed disabled:opacity-30 md:hover:border-th-fgd-4 md:disabled:hover:border-th-bkg-4"
       onClick={() => onSelect(name)}
       disabled={customValue <= 0}
     >

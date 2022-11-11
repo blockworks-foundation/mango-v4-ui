@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
 
 import mangoStore from '@store/mangoStore'
-import { GRID_LAYOUT_KEY } from 'utils/constants'
+import { GRID_LAYOUT_KEY, IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { breakpoints } from 'utils/theme'
 import { useViewport } from 'hooks/useViewport'
@@ -53,6 +53,7 @@ const TradeAdvancedPage = () => {
   const showMobileView = width <= breakpoints.md
   const tourSettings = mangoStore((s) => s.settings.tours)
   const { connected } = useWallet()
+  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
     const topnavbarHeight = 67
@@ -224,7 +225,7 @@ const TradeAdvancedPage = () => {
           <OrderbookAndTrades />
         </div>
       </ResponsiveGridLayout>
-      {!tourSettings?.trade_tour_seen && connected ? (
+      {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
         <TradeOnboardingTour />
       ) : null}
     </>

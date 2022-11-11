@@ -420,12 +420,10 @@ input[type='range']::-webkit-slider-runnable-track {
 
 .radial-gradient-bg {
   background-image: radial-gradient(
-      at -100% -100%,
-      var(--red) 0,
-      transparent 65%
-    ),
-    radial-gradient(at 300% 200%, var(--button) 0, transparent 75%);
-  /* radial-gradient(at -100% 200%, var(--primary) 0, transparent 65%); */
+    at 300% 100%,
+    var(--button) 0,
+    transparent 75%
+  );
   @apply bg-th-bkg-1;
 }
 
