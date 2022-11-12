@@ -14,7 +14,14 @@ import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  ChangeEvent,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { MIN_SOL_BALANCE } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import { floorToDecimal } from 'utils/numbers'
@@ -44,7 +51,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
+  const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const solBalance = useMemo(() => {
@@ -225,17 +232,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
         </IconButton>
       </div>
       <div className="col-span-1 flex flex-col items-center justify-center p-6 pt-24">
-        <Transition
-          appear={true}
-          className="h-full w-full max-w-md"
-          show={showSetupStep === 0}
-          enter="transition ease-in duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="transition ease-out duration-300"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
+        <UserSetupTransition show={showSetupStep === 0}>
           <h2 className="mb-4 text-5xl lg:text-6xl">
             {t('onboarding:intro-heading')}
           </h2>
@@ -268,17 +265,8 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
               {t('onboarding:lets-go')}
             </div>
           </Button>
-        </Transition>
-        <Transition
-          className="h-full w-full max-w-md"
-          show={showSetupStep === 1}
-          enter="transition ease-in duration-300 delay-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="transition ease-out duration-300"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
+        </UserSetupTransition>
+        <UserSetupTransition delay show={showSetupStep === 1}>
           {showSetupStep === 1 ? (
             <div>
               <h2 className="mb-6 text-5xl lg:text-6xl">
@@ -326,16 +314,10 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
               </Button>
             </div>
           ) : null}
-        </Transition>
-        <Transition
-          className="h-full w-full max-w-md"
+        </UserSetupTransition>
+        <UserSetupTransition
+          delay
           show={showSetupStep === 2 && !mangoAccountLoading}
-          enter="transition ease-in duration-300 delay-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="transition ease-out duration-300"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
         >
           {showSetupStep === 2 ? (
             <div>
@@ -400,31 +382,14 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
               </div>
             </div>
           ) : null}
-        </Transition>
-        <Transition
-          className="h-full w-full max-w-md"
-          show={showSetupStep === 3}
-          enter="transition ease-in duration-300 delay-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="transition ease-out duration-300"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
+        </UserSetupTransition>
+        <UserSetupTransition delay show={showSetupStep === 3}>
           {showSetupStep === 3 ? (
             <div className="relative">
               <h2 className="mb-6 text-5xl lg:text-6xl">
                 {t('onboarding:fund-account')}
               </h2>
-              <Transition
-                show={depositToken.length > 0}
-                enter="transition ease-in duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="transition ease-out duration-300"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
+              <UserSetupTransition show={depositToken.length > 0}>
                 <div className="flex justify-between">
                   <Label text={t('amount')} />
                   <MaxAmountButton
@@ -504,16 +469,8 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     {t('onboarding:skip')}
                   </span>
                 </LinkButton>
-              </Transition>
-              <Transition
-                show={depositToken.length === 0}
-                enter="transition ease-in duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="transition ease-out duration-300"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
+              </UserSetupTransition>
+              <UserSetupTransition show={depositToken.length === 0}>
                 <div
                   className="thin-scroll absolute top-36 w-full overflow-auto"
                   style={{ height: 'calc(100vh - 380px)' }}
@@ -539,10 +496,10 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     valueKey="walletBalance"
                   />
                 </div>
-              </Transition>
+              </UserSetupTransition>
             </div>
           ) : null}
-        </Transition>
+        </UserSetupTransition>
       </div>
       <div className="col-span-1 hidden h-screen lg:block">
         <ParticlesBackground />
@@ -552,3 +509,29 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
 }
 
 export default UserSetup
+
+const UserSetupTransition = ({
+  show,
+  children,
+  delay = false,
+}: {
+  show: boolean
+  children: ReactNode
+  delay?: boolean
+}) => {
+  return (
+    <Transition
+      appear
+      className="h-full w-full max-w-md"
+      show={show}
+      enter={`transition ease-in duration-300 ${delay ? 'delay-300' : ''}`}
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
+      leave="transition ease-out duration-300"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+    >
+      {children}
+    </Transition>
+  )
+}
