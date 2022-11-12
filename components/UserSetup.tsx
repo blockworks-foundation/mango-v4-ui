@@ -32,7 +32,7 @@ import MaxAmountButton from './shared/MaxAmountButton'
 import { handleWalletConnect } from './wallet/ConnectWalletButton'
 
 const UserSetup = ({ onClose }: { onClose: () => void }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'onboarding'])
   const group = mangoStore((s) => s.group)
   const { connected, select, wallet, wallets } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
@@ -221,7 +221,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
       </div>
       <div className="absolute top-6 right-6 z-10">
         <IconButton hideBg onClick={() => onClose()}>
-          <XMarkIcon className="h-6 w-6 text-th-fgd-2" />
+          <XMarkIcon className="h-6 w-6 text-th-fgd-4" />
         </IconButton>
       </div>
       <div className="col-span-1 flex flex-col items-center justify-center p-6 pt-24">
@@ -237,18 +237,13 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
           leaveTo="opacity-0"
         >
           <h2 className="mb-4 text-5xl lg:text-6xl">
-            Not your average exchange
+            {t('onboarding:intro-heading')}
           </h2>
-          <p className="mb-4 text-base">
-            We&apos;ve got DeFi covered. Trade, swap, borrow and lend all of
-            your favorite tokens with low fees and lightning execution.
-          </p>
+          <p className="mb-4 text-base">{t('onboarding:intro-desc')}</p>
           <div className="mb-6 space-y-2 py-3">
             <div className="flex items-center space-x-2">
               <CheckCircleIcon className="h-5 w-5 text-th-green" />
-              <p className="text-base">
-                Fully permissionless and trusted by 1,000s of DeFi users
-              </p>
+              <p className="text-base">{t('onboarding:bullet-1')}</p>
             </div>
             {/* <div className="flex items-center space-x-2">
               <CheckCircleIcon className="h-5 w-5 text-th-green" />
@@ -256,27 +251,21 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
             </div> */}
             <div className="flex items-center space-x-2">
               <CheckCircleIcon className="h-5 w-5 text-th-green" />
-              <p className="text-base">
-                Up to 20x leverage across 100s of tokens
-              </p>
+              <p className="text-base">{t('onboarding:bullet-2')}</p>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircleIcon className="h-5 w-5 text-th-green" />
-              <p className="text-base">
-                Automatically earn interest on your deposits
-              </p>
+              <p className="text-base">{t('onboarding:bullet-3')}</p>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircleIcon className="h-5 w-5 text-th-green" />
-              <p className="text-base">
-                Borrow 100s of tokens with many collateral options
-              </p>
+              <p className="text-base">{t('onboarding:bullet-4')}</p>
             </div>
           </div>
           <Button className="w-44" onClick={handleNextStep} size="large">
             <div className="flex items-center justify-center">
               <FireIcon className="mr-2 h-5 w-5" />
-              {"Let's Go"}
+              {t('onboarding:lets-go')}
             </div>
           </Button>
         </Transition>
@@ -292,8 +281,10 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
         >
           {showSetupStep === 1 ? (
             <div>
-              <h2 className="mb-6 text-5xl lg:text-6xl">Connect Wallet</h2>
-              <p className="mb-2 text-base">Choose Wallet</p>
+              <h2 className="mb-6 text-5xl lg:text-6xl">
+                {t('onboarding:connect-wallet')}
+              </h2>
+              <p className="mb-2 text-base">{t('onboarding:choose-wallet')}</p>
               <div className="space-y-2">
                 {wallets?.map((w) => (
                   <button
@@ -328,7 +319,8 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                 ) : (
                   <div className="flex items-center justify-center">
                     <WalletIcon className="mr-2 h-5 w-5" />
-                    Connect Wallet
+
+                    {t('onboarding:connect-wallet')}
                   </div>
                 )}
               </Button>
@@ -349,16 +341,18 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
             <div>
               <div className="pb-6">
                 <h2 className="mb-4 text-5xl lg:text-6xl">
-                  Create Your Account
+                  {t('onboarding:create-account')}
                 </h2>
                 <p className="text-base">
-                  You need a Mango Account to get started.
+                  {t('onboarding:create-account-desc')}
                 </p>
               </div>
               <div className="pb-4">
                 <p className="mb-2 text-base text-th-fgd-3">
-                  Account Name{' '}
-                  <span className="ml-1 text-xs text-th-fgd-4">(Optional)</span>
+                  {t('account-name')}{' '}
+                  <span className="ml-1 text-xs text-th-fgd-4">
+                    ({t('optional')})
+                  </span>
                 </p>
                 <Input
                   type="text"
@@ -385,7 +379,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     ) : (
                       <div className="flex items-center justify-center">
                         <PlusCircleIcon className="mr-2 h-5 w-5" />
-                        Create Account
+                        {t('create-account')}
                       </div>
                     )}
                   </Button>
@@ -399,7 +393,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                   ) : null}
                   <LinkButton onClick={onClose}>
                     <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
-                      Skip for now
+                      {t('onboarding:skip')}
                     </span>
                   </LinkButton>
                 </div>
@@ -419,7 +413,9 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
         >
           {showSetupStep === 3 ? (
             <div className="relative">
-              <h2 className="mb-6 text-5xl lg:text-6xl">Fund Your Account</h2>
+              <h2 className="mb-6 text-5xl lg:text-6xl">
+                {t('onboarding:fund-account')}
+              </h2>
               <Transition
                 show={depositToken.length > 0}
                 enter="transition ease-in duration-300"
@@ -430,7 +426,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                 leaveTo="opacity-0"
               >
                 <div className="flex justify-between">
-                  <Label text="Amount" />
+                  <Label text={t('amount')} />
                   <MaxAmountButton
                     className="mb-2"
                     label="Wallet Max"
@@ -499,13 +495,13 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                   ) : (
                     <div className="flex items-center justify-center">
                       <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
-                      Deposit
+                      {t('deposit')}
                     </div>
                   )}
                 </Button>
                 <LinkButton onClick={onClose}>
                   <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
-                    Skip for now
+                    {t('onboarding:skip')}
                   </span>
                 </LinkButton>
               </Transition>
