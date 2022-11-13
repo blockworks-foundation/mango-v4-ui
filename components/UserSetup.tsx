@@ -12,6 +12,7 @@ import { TokenInstructions } from '@project-serum/serum'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import {
@@ -22,7 +23,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { MIN_SOL_BALANCE } from 'utils/constants'
+import { IS_ONBOARDED_KEY, MIN_SOL_BALANCE } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import { floorToDecimal } from 'utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
@@ -32,6 +33,8 @@ import Label from './forms/Label'
 import WalletIcon from './icons/WalletIcon'
 import { walletBalanceForToken } from './modals/DepositModal'
 import ParticlesBackground from './ParticlesBackground'
+import EditNftProfilePic from './profile/EditNftProfilePic'
+import EditProfileForm from './profile/EditProfileForm'
 import Button, { IconButton, LinkButton } from './shared/Button'
 import InlineNotification from './shared/InlineNotification'
 import Loading from './shared/Loading'
@@ -53,6 +56,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const [sizePercentage, setSizePercentage] = useState('')
   const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
+  const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const solBalance = useMemo(() => {
     return (
@@ -142,7 +146,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
       })
 
       await actions.reloadMangoAccount()
-      onClose()
+      setShowSetupStep(4)
       setSubmitDeposit(false)
     } catch (e: any) {
       notify({
@@ -158,6 +162,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
 
   useEffect(() => {
     if (mangoAccount && showSetupStep === 2) {
+      setIsOnboarded(true)
       onClose()
     }
   }, [mangoAccount, showSetupStep, onClose])
@@ -221,7 +226,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
       <div className="absolute top-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
         <div
           style={{
-            width: `${(showSetupStep / 3) * 100}%`,
+            width: `${(showSetupStep / 4) * 100}%`,
           }}
           className="flex bg-th-primary transition-all duration-700 ease-out"
         />
@@ -330,17 +335,12 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                 </p>
               </div>
               <div className="pb-4">
-                <p className="mb-2 text-base text-th-fgd-3">
-                  {t('account-name')}{' '}
-                  <span className="ml-1 text-xs text-th-fgd-4">
-                    ({t('optional')})
-                  </span>
-                </p>
+                <Label text={t('account-name')} optional />
                 <Input
                   type="text"
                   name="name"
                   id="name"
-                  placeholder="Account"
+                  placeholder="e.g. Highly Profitable Trading Strategies"
                   value={accountName}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setAccountName(e.target.value)
@@ -464,7 +464,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     </div>
                   )}
                 </Button>
-                <LinkButton onClick={onClose}>
+                <LinkButton onClick={() => setShowSetupStep(4)}>
                   <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                     {t('onboarding:skip')}
                   </span>
@@ -494,6 +494,40 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     showDepositRates
                     sortByKey="walletBalanceValue"
                     valueKey="walletBalance"
+                  />
+                </div>
+              </UserSetupTransition>
+            </div>
+          ) : null}
+        </UserSetupTransition>
+        <UserSetupTransition delay show={showSetupStep === 4}>
+          {showSetupStep === 4 ? (
+            <div className="relative">
+              <h2 className="mb-4 text-5xl lg:text-6xl">
+                {t('onboarding:your-profile')}
+              </h2>
+              <p className="text-base">{t('onboarding:profile-desc')}</p>
+              {!showEditProfilePic ? (
+                <div className="mt-6 border-t border-th-bkg-3 pt-3">
+                  <EditProfileForm
+                    onFinish={onClose}
+                    onEditProfileImage={() => setShowEditProfilePic(true)}
+                    onboarding
+                  />
+                  <LinkButton className="mt-6" onClick={onClose}>
+                    <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
+                      {t('onboarding:skip-finish')}
+                    </span>
+                  </LinkButton>
+                </div>
+              ) : null}
+              <UserSetupTransition show={showEditProfilePic}>
+                <div
+                  className="thin-scroll absolute mt-6 w-full overflow-auto border-t border-th-bkg-3 px-2 pt-6"
+                  style={{ height: 'calc(100vh - 360px)' }}
+                >
+                  <EditNftProfilePic
+                    onClose={() => setShowEditProfilePic(false)}
                   />
                 </div>
               </UserSetupTransition>

@@ -9,7 +9,11 @@
     "create-account-desc": "You need a Mango Account to get started",
     "fund-account": "Fund Your Account",
     "intro-desc": "We've got DeFi covered. Trade, swap, borrow and lend all of your favorite tokens with low fees and lightning execution",
-    "intro-heading": "Not your average exchange",
+    "intro-heading": "Your one-stop DeFi shop",
     "lets-go": "Let's Go",
-    "skip": "Skip for now"
+    "profile-desc": "Add an NFT profile image and edit your assigned name",
+    "save-finish": "Save and Finish",
+    "skip": "Skip for now",
+    "skip-finish": "Skip and Finish",
+    "your-profile": "Your Profile"
 }
