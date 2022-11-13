@@ -2,11 +2,9 @@ import { useState, useCallback, useEffect, useMemo } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import {
   ArrowDownIcon,
-  ArrowRightIcon,
   Cog8ToothIcon,
   MagnifyingGlassIcon,
   ExclamationCircleIcon,
-  HeartIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
 import { RouteInfo } from '@jup-ag/core'
@@ -22,7 +20,7 @@ import { SwapLeverageSlider } from './LeverageSlider'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
-import Button, { IconButton, LinkButton } from '../shared/Button'
+import Button, { IconButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
@@ -35,8 +33,8 @@ import {
   OUTPUT_TOKEN_DEFAULT,
 } from '../../utils/constants'
 import { useTokenMax } from './useTokenMax'
-import Tooltip from '@components/shared/Tooltip'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
+import HealthImpact from '@components/shared/HealthImpact'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -368,39 +366,7 @@ const SwapForm = () => {
         id="swap-step-four"
         className={`border-t border-th-bkg-3 px-6 py-4 transition-all`}
       >
-        <div className="flex justify-between">
-          <div className="flex items-center">
-            <HeartIcon className="mr-1.5 h-4 w-4 text-th-fgd-4" />
-            <Tooltip content="Projects the health of your account before you make a trade. The first value is your current account health and the second, your projected account health.">
-              <p className="tooltip-underline text-sm">{t('health-impact')}</p>
-            </Tooltip>
-          </div>
-          <div className="flex items-center space-x-2 font-mono">
-            <p className="text-sm text-th-fgd-1">{currentMaintHealth}%</p>
-            <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
-            <p
-              className={`${
-                maintProjectedHealth! < 50 && maintProjectedHealth! > 15
-                  ? 'text-th-orange'
-                  : maintProjectedHealth! <= 15
-                  ? 'text-th-red'
-                  : 'text-th-green'
-              } text-sm`}
-            >
-              {maintProjectedHealth!}%{' '}
-              <span
-                className={`text-xs ${
-                  maintProjectedHealth! >= currentMaintHealth!
-                    ? 'text-th-green'
-                    : 'text-th-red'
-                }`}
-              >
-                ({maintProjectedHealth! >= currentMaintHealth! ? '+' : ''}
-                {maintProjectedHealth! - currentMaintHealth!}%)
-              </span>
-            </p>
-          </div>
-        </div>
+        <HealthImpact maintProjectedHealth={maintProjectedHealth} />
       </div>
     </ContentBox>
   )

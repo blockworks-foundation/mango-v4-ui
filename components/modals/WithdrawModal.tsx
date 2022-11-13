@@ -14,12 +14,11 @@ import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
+import { formatFixedDecimals } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Label from '../forms/Label'
-import Button, { LinkButton } from '../shared/Button'
-import HealthImpact from '../shared/HealthImpact'
+import Button from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
@@ -27,6 +26,7 @@ import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 import { withValueLimit } from '../swap/SwapForm'
 import { getMaxWithdrawForBank } from '../swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
+import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 
 interface WithdrawModalProps {
   token?: string
@@ -255,7 +255,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </div>
             </div>
             <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
-              <HealthImpact
+              <HealthImpactTokenChange
                 mintPk={bank!.mint}
                 uiAmount={Number(inputAmount)}
               />

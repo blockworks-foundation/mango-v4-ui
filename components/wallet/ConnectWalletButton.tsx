@@ -5,7 +5,6 @@ import { useTranslation } from 'next-i18next'
 import uniqBy from 'lodash/uniqBy'
 import WalletSelect from './WalletSelect'
 import mangoStore from '@store/mangoStore'
-import { Wallet as AnchorWallet } from '@project-serum/anchor'
 import { notify } from '../../utils/notifications'
 import Loading from '../shared/Loading'
 
@@ -13,13 +12,10 @@ export const handleWalletConnect = async (wallet: Wallet) => {
   if (!wallet) {
     return
   }
-  const actions = mangoStore.getState().actions
   const set = mangoStore.getState().set
 
   try {
     await wallet?.adapter?.connect()
-    await actions.connectMangoClientWithWallet(wallet)
-    await onConnectFetchAccountData(wallet)
     set((state) => {
       state.connected = true
     })
@@ -39,14 +35,6 @@ export const handleWalletConnect = async (wallet: Wallet) => {
       })
     }
   }
-}
-
-const onConnectFetchAccountData = async (wallet: Wallet) => {
-  if (!wallet) return
-  const actions = mangoStore.getState().actions
-  await actions.fetchMangoAccounts(wallet.adapter as unknown as AnchorWallet)
-  actions.fetchTourSettings(wallet.adapter.publicKey?.toString() as string)
-  actions.fetchWalletTokens(wallet.adapter as unknown as AnchorWallet)
 }
 
 export const ConnectWalletButton: React.FC = () => {

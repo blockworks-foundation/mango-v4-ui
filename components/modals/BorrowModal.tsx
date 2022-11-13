@@ -17,8 +17,7 @@ import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Label from '../forms/Label'
-import Button, { LinkButton } from '../shared/Button'
-import HealthImpact from '../shared/HealthImpact'
+import Button from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
@@ -26,6 +25,7 @@ import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 import { withValueLimit } from '../swap/SwapForm'
 import { getMaxWithdrawForBank } from '../swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
+import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 
 interface BorrowModalProps {
   token?: string
@@ -256,7 +256,10 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
             </div> */}
           </div>
           <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
-            <HealthImpact mintPk={bank!.mint} uiAmount={Number(inputAmount)} />
+            <HealthImpactTokenChange
+              mintPk={bank!.mint}
+              uiAmount={Number(inputAmount)}
+            />
             <div className="flex justify-between">
               <p>{t('borrow-value')}</p>
               <p className="font-mono text-th-fgd-1">
