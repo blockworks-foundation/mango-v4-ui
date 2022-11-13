@@ -166,7 +166,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     onClose()
   }
 
-  // TODO extract into a shared hook for UserSetupModal.tsx
+  // TODO extract into a shared hook for UserSetup.tsx
   const banks = useMemo(() => {
     const banks = group?.banksMapByName
       ? Array.from(group?.banksMapByName, ([key, value]) => {

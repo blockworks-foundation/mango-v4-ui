@@ -417,3 +417,16 @@ input[type='range']::-webkit-slider-runnable-track {
 .tooltip-underline {
   @apply default-transition w-max border-b border-dashed border-th-fgd-4 leading-tight hover:cursor-help hover:border-transparent;
 }
+
+.radial-gradient-bg {
+  background-image: radial-gradient(
+    at 300% 100%,
+    var(--button) 0,
+    transparent 75%
+  );
+  @apply bg-th-bkg-1;
+}
+
+#tsparticles {
+  @apply absolute h-screen w-full;
+}
