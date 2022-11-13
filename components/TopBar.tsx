@@ -19,7 +19,7 @@ const TopBar = () => {
   const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const connected = mangoStore((s) => s.connected)
-  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetupModal, setShowUserSetupModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
@@ -91,7 +91,7 @@ const TopBar = () => {
             </button>
             <ConnectedMenu />
           </div>
-        ) : isOnboarded ? (
+        ) : isOnBoarded ? (
           <ConnectWalletButton />
         ) : (
           <button
