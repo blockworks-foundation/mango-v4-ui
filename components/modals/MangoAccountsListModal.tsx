@@ -69,7 +69,7 @@ const MangoAccountsListModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="inline-block w-full transform overflow-x-hidden">
-        <div className="flex min-h-[264px] flex-col justify-between">
+        <div className="flex min-h-[324px] flex-col justify-between">
           <div>
             <h2 className="text-center">{t('accounts')}</h2>
             {loading ? (
