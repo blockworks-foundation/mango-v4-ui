@@ -248,14 +248,14 @@ const SwapForm = () => {
             </IconButton>
           </div>
         </div>
-        <div id="swap-step-two" className="mb-2 flex items-end justify-between">
+        <div className="mb-2 flex items-end justify-between">
           <p className="text-th-fgd-3">{t('swap:pay')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
             setAmountIn={setAmountInFormValue}
           />
         </div>
-        <div className="mb-3 grid grid-cols-2">
+        <div className="mb-3 grid grid-cols-2" id="swap-step-two">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
               tokenSymbol={inputTokenInfo?.symbol || INPUT_TOKEN_DEFAULT}
