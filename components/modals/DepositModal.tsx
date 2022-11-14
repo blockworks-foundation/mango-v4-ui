@@ -13,7 +13,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
-import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from '../../utils/constants'
+import {
+  ALPHA_DEPOSIT_LIMIT,
+  INPUT_TOKEN_DEFAULT,
+  MIN_SOL_BALANCE,
+} from '../../utils/constants'
 import { notify } from '../../utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { TokenAccount } from '../../utils/tokens'
@@ -29,6 +33,7 @@ import { withValueLimit } from '../swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
+import { TokenInstructions } from '@project-serum/serum'
 
 interface DepositModalProps {
   token?: string
@@ -88,14 +93,32 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
+  const solBalance = useMemo(() => {
+    return (
+      walletTokens.find((t) =>
+        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
+      )?.uiAmount || 0
+    )
+  }, [walletTokens])
+
+  useEffect(() => {
+    const maxSolDeposit = solBalance - MIN_SOL_BALANCE
+    if (selectedToken === 'SOL' && maxSolDeposit < Number(inputAmount)) {
+      setInputAmount(maxSolDeposit.toString())
+      setShowMaxSolWarning(true)
+    } else {
+      if (showMaxSolWarning) {
+        setShowMaxSolWarning(false)
+      }
+    }
+  }, [solBalance, inputAmount, selectedToken])
+
   const tokenMax = useMemo(() => {
     return walletBalanceForToken(walletTokens, selectedToken)
   }, [walletTokens, selectedToken])
 
   const setMax = useCallback(() => {
-    const max =
-      selectedToken === 'SOL' ? tokenMax.maxAmount - 0.05 : tokenMax.maxAmount
-    setInputAmount(max.toString())
+    setInputAmount(tokenMax.maxAmount.toString())
     setSizePercentage('100')
   }, [tokenMax, selectedToken])
 
@@ -104,24 +127,12 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       setSizePercentage(percentage)
 
       let amount = new Decimal(tokenMax.maxAmount).mul(percentage).div(100)
-      if (percentage !== '100') {
-        amount = floorToDecimal(amount, tokenMax.maxDecimals)
-      } else {
-        amount = selectedToken === 'SOL' ? amount.sub(0.05) : amount
-      }
+      amount = floorToDecimal(amount, tokenMax.maxDecimals)
 
       setInputAmount(amount.toString())
     },
     [tokenMax, selectedToken]
   )
-
-  useEffect(() => {
-    if (selectedToken === 'SOL' && sizePercentage === '100') {
-      setShowMaxSolWarning(true)
-    } else {
-      setShowMaxSolWarning(false)
-    }
-  }, [selectedToken, sizePercentage])
 
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
@@ -245,7 +256,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="mt-2">
               <InlineNotification
                 type="warning"
-                desc="SOL deposits are restricted to leave 0.05 SOL in your wallet for sending transactions"
+                desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
               />
             </div>
           ) : null}

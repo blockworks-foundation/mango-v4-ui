@@ -1,7 +1,9 @@
+import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import {
   ArrowDownTrayIcon,
   CheckCircleIcon,
+  ExclamationCircleIcon,
   FireIcon,
   PencilIcon,
   PlusCircleIcon,
@@ -23,7 +25,11 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { IS_ONBOARDED_KEY, MIN_SOL_BALANCE } from 'utils/constants'
+import {
+  ALPHA_DEPOSIT_LIMIT,
+  IS_ONBOARDED_KEY,
+  MIN_SOL_BALANCE,
+} from 'utils/constants'
 import { notify } from 'utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from 'utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
@@ -42,7 +48,7 @@ import MaxAmountButton from './shared/MaxAmountButton'
 import { handleWalletConnect } from './wallet/ConnectWalletButton'
 
 const UserSetup = ({ onClose }: { onClose: () => void }) => {
-  const { t } = useTranslation(['common', 'onboarding'])
+  const { t } = useTranslation(['common', 'onboarding', 'swap'])
   const group = mangoStore((s) => s.group)
   const { connected, select, wallet, wallets } = useWallet()
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
@@ -57,6 +63,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [showMaxSolWarning, setShowMaxSolWarning] = useState(false)
 
   const solBalance = useMemo(() => {
     return (
@@ -65,6 +72,35 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
       )?.uiAmount || 0
     )
   }, [walletTokens])
+
+  useEffect(() => {
+    const maxSolDeposit = solBalance - MIN_SOL_BALANCE
+    if (depositToken === 'SOL' && maxSolDeposit < Number(depositAmount)) {
+      setDepositAmount(maxSolDeposit.toString())
+      setShowMaxSolWarning(true)
+    } else {
+      if (showMaxSolWarning) {
+        setShowMaxSolWarning(false)
+      }
+    }
+  }, [solBalance, depositAmount, depositToken])
+
+  const exceedsAlphaMax = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!group || !mangoAccount) return
+    if (
+      mangoAccount.owner.toString() ===
+      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
+    )
+      return false
+    const accountValue = toUiDecimalsForQuote(
+      mangoAccount.getEquity(group)!.toNumber()
+    )
+    return (
+      parseFloat(depositAmount) > ALPHA_DEPOSIT_LIMIT ||
+      accountValue > ALPHA_DEPOSIT_LIMIT
+    )
+  }, [depositAmount])
 
   const connectWallet = async () => {
     if (wallet) {
@@ -197,6 +233,8 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
     }
     return { amount: 0, decimals: 0 }
   }, [banks, depositToken])
+
+  const showInsufficientBalance = tokenMax.amount < Number(depositAmount)
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -394,6 +432,20 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                 {t('onboarding:fund-account')}
               </h2>
               <UserSetupTransition show={depositToken.length > 0}>
+                <div className="mb-4">
+                  <InlineNotification
+                    type="info"
+                    desc={`There is a $${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha testing.`}
+                  />
+                  {showMaxSolWarning ? (
+                    <div className="mt-2">
+                      <InlineNotification
+                        type="warning"
+                        desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
+                      />
+                    </div>
+                  ) : null}
+                </div>
                 <div className="flex justify-between">
                   <Label text={t('amount')} />
                   <MaxAmountButton
@@ -466,12 +518,24 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                 </div>
                 <Button
                   className="mb-6 flex w-44 items-center justify-center"
-                  disabled={!depositAmount || !depositToken}
+                  disabled={
+                    !depositAmount ||
+                    !depositToken ||
+                    exceedsAlphaMax ||
+                    showInsufficientBalance
+                  }
                   onClick={handleDeposit}
                   size="large"
                 >
                   {submitDeposit ? (
                     <Loading />
+                  ) : showInsufficientBalance ? (
+                    <div className="flex items-center">
+                      <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                      {t('swap:insufficient-balance', {
+                        symbol: depositToken,
+                      })}
+                    </div>
                   ) : (
                     <div className="flex items-center justify-center">
                       <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
