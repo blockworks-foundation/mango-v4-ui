@@ -177,7 +177,12 @@ const ActivityFeedTable = ({
                         {amounts.debit.symbol}
                       </span>
                     </td>
-                    <td className="text-right font-mono">
+                    <td
+                      className={`text-right font-mono ${
+                        value >= 0 ? 'text-th-green' : 'text-th-red'
+                      }`}
+                    >
+                      {value > 0 ? '+' : ''}
                       {formatFixedDecimals(value, true)}
                     </td>
                     <td>
