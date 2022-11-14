@@ -343,7 +343,7 @@ const AdvancedTradeForm = () => {
           fillWidth
         />
       </div>
-      <div className="mt-6 px-4">
+      <div className="mt-1 px-4 md:mt-6">
         <TabUnderline
           activeValue={tradeForm.side}
           values={['buy', 'sell']}
@@ -524,8 +524,8 @@ const AdvancedTradeForm = () => {
           )}
         </Button>
       </div>
-      <div className="mt-6 px-4">
-        <HealthImpact maintProjectedHealth={maintProjectedHealth} />
+      <div className="mt-4 px-4 lg:mt-6">
+        <HealthImpact maintProjectedHealth={maintProjectedHealth} responsive />
       </div>
     </div>
   )

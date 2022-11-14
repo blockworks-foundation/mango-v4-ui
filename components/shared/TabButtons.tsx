@@ -31,7 +31,13 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
           <button
             className={`default-transition flex h-12 w-full items-center justify-center px-4 font-normal md:px-6 ${
               rounded ? 'rounded-md' : 'rounded-none'
-            } ${showBorders ? 'border-r border-th-bkg-3' : ''} ${
+            } ${
+              showBorders
+                ? `border-r border-th-bkg-3 ${
+                    fillWidth && i === values.length - 1 ? 'border-r-0' : ''
+                  }`
+                : ''
+            } ${
               label === activeValue
                 ? 'bg-th-bkg-2 text-th-primary'
                 : 'hover:cursor-pointer hover:text-th-fgd-2'

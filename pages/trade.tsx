@@ -17,7 +17,11 @@ export async function getStaticProps({ locale }: { locale: string }) {
 }
 
 const Trade: NextPage = () => {
-  return <TradeAdvancedPage />
+  return (
+    <div className="pb-16 md:pb-0">
+      <TradeAdvancedPage />
+    </div>
+  )
 }
 
 export default Trade

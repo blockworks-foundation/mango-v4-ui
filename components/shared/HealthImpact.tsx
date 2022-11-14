@@ -7,8 +7,10 @@ import Tooltip from './Tooltip'
 
 const HealthImpact = ({
   maintProjectedHealth,
+  responsive,
 }: {
   maintProjectedHealth: number
+  responsive?: boolean
 }) => {
   const { t } = useTranslation('common')
   const group = mangoStore.getState().group
@@ -22,21 +24,29 @@ const HealthImpact = ({
   return (
     <div className="flex flex-wrap items-start justify-between">
       <Tooltip content={t('health-tooltip')}>
-        <p className="tooltip-underline mr-4 mb-1 text-sm">
+        <p
+          className={`tooltip-underline mr-4 mb-1 ${
+            responsive ? 'text-xs lg:text-sm' : ''
+          }`}
+        >
           {t('health-impact')}
         </p>
       </Tooltip>
       <div className="flex items-center space-x-1.5 font-mono">
-        <p className="text-th-fgd-1">{currentMaintHealth}%</p>
+        <p
+          className={`text-th-fgd-1 ${responsive ? 'text-xs lg:text-sm' : ''}`}
+        >
+          {currentMaintHealth}%
+        </p>
         <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
         <p
-          className={
+          className={`${
             maintProjectedHealth < 50 && maintProjectedHealth > 15
               ? 'text-th-orange'
               : maintProjectedHealth <= 15
               ? 'text-th-red'
               : 'text-th-green'
-          }
+          } ${responsive ? 'text-xs lg:text-sm' : ''}`}
         >
           {maintProjectedHealth}%
         </p>
