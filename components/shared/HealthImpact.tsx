@@ -21,12 +21,12 @@ const HealthImpact = ({
 
   return (
     <div className="flex flex-wrap items-start justify-between">
-      <Tooltip content="Projects the health of your account before you make a trade. The first value is your current account health and the second, your projected account health.">
+      <Tooltip content={t('health-tooltip')}>
         <p className="tooltip-underline mr-4 mb-1 text-sm">
           {t('health-impact')}
         </p>
       </Tooltip>
-      <div className="flex items-center space-x-2 font-mono">
+      <div className="flex items-center space-x-1.5 font-mono">
         <p className="text-th-fgd-1">{currentMaintHealth}%</p>
         <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
         <p
@@ -38,18 +38,18 @@ const HealthImpact = ({
               : 'text-th-green'
           }
         >
-          {maintProjectedHealth}%{' '}
-          <span
-            className={`text-xs ${
-              maintProjectedHealth >= currentMaintHealth!
-                ? 'text-th-green'
-                : 'text-th-red'
-            }`}
-          >
-            ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
-            {maintProjectedHealth - currentMaintHealth!}%)
-          </span>
+          {maintProjectedHealth}%
         </p>
+        <span
+          className={`text-xs ${
+            maintProjectedHealth >= currentMaintHealth!
+              ? 'text-th-green'
+              : 'text-th-red'
+          }`}
+        >
+          ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
+          {maintProjectedHealth - currentMaintHealth!}%)
+        </span>
       </div>
     </div>
   )
