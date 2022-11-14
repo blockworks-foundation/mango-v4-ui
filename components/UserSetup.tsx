@@ -25,7 +25,7 @@ import {
 } from 'react'
 import { IS_ONBOARDED_KEY, MIN_SOL_BALANCE } from 'utils/constants'
 import { notify } from 'utils/notifications'
-import { floorToDecimal } from 'utils/numbers'
+import { floorToDecimal, formatFixedDecimals } from 'utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Input from './forms/Input'
@@ -185,6 +185,10 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
       : []
     return banks
   }, [group?.banksMapByName, walletTokens])
+
+  const depositBank = useMemo(() => {
+    return banks.find((b) => b.key === depositToken)
+  }, [depositToken])
 
   const tokenMax = useMemo(() => {
     const bank = banks.find((bank) => bank.key === depositToken)
@@ -409,7 +413,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     ).toFixed()}
                   />
                 </div>
-                <div className="mb-10 grid grid-cols-2">
+                <div className="mb-6 grid grid-cols-2">
                   <button
                     className="col-span-1 flex items-center rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-transparent px-4 hover:bg-transparent"
                     onClick={() => setDepositToken('')}
@@ -447,6 +451,17 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                       values={['10', '25', '50', '75', '100']}
                       unit="%"
                     />
+                  </div>
+                </div>
+                <div className="mb-10 border-y border-th-bkg-3">
+                  <div className="flex justify-between px-2 py-4">
+                    <p>{t('deposit-value')}</p>
+                    <p className="font-mono">
+                      {formatFixedDecimals(
+                        depositBank?.value[0].uiPrice! * Number(depositAmount),
+                        true
+                      )}
+                    </p>
                   </div>
                 </div>
                 <Button
