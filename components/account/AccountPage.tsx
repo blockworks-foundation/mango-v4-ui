@@ -386,7 +386,7 @@ const AccountPage = () => {
           </div>
         </div>
         <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
-          <div>
+          <div id="account-step-six">
             <Tooltip
               content="Total position size divided by total collateral."
               maxWidth="20rem"
@@ -410,7 +410,7 @@ const AccountPage = () => {
           }`}
           onClick={() => handleChartToShow('pnl')}
         >
-          <div id="account-step-six" className="flex flex-col items-start">
+          <div id="account-step-seven" className="flex flex-col items-start">
             <Tooltip
               content="The amount your account has made or lost."
               placement="bottom"
@@ -437,7 +437,7 @@ const AccountPage = () => {
           }`}
           onClick={() => handleChartToShow('cumulative-interest-value')}
         >
-          <div id="account-step-seven">
+          <div id="account-step-eight">
             <Tooltip
               content="The value of interest earned (deposits) minus interest paid (borrows)."
               maxWidth="20rem"

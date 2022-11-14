@@ -108,14 +108,14 @@ const TokenList = () => {
               </th>
               <th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</th>
               <th className="bg-th-bkg-1 text-right">{t('trade:unsettled')}</th>
-              <th className="flex justify-end" id="account-step-eight">
+              <th className="flex justify-end" id="account-step-nine">
                 <Tooltip content="The sum of interest earned and interest paid for each token.">
                   <span className="tooltip-underline">
                     {t('interest-earned-paid')}
                   </span>
                 </Tooltip>
               </th>
-              <th id="account-step-nine">
+              <th id="account-step-ten">
                 <div className="flex justify-end">
                   <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right).">
                     <span className="tooltip-underline">{t('rates')}</span>
@@ -226,10 +226,7 @@ const TokenList = () => {
                     </div>
                   </td>
                   <td>
-                    <div
-                      className="flex justify-end space-x-2"
-                      id={i === 0 ? 'account-step-ten' : ''}
-                    >
+                    <div className="flex justify-end space-x-2">
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
                       <IconButton
                         onClick={() => goToTokenPage(bank)}

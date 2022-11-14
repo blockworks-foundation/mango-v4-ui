@@ -76,6 +76,7 @@ const TopBar = () => {
           <div className="flex items-center space-x-4 pr-4 md:pr-0">
             <button
               className="mr-2 hidden md:block"
+              id="account-step-two"
               onClick={handleShowAccounts}
             >
               <p className="text-right text-xs">{t('accounts')}</p>
