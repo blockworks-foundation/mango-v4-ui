@@ -46,7 +46,8 @@ const MangoAccountsListModal = ({
     })
     try {
       const reloadedMangoAccount = await retryFn(() => acc.reload(client))
-      actions.fetchOpenOrders(reloadedMangoAccount)
+      await actions.fetchOpenOrders(reloadedMangoAccount)
+
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
         s.mangoAccount.lastUpdatedAt = new Date().toISOString()
