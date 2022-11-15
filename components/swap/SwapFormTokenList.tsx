@@ -53,21 +53,12 @@ const TokenItem = ({
 }) => {
   const { address, symbol, logoURI, name } = token
 
-  const isDisabled =
-    (type === 'input' && useMargin && token.amountWithBorrow!.eq(0)) ||
-    (type === 'input' && !useMargin && token.amount!.eq(0))
-
   return (
     <div>
       <button
         key={address}
-        className={`default-transition flex w-full items-center justify-between rounded-md p-2 font-normal  ${
-          isDisabled
-            ? 'opacity-50'
-            : 'cursor-pointer focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2'
-        }`}
+        className={`default-transition flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2`}
         onClick={() => onSubmit(address)}
-        disabled={isDisabled}
       >
         <div className="flex items-center">
           <picture>

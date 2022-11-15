@@ -72,7 +72,7 @@ const useJupiter = ({
               amount: JSBI.BigInt(
                 new Decimal(inputAmount).mul(10 ** inputTokenInfo.decimals)
               ),
-              slippage, // The slippage in % terms
+              slippageBps: Math.ceil(slippage * 100), // The slippage in % terms
               filterTopNResult: 10,
               onlyDirectRoutes: true,
             })
