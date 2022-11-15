@@ -25,7 +25,7 @@ const TabUnderline = ({
             : 'bg-th-primary'
         }`}
         style={{
-          maxWidth: '176px',
+          // maxWidth: '176px',
           transform: `translateX(${
             values.findIndex((v) => v === activeValue) * 100
           }%)`,

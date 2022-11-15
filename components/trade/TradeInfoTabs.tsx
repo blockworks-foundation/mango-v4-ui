@@ -6,12 +6,16 @@ import UnsettledTrades from './UnsettledTrades'
 import mangoStore from '@store/mangoStore'
 import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
 import PerpPositions from './PerpPositions'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const unsettledSpotBalances = useUnsettledSpotBalances()
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.lg : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     return [
@@ -30,6 +34,7 @@ const TradeInfoTabs = () => {
           onChange={(tab: string) => setSelectedTab(tab)}
           values={tabsWithCount}
           showBorders
+          fillWidth={isMobile}
         />
       </div>
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}

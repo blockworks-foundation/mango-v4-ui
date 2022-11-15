@@ -1,18 +1,16 @@
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
+import Tooltip from './Tooltip'
 
 const HealthImpact = ({
-  uiAmount,
-  isDeposit,
-  mintPk,
+  maintProjectedHealth,
+  responsive,
 }: {
-  uiAmount: number
-  isDeposit?: boolean
-  mintPk: PublicKey
+  maintProjectedHealth: number
+  responsive?: boolean
 }) => {
   const { t } = useTranslation('common')
   const group = mangoStore.getState().group
@@ -23,51 +21,45 @@ const HealthImpact = ({
     return mangoAccount.getHealthRatioUi(group, HealthType.maint)
   }, [mangoAccount])
 
-  const maintProjectedHealth = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !mangoAccount) return 0
-    const uiTokenAmount = isDeposit ? uiAmount : uiAmount * -1
-    const projectedHealth =
-      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
-        group,
-        [{ mintPk, uiTokenAmount }],
-        HealthType.maint
-      )
-
-    return projectedHealth! > 100
-      ? 100
-      : projectedHealth! < 0
-      ? 0
-      : Math.trunc(projectedHealth!)
-  }, [mangoAccount, mintPk, uiAmount, isDeposit])
-
   return (
-    <div className="flex justify-between">
-      <p>{t('health-impact')}</p>
-      <div className="flex items-center space-x-2 font-mono">
-        <p className="text-th-fgd-1">{currentMaintHealth}%</p>
+    <div className="flex flex-wrap items-start justify-between">
+      <Tooltip content={t('health-tooltip')}>
+        <p
+          className={`tooltip-underline mr-4 mb-1 ${
+            responsive ? 'text-xs lg:text-sm' : ''
+          }`}
+        >
+          {t('health-impact')}
+        </p>
+      </Tooltip>
+      <div className="flex items-center space-x-1.5 font-mono">
+        <p
+          className={`text-th-fgd-1 ${responsive ? 'text-xs lg:text-sm' : ''}`}
+        >
+          {currentMaintHealth}%
+        </p>
         <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
         <p
-          className={
+          className={`${
             maintProjectedHealth < 50 && maintProjectedHealth > 15
               ? 'text-th-orange'
               : maintProjectedHealth <= 15
               ? 'text-th-red'
               : 'text-th-green'
-          }
+          } ${responsive ? 'text-xs lg:text-sm' : ''}`}
         >
-          {maintProjectedHealth}%{' '}
-          <span
-            className={`text-xs ${
-              maintProjectedHealth >= currentMaintHealth!
-                ? 'text-th-green'
-                : 'text-th-red'
-            }`}
-          >
-            ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
-            {maintProjectedHealth - currentMaintHealth!}%)
-          </span>
+          {maintProjectedHealth}%
         </p>
+        <span
+          className={`text-xs ${
+            maintProjectedHealth >= currentMaintHealth!
+              ? 'text-th-green'
+              : 'text-th-red'
+          }`}
+        >
+          ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
+          {maintProjectedHealth - currentMaintHealth!}%)
+        </span>
       </div>
     </div>
   )

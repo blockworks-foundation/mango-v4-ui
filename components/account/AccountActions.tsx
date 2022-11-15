@@ -17,6 +17,7 @@ import AccountNameModal from '../modals/AccountNameModal'
 import mangoStore from '@store/mangoStore'
 import { copyToClipboard } from 'utils'
 import { notify } from 'utils/notifications'
+import { abbreviateAddress } from 'utils/formatting'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
@@ -29,7 +30,9 @@ const AccountActions = () => {
   const handleCopyAddress = (address: string) => {
     copyToClipboard(address)
     notify({
-      title: t('copy-address-success'),
+      title: t('copy-address-success', {
+        pk: abbreviateAddress(mangoAccount!.publicKey),
+      }),
       type: 'success',
     })
   }

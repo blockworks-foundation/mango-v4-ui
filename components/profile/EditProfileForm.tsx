@@ -3,7 +3,11 @@ import Label from '@components/forms/Label'
 import Button, { IconButton } from '@components/shared/Button'
 import InlineNotification from '@components/shared/InlineNotification'
 import Loading from '@components/shared/Loading'
-import { ExclamationCircleIcon, PencilIcon } from '@heroicons/react/20/solid'
+import {
+  ExclamationCircleIcon,
+  PencilIcon,
+  PlusIcon,
+} from '@heroicons/react/20/solid'
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
@@ -16,11 +20,13 @@ import ProfileImage from './ProfileImage'
 const EditProfileForm = ({
   onFinish,
   onEditProfileImage,
+  onboarding = false,
 }: {
   onFinish: () => void
   onEditProfileImage: () => void
+  onboarding?: boolean
 }) => {
-  const { t } = useTranslation('profile')
+  const { t } = useTranslation(['profile', 'onboarding'])
   const profile = mangoStore((s) => s.profile.details)
   const { publicKey, signMessage } = useWallet()
   const [profileName, setProfileName] = useState(
@@ -132,12 +138,16 @@ const EditProfileForm = ({
             size="small"
             onClick={onEditProfileImage}
           >
-            <PencilIcon className="h-4 w-4" />
+            {profile?.profile_image_url ? (
+              <PencilIcon className="h-4 w-4" />
+            ) : (
+              <PlusIcon className="h-4 w-4" />
+            )}
           </IconButton>
           <ProfileImage imageSize="80" placeholderSize="48" isOwnerProfile />
         </div>
       </div>
-      <div className="pb-6">
+      <div className={onboarding ? 'pb-10' : 'pb-6'}>
         <Label text={t('profile:profile-name')} />
         <Input
           type="text"
@@ -171,7 +181,9 @@ const EditProfileForm = ({
               </Select>
             </div> */}
       <Button
-        className="flex w-full items-center justify-center"
+        className={`flex ${
+          onboarding ? 'w-44' : 'w-full'
+        } items-center justify-center`}
         disabled={
           !!Object.keys(inputError).length ||
           loadUniquenessCheck ||
@@ -182,6 +194,8 @@ const EditProfileForm = ({
       >
         {loadUniquenessCheck || loadUpdateProfile ? (
           <Loading />
+        ) : onboarding ? (
+          t('onboarding:save-finish')
         ) : (
           t('profile:save-profile')
         )}

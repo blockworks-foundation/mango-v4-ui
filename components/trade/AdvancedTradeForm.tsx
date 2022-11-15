@@ -1,4 +1,5 @@
 import {
+  HealthType,
   PerpMarket,
   PerpOrderSide,
   PerpOrderType,
@@ -29,6 +30,7 @@ import { Market } from '@project-serum/serum'
 import TabUnderline from '@components/shared/TabUnderline'
 import { group } from 'console'
 import PerpSlider from './PerpSlider'
+import HealthImpact from '@components/shared/HealthImpact'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -287,6 +289,50 @@ const AdvancedTradeForm = () => {
     }
   }, [t])
 
+  const maintProjectedHealth = useMemo(() => {
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!mangoAccount || !group || !tradeForm.baseSize) return 100
+
+    let simulatedHealthRatio: number
+
+    if (selectedMarket instanceof Serum3Market) {
+      simulatedHealthRatio =
+        tradeForm.side === 'sell'
+          ? mangoAccount.simHealthRatioWithSerum3AskUiChanges(
+              group,
+              parseFloat(tradeForm.baseSize),
+              selectedMarket.serumMarketExternal,
+              HealthType.maint
+            )
+          : mangoAccount.simHealthRatioWithSerum3BidUiChanges(
+              group,
+              parseFloat(tradeForm.baseSize),
+              selectedMarket.serumMarketExternal,
+              HealthType.maint
+            )
+    } else {
+      simulatedHealthRatio =
+        tradeForm.side === 'sell'
+          ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
+              group,
+              selectedMarket!.perpMarketIndex,
+              parseFloat(tradeForm.baseSize)
+            )
+          : mangoAccount.simHealthRatioWithPerpBidUiChanges(
+              group,
+              selectedMarket!.perpMarketIndex,
+              parseFloat(tradeForm.baseSize)
+            )
+    }
+
+    return simulatedHealthRatio! > 100
+      ? 100
+      : simulatedHealthRatio! < 0
+      ? 0
+      : Math.trunc(simulatedHealthRatio!)
+  }, [selectedMarket, tradeForm])
+
   return (
     <div>
       <div className="border-b border-th-bkg-3">
@@ -297,7 +343,7 @@ const AdvancedTradeForm = () => {
           fillWidth
         />
       </div>
-      <div className="mt-6 px-4">
+      <div className="mt-1 px-4 md:mt-6">
         <TabUnderline
           activeValue={tradeForm.side}
           values={['buy', 'sell']}
@@ -477,6 +523,9 @@ const AdvancedTradeForm = () => {
             </div>
           )}
         </Button>
+      </div>
+      <div className="mt-4 px-4 lg:mt-6">
+        <HealthImpact maintProjectedHealth={maintProjectedHealth} responsive />
       </div>
     </div>
   )

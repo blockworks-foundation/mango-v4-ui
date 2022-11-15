@@ -16,6 +16,7 @@ const ParticlesBackground = () => {
       init={particlesInit}
       // loaded={particlesLoaded}
       options={{
+        fullScreen: false,
         interactivity: {
           detect_on: 'canvas',
           events: {
@@ -32,40 +33,40 @@ const ParticlesBackground = () => {
           },
         },
         particles: {
-          groups: {
-            z5000: {
-              number: {
-                value: 70,
-              },
-              zIndex: {
-                value: 50,
-              },
-            },
-            z7500: {
-              number: {
-                value: 30,
-              },
-              zIndex: {
-                value: 75,
-              },
-            },
-            z2500: {
-              number: {
-                value: 50,
-              },
-              zIndex: {
-                value: 25,
-              },
-            },
-            z1000: {
-              number: {
-                value: 40,
-              },
-              zIndex: {
-                value: 10,
-              },
-            },
-          },
+          // groups: {
+          //   z5000: {
+          //     number: {
+          //       value: 70,
+          //     },
+          //     zIndex: {
+          //       value: 50,
+          //     },
+          //   },
+          //   z7500: {
+          //     number: {
+          //       value: 30,
+          //     },
+          //     zIndex: {
+          //       value: 75,
+          //     },
+          //   },
+          //   z2500: {
+          //     number: {
+          //       value: 50,
+          //     },
+          //     zIndex: {
+          //       value: 25,
+          //     },
+          //   },
+          //   z1000: {
+          //     number: {
+          //       value: 40,
+          //     },
+          //     zIndex: {
+          //       value: 10,
+          //     },
+          //   },
+          // },
           move: {
             angle: 10,
             attract: {
@@ -77,6 +78,9 @@ const ParticlesBackground = () => {
             direction: 'right',
             enable: true,
             speed: 1,
+          },
+          opacity: {
+            value: 0,
           },
         },
         emitters: [
@@ -100,38 +104,38 @@ const ParticlesBackground = () => {
                   images: [
                     {
                       src: '/icons/mngo.svg',
-                      width: 32,
-                      height: 32,
+                      width: 48,
+                      height: 48,
                     },
                     {
                       src: '/icons/btc.svg',
-                      width: 32,
-                      height: 32,
+                      width: 48,
+                      height: 48,
                     },
                     {
                       src: '/icons/eth.svg',
-                      width: 32,
-                      height: 32,
+                      width: 48,
+                      height: 48,
                     },
                     {
                       src: '/icons/sol.svg',
-                      width: 32,
-                      height: 32,
+                      width: 48,
+                      height: 48,
                     },
                     {
                       src: '/icons/usdc.svg',
-                      width: 32,
-                      height: 32,
+                      width: 48,
+                      height: 48,
                     },
                     {
                       src: '/icons/usdt.svg',
-                      width: 32,
-                      height: 32,
+                      width: 48,
+                      height: 48,
                     },
                     {
                       src: '/icons/msol.svg',
-                      width: 32,
-                      height: 32,
+                      width: 48,
+                      height: 48,
                     },
                   ],
                 },
@@ -153,7 +157,7 @@ const ParticlesBackground = () => {
                 value: 1,
               },
               size: {
-                value: 16,
+                value: 24,
                 random: false,
               },
               move: {

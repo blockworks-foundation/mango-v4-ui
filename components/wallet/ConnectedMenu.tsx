@@ -4,7 +4,7 @@ import {
   CurrencyDollarIcon,
   UserCircleIcon,
 } from '@heroicons/react/20/solid'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { useWallet, Wallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
@@ -16,6 +16,7 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import EditProfileModal from '@components/modals/EditProfileModal'
 import MangoAccountsListModal from '@components/modals/MangoAccountsListModal'
+import { Wallet as AnchorWallet } from '@project-serum/anchor'
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
@@ -28,7 +29,13 @@ const ConnectedMenu = () => {
   const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
-
+  const onConnectFetchAccountData = async (wallet: Wallet) => {
+    if (!wallet) return
+    const actions = mangoStore.getState().actions
+    await actions.fetchMangoAccounts(wallet.adapter as unknown as AnchorWallet)
+    actions.fetchTourSettings(wallet.adapter.publicKey?.toString() as string)
+    actions.fetchWalletTokens(wallet.adapter as unknown as AnchorWallet)
+  }
   const handleDisconnect = useCallback(() => {
     set((state) => {
       state.activityFeed.feed = []
@@ -49,8 +56,14 @@ const ConnectedMenu = () => {
   }, [set, t, disconnect])
 
   useEffect(() => {
+    const handleGetWalletMangoData = async () => {
+      const actions = mangoStore.getState().actions
+      await actions.connectMangoClientWithWallet(wallet!)
+      await onConnectFetchAccountData(wallet!)
+    }
     if (publicKey) {
       actions.fetchProfileDetails(publicKey.toString())
+      handleGetWalletMangoData()
     }
   }, [publicKey])
 

@@ -7,9 +7,9 @@ export async function getStaticProps({ locale }: { locale: string }) {
     props: {
       ...(await serverSideTranslations(locale, [
         'common',
-        'close-account',
-        'profile',
+        'onboarding',
         'onboarding-tours',
+        'profile',
         'swap',
         'trade',
         'activity',
