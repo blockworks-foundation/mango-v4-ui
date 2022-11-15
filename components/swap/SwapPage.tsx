@@ -19,11 +19,10 @@ const SwapPage = () => {
     <>
       <div className="grid grid-cols-12">
         <div className="col-span-12 border-th-bkg-3 md:col-span-6 md:border-b lg:col-span-7 xl:col-span-8">
-          {inputTokenInfo?.extensions?.coingeckoId &&
-          outputTokenInfo?.extensions?.coingeckoId ? (
+          {inputTokenInfo?.address && outputTokenInfo?.address ? (
             <SwapTokenChart
-              inputTokenId={inputTokenInfo?.extensions?.coingeckoId}
-              outputTokenId={outputTokenInfo?.extensions?.coingeckoId}
+              inputMint={inputTokenInfo.address}
+              outputMint={outputTokenInfo.address}
             />
           ) : null}
         </div>

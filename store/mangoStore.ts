@@ -37,6 +37,7 @@ import { Orderbook, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
+import { BIRDEYE_REQUEST_HEADER } from 'apis/birdeye'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
@@ -144,6 +145,19 @@ interface TourSettings {
   wallet_pk: string
 }
 
+export interface BirdeyePrice {
+  address: string
+  unixTime: number
+  value: number
+}
+
+export interface BirdeyeResponse {
+  data: {
+    items: BirdeyePrice[]
+  }
+  success: boolean
+}
+
 // const defaultUserSettings = {
 //   account_tour_seen: false,
 //   default_language: 'English',
@@ -164,8 +178,8 @@ export type MangoStore = {
     initialLoad: boolean
     loading: boolean
   }
-  coingeckoPrices: {
-    data: any[]
+  birdeyePrices: {
+    data: BirdeyePrice[][]
     loading: boolean
   }
   connected: boolean
@@ -204,6 +218,10 @@ export type MangoStore = {
     orderbook: Orderbook
   }
   serumMarkets: Serum3Market[]
+  serumMarketPrices: {
+    data: BirdeyePrice[][]
+    loading: boolean
+  }
   serumOrders: Order[] | undefined
   settings: {
     loading: boolean
@@ -246,7 +264,7 @@ export type MangoStore = {
       mangoAccountPk: string,
       range: number
     ) => Promise<void>
-    fetchCoingeckoPrices: () => Promise<void>
+    fetchBirdeyePrices: () => Promise<void>
     fetchGroup: () => Promise<void>
     fetchJupiterTokens: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
@@ -254,6 +272,7 @@ export type MangoStore = {
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrders: (ma?: MangoAccount) => Promise<void>
     fetchProfileDetails: (walletPk: string) => void
+    fetchSerumMarketPrices: () => Promise<void>
     fetchSwapHistory: (mangoAccountPk: string) => Promise<void>
     fetchTourSettings: (walletPk: string) => void
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
@@ -270,7 +289,7 @@ const mangoStore = create<MangoStore>()(
         initialLoad: false,
         loading: true,
       },
-      coingeckoPrices: {
+      birdeyePrices: {
         data: [],
         loading: false,
       },
@@ -313,6 +332,10 @@ const mangoStore = create<MangoStore>()(
         },
       },
       serumMarkets: [],
+      serumMarketPrices: {
+        data: [],
+        loading: false,
+      },
       serumOrders: undefined,
       set: (fn) => _set(produce(fn)),
       settings: {
@@ -477,42 +500,79 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        fetchCoingeckoPrices: async () => {
+        fetchBirdeyePrices: async () => {
           const set = get().set
           set((state) => {
-            state.coingeckoPrices.loading = true
+            state.birdeyePrices.loading = true
           })
           try {
             const jupiterTokens = mangoStore.getState().jupiterTokens
             if (jupiterTokens.length) {
-              const coingeckoIds = jupiterTokens.map((token) => ({
-                id: token.extensions?.coingeckoId,
-                symbol: token.symbol,
-              }))
-              const promises: any = []
-              for (const token of coingeckoIds) {
-                if (token.id) {
-                  promises.push(
-                    fetch(
-                      `https://api.coingecko.com/api/v3/coins/${token.id}/market_chart?vs_currency=usd&days=1`
-                    ).then((res) => res.json())
-                  )
-                }
+              const addresses = jupiterTokens.map((token) => token.address)
+              const timeTo = Math.trunc(Date.now() / 1000)
+              const timeFrom = timeTo - 86400
+              const promises = []
+              for (const address of addresses) {
+                promises.push(
+                  fetch(
+                    `https://public-api.birdeye.so/defi/history_price?address=${address}&address_type=token&type=30m&time_from=${timeFrom}&time_to=${timeTo}`,
+                    {
+                      headers: BIRDEYE_REQUEST_HEADER,
+                    }
+                  ).then((res) => res.json())
+                )
               }
 
-              const data = await Promise.all(promises)
-              for (let i = 0; i < data.length; i++) {
-                data[i].symbol = coingeckoIds[i].symbol
-              }
+              const response: BirdeyeResponse[] = await Promise.all(promises)
+              const data = response.map((r) => r.data.items)
               set((state) => {
-                state.coingeckoPrices.data = data
-                state.coingeckoPrices.loading = false
+                state.birdeyePrices.data = data
+                state.birdeyePrices.loading = false
               })
             }
           } catch (e) {
-            console.warn('Unable to load Coingecko prices')
+            console.warn('Unable to load Birdeye prices')
             set((state) => {
-              state.coingeckoPrices.loading = false
+              state.birdeyePrices.loading = false
+            })
+          }
+        },
+        fetchSerumMarketPrices: async () => {
+          const set = get().set
+          set((state) => {
+            state.serumMarketPrices.loading = true
+          })
+          try {
+            const serumMarkets = mangoStore.getState().serumMarkets
+            if (serumMarkets.length) {
+              const addresses = serumMarkets.map((market) =>
+                market.serumMarketExternal.toString()
+              )
+              const timeTo = Math.trunc(Date.now() / 1000)
+              const timeFrom = timeTo - 86400
+              const promises = []
+              for (const address of addresses) {
+                promises.push(
+                  fetch(
+                    `https://public-api.birdeye.so/defi/history_price?address=${address}&address_type=pair&type=30m&time_from=${timeFrom}&time_to=${timeTo}`,
+                    {
+                      headers: BIRDEYE_REQUEST_HEADER,
+                    }
+                  ).then((res) => res.json())
+                )
+              }
+
+              const response: BirdeyeResponse[] = await Promise.all(promises)
+              const data = response.map((r) => r.data.items)
+              set((state) => {
+                state.serumMarketPrices.data = data
+                state.serumMarketPrices.loading = false
+              })
+            }
+          } catch (e) {
+            console.warn('Unable to load Serum market prices')
+            set((state) => {
+              state.serumMarketPrices.loading = false
             })
           }
         },
