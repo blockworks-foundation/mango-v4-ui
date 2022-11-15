@@ -421,14 +421,11 @@ const AdvancedFiltersForm = ({
     if (dateFrom && dateTo) {
       setAdvancedFilters({
         ...advancedFilters,
-        'start-date':
-          dayjs(dateFrom).set('hour', 0).format('YYYY-MM-DDTHH:mm:ss.000') +
-          'Z',
-        'end-date':
-          dayjs(dateTo)
-            .set('hour', 23)
-            .set('minute', 59)
-            .format('YYYY-MM-DDTHH:mm:ss.000') + 'Z',
+        'start-date': dayjs(dateFrom).set('hour', 0).toISOString(),
+        'end-date': dayjs(dateTo)
+          .set('hour', 23)
+          .set('minute', 59)
+          .toISOString(),
       })
     } else {
       setAdvancedFilters({

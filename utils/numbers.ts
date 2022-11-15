@@ -92,13 +92,13 @@ export const formatFixedDecimals = (
         maximumFractionDigits: 2,
       }
     )
-  } else if (value >= 1000) {
+  } else if (Math.abs(value) >= 1000) {
     formattedValue = isCurrency
       ? usdFormatter0.format(value)
       : Number(floorToDecimal(value, 0)).toLocaleString(undefined, {
           maximumFractionDigits: 0,
         })
-  } else if (value >= 1) {
+  } else if (Math.abs(value) >= 0.1) {
     formattedValue = isCurrency
       ? usdFormatter2.format(value)
       : Number(floorToDecimal(value, 3)).toLocaleString(undefined, {
@@ -106,7 +106,7 @@ export const formatFixedDecimals = (
         })
   } else {
     formattedValue = isCurrency
-      ? usdFormatter2.format(value)
+      ? usdFormatter4.format(value)
       : Number(floorToDecimal(value, 4)).toLocaleString(undefined, {
           maximumFractionDigits: 4,
         })
