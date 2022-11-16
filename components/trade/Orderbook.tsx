@@ -333,79 +333,90 @@ const Orderbook = () => {
     console.log('in orderbook WS useEffect')
     const bidsPk =
       market instanceof Market ? market['_decoded'].bids : market.bids
-    connection.getAccountInfo(bidsPk).then((info) => {
-      if (!info) return
-      set((state) => {
-        // state.accountInfos[bidsPk.toString()] = info
-        state.selectedMarket.orderbook.bids = decodeBookL2(
-          client,
-          market,
-          info,
-          'bids'
-        )
+    let bidSubscriptionId: number
+    if (bidsPk) {
+      connection.getAccountInfo(bidsPk).then((info) => {
+        if (!info) return
+        set((state) => {
+          // state.accountInfos[bidsPk.toString()] = info
+          state.selectedMarket.orderbook.bids = decodeBookL2(
+            client,
+            market,
+            info,
+            'bids'
+          )
+        })
       })
-    })
-    const bidSubscriptionId = connection.onAccountChange(
-      bidsPk,
-      (info, context) => {
-        if (
-          !previousBidInfo ||
-          !previousBidInfo.data.equals(info.data) ||
-          previousBidInfo.lamports !== info.lamports
-        ) {
-          previousBidInfo = info
-          // info['parsed'] = decodeBook(serum3MarketExternal, info)
-          set((state) => {
-            // state.accountInfos[bidsPk.toString()] = info
-            state.selectedMarket.orderbook.bids = decodeBookL2(
-              client,
-              market,
-              info,
-              'bids'
-            )
-          })
+      console.log('bidsPk', bidsPk)
+      bidSubscriptionId = connection.onAccountChange(
+        bidsPk,
+        (info, context) => {
+          if (
+            !previousBidInfo ||
+            !previousBidInfo.data.equals(info.data) ||
+            previousBidInfo.lamports !== info.lamports
+          ) {
+            previousBidInfo = info
+            // info['parsed'] = decodeBook(serum3MarketExternal, info)
+            set((state) => {
+              // state.accountInfos[bidsPk.toString()] = info
+              state.selectedMarket.orderbook.bids = decodeBookL2(
+                client,
+                market,
+                info,
+                'bids'
+              )
+            })
+          }
         }
-      }
-    )
+      )
+    }
     const asksPk =
       market instanceof Market ? market['_decoded'].asks : market.asks
-    connection.getAccountInfo(asksPk).then((info) => {
-      if (!info) return
-      set((state) => {
-        // state.accountInfos[bidsPk.toString()] = info
-        state.selectedMarket.orderbook.asks = decodeBookL2(
-          client,
-          market,
-          info,
-          'bids'
-        )
+    let askSubscriptionId: number
+    if (asksPk) {
+      connection.getAccountInfo(asksPk).then((info) => {
+        if (!info) return
+        set((state) => {
+          // state.accountInfos[bidsPk.toString()] = info
+          state.selectedMarket.orderbook.asks = decodeBookL2(
+            client,
+            market,
+            info,
+            'bids'
+          )
+        })
       })
-    })
-    const askSubscriptionId = connection.onAccountChange(
-      asksPk,
-      (info, context) => {
-        if (
-          !previousAskInfo ||
-          !previousAskInfo.data.equals(info.data) ||
-          previousAskInfo.lamports !== info.lamports
-        ) {
-          previousAskInfo = info
-          // info['parsed'] = decodeBook(serum3MarketExternal, info)
-          set((state) => {
-            // state.accountInfos[asksPk.toString()] = info
-            state.selectedMarket.orderbook.asks = decodeBookL2(
-              client,
-              market,
-              info,
-              'asks'
-            )
-          })
+      askSubscriptionId = connection.onAccountChange(
+        asksPk,
+        (info, context) => {
+          if (
+            !previousAskInfo ||
+            !previousAskInfo.data.equals(info.data) ||
+            previousAskInfo.lamports !== info.lamports
+          ) {
+            previousAskInfo = info
+            // info['parsed'] = decodeBook(serum3MarketExternal, info)
+            set((state) => {
+              // state.accountInfos[asksPk.toString()] = info
+              state.selectedMarket.orderbook.asks = decodeBookL2(
+                client,
+                market,
+                info,
+                'asks'
+              )
+            })
+          }
         }
-      }
-    )
+      )
+    }
     return () => {
-      connection.removeAccountChangeListener(bidSubscriptionId)
-      connection.removeAccountChangeListener(askSubscriptionId)
+      if (bidSubscriptionId) {
+        connection.removeAccountChangeListener(bidSubscriptionId)
+      }
+      if (askSubscriptionId) {
+        connection.removeAccountChangeListener(askSubscriptionId)
+      }
     }
   }, [market])
 

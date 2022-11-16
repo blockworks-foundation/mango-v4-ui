@@ -30,6 +30,7 @@ import {
   formatFixedDecimals,
 } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -83,11 +84,11 @@ const JupiterRouteInfo = ({
   const [feeValue, setFeeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [coingeckoPrices, setCoingeckoPrices] = useState(EMPTY_COINGECKO_PRICES)
+  const { connected } = useWallet()
 
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
   const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-  const connected = mangoStore((s) => s.connected)
   const inputBank = mangoStore((s) => s.swap.inputBank)
 
   const inputTokenIconUri = useMemo(() => {

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 
 import mangoStore from '@store/mangoStore'
@@ -18,7 +19,7 @@ import SolanaTps from './SolanaTps'
 const TopBar = () => {
   const { t } = useTranslation('common')
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const connected = mangoStore((s) => s.connected)
+  const { connected } = useWallet()
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetup, setShowUserSetup] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)

@@ -45,7 +45,7 @@ import Button, { IconButton, LinkButton } from './shared/Button'
 import InlineNotification from './shared/InlineNotification'
 import Loading from './shared/Loading'
 import MaxAmountButton from './shared/MaxAmountButton'
-import { handleWalletConnect } from './wallet/ConnectWalletButton'
+import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 
 const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation(['common', 'onboarding', 'swap'])
@@ -64,6 +64,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showMaxSolWarning, setShowMaxSolWarning] = useState(false)
+  const { handleConnect } = useEnhancedWallet()
 
   const solBalance = useMemo(() => {
     return (
@@ -101,19 +102,6 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
       accountValue > ALPHA_DEPOSIT_LIMIT
     )
   }, [depositAmount])
-
-  const connectWallet = async () => {
-    if (wallet) {
-      try {
-        await handleWalletConnect(wallet)
-      } catch (e) {
-        notify({
-          title: 'Setup failed. Refresh and try again.',
-          type: 'error',
-        })
-      }
-    }
-  }
 
   useEffect(() => {
     if (connected) {
@@ -346,7 +334,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
               </div>
               <Button
                 className="mt-10 flex w-44 items-center justify-center"
-                onClick={connectWallet}
+                onClick={handleConnect}
                 size="large"
               >
                 {connected && mangoAccountLoading ? (

@@ -35,6 +35,7 @@ import {
 import { useTokenMax } from './useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpact from '@components/shared/HealthImpact'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -61,8 +62,8 @@ const SwapForm = () => {
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
   const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-  const connected = mangoStore((s) => s.connected)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
+  const { connected } = useWallet()
 
   const amountIn: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
@@ -390,7 +391,7 @@ const SwapFormSubmitButton = ({
   useMargin: boolean
 }) => {
   const { t } = useTranslation('common')
-  const connected = mangoStore((s) => s.connected)
+  const { connected } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
 
   const showInsufficientBalance = useMargin

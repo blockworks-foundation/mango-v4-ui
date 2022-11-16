@@ -9,11 +9,12 @@ import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const sideBarAnimationDuration = 500
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  const connected = mangoStore((s) => s.connected)
+  const { connected } = useWallet()
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,

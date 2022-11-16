@@ -1,11 +1,12 @@
 import React, { Fragment } from 'react'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Menu, Transition } from '@headlessui/react'
 import mangoStore from '@store/mangoStore'
+import { useEnhancedWallet } from './EnhancedWalletProvider'
 
 const WalletSelect = () => {
-  const { wallets, select } = useWallet()
+  const { displayedWallets, handleSelect } = useEnhancedWallet()
+
   const group = mangoStore((s) => s.group)
 
   return (
@@ -34,12 +35,12 @@ const WalletSelect = () => {
             leaveTo="opacity-0"
           >
             <Menu.Items className="absolute top-16 right-0 z-20 w-44 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 outline-none">
-              {wallets?.map((wallet, index) => (
+              {displayedWallets?.map((wallet, index) => (
                 <Menu.Item key={index}>
                   <button
                     className="flex w-full flex-row items-center justify-between rounded-none py-1.5 font-normal focus:outline-none md:hover:cursor-pointer md:hover:text-th-primary"
                     onClick={() => {
-                      select(wallet.adapter.name)
+                      handleSelect(wallet.adapter.name)
                     }}
                   >
                     <div className="flex items-center">

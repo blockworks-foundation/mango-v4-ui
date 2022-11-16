@@ -20,15 +20,19 @@ import { Wallet as AnchorWallet } from '@project-serum/anchor'
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
+  const { publicKey, disconnect, wallet } = useWallet()
+  const { width } = useViewport()
+
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
+
   const set = mangoStore((s) => s.set)
-  const { publicKey, disconnect, wallet } = useWallet()
   const actions = mangoStore((s) => s.actions)
   const profileDetails = mangoStore((s) => s.profile.details)
   const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
-  const { width } = useViewport()
+
   const isMobile = width ? width < breakpoints.md : false
+
   const onConnectFetchAccountData = async (wallet: Wallet) => {
     if (!wallet) return
     const actions = mangoStore.getState().actions
@@ -36,13 +40,13 @@ const ConnectedMenu = () => {
     actions.fetchTourSettings(wallet.adapter.publicKey?.toString() as string)
     actions.fetchWalletTokens(wallet.adapter as unknown as AnchorWallet)
   }
+
   const handleDisconnect = useCallback(() => {
     set((state) => {
       state.activityFeed.feed = []
       state.activityFeed.initialLoad = false
       state.mangoAccount.current = undefined
       state.mangoAccounts = []
-      state.connected = false
       state.mangoAccount.openOrders = {}
       state.mangoAccount.stats.interestTotals = { data: [], loading: false }
       state.mangoAccount.stats.performance = { data: [], loading: false }
@@ -61,11 +65,12 @@ const ConnectedMenu = () => {
       await actions.connectMangoClientWithWallet(wallet!)
       await onConnectFetchAccountData(wallet!)
     }
+
     if (publicKey) {
       actions.fetchProfileDetails(publicKey.toString())
       handleGetWalletMangoData()
     }
-  }, [publicKey])
+  }, [publicKey, actions, wallet])
 
   const { profile_name, wallet_pk } = profileDetails
 
