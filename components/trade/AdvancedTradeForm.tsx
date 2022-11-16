@@ -31,6 +31,10 @@ import TabUnderline from '@components/shared/TabUnderline'
 import { group } from 'console'
 import PerpSlider from './PerpSlider'
 import HealthImpact from '@components/shared/HealthImpact'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { TRADE_FORM_UI_KEY } from 'utils/constants'
+import SpotButtonGroup from './SpotButtonGroup'
+import PerpButtonGroup from './PerpButtonGroup'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -45,6 +49,7 @@ const AdvancedTradeForm = () => {
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
+  const [tradeFormUi] = useLocalStorageState(TRADE_FORM_UI_KEY, 'Slider')
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[0]
@@ -440,11 +445,17 @@ const AdvancedTradeForm = () => {
           </div>
         </div>
       </div>
-      <div className="mt-4 flex">
+      <div className={`${tradeFormUi === 'Slider' ? 'mt-4' : 'mt-2'} flex`}>
         {selectedMarket instanceof Serum3Market ? (
-          <SpotSlider />
-        ) : (
+          tradeFormUi === 'Slider' ? (
+            <SpotSlider />
+          ) : (
+            <SpotButtonGroup />
+          )
+        ) : tradeFormUi === 'Slider' ? (
           <PerpSlider />
+        ) : (
+          <PerpButtonGroup />
         )}
       </div>
       <div className="flex flex-wrap px-5">

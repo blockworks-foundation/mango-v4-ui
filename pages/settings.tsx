@@ -10,6 +10,7 @@ import {
   NOTIFICATION_POSITION_KEY,
   ORDERBOOK_FLASH_KEY,
   PREFERRED_EXPLORER_KEY,
+  TRADE_FORM_UI_KEY,
 } from 'utils/constants'
 import Switch from '@components/forms/Switch'
 import { useCallback, useMemo } from 'react'
@@ -63,7 +64,7 @@ const NOTIFICATION_POSITIONS = [
 ]
 
 const Settings: NextPage = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'settings'])
   const { theme, setTheme } = useTheme()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
@@ -81,6 +82,10 @@ const Settings: NextPage = () => {
   const [preferredExplorer, setPreferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
+  )
+  const [tradeFormUi, setTradeFormUi] = useLocalStorageState(
+    TRADE_FORM_UI_KEY,
+    'Slider'
   )
   const themes = useMemo(() => {
     return [t('settings:light'), t('settings:mango'), t('settings:dark')]
@@ -107,7 +112,7 @@ const Settings: NextPage = () => {
                 activeValue={theme}
                 onChange={(t) => setTheme(t)}
                 values={themes}
-                large={!isMobile}
+                // large={!isMobile}
               />
             </div>
           </div>
@@ -119,7 +124,7 @@ const Settings: NextPage = () => {
                 onChange={(l) => handleLangChange(l)}
                 values={LANGS.map((val) => val.locale)}
                 names={LANGS.map((val) => t(`settings:${val.name}`))}
-                large={!isMobile}
+                // large={!isMobile}
               />
             </div>
           </div>
@@ -135,7 +140,18 @@ const Settings: NextPage = () => {
                 names={NOTIFICATION_POSITIONS.map((val) =>
                   t(`settings:${val}`)
                 )}
-                large={!isMobile}
+                // large={!isMobile}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
+            <p className="mb-2 lg:mb-0">{t('settings:trade-size-ui')}</p>
+            <div className="w-full min-w-[160px] md:w-auto">
+              <ButtonGroup
+                activeValue={tradeFormUi}
+                onChange={(v) => setTradeFormUi(v)}
+                values={[t('settings:slider'), t('settings:buttons')]}
+                // large={!isMobile}
               />
             </div>
           </div>

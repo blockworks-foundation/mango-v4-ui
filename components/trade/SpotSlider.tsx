@@ -1,7 +1,6 @@
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/swap/LeverageSlider'
 import mangoStore from '@store/mangoStore'
-import Decimal from 'decimal.js'
 import { useCallback, useMemo } from 'react'
 import { notify } from 'utils/notifications'
 

@@ -1,6 +1,7 @@
 {
     "bottom-left": "Bottom-Left",
     "bottom-right": "Bottom-Right",
+    "buttons": "Buttons",
     "chinese": "简体中文",
     "chinese-traditional": "繁體中文",
     "dark": "Dark",
@@ -13,6 +14,7 @@
     "orderbook-flash": "Orderbook Flash",
     "preferred-explorer": "Preferred Explorer",
     "russian": "Русский",
+    "slider": "Slider",
     "solana-beach": "Solana Beach",
     "solana-explorer": "Solana Explorer",
     "solanafm": "SolanaFM",
@@ -20,5 +22,6 @@
     "spanish": "Español",
     "theme": "Theme",
     "top-left": "Top-Left",
-    "top-right": "Top-Right"
+    "top-right": "Top-Right",
+    "trade-size-ui": "Trade Size UI"
 }

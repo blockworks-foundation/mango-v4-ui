@@ -18,6 +18,8 @@ export const ONBOARDING_TOUR_KEY = 'showOnboardingTour'
 
 export const PREFERRED_EXPLORER_KEY = 'preferredExplorer'
 
+export const TRADE_FORM_UI_KEY = 'tradeFormUi'
+
 export const PROFILE_CATEGORIES = [
   'borrower',
   'day-trader',
