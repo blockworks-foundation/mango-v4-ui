@@ -223,7 +223,12 @@ const AdvancedTradeForm = () => {
       let price = new Decimal(tradeForm.price).toNumber()
       if (tradeForm.tradeType === 'Market') {
         const orderbook = mangoStore.getState().selectedMarket.orderbook
-        price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
+        price = calculateMarketPrice(
+          orderbook,
+          baseSize,
+          tradeForm.side,
+          'base'
+        )
       }
 
       if (selectedMarket instanceof Serum3Market) {
