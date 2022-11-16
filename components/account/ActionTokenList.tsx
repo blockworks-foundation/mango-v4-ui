@@ -20,10 +20,14 @@ const ActionTokenList = ({
 }: {
   banks: BankParams[]
   onSelect: (x: string) => void
-  sortByKey: 'maxAmount' | 'walletBalanceValue' | 'accountBalanceValue'
+  sortByKey:
+    | 'maxAmount'
+    | 'walletBalanceValue'
+    | 'accountBalanceValue'
+    | 'borrowAmountValue'
   showBorrowRates?: boolean
   showDepositRates?: boolean
-  valueKey: 'maxAmount' | 'walletBalance' | 'accountBalance'
+  valueKey: 'maxAmount' | 'walletBalance' | 'accountBalance' | 'borrowAmount'
 }) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 

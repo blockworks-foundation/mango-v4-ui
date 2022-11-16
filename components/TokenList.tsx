@@ -1,4 +1,8 @@
-import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  MangoAccount,
+  ZERO_I80F48,
+} from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -24,6 +28,7 @@ import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
+import RepayModal from './modals/RepayModal'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -409,6 +414,7 @@ const ActionsMenu = ({
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
   const [showBorrowModal, setShowBorrowModal] = useState(false)
+  const [showRepayModal, setShowRepayModal] = useState(false)
   const [selectedToken, setSelectedToken] = useState('')
   // const set = mangoStore.getState().set
   // const router = useRouter()
@@ -416,13 +422,15 @@ const ActionsMenu = ({
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const handleShowActionModals = useCallback(
-    (token: string, action: 'borrow' | 'deposit' | 'withdraw') => {
+    (token: string, action: 'borrow' | 'deposit' | 'withdraw' | 'repay') => {
       setSelectedToken(token)
       action === 'borrow'
         ? setShowBorrowModal(true)
         : action === 'deposit'
         ? setShowDepositModal(true)
-        : setShowWithdrawModal(true)
+        : action === 'withdraw'
+        ? setShowWithdrawModal(true)
+        : setShowRepayModal(true)
     },
     []
   )
@@ -473,13 +481,23 @@ const ActionsMenu = ({
             {formatTokenSymbol(bank.name)}
           </p>
         </div>
-        <LinkButton
-          className="w-full text-left"
-          disabled={!mangoAccount}
-          onClick={() => handleShowActionModals(bank.name, 'deposit')}
-        >
-          {t('deposit')}
-        </LinkButton>
+        {mangoAccount?.getTokenBorrows(bank).eq(ZERO_I80F48()) ? (
+          <LinkButton
+            className="w-full text-left"
+            disabled={!mangoAccount}
+            onClick={() => handleShowActionModals(bank.name, 'deposit')}
+          >
+            {t('deposit')}
+          </LinkButton>
+        ) : (
+          <LinkButton
+            className="w-full text-left"
+            disabled={!mangoAccount}
+            onClick={() => handleShowActionModals(bank.name, 'repay')}
+          >
+            {t('repay')}
+          </LinkButton>
+        )}
         <LinkButton
           className="w-full text-left"
           disabled={!mangoAccount}
@@ -527,6 +545,13 @@ const ActionsMenu = ({
         <BorrowModal
           isOpen={showBorrowModal}
           onClose={() => setShowBorrowModal(false)}
+          token={selectedToken}
+        />
+      ) : null}
+      {showRepayModal ? (
+        <RepayModal
+          isOpen={showRepayModal}
+          onClose={() => setShowRepayModal(false)}
           token={selectedToken}
         />
       ) : null}
