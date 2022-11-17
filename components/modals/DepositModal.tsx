@@ -34,6 +34,7 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import { TokenInstructions } from '@project-serum/serum'
+import useSolBalance from 'hooks/useSolBalance'
 
 interface DepositModalProps {
   token?: string
@@ -92,14 +93,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
-
-  const solBalance = useMemo(() => {
-    return (
-      walletTokens.find((t) =>
-        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
-      )?.uiAmount || 0
-    )
-  }, [walletTokens])
+  const solBalance = useSolBalance()
 
   useEffect(() => {
     const maxSolDeposit = solBalance - MIN_SOL_BALANCE

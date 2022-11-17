@@ -19,6 +19,7 @@ import {
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { EXPLORERS } from 'pages/settings'
 import { useTranslation } from 'next-i18next'
+import useSolBalance from 'hooks/useSolBalance'
 
 const setMangoStore = mangoStore.getState().set
 
@@ -32,6 +33,7 @@ const NotificationList = () => {
     'bottom-left'
   )
   const [mounted, setMounted] = useState(false)
+  const solBalance = useSolBalance()
 
   // if a notification is shown with {"InstructionError":[0,{"Custom":1}]} then
   // add a notification letting the user know they may not have enough SOL
@@ -43,9 +45,6 @@ const NotificationList = () => {
       const notEnoughSolNotification = notifications.find(
         (n) => n.title && n.title.includes(notEnoughSoLMessage)
       )
-      const solBalance = walletTokens.find((t) =>
-        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
-      )?.uiAmount
 
       if (
         !notEnoughSolNotification &&
@@ -59,7 +58,7 @@ const NotificationList = () => {
         })
       }
     }
-  }, [notifications, walletTokens])
+  }, [notifications, walletTokens, solBalance])
 
   const clearAll = useCallback(() => {
     setMangoStore((s) => {

@@ -15,6 +15,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import useSolBalance from 'hooks/useSolBalance'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import {
@@ -65,14 +66,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showMaxSolWarning, setShowMaxSolWarning] = useState(false)
   const { handleConnect } = useEnhancedWallet()
-
-  const solBalance = useMemo(() => {
-    return (
-      walletTokens.find((t) =>
-        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
-      )?.uiAmount || 0
-    )
-  }, [walletTokens])
+  const solBalance = useSolBalance()
 
   useEffect(() => {
     const maxSolDeposit = solBalance - MIN_SOL_BALANCE
