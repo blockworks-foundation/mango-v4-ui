@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
+  BanknotesIcon,
   DocumentDuplicateIcon,
   EllipsisHorizontalIcon,
   PencilIcon,
@@ -19,15 +20,19 @@ import mangoStore from '@store/mangoStore'
 import { copyToClipboard } from 'utils'
 import { notify } from 'utils/notifications'
 import { abbreviateAddress } from 'utils/formatting'
+import { HealthType, ZERO_I80F48 } from '@blockworks-foundation/mango-v4'
+import RepayModal from '@components/modals/RepayModal'
 import DelegateModal from '@components/modals/DelegateModal'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
+  const group = mangoStore((s) => s.group)
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+  const [showRepayModal, setShowRepayModal] = useState(false)
   const [showDelegateModal, setShowDelegateModal] = useState(false)
 
   const handleCopyAddress = (address: string) => {
@@ -40,14 +45,30 @@ const AccountActions = () => {
     })
   }
 
+  const hasBorrows = useMemo(() => {
+    return mangoAccount && group
+      ? !mangoAccount.getLiabsValue(group, HealthType.init).eq(ZERO_I80F48())
+      : false
+  }, [mangoAccount, group])
+
   return (
     <>
       <div className="flex items-center space-x-2 md:space-x-3">
+        {hasBorrows ? (
+          <Button
+            className="flex items-center"
+            disabled={!mangoAccount}
+            onClick={() => setShowRepayModal(true)}
+          >
+            <BanknotesIcon className="mr-2 h-5 w-5" />
+            {t('repay')}
+          </Button>
+        ) : null}
         <Button
           className="flex items-center"
           disabled={!mangoAccount}
           onClick={() => setShowDepositModal(true)}
-          size="large"
+          secondary={hasBorrows}
         >
           <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
           {t('deposit')}
@@ -57,14 +78,13 @@ const AccountActions = () => {
           disabled={!mangoAccount}
           onClick={() => setShowWithdrawModal(true)}
           secondary
-          size="large"
         >
           <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
           {t('withdraw')}
         </Button>
         <IconDropMenu
           icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
-          large
+          size="medium"
         >
           <LinkButton
             className="whitespace-nowrap"
@@ -126,6 +146,12 @@ const AccountActions = () => {
           onClose={() => setShowWithdrawModal(false)}
         />
       ) : null}
+
+      {showRepayModal ? (
+        <RepayModal
+          isOpen={showRepayModal}
+          onClose={() => setShowRepayModal(false)}
+        /> 
       {showDelegateModal ? (
         <DelegateModal
           isOpen={showDelegateModal}

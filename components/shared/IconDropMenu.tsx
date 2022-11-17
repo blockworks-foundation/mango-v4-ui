@@ -7,13 +7,13 @@ const IconDropMenu = ({
   icon,
   children,
   disabled,
-  large,
+  size,
   postion = 'bottomRight',
 }: {
   icon: ReactNode
   children: ReactNode
   disabled?: boolean
-  large?: boolean
+  size?: 'small' | 'medium' | 'large'
   postion?:
     | 'bottomLeft'
     | 'bottomRight'
@@ -25,14 +25,14 @@ const IconDropMenu = ({
     | 'rightTop'
 }) => {
   const panelPosition = {
-    bottomLeft: large ? 'left-0 top-14' : 'left-0 top-12',
-    bottomRight: large ? 'right-0 top-14' : 'right-0 top-12',
-    topLeft: large ? 'left-0 bottom-14' : 'left-0 bottom-12',
-    topRight: large ? 'right-0 bottom-14' : 'right-0 bottom-12',
-    leftBottom: large ? 'right-14 bottom-0' : 'right-12 bottom-0',
-    leftTop: large ? 'right-14 top-0' : 'right-12 top-0',
-    rightBottom: large ? 'left-14 bottom-0' : 'left-12 bottom-0',
-    rightTop: large ? 'left-14 top-0' : 'left-12 top-0',
+    bottomLeft: size === 'large' ? 'left-0 top-14' : 'left-0 top-12',
+    bottomRight: size === 'large' ? 'right-0 top-14' : 'right-0 top-12',
+    topLeft: size === 'large' ? 'left-0 bottom-14' : 'left-0 bottom-12',
+    topRight: size === 'large' ? 'right-0 bottom-14' : 'right-0 bottom-12',
+    leftBottom: size === 'large' ? 'right-14 bottom-0' : 'right-12 bottom-0',
+    leftTop: size === 'large' ? 'right-14 top-0' : 'right-12 top-0',
+    rightBottom: size === 'large' ? 'left-14 bottom-0' : 'left-12 bottom-0',
+    rightTop: size === 'large' ? 'left-14 top-0' : 'left-12 top-0',
   }
   const { theme } = useTheme()
   return (
@@ -41,7 +41,11 @@ const IconDropMenu = ({
         <div className="relative">
           <Popover.Button
             className={`flex ${
-              large ? 'h-12 w-12' : 'h-8 w-8'
+              size === 'large'
+                ? 'h-12 w-12'
+                : size === 'medium'
+                ? 'h-10 w-10'
+                : 'h-8 w-8'
             } default-transition items-center justify-center rounded-full border border-th-fgd-4 md:hover:border-th-bkg-4 ${
               theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
             } md:hover:text-th-fgd-1 ${
