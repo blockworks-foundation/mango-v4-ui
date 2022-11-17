@@ -65,6 +65,8 @@
   "leverage": "Leverage",
   "liability-weight": "Liability Weight",
   "liquidity": "Liquidity",
+  "loan-origination-fee": "Loan Origination Fee",
+  "loan-origination-fee-tooltip": "The fee for opening a borrow. This is paid to the Mango DAO Treasury",
   "market": "Market",
   "max": "Max",
   "max-borrow": "Max Borrow",

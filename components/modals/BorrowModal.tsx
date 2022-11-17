@@ -26,6 +26,7 @@ import { withValueLimit } from '../swap/SwapForm'
 import { getMaxWithdrawForBank } from '../swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
+import Tooltip from '@components/shared/Tooltip'
 
 interface BorrowModalProps {
   token?: string
@@ -255,21 +256,37 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
               />
             </div> */}
           </div>
-          <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
-            <HealthImpactTokenChange
-              mintPk={bank!.mint}
-              uiAmount={Number(inputAmount)}
-            />
-            <div className="flex justify-between">
-              <p>{t('borrow-value')}</p>
-              <p className="font-mono text-th-fgd-1">
-                {formatFixedDecimals(
-                  bank?.uiPrice! * Number(inputAmount),
-                  true
-                )}
-              </p>
+          {bank ? (
+            <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
+              <HealthImpactTokenChange
+                mintPk={bank.mint}
+                uiAmount={Number(inputAmount)}
+              />
+              <div className="flex justify-between">
+                <p>{t('borrow-value')}</p>
+                <p className="font-mono text-th-fgd-1">
+                  {formatFixedDecimals(
+                    bank.uiPrice * Number(inputAmount),
+                    true
+                  )}
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <Tooltip content={t('loan-origination-fee-tooltip')}>
+                  <p className="tooltip-underline">
+                    {t('loan-origination-fee')}
+                  </p>
+                </Tooltip>
+                <p className="font-mono text-th-fgd-1">
+                  {formatFixedDecimals(
+                    bank.loanOriginationFeeRate.toNumber() *
+                      Number(inputAmount),
+                    true
+                  )}
+                </p>
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
         <Button
           onClick={handleWithdraw}
