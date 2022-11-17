@@ -3,14 +3,19 @@ import { Orderbook } from 'types'
 export const calculateMarketPrice = (
   orderBook: Orderbook,
   size: number,
-  side: 'buy' | 'sell'
+  side: 'buy' | 'sell',
+  baseOrQuote: 'base' | 'quote'
 ): number => {
   const orders = side === 'buy' ? orderBook.asks : orderBook.bids
   let acc = 0
   let selectedOrder
+  let orderSize = size
   for (const order of orders) {
     acc += order[1]
-    if (acc >= size) {
+    if (baseOrQuote === 'quote') {
+      orderSize = size / acc
+    }
+    if (acc >= orderSize) {
       selectedOrder = order
       break
     }

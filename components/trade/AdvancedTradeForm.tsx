@@ -192,13 +192,19 @@ const AdvancedTradeForm = () => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
     if (selectedMarket instanceof Serum3Market) {
-      const baseBank = group?.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
-      )
-      if (baseBank.uiPrice) {
-        const price = baseBank.uiPrice.toString()
+      if (tradeForm.tradeType === 'Limit') {
+        const baseBank = group?.getFirstBankByTokenIndex(
+          selectedMarket.baseTokenIndex
+        )
+        if (baseBank.uiPrice) {
+          const price = baseBank.uiPrice.toString()
+          set((s) => {
+            s.tradeForm.price = price
+          })
+        }
+      } else {
         set((s) => {
-          s.tradeForm.price = price
+          s.tradeForm.price = ''
         })
       }
     } else {
@@ -206,7 +212,7 @@ const AdvancedTradeForm = () => {
         s.tradeForm.price = selectedMarket._uiPrice.toString()
       })
     }
-  }, [set, selectedMarket])
+  }, [set, selectedMarket, tradeForm])
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -223,7 +229,12 @@ const AdvancedTradeForm = () => {
       let price = new Decimal(tradeForm.price).toNumber()
       if (tradeForm.tradeType === 'Market') {
         const orderbook = mangoStore.getState().selectedMarket.orderbook
-        price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
+        price = calculateMarketPrice(
+          orderbook,
+          baseSize,
+          tradeForm.side,
+          'base'
+        )
       }
 
       if (selectedMarket instanceof Serum3Market) {

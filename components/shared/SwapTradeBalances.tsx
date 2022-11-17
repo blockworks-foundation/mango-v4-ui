@@ -1,11 +1,16 @@
+import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
+import Decimal from 'decimal.js'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
+import { useRouter } from 'next/router'
 import { useMemo } from 'react'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
+import { calculateMarketPrice } from 'utils/tradeForm'
+import { LinkButton } from './Button'
 
 const SwapTradeBalances = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -88,14 +93,7 @@ const SwapTradeBalances = () => {
                   </div>
                 </td>
                 <td className="text-right">
-                  <p>
-                    {mangoAccount
-                      ? formatDecimal(
-                          mangoAccount.getTokenBalanceUi(bank),
-                          bank.mintDecimals
-                        )
-                      : 0}
-                  </p>
+                  <Balance bank={bank} />
                   <p className="text-sm text-th-fgd-4">
                     {mangoAccount
                       ? `${formatFixedDecimals(
@@ -199,3 +197,86 @@ const SwapTradeBalances = () => {
 }
 
 export default SwapTradeBalances
+
+const Balance = ({ bank }: { bank: Bank }) => {
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const { asPath } = useRouter()
+
+  const handleBalanceClick = (balance: number, type: 'base' | 'quote') => {
+    const set = mangoStore.getState().set
+    const tradeForm = mangoStore.getState().tradeForm
+
+    let price: number
+    if (tradeForm.tradeType === 'Market') {
+      const orderbook = mangoStore.getState().selectedMarket.orderbook
+      const side =
+        (balance > 0 && type === 'quote') || (balance < 0 && type === 'base')
+          ? 'buy'
+          : 'sell'
+      price = calculateMarketPrice(orderbook, balance, side, type)
+    } else price = new Decimal(tradeForm.price).toNumber()
+
+    if (balance > 0) {
+      if (type === 'quote') {
+        set((s) => {
+          s.tradeForm.side = 'buy'
+          s.tradeForm.baseSize = (balance / price).toString()
+          s.tradeForm.quoteSize = balance.toString()
+        })
+      } else {
+        set((s) => {
+          s.tradeForm.side = 'sell'
+          s.tradeForm.baseSize = balance.toString()
+          s.tradeForm.quoteSize = (balance * price).toString()
+        })
+      }
+    } else {
+      if (type === 'quote') {
+        set((s) => {
+          s.tradeForm.side = 'sell'
+          s.tradeForm.baseSize = (balance / price).toString()
+          s.tradeForm.quoteSize = balance.toString()
+        })
+      } else {
+        set((s) => {
+          s.tradeForm.side = 'buy'
+          s.tradeForm.baseSize = balance.toString()
+          s.tradeForm.quoteSize = (balance * price).toString()
+        })
+      }
+    }
+  }
+
+  const balance = useMemo(() => {
+    return mangoAccount ? mangoAccount.getTokenBalanceUi(bank) : 0
+  }, [mangoAccount])
+
+  const isBaseOrQuote = useMemo(() => {
+    if (selectedMarket instanceof Serum3Market && asPath === '/trade') {
+      if (bank.tokenIndex === selectedMarket.baseTokenIndex) {
+        return 'base'
+      } else if (bank.tokenIndex === selectedMarket.quoteTokenIndex) {
+        return 'quote'
+      } else return ''
+    }
+  }, [bank, selectedMarket])
+
+  return (
+    <p className="flex justify-end">
+      {balance ? (
+        isBaseOrQuote ? (
+          <LinkButton
+            onClick={() => handleBalanceClick(balance, isBaseOrQuote)}
+          >
+            {formatDecimal(balance, bank.mintDecimals)}
+          </LinkButton>
+        ) : (
+          formatDecimal(balance, bank.mintDecimals)
+        )
+      ) : (
+        0
+      )}
+    </p>
+  )
+}
