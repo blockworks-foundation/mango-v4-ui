@@ -54,6 +54,9 @@
     "@project-serum/anchor": "0.25.0",
     "@project-serum/serum": ">=0.13.62"
   },
+  "resolutions": {
+    "@jup-ag/goosefx-ssl-sdk/**/@solana/spl-token": "0.3.6"
+  },
   "devDependencies": {
     "@types/node": "17.0.23",
     "@types/react": "18.0.3",
