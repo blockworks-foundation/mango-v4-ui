@@ -223,13 +223,11 @@ const Balance = ({ bank }: { bank: Bank }) => {
     if (balance > 0) {
       if (type === 'quote') {
         set((s) => {
-          s.tradeForm.side = 'buy'
           s.tradeForm.baseSize = (balance / price).toString()
           s.tradeForm.quoteSize = balance.toString()
         })
       } else {
         set((s) => {
-          s.tradeForm.side = 'sell'
           s.tradeForm.baseSize = balance.toString()
           s.tradeForm.quoteSize = (balance * price).toString()
         })
@@ -237,13 +235,11 @@ const Balance = ({ bank }: { bank: Bank }) => {
     } else {
       if (type === 'quote') {
         set((s) => {
-          s.tradeForm.side = 'sell'
           s.tradeForm.baseSize = (balance / price).toString()
           s.tradeForm.quoteSize = balance.toString()
         })
       } else {
         set((s) => {
-          s.tradeForm.side = 'buy'
           s.tradeForm.baseSize = balance.toString()
           s.tradeForm.quoteSize = (balance * price).toString()
         })

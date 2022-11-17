@@ -192,19 +192,13 @@ const AdvancedTradeForm = () => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
     if (selectedMarket instanceof Serum3Market) {
-      if (tradeForm.tradeType === 'Limit') {
-        const baseBank = group?.getFirstBankByTokenIndex(
-          selectedMarket.baseTokenIndex
-        )
-        if (baseBank.uiPrice) {
-          const price = baseBank.uiPrice.toString()
-          set((s) => {
-            s.tradeForm.price = price
-          })
-        }
-      } else {
+      const baseBank = group?.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex
+      )
+      if (baseBank.uiPrice) {
+        const price = baseBank.uiPrice.toString()
         set((s) => {
-          s.tradeForm.price = ''
+          s.tradeForm.price = price
         })
       }
     } else {
@@ -212,7 +206,7 @@ const AdvancedTradeForm = () => {
         s.tradeForm.price = selectedMarket._uiPrice.toString()
       })
     }
-  }, [set, selectedMarket, tradeForm])
+  }, [set, selectedMarket])
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
