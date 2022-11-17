@@ -96,19 +96,27 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const maxSolDeposit = solBalance - MIN_SOL_BALANCE
 
   useEffect(() => {
-    if (selectedToken === 'SOL' && maxSolDeposit < Number(inputAmount)) {
+    if (
+      selectedToken === 'SOL' &&
+      maxSolDeposit > 0 &&
+      maxSolDeposit <= Number(inputAmount)
+    ) {
       setShowMaxSolWarning(true)
-    }
-    if (maxSolDeposit > 0 && inputAmount) {
       setInputAmount(maxSolDeposit.toString())
     }
-  }, [maxSolDeposit, inputAmount, selectedToken])
+  }, [maxSolDeposit, inputAmount, selectedToken, sizePercentage])
 
   useEffect(() => {
-    if (selectedToken !== 'SOL' && showMaxSolWarning) {
-      setShowMaxSolWarning(false)
+    if (selectedToken !== 'SOL') {
+      if (showMaxSolWarning) {
+        setShowMaxSolWarning(false)
+      }
+    } else {
+      if (showMaxSolWarning && maxSolDeposit > Number(inputAmount)) {
+        setShowMaxSolWarning(false)
+      }
     }
-  }, [selectedToken, showMaxSolWarning])
+  }, [inputAmount, selectedToken, showMaxSolWarning])
 
   const tokenMax = useMemo(() => {
     return walletBalanceForToken(walletTokens, selectedToken)
@@ -252,8 +260,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           {showMaxSolWarning ? (
             <div className="mt-2">
               <InlineNotification
-                type="warning"
-                desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions. Add more SOL to your wallet`}
+                type="info"
+                desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
               />
             </div>
           ) : null}

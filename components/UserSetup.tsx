@@ -70,19 +70,27 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const maxSolDeposit = solBalance - MIN_SOL_BALANCE
 
   useEffect(() => {
-    if (depositToken === 'SOL' && maxSolDeposit < Number(depositAmount)) {
+    if (
+      depositToken === 'SOL' &&
+      maxSolDeposit > 0 &&
+      maxSolDeposit <= Number(depositAmount)
+    ) {
       setShowMaxSolWarning(true)
-    }
-    if (maxSolDeposit > 0 && depositAmount) {
       setDepositAmount(maxSolDeposit.toString())
     }
-  }, [maxSolDeposit, depositAmount, depositToken])
+  }, [maxSolDeposit, depositAmount, depositToken, sizePercentage])
 
   useEffect(() => {
-    if (depositToken !== 'SOL' && showMaxSolWarning) {
-      setShowMaxSolWarning(false)
+    if (depositToken !== 'SOL') {
+      if (showMaxSolWarning) {
+        setShowMaxSolWarning(false)
+      }
+    } else {
+      if (showMaxSolWarning && maxSolDeposit > Number(depositAmount)) {
+        setShowMaxSolWarning(false)
+      }
     }
-  }, [depositToken, showMaxSolWarning])
+  }, [depositAmount, depositToken, showMaxSolWarning])
 
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -427,7 +435,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     <div className="mt-2">
                       <InlineNotification
                         type="warning"
-                        desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions. Add more SOL to your wallet`}
+                        desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
                       />
                     </div>
                   ) : null}
