@@ -1,6 +1,10 @@
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { LinkButton } from '@components/shared/Button'
 import SideBadge from '@components/shared/SideBadge'
 import mangoStore from '@store/mangoStore'
+import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
+import { calculateMarketPrice } from 'utils/tradeForm'
 import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 
@@ -8,6 +12,27 @@ const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
   const group = mangoStore((s) => s.group)
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
+  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+
+  const handlePositionClick = (positionSize: number) => {
+    const tradeForm = mangoStore.getState().tradeForm
+    const set = mangoStore.getState().set
+
+    let price = new Decimal(tradeForm.price).toNumber()
+    if (tradeForm.tradeType === 'Market') {
+      const orderbook = mangoStore.getState().selectedMarket.orderbook
+      const side = tradeForm.side === 'buy' ? 'sell' : 'buy'
+      price = calculateMarketPrice(orderbook, positionSize, side)
+    }
+
+    if (tradeForm.side === 'buy') {
+      set((s) => {
+        s.tradeForm.side = 'sell'
+        s.tradeForm.baseSize = positionSize.toFixed()
+        s.tradeForm.quoteSize = (positionSize / price).toFixed()
+      })
+    }
+  }
 
   if (!group) return null
 
@@ -28,6 +53,10 @@ const PerpPositions = () => {
               position.marketIndex
             )
             const basePosition = position.getBasePositionUi(market)
+            const isSelectedMarket =
+              selectedMarket instanceof PerpMarket &&
+              selectedMarket.perpMarketIndex === position.marketIndex
+
             return (
               <tr key={`${position.marketIndex}`} className="my-1 p-2">
                 <td>
@@ -40,10 +69,20 @@ const PerpPositions = () => {
                   <PerpSideBadge basePosition={basePosition} />
                 </td>
                 <td className="text-right">
-                  <div className="">{basePosition}</div>
+                  <p className="flex justify-end">
+                    {isSelectedMarket ? (
+                      <LinkButton
+                        onClick={() => handlePositionClick(basePosition)}
+                      >
+                        {basePosition}
+                      </LinkButton>
+                    ) : (
+                      basePosition
+                    )}
+                  </p>
                 </td>
                 <td className="text-right">
-                  <div className="">
+                  <div>
                     ${Math.abs(basePosition * market._uiPrice).toFixed(2)}
                   </div>
                 </td>
