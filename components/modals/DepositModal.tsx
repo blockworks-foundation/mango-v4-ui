@@ -33,7 +33,7 @@ import { withValueLimit } from '../swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
-import { TokenInstructions } from '@project-serum/serum'
+import useSolBalance from 'hooks/useSolBalance'
 
 interface DepositModalProps {
   token?: string
@@ -92,26 +92,23 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
-
-  const solBalance = useMemo(() => {
-    return (
-      walletTokens.find((t) =>
-        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
-      )?.uiAmount || 0
-    )
-  }, [walletTokens])
+  const solBalance = useSolBalance()
+  const maxSolDeposit = solBalance - MIN_SOL_BALANCE
 
   useEffect(() => {
-    const maxSolDeposit = solBalance - MIN_SOL_BALANCE
     if (selectedToken === 'SOL' && maxSolDeposit < Number(inputAmount)) {
-      setInputAmount(maxSolDeposit.toString())
       setShowMaxSolWarning(true)
-    } else {
-      if (showMaxSolWarning) {
-        setShowMaxSolWarning(false)
-      }
     }
-  }, [solBalance, inputAmount, selectedToken])
+    if (maxSolDeposit > 0 && inputAmount) {
+      setInputAmount(maxSolDeposit.toString())
+    }
+  }, [maxSolDeposit, inputAmount, selectedToken])
+
+  useEffect(() => {
+    if (selectedToken !== 'SOL' && showMaxSolWarning) {
+      setShowMaxSolWarning(false)
+    }
+  }, [selectedToken, showMaxSolWarning])
 
   const tokenMax = useMemo(() => {
     return walletBalanceForToken(walletTokens, selectedToken)
@@ -256,7 +253,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="mt-2">
               <InlineNotification
                 type="warning"
-                desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
+                desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions. Add more SOL to your wallet`}
               />
             </div>
           ) : null}
@@ -265,6 +262,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <Label text={t('token')} />
               <MaxAmountButton
                 className="mb-2"
+                disabled={selectedToken === 'SOL' && maxSolDeposit <= 0}
                 label={t('wallet-balance')}
                 onClick={setMax}
                 value={floorToDecimal(
@@ -314,6 +312,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <ButtonGroup
                 activeValue={sizePercentage}
                 className="font-mono"
+                disabled={selectedToken === 'SOL' && maxSolDeposit <= 0}
                 onChange={(p) => handleSizePercentage(p)}
                 values={['10', '25', '50', '75', '100']}
                 unit="%"

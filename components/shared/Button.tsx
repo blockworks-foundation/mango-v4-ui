@@ -108,7 +108,7 @@ export const LinkButton: FunctionComponent<LinkButtonCombinedProps> = ({
       disabled={disabled}
       className={`flex items-center border-0 font-bold ${
         secondary ? 'text-th-primary' : 'text-th-fgd-2'
-      } underline focus:outline-none disabled:cursor-not-allowed disabled:underline disabled:opacity-50 md:hover:no-underline  ${className}`}
+      } underline focus:outline-none disabled:cursor-not-allowed  disabled:opacity-50 md:hover:no-underline  ${className}`}
       {...props}
     >
       {children}

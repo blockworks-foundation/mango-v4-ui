@@ -12,6 +12,7 @@ import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import { TokenInstructions } from '@project-serum/serum'
 import { MIN_SOL_BALANCE } from 'utils/constants'
+import useSolBalance from 'hooks/useSolBalance'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -39,15 +40,7 @@ const CreateAccountForm = ({
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const { wallet } = useWallet()
-  const walletTokens = mangoStore((s) => s.wallet.tokens)
-
-  const solBalance = useMemo(() => {
-    return (
-      walletTokens.find((t) =>
-        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
-      )?.uiAmount || 0
-    )
-  }, [walletTokens])
+  const solBalance = useSolBalance()
 
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client

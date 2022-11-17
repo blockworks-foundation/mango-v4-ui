@@ -10,6 +10,7 @@ import {
   EllipsisHorizontalIcon,
   PencilIcon,
   TrashIcon,
+  UsersIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import IconDropMenu from '../shared/IconDropMenu'
@@ -21,6 +22,7 @@ import { notify } from 'utils/notifications'
 import { abbreviateAddress } from 'utils/formatting'
 import { HealthType, ZERO_I80F48 } from '@blockworks-foundation/mango-v4'
 import RepayModal from '@components/modals/RepayModal'
+import DelegateModal from '@components/modals/DelegateModal'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
@@ -31,6 +33,7 @@ const AccountActions = () => {
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
   const [showRepayModal, setShowRepayModal] = useState(false)
+  const [showDelegateModal, setShowDelegateModal] = useState(false)
 
   const handleCopyAddress = (address: string) => {
     copyToClipboard(address)
@@ -104,6 +107,14 @@ const AccountActions = () => {
           <LinkButton
             className="whitespace-nowrap"
             disabled={!mangoAccount}
+            onClick={() => setShowDelegateModal(true)}
+          >
+            <UsersIcon className="h-4 w-4" />
+            <span className="ml-2">{t('delegate-account')}</span>
+          </LinkButton>
+          <LinkButton
+            className="whitespace-nowrap"
+            disabled={!mangoAccount}
             onClick={() => setShowCloseAccountModal(true)}
           >
             <TrashIcon className="h-4 w-4" />
@@ -135,10 +146,16 @@ const AccountActions = () => {
           onClose={() => setShowWithdrawModal(false)}
         />
       ) : null}
+
       {showRepayModal ? (
         <RepayModal
           isOpen={showRepayModal}
           onClose={() => setShowRepayModal(false)}
+        /> 
+      {showDelegateModal ? (
+        <DelegateModal
+          isOpen={showDelegateModal}
+          onClose={() => setShowDelegateModal(false)}
         />
       ) : null}
     </>

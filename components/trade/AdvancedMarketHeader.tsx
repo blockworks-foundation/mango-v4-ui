@@ -4,7 +4,7 @@ import TabUnderline from '@components/shared/TabUnderline'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
-import { group } from 'console'
+import useOraclePrice from 'hooks/useOraclePrice'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
@@ -110,34 +110,14 @@ const MarketSelectDropdown = () => {
   )
 }
 
-const OraclePrice = () => {
-  const group = mangoStore((s) => s.group)
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
-
-  if (!group || !selectedMarket) return null
-
-  let price
-  if (selectedMarket instanceof Serum3Market) {
-    price = group.getFirstBankByTokenIndex(
-      selectedMarket?.baseTokenIndex
-    ).uiPrice
-  } else {
-    price = selectedMarket.uiPrice
-  }
-
-  return (
-    <div className="font-mono text-xs text-th-fgd-2">
-      ${price ? formatFixedDecimals(price) : null}
-    </div>
-  )
-}
-
 const AdvancedMarketHeader = () => {
   const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const serumMarketPrices = mangoStore((s) => s.serumMarketPrices.data)
+  const loadSerumMarketPrices = mangoStore((s) => s.serumMarketPrices.loading)
   const actions = mangoStore((s) => s.actions)
   const serumMarkets = mangoStore((s) => s.serumMarkets)
+  const oraclePrice = useOraclePrice()
 
   useEffect(() => {
     if (serumMarkets.length) {
@@ -158,11 +138,9 @@ const AdvancedMarketHeader = () => {
   }, [selectedMarket, serumMarketPrices])
 
   const change = useMemo(() => {
-    if (marketPrices) {
+    if (marketPrices && oraclePrice) {
       return (
-        ((marketPrices[marketPrices.length - 1].value - marketPrices[0].value) /
-          marketPrices[0].value) *
-        100
+        ((oraclePrice - marketPrices[0].value) / marketPrices[0].value) * 100
       )
     }
     return 0
@@ -177,12 +155,20 @@ const AdvancedMarketHeader = () => {
       </div>
       <div id="trade-step-two" className="ml-6 flex-col">
         <div className="text-xs text-th-fgd-4">{t('trade:oracle-price')}</div>
-        <OraclePrice />
+        <div className="font-mono text-xs text-th-fgd-2">
+          {oraclePrice ? (
+            `$${formatFixedDecimals(oraclePrice)}`
+          ) : (
+            <span className="text-th-fgd-4">–</span>
+          )}
+        </div>
       </div>
       <div className="ml-6 flex-col">
         <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
         {change ? (
           <Change change={change} size="small" />
+        ) : loadSerumMarketPrices ? (
+          <span className="text-th-fgd-4">–</span>
         ) : (
           <div className="font-mono text-xs">{t('unavailable')}</div>
         )}

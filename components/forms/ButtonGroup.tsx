@@ -3,6 +3,7 @@ import { FunctionComponent } from 'react'
 interface ButtonGroupProps {
   activeValue: string
   className?: string
+  disabled?: boolean
   onChange: (x: string) => void
   unit?: string
   values: Array<any>
@@ -13,6 +14,7 @@ interface ButtonGroupProps {
 const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
   activeValue,
   className,
+  disabled,
   unit,
   values,
   onChange,
@@ -20,7 +22,7 @@ const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
   large,
 }) => {
   return (
-    <div className="rounded-md bg-th-bkg-3">
+    <div className={`rounded-md bg-th-bkg-3 ${disabled ? 'opacity-50' : ''}`}>
       <div className="relative flex">
         {activeValue && values.includes(activeValue) ? (
           <div
@@ -35,7 +37,7 @@ const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
         ) : null}
         {values.map((v, i) => (
           <button
-            className={`${className} default-transition relative w-1/2 cursor-pointer rounded-md px-3 text-center ${
+            className={`${className} default-transition relative w-1/2 cursor-pointer rounded-md px-3 text-center disabled:cursor-not-allowed ${
               large ? 'h-12 text-sm' : 'h-10 text-xs'
             } font-normal
               ${
@@ -44,6 +46,7 @@ const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
                   : `text-th-fgd-2 md:hover:text-th-primary`
               }
             `}
+            disabled={disabled}
             key={`${v}${i}`}
             onClick={() => onChange(v)}
             style={{
