@@ -74,15 +74,13 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
         <div className="flex h-full flex-col justify-between">
           <div className="pb-4">
             <h2 className="mb-1">{t('delegate-account')}</h2>
-            <p className="mb-4">
-              Delegate your Mango account to another wallet address.{' '}
-            </p>
-            <Label text={'Wallet address'} />
+            <p className="mb-4">{t('delegate-desc')}</p>
+            <Label text={t('wallet-address')} />
             <Input
               type="text"
               name="name"
               id="name"
-              placeholder="Enter a wallet address to delegate to"
+              placeholder={t('delegate-placeholder')}
               value={delegateAddress}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setDelegateAddress(e.target.value)
