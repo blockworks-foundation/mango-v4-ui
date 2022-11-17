@@ -93,14 +93,7 @@ const BalancesTable = () => {
                   </div>
                 </td>
                 <td className="text-right">
-                  <p>
-                    {mangoAccount
-                      ? formatDecimal(
-                          mangoAccount.getTokenBalanceUi(bank),
-                          bank.mintDecimals
-                        )
-                      : 0}
-                  </p>
+                  <Balance bank={bank} />
                   <p className="text-sm text-th-fgd-4">
                     {mangoAccount
                       ? `${formatFixedDecimals(
@@ -222,7 +215,10 @@ const Balance = ({ bank }: { bank: Bank }) => {
           ? 'buy'
           : 'sell'
       price = calculateMarketPrice(orderbook, balance, side)
-    } else price = new Decimal(tradeForm.price).toNumber()
+    } else {
+      price = new Decimal(tradeForm.price).toNumber()
+    }
+    console.log('balance', balance)
 
     if (balance > 0) {
       if (type === 'quote') {
@@ -274,7 +270,12 @@ const Balance = ({ bank }: { bank: Bank }) => {
       {balance ? (
         isBaseOrQuote ? (
           <LinkButton
-            onClick={() => handleBalanceClick(balance, isBaseOrQuote)}
+            onClick={() =>
+              handleBalanceClick(
+                parseFloat(formatDecimal(balance, bank.mintDecimals)),
+                isBaseOrQuote
+              )
+            }
           >
             {formatDecimal(balance, bank.mintDecimals)}
           </LinkButton>
