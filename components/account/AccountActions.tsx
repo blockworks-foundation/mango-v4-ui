@@ -151,7 +151,8 @@ const AccountActions = () => {
         <RepayModal
           isOpen={showRepayModal}
           onClose={() => setShowRepayModal(false)}
-        /> 
+        />
+      ) : null}
       {showDelegateModal ? (
         <DelegateModal
           isOpen={showDelegateModal}

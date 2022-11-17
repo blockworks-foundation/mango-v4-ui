@@ -93,7 +93,14 @@ const SwapTradeBalances = () => {
                   </div>
                 </td>
                 <td className="text-right">
-                  <Balance bank={bank} />
+                  <p>
+                    {mangoAccount
+                      ? formatDecimal(
+                          mangoAccount.getTokenBalanceUi(bank),
+                          bank.mintDecimals
+                        )
+                      : 0}
+                  </p>
                   <p className="text-sm text-th-fgd-4">
                     {mangoAccount
                       ? `${formatFixedDecimals(
@@ -214,7 +221,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
         (balance > 0 && type === 'quote') || (balance < 0 && type === 'base')
           ? 'buy'
           : 'sell'
-      price = calculateMarketPrice(orderbook, balance, side, type)
+      price = calculateMarketPrice(orderbook, balance, side)
     } else price = new Decimal(tradeForm.price).toNumber()
 
     if (balance > 0) {
