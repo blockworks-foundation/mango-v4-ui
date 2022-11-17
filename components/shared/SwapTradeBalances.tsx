@@ -207,11 +207,15 @@ const Balance = ({ bank }: { bank: Bank }) => {
     const set = mangoStore.getState().set
     const tradeForm = mangoStore.getState().tradeForm
 
-    let price = new Decimal(tradeForm.price).toNumber()
+    let price: number
     if (tradeForm.tradeType === 'Market') {
       const orderbook = mangoStore.getState().selectedMarket.orderbook
-      price = calculateMarketPrice(orderbook, balance, tradeForm.side, type)
-    }
+      const side =
+        (balance > 0 && type === 'quote') || (balance < 0 && type === 'base')
+          ? 'buy'
+          : 'sell'
+      price = calculateMarketPrice(orderbook, balance, side, type)
+    } else price = new Decimal(tradeForm.price).toNumber()
 
     if (balance > 0) {
       if (type === 'quote') {
