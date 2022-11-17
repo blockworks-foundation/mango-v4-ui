@@ -67,18 +67,22 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const [showMaxSolWarning, setShowMaxSolWarning] = useState(false)
   const { handleConnect } = useEnhancedWallet()
   const solBalance = useSolBalance()
+  const maxSolDeposit = solBalance - MIN_SOL_BALANCE
 
   useEffect(() => {
-    const maxSolDeposit = solBalance - MIN_SOL_BALANCE
     if (depositToken === 'SOL' && maxSolDeposit < Number(depositAmount)) {
-      setDepositAmount(maxSolDeposit.toString())
       setShowMaxSolWarning(true)
-    } else {
-      if (showMaxSolWarning) {
-        setShowMaxSolWarning(false)
-      }
     }
-  }, [solBalance, depositAmount, depositToken])
+    if (maxSolDeposit > 0 && depositAmount) {
+      setDepositAmount(maxSolDeposit.toString())
+    }
+  }, [maxSolDeposit, depositAmount, depositToken])
+
+  useEffect(() => {
+    if (depositToken !== 'SOL' && showMaxSolWarning) {
+      setShowMaxSolWarning(false)
+    }
+  }, [depositToken, showMaxSolWarning])
 
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -423,7 +427,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     <div className="mt-2">
                       <InlineNotification
                         type="warning"
-                        desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
+                        desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions. Add more SOL to your wallet`}
                       />
                     </div>
                   ) : null}
@@ -432,6 +436,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                   <Label text={t('amount')} />
                   <MaxAmountButton
                     className="mb-2"
+                    disabled={depositToken === 'SOL' && maxSolDeposit <= 0}
                     label="Wallet Max"
                     onClick={() =>
                       setDepositAmount(
@@ -481,6 +486,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                   <div className="col-span-2 mt-2">
                     <ButtonGroup
                       activeValue={sizePercentage}
+                      disabled={depositToken === 'SOL' && maxSolDeposit <= 0}
                       onChange={(p) => handleSizePercentage(p)}
                       values={['10', '25', '50', '75', '100']}
                       unit="%"
