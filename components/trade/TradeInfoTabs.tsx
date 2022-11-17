@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import TabButtons from '@components/shared/TabButtons'
 import OpenOrders from './OpenOrders'
-import SwapTradeBalances from '../shared/SwapTradeBalances'
+import SwapTradeBalances from '../shared/BalancesTable'
 import UnsettledTrades from './UnsettledTrades'
 import mangoStore from '@store/mangoStore'
 import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'

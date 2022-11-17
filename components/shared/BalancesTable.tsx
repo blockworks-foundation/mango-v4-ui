@@ -12,7 +12,7 @@ import { breakpoints } from 'utils/theme'
 import { calculateMarketPrice } from 'utils/tradeForm'
 import { LinkButton } from './Button'
 
-const SwapTradeBalances = () => {
+const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
@@ -203,7 +203,7 @@ const SwapTradeBalances = () => {
   )
 }
 
-export default SwapTradeBalances
+export default BalancesTable
 
 const Balance = ({ bank }: { bank: Bank }) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)

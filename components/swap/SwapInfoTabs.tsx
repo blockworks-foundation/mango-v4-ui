@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import TabButtons from '@components/shared/TabButtons'
-import SwapTradeBalances from '../shared/SwapTradeBalances'
+import SwapTradeBalances from '../shared/BalancesTable'
 import UnsettledTrades from '../trade/UnsettledTrades'
 import mangoStore from '@store/mangoStore'
 import SwapHistoryTable from './SwapHistoryTable'
