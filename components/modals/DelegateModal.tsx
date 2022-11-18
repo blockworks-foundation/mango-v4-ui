@@ -78,9 +78,8 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
             <Label text={t('wallet-address')} />
             <Input
               type="text"
-              name="name"
-              id="name"
-              placeholder={t('delegate-placeholder')}
+              name="address"
+              id="address"
               value={delegateAddress}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setDelegateAddress(e.target.value)
@@ -92,7 +91,7 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
             onClick={handleUpdateccountName}
             size="large"
           >
-            {t('update')}
+            {t('delegate')}
           </Button>
         </div>
       </div>

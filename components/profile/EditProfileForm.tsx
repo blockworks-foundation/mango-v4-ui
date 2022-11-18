@@ -42,7 +42,7 @@ const EditProfileForm = ({
     try {
       setLoadUniquenessCheck(true)
       const response = await fetch(
-        `https://mango-transaction-log.herokuapp.com/v4/user-data/check-profile-name-unique?profile-name=${name.toLowerCase()}`
+        `https://mango-transaction-log.herokuapp.com/v4/user-data/check-profile-name-unique?profile-name=${name}`
       )
       const uniquenessCheck = await response.json()
 
@@ -62,11 +62,9 @@ const EditProfileForm = ({
 
   const onChangeNameInput = (name: string) => {
     setProfileName(name)
-    const re = /^([a-zA-Z0-9]+\s)*[a-zA-Z0-9]+$/
+    const re = /^[a-zA-Z0-9 ]*$/gm
     if (!re.test(name)) {
       setInputError(t('profile:invalid-characters'))
-    } else if (name.length > 19) {
-      setInputError(t('profile:length-error'))
     } else {
       setInputError('')
     }
@@ -74,7 +72,7 @@ const EditProfileForm = ({
 
   const saveProfile = async () => {
     setUpdateError('')
-    const name = profileName.toLowerCase()
+    const name = profileName.trim().toLowerCase()
     if (profile?.profile_name === name) {
       onFinish()
       return
@@ -156,6 +154,7 @@ const EditProfileForm = ({
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             onChangeNameInput(e.target.value)
           }
+          charLimit={20}
         />
         {inputError ? (
           <div className="mt-1.5 flex items-center space-x-1">

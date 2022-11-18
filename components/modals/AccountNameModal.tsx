@@ -59,11 +59,12 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
                 type="text"
                 name="name"
                 id="name"
-                placeholder="Mango"
+                placeholder="e.g. Sweet Caroline"
                 value={name}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setName(e.target.value)
                 }
+                charLimit={30}
               />
             </div>
             <Button

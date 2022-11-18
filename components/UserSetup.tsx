@@ -347,11 +347,12 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                   type="text"
                   name="name"
                   id="name"
-                  placeholder="e.g. Highly Profitable Trading Strategies"
+                  placeholder="e.g. Main Account"
                   value={accountName}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setAccountName(e.target.value)
                   }
+                  charLimit={30}
                 />
               </div>
               <div>
