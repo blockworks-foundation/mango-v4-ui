@@ -10,7 +10,6 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { Wallet } from '@project-serum/anchor'
-import { TokenInstructions } from '@project-serum/serum'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -26,11 +25,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {
-  ALPHA_DEPOSIT_LIMIT,
-  IS_ONBOARDED_KEY,
-  MIN_SOL_BALANCE,
-} from 'utils/constants'
+import { ALPHA_DEPOSIT_LIMIT, IS_ONBOARDED_KEY } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from 'utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
@@ -46,6 +41,7 @@ import Button, { IconButton, LinkButton } from './shared/Button'
 import InlineNotification from './shared/InlineNotification'
 import Loading from './shared/Loading'
 import MaxAmountButton from './shared/MaxAmountButton'
+import SolBalanceWarnings from './shared/SolBalanceWarnings'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 
 const UserSetup = ({ onClose }: { onClose: () => void }) => {
@@ -64,33 +60,8 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
-  const [showMaxSolWarning, setShowMaxSolWarning] = useState(false)
   const { handleConnect } = useEnhancedWallet()
-  const solBalance = useSolBalance()
-  const maxSolDeposit = solBalance - MIN_SOL_BALANCE
-
-  useEffect(() => {
-    if (
-      depositToken === 'SOL' &&
-      maxSolDeposit > 0 &&
-      maxSolDeposit <= Number(depositAmount)
-    ) {
-      setShowMaxSolWarning(true)
-      setDepositAmount(maxSolDeposit.toString())
-    }
-  }, [maxSolDeposit, depositAmount, depositToken, sizePercentage])
-
-  useEffect(() => {
-    if (depositToken !== 'SOL') {
-      if (showMaxSolWarning) {
-        setShowMaxSolWarning(false)
-      }
-    } else {
-      if (showMaxSolWarning && maxSolDeposit > Number(depositAmount)) {
-        setShowMaxSolWarning(false)
-      }
-    }
-  }, [depositAmount, depositToken, showMaxSolWarning])
+  const { maxSolDeposit } = useSolBalance()
 
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -388,7 +359,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                 <div className="mt-10">
                   <Button
                     className="mb-6 flex w-44 items-center justify-center"
-                    disabled={solBalance < MIN_SOL_BALANCE}
+                    disabled={maxSolDeposit <= 0}
                     onClick={handleCreateAccount}
                     size="large"
                   >
@@ -401,14 +372,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                       </div>
                     )}
                   </Button>
-                  {solBalance < MIN_SOL_BALANCE ? (
-                    <div className="mb-6">
-                      <InlineNotification
-                        type="error"
-                        desc={t('deposit-more-sol')}
-                      />
-                    </div>
-                  ) : null}
+                  <SolBalanceWarnings />
                   <LinkButton onClick={onClose}>
                     <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                       {t('onboarding:skip')}
@@ -431,14 +395,11 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     type="info"
                     desc={`There is a $${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha testing.`}
                   />
-                  {showMaxSolWarning ? (
-                    <div className="mt-2">
-                      <InlineNotification
-                        type="warning"
-                        desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
-                      />
-                    </div>
-                  ) : null}
+                  <SolBalanceWarnings
+                    amount={depositAmount}
+                    setAmount={setDepositAmount}
+                    selectedToken={depositToken}
+                  />
                 </div>
                 <div className="flex justify-between">
                   <Label text={t('amount')} />

@@ -35,6 +35,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { TRADE_FORM_UI_KEY } from 'utils/constants'
 import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
+import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -347,6 +348,9 @@ const AdvancedTradeForm = () => {
           values={TABS}
           fillWidth
         />
+      </div>
+      <div className="mt-4 px-4">
+        <SolBalanceWarnings />
       </div>
       <div className="mt-1 px-4 md:mt-6">
         <TabUnderline

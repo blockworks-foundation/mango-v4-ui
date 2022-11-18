@@ -13,22 +13,21 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
-import { MIN_SOL_BALANCE } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Label from '../forms/Label'
 import Button from '../shared/Button'
-import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import Modal from '../shared/Modal'
 import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
 import { withValueLimit } from '../swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
-import { TokenInstructions } from '@project-serum/serum'
 import { walletBalanceForToken } from './DepositModal'
+import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
+import useSolBalance from 'hooks/useSolBalance'
 
 interface RepayModalProps {
   token?: string
@@ -45,8 +44,8 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [selectedToken, setSelectedToken] = useState(token)
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const [showMaxSolWarning, setShowMaxSolWarning] = useState(false)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { maxSolDeposit } = useSolBalance()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -65,26 +64,6 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
-
-  const solBalance = useMemo(() => {
-    return (
-      walletTokens.find((t) =>
-        t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
-      )?.uiAmount || 0
-    )
-  }, [walletTokens])
-
-  useEffect(() => {
-    const maxSolDeposit = solBalance - MIN_SOL_BALANCE
-    if (selectedToken === 'SOL' && maxSolDeposit < Number(inputAmount)) {
-      setInputAmount(maxSolDeposit.toString())
-      setShowMaxSolWarning(true)
-    } else {
-      if (showMaxSolWarning) {
-        setShowMaxSolWarning(false)
-      }
-    }
-  }, [solBalance, inputAmount, selectedToken])
 
   const walletBalance = useMemo(() => {
     return selectedToken
@@ -208,14 +187,11 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
       >
         <div>
           <h2 className="mb-2 text-center">{t('repay-borrow')}</h2>
-          {showMaxSolWarning ? (
-            <div className="mt-2">
-              <InlineNotification
-                type="warning"
-                desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
-              />
-            </div>
-          ) : null}
+          <SolBalanceWarnings
+            amount={inputAmount}
+            setAmount={setInputAmount}
+            selectedToken={selectedToken}
+          />
           <div className="mt-4 grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />

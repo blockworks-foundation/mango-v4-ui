@@ -45,7 +45,7 @@
   "delegate-desc": "Delegate your Mango account to another wallet address",
   "delegate-placeholder": "Enter a wallet address to delegate to",
   "deposit": "Deposit",
-  "deposit-more-sol": "Deposit more SOL to your wallet before creating an account.",
+  "deposit-more-sol": "Your SOL wallet balance is low. Add more to pay for transactions",
   "deposit-rate": "Deposit Rate (APR)",
   "deposit-value": "Deposit Value",
   "disconnect": "Disconnect",

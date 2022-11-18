@@ -9,15 +9,11 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
-import {
-  ALPHA_DEPOSIT_LIMIT,
-  INPUT_TOKEN_DEFAULT,
-  MIN_SOL_BALANCE,
-} from '../../utils/constants'
+import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { TokenAccount } from '../../utils/tokens'
@@ -34,6 +30,7 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import useSolBalance from 'hooks/useSolBalance'
+import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 
 interface DepositModalProps {
   token?: string
@@ -72,7 +69,6 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const [showMaxSolWarning, setShowMaxSolWarning] = useState(false)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   const bank = useMemo(() => {
@@ -92,31 +88,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
-  const solBalance = useSolBalance()
-  const maxSolDeposit = solBalance - MIN_SOL_BALANCE
-
-  useEffect(() => {
-    if (
-      selectedToken === 'SOL' &&
-      maxSolDeposit > 0 &&
-      maxSolDeposit <= Number(inputAmount)
-    ) {
-      setShowMaxSolWarning(true)
-      setInputAmount(maxSolDeposit.toString())
-    }
-  }, [maxSolDeposit, inputAmount, selectedToken, sizePercentage])
-
-  useEffect(() => {
-    if (selectedToken !== 'SOL') {
-      if (showMaxSolWarning) {
-        setShowMaxSolWarning(false)
-      }
-    } else {
-      if (showMaxSolWarning && maxSolDeposit > Number(inputAmount)) {
-        setShowMaxSolWarning(false)
-      }
-    }
-  }, [inputAmount, selectedToken, showMaxSolWarning])
+  const { maxSolDeposit } = useSolBalance()
 
   const tokenMax = useMemo(() => {
     return walletBalanceForToken(walletTokens, selectedToken)
@@ -257,20 +229,16 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             desc={`There is a $${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha
             testing.`}
           />
-          {showMaxSolWarning ? (
-            <div className="mt-2">
-              <InlineNotification
-                type="info"
-                desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
-              />
-            </div>
-          ) : null}
+          <SolBalanceWarnings
+            amount={inputAmount}
+            setAmount={setInputAmount}
+            selectedToken={selectedToken}
+          />
           <div className="mt-4 grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
               <Label text={t('token')} />
               <MaxAmountButton
                 className="mb-2"
-                disabled={selectedToken === 'SOL' && maxSolDeposit <= 0}
                 label={t('wallet-balance')}
                 onClick={setMax}
                 value={floorToDecimal(
@@ -320,7 +288,6 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <ButtonGroup
                 activeValue={sizePercentage}
                 className="font-mono"
-                disabled={selectedToken === 'SOL' && maxSolDeposit <= 0}
                 onChange={(p) => handleSizePercentage(p)}
                 values={['10', '25', '50', '75', '100']}
                 unit="%"

@@ -27,13 +27,13 @@ const NotificationList = () => {
   const { t } = useTranslation()
   const notifications = mangoStore((s) => s.notifications)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
-  const notEnoughSoLMessage = 'Not enough SOL'
+  const notEnoughSoLMessage = t('deposit-more-sol')
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
     'bottom-left'
   )
   const [mounted, setMounted] = useState(false)
-  const solBalance = useSolBalance()
+  const { maxSolDeposit } = useSolBalance()
 
   // if a notification is shown with {"InstructionError":[0,{"Custom":1}]} then
   // add a notification letting the user know they may not have enough SOL
@@ -49,8 +49,7 @@ const NotificationList = () => {
       if (
         !notEnoughSolNotification &&
         customErrorNotification &&
-        solBalance &&
-        solBalance < 0.04
+        maxSolDeposit <= 0
       ) {
         notify({
           title: notEnoughSoLMessage,
@@ -58,7 +57,7 @@ const NotificationList = () => {
         })
       }
     }
-  }, [notifications, walletTokens, solBalance])
+  }, [notifications, walletTokens, maxSolDeposit])
 
   const clearAll = useCallback(() => {
     setMangoStore((s) => {

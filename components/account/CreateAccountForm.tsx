@@ -1,4 +1,4 @@
-import { ChangeEvent, useMemo, useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
@@ -10,8 +10,6 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import InlineNotification from '../shared/InlineNotification'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
-import { TokenInstructions } from '@project-serum/serum'
-import { MIN_SOL_BALANCE } from 'utils/constants'
 import useSolBalance from 'hooks/useSolBalance'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
@@ -40,7 +38,7 @@ const CreateAccountForm = ({
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const { wallet } = useWallet()
-  const solBalance = useSolBalance()
+  const { maxSolDeposit } = useSolBalance()
 
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
@@ -133,13 +131,13 @@ const CreateAccountForm = ({
         <InlineNotification type="info" desc={t('insufficient-sol')} />
         <Button
           className="w-full"
-          disabled={solBalance < MIN_SOL_BALANCE}
+          disabled={maxSolDeposit <= 0}
           onClick={handleNewAccount}
           size="large"
         >
           {t('create-account')}
         </Button>
-        {solBalance < MIN_SOL_BALANCE ? (
+        {maxSolDeposit <= 0 ? (
           <InlineNotification type="error" desc={t('deposit-more-sol')} />
         ) : null}
       </div>
