@@ -6,7 +6,7 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useOraclePrice from 'hooks/useOraclePrice'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import { formatFixedDecimals } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
@@ -113,38 +113,27 @@ const MarketSelectDropdown = () => {
 const AdvancedMarketHeader = () => {
   const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
-  const serumMarketPrices = mangoStore((s) => s.serumMarketPrices.data)
-  const loadSerumMarketPrices = mangoStore((s) => s.serumMarketPrices.loading)
+  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
   const actions = mangoStore((s) => s.actions)
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const oraclePrice = useOraclePrice()
 
-  useEffect(() => {
-    if (serumMarkets.length) {
-      actions.fetchSerumMarketPrices()
-    }
-  }, [actions, serumMarkets])
+  const baseSymbol = useMemo(() => {
+    return selectedMarket?.name.split('/')[0]
+  }, [selectedMarket])
 
-  const marketPrices = useMemo(() => {
-    if (selectedMarket instanceof Serum3Market) {
-      const prices = serumMarketPrices.find(
-        (m) =>
-          m.length &&
-          m[0].address === selectedMarket.serumMarketExternal.toString()
-      )
-      return prices
-    }
-    // need to handle perp
-  }, [selectedMarket, serumMarketPrices])
+  const coingeckoData = coingeckoPrices.find((asset) =>
+    baseSymbol === 'soETH'
+      ? asset.symbol === 'ETH'
+      : asset.symbol === baseSymbol
+  )
 
-  const change = useMemo(() => {
-    if (marketPrices && oraclePrice) {
-      return (
-        ((oraclePrice - marketPrices[0].value) / marketPrices[0].value) * 100
-      )
-    }
-    return 0
-  }, [marketPrices])
+  const change = coingeckoData
+    ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
+        coingeckoData.prices[0][1]) /
+        coingeckoData.prices[0][1]) *
+      100
+    : 0
 
   return (
     <div className="flex h-16 items-center bg-th-bkg-1 px-5 md:h-12">
@@ -165,13 +154,14 @@ const AdvancedMarketHeader = () => {
       </div>
       <div className="ml-6 flex-col">
         <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
-        {change ? (
-          <Change change={change} size="small" />
-        ) : loadSerumMarketPrices ? (
-          <span className="text-th-fgd-4">–</span>
-        ) : (
-          <div className="font-mono text-xs">{t('unavailable')}</div>
-        )}
+        <Change change={change} size="small" />
+        {/* <div
+          className={`font-mono text-xs ${
+            change < 0 ? 'text-th-red' : 'text-th-gree'
+          }`}
+        >
+          {isNaN(change) ? '0.00' : change.toFixed(2)}%
+        </div> */}
       </div>
     </div>
   )

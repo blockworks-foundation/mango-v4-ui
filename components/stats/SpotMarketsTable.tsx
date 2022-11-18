@@ -1,7 +1,7 @@
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
@@ -11,7 +11,6 @@ import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
 import dynamic from 'next/dynamic'
-import SheenLoader from '@components/shared/SheenLoader'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -19,20 +18,13 @@ const SimpleAreaChart = dynamic(
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
-  const actions = mangoStore((s) => s.actions)
+  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
+  const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
   const group = mangoStore((s) => s.group)
   const serumMarkets = mangoStore((s) => s.serumMarkets)
-  const serumMarketPrices = mangoStore((s) => s.serumMarketPrices.data)
-  const loadingSerumMarketPrices = mangoStore(
-    (s) => s.serumMarketPrices.loading
-  )
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-
-  useEffect(() => {
-    actions.fetchSerumMarketPrices()
-  }, [actions])
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -53,18 +45,20 @@ const SpotMarketsTable = () => {
               )
               const oraclePrice = bank?.uiPrice
 
-              const chartData = serumMarketPrices.find(
-                (m) =>
-                  m.length &&
-                  m[0].address === market.serumMarketExternal.toString()
+              const coingeckoData = coingeckoPrices.find((asset) =>
+                bank?.name === 'soETH'
+                  ? asset.symbol === 'ETH'
+                  : asset.symbol === bank?.name
               )
 
-              const change = chartData
-                ? ((chartData[chartData.length - 1].value -
-                    chartData[0].value) /
-                    chartData[0].value) *
+              const change = coingeckoData
+                ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
+                    coingeckoData.prices[0][1]) /
+                    coingeckoData.prices[0][1]) *
                   100
-                : 'unavailable'
+                : 0
+
+              const chartData = coingeckoData ? coingeckoData.prices : undefined
 
               return (
                 <tr key={market.publicKey.toString()}>
@@ -80,7 +74,7 @@ const SpotMarketsTable = () => {
                     </div>
                   </td>
                   <td>
-                    {!loadingSerumMarketPrices ? (
+                    {!loadingCoingeckoPrices ? (
                       chartData !== undefined ? (
                         <SimpleAreaChart
                           color={
@@ -92,10 +86,11 @@ const SpotMarketsTable = () => {
                           height={40}
                           name={bank!.name}
                           width={104}
-                          xKey="unixTime"
-                          yKey="value"
+                          xKey="0"
+                          yKey="1"
                         />
-                      ) : (
+                      ) : bank?.name === 'USDC' ||
+                        bank?.name === 'USDT' ? null : (
                         <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
                       )
                     ) : (
@@ -104,17 +99,7 @@ const SpotMarketsTable = () => {
                   </td>
                   <td>
                     <div className="flex flex-col items-end">
-                      {change !== 'unavailable' ? (
-                        loadingSerumMarketPrices ? (
-                          <SheenLoader>
-                            <div className="h-5 w-12 rounded bg-th-bkg-2" />
-                          </SheenLoader>
-                        ) : (
-                          <Change change={change} />
-                        )
-                      ) : (
-                        <p className="text-th-fgd-4">{t('unavailable')}</p>
-                      )}
+                      <Change change={change} />
                     </div>
                   </td>
                 </tr>
@@ -142,34 +127,41 @@ export default SpotMarketsTable
 
 const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
   const { t } = useTranslation('common')
-  const serumMarketPrices = mangoStore((s) => s.serumMarketPrices.data)
-  const loadingSerumMarketPrices = mangoStore(
-    (s) => s.serumMarketPrices.loading
-  )
+  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
+  const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
   const group = mangoStore((s) => s.group)
   const { theme } = useTheme()
   const bank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
 
-  const chartData = useMemo(() => {
-    if (!loadingSerumMarketPrices) {
-      return serumMarketPrices.find(
-        (m) =>
-          m.length && m[0].address === market.serumMarketExternal.toString()
+  const coingeckoData = useMemo(() => {
+    if (!loadingCoingeckoPrices && bank) {
+      return coingeckoPrices.find((asset) =>
+        bank.name === 'soETH'
+          ? asset.symbol === 'ETH'
+          : asset.symbol === bank?.name
       )
     }
     return null
-  }, [loadingSerumMarketPrices])
+  }, [loadingCoingeckoPrices, bank])
 
   const change = useMemo(() => {
-    if (chartData) {
+    if (coingeckoData) {
       return (
-        ((chartData[chartData.length - 1].value - chartData[0].value) /
-          chartData[0].value) *
+        ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
+          coingeckoData.prices[0][1]) /
+          coingeckoData.prices[0][1]) *
         100
       )
     }
     return 0
-  }, [chartData])
+  }, [coingeckoData])
+
+  const chartData = useMemo(() => {
+    if (coingeckoData) {
+      return coingeckoData.prices
+    }
+    return undefined
+  }, [coingeckoData])
 
   return (
     <div className="border-b border-th-bkg-3 px-6 py-4">
@@ -182,27 +174,23 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
               <p className="font-mono">
                 {formatFixedDecimals(bank?.uiPrice!, true)}
               </p>
-              {change ? (
-                <Change change={change} />
-              ) : (
-                <p className="text-th-fgd-4">{t('unavailable')}</p>
-              )}
+              <Change change={change} />
             </div>
           </div>
         </div>
-        {!loadingSerumMarketPrices ? (
-          chartData ? (
+        {!loadingCoingeckoPrices ? (
+          chartData !== undefined ? (
             <SimpleAreaChart
               color={change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]}
               data={chartData}
               height={40}
               name={bank!.name}
               width={104}
-              xKey="unixTime"
-              yKey="value"
+              xKey="0"
+              yKey="1"
             />
-          ) : (
-            <p className="text-th-fgd-4">{t('unavailable')}</p>
+          ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
+            <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
           )
         ) : (
           <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />

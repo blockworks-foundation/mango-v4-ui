@@ -1,5 +1,4 @@
 import { formatDateAxis } from '@components/shared/DetailedAreaChart'
-import { BirdeyePrice } from '@store/mangoStore'
 import { useTheme } from 'next-themes'
 import { useMemo } from 'react'
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
@@ -9,13 +8,13 @@ const PriceChart = ({
   prices,
   daysToShow,
 }: {
-  prices: BirdeyePrice[]
+  prices: number[][]
   daysToShow: number
 }) => {
   const { theme } = useTheme()
 
   const change = useMemo(() => {
-    return prices[prices.length - 1].value - prices[0].value
+    return prices[prices.length - 1][1] - prices[0][1]
   }, [prices])
 
   return (
@@ -44,14 +43,14 @@ const PriceChart = ({
             <Area
               isAnimationActive={false}
               type="monotone"
-              dataKey="value"
+              dataKey="1"
               stroke={change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]}
               strokeWidth={1.5}
               fill="url(#gradientArea)"
             />
             <XAxis
               axisLine={false}
-              dataKey="unixTime"
+              dataKey="0"
               padding={{ left: 20, right: 20 }}
               tick={{
                 fill:
@@ -60,13 +59,12 @@ const PriceChart = ({
                     : 'rgba(255,255,255,0.6)',
                 fontSize: 10,
               }}
-              interval={10}
               tickLine={false}
-              tickFormatter={(d) => formatDateAxis(d * 1000, daysToShow)}
+              tickFormatter={(d) => formatDateAxis(d, daysToShow)}
             />
             <YAxis
               axisLine={false}
-              dataKey={'value'}
+              dataKey={'1'}
               type="number"
               domain={['dataMin', 'dataMax']}
               padding={{ top: 20, bottom: 20 }}
