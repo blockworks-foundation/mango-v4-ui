@@ -22,12 +22,13 @@ import { HealthType } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import HealthHeart from './account/HealthHeart'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const group = mangoStore.getState().group
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const router = useRouter()
   const { pathname } = router
 
@@ -173,7 +174,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default SideNav
@@ -204,8 +205,8 @@ const MenuItem = ({
         shallow={true}
         className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
           active ? 'text-th-primary' : 'text-th-fgd-1'
-        } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}>
-
+        } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
+      >
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center">
             <div
@@ -234,10 +235,9 @@ const MenuItem = ({
             <ArrowTopRightOnSquareIcon className="h-4 w-4" />
           ) : null}
         </div>
-
       </Link>
     </Tooltip>
-  );
+  )
 }
 
 export const ExpandableMenuItem = ({

@@ -11,12 +11,13 @@ import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
 import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const MangoAccountSummary = () => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const group = mangoStore.getState().group
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
 

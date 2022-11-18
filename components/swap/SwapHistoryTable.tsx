@@ -25,6 +25,7 @@ import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { EXPLORERS } from 'pages/settings'
 import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const SwapHistoryTable = ({
   swapHistory,
@@ -35,7 +36,7 @@ const SwapHistoryTable = ({
 }) => {
   const { t } = useTranslation(['common', 'settings'])
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const [showSwapDetails, setSwapDetails] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false

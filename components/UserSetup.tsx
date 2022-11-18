@@ -14,6 +14,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import useMangoAccount from 'hooks/useMangoAccount'
 import useSolBalance from 'hooks/useSolBalance'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -48,7 +49,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation(['common', 'onboarding', 'swap'])
   const group = mangoStore((s) => s.group)
   const { connected, select, wallet, wallets } = useWallet()
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [accountName, setAccountName] = useState('')
   const [loadingAccount, setLoadingAccount] = useState(false)

@@ -6,6 +6,7 @@ import SwapHistoryTable from '../swap/SwapHistoryTable'
 import ActivityFeed from './ActivityFeed'
 import UnsettledTrades from '@components/trade/UnsettledTrades'
 import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const TABS = [
   'balances',
@@ -17,7 +18,7 @@ const TABS = [
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
   const actions = mangoStore((s) => s.actions)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     return TABS.map((t) => [t, 0])

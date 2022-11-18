@@ -36,6 +36,7 @@ import { useTokenMax } from './useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpact from '@components/shared/HealthImpact'
 import { useWallet } from '@solana/wallet-adapter-react'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -58,11 +59,11 @@ const SwapForm = () => {
   const set = mangoStore.getState().set
   const useMargin = mangoStore((s) => s.swap.margin)
   const slippage = mangoStore((s) => s.swap.slippage)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
   const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
+  const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
 
   const amountIn: Decimal | null = useMemo(() => {

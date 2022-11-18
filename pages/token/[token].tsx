@@ -25,6 +25,7 @@ import Tooltip from '@components/shared/Tooltip'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import dynamic from 'next/dynamic'
 import { LISTED_TOKENS } from 'utils/tokens'
+import useMangoAccount from 'hooks/useMangoAccount'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
 })
@@ -74,7 +75,7 @@ const Token: NextPage = () => {
   const router = useRouter()
   const { token } = router.query
   const group = mangoStore((s) => s.group)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
   const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)

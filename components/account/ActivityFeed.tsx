@@ -16,6 +16,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
@@ -60,7 +61,7 @@ const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
   const initialLoad = mangoStore((s) => s.activityFeed.initialLoad)
   const actions = mangoStore((s) => s.actions)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const [showActivityDetail, setShowActivityDetail] = useState(null)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(
@@ -152,7 +153,7 @@ const ActivityFilters = ({
   const { t } = useTranslation(['common', 'activity'])
   const actions = mangoStore((s) => s.actions)
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const [showAdvancedFiltersModal, setShowAdvancedFiltersModal] =
     useState(false)
   const { width } = useViewport()

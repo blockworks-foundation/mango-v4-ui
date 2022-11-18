@@ -27,6 +27,7 @@ import { withValueLimit } from '../swap/SwapForm'
 import { getMaxWithdrawForBank } from '../swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 interface WithdrawModalProps {
   token?: string
@@ -45,6 +46,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoAccount } = useMangoAccount()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -60,8 +62,6 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     }
     return logoURI
   }, [bank?.mint, jupiterTokens])
-
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
 
   const tokenMax = useMemo(() => {
     if (!bank || !mangoAccount || !group) return new Decimal(0)

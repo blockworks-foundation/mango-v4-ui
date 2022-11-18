@@ -4,13 +4,13 @@ import { useCallback, useState } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { IconButton } from '@components/shared/Button'
 import { notify } from 'utils/notifications'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { CheckIcon, LinkIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import Loading from '@components/shared/Loading'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import MarketLogos from './MarketLogos'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -18,7 +18,7 @@ const UnsettledTrades = ({
   unsettledSpotBalances: any
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const group = mangoStore((s) => s.group)
   // const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const [settleMktAddress, setSettleMktAddress] = useState<string>('')

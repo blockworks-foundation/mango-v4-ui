@@ -15,6 +15,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
+import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
@@ -25,7 +26,7 @@ import MarketLogos from './MarketLogos'
 
 const OpenOrders = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [cancelId, setCancelId] = useState<string>('')
   const { width } = useViewport()

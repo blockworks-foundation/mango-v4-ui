@@ -29,12 +29,13 @@ import IconDropMenu from './shared/IconDropMenu'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import RepayModal from './modals/RepayModal'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
   const { connected } = useWallet()
   const [showZeroBalances, setShowZeroBalances] = useState(true)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const group = mangoStore((s) => s.group)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
@@ -264,7 +265,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const [showTokenDetails, setShowTokenDetails] = useState(false)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.stats.interestTotals.data
   )

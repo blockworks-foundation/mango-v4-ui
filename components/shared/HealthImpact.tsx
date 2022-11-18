@@ -4,6 +4,7 @@ import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
 import Tooltip from './Tooltip'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const HealthImpact = ({
   maintProjectedHealth,
@@ -14,7 +15,7 @@ const HealthImpact = ({
 }) => {
   const { t } = useTranslation('common')
   const group = mangoStore.getState().group
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
 
   const currentMaintHealth = useMemo(() => {
     if (!group || !mangoAccount) return 0

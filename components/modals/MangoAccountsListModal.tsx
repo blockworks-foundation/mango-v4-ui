@@ -17,6 +17,7 @@ import { formatFixedDecimals } from 'utils/numbers'
 import CreateAccountForm from '@components/account/CreateAccountForm'
 import { EnterRightExitLeft } from '@components/shared/Transitions'
 import { useRouter } from 'next/router'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const MangoAccountsListModal = ({
   isOpen,
@@ -26,7 +27,7 @@ const MangoAccountsListModal = ({
   onClose: () => void
 }) => {
   const { t } = useTranslation('common')
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const mangoAccounts = mangoStore((s) => s.mangoAccounts)
   const actions = mangoStore((s) => s.actions)
   const group = mangoStore((s) => s.group)

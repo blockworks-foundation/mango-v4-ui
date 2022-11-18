@@ -1,5 +1,6 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
+import useMangoAccount from 'hooks/useMangoAccount'
 import ActionTokenItem from './ActionTokenItem'
 
 type BankParams = {
@@ -29,7 +30,7 @@ const ActionTokenList = ({
   showDepositRates?: boolean
   valueKey: 'maxAmount' | 'walletBalance' | 'accountBalance' | 'borrowAmount'
 }) => {
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
 
   return mangoAccount ? (
     <>

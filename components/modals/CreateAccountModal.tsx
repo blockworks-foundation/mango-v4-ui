@@ -1,16 +1,15 @@
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import CreateAccountForm from '@components/account/CreateAccountForm'
-import mangoStore from '@store/mangoStore'
 import { useRouter } from 'next/router'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const CreateAccountModal = ({ isOpen, onClose }: ModalProps) => {
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const router = useRouter()
-  const { asPath } = useRouter()
 
   const handleClose = () => {
-    if (asPath !== '/') {
+    if (router.asPath !== '/') {
       router.push('/')
     }
     onClose()

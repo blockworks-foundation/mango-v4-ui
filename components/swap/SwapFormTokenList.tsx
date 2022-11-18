@@ -13,6 +13,7 @@ import { useTranslation } from 'next-i18next'
 import { floorToDecimal } from '../../utils/numbers'
 import Decimal from 'decimal.js'
 import { getTokenInMax } from './useTokenMax'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const generateSearchTerm = (item: Token, searchValue: string) => {
   const normalizedSearchValue = searchValue.toLowerCase()
@@ -104,8 +105,8 @@ const SwapFormTokenList = ({
   // const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
   const group = mangoStore((s) => s.group)
+  const { mangoAccount } = useMangoAccount()
 
   // const popularTokens = useMemo(() => {
   //   return tokens.filter((token) => {

@@ -28,6 +28,7 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import { walletBalanceForToken } from './DepositModal'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useSolBalance from 'hooks/useSolBalance'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 interface RepayModalProps {
   token?: string
@@ -38,7 +39,7 @@ type ModalCombinedProps = RepayModalProps & ModalProps
 function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation('common')
   const group = mangoStore((s) => s.group)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(token)

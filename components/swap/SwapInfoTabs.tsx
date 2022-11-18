@@ -5,11 +5,12 @@ import UnsettledTrades from '../trade/UnsettledTrades'
 import mangoStore from '@store/mangoStore'
 import SwapHistoryTable from './SwapHistoryTable'
 import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const SwapInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
   const loading = mangoStore((s) => s.mangoAccount.stats.swapHistory.loading)
   const unsettledSpotBalances = useUnsettledSpotBalances()

@@ -23,11 +23,12 @@ import { abbreviateAddress } from 'utils/formatting'
 import { HealthType, ZERO_I80F48 } from '@blockworks-foundation/mango-v4'
 import RepayModal from '@components/modals/RepayModal'
 import DelegateModal from '@components/modals/DelegateModal'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
   const group = mangoStore((s) => s.group)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)

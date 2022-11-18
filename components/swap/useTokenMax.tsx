@@ -3,7 +3,7 @@ import Decimal from 'decimal.js'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
 import { floorToDecimal } from '../../utils/numbers'
-import useMangoAccount from '../shared/useMangoAccount'
+import useMangoAccount from '../../hooks/useMangoAccount'
 
 export const getMaxWithdrawForBank = (
   group: Group,

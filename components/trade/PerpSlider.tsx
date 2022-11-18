@@ -2,13 +2,14 @@ import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/swap/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
+import useMangoAccount from 'hooks/useMangoAccount'
 import { useCallback, useMemo } from 'react'
 import { notify } from 'utils/notifications'
 
 const PerpSlider = () => {
   const side = mangoStore((s) => s.tradeForm.side)
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
 
   const leverageMax = useMemo(() => {

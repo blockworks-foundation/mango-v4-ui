@@ -8,12 +8,11 @@ import { ChangeEvent, useState } from 'react'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import { PublicKey } from '@solana/web3.js'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-  const [loading, setLoading] = useState(false)
-  console.log('mad', mangoAccount?.delegate?.toString())
+  const { mangoAccount } = useMangoAccount()
 
   const [delegateAddress, setDelegateAddress] = useState(
     mangoAccount?.delegate?.toString() !== '11111111111111111111111111111111'
@@ -40,7 +39,6 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
       })
     }
 
-    setLoading(true)
     try {
       const tx = await client.editMangoAccount(
         group,
@@ -48,8 +46,6 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
         undefined,
         delegateAddress ? new PublicKey(delegateAddress) : undefined
       )
-
-      setLoading(false)
       onClose()
       notify({
         title: t('account-update-success'),
@@ -58,7 +54,6 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
       })
       await actions.reloadMangoAccount()
     } catch (e: any) {
-      setLoading(false)
       notify({
         title: t('account-update-failed'),
         txid: e?.signature,

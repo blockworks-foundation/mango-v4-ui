@@ -8,10 +8,11 @@ import { ChangeEvent, useState } from 'react'
 import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState(mangoAccount?.name || '')
 

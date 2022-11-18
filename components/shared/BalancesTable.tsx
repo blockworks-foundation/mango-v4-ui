@@ -2,6 +2,7 @@ import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
+import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
@@ -14,7 +15,7 @@ import { LinkButton } from './Button'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const group = mangoStore((s) => s.group)
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
@@ -199,7 +200,7 @@ const BalancesTable = () => {
 export default BalancesTable
 
 const Balance = ({ bank }: { bank: Bank }) => {
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const { asPath } = useRouter()
 

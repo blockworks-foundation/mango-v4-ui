@@ -4,6 +4,7 @@ import useInterval from '@components/shared/useInterval'
 import { PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const rehydrateStore = async () => {
   const actions = mangoStore.getState().actions
@@ -16,7 +17,7 @@ const rehydrateStore = async () => {
 
 const HydrateStore = () => {
   const actions = mangoStore((s) => s.actions)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const jupiterTokens = mangoStore((s) => s.jupiterTokens)
 
   useInterval(() => {

@@ -15,10 +15,11 @@ import MangoAccountsListModal from './modals/MangoAccountsListModal'
 import { useRouter } from 'next/router'
 import UserSetup from './UserSetup'
 import SolanaTps from './SolanaTps'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetup, setShowUserSetup] = useState(false)
