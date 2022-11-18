@@ -18,12 +18,13 @@ import FlipNumbers from 'react-flip-numbers'
 import Tooltip from '@components/shared/Tooltip'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import { useRouter } from 'next/router'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const group = mangoStore((s) => s.group)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
@@ -141,8 +142,8 @@ const TokenStats = () => {
               const bank = value[0]
 
               let logoURI
-              if (jupiterTokens.length) {
-                logoURI = jupiterTokens.find(
+              if (mangoTokens.length) {
+                logoURI = mangoTokens.find(
                   (t) => t.address === bank.mint.toString()
                 )!.logoURI
               }
@@ -232,8 +233,8 @@ const TokenStats = () => {
           {banks.map(({ key, value }) => {
             const bank = value[0]
             let logoURI
-            if (jupiterTokens.length) {
-              logoURI = jupiterTokens.find(
+            if (mangoTokens.length) {
+              logoURI = mangoTokens.find(
                 (t) => t.address === bank.mint.toString()
               )!.logoURI
             }

@@ -31,6 +31,7 @@ import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import useSolBalance from 'hooks/useSolBalance'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 interface DepositModalProps {
   token?: string
@@ -69,7 +70,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -78,13 +79,13 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const logoUri = useMemo(() => {
     let logoURI
-    if (jupiterTokens.length) {
-      logoURI = jupiterTokens.find(
+    if (mangoTokens.length) {
+      logoURI = mangoTokens.find(
         (t) => t.address === bank?.mint.toString()
       )!.logoURI
     }
     return logoURI
-  }, [bank?.mint, jupiterTokens])
+  }, [bank?.mint, mangoTokens])
 
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)

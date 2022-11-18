@@ -11,6 +11,8 @@ import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
 import dynamic from 'next/dynamic'
+import { useCoingecko } from 'hooks/useCoingecko'
+import useMangoGroup from 'hooks/useMangoGroup'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -18,8 +20,7 @@ const SimpleAreaChart = dynamic(
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
-  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
-  const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
+  const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
   const group = mangoStore((s) => s.group)
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const { theme } = useTheme()
@@ -74,7 +75,7 @@ const SpotMarketsTable = () => {
                     </div>
                   </td>
                   <td>
-                    {!loadingCoingeckoPrices ? (
+                    {!loadingPrices ? (
                       chartData !== undefined ? (
                         <SimpleAreaChart
                           color={
@@ -127,22 +128,17 @@ export default SpotMarketsTable
 
 const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
   const { t } = useTranslation('common')
-  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
-  const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
-  const group = mangoStore((s) => s.group)
+  const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
+  const { group } = useMangoGroup()
   const { theme } = useTheme()
   const bank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
 
   const coingeckoData = useMemo(() => {
-    if (!loadingCoingeckoPrices && bank) {
-      return coingeckoPrices.find((asset) =>
-        bank.name === 'soETH'
-          ? asset.symbol === 'ETH'
-          : asset.symbol === bank?.name
-      )
+    if (!loadingPrices && bank) {
+      return coingeckoPrices.find((asset) => asset.symbol === bank?.name)
     }
     return null
-  }, [loadingCoingeckoPrices, bank])
+  }, [loadingPrices, bank])
 
   const change = useMemo(() => {
     if (coingeckoData) {
@@ -178,7 +174,7 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
             </div>
           </div>
         </div>
-        {!loadingCoingeckoPrices ? (
+        {!loadingPrices ? (
           chartData !== undefined ? (
             <SimpleAreaChart
               color={change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]}

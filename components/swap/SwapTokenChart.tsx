@@ -1,10 +1,4 @@
-import {
-  FunctionComponent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -31,13 +25,9 @@ import { formatTokenSymbol } from 'utils/tokens'
 import { useQuery } from '@tanstack/react-query'
 import { fetchChartData } from 'apis/coingecko'
 import mangoStore from '@store/mangoStore'
+import useJupiterSwapData from './useJupiterSwapData'
 
 dayjs.extend(relativeTime)
-
-interface SwapTokenChartProps {
-  inputTokenId: string
-  outputTokenId: string
-}
 
 const CustomizedLabel = ({
   chartData,
@@ -77,21 +67,19 @@ const CustomizedLabel = ({
   } else return <div />
 }
 
-const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
-  inputTokenId,
-  outputTokenId,
-}) => {
-  const inputBank = mangoStore((s) => s.swap.inputBank)
-  const outputBank = mangoStore((s) => s.swap.outputBank)
-  const [baseTokenId, setBaseTokenId] = useState(inputTokenId)
-  const [quoteTokenId, setQuoteTokenId] = useState(outputTokenId)
+const SwapTokenChart = () => {
+  const { inputBank, outputBank } = mangoStore((s) => s.swap)
+  const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
+  const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
+  const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState(1)
   const { theme } = useTheme()
+
   const chartDataQuery = useQuery(
     ['chart-data', baseTokenId, quoteTokenId, daysToShow],
     () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
-    { staleTime: 0 }
+    { staleTime: 0, enabled: !!baseTokenId && !!quoteTokenId }
   )
   const chartData = chartDataQuery.data
 
@@ -106,16 +94,16 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
   }
 
   useEffect(() => {
-    if (!inputTokenId || !outputTokenId) return
+    if (!inputCoingeckoId || !outputCoingeckoId) return
 
-    if (['usd-coin', 'tether'].includes(outputTokenId)) {
-      setBaseTokenId(inputTokenId)
-      setQuoteTokenId(outputTokenId)
+    if (['usd-coin', 'tether'].includes(outputCoingeckoId)) {
+      setBaseTokenId(inputCoingeckoId)
+      setQuoteTokenId(outputCoingeckoId)
     } else {
-      setBaseTokenId(outputTokenId)
-      setQuoteTokenId(inputTokenId)
+      setBaseTokenId(outputCoingeckoId)
+      setQuoteTokenId(inputCoingeckoId)
     }
-  }, [inputTokenId, outputTokenId])
+  }, [inputCoingeckoId, outputCoingeckoId])
 
   // const handleFlipChart = useCallback(() => {
   //   if (!baseTokenId || !quoteTokenId) return
@@ -144,7 +132,7 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
 
   return (
     <ContentBox hideBorder hidePadding className="h-full px-6 py-3">
-      {chartDataQuery?.isLoading ? (
+      {chartDataQuery?.isLoading || chartDataQuery.isFetching ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />
@@ -159,14 +147,14 @@ const SwapTokenChart: FunctionComponent<SwapTokenChartProps> = ({
             <div className="h-[308px] bg-th-bkg-2" />
           </SheenLoader>
         </>
-      ) : chartData.length && baseTokenId && quoteTokenId ? (
+      ) : chartData?.length && baseTokenId && quoteTokenId ? (
         <div className="relative">
           <div className="flex items-start justify-between">
             <div>
               {inputBank && outputBank ? (
                 <div className="mb-0.5 flex items-center">
                   <p className="text-base text-th-fgd-3">
-                    {['usd-coin', 'tether'].includes(inputTokenId || '')
+                    {['usd-coin', 'tether'].includes(inputCoingeckoId || '')
                       ? `${formatTokenSymbol(
                           outputBank?.name?.toUpperCase()
                         )}/${inputBank?.name?.toUpperCase()}`

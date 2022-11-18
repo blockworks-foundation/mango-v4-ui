@@ -28,6 +28,7 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import Tooltip from '@components/shared/Tooltip'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 interface BorrowModalProps {
   token?: string
@@ -45,7 +46,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
 
   const bank = useMemo(() => {
@@ -55,13 +56,13 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const logoUri = useMemo(() => {
     let logoURI
-    if (jupiterTokens.length) {
-      logoURI = jupiterTokens.find(
+    if (mangoTokens?.length) {
+      logoURI = mangoTokens.find(
         (t) => t.address === bank?.mint.toString()
       )!.logoURI
     }
     return logoURI
-  }, [jupiterTokens, bank])
+  }, [mangoTokens, bank])
 
   const tokenMax = useMemo(() => {
     const group = mangoStore.getState().group

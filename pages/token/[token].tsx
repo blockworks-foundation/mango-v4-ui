@@ -26,6 +26,9 @@ import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import dynamic from 'next/dynamic'
 import { LISTED_TOKENS } from 'utils/tokens'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useMangoGroup from 'hooks/useMangoGroup'
+import useJupiterMints from 'hooks/useJupiterMints'
+import { useCoingecko } from 'hooks/useCoingecko'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
 })
@@ -74,13 +77,12 @@ const Token: NextPage = () => {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const { token } = router.query
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
+  const { mangoTokens } = useJupiterMints()
+  const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
   const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
   const [loadChartData, setLoadChartData] = useState(true)
-  const loadingCoingeckoPrices = mangoStore((s) => s.coingeckoPrices.loading)
   const [daysToShow, setDaysToShow] = useState<number>(1)
 
   const bank = useMemo(() => {
@@ -95,18 +97,18 @@ const Token: NextPage = () => {
   }, [group, token])
 
   const logoURI = useMemo(() => {
-    if (bank && jupiterTokens.length) {
-      return jupiterTokens.find((t) => t.address === bank.mint.toString())
+    if (bank && mangoTokens.length) {
+      return mangoTokens.find((t) => t.address === bank.mint.toString())
         ?.logoURI
     }
-  }, [bank, jupiterTokens])
+  }, [bank, mangoTokens])
 
   const coingeckoId = useMemo(() => {
-    if (bank && jupiterTokens.length) {
-      return jupiterTokens.find((t) => t.address === bank.mint.toString())
+    if (bank && mangoTokens.length) {
+      return mangoTokens.find((t) => t.address === bank.mint.toString())
         ?.extensions?.coingeckoId
     }
-  }, [bank, jupiterTokens])
+  }, [bank, mangoTokens])
 
   const serumMarkets = useMemo(() => {
     if (group) {
@@ -137,13 +139,13 @@ const Token: NextPage = () => {
     return data
   }
 
-  const getCoingeckoData = async (id: string) => {
-    const response = await fetchTokenInfo(id)
-    setCoingeckoData(response)
-    setLoading(false)
-  }
-
   useEffect(() => {
+    const getCoingeckoData = async (id: string) => {
+      const response = await fetchTokenInfo(id)
+      setCoingeckoData(response)
+      setLoading(false)
+    }
+
     if (coingeckoId) {
       getCoingeckoData(coingeckoId)
     }
@@ -168,16 +170,15 @@ const Token: NextPage = () => {
   } = coingeckoData ? coingeckoData.market_data : DEFAULT_COINGECKO_VALUES
 
   const loadingChart = useMemo(() => {
-    return daysToShow == 1 ? loadingCoingeckoPrices : loadChartData
-  }, [loadChartData, loadingCoingeckoPrices])
+    return daysToShow == 1 ? loadingPrices : loadChartData
+  }, [loadChartData, loadingPrices])
 
   const coingeckoTokenPrices = useMemo(() => {
     if (daysToShow === 1 && coingeckoPrices.length && bank) {
-      const tokenPriceData = coingeckoPrices.find((asset) =>
-        bank?.name === 'soETH'
-          ? asset.symbol === 'ETH'
-          : asset.symbol === bank.name
+      const tokenPriceData = coingeckoPrices.find(
+        (asset) => asset.symbol === bank.name
       )
+
       if (tokenPriceData) {
         return tokenPriceData.prices
       }

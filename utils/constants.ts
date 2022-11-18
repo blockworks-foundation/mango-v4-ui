@@ -3,7 +3,8 @@ export const LAST_ACCOUNT_KEY = 'mangoAccount-0.1'
 export const CLIENT_TX_TIMEOUT = 90000
 
 export const INPUT_TOKEN_DEFAULT = 'USDC'
-
+export const MANGO_MINT = 'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac'
+export const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 export const OUTPUT_TOKEN_DEFAULT = 'SOL'
 
 export const IS_ONBOARDED_KEY = 'isOnboarded-0.1'

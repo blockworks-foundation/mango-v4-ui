@@ -1,42 +1,20 @@
 import { useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
-import useInterval from '@components/shared/useInterval'
 import { PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 
-const rehydrateStore = async () => {
-  const actions = mangoStore.getState().actions
-  actions.fetchGroup()
-  const mangoAccount = mangoStore.getState().mangoAccount.current
-  if (mangoAccount) {
-    // actions.reloadMangoAccount()
-  }
-}
-
 const HydrateStore = () => {
   const actions = mangoStore((s) => s.actions)
   const { mangoAccount } = useMangoAccount()
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-
-  useInterval(() => {
-    rehydrateStore()
-  }, 5000)
 
   useEffect(() => {
     const fetchData = async () => {
       await actions.fetchGroup()
-      actions.fetchJupiterTokens()
     }
     fetchData()
-  }, [])
-
-  useEffect(() => {
-    if (jupiterTokens.length) {
-      actions.fetchCoingeckoPrices()
-    }
-  }, [jupiterTokens])
+  }, [actions])
 
   // watch selected Mango Account for changes
   useEffect(() => {

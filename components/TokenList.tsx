@@ -30,6 +30,7 @@ import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import RepayModal from './modals/RepayModal'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useJupiterMints from '../hooks/useJupiterMints'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -38,7 +39,7 @@ const TokenList = () => {
   const { mangoAccount } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const group = mangoStore((s) => s.group)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.stats.interestTotals.data
   )
@@ -136,8 +137,8 @@ const TokenList = () => {
               const oraclePrice = bank.uiPrice
 
               let logoURI
-              if (jupiterTokens.length) {
-                logoURI = jupiterTokens.find(
+              if (mangoTokens?.length) {
+                logoURI = mangoTokens.find(
                   (t) => t.address === bank.mint.toString()
                 )!.logoURI
               }
@@ -263,7 +264,7 @@ export default TokenList
 const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation(['common', 'token'])
   const [showTokenDetails, setShowTokenDetails] = useState(false)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoAccount } = useMangoAccount()
   const totalInterestData = mangoStore(
@@ -274,8 +275,8 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const router = useRouter()
 
   let logoURI
-  if (jupiterTokens.length) {
-    logoURI = jupiterTokens.find(
+  if (mangoTokens?.length) {
+    logoURI = mangoTokens.find(
       (t) => t.address === bank.mint.toString()
     )!.logoURI
   }
@@ -420,7 +421,7 @@ const ActionsMenu = ({
   // const set = mangoStore.getState().set
   // const router = useRouter()
   // const { asPath } = router
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
 
   const handleShowActionModals = useCallback(
     (token: string, action: 'borrow' | 'deposit' | 'withdraw' | 'repay') => {
@@ -437,7 +438,7 @@ const ActionsMenu = ({
   )
 
   // const handleBuy = useCallback(() => {
-  //   const outputTokenInfo = jupiterTokens.find(
+  //   const outputTokenInfo = mangoTokens.find(
   //     (t: any) => t.address === bank.mint.toString()
   //   )
   //   set((s) => {
@@ -447,10 +448,10 @@ const ActionsMenu = ({
   //   if (asPath === '/') {
   //     router.push('/swap', undefined, { shallow: true })
   //   }
-  // }, [bank, router, asPath, set, jupiterTokens])
+  // }, [bank, router, asPath, set, mangoTokens])
 
   // const handleSell = useCallback(() => {
-  //   const inputTokenInfo = jupiterTokens.find(
+  //   const inputTokenInfo = mangoTokens.find(
   //     (t: any) => t.address === bank.mint.toString()
   //   )
   //   set((s) => {
@@ -460,13 +461,12 @@ const ActionsMenu = ({
   //   if (asPath === '/') {
   //     router.push('/swap', undefined, { shallow: true })
   //   }
-  // }, [router, asPath, set, bank, jupiterTokens])
+  // }, [router, asPath, set, bank, mangoTokens])
 
   const logoURI = useMemo(() => {
-    if (!bank || !jupiterTokens.length) return ''
-    return jupiterTokens.find((t) => t.address === bank.mint.toString())
-      ?.logoURI
-  }, [bank, jupiterTokens])
+    if (!bank || !mangoTokens?.length) return ''
+    return mangoTokens.find((t) => t.address === bank.mint.toString())?.logoURI
+  }, [bank, mangoTokens])
 
   return (
     <>

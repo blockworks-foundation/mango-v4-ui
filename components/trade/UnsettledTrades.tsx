@@ -20,7 +20,6 @@ const UnsettledTrades = ({
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
   const group = mangoStore((s) => s.group)
-  // const jupiterTokens = mangoStore((s) => s.jupiterTokens)
   const [settleMktAddress, setSettleMktAddress] = useState<string>('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false

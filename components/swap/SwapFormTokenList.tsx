@@ -1,19 +1,13 @@
-import { memo, useMemo, useState, useEffect, ChangeEvent } from 'react'
-import Image from 'next/legacy/image'
+import { memo, useMemo, useEffect } from 'react'
 import { Token } from '../../types/jupiter'
 import mangoStore from '@store/mangoStore'
-import Input from '../forms/Input'
 import { IconButton } from '../shared/Button'
-import {
-  QuestionMarkCircleIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon,
-} from '@heroicons/react/20/solid'
+import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { floorToDecimal } from '../../utils/numbers'
 import Decimal from 'decimal.js'
 import { getTokenInMax } from './useTokenMax'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 const generateSearchTerm = (item: Token, searchValue: string) => {
   const normalizedSearchValue = searchValue.toLowerCase()
@@ -99,10 +93,8 @@ const SwapFormTokenList = ({
   useMargin: boolean
 }) => {
   const { t } = useTranslation(['common', 'swap'])
-  const [search, setSearch] = useState('')
-  const tokens = mangoStore.getState().jupiterTokens
-  const walletTokens = mangoStore((s) => s.wallet.tokens)
-  // const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  // const [search, setSearch] = useState('')
+  const { mangoTokens } = useJupiterMints()
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
   const group = mangoStore((s) => s.group)
@@ -128,13 +120,13 @@ const SwapFormTokenList = ({
 
   const tokenInfos = useMemo(() => {
     if (
-      tokens?.length &&
+      mangoTokens?.length &&
       group &&
       mangoAccount &&
       outputBank &&
       type === 'input'
     ) {
-      const filteredSortedTokens = tokens
+      const filteredSortedTokens = mangoTokens
         .map((token) => {
           const max = getTokenInMax(
             mangoAccount,
@@ -152,8 +144,8 @@ const SwapFormTokenList = ({
         )
 
       return filteredSortedTokens
-    } else if (tokens?.length) {
-      const filteredTokens = tokens
+    } else if (mangoTokens?.length) {
+      const filteredTokens = mangoTokens
         .map((token) => ({
           ...token,
           amount: new Decimal(0),
@@ -164,7 +156,7 @@ const SwapFormTokenList = ({
     } else {
       return []
     }
-  }, [tokens, walletTokens, inputBank, outputBank, mangoAccount, group])
+  }, [mangoTokens, inputBank, outputBank, mangoAccount, group, useMargin, type])
 
   // const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
   //   setSearch(e.target.value)
@@ -203,8 +195,8 @@ const SwapFormTokenList = ({
         <div className="mt-4 flex flex-wrap">
           {popularTokens.map((token) => {
             let logoURI
-            if (jupiterTokens.length) {
-              logoURI = jupiterTokens.find(
+            if (mangoTokens.length) {
+              logoURI = mangoTokens.find(
                 (t) => t.address === token.address
               )!.logoURI
             }

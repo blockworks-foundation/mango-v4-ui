@@ -13,8 +13,7 @@ import { useViewport } from '../../hooks/useViewport'
 import { IconButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
-import { useWallet } from '@solana/wallet-adapter-react'
-import mangoStore, { SwapHistoryItem } from '@store/mangoStore'
+import { SwapHistoryItem } from '@store/mangoStore'
 import {
   countLeadingZeros,
   formatFixedDecimals,
@@ -26,6 +25,7 @@ import { EXPLORERS } from 'pages/settings'
 import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 const SwapHistoryTable = ({
   swapHistory,
@@ -35,7 +35,7 @@ const SwapHistoryTable = ({
   loading: boolean
 }) => {
   const { t } = useTranslation(['common', 'settings'])
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
   const [showSwapDetails, setSwapDetails] = useState('')
   const { width } = useViewport()
@@ -95,11 +95,11 @@ const SwapHistoryTable = ({
                 const inSymbol = formatTokenSymbol(swap_in_symbol)
                 const outSymbol = formatTokenSymbol(swap_out_symbol)
 
-                if (jupiterTokens.length) {
-                  baseLogoURI = jupiterTokens.find(
+                if (mangoTokens.length) {
+                  baseLogoURI = mangoTokens.find(
                     (t) => t.symbol === inSymbol
                   )?.logoURI
-                  quoteLogoURI = jupiterTokens.find(
+                  quoteLogoURI = mangoTokens.find(
                     (t) => t.symbol === outSymbol
                   )?.logoURI
                 }
@@ -255,11 +255,11 @@ const SwapHistoryTable = ({
               const inSymbol = formatTokenSymbol(swap_in_symbol)
               const outSymbol = formatTokenSymbol(swap_out_symbol)
 
-              if (jupiterTokens.length) {
-                baseLogoURI = jupiterTokens.find(
+              if (mangoTokens.length) {
+                baseLogoURI = mangoTokens.find(
                   (t) => t.symbol === inSymbol
                 )?.logoURI
-                quoteLogoURI = jupiterTokens.find(
+                quoteLogoURI = mangoTokens.find(
                   (t) => t.symbol === outSymbol
                 )?.logoURI
               }
