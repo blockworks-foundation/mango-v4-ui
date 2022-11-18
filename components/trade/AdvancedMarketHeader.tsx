@@ -4,6 +4,7 @@ import TabUnderline from '@components/shared/TabUnderline'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
+import { useCoingecko } from 'hooks/useCoingecko'
 import useOraclePrice from 'hooks/useOraclePrice'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
@@ -113,16 +114,14 @@ const MarketSelectDropdown = () => {
 const AdvancedMarketHeader = () => {
   const { t } = useTranslation(['common', 'trade'])
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
-  const coingeckoPrices = mangoStore((s) => s.coingeckoPrices.data)
-  const actions = mangoStore((s) => s.actions)
-  const serumMarkets = mangoStore((s) => s.serumMarkets)
+  const { data: tokenPrices } = useCoingecko()
   const oraclePrice = useOraclePrice()
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split('/')[0]
   }, [selectedMarket])
 
-  const coingeckoData = coingeckoPrices.find((asset) =>
+  const coingeckoData = tokenPrices.find((asset) =>
     baseSymbol === 'soETH'
       ? asset.symbol === 'ETH'
       : asset.symbol === baseSymbol

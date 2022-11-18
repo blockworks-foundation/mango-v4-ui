@@ -1,4 +1,5 @@
 import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
+import useJupiterMints from 'hooks/useJupiterMints'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -18,7 +19,7 @@ const BalancesTable = () => {
   const { mangoAccount } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const group = mangoStore((s) => s.group)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
@@ -69,8 +70,8 @@ const BalancesTable = () => {
             const bank = value[0]
 
             let logoURI
-            if (jupiterTokens.length) {
-              logoURI = jupiterTokens.find(
+            if (mangoTokens.length) {
+              logoURI = mangoTokens.find(
                 (t) => t.address === bank.mint.toString()
               )!.logoURI
             }
@@ -127,8 +128,8 @@ const BalancesTable = () => {
           const bank = value[0]
 
           let logoURI
-          if (jupiterTokens.length) {
-            logoURI = jupiterTokens.find(
+          if (mangoTokens.length) {
+            logoURI = mangoTokens.find(
               (t) => t.address === bank.mint.toString()
             )!.logoURI
           }

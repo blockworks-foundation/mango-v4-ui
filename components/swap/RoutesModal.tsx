@@ -1,11 +1,9 @@
-import { RouteInfo } from '@jup-ag/core'
 import { Dispatch, SetStateAction } from 'react'
-import JSBI from 'jsbi'
 
-import mangoStore from '@store/mangoStore'
-import { Token } from '../../types/jupiter'
+import { RouteInfo, Token } from '../../types/jupiter'
 import { formatDecimal } from '../../utils/numbers'
 import Modal from '../shared/Modal'
+import useJupiterMints from '../../hooks/useJupiterMints'
 
 type RoutesModalProps = {
   onClose: () => void
@@ -26,7 +24,7 @@ const RoutesModal = ({
   inputTokenSymbol,
   outputTokenInfo,
 }: RoutesModalProps) => {
-  const tokens = mangoStore.getState().jupiterTokens
+  const { mangoTokens } = useJupiterMints()
 
   const handleSelectRoute = (route: RouteInfo) => {
     setSelectedRoute(route)
@@ -40,7 +38,7 @@ const RoutesModal = ({
       </div>
       <div className="thin-scroll max-h-96 overflow-y-auto overflow-x-hidden">
         {routes?.map((route, index) => {
-          const selected = selectedRoute === route
+          const selected = selectedRoute.outAmount === route.outAmount
           return (
             <div
               key={index}
@@ -66,7 +64,7 @@ const RoutesModal = ({
                           includeSeparator = true
                         }
                         return (
-                          <span key={index}>{`${info.amm.label} ${
+                          <span key={index}>{`${info.label} ${
                             includeSeparator ? 'x ' : ''
                           }`}</span>
                         )
@@ -81,7 +79,7 @@ const RoutesModal = ({
                           <span key={index}>
                             <span>
                               {
-                                tokens.find(
+                                mangoTokens.find(
                                   (item) =>
                                     item?.address === r?.outputMint?.toString()
                                 )?.symbol
@@ -95,8 +93,7 @@ const RoutesModal = ({
                   </div>
                   <div className="text-lg">
                     {formatDecimal(
-                      JSBI.toNumber(route.outAmount) /
-                        10 ** (outputTokenInfo?.decimals || 1),
+                      route.outAmount / 10 ** (outputTokenInfo?.decimals || 1),
                       6
                     )}
                   </div>

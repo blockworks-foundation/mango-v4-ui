@@ -1,4 +1,5 @@
 import { Serum3Market, PerpMarket } from '@blockworks-foundation/mango-v4'
+import useJupiterMints from 'hooks/useJupiterMints'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import Image from 'next/legacy/image'
@@ -6,10 +7,10 @@ import { useMemo } from 'react'
 
 const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
   const group = mangoStore((s) => s.group)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
 
   const logos = useMemo(() => {
-    if (!group || !jupiterTokens.length || !market)
+    if (!group || !mangoTokens.length || !market)
       return { baseLogoURI: '', quoteLogoURI: '' }
 
     let jupiterBaseToken, jupiterQuoteToken
@@ -17,14 +18,14 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
       const baseBank = group.getFirstBankByTokenIndex(market.baseTokenIndex)
       const quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
 
-      jupiterBaseToken = jupiterTokens.find(
+      jupiterBaseToken = mangoTokens.find(
         (t) => t.address === baseBank.mint.toString()
       )
-      jupiterQuoteToken = jupiterTokens.find(
+      jupiterQuoteToken = mangoTokens.find(
         (t) => t.address === quoteBank.mint.toString()
       )
     } else {
-      jupiterBaseToken = jupiterTokens.find(
+      jupiterBaseToken = mangoTokens.find(
         (t) => t.symbol === market.name.split('-')[0]
       )
     }
@@ -34,7 +35,7 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
       baseLogoURI,
       quoteLogoURI,
     }
-  }, [group, jupiterTokens, market])
+  }, [group, mangoTokens, market])
 
   return (
     <div

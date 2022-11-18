@@ -36,6 +36,7 @@ import { TRADE_FORM_UI_KEY } from 'utils/constants'
 import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -46,7 +47,7 @@ const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
   const set = mangoStore.getState().set
   const tradeForm = mangoStore((s) => s.tradeForm)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
@@ -57,13 +58,13 @@ const AdvancedTradeForm = () => {
   }, [selectedMarket])
 
   const baseLogoURI = useMemo(() => {
-    if (!baseSymbol || !jupiterTokens.length) return ''
-    const token = jupiterTokens.find((t) => t.symbol === baseSymbol)
+    if (!baseSymbol || !mangoTokens.length) return ''
+    const token = mangoTokens.find((t) => t.symbol === baseSymbol)
     if (token) {
       return token.logoURI
     }
     return ''
-  }, [baseSymbol, jupiterTokens])
+  }, [baseSymbol, mangoTokens])
 
   const quoteBank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -80,13 +81,13 @@ const AdvancedTradeForm = () => {
   }, [quoteBank])
 
   const quoteLogoURI = useMemo(() => {
-    if (!quoteSymbol || !jupiterTokens.length) return ''
-    const token = jupiterTokens.find((t) => t.symbol === quoteSymbol)
+    if (!quoteSymbol || !mangoTokens.length) return ''
+    const token = mangoTokens.find((t) => t.symbol === quoteSymbol)
     if (token) {
       return token.logoURI
     }
     return ''
-  }, [quoteSymbol, jupiterTokens])
+  }, [quoteSymbol, mangoTokens])
 
   const setTradeType = useCallback(
     (tradeType: 'Limit' | 'Market') => {

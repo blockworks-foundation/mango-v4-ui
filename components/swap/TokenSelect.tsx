@@ -3,7 +3,8 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import Image from 'next/legacy/image'
-import mangoStore from '@store/mangoStore'
+import useMangoGroup from 'hooks/useMangoGroup'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 type TokenSelectProps = {
   tokenSymbol: string | undefined
@@ -16,14 +17,14 @@ const TokenSelect = ({
   showTokenList,
   type,
 }: TokenSelectProps) => {
-  const group = mangoStore((s) => s.group)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { group } = useMangoGroup()
+  const { mangoTokens } = useJupiterMints()
 
   if (!group) return null
 
   let logoURI
-  if (jupiterTokens.length) {
-    logoURI = jupiterTokens.find((t) => t.symbol === tokenSymbol)!.logoURI
+  if (mangoTokens.length) {
+    logoURI = mangoTokens.find((t) => t.symbol === tokenSymbol)!.logoURI
   }
 
   return (

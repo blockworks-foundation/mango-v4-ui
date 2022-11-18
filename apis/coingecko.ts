@@ -1,8 +1,11 @@
 export const fetchChartData = async (
-  baseTokenId: string,
-  quoteTokenId: string,
+  baseTokenId: string | undefined,
+  quoteTokenId: string | undefined,
   daysToShow: number
 ) => {
+  console.log('fetching chart:', baseTokenId, quoteTokenId)
+
+  if (!baseTokenId || !quoteTokenId) return
   try {
     const [inputResponse, outputResponse] = await Promise.all([
       fetch(

@@ -8,10 +8,12 @@ const LeverageSlider = ({
   amount,
   leverageMax,
   onChange,
+  step,
 }: {
   amount: number
   leverageMax: number
   onChange: (x: string) => any
+  step: number
 }) => {
   const [value, setValue] = useState(0)
   const inputEl = useRef<HTMLInputElement>(null)
@@ -58,7 +60,7 @@ const LeverageSlider = ({
         type="range"
         min="0"
         max={leverageMax}
-        step={inputTokenInfo ? 1 / 10 ** inputTokenInfo?.decimals : 6}
+        step={step}
         className="w-full"
         onChange={handleSliderChange}
         value={value}
@@ -71,10 +73,12 @@ export const SwapLeverageSlider = ({
   amount,
   onChange,
   useMargin,
+  step,
 }: {
   amount: number
   onChange: (x: string) => void
   useMargin: boolean
+  step: number
 }) => {
   const { mangoAccount } = useMangoAccount()
   const { amountWithBorrow } = useTokenMax(useMargin)
@@ -82,12 +86,18 @@ export const SwapLeverageSlider = ({
   return (
     <>
       {!mangoAccount ? (
-        <LeverageSlider amount={amount} leverageMax={100} onChange={onChange} />
+        <LeverageSlider
+          amount={amount}
+          leverageMax={100}
+          onChange={onChange}
+          step={step}
+        />
       ) : (
         <LeverageSlider
           amount={amount}
           leverageMax={amountWithBorrow.toNumber()}
           onChange={onChange}
+          step={step}
         />
       )}
     </>

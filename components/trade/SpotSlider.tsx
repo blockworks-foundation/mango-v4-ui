@@ -74,6 +74,7 @@ const SpotSlider = () => {
         }
         leverageMax={leverageMax}
         onChange={handleSlide}
+        step={0.01}
       />
     </div>
   )

@@ -29,6 +29,7 @@ import { walletBalanceForToken } from './DepositModal'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useSolBalance from 'hooks/useSolBalance'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 interface RepayModalProps {
   token?: string
@@ -45,8 +46,8 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [selectedToken, setSelectedToken] = useState(token)
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
-  const { maxSolDeposit } = useSolBalance()
+  const { mangoTokens } = useJupiterMints()
+  // const { maxSolDeposit } = useSolBalance()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -55,13 +56,13 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const logoUri = useMemo(() => {
     let logoURI
-    if (jupiterTokens.length && bank) {
-      logoURI = jupiterTokens.find(
+    if (mangoTokens.length && bank) {
+      logoURI = mangoTokens.find(
         (t) => t.address === bank?.mint.toString()
       )!.logoURI
     }
     return logoURI
-  }, [bank, jupiterTokens])
+  }, [bank, mangoTokens])
 
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)

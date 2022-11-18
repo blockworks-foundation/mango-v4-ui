@@ -7,7 +7,6 @@ import {
   ExclamationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
-import { RouteInfo } from '@jup-ag/core'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
@@ -24,19 +23,22 @@ import Button, { IconButton } from '../shared/Button'
 import ButtonGroup from '../forms/ButtonGroup'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
-import useJupiter from './useJupiter'
+import useJupiterRoutes from './useJupiterRoutes'
 import SwapSettings from './SwapSettings'
 import SheenLoader from '../shared/SheenLoader'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   INPUT_TOKEN_DEFAULT,
+  MANGO_MINT,
   OUTPUT_TOKEN_DEFAULT,
+  USDC_MINT,
 } from '../../utils/constants'
 import { useTokenMax } from './useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpact from '@components/shared/HealthImpact'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { RouteInfo } from 'types/jupiter'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -53,15 +55,15 @@ const SwapForm = () => {
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-
-  const group = mangoStore.getState().group
+  console.log('amountInFormValue', amountInFormValue)
 
   const set = mangoStore.getState().set
-  const useMargin = mangoStore((s) => s.swap.margin)
-  const slippage = mangoStore((s) => s.swap.slippage)
-  const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
-  const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const {
+    margin: useMargin,
+    slippage,
+    inputBank,
+    outputBank,
+  } = mangoStore((s) => s.swap)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
@@ -72,16 +74,26 @@ const SwapForm = () => {
       : new Decimal(0)
   }, [debouncedAmountIn])
 
-  const { amountOut, jupiter, routes } = useJupiter({
-    inputTokenInfo,
-    outputTokenInfo,
+  const { bestRoute, routes } = useJupiterRoutes({
+    inputMint: inputBank?.mint.toString() || USDC_MINT,
+    outputMint: outputBank?.mint.toString() || MANGO_MINT,
     inputAmount: debouncedAmountIn,
     slippage,
   })
 
+  const outAmount: number = useMemo(() => {
+    return selectedRoute?.outAmount.toString()
+      ? new Decimal(selectedRoute.outAmount.toString())
+          .div(10 ** outputBank!.mintDecimals)
+          .toNumber()
+      : 0
+  }, [selectedRoute, outputBank])
+
   useEffect(() => {
-    setSelectedRoute(routes[0])
-  }, [routes])
+    if (bestRoute) {
+      setSelectedRoute(bestRoute)
+    }
+  }, [bestRoute])
 
   useEffect(() => {
     setAmountInFormValue('')
@@ -93,71 +105,50 @@ const SwapForm = () => {
 
   const handleTokenInSelect = useCallback(
     (mintAddress: string) => {
-      const inputTokenInfo = jupiterTokens.find(
-        (t: any) => t.address === mintAddress
-      )
       const group = mangoStore.getState().group
       if (group) {
         const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
         set((s) => {
           s.swap.inputBank = bank
-          s.swap.inputTokenInfo = inputTokenInfo
         })
       }
       setShowTokenSelect('')
     },
-    [jupiterTokens, set]
+    [set]
   )
 
   const handleTokenOutSelect = useCallback(
     (mintAddress: string) => {
-      const outputTokenInfo = jupiterTokens.find(
-        (t: any) => t.address === mintAddress
-      )
       const group = mangoStore.getState().group
       if (group) {
         const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
         set((s) => {
           s.swap.outputBank = bank
-          s.swap.outputTokenInfo = outputTokenInfo
         })
       }
       setShowTokenSelect('')
     },
-    [jupiterTokens, set]
+    [set]
   )
 
   const handleSwitchTokens = useCallback(() => {
-    if (amountIn?.gt(0)) {
-      setAmountInFormValue(amountOut.toString())
+    if (amountIn?.gt(0) && outAmount) {
+      setAmountInFormValue(outAmount.toString())
     }
     const inputBank = mangoStore.getState().swap.inputBank
     const outputBank = mangoStore.getState().swap.outputBank
     set((s) => {
       s.swap.inputBank = outputBank
       s.swap.outputBank = inputBank
-      s.swap.inputTokenInfo = outputTokenInfo
-      s.swap.outputTokenInfo = inputTokenInfo
     })
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
     )
-  }, [inputTokenInfo, outputTokenInfo, set, amountOut, amountIn])
-
-  const currentMaintHealth = useMemo(() => {
-    if (!group || !mangoAccount) return 0
-    return mangoAccount.getHealthRatioUi(group, HealthType.maint)
-  }, [mangoAccount])
+  }, [set, outAmount, amountIn])
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
-    if (
-      !inputTokenInfo ||
-      !mangoAccount ||
-      !outputTokenInfo ||
-      !amountOut ||
-      !group
-    )
+    if (!inputBank || !mangoAccount || !outputBank || !outAmount || !group)
       return 0
 
     const simulatedHealthRatio =
@@ -165,12 +156,12 @@ const SwapForm = () => {
         group,
         [
           {
-            mintPk: new PublicKey(inputTokenInfo.address),
+            mintPk: inputBank.mint,
             uiTokenAmount: amountIn.toNumber() * -1,
           },
           {
-            mintPk: new PublicKey(outputTokenInfo.address),
-            uiTokenAmount: amountOut.toNumber(),
+            mintPk: outputBank.mint,
+            uiTokenAmount: outAmount,
           },
         ],
         HealthType.maint
@@ -180,15 +171,11 @@ const SwapForm = () => {
       : simulatedHealthRatio! < 0
       ? 0
       : Math.trunc(simulatedHealthRatio!)
-  }, [mangoAccount, inputTokenInfo, outputTokenInfo, amountIn, amountOut])
+  }, [mangoAccount, inputBank, outputBank, amountIn, outAmount])
 
   const loadingSwapDetails: boolean = useMemo(() => {
-    return (
-      !!amountIn.toNumber() && connected && (!selectedRoute || !outputTokenInfo)
-    )
-  }, [amountIn, connected, selectedRoute, outputTokenInfo])
-
-  const showHealthImpact = !!inputTokenInfo && !!outputTokenInfo && !!amountOut
+    return !!amountIn.toNumber() && connected && !selectedRoute
+  }, [amountIn, connected, selectedRoute])
 
   return (
     <ContentBox
@@ -211,7 +198,6 @@ const SwapForm = () => {
             onClose={() => setShowConfirm(false)}
             amountIn={amountIn}
             slippage={slippage}
-            jupiter={jupiter}
             routes={routes}
             selectedRoute={selectedRoute}
             setSelectedRoute={setSelectedRoute}
@@ -260,7 +246,7 @@ const SwapForm = () => {
         <div className="mb-3 grid grid-cols-2" id="swap-step-two">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
-              tokenSymbol={inputTokenInfo?.symbol || INPUT_TOKEN_DEFAULT}
+              tokenSymbol={inputBank?.name || INPUT_TOKEN_DEFAULT}
               showTokenList={setShowTokenSelect}
               type="input"
             />
@@ -271,7 +257,7 @@ const SwapForm = () => {
               thousandSeparator=","
               allowNegative={false}
               isNumericString={true}
-              decimalScale={inputTokenInfo?.decimals || 6}
+              decimalScale={inputBank?.mintDecimals || 6}
               name="amountIn"
               id="amountIn"
               className="w-full rounded-r-lg border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
@@ -308,7 +294,7 @@ const SwapForm = () => {
         <div id="swap-step-three" className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
-              tokenSymbol={outputTokenInfo?.symbol || OUTPUT_TOKEN_DEFAULT}
+              tokenSymbol={outputBank?.name || OUTPUT_TOKEN_DEFAULT}
               showTokenList={setShowTokenSelect}
               type="output"
             />
@@ -329,15 +315,13 @@ const SwapForm = () => {
                 thousandSeparator=","
                 allowNegative={false}
                 isNumericString={true}
-                decimalScale={outputTokenInfo?.decimals || 6}
+                decimalScale={outputBank?.mintDecimals || 6}
                 name="amountOut"
                 id="amountOut"
                 className="w-full rounded-r-lg bg-th-bkg-3 p-3 text-right font-mono text-base font-bold text-th-fgd-3 focus:outline-none lg:text-lg xl:text-xl"
                 placeholder="0.00"
                 disabled
-                value={
-                  amountOut ? numberFormat.format(amountOut.toNumber()) : ''
-                }
+                value={outAmount ? numberFormat.format(outAmount) : ''}
               />
             )}
           </div>
@@ -352,6 +336,7 @@ const SwapForm = () => {
               useMargin={useMargin}
               amount={amountIn.toNumber()}
               onChange={setAmountInFormValue}
+              step={1 / 10 ** (inputBank?.mintDecimals || 6)}
             />
           </>
         ) : null}
@@ -360,8 +345,8 @@ const SwapForm = () => {
           useMargin={useMargin}
           setShowConfirm={setShowConfirm}
           amountIn={amountIn}
-          inputSymbol={inputTokenInfo?.symbol}
-          amountOut={amountOut}
+          inputSymbol={inputBank?.name}
+          amountOut={selectedRoute ? outAmount : undefined}
         />
       </div>
       <div
@@ -385,7 +370,7 @@ const SwapFormSubmitButton = ({
   useMargin,
 }: {
   amountIn: Decimal
-  amountOut: Decimal
+  amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
   setShowConfirm: (x: any) => any
@@ -400,10 +385,7 @@ const SwapFormSubmitButton = ({
     : tokenMax.lt(amountIn)
 
   const disabled =
-    !amountIn.toNumber() ||
-    !connected ||
-    showInsufficientBalance ||
-    !amountOut.gt(0)
+    !amountIn.toNumber() || !connected || showInsufficientBalance || !amountOut
 
   return (
     <Button

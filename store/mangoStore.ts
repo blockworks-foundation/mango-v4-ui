@@ -4,7 +4,6 @@ import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
-import { TOKEN_LIST_URL } from '@jup-ag/core'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
 import {
@@ -45,7 +44,7 @@ export const connection = new web3.Connection(
   'processed'
 )
 const options = AnchorProvider.defaultOptions()
-export const CLUSTER = 'mainnet-beta'
+export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
 const wallet = new EmptyWallet(Keypair.generate())
 const DEFAULT_PROVIDER = new AnchorProvider(connection, wallet, options)
 DEFAULT_PROVIDER.opts.skipPreflight = true
@@ -164,16 +163,11 @@ export type MangoStore = {
     initialLoad: boolean
     loading: boolean
   }
-  coingeckoPrices: {
-    data: any[]
-    loading: boolean
-  }
   connected: boolean
   connection: Connection
   group: Group | undefined
   groupLoaded: boolean
   client: MangoClient
-  jupiterTokens: Token[]
   mangoAccount: {
     current: MangoAccount | undefined
     initialLoad: boolean
@@ -246,9 +240,7 @@ export type MangoStore = {
       mangoAccountPk: string,
       range: number
     ) => Promise<void>
-    fetchCoingeckoPrices: () => Promise<void>
     fetchGroup: () => Promise<void>
-    fetchJupiterTokens: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (wallet: Wallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
@@ -270,16 +262,11 @@ const mangoStore = create<MangoStore>()(
         initialLoad: false,
         loading: true,
       },
-      coingeckoPrices: {
-        data: [],
-        loading: false,
-      },
       connected: false,
       connection,
       group: undefined,
       groupLoaded: false,
       client: DEFAULT_CLIENT,
-      jupiterTokens: [],
       mangoAccount: {
         current: undefined,
         initialLoad: true,
@@ -474,45 +461,6 @@ const mangoStore = create<MangoStore>()(
             }
             set((state) => {
               state.activityFeed.loading = false
-            })
-          }
-        },
-        fetchCoingeckoPrices: async () => {
-          const set = get().set
-          set((state) => {
-            state.coingeckoPrices.loading = true
-          })
-          try {
-            const jupiterTokens = mangoStore.getState().jupiterTokens
-            if (jupiterTokens.length) {
-              const coingeckoIds = jupiterTokens.map((token) => ({
-                id: token.extensions?.coingeckoId,
-                symbol: token.symbol,
-              }))
-              const promises: any = []
-              for (const token of coingeckoIds) {
-                if (token.id) {
-                  promises.push(
-                    fetch(
-                      `https://api.coingecko.com/api/v3/coins/${token.id}/market_chart?vs_currency=usd&days=1`
-                    ).then((res) => res.json())
-                  )
-                }
-              }
-
-              const data = await Promise.all(promises)
-              for (let i = 0; i < data.length; i++) {
-                data[i].symbol = coingeckoIds[i].symbol
-              }
-              set((state) => {
-                state.coingeckoPrices.data = data
-                state.coingeckoPrices.loading = false
-              })
-            }
-          } catch (e) {
-            console.warn('Unable to load Coingecko prices')
-            set((state) => {
-              state.coingeckoPrices.loading = false
             })
           }
         },
@@ -770,38 +718,6 @@ const mangoStore = create<MangoStore>()(
               state.wallet.tokens = []
             })
           }
-        },
-        fetchJupiterTokens: async () => {
-          const set = mangoStore.getState().set
-          const group = mangoStore.getState().group
-          if (!group) {
-            console.error(
-              'Mango group unavailable; Loading jupiter tokens failed'
-            )
-            return
-          }
-          const bankMints = Array.from(group.banksMapByName.values()).map((b) =>
-            b[0].mint.toString()
-          )
-
-          fetch(TOKEN_LIST_URL[CLUSTER])
-            .then((response) => response.json())
-            .then((result) => {
-              const groupTokens = result.filter((t: any) =>
-                bankMints.includes(t.address)
-              )
-              const inputTokenInfo = groupTokens.find(
-                (t: any) => t.symbol === INPUT_TOKEN_DEFAULT
-              )
-              const outputTokenInfo = groupTokens.find(
-                (t: any) => t.symbol === OUTPUT_TOKEN_DEFAULT
-              )
-              set((s) => {
-                s.swap.inputTokenInfo = inputTokenInfo
-                s.swap.outputTokenInfo = outputTokenInfo
-                s.jupiterTokens = groupTokens
-              })
-            })
         },
         connectMangoClientWithWallet: async (wallet: WalletAdapter) => {
           const set = get().set

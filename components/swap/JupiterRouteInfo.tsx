@@ -6,9 +6,6 @@ import React, {
   useState,
 } from 'react'
 import { TransactionInstruction, PublicKey } from '@solana/web3.js'
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
-import { Jupiter, RouteInfo, TransactionFeeInfo } from '@jup-ag/core'
-import JSBI from 'jsbi'
 import Decimal from 'decimal.js'
 
 import mangoStore from '@store/mangoStore'
@@ -31,10 +28,12 @@ import {
 } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 import { useWallet } from '@solana/wallet-adapter-react'
+import useJupiterMints from '../../hooks/useJupiterMints'
+import { RouteInfo, TransactionFeeInfo } from 'types/jupiter'
+import useJupiterSwapData from './useJupiterSwapData'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
-  jupiter: Jupiter | undefined
   onClose: () => void
   routes: RouteInfo[] | undefined
   selectedRoute: RouteInfo | undefined
@@ -43,14 +42,28 @@ type JupiterRouteInfoProps = {
 }
 
 const parseJupiterRoute = async (
-  jupiter: Jupiter,
   selectedRoute: RouteInfo,
   userPublicKey: PublicKey
 ): Promise<TransactionInstruction[]> => {
-  const { transactions } = await jupiter.exchange({
-    routeInfo: selectedRoute,
-    userPublicKey,
-  })
+  const transactions = await (
+    await fetch('https://quote-api.jup.ag/v3/swap', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        // route from /quote api
+        route: selectedRoute,
+        // user public key to be used for the swap
+        userPublicKey,
+        // auto wrap and unwrap SOL. default is true
+        wrapUnwrapSOL: true,
+        // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
+        // This is the ATA account for the output token where the fee will be sent to. If you are swapping from SOL->USDC then this would be the USDC ATA you want to collect the fee.
+        feeAccount: 'fee_account_public_key',
+      }),
+    })
+  ).json()
   const { swapTransaction } = transactions
   const instructions = []
   for (const ix of swapTransaction.instructions) {
@@ -72,7 +85,6 @@ const EMPTY_COINGECKO_PRICES = {
 const JupiterRouteInfo = ({
   amountIn,
   onClose,
-  jupiter,
   routes,
   selectedRoute,
   setSelectedRoute,
@@ -80,15 +92,11 @@ const JupiterRouteInfo = ({
   const { t } = useTranslation(['common', 'trade'])
   const [showRoutesModal, setShowRoutesModal] = useState(false)
   const [swapRate, setSwapRate] = useState<boolean>(false)
-  const [depositAndFee, setDepositAndFee] = useState<TransactionFeeInfo>()
   const [feeValue, setFeeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [coingeckoPrices, setCoingeckoPrices] = useState(EMPTY_COINGECKO_PRICES)
-  const { connected } = useWallet()
-
-  const inputTokenInfo = mangoStore((s) => s.swap.inputTokenInfo)
-  const outputTokenInfo = mangoStore((s) => s.swap.outputTokenInfo)
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
+  const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
 
   const inputTokenIconUri = useMemo(() => {
@@ -101,18 +109,6 @@ const JupiterRouteInfo = ({
       10 ** outputTokenInfo.decimals
     )
   }, [selectedRoute, outputTokenInfo])
-
-  useEffect(() => {
-    const getDepositAndFee = async () => {
-      const fees = await selectedRoute?.getDepositAndFee()
-      if (fees) {
-        setDepositAndFee(fees)
-      }
-    }
-    if (selectedRoute && connected) {
-      getDepositAndFee()
-    }
-  }, [selectedRoute, connected])
 
   useEffect(() => {
     setCoingeckoPrices(EMPTY_COINGECKO_PRICES)
@@ -140,7 +136,7 @@ const JupiterRouteInfo = ({
   }, [inputTokenInfo, outputTokenInfo])
 
   const onSwap = async () => {
-    if (!jupiter || !selectedRoute) return
+    if (!selectedRoute) return
     try {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
@@ -151,11 +147,7 @@ const JupiterRouteInfo = ({
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
 
-      const ixs = await parseJupiterRoute(
-        jupiter,
-        selectedRoute,
-        mangoAccount!.owner
-      )
+      const ixs = await parseJupiterRoute(selectedRoute, mangoAccount!.owner)
 
       try {
         setSubmitting(true)
@@ -201,7 +193,9 @@ const JupiterRouteInfo = ({
 
     const remainingBalance =
       mangoAccount.getTokenDepositsUi(inputBank) - amountIn.toNumber()
-    return remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+    const x = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+    console.log('borrowAmount', x)
+    return x
   }, [amountIn])
 
   const coinGeckoPriceDifference = useMemo(() => {
@@ -219,6 +213,8 @@ const JupiterRouteInfo = ({
         )
       : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
+
+  console.log('selectedRoute', selectedRoute)
 
   return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (
     <div className="flex h-full flex-col justify-between">
@@ -320,7 +316,7 @@ const JupiterRouteInfo = ({
             {outputTokenInfo?.decimals ? (
               <p className="text-right font-mono text-sm text-th-fgd-1">
                 {formatDecimal(
-                  JSBI.toNumber(selectedRoute?.otherAmountThreshold) /
+                  selectedRoute?.otherAmountThreshold /
                     10 ** outputTokenInfo.decimals || 1,
                   outputTokenInfo.decimals
                 )}{' '}
@@ -382,7 +378,7 @@ const JupiterRouteInfo = ({
                     includeSeparator = true
                   }
                   return (
-                    <span key={index}>{`${info.amm.label} ${
+                    <span key={index}>{`${info?.label} ${
                       includeSeparator ? 'x ' : ''
                     }`}</span>
                   )
@@ -402,21 +398,20 @@ const JupiterRouteInfo = ({
             </div>
           ) : (
             selectedRoute?.marketInfos.map((info, index) => {
-              const feeToken = jupiterTokens.find(
+              const feeToken = mangoTokens.find(
                 (item) => item?.address === info.lpFee?.mint
               )
               return (
                 <div className="flex justify-between" key={index}>
                   <p className="text-sm text-th-fgd-3">
                     {t('swap:fees-paid-to', {
-                      route: info?.amm?.label,
+                      route: info?.label,
                     })}
                   </p>
                   {feeToken?.decimals && (
                     <p className="text-right font-mono text-sm text-th-fgd-1">
                       {(
-                        JSBI.toNumber(info.lpFee?.amount) /
-                        Math.pow(10, feeToken.decimals)
+                        info.lpFee?.amount / Math.pow(10, feeToken.decimals)
                       ).toFixed(6)}{' '}
                       <span className="font-body tracking-wide">
                         {feeToken?.symbol}

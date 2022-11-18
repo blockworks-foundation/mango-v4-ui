@@ -3,6 +3,7 @@ import Image from 'next/legacy/image'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
 import { formatDecimal } from '../../utils/numbers'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 const ActionTokenItem = ({
   bank,
@@ -18,17 +19,15 @@ const ActionTokenItem = ({
   showDepositRates?: boolean
 }) => {
   const { mint, name } = bank
-  const jupiterTokens = mangoStore((s) => s.jupiterTokens)
+  const { mangoTokens } = useJupiterMints()
 
   const logoUri = useMemo(() => {
     let logoURI
-    if (jupiterTokens.length) {
-      logoURI = jupiterTokens.find(
-        (t) => t.address === mint.toString()
-      )!.logoURI
+    if (mangoTokens?.length) {
+      logoURI = mangoTokens.find((t) => t.address === mint.toString())!.logoURI
     }
     return logoURI
-  }, [mint, jupiterTokens])
+  }, [mint, mangoTokens])
 
   return (
     <button

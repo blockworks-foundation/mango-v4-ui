@@ -1,7 +1,6 @@
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/swap/LeverageSlider'
 import mangoStore from '@store/mangoStore'
-import Decimal from 'decimal.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useCallback, useMemo } from 'react'
 import { notify } from 'utils/notifications'
@@ -75,6 +74,7 @@ const PerpSlider = () => {
         }
         leverageMax={leverageMax}
         onChange={handleSlide}
+        step={0.01}
       />
     </div>
   )
