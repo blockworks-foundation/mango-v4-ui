@@ -25,9 +25,9 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
         (t) => t.address === quoteBank.mint.toString()
       )
     } else {
-      jupiterBaseToken = mangoTokens.find(
-        (t) => t.symbol === market.name.split('-')[0]
-      )
+      jupiterBaseToken =
+        mangoTokens.find((t) => t.symbol === market.name.split('-')[0]) ||
+        mangoTokens.find((t) => t.symbol.includes(market.name.split('-')[0]))
     }
     const baseLogoURI = jupiterBaseToken ? jupiterBaseToken.logoURI : ''
     const quoteLogoURI = jupiterQuoteToken ? jupiterQuoteToken.logoURI : ''
