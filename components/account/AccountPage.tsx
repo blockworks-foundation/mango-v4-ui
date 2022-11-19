@@ -141,11 +141,8 @@ const AccountPage = () => {
 
   const oneDayPnlChange = useMemo(() => {
     if (accountPnl && oneDayPerformanceData.length) {
-      return (
-        ((accountPnl - oneDayPerformanceData[0].pnl) /
-          Math.abs(oneDayPerformanceData[0].pnl)) *
-        100
-      )
+      const startDayPnl = oneDayPerformanceData[0].pnl
+      return (accountPnl / startDayPnl) * 100 - 100
     }
     return 0.0
   }, [accountPnl, oneDayPerformanceData])
@@ -162,14 +159,17 @@ const AccountPage = () => {
 
   const oneDayInterestChange = useMemo(() => {
     if (oneDayPerformanceData.length && mangoAccount) {
-      return (
-        oneDayPerformanceData[oneDayPerformanceData.length - 1]
-          .borrow_interest_cumulative_usd +
-        oneDayPerformanceData[oneDayPerformanceData.length - 1]
-          .deposit_interest_cumulative_usd -
-        (oneDayPerformanceData[0].borrow_interest_cumulative_usd +
-          oneDayPerformanceData[0].deposit_interest_cumulative_usd)
-      )
+      const startDayInterest =
+        oneDayPerformanceData[0].borrow_interest_cumulative_usd +
+        oneDayPerformanceData[0].deposit_interest_cumulative_usd
+
+      const latest = oneDayPerformanceData.length - 1
+
+      const endDayInterest =
+        oneDayPerformanceData[latest].borrow_interest_cumulative_usd +
+        oneDayPerformanceData[latest].deposit_interest_cumulative_usd
+
+      return endDayInterest - startDayInterest
     }
     return 0.0
   }, [oneDayPerformanceData, mangoAccount])
@@ -423,7 +423,10 @@ const AccountPage = () => {
             <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {formatFixedDecimals(accountPnl, true)}
             </p>
-            <Change change={oneDayPnlChange} size="small" />
+            <div className="flex space-x-1">
+              <Change change={oneDayPnlChange} size="small" />
+              <p className="text-xs text-th-fgd-4">{t('today')}</p>
+            </div>
           </div>
           {performanceData.length > 4 ? (
             <ChevronRightIcon className="h-6 w-6" />
@@ -451,7 +454,10 @@ const AccountPage = () => {
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {formatFixedDecimals(interestTotalValue, true)}
             </p>
-            <Change change={oneDayInterestChange} isCurrency size="small" />
+            <div className="flex space-x-1">
+              <Change change={oneDayInterestChange} isCurrency size="small" />
+              <p className="text-xs text-th-fgd-4">{t('today')}</p>
+            </div>
           </div>
           {interestTotalValue > 1 || interestTotalValue < -1 ? (
             <ChevronRightIcon className="-mt-0.5 h-6 w-6" />

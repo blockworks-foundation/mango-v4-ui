@@ -695,7 +695,7 @@ const mangoStore = create<MangoStore>()(
               state.mangoAccount.stats.swapHistory.loading = false
             })
             notify({
-              title: 'Failed to load account performance data',
+              title: 'Failed to load account swap history data',
               type: 'error',
             })
           }
