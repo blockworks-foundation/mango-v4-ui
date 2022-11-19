@@ -27,7 +27,6 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import { walletBalanceForToken } from './DepositModal'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
-import useSolBalance from 'hooks/useSolBalance'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 
@@ -264,10 +263,12 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="flex justify-between">
               <p>{t('repayment-value')}</p>
               <p className="font-mono">
-                {formatFixedDecimals(
-                  bank?.uiPrice! * Number(inputAmount),
-                  true
-                )}
+                {bank?.uiPrice
+                  ? formatFixedDecimals(
+                      bank.uiPrice * Number(inputAmount),
+                      true
+                    )
+                  : '-'}
               </p>
             </div>
             <div className="flex justify-between">

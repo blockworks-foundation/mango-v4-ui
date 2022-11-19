@@ -14,7 +14,6 @@ import { LAST_ACCOUNT_KEY } from '../utils/constants'
 import { useTranslation } from 'next-i18next'
 import { retryFn } from '../utils'
 import Loading from './shared/Loading'
-import ActionTokenList from './account/ActionTokenList'
 
 const MangoAccountsList = ({
   mangoAccount,

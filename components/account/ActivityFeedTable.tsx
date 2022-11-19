@@ -8,7 +8,6 @@ import {
   ChevronRightIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
-import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -133,7 +132,7 @@ const ActivityFeedTable = ({
               </tr>
             </thead>
             <tbody>
-              {activityFeed.map((activity: any, i: number) => {
+              {activityFeed.map((activity: any) => {
                 const { activity_type, block_datetime } = activity
                 const { signature } = activity.activity_details
                 const isLiquidation =
@@ -224,7 +223,7 @@ const ActivityFeedTable = ({
           </table>
         ) : (
           <div>
-            {activityFeed.map((activity: any, i: number) => (
+            {activityFeed.map((activity: any) => (
               <MobileActivityFeedItem
                 activity={activity}
                 getValue={getValue}

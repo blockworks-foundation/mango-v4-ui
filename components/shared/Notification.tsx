@@ -10,7 +10,6 @@ import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Notification, notify } from '../../utils/notifications'
 import Loading from './Loading'
 import { Transition } from '@headlessui/react'
-import { TokenInstructions } from '@project-serum/serum'
 import {
   CLIENT_TX_TIMEOUT,
   NOTIFICATION_POSITION_KEY,

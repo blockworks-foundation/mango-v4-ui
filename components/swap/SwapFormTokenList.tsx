@@ -9,31 +9,31 @@ import { getTokenInMax } from './useTokenMax'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 
-const generateSearchTerm = (item: Token, searchValue: string) => {
-  const normalizedSearchValue = searchValue.toLowerCase()
-  const values = `${item.symbol} ${item.name}`.toLowerCase()
+// const generateSearchTerm = (item: Token, searchValue: string) => {
+//   const normalizedSearchValue = searchValue.toLowerCase()
+//   const values = `${item.symbol} ${item.name}`.toLowerCase()
 
-  const isMatchingWithSymbol =
-    item.symbol.toLowerCase().indexOf(normalizedSearchValue) >= 0
-  const matchingSymbolPercent = isMatchingWithSymbol
-    ? normalizedSearchValue.length / item.symbol.length
-    : 0
+//   const isMatchingWithSymbol =
+//     item.symbol.toLowerCase().indexOf(normalizedSearchValue) >= 0
+//   const matchingSymbolPercent = isMatchingWithSymbol
+//     ? normalizedSearchValue.length / item.symbol.length
+//     : 0
 
-  return {
-    token: item,
-    matchingIdx: values.indexOf(normalizedSearchValue),
-    matchingSymbolPercent,
-  }
-}
+//   return {
+//     token: item,
+//     matchingIdx: values.indexOf(normalizedSearchValue),
+//     matchingSymbolPercent,
+//   }
+// }
 
-const startSearch = (items: Token[], searchValue: string) => {
-  return items
-    .map((item) => generateSearchTerm(item, searchValue))
-    .filter((item) => item.matchingIdx >= 0)
-    .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
-    .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
-    .map((item) => item.token)
-}
+// const startSearch = (items: Token[], searchValue: string) => {
+//   return items
+//     .map((item) => generateSearchTerm(item, searchValue))
+//     .filter((item) => item.matchingIdx >= 0)
+//     .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
+//     .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
+//     .map((item) => item.token)
+// }
 
 const TokenItem = ({
   token,
@@ -79,7 +79,7 @@ const TokenItem = ({
   )
 }
 
-const popularTokenSymbols = ['USDC', 'SOL', 'USDT', 'MNGO', 'BTC']
+// const popularTokenSymbols = ['USDC', 'SOL', 'USDT', 'MNGO', 'BTC']
 
 const SwapFormTokenList = ({
   onClose,

@@ -15,7 +15,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
   const slippage = mangoStore((s) => s.swap.slippage)
   const set = mangoStore((s) => s.set)
 
-  const [showCustomSlippageForm, setShowCustomSlippageForm] = useState(false)
+  const [showCustomSlippageForm] = useState(false)
   const [inputValue, setInputValue] = useState('')
 
   const handleSetMargin = () => {

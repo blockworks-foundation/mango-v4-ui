@@ -26,9 +26,7 @@ import { calculateMarketPrice } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
-import { Market } from '@project-serum/serum'
 import TabUnderline from '@components/shared/TabUnderline'
-import { group } from 'console'
 import PerpSlider from './PerpSlider'
 import HealthImpact from '@components/shared/HealthImpact'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -221,7 +219,7 @@ const AdvancedTradeForm = () => {
     if (!group || !mangoAccount) return
     setPlacingOrder(true)
     try {
-      let baseSize = new Decimal(tradeForm.baseSize).toNumber()
+      const baseSize = new Decimal(tradeForm.baseSize).toNumber()
       let price = new Decimal(tradeForm.price).toNumber()
       if (tradeForm.tradeType === 'Market') {
         const orderbook = mangoStore.getState().selectedMarket.orderbook

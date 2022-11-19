@@ -9,7 +9,6 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
   Cog8ToothIcon,
-  InformationCircleIcon,
   ArrowsRightLeftIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'

@@ -1,6 +1,5 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { LinkButton } from '@components/shared/Button'
-import SideBadge from '@components/shared/SideBadge'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -48,7 +47,7 @@ const PerpPositions = () => {
           </tr>
         </thead>
         <tbody>
-          {Object.entries(perpPositions).map(([mkt, position]) => {
+          {Object.entries(perpPositions).map(([_mkt, position]) => {
             const market = group.getPerpMarketByMarketIndex(
               position.marketIndex
             )

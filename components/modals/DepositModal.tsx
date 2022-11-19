@@ -29,7 +29,6 @@ import { withValueLimit } from '../swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
-import useSolBalance from 'hooks/useSolBalance'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 
@@ -74,22 +73,21 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return group?.banksMapByName.get(selectedToken)![0]
+    return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
     let logoURI
-    if (mangoTokens.length) {
+    if (mangoTokens?.length) {
       logoURI = mangoTokens.find(
         (t) => t.address === bank?.mint.toString()
-      )!.logoURI
+      )?.logoURI
     }
     return logoURI
   }, [bank?.mint, mangoTokens])
 
   const { wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
-  const { maxSolDeposit } = useSolBalance()
 
   const tokenMax = useMemo(() => {
     return walletBalanceForToken(walletTokens, selectedToken)
@@ -304,10 +302,12 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
             <div className="flex justify-between">
               <p>{t('deposit-value')}</p>
               <p className="font-mono">
-                {formatFixedDecimals(
-                  bank?.uiPrice! * Number(inputAmount),
-                  true
-                )}
+                {bank?.uiPrice
+                  ? formatFixedDecimals(
+                      bank.uiPrice * Number(inputAmount),
+                      true
+                    )
+                  : '-'}
               </p>
             </div>
             <div className="flex justify-between">

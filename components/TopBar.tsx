@@ -7,7 +7,7 @@ import {
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from './icons/WalletIcon'
-import { IconButton, LinkButton } from './shared/Button'
+import { IconButton } from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../utils/constants'

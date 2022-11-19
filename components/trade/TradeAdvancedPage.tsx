@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
 
 import mangoStore from '@store/mangoStore'
-import { GRID_LAYOUT_KEY, IS_ONBOARDED_KEY } from 'utils/constants'
+import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { breakpoints } from 'utils/theme'
 import { useViewport } from 'hooks/useViewport'
@@ -20,13 +20,6 @@ const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
 })
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
-const getCurrentBreakpoint = () => {
-  // @ts-ignore
-  return Responsive.utils.getBreakpointFromWidth(
-    gridBreakpoints,
-    window.innerWidth - 63
-  )
-}
 
 const sidebarWidth = 65
 const totalCols = 24
@@ -48,7 +41,6 @@ const getHeight = (
 
 const TradeAdvancedPage = () => {
   const { height, width } = useViewport()
-  const [currentBreakpoint, setCurrentBreakpoint] = useState<string>()
   const { uiLocked } = mangoStore((s) => s.settings)
   const showMobileView = width <= breakpoints.md
   const tourSettings = mangoStore((s) => s.settings.tours)
@@ -153,23 +145,6 @@ const TradeAdvancedPage = () => {
     }
   }, [height])
 
-  const [savedLayouts, setSavedLayouts] = useLocalStorageState(
-    GRID_LAYOUT_KEY,
-    defaultLayouts
-  )
-
-  const onLayoutChange = useCallback((layouts: ReactGridLayout.Layouts) => {
-    if (layouts) {
-      setSavedLayouts(layouts)
-    }
-  }, [])
-
-  const onBreakpointChange = useCallback((newBreakpoint: string) => {
-    console.log('newBreakpoints', newBreakpoint)
-
-    setCurrentBreakpoint(newBreakpoint)
-  }, [])
-
   return showMobileView ? (
     <MobileTradeAdvancedPage />
   ) : (
@@ -189,10 +164,6 @@ const TradeAdvancedPage = () => {
         rowHeight={1}
         isDraggable={!uiLocked}
         isResizable={!uiLocked}
-        onBreakpointChange={(newBreakpoint) =>
-          onBreakpointChange(newBreakpoint)
-        }
-        onLayoutChange={(layout, layouts) => onLayoutChange(layouts)}
         measureBeforeMount
         containerPadding={[0, 0]}
         margin={[0, 0]}

@@ -181,7 +181,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
               walletBalance.maxAmount,
               walletBalance.maxDecimals
             ).toNumber(),
-            walletBalanceValue: walletBalance.maxAmount * value[0]?.uiPrice!,
+            walletBalanceValue: walletBalance.maxAmount * value?.[0].uiPrice,
           }
         })
       : []
@@ -468,10 +468,13 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                   <div className="flex justify-between px-2 py-4">
                     <p>{t('deposit-value')}</p>
                     <p className="font-mono">
-                      {formatFixedDecimals(
-                        depositBank?.value[0].uiPrice! * Number(depositAmount),
-                        true
-                      )}
+                      {depositBank
+                        ? formatFixedDecimals(
+                            depositBank.value[0].uiPrice *
+                              Number(depositAmount),
+                            true
+                          )
+                        : ''}
                     </p>
                   </div>
                 </div>

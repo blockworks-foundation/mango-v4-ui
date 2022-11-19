@@ -7,7 +7,6 @@ import {
   ResolutionString,
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { useViewport } from 'hooks/useViewport'
 import { CHART_DATA_FEED, DEFAULT_MARKET_NAME } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
@@ -37,8 +36,7 @@ const TradingViewChart = () => {
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const isMobile = width ? width < breakpoints.sm : false
 
-  // @ts-ignore
-  const defaultProps: ChartContainerProps = useMemo(
+  const defaultProps = useMemo(
     () => ({
       symbol: DEFAULT_MARKET_NAME,
       interval: '60' as ResolutionString,
@@ -98,7 +96,9 @@ const TradingViewChart = () => {
       tvWidgetRef.current.setSymbol(
         selectedMarketName!,
         tvWidgetRef.current.activeChart().resolution(),
-        () => {}
+        () => {
+          return
+        }
       )
     }
   }, [selectedMarketName, chartReady])

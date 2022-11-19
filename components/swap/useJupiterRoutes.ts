@@ -11,11 +11,11 @@ type useJupiterPropTypes = {
 }
 
 const fetchJupiterRoutes = async (
-  inputMint: string = 'So11111111111111111111111111111111111111112',
-  outputMint: string = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-  amount: number = 0,
-  slippage: number = 50,
-  feeBps: number = 0
+  inputMint = 'So11111111111111111111111111111111111111112',
+  outputMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  amount = 0,
+  slippage = 50,
+  feeBps = 0
 ) => {
   {
     const params: any = {

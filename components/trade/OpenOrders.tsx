@@ -1,5 +1,4 @@
 import {
-  Bank,
   PerpMarket,
   PerpOrder,
   Serum3Market,
@@ -11,10 +10,8 @@ import SideBadge from '@components/shared/SideBadge'
 import Tooltip from '@components/shared/Tooltip'
 import { LinkIcon, TrashIcon } from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
-import Decimal from 'decimal.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'

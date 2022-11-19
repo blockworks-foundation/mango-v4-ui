@@ -73,60 +73,7 @@ const UnsettledTrades = ({
             </tr>
           </thead>
           <tbody>
-            {Object.entries(unsettledSpotBalances).map(
-              ([mktAddress, balance]) => {
-                const market = group.getSerum3MarketByExternalMarket(
-                  new PublicKey(mktAddress)
-                )
-                const base = market?.name.split('/')[0]
-                const quote = market?.name.split('/')[1]
-
-                return (
-                  <tr key={mktAddress} className="text-sm">
-                    <td>
-                      <div className="flex items-center">
-                        <MarketLogos market={market!} />
-                        <span>{market ? market.name : ''}</span>
-                      </div>
-                    </td>
-                    <td className="text-right font-mono">
-                      {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
-                      <span className="font-body tracking-wide text-th-fgd-4">
-                        {base}
-                      </span>
-                    </td>
-                    <td className="text-right font-mono">
-                      {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
-                      <span className="font-body tracking-wide text-th-fgd-4">
-                        {quote}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="flex justify-end">
-                        <Tooltip content={t('trade:settle-funds')}>
-                          <IconButton
-                            onClick={() => handleSettleFunds(mktAddress)}
-                            size="small"
-                          >
-                            {settleMktAddress === mktAddress ? (
-                              <Loading className="h-4 w-4" />
-                            ) : (
-                              <CheckIcon className="h-4 w-4" />
-                            )}
-                          </IconButton>
-                        </Tooltip>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              }
-            )}
-          </tbody>
-        </table>
-      ) : (
-        <div className="pb-20">
-          {Object.entries(unsettledSpotBalances).map(
-            ([mktAddress, balance]) => {
+            {Object.entries(unsettledSpotBalances).map(([mktAddress]) => {
               const market = group.getSerum3MarketByExternalMarket(
                 new PublicKey(mktAddress)
               )
@@ -134,43 +81,92 @@ const UnsettledTrades = ({
               const quote = market?.name.split('/')[1]
 
               return (
-                <div
-                  key={mktAddress}
-                  className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-                >
-                  <div className="flex items-center">
-                    <MarketLogos market={market!} />
-                    <span>{market ? market.name : ''}</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    {unsettledSpotBalances[mktAddress].base ? (
-                      <span className="font-mono text-sm">
-                        {unsettledSpotBalances[mktAddress].base}{' '}
-                        <span className="font-body tracking-wide text-th-fgd-4">
-                          {base}
-                        </span>
-                      </span>
-                    ) : null}
-                    {unsettledSpotBalances[mktAddress].quote ? (
-                      <span className="font-mono text-sm">
-                        {unsettledSpotBalances[mktAddress].quote}{' '}
-                        <span className="font-body tracking-wide text-th-fgd-4">
-                          {quote}
-                        </span>
-                      </span>
-                    ) : null}
-                    <IconButton onClick={() => handleSettleFunds(mktAddress)}>
-                      {settleMktAddress === mktAddress ? (
-                        <Loading className="h-4 w-4" />
-                      ) : (
-                        <CheckIcon className="h-4 w-4" />
-                      )}
-                    </IconButton>
-                  </div>
-                </div>
+                <tr key={mktAddress} className="text-sm">
+                  <td>
+                    <div className="flex items-center">
+                      <MarketLogos market={market!} />
+                      <span>{market ? market.name : ''}</span>
+                    </div>
+                  </td>
+                  <td className="text-right font-mono">
+                    {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
+                    <span className="font-body tracking-wide text-th-fgd-4">
+                      {base}
+                    </span>
+                  </td>
+                  <td className="text-right font-mono">
+                    {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
+                    <span className="font-body tracking-wide text-th-fgd-4">
+                      {quote}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="flex justify-end">
+                      <Tooltip content={t('trade:settle-funds')}>
+                        <IconButton
+                          onClick={() => handleSettleFunds(mktAddress)}
+                          size="small"
+                        >
+                          {settleMktAddress === mktAddress ? (
+                            <Loading className="h-4 w-4" />
+                          ) : (
+                            <CheckIcon className="h-4 w-4" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </td>
+                </tr>
               )
-            }
-          )}
+            })}
+          </tbody>
+        </table>
+      ) : (
+        <div className="pb-20">
+          {Object.entries(unsettledSpotBalances).map(([mktAddress]) => {
+            const market = group.getSerum3MarketByExternalMarket(
+              new PublicKey(mktAddress)
+            )
+            const base = market?.name.split('/')[0]
+            const quote = market?.name.split('/')[1]
+
+            return (
+              <div
+                key={mktAddress}
+                className="flex items-center justify-between border-b border-th-bkg-3 p-4"
+              >
+                <div className="flex items-center">
+                  <MarketLogos market={market!} />
+                  <span>{market ? market.name : ''}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  {unsettledSpotBalances[mktAddress].base ? (
+                    <span className="font-mono text-sm">
+                      {unsettledSpotBalances[mktAddress].base}{' '}
+                      <span className="font-body tracking-wide text-th-fgd-4">
+                        {base}
+                      </span>
+                    </span>
+                  ) : null}
+                  {unsettledSpotBalances[mktAddress].quote ? (
+                    <span className="font-mono text-sm">
+                      {unsettledSpotBalances[mktAddress].quote}{' '}
+                      <span className="font-body tracking-wide text-th-fgd-4">
+                        {quote}
+                      </span>
+                    </span>
+                  ) : null}
+                  <IconButton onClick={() => handleSettleFunds(mktAddress)}>
+                    {settleMktAddress === mktAddress ? (
+                      <Loading className="h-4 w-4" />
+                    ) : (
+                      <CheckIcon className="h-4 w-4" />
+                    )}
+                  </IconButton>
+                </div>
+              </div>
+            )
+          })}
         </div>
       )
     ) : (

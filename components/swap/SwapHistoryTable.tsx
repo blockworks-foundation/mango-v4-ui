@@ -64,7 +64,7 @@ const SwapHistoryTable = ({
               </tr>
             </thead>
             <tbody>
-              {swapHistory.map((h, index) => {
+              {swapHistory.map((h) => {
                 const {
                   block_datetime,
                   signature,
@@ -227,7 +227,6 @@ const SwapHistoryTable = ({
                 block_datetime,
                 signature,
                 swap_in_amount,
-                swap_in_loan,
                 swap_in_loan_origination_fee,
                 swap_in_price_usd,
                 swap_in_symbol,

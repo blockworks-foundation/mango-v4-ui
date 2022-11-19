@@ -1,6 +1,5 @@
 import { PaperAirplaneIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { IconButton } from '../shared/Button'
 import Input from '../forms/Input'
 import { ChangeEvent, FormEvent, useCallback, useState } from 'react'
 import { MessageProps } from './Messages'

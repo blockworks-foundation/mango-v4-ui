@@ -1,7 +1,6 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Image from 'next/legacy/image'
 import { useMemo } from 'react'
-import mangoStore from '@store/mangoStore'
 import { formatDecimal } from '../../utils/numbers'
 import useJupiterMints from 'hooks/useJupiterMints'
 
@@ -24,7 +23,7 @@ const ActionTokenItem = ({
   const logoUri = useMemo(() => {
     let logoURI
     if (mangoTokens?.length) {
-      logoURI = mangoTokens.find((t) => t.address === mint.toString())!.logoURI
+      logoURI = mangoTokens.find((t) => t.address === mint.toString())?.logoURI
     }
     return logoURI
   }, [mint, mangoTokens])

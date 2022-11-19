@@ -168,7 +168,7 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
             <p className="text-th-fgd-1">{market.name}</p>
             <div className="flex items-center space-x-3">
               <p className="font-mono">
-                {formatFixedDecimals(bank?.uiPrice!, true)}
+                {bank?.uiPrice ? formatFixedDecimals(bank.uiPrice, true) : '-'}
               </p>
               <Change change={change} />
             </div>

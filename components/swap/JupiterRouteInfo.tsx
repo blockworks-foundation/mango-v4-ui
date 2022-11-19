@@ -99,7 +99,7 @@ const JupiterRouteInfo = ({
   const { t } = useTranslation(['common', 'trade'])
   const [showRoutesModal, setShowRoutesModal] = useState(false)
   const [swapRate, setSwapRate] = useState<boolean>(false)
-  const [feeValue, setFeeValue] = useState<number | null>(null)
+  const [feeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [coingeckoPrices, setCoingeckoPrices] = useState(EMPTY_COINGECKO_PRICES)
   const { mangoTokens } = useJupiterMints()
@@ -157,7 +157,7 @@ const JupiterRouteInfo = ({
 
       const ixs = await parseJupiterRoute(
         selectedRoute,
-        mangoAccount!.owner,
+        mangoAccount.owner,
         slippage
       )
 

@@ -38,7 +38,7 @@ const LeverageSlider = ({
   }, [amount])
 
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
-    let target = e.target
+    const target = e.target
     const min = parseFloat(target.min)
     const max = parseFloat(target.max)
     const val = parseFloat(target.value)

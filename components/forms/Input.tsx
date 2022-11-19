@@ -8,7 +8,11 @@ interface InputProps {
   className?: string
   disabled?: boolean
   prefixClassname?: string
+  wrapperClassName?: string
   error?: boolean
+  prefix: string
+  prefixClassName: string
+  suffix: string
   [x: string]: any
 }
 

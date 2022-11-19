@@ -60,15 +60,15 @@ const ConnectedMenu = () => {
   }, [set, t, disconnect])
 
   useEffect(() => {
-    const handleGetWalletMangoData = async () => {
+    const handleGetWalletMangoData = async (wallet: Wallet) => {
       const actions = mangoStore.getState().actions
-      await actions.connectMangoClientWithWallet(wallet!)
-      await onConnectFetchAccountData(wallet!)
+      await actions.connectMangoClientWithWallet(wallet)
+      await onConnectFetchAccountData(wallet)
     }
 
-    if (publicKey) {
+    if (publicKey && wallet) {
       actions.fetchProfileDetails(publicKey.toString())
-      handleGetWalletMangoData()
+      handleGetWalletMangoData(wallet)
     }
   }, [publicKey, actions, wallet])
 

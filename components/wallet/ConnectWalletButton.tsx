@@ -1,11 +1,8 @@
-import React, { useCallback, useMemo, useEffect, useState } from 'react'
-import { useWallet, Wallet } from '@solana/wallet-adapter-react'
-import { WalletReadyState } from '@solana/wallet-adapter-base'
+import React from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
-import uniqBy from 'lodash/uniqBy'
 import WalletSelect from './WalletSelect'
 import mangoStore from '@store/mangoStore'
-import { notify } from '../../utils/notifications'
 import Loading from '../shared/Loading'
 import { useEnhancedWallet } from './EnhancedWalletProvider'
 

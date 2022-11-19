@@ -263,10 +263,12 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <div className="flex justify-between">
                 <p>{t('withdrawal-value')}</p>
                 <p className="font-mono text-th-fgd-1">
-                  {formatFixedDecimals(
-                    bank?.uiPrice! * Number(inputAmount),
-                    true
-                  )}
+                  {bank?.uiPrice
+                    ? formatFixedDecimals(
+                        bank.uiPrice * Number(inputAmount),
+                        true
+                      )
+                    : '-'}
                 </p>
               </div>
             </div>

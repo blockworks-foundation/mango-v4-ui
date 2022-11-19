@@ -12,7 +12,6 @@ import {
   ArrowPathIcon,
   ChevronDownIcon,
 } from '@heroicons/react/20/solid'
-import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -94,7 +93,7 @@ const ActivityFeed = () => {
   }
 
   const advancedParamsString = useMemo(() => {
-    let advancedParams: string = ''
+    let advancedParams = ''
     Object.entries(advancedFilters).map((entry) => {
       if (entry[1].length) {
         advancedParams = advancedParams + `&${entry[0]}=${entry[1]}`
@@ -391,7 +390,7 @@ const AdvancedFiltersForm = ({
 
   const symbols = useMemo(() => {
     if (!group) return []
-    return Array.from(group.banksMapByName, ([key, value]) => key)
+    return Array.from(group.banksMapByName, ([key]) => key)
   }, [group])
 
   useEffect(() => {

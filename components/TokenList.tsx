@@ -132,7 +132,7 @@ const TokenList = () => {
             </tr>
           </thead>
           <tbody>
-            {banks.map(({ key, value }, i) => {
+            {banks.map(({ key, value }) => {
               const bank = value[0]
               const oraclePrice = bank.uiPrice
 
@@ -140,7 +140,7 @@ const TokenList = () => {
               if (mangoTokens?.length) {
                 logoURI = mangoTokens.find(
                   (t) => t.address === bank.mint.toString()
-                )!.logoURI
+                )?.logoURI
               }
 
               const hasInterestEarned = totalInterestData.find(

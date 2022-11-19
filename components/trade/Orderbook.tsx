@@ -7,7 +7,7 @@ import useInterval from '@components/shared/useInterval'
 import isEqual from 'lodash/isEqual'
 import usePrevious from '@components/shared/usePrevious'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { floorToDecimal, formatDecimal, getDecimalCount } from 'utils/numbers'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { ORDERBOOK_FLASH_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
@@ -90,7 +90,7 @@ const getCumulativeOrderbookSide = (
   maxSize: number,
   depth: number
 ): cumOrderbookSide[] => {
-  let cumulative = orders
+  const cumulative = orders
     .slice(0, depth)
     .reduce((cumulative, [price, size], i) => {
       const cumulativeSize = (cumulative[i - 1]?.cumulativeSize || 0) + size
@@ -350,7 +350,7 @@ const Orderbook = () => {
       console.log('bidsPk', bidsPk)
       bidSubscriptionId = connection.onAccountChange(
         bidsPk,
-        (info, context) => {
+        (info, _context) => {
           if (
             !previousBidInfo ||
             !previousBidInfo.data.equals(info.data) ||
@@ -389,7 +389,7 @@ const Orderbook = () => {
       })
       askSubscriptionId = connection.onAccountChange(
         asksPk,
-        (info, context) => {
+        (info, _context) => {
           if (
             !previousAskInfo ||
             !previousAskInfo.data.equals(info.data) ||

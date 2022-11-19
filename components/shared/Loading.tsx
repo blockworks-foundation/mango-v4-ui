@@ -1,4 +1,4 @@
-const Loading = ({ className = '' }) => {
+const Loading = ({ className = '' }: { className?: string }) => {
   return (
     <svg
       className={`${className} h-5 w-5 animate-spin`}

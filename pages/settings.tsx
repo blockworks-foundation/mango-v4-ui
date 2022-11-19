@@ -16,8 +16,6 @@ import Switch from '@components/forms/Switch'
 import { useCallback, useMemo } from 'react'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import Image from 'next/legacy/image'
-import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 
 require('dayjs/locale/en')
 require('dayjs/locale/es')
@@ -66,8 +64,6 @@ const NOTIFICATION_POSITIONS = [
 const Settings: NextPage = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, setTheme } = useTheme()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
   const [savedLanguage, setSavedLanguage] = useLocalStorageState('language', '')
   const [notificationPosition, setNotificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
