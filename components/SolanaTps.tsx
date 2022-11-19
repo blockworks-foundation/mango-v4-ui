@@ -41,7 +41,7 @@ const SolanaTps = () => {
   if (CLUSTER == 'mainnet-beta') {
     return (
       <div>
-        <p className="text-xs">{t('solana-tps')}</p>
+        <p className="text-xs text-th-fgd-4">{t('solana-tps')}</p>
         <div className="flex items-center">
           <div className="relative mr-1 h-3 w-3">
             <div

@@ -2,8 +2,6 @@ import { useCallback, useState } from 'react'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
-
-import mangoStore from '@store/mangoStore'
 import WalletIcon from './icons/WalletIcon'
 import { IconButton, LinkButton } from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
@@ -48,17 +46,17 @@ const TopBar = () => {
   return (
     <>
       <div className="flex w-full items-center justify-between space-x-4">
-        {connected ? <SolanaTps /> : null}
         <span className="mb-0 flex items-center">
           {query.token ? (
-            <div
-              className={`mr-2 flex h-16 items-center pr-4 md:mr-4 md:pr-6 ${
-                !connected || !mangoAccount ? 'border-r border-th-bkg-3' : ''
-              }`}
-            >
+            <div className="mr-2 flex h-16 items-center border-r border-th-bkg-3 pr-4 md:mr-4 md:pr-6">
               <IconButton onClick={() => router.back()} hideBg size="small">
                 <ArrowLeftIcon className="h-6 w-6" />
               </IconButton>
+            </div>
+          ) : null}
+          {connected ? (
+            <div className="hidden md:block">
+              <SolanaTps />
             </div>
           ) : null}
           <img
