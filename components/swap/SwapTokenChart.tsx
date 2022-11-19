@@ -79,7 +79,11 @@ const SwapTokenChart = () => {
   const chartDataQuery = useQuery(
     ['chart-data', baseTokenId, quoteTokenId, daysToShow],
     () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
-    { staleTime: 0, enabled: !!baseTokenId && !!quoteTokenId }
+    {
+      cacheTime: 1000 * 60 * 1,
+      staleTime: 1000 * 60 * 1,
+      enabled: !!baseTokenId && !!quoteTokenId,
+    }
   )
   const chartData = chartDataQuery.data
 

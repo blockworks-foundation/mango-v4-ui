@@ -27,10 +27,10 @@ import {
   formatFixedDecimals,
 } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
-import { useWallet } from '@solana/wallet-adapter-react'
 import useJupiterMints from '../../hooks/useJupiterMints'
-import { RouteInfo, TransactionFeeInfo } from 'types/jupiter'
+import { RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
+import { Transaction } from '@solana/web3.js'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -43,7 +43,8 @@ type JupiterRouteInfoProps = {
 
 const parseJupiterRoute = async (
   selectedRoute: RouteInfo,
-  userPublicKey: PublicKey
+  userPublicKey: PublicKey,
+  slippage: number
 ): Promise<TransactionInstruction[]> => {
   const transactions = await (
     await fetch('https://quote-api.jup.ag/v3/swap', {
@@ -60,15 +61,21 @@ const parseJupiterRoute = async (
         wrapUnwrapSOL: true,
         // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
         // This is the ATA account for the output token where the fee will be sent to. If you are swapping from SOL->USDC then this would be the USDC ATA you want to collect the fee.
-        feeAccount: 'fee_account_public_key',
+        // feeAccount: 'fee_account_public_key',
+        slippageBps: Math.ceil(slippage * 100),
       }),
     })
   ).json()
+
   const { swapTransaction } = transactions
+  const parsedSwapTransaction = Transaction.from(
+    Buffer.from(swapTransaction, 'base64')
+  )
+
   const instructions = []
-  for (const ix of swapTransaction.instructions) {
+  for (const ix of parsedSwapTransaction.instructions) {
     if (
-      ix.programId.toBase58() === 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph'
+      ix.programId.toBase58() === 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
     ) {
       instructions.push(ix)
     }
@@ -144,10 +151,15 @@ const JupiterRouteInfo = ({
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const inputBank = mangoStore.getState().swap.inputBank
       const outputBank = mangoStore.getState().swap.outputBank
+      const slippage = mangoStore.getState().swap.slippage
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
 
-      const ixs = await parseJupiterRoute(selectedRoute, mangoAccount!.owner)
+      const ixs = await parseJupiterRoute(
+        selectedRoute,
+        mangoAccount!.owner,
+        slippage
+      )
 
       try {
         setSubmitting(true)

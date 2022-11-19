@@ -55,7 +55,6 @@ const SwapForm = () => {
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  console.log('amountInFormValue', amountInFormValue)
 
   const set = mangoStore.getState().set
   const {

@@ -14,7 +14,7 @@ const fetchJupiterRoutes = async (
   inputMint: string = 'So11111111111111111111111111111111111111112',
   outputMint: string = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   amount: number = 0,
-  slippageBps: number = 50,
+  slippage: number = 50,
   feeBps: number = 0
 ) => {
   {
@@ -22,14 +22,14 @@ const fetchJupiterRoutes = async (
       inputMint: inputMint.toString(),
       outputMint: outputMint.toString(),
       amount,
-      slippageBps,
+      slippageBps: Math.ceil(slippage * 100),
       onlyDirectRoutes: 'true',
       feeBps,
     }
 
     const paramsString = new URLSearchParams(params).toString()
     const response = await fetch(
-      `https://quote-api.jup.ag/v1/quote?${paramsString}`
+      `https://quote-api.jup.ag/v3/quote?${paramsString}`
     )
 
     const res = await response.json()
