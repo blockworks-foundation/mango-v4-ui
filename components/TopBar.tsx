@@ -1,5 +1,9 @@
 import { useCallback, useState } from 'react'
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ExclamationTriangleIcon,
+} from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from './icons/WalletIcon'
@@ -14,6 +18,7 @@ import { useRouter } from 'next/router'
 import UserSetup from './UserSetup'
 import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useOnlineStatus from 'hooks/useOnlineStatus'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -23,6 +28,7 @@ const TopBar = () => {
   const [showUserSetup, setShowUserSetup] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
+  const isOnline = useOnlineStatus()
   const router = useRouter()
   const { query } = router
 
@@ -72,6 +78,14 @@ const TopBar = () => {
             </span>
           ) : null}
         </span>
+        {!isOnline ? (
+          <div className="flex items-center rounded-full bg-th-red py-2 px-4">
+            <ExclamationTriangleIcon className="h-5 w-5" />
+            <div className="ml-2">
+              Your network connection appears to be offline!
+            </div>
+          </div>
+        ) : null}
         {connected ? (
           <div className="flex items-center space-x-4 pr-4 md:pr-0">
             <button
