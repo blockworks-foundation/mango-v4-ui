@@ -74,15 +74,9 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     if (data.length) {
       if (mouseData) {
         const index = data.findIndex((d: any) => d[xKey] === mouseData[xKey])
-        const change =
-          ((data[index][yKey] - data[0][yKey]) / Math.abs(data[0][yKey])) * 100
+        const change = data[index][yKey] - data[0][yKey]
         return isNaN(change) ? 0 : change
-      } else
-        return (
-          ((data[data.length - 1][yKey] - data[0][yKey]) /
-            Math.abs(data[0][yKey])) *
-          100
-        )
+      } else return data[data.length - 1][yKey] - data[0][yKey]
     }
     return 0
   }
@@ -120,7 +114,10 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                         />
                         {!hideChange ? (
                           <span className="ml-3">
-                            <Change change={calculateChartChange()} />
+                            <Change
+                              change={calculateChartChange()}
+                              isCurrency
+                            />
                           </span>
                         ) : null}
                       </div>
@@ -140,7 +137,10 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                         />
                         {!hideChange ? (
                           <span className="ml-3">
-                            <Change change={calculateChartChange()} />
+                            <Change
+                              change={calculateChartChange()}
+                              isCurrency
+                            />
                           </span>
                         ) : null}
                       </div>
