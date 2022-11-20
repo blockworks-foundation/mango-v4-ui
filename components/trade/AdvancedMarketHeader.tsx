@@ -6,6 +6,7 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import { useCoingecko } from 'hooks/useCoingecko'
 import useOraclePrice from 'hooks/useOraclePrice'
+import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
@@ -13,7 +14,7 @@ import { formatFixedDecimals } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 
 const MarketSelectDropdown = () => {
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const { selectedMarket } = useSelectedMarket()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const set = mangoStore((s) => s.set)
@@ -113,7 +114,7 @@ const MarketSelectDropdown = () => {
 
 const AdvancedMarketHeader = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const { selectedMarket } = useSelectedMarket()
   const { data: tokenPrices } = useCoingecko()
   const oraclePrice = useOraclePrice()
 

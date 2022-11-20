@@ -23,6 +23,7 @@ import {
   PerpMarket,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
+import useSelectedMarket from 'hooks/useSelectedMarket'
 
 function decodeBookL2(
   client: MangoClient,
@@ -174,7 +175,7 @@ const depth = 40
 
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const { selectedMarket } = useSelectedMarket()
 
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)

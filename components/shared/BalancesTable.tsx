@@ -14,6 +14,7 @@ import { breakpoints } from 'utils/theme'
 import { calculateMarketPrice } from 'utils/tradeForm'
 import { LinkButton } from './Button'
 import { Table, Td, Th, TrBody, TrHead } from './TableElements'
+import useSelectedMarket from 'hooks/useSelectedMarket'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -203,7 +204,7 @@ export default BalancesTable
 
 const Balance = ({ bank }: { bank: Bank }) => {
   const { mangoAccount } = useMangoAccount()
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const { selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
 
   const handleBalanceClick = (balance: number, type: 'base' | 'quote') => {

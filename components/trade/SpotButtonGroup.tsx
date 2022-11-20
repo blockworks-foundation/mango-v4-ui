@@ -2,12 +2,13 @@ import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import ButtonGroup from '@components/forms/ButtonGroup'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo, useState } from 'react'
 import { notify } from 'utils/notifications'
 
 const SpotButtonGroup = () => {
   const side = mangoStore((s) => s.tradeForm.side)
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const { selectedMarket } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
   const [sizePercentage, setSizePercentage] = useState('')
 

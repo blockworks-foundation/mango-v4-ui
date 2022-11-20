@@ -7,11 +7,12 @@ import Decimal from 'decimal.js'
 import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import useSelectedMarket from 'hooks/useSelectedMarket'
 
 const RecentTrades = () => {
   const { t } = useTranslation(['common', 'trade'])
   const [trades, setTrades] = useState<any[]>([])
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const { selectedMarket } = useSelectedMarket()
 
   const market = useMemo(() => {
     const group = mangoStore.getState().group
