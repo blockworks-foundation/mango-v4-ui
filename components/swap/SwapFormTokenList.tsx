@@ -8,6 +8,7 @@ import Decimal from 'decimal.js'
 import { getTokenInMax } from './useTokenMax'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 // const generateSearchTerm = (item: Token, searchValue: string) => {
 //   const normalizedSearchValue = searchValue.toLowerCase()
@@ -70,8 +71,8 @@ const TokenItem = ({
         {type === 'input' ? (
           <p className="text-sm text-th-fgd-2">
             {useMargin
-              ? token.amountWithBorrow!.toString()
-              : token.amount!.toString()}
+              ? token.amountWithBorrow?.toString()
+              : token.amount?.toString()}
           </p>
         ) : null}
       </button>
@@ -97,7 +98,7 @@ const SwapFormTokenList = ({
   const { mangoTokens } = useJupiterMints()
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
 
   // const popularTokens = useMemo(() => {

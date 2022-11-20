@@ -18,6 +18,7 @@ import CreateAccountForm from '@components/account/CreateAccountForm'
 import { EnterRightExitLeft } from '@components/shared/Transitions'
 import { useRouter } from 'next/router'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const MangoAccountsListModal = ({
   isOpen,
@@ -27,11 +28,10 @@ const MangoAccountsListModal = ({
   onClose: () => void
 }) => {
   const { t } = useTranslation('common')
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, initialLoad: loading } = useMangoAccount()
   const mangoAccounts = mangoStore((s) => s.mangoAccounts)
-  const actions = mangoStore((s) => s.actions)
-  const group = mangoStore((s) => s.group)
-  const loading = mangoStore((s) => s.mangoAccount.initialLoad)
+  const actions = mangoStore.getState().actions
+  const { group } = useMangoGroup()
   const [showNewAccountForm, setShowNewAccountForm] = useState(false)
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
   const router = useRouter()

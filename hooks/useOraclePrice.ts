@@ -1,9 +1,9 @@
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
-import mangoStore from '@store/mangoStore'
+import useMangoGroup from './useMangoGroup'
 import useSelectedMarket from './useSelectedMarket'
 
 export default function useOraclePrice() {
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { selectedMarket } = useSelectedMarket()
 
   if (!group || !selectedMarket) return false

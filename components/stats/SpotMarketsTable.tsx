@@ -22,7 +22,7 @@ const SimpleAreaChart = dynamic(
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const { theme } = useTheme()
   const { width } = useViewport()

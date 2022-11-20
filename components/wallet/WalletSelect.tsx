@@ -1,13 +1,12 @@
 import React, { Fragment } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Menu, Transition } from '@headlessui/react'
-import mangoStore from '@store/mangoStore'
 import { useEnhancedWallet } from './EnhancedWalletProvider'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const WalletSelect = () => {
   const { displayedWallets, handleSelect } = useEnhancedWallet()
-
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
 
   return (
     <Menu>

@@ -29,6 +29,7 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import Tooltip from '@components/shared/Tooltip'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 interface BorrowModalProps {
   token?: string
@@ -38,7 +39,7 @@ type ModalCombinedProps = BorrowModalProps & ModalProps
 
 function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation('common')
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(

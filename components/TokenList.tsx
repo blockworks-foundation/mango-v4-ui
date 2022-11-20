@@ -32,6 +32,7 @@ import RepayModal from './modals/RepayModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from '../hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -39,7 +40,7 @@ const TokenList = () => {
   const [showZeroBalances, setShowZeroBalances] = useState(true)
   const { mangoAccount } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.stats.interestTotals.data

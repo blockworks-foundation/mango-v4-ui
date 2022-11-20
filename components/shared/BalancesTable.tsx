@@ -15,12 +15,13 @@ import { calculateMarketPrice } from 'utils/tradeForm'
 import { LinkButton } from './Button'
 import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -35,12 +36,10 @@ const BalancesTable = () => {
         ? rawBanks.sort(
             (a, b) =>
               Math.abs(
-                mangoAccount?.getTokenBalanceUi(b.value[0]) *
-                  b.value[0].uiPrice!
+                mangoAccount?.getTokenBalanceUi(b.value[0]) * b.value[0].uiPrice
               ) -
               Math.abs(
-                mangoAccount?.getTokenBalanceUi(a.value[0]) *
-                  a.value[0].uiPrice!
+                mangoAccount?.getTokenBalanceUi(a.value[0]) * a.value[0].uiPrice
               )
           )
         : rawBanks
@@ -75,7 +74,7 @@ const BalancesTable = () => {
             if (mangoTokens.length) {
               logoURI = mangoTokens.find(
                 (t) => t.address === bank.mint.toString()
-              )!.logoURI
+              )?.logoURI
             }
 
             const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
@@ -101,7 +100,7 @@ const BalancesTable = () => {
                   <p className="text-sm text-th-fgd-4">
                     {mangoAccount
                       ? `${formatFixedDecimals(
-                          mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice!,
+                          mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
                           true
                         )}`
                       : '$0.00'}
@@ -110,13 +109,13 @@ const BalancesTable = () => {
                 <Td className="text-right font-mono">
                   <p>{formatDecimal(inOrders)}</p>
                   <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(inOrders * bank.uiPrice!, true)}
+                    {formatFixedDecimals(inOrders * bank.uiPrice, true)}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
                   <p>{formatDecimal(unsettled)}</p>
                   <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(unsettled * bank.uiPrice!, true)}
+                    {formatFixedDecimals(unsettled * bank.uiPrice, true)}
                   </p>
                 </Td>
               </TrBody>
@@ -133,7 +132,7 @@ const BalancesTable = () => {
           if (mangoTokens.length) {
             logoURI = mangoTokens.find(
               (t) => t.address === bank.mint.toString()
-            )!.logoURI
+            )?.logoURI
           }
 
           const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
@@ -166,7 +165,7 @@ const BalancesTable = () => {
                     (
                     {mangoAccount
                       ? `${formatFixedDecimals(
-                          mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice!,
+                          mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
                           true
                         )}`
                       : '$0.00'}

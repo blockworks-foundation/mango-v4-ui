@@ -3,6 +3,7 @@ import { LinkButton } from '@components/shared/Button'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
+import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { calculateMarketPrice } from 'utils/tradeForm'
@@ -11,7 +12,7 @@ import PerpSideBadge from './PerpSideBadge'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const { selectedMarket } = useSelectedMarket()
 
@@ -58,7 +59,7 @@ const PerpPositions = () => {
               <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
                 <Td>
                   <div className="flex items-center">
-                    <MarketLogos market={market!} />
+                    <MarketLogos market={market} />
                     {market?.name}
                   </div>
                 </Td>

@@ -1,12 +1,12 @@
 import { Serum3Market, PerpMarket } from '@blockworks-foundation/mango-v4'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
-import mangoStore from '@store/mangoStore'
 import Image from 'next/legacy/image'
 import { useMemo } from 'react'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
 
   const logos = useMemo(() => {

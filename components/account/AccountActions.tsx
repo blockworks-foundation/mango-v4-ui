@@ -16,7 +16,6 @@ import { useTranslation } from 'next-i18next'
 import IconDropMenu from '../shared/IconDropMenu'
 import CloseAccountModal from '../modals/CloseAccountModal'
 import AccountNameModal from '../modals/AccountNameModal'
-import mangoStore from '@store/mangoStore'
 import { copyToClipboard } from 'utils'
 import { notify } from 'utils/notifications'
 import { abbreviateAddress } from 'utils/formatting'
@@ -24,10 +23,11 @@ import { HealthType, ZERO_I80F48 } from '@blockworks-foundation/mango-v4'
 import RepayModal from '@components/modals/RepayModal'
 import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showDepositModal, setShowDepositModal] = useState(false)

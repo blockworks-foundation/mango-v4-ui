@@ -29,6 +29,7 @@ import { walletBalanceForToken } from './DepositModal'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 interface RepayModalProps {
   token?: string
@@ -38,7 +39,7 @@ type ModalCombinedProps = RepayModalProps & ModalProps
 
 function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation('common')
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -50,7 +51,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return selectedToken ? group?.banksMapByName.get(selectedToken)![0] : null
+    return selectedToken ? group?.banksMapByName.get(selectedToken)?.[0] : null
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
@@ -58,7 +59,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
     if (mangoTokens.length && bank) {
       logoURI = mangoTokens.find(
         (t) => t.address === bank?.mint.toString()
-      )!.logoURI
+      )?.logoURI
     }
     return logoURI
   }, [bank, mangoTokens])
@@ -98,20 +99,20 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
     setShowTokenList(false)
   }
 
-  const handleDeposit = async () => {
+  const handleDeposit = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current
 
-    if (!mangoAccount || !group) return
+    if (!mangoAccount || !group || !bank || !wallet) return
 
     try {
       setSubmitting(true)
       const tx = await client.tokenDeposit(
         group,
         mangoAccount,
-        bank!.mint,
+        bank.mint,
         parseFloat(inputAmount)
       )
       notify({
@@ -121,7 +122,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
       })
 
       await actions.reloadMangoAccount()
-      actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
+      actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)
       setSubmitting(false)
     } catch (e: any) {
       notify({
@@ -134,7 +135,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
     }
 
     onClose()
-  }
+  }, [bank, wallet])
 
   const banks = useMemo(() => {
     const banks =

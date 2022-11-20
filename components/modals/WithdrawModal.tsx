@@ -29,6 +29,7 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 interface WithdrawModalProps {
   token?: string
@@ -38,7 +39,7 @@ type ModalCombinedProps = WithdrawModalProps & ModalProps
 
 function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const { t } = useTranslation(['common', 'trade'])
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
@@ -51,15 +52,15 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return group?.banksMapByName.get(selectedToken)![0]
+    return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
     let logoURI
-    if (mangoTokens.length) {
+    if (mangoTokens?.length) {
       logoURI = mangoTokens.find(
         (t) => t.address === bank?.mint.toString()
-      )!.logoURI
+      )?.logoURI
     }
     return logoURI
   }, [bank?.mint, mangoTokens])
@@ -82,18 +83,18 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     [tokenMax]
   )
 
-  const handleWithdraw = async () => {
+  const handleWithdraw = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
-    if (!mangoAccount || !group) return
+    if (!mangoAccount || !group || !bank) return
     setSubmitting(true)
     try {
       const tx = await client.tokenWithdraw(
         group,
         mangoAccount,
-        bank!.mint,
+        bank.mint,
         parseFloat(inputAmount),
         false
       )
@@ -115,12 +116,12 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
       setSubmitting(false)
       onClose()
     }
-  }
+  }, [bank])
 
-  const handleSelectToken = (token: string) => {
+  const handleSelectToken = useCallback((token: string) => {
     setSelectedToken(token)
     setShowTokenList(false)
-  }
+  }, [])
 
   const withdrawBanks = useMemo(() => {
     if (mangoAccount) {
@@ -186,7 +187,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         >
           <div>
             <h2 className="mb-4 text-center">{t('withdraw')}</h2>
-            {initHealth! <= 0 ? (
+            {initHealth <= 0 ? (
               <div className="mb-4">
                 <InlineNotification
                   type="error"
@@ -279,7 +280,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               className="flex w-full items-center justify-center"
               size="large"
               disabled={
-                !inputAmount || showInsufficientBalance || initHealth! <= 0
+                !inputAmount || showInsufficientBalance || initHealth <= 0
               }
             >
               {submitting ? (

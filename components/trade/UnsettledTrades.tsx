@@ -12,6 +12,7 @@ import { breakpoints } from 'utils/theme'
 import MarketLogos from './MarketLogos'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -20,7 +21,7 @@ const UnsettledTrades = ({
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const [settleMktAddress, setSettleMktAddress] = useState<string>('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false

@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
 import { floorToDecimal } from '../../utils/numbers'
 import useMangoAccount from '../../hooks/useMangoAccount'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 export const getMaxWithdrawForBank = (
   group: Group,
@@ -30,7 +31,7 @@ export const getTokenInMax = (
   useMargin: boolean
 ) => {
   const outputBank = mangoStore.getState().swap.outputBank
-  const inputBank = group.banksMapByMint.get(inputTokenAddress)![0]
+  const inputBank = group.banksMapByMint.get(inputTokenAddress)?.[0]
 
   if (!group || !inputBank || !mangoAccount || !outputBank) {
     return {
@@ -64,12 +65,12 @@ export const getTokenInMax = (
     ? Decimal.min(
         maxAmountWithoutMargin,
         inputBankVaultBalance,
-        maxUiAmountWithBorrow!
+        maxUiAmountWithBorrow
       )
     : Decimal.min(maxAmountWithoutMargin, inputBankVaultBalance)
 
   const maxAmountWithBorrow = Decimal.min(
-    maxUiAmountWithBorrow!,
+    maxUiAmountWithBorrow,
     inputBankVaultBalance
   )
 
@@ -82,7 +83,7 @@ export const getTokenInMax = (
 
 export const useTokenMax = (useMargin = true) => {
   const { mangoAccount } = useMangoAccount()
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const inputBank = mangoStore((s) => s.swap.inputBank)
 
   const tokenInMax = useMemo(() => {

@@ -15,6 +15,7 @@ import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useMangoGroup from 'hooks/useMangoGroup'
 import useSolBalance from 'hooks/useSolBalance'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -47,7 +48,7 @@ import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 
 const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation(['common', 'onboarding', 'swap'])
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { connected, select, wallet, wallets } = useWallet()
   const { mangoAccount } = useMangoAccount()
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)

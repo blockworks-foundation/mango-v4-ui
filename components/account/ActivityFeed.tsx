@@ -16,6 +16,7 @@ import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useMangoGroup from 'hooks/useMangoGroup'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
@@ -382,7 +383,7 @@ const AdvancedFiltersForm = ({
   setAdvancedFilters,
 }: AdvancedFiltersFormProps) => {
   const { t } = useTranslation(['common', 'activity'])
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const [dateFrom, setDateFrom] = useState<Date | null>(null)
   const [dateTo, setDateTo] = useState<Date | null>(null)
   const [valueFrom, setValueFrom] = useState(advancedFilters['usd-lower'] || '')

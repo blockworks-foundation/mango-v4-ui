@@ -9,7 +9,6 @@ import Image from 'next/legacy/image'
 import { Fragment, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 
-import mangoStore from '@store/mangoStore'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import { IconButton, LinkButton } from '../shared/Button'
@@ -20,11 +19,12 @@ import { Bank } from '@blockworks-foundation/mango-v4'
 import { useRouter } from 'next/router'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
   const [showTokenDetails, setShowTokenDetails] = useState('')
-  const group = mangoStore((s) => s.group)
+  const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -49,11 +49,11 @@ const TokenStats = () => {
     if (banks.length) {
       return [
         banks.reduce(
-          (a, c) => a + c.value[0].uiPrice! * c.value[0].uiDeposits(),
+          (a, c) => a + c.value[0].uiPrice * c.value[0].uiDeposits(),
           0
         ),
         banks.reduce(
-          (a, c) => a + c.value[0].uiPrice! * c.value[0].uiBorrows(),
+          (a, c) => a + c.value[0].uiPrice * c.value[0].uiBorrows(),
           0
         ),
       ]
@@ -143,10 +143,10 @@ const TokenStats = () => {
               const bank = value[0]
 
               let logoURI
-              if (mangoTokens.length) {
+              if (mangoTokens?.length) {
                 logoURI = mangoTokens.find(
                   (t) => t.address === bank.mint.toString()
-                )!.logoURI
+                )?.logoURI
               }
 
               return (
@@ -234,10 +234,10 @@ const TokenStats = () => {
           {banks.map(({ key, value }) => {
             const bank = value[0]
             let logoURI
-            if (mangoTokens.length) {
+            if (mangoTokens?.length) {
               logoURI = mangoTokens.find(
                 (t) => t.address === bank.mint.toString()
-              )!.logoURI
+              )?.logoURI
             }
             return (
               <div key={key} className="border-b border-th-bkg-3 px-6 py-4">
