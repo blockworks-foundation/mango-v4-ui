@@ -203,11 +203,11 @@ const AccountPage = () => {
               content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
               delay={250}
             >
-              <p className="tooltip-underline mb-1.5 text-base">
+              <p className="tooltip-underline mb-2 text-base">
                 {t('account-value')}
               </p>
             </Tooltip>
-            <div className="mb-1 flex items-center text-5xl font-bold text-th-fgd-1">
+            <div className="mb-2 flex items-center text-5xl font-bold text-th-fgd-1">
               {group && mangoAccount ? (
                 <FlipNumbers
                   height={48}
@@ -233,7 +233,7 @@ const AccountPage = () => {
                 />
               )}
             </div>
-            <div className="flex space-x-1.5">
+            <div className="flex items-center space-x-1.5">
               <Change change={accountValueChange} isCurrency />
               <p className="text-th-fgd-4">{t('today')}</p>
             </div>
