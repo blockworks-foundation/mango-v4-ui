@@ -20,7 +20,7 @@ function Modal({
     <Dialog
       open={isOpen}
       onClose={onClose}
-      className="relative z-30 overflow-y-auto"
+      className="relative z-50 overflow-y-auto"
     >
       <div
         className={`fixed inset-0 backdrop-blur-sm backdrop-brightness-75 ${

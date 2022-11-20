@@ -116,7 +116,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
       setSubmitting(false)
       onClose()
     }
-  }, [bank])
+  }, [bank, inputAmount])
 
   const handleSelectToken = useCallback((token: string) => {
     setSelectedToken(token)

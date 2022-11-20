@@ -1,4 +1,3 @@
-import Decimal from 'decimal.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { useTokenMax } from './useTokenMax'
@@ -32,7 +31,6 @@ const LeverageSlider = ({
 
   useEffect(() => {
     if (amount) {
-      onChange(new Decimal(amount).toFixed())
       setValue(amount)
     }
   }, [amount])

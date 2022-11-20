@@ -25,10 +25,16 @@ const PerpPositions = () => {
       const orderbook = mangoStore.getState().selectedMarket.orderbook
       price = calculateMarketPrice(orderbook, positionSize, tradeForm.side)
     }
+    const newSide = positionSize > 0 ? 'sell' : 'buy'
 
     set((s) => {
-      s.tradeForm.baseSize = positionSize.toFixed()
-      s.tradeForm.quoteSize = (positionSize / price).toFixed()
+      s.tradeForm.side = newSide
+      s.tradeForm.baseSize = positionSize.toString()
+      if (newSide === 'buy') {
+        s.tradeForm.quoteSize = (positionSize * price).toString()
+      } else {
+        s.tradeForm.quoteSize = (positionSize / price).toString()
+      }
     })
   }
 
@@ -43,6 +49,7 @@ const PerpPositions = () => {
             <Th className="text-right">{t('trade:side')}</Th>
             <Th className="text-right">{t('trade:size')}</Th>
             <Th className="text-right">{t('value')}</Th>
+            <Th className="text-right">{t('trade:entry-price')}</Th>
           </TrHead>
         </thead>
         <tbody>
@@ -83,6 +90,9 @@ const PerpPositions = () => {
                   <div>
                     ${Math.abs(basePosition * market._uiPrice).toFixed(2)}
                   </div>
+                </Td>
+                <Td className="text-right">
+                  <div>{position.quoteEntryNative.toNumber()}</div>
                 </Td>
               </TrBody>
             )

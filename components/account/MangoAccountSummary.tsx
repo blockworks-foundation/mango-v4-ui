@@ -24,10 +24,10 @@ const MangoAccountSummary = () => {
   const leverage = useMemo(() => {
     if (!group || !mangoAccount) return 0
     const liabsValue = mangoAccount
-      .getLiabsValue(group, HealthType.init)!
+      .getLiabsValue(group, HealthType.init)
       .toNumber()
     const totalCollateral = mangoAccount
-      .getAssetsValue(group, HealthType.init)!
+      .getAssetsValue(group, HealthType.init)
       .toNumber()
     if (isNaN(liabsValue / totalCollateral)) {
       return 0
@@ -53,7 +53,7 @@ const MangoAccountSummary = () => {
             {group && mangoAccount
               ? formatDecimal(
                   toUiDecimalsForQuote(
-                    mangoAccount.getEquity(group)!.toNumber()
+                    mangoAccount.getEquity(group).toNumber()
                   ),
                   2
                 )
@@ -66,7 +66,7 @@ const MangoAccountSummary = () => {
             {group && mangoAccount
               ? formatFixedDecimals(
                   toUiDecimalsForQuote(
-                    mangoAccount.getCollateralValue(group)!.toNumber()
+                    mangoAccount.getCollateralValue(group).toNumber()
                   ),
                   true
                 )
@@ -80,7 +80,7 @@ const MangoAccountSummary = () => {
               ? formatFixedDecimals(
                   toUiDecimalsForQuote(
                     mangoAccount
-                      .getAssetsValue(group, HealthType.init)!
+                      .getAssetsValue(group, HealthType.init)
                       .toNumber()
                   ),
                   true

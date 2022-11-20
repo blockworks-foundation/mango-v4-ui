@@ -261,8 +261,8 @@ const Orderbook = () => {
       }
 
       // updated orderbook data
-      const bids = groupBy(orderbook?.bids, market!, grouping, true) || []
-      const asks = groupBy(orderbook?.asks, market!, grouping, false) || []
+      const bids = groupBy(orderbook?.bids, market, grouping, true) || []
+      const asks = groupBy(orderbook?.asks, market, grouping, false) || []
 
       const sum = (total: number, [, size]: number[], index: number) =>
         index < depth ? total + size : total
@@ -647,10 +647,6 @@ const OrderbookRow = ({
 
   if (!minOrderSize) return null
 
-  if (hasOpenOrder) {
-    console.log('HAS OPEN ORDER')
-  }
-
   return (
     <div
       className={`relative flex h-[24px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
@@ -696,7 +692,11 @@ const OrderbookRow = ({
 
 const MemoizedOrderbookRow = React.memo(OrderbookRow)
 
-const Line = (props: any) => {
+const Line = (props: {
+  className: string
+  invert?: boolean
+  'data-width': string
+}) => {
   return (
     <div
       className={`${props.className}`}

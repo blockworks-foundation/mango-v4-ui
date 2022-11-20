@@ -118,7 +118,10 @@ const AdvancedTradeForm = () => {
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
-        const price = parseFloat(s.tradeForm.price)
+        const price =
+          s.tradeForm.tradeType === 'Market'
+            ? marketPrice
+            : parseFloat(s.tradeForm.price)
 
         s.tradeForm.baseSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
@@ -128,14 +131,17 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [set]
+    [set, marketPrice]
   )
 
   const handleQuoteSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
-        const price = parseFloat(s.tradeForm.price)
+        const price =
+          s.tradeForm.tradeType === 'Market'
+            ? marketPrice
+            : parseFloat(s.tradeForm.price)
 
         s.tradeForm.quoteSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
@@ -145,7 +151,7 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [set]
+    [set, marketPrice]
   )
 
   const handlePostOnlyChange = useCallback(
@@ -183,13 +189,12 @@ const AdvancedTradeForm = () => {
 
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
-    if (selectedMarket instanceof Serum3Market) {
-      set((s) => {
-        s.tradeForm.price = marketPrice.toString()
-      })
-    }
-  }, [set, selectedMarket])
+    if (!group || !marketPrice) return
+
+    set((s) => {
+      s.tradeForm.price = marketPrice.toString()
+    })
+  }, [set, marketPrice])
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client

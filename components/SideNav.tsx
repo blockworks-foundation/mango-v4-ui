@@ -306,15 +306,18 @@ export const ExpandableMenuItem = ({
           </div>
         </Popover.Button>
 
-        <Popover.Panel
-          className={`absolute z-20 w-56 rounded-md rounded-l-none bg-th-bkg-2 py-2 ${
-            alignBottom
-              ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
-              : 'top-1/2 left-[63px] -translate-y-1/2'
-          }`}
-        >
-          {children}
-        </Popover.Panel>
+        {showMenu ? (
+          <Popover.Panel
+            static
+            className={`absolute z-20 w-56 rounded-md rounded-l-none bg-th-bkg-2 py-2 ${
+              alignBottom
+                ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
+                : 'top-1/2 left-[63px] -translate-y-1/2'
+            }`}
+          >
+            {children}
+          </Popover.Panel>
+        ) : null}
       </div>
     </Popover>
   ) : (

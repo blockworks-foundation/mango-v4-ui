@@ -116,20 +116,20 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     setShowTokenList(false)
   }
 
-  const handleDeposit = async () => {
+  const handleDeposit = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current
 
-    if (!mangoAccount || !group) return
+    if (!mangoAccount || !group || !bank) return
 
     try {
       setSubmitting(true)
       const tx = await client.tokenDeposit(
         group,
         mangoAccount,
-        bank!.mint,
+        bank.mint,
         parseFloat(inputAmount)
       )
       notify({
@@ -152,7 +152,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     }
 
     onClose()
-  }
+  }, [bank, wallet, inputAmount])
 
   // TODO extract into a shared hook for UserSetup.tsx
   const banks = useMemo(() => {
