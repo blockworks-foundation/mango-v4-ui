@@ -13,6 +13,7 @@ import MarketLogos from '@components/trade/MarketLogos'
 import dynamic from 'next/dynamic'
 import { useCoingecko } from 'hooks/useCoingecko'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -30,14 +31,14 @@ const SpotMarketsTable = () => {
   return (
     <ContentBox hideBorder hidePadding>
       {showTableView ? (
-        <table className="min-w-full">
+        <Table>
           <thead>
-            <tr>
-              <th className="text-left">{t('market')}</th>
-              <th className="text-right">{t('price')}</th>
-              <th className="hidden text-right lg:block"></th>
-              <th className="text-right">{t('rolling-change')}</th>
-            </tr>
+            <TrHead>
+              <Th className="text-left">{t('market')}</Th>
+              <Th className="text-right">{t('price')}</Th>
+              <Th className="hidden text-right lg:block"></Th>
+              <Th className="text-right">{t('rolling-change')}</Th>
+            </TrHead>
           </thead>
           <tbody>
             {serumMarkets.map((market) => {
@@ -62,19 +63,19 @@ const SpotMarketsTable = () => {
               const chartData = coingeckoData ? coingeckoData.prices : undefined
 
               return (
-                <tr key={market.publicKey.toString()}>
-                  <td>
+                <TrBody key={market.publicKey.toString()}>
+                  <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market} />
                       <p className="font-body tracking-wide">{market.name}</p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(oraclePrice!, true)}</p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     {!loadingPrices ? (
                       chartData !== undefined ? (
                         <SimpleAreaChart
@@ -97,17 +98,17 @@ const SpotMarketsTable = () => {
                     ) : (
                       <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
                     )}
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex flex-col items-end">
                       <Change change={change} />
                     </div>
-                  </td>
-                </tr>
+                  </Td>
+                </TrBody>
               )
             })}
           </tbody>
-        </table>
+        </Table>
       ) : (
         <div>
           {serumMarkets.map((market) => {

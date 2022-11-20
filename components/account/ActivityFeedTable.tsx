@@ -1,5 +1,6 @@
 import { IconButton, LinkButton } from '@components/shared/Button'
 import SheenLoader from '@components/shared/SheenLoader'
+import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
 import { Transition } from '@headlessui/react'
 import {
@@ -112,24 +113,24 @@ const ActivityFeedTable = ({
     activityFeed.length || loadActivityFeed ? (
       <>
         {showTableView ? (
-          <table className="min-w-full">
+          <Table className="min-w-full">
             <thead>
-              <tr className="sticky top-0 z-10">
-                <th className="bg-th-bkg-1 text-left">{t('date')}</th>
-                <th className="bg-th-bkg-1 text-right">
+              <TrHead className="sticky top-0 z-10">
+                <Th className="bg-th-bkg-1 text-left">{t('date')}</Th>
+                <Th className="bg-th-bkg-1 text-right">
                   {t('activity:activity')}
-                </th>
-                <th className="bg-th-bkg-1 text-right">
+                </Th>
+                <Th className="bg-th-bkg-1 text-right">
                   {t('activity:credit')}
-                </th>
-                <th className="bg-th-bkg-1 text-right">
+                </Th>
+                <Th className="bg-th-bkg-1 text-right">
                   {t('activity:debit')}
-                </th>
-                <th className="bg-th-bkg-1 text-right">
+                </Th>
+                <Th className="bg-th-bkg-1 text-right">
                   {t('activity:activity-value')}
-                </th>
-                <th className="bg-th-bkg-1 text-right">{t('explorer')}</th>
-              </tr>
+                </Th>
+                <Th className="bg-th-bkg-1 text-right">{t('explorer')}</Th>
+              </TrHead>
             </thead>
             <tbody>
               {activityFeed.map((activity: any) => {
@@ -143,7 +144,7 @@ const ActivityFeedTable = ({
                 const amounts = getCreditAndDebit(activity)
                 const value = getValue(activity)
                 return (
-                  <tr
+                  <TrBody
                     key={signature}
                     className={`default-transition text-sm hover:bg-th-bkg-2 ${
                       isLiquidation ? 'cursor-pointer' : ''
@@ -154,38 +155,38 @@ const ActivityFeedTable = ({
                         : undefined
                     }
                   >
-                    <td>
+                    <Td>
                       <p className="font-body tracking-wide">
                         {dayjs(block_datetime).format('ddd D MMM')}
                       </p>
                       <p className="text-xs text-th-fgd-3">
                         {dayjs(block_datetime).format('h:mma')}
                       </p>
-                    </td>
-                    <td className="text-right">
+                    </Td>
+                    <Td className="text-right">
                       {t(`activity:${activityName}`)}
-                    </td>
-                    <td className="text-right font-mono">
+                    </Td>
+                    <Td className="text-right font-mono">
                       {amounts.credit.value}{' '}
                       <span className="font-body tracking-wide text-th-fgd-3">
                         {amounts.credit.symbol}
                       </span>
-                    </td>
-                    <td className="text-right font-mono">
+                    </Td>
+                    <Td className="text-right font-mono">
                       {amounts.debit.value}{' '}
                       <span className="font-body tracking-wide text-th-fgd-3">
                         {amounts.debit.symbol}
                       </span>
-                    </td>
-                    <td
+                    </Td>
+                    <Td
                       className={`text-right font-mono ${
                         value >= 0 ? 'text-th-green' : 'text-th-red'
                       }`}
                     >
                       {value > 0 ? '+' : ''}
                       {formatFixedDecimals(value, true)}
-                    </td>
-                    <td>
+                    </Td>
+                    <Td>
                       {activity_type !== 'liquidate_token_with_token' ? (
                         <div className="flex items-center justify-end">
                           <Tooltip
@@ -215,12 +216,12 @@ const ActivityFeedTable = ({
                           <ChevronRightIcon className="h-6 w-6 text-th-fgd-3" />
                         </div>
                       )}
-                    </td>
-                  </tr>
+                    </Td>
+                  </TrBody>
                 )
               })}
             </tbody>
-          </table>
+          </Table>
         ) : (
           <div>
             {activityFeed.map((activity: any) => (

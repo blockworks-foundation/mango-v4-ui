@@ -31,6 +31,7 @@ import { formatTokenSymbol } from 'utils/tokens'
 import RepayModal from './modals/RepayModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from '../hooks/useJupiterMints'
+import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -102,34 +103,34 @@ const TokenList = () => {
         </div>
       </div>
       {showTableView ? (
-        <table className="min-w-full">
+        <Table>
           <thead>
-            <tr>
-              <th className="text-left">{t('token')}</th>
-              <th>
+            <TrHead>
+              <Th className="text-left">{t('token')}</Th>
+              <Th>
                 <div className="flex justify-end">
                   <Tooltip content="If your balance is negative, you have a borrow for that token, of that amount.">
                     <span className="tooltip-underline">{t('balance')}</span>
                   </Tooltip>
                 </div>
-              </th>
-              <th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</th>
-              <th className="bg-th-bkg-1 text-right">{t('trade:unsettled')}</th>
-              <th className="flex justify-end" id="account-step-nine">
+              </Th>
+              <Th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</Th>
+              <Th className="bg-th-bkg-1 text-right">{t('trade:unsettled')}</Th>
+              <Th className="flex justify-end" id="account-step-nine">
                 <Tooltip content="The sum of interest earned and interest paid for each token.">
                   <span className="tooltip-underline">
                     {t('interest-earned-paid')}
                   </span>
                 </Tooltip>
-              </th>
-              <th id="account-step-ten">
+              </Th>
+              <Th id="account-step-ten">
                 <div className="flex justify-end">
                   <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right).">
                     <span className="tooltip-underline">{t('rates')}</span>
                   </Tooltip>
                 </div>
-              </th>
-            </tr>
+              </Th>
+            </TrHead>
           </thead>
           <tbody>
             {banks.map(({ key, value }) => {
@@ -164,8 +165,8 @@ const TokenList = () => {
                 spotBalances[bank.mint.toString()]?.unsettled || 0.0
 
               return (
-                <tr key={key}>
-                  <td>
+                <TrBody key={key}>
+                  <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         {logoURI ? (
@@ -176,8 +177,8 @@ const TokenList = () => {
                       </div>
                       <p className="font-body tracking-wide">{bank.name}</p>
                     </div>
-                  </td>
-                  <td className="text-right">
+                  </Td>
+                  <Td className="text-right">
                     <p>
                       {mangoAccount
                         ? formatDecimal(
@@ -194,28 +195,28 @@ const TokenList = () => {
                           )}`
                         : '$0.00'}
                     </p>
-                  </td>
-                  <td className="text-right">
+                  </Td>
+                  <Td className="text-right">
                     <p>{formatDecimal(inOrders)}</p>
                     <p className="text-sm text-th-fgd-4">
                       {formatFixedDecimals(inOrders * oraclePrice!, true)}
                     </p>
-                  </td>
-                  <td className="text-right">
+                  </Td>
+                  <Td className="text-right">
                     <p>{formatDecimal(unsettled)}</p>
                     <p className="text-sm text-th-fgd-4">
                       {formatFixedDecimals(unsettled * oraclePrice!, true)}
                     </p>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex flex-col text-right">
                       <p>{formatDecimal(interestAmount)}</p>
                       <p className="text-sm text-th-fgd-4">
                         {formatFixedDecimals(interestValue, true)}
                       </p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex justify-end space-x-2">
                       <p className="text-th-green">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
@@ -231,8 +232,8 @@ const TokenList = () => {
                         %
                       </p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex justify-end space-x-2">
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
                       <IconButton
@@ -242,12 +243,12 @@ const TokenList = () => {
                         <ChevronRightIcon className="h-5 w-5" />
                       </IconButton>
                     </div>
-                  </td>
-                </tr>
+                  </Td>
+                </TrBody>
               )
             })}
           </tbody>
-        </table>
+        </Table>
       ) : (
         <div>
           {banks.map(({ key, value }) => {

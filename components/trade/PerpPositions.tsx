@@ -1,5 +1,6 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { LinkButton } from '@components/shared/Button'
+import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -33,14 +34,14 @@ const PerpPositions = () => {
 
   return Object.entries(perpPositions).length ? (
     <div>
-      <table>
+      <Table>
         <thead>
-          <tr>
-            <th className="text-left">{t('market')}</th>
-            <th className="text-right">{t('trade:side')}</th>
-            <th className="text-right">{t('trade:size')}</th>
-            <th className="text-right">{t('value')}</th>
-          </tr>
+          <TrHead>
+            <Th className="text-left">{t('market')}</Th>
+            <Th className="text-right">{t('trade:side')}</Th>
+            <Th className="text-right">{t('trade:size')}</Th>
+            <Th className="text-right">{t('value')}</Th>
+          </TrHead>
         </thead>
         <tbody>
           {Object.entries(perpPositions).map(([_mkt, position]) => {
@@ -53,17 +54,17 @@ const PerpPositions = () => {
               selectedMarket.perpMarketIndex === position.marketIndex
 
             return (
-              <tr key={`${position.marketIndex}`} className="my-1 p-2">
-                <td>
+              <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
+                <Td>
                   <div className="flex items-center">
                     <MarketLogos market={market!} />
                     {market?.name}
                   </div>
-                </td>
-                <td className="text-right">
+                </Td>
+                <Td className="text-right">
                   <PerpSideBadge basePosition={basePosition} />
-                </td>
-                <td className="text-right">
+                </Td>
+                <Td className="text-right">
                   <p className="flex justify-end">
                     {isSelectedMarket ? (
                       <LinkButton
@@ -75,17 +76,17 @@ const PerpPositions = () => {
                       Math.abs(basePosition)
                     )}
                   </p>
-                </td>
-                <td className="text-right">
+                </Td>
+                <Td className="text-right">
                   <div>
                     ${Math.abs(basePosition * market._uiPrice).toFixed(2)}
                   </div>
-                </td>
-              </tr>
+                </Td>
+              </TrBody>
             )
           })}
         </tbody>
-      </table>
+      </Table>
     </div>
   ) : (
     <div className="flex flex-col items-center p-8">

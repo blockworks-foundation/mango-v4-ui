@@ -26,6 +26,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
+import { Table, Td, Th, TrBody } from '@components/shared/TableElements'
 
 const SwapHistoryTable = ({
   swapHistory,
@@ -53,15 +54,15 @@ const SwapHistoryTable = ({
     !loading ? (
       swapHistory.length ? (
         showTableView ? (
-          <table className="min-w-full">
+          <Table>
             <thead>
-              <tr>
-                <th className="text-left">{t('date')}</th>
-                <th className="w-1/3 text-left">{t('swap')}</th>
-                <th className="text-right">{t('borrow')}</th>
-                <th className="text-right">{t('borrow-fee')}</th>
-                <th />
-              </tr>
+              <TrBody>
+                <Th className="text-left">{t('date')}</Th>
+                <Th className="w-1/3 text-left">{t('swap')}</Th>
+                <Th className="text-right">{t('borrow')}</Th>
+                <Th className="text-right">{t('borrow-fee')}</Th>
+                <Th />
+              </TrBody>
             </thead>
             <tbody>
               {swapHistory.map((h) => {
@@ -107,16 +108,16 @@ const SwapHistoryTable = ({
                 const inDecimals = countLeadingZeros(swap_in_amount) + 2
                 const outDecimals = countLeadingZeros(swap_out_amount) + 2
                 return (
-                  <tr key={signature}>
-                    <td>
+                  <TrBody key={signature}>
+                    <Td>
                       <p className="font-body tracking-wide">
                         {dayjs(block_datetime).format('ddd D MMM')}
                       </p>
                       <p className="font-body text-xs tracking-wide text-th-fgd-3">
                         {dayjs(block_datetime).format('h:mma')}
                       </p>
-                    </td>
-                    <td className="w-1/3">
+                    </Td>
+                    <Td className="w-1/3">
                       <div className="flex items-center space-x-4">
                         <div className="flex w-1/2 items-center">
                           <div className="mr-2 flex flex-shrink-0 items-center">
@@ -174,8 +175,8 @@ const SwapHistoryTable = ({
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td>
+                    </Td>
+                    <Td>
                       <div className="flex flex-col text-right">
                         <p>
                           {borrowAmount}
@@ -184,13 +185,13 @@ const SwapHistoryTable = ({
                           </span>
                         </p>
                       </div>
-                    </td>
-                    <td>
+                    </Td>
+                    <Td>
                       <div className="flex flex-col text-right">
                         <p>${borrowFee}</p>
                       </div>
-                    </td>
-                    <td>
+                    </Td>
+                    <Td>
                       <div className="flex items-center justify-end">
                         <Tooltip
                           content={`View on ${t(
@@ -214,12 +215,12 @@ const SwapHistoryTable = ({
                           </a>
                         </Tooltip>
                       </div>
-                    </td>
-                  </tr>
+                    </Td>
+                  </TrBody>
                 )
               })}
             </tbody>
-          </table>
+          </Table>
         ) : (
           <div>
             {swapHistory.map((h) => {

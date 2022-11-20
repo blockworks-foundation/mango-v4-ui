@@ -7,6 +7,7 @@ import {
 import { IconButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
+import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
 import { LinkIcon, TrashIcon } from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
@@ -112,16 +113,16 @@ const OpenOrders = () => {
   return mangoAccount ? (
     Object.values(openOrders).flat().length ? (
       showTableView ? (
-        <table>
+        <Table>
           <thead>
-            <tr>
-              <th className="text-left">{t('market')}</th>
-              <th className="text-right">{t('trade:side')}</th>
-              <th className="text-right">{t('trade:size')}</th>
-              <th className="text-right">{t('price')}</th>
-              <th className="text-right">{t('value')}</th>
-              <th className="text-right"></th>
-            </tr>
+            <TrHead>
+              <Th className="text-left">{t('market')}</Th>
+              <Th className="text-right">{t('trade:side')}</Th>
+              <Th className="text-right">{t('trade:size')}</Th>
+              <Th className="text-right">{t('price')}</Th>
+              <Th className="text-right">{t('value')}</Th>
+              <Th className="text-right"></Th>
+            </TrHead>
           </thead>
           <tbody>
             {Object.entries(openOrders)
@@ -144,25 +145,25 @@ const OpenOrders = () => {
                     ).name
                   }
                   return (
-                    <tr
+                    <TrBody
                       key={`${o.side}${o.size}${o.price}`}
                       className="my-1 p-2"
                     >
-                      <td>
+                      <Td>
                         <div className="flex items-center">
                           <MarketLogos market={market!} />
                           {market?.name}
                         </div>
-                      </td>
-                      <td className="text-right">
+                      </Td>
+                      <Td className="text-right">
                         <SideBadge side={o.side} />
-                      </td>
-                      <td className="text-right font-mono">
+                      </Td>
+                      <Td className="text-right font-mono">
                         {o.size.toLocaleString(undefined, {
                           maximumFractionDigits: getDecimalCount(o.size),
                         })}
-                      </td>
-                      <td className="text-right">
+                      </Td>
+                      <Td className="text-right">
                         <span className="font-mono">
                           {o.price.toLocaleString(undefined, {
                             maximumFractionDigits: getDecimalCount(o.price),
@@ -171,11 +172,11 @@ const OpenOrders = () => {
                             {quoteSymbol}
                           </span>
                         </span>
-                      </td>
-                      <td className="text-right">
+                      </Td>
+                      <Td className="text-right">
                         {formatFixedDecimals(o.size * o.price, true)}
-                      </td>
-                      <td>
+                      </Td>
+                      <Td>
                         <div className="flex justify-end">
                           <Tooltip content={t('cancel')}>
                             <IconButton
@@ -195,14 +196,14 @@ const OpenOrders = () => {
                             </IconButton>
                           </Tooltip>
                         </div>
-                      </td>
-                    </tr>
+                      </Td>
+                    </TrBody>
                   )
                 })
               })
               .flat()}
           </tbody>
-        </table>
+        </Table>
       ) : (
         <div className="pb-20">
           {Object.entries(openOrders).map(([marketPk, orders]) => {

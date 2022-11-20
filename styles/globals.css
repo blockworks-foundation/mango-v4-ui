@@ -241,30 +241,6 @@ input[type='range']::-ms-thumb {
 
 /* Table */
 
-table {
-  @apply m-0 w-full p-0;
-}
-
-table caption {
-  @apply my-2;
-}
-
-tbody tr {
-  @apply border-y border-th-bkg-3 p-2;
-}
-
-thead tr {
-  @apply border-b border-th-bkg-3;
-}
-
-table td {
-  @apply px-6 py-3;
-}
-
-table th {
-  @apply px-6 py-3 text-xs font-normal text-th-fgd-3;
-}
-
 table p {
   @apply font-mono text-sm text-th-fgd-2;
 }

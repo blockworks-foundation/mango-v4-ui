@@ -13,6 +13,7 @@ import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateMarketPrice } from 'utils/tradeForm'
 import { LinkButton } from './Button'
+import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -54,16 +55,16 @@ const BalancesTable = () => {
 
   return banks?.length ? (
     showTableView ? (
-      <table className="min-w-full">
+      <Table>
         <thead>
-          <tr>
-            <th className="bg-th-bkg-1 text-left">{t('token')}</th>
-            <th className="bg-th-bkg-1 text-right">{t('balance')}</th>
-            <th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</th>
-            <th className="bg-th-bkg-1 text-right" id="trade-step-ten">
+          <TrHead>
+            <Th className="bg-th-bkg-1 text-left">{t('token')}</Th>
+            <Th className="bg-th-bkg-1 text-right">{t('balance')}</Th>
+            <Th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</Th>
+            <Th className="bg-th-bkg-1 text-right" id="trade-step-ten">
               {t('trade:unsettled')}
-            </th>
-          </tr>
+            </Th>
+          </TrHead>
         </thead>
         <tbody>
           {banks.map(({ key, value }) => {
@@ -81,8 +82,8 @@ const BalancesTable = () => {
               spotBalances[bank.mint.toString()]?.unsettled || 0.0
 
             return (
-              <tr key={key} className="text-sm">
-                <td>
+              <TrBody key={key} className="text-sm">
+                <Td>
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
                       {logoURI ? (
@@ -93,8 +94,8 @@ const BalancesTable = () => {
                     </div>
                     <span>{bank.name}</span>
                   </div>
-                </td>
-                <td className="text-right">
+                </Td>
+                <Td className="text-right">
                   <Balance bank={bank} />
                   <p className="text-sm text-th-fgd-4">
                     {mangoAccount
@@ -104,24 +105,24 @@ const BalancesTable = () => {
                         )}`
                       : '$0.00'}
                   </p>
-                </td>
-                <td className="text-right font-mono">
+                </Td>
+                <Td className="text-right font-mono">
                   <p>{formatDecimal(inOrders)}</p>
                   <p className="text-sm text-th-fgd-4">
                     {formatFixedDecimals(inOrders * bank.uiPrice!, true)}
                   </p>
-                </td>
-                <td className="text-right font-mono">
+                </Td>
+                <Td className="text-right font-mono">
                   <p>{formatDecimal(unsettled)}</p>
                   <p className="text-sm text-th-fgd-4">
                     {formatFixedDecimals(unsettled * bank.uiPrice!, true)}
                   </p>
-                </td>
-              </tr>
+                </Td>
+              </TrBody>
             )
           })}
         </tbody>
-      </table>
+      </Table>
     ) : (
       <>
         {banks.map(({ key, value }) => {

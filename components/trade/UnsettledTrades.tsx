@@ -11,6 +11,7 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import MarketLogos from './MarketLogos'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -63,14 +64,14 @@ const UnsettledTrades = ({
   return mangoAccount ? (
     Object.values(unsettledSpotBalances).flat().length ? (
       showTableView ? (
-        <table className="min-w-full">
+        <Table>
           <thead>
-            <tr>
-              <th className="bg-th-bkg-1 text-left">{t('market')}</th>
-              <th className="bg-th-bkg-1 text-right">{t('trade:base')}</th>
-              <th className="bg-th-bkg-1 text-right">{t('trade:quote')}</th>
-              <th className="bg-th-bkg-1 text-right" />
-            </tr>
+            <TrHead>
+              <Th className="bg-th-bkg-1 text-left">{t('market')}</Th>
+              <Th className="bg-th-bkg-1 text-right">{t('trade:base')}</Th>
+              <Th className="bg-th-bkg-1 text-right">{t('trade:quote')}</Th>
+              <Th className="bg-th-bkg-1 text-right" />
+            </TrHead>
           </thead>
           <tbody>
             {Object.entries(unsettledSpotBalances).map(([mktAddress]) => {
@@ -81,26 +82,26 @@ const UnsettledTrades = ({
               const quote = market?.name.split('/')[1]
 
               return (
-                <tr key={mktAddress} className="text-sm">
-                  <td>
+                <TrBody key={mktAddress} className="text-sm">
+                  <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market!} />
                       <span>{market ? market.name : ''}</span>
                     </div>
-                  </td>
-                  <td className="text-right font-mono">
+                  </Td>
+                  <Td className="text-right font-mono">
                     {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
                     <span className="font-body tracking-wide text-th-fgd-4">
                       {base}
                     </span>
-                  </td>
-                  <td className="text-right font-mono">
+                  </Td>
+                  <Td className="text-right font-mono">
                     {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
                     <span className="font-body tracking-wide text-th-fgd-4">
                       {quote}
                     </span>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex justify-end">
                       <Tooltip content={t('trade:settle-funds')}>
                         <IconButton
@@ -115,12 +116,12 @@ const UnsettledTrades = ({
                         </IconButton>
                       </Tooltip>
                     </div>
-                  </td>
-                </tr>
+                  </Td>
+                </TrBody>
               )
             })}
           </tbody>
-        </table>
+        </Table>
       ) : (
         <div className="pb-20">
           {Object.entries(unsettledSpotBalances).map(([mktAddress]) => {

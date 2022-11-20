@@ -19,6 +19,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import { useRouter } from 'next/router'
 import useJupiterMints from 'hooks/useJupiterMints'
+import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -99,20 +100,20 @@ const TokenStats = () => {
         </div>
       </div>
       {showTableView ? (
-        <table className="min-w-full">
+        <Table>
           <thead>
-            <tr>
-              <th className="text-left">{t('token')}</th>
-              <th className="text-right">{t('total-deposits')}</th>
-              <th className="text-right">{t('total-borrows')}</th>
-              <th>
+            <TrHead>
+              <Th className="text-left">{t('token')}</Th>
+              <Th className="text-right">{t('total-deposits')}</Th>
+              <Th className="text-right">{t('total-borrows')}</Th>
+              <Th>
                 <div className="flex justify-end">
                   <Tooltip content="The deposit rate (green) will automatically be paid on positive balances and the borrow rate (red) will automatically be charged on negative balances.">
                     <span className="tooltip-underline">{t('rates')}</span>
                   </Tooltip>
                 </div>
-              </th>
-              <th>
+              </Th>
+              <Th>
                 <div className="flex justify-end">
                   <Tooltip content="The percentage of deposits that have been lent out.">
                     <span className="tooltip-underline">
@@ -120,8 +121,8 @@ const TokenStats = () => {
                     </span>
                   </Tooltip>
                 </div>
-              </th>
-              <th>
+              </Th>
+              <Th>
                 <div className="flex justify-end text-right">
                   <Tooltip content={t('asset-weight-desc')}>
                     <span className="tooltip-underline">
@@ -129,13 +130,13 @@ const TokenStats = () => {
                     </span>
                   </Tooltip>
                 </div>
-              </th>
-              <th>
+              </Th>
+              <Th>
                 <div className="flex items-center justify-end">
                   <span className="text-right">{t('liability-weight')}</span>
                 </div>
-              </th>
-            </tr>
+              </Th>
+            </TrHead>
           </thead>
           <tbody>
             {banks.map(({ key, value }) => {
@@ -149,8 +150,8 @@ const TokenStats = () => {
               }
 
               return (
-                <tr key={key}>
-                  <td>
+                <TrBody key={key}>
+                  <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
                         {logoURI ? (
@@ -161,18 +162,18 @@ const TokenStats = () => {
                       </div>
                       <p className="font-body tracking-wide">{bank.name}</p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(bank.uiDeposits())}</p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(bank.uiBorrows())}</p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex justify-end space-x-2">
                       <p className="text-th-green">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
@@ -188,8 +189,8 @@ const TokenStats = () => {
                         %
                       </p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex flex-col text-right">
                       <p>
                         {bank.uiDeposits() > 0
@@ -202,18 +203,18 @@ const TokenStats = () => {
                         %
                       </p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="text-right">
                       <p>{bank.initAssetWeight.toFixed(2)}</p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="text-right">
                       <p>{bank.initLiabWeight.toFixed(2)}</p>
                     </div>
-                  </td>
-                  <td>
+                  </Td>
+                  <Td>
                     <div className="flex justify-end">
                       <IconButton
                         onClick={() => goToTokenPage(bank)}
@@ -222,12 +223,12 @@ const TokenStats = () => {
                         <ChevronRightIcon className="h-5 w-5" />
                       </IconButton>
                     </div>
-                  </td>
-                </tr>
+                  </Td>
+                </TrBody>
               )
             })}
           </tbody>
-        </table>
+        </Table>
       ) : (
         <div>
           {banks.map(({ key, value }) => {
