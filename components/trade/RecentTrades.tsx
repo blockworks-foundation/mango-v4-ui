@@ -65,44 +65,52 @@ const RecentTrades = () => {
     }
   }, 5000)
   return (
-    <div className="thin-scroll h-full overflow-y-scroll">
-      <div className={`mb-1 grid grid-cols-3 px-4 pt-2 text-xxs text-th-fgd-4`}>
-        <div className="text-right">{`${t('price')} (${quoteSymbol})`} </div>
-        <div className={`text-right`}>
-          {t('trade:size')} ({baseSymbol})
-        </div>
-        <div className={`text-right`}>{t('time')}</div>
-      </div>
-      {!!trades.length && (
-        <div className="px-4 font-mono text-xs">
-          {trades.map((trade: ChartTradeType, i: number) => {
-            const formattedPrice = market?.tickSize
-              ? floorToDecimal(trade.price, getDecimalCount(market.tickSize))
-              : new Decimal(trade?.price || 0)
+    <div className="thin-scroll h-full overflow-y-scroll px-2">
+      <table className="min-w-full">
+        <thead>
+          <tr className="text-right text-xxs text-th-fgd-4">
+            <th className="py-2 font-normal">{`${t(
+              'price'
+            )} (${quoteSymbol})`}</th>
+            <th className="py-2 font-normal">
+              {t('trade:size')} ({baseSymbol})
+            </th>
+            <th className="py-2 font-normal">{t('time')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {!!trades.length &&
+            trades.map((trade: ChartTradeType, i: number) => {
+              const formattedPrice = market?.tickSize
+                ? floorToDecimal(trade.price, getDecimalCount(market.tickSize))
+                : new Decimal(trade?.price || 0)
 
-            const formattedSize = market?.minOrderSize
-              ? floorToDecimal(trade.size, getDecimalCount(market.minOrderSize))
-              : new Decimal(trade?.size || 0)
-            return (
-              <div key={i} className={`grid grid-cols-3 leading-6`}>
-                <div
-                  className={`text-right ${
-                    trade.side === 'buy' ? `text-th-green` : `text-th-red`
-                  }`}
-                >
-                  {formattedPrice.toFixed()}
-                </div>
-                <div className={`text-right text-th-fgd-2`}>
-                  {formattedSize.toFixed()}
-                </div>
-                <div className={`text-right tracking-tighter text-th-fgd-4`}>
-                  {trade.time && new Date(trade.time).toLocaleTimeString()}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+              const formattedSize = market?.minOrderSize
+                ? floorToDecimal(
+                    trade.size,
+                    getDecimalCount(market.minOrderSize)
+                  )
+                : new Decimal(trade?.size || 0)
+              return (
+                <tr className="font-mono text-xs" key={i}>
+                  <td
+                    className={`pb-1.5 text-right ${
+                      trade.side === 'buy' ? `text-th-green` : `text-th-red`
+                    }`}
+                  >
+                    {formattedPrice.toFixed()}
+                  </td>
+                  <td className="pb-1.5 text-right">
+                    {formattedSize.toFixed()}
+                  </td>
+                  <td className="pb-1.5 text-right text-th-fgd-4">
+                    {trade.time && new Date(trade.time).toLocaleTimeString()}
+                  </td>
+                </tr>
+              )
+            })}
+        </tbody>
+      </table>
     </div>
   )
 }
