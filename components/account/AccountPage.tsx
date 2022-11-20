@@ -130,10 +130,8 @@ const AccountPage = () => {
       return {
         accountPnl: performanceData[performanceData.length - 1].pnl,
         accountValueChange:
-          ((toUiDecimalsForQuote(mangoAccount.getEquity(group)!.toNumber()) -
-            performanceData[0].account_equity) /
-            performanceData[0].account_equity) *
-          100,
+          performanceData[performanceData.length - 1].account_equity -
+          performanceData[0].account_equity,
       }
     }
     return { accountPnl: 0, accountValueChange: 0 }
@@ -142,7 +140,7 @@ const AccountPage = () => {
   const oneDayPnlChange = useMemo(() => {
     if (accountPnl && oneDayPerformanceData.length) {
       const startDayPnl = oneDayPerformanceData[0].pnl
-      return (accountPnl / startDayPnl) * 100 - 100
+      return accountPnl - startDayPnl
     }
     return 0.0
   }, [accountPnl, oneDayPerformanceData])
@@ -235,7 +233,10 @@ const AccountPage = () => {
                 />
               )}
             </div>
-            <Change change={accountValueChange} />
+            <div className="flex space-x-1.5">
+              <Change change={accountValueChange} isCurrency />
+              <p className="text-th-fgd-4">{t('today')}</p>
+            </div>
           </div>
           {!loadPerformanceData ? (
             mangoAccount && performanceData.length ? (
@@ -424,7 +425,7 @@ const AccountPage = () => {
               {formatFixedDecimals(accountPnl, true)}
             </p>
             <div className="flex space-x-1">
-              <Change change={oneDayPnlChange} size="small" />
+              <Change change={oneDayPnlChange} isCurrency size="small" />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
