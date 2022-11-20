@@ -2,12 +2,13 @@ import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/swap/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
 import { notify } from 'utils/notifications'
 
 const SpotSlider = () => {
   const side = mangoStore((s) => s.tradeForm.side)
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const { selectedMarket, price: marketPrice } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
 
@@ -38,31 +39,33 @@ const SpotSlider = () => {
     }
   }, [side, selectedMarket, mangoAccount])
 
-  const handleSlide = useCallback((val: string) => {
-    const set = mangoStore.getState().set
+  const handleSlide = useCallback(
+    (val: string) => {
+      const set = mangoStore.getState().set
 
-    set((s) => {
-      if (s.tradeForm.side === 'buy') {
-        s.tradeForm.quoteSize = val
+      set((s) => {
+        const price =
+          s.tradeForm.tradeType === 'Market'
+            ? marketPrice
+            : parseFloat(s.tradeForm.price)
 
-        if (Number(s.tradeForm.price)) {
-          s.tradeForm.baseSize = (
-            parseFloat(val) / parseFloat(s.tradeForm.price)
-          ).toString()
-        } else {
-          s.tradeForm.baseSize = ''
+        if (s.tradeForm.side === 'buy') {
+          s.tradeForm.quoteSize = val
+          if (Number(price)) {
+            s.tradeForm.baseSize = (parseFloat(val) / price).toString()
+          } else {
+            s.tradeForm.baseSize = ''
+          }
+        } else if (s.tradeForm.side === 'sell') {
+          s.tradeForm.baseSize = val
+          if (Number(price)) {
+            s.tradeForm.quoteSize = (parseFloat(val) * price).toString()
+          }
         }
-      } else if (s.tradeForm.side === 'sell') {
-        s.tradeForm.baseSize = val
-
-        if (Number(s.tradeForm.price)) {
-          s.tradeForm.quoteSize = (
-            parseFloat(val) * parseFloat(s.tradeForm.price)
-          ).toString()
-        }
-      }
-    })
-  }, [])
+      })
+    },
+    [marketPrice]
+  )
 
   return (
     <div className="w-full px-4">

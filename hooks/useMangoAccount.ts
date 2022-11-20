@@ -4,13 +4,9 @@ import mangoStore from '@store/mangoStore'
 export default function useMangoAccount(): {
   mangoAccount: MangoAccount | undefined
   initialLoad: boolean
-  lastUpdatedAt: string
 } {
-  const { mangoAccount, initialLoad, lastUpdatedAt } = mangoStore((state) => ({
-    mangoAccount: state.mangoAccount.current,
-    lastUpdatedAt: state.mangoAccount.lastUpdatedAt,
-    initialLoad: state.mangoAccount.initialLoad,
-  }))
+  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const initialLoad = mangoStore((s) => s.mangoAccount.initialLoad)
 
-  return { mangoAccount, initialLoad, lastUpdatedAt }
+  return { mangoAccount, initialLoad }
 }

@@ -51,7 +51,6 @@ const MangoAccountsListModal = ({
 
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
-        s.mangoAccount.lastUpdatedAt = new Date().toISOString()
       })
       setLastAccountViewed(acc.publicKey.toString())
     } catch (e) {

@@ -20,17 +20,13 @@ const PerpPositions = () => {
     let price = new Decimal(tradeForm.price).toNumber()
     if (tradeForm.tradeType === 'Market') {
       const orderbook = mangoStore.getState().selectedMarket.orderbook
-      const side = tradeForm.side === 'buy' ? 'sell' : 'buy'
-      price = calculateMarketPrice(orderbook, positionSize, side)
+      price = calculateMarketPrice(orderbook, positionSize, tradeForm.side)
     }
 
-    if (tradeForm.side === 'buy') {
-      set((s) => {
-        s.tradeForm.side = 'sell'
-        s.tradeForm.baseSize = positionSize.toFixed()
-        s.tradeForm.quoteSize = (positionSize / price).toFixed()
-      })
-    }
+    set((s) => {
+      s.tradeForm.baseSize = positionSize.toFixed()
+      s.tradeForm.quoteSize = (positionSize / price).toFixed()
+    })
   }
 
   if (!group) return null
@@ -73,10 +69,10 @@ const PerpPositions = () => {
                       <LinkButton
                         onClick={() => handlePositionClick(basePosition)}
                       >
-                        {basePosition}
+                        {Math.abs(basePosition)}
                       </LinkButton>
                     ) : (
-                      basePosition
+                      Math.abs(basePosition)
                     )}
                   </p>
                 </td>

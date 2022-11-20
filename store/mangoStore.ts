@@ -31,7 +31,6 @@ import {
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
 } from '../utils/constants'
-import { retryFn } from '../utils'
 import { Orderbook, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -171,7 +170,6 @@ export type MangoStore = {
   mangoAccount: {
     current: MangoAccount | undefined
     initialLoad: boolean
-    lastUpdatedAt: string
     lastSlot: number
     openOrderAccounts: OpenOrders[]
     openOrders: Record<string, Order[] | PerpOrder[]>
@@ -271,7 +269,6 @@ const mangoStore = create<MangoStore>()(
         current: undefined,
         initialLoad: true,
         lastSlot: 0,
-        lastUpdatedAt: '',
         openOrderAccounts: [],
         openOrders: {},
         perpPositions: [],
@@ -520,7 +517,6 @@ const mangoStore = create<MangoStore>()(
             if (slot > lastSlot) {
               set((state) => {
                 state.mangoAccount.current = reloadedMangoAccount
-                state.mangoAccount.lastUpdatedAt = new Date().toISOString()
                 state.mangoAccount.lastSlot = slot
               })
             }
@@ -556,7 +552,6 @@ const mangoStore = create<MangoStore>()(
               set((state) => {
                 state.mangoAccounts = []
                 state.mangoAccount.current = undefined
-                state.mangoAccount.lastUpdatedAt = new Date().toISOString()
               })
               return
             }
@@ -583,7 +578,6 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.mangoAccounts = mangoAccounts
               state.mangoAccount.current = newSelectedMangoAccount
-              state.mangoAccount.lastUpdatedAt = new Date().toISOString()
             })
           } catch (e) {
             console.error('Error fetching mango accts', e)
@@ -622,7 +616,7 @@ const mangoStore = create<MangoStore>()(
           if (!mangoAccount) return
 
           try {
-            let openOrders: Record<string, Order[] | PerpOrder[]> = {}
+            const openOrders: Record<string, Order[] | PerpOrder[]> = {}
             let serumOpenOrderAccounts: OpenOrders[] = []
 
             for (const serum3Orders of mangoAccount.serum3Active()) {

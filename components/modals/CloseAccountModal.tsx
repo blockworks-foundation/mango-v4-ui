@@ -42,7 +42,6 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
         set((state) => {
           state.mangoAccounts = newMangoAccounts
           state.mangoAccount.current = newCurrentAccount
-          state.mangoAccount.lastUpdatedAt = new Date().toISOString()
         })
       }
     } catch (e) {

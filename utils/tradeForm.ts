@@ -8,7 +8,7 @@ export const calculateMarketPrice = (
   const orders = side === 'buy' ? orderBook.asks : orderBook.bids
   let acc = 0
   let selectedOrder
-  let orderSize = size
+  const orderSize = size
   for (const order of orders) {
     acc += order[1]
     if (acc >= orderSize) {

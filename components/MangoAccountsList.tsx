@@ -40,7 +40,6 @@ const MangoAccountsList = ({
       const reloadedMangoAccount = await retryFn(() => acc.reload(client))
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
-        s.mangoAccount.lastUpdatedAt = new Date().toISOString()
       })
       setLastAccountViewed(acc.publicKey.toString())
       actions.fetchOpenOrders(acc)

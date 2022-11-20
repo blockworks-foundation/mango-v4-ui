@@ -35,6 +35,7 @@ import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
+import useSelectedMarket from 'hooks/useSelectedMarket'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -46,7 +47,7 @@ const AdvancedTradeForm = () => {
   const set = mangoStore.getState().set
   const tradeForm = mangoStore((s) => s.tradeForm)
   const { mangoTokens } = useJupiterMints()
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const { selectedMarket, price: marketPrice } = useSelectedMarket()
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormUi] = useLocalStorageState(TRADE_FORM_UI_KEY, 'Slider')
@@ -57,7 +58,9 @@ const AdvancedTradeForm = () => {
 
   const baseLogoURI = useMemo(() => {
     if (!baseSymbol || !mangoTokens.length) return ''
-    const token = mangoTokens.find((t) => t.symbol === baseSymbol)
+    const token =
+      mangoTokens.find((t) => t.symbol === baseSymbol) ||
+      mangoTokens.find((t) => t.symbol.includes(baseSymbol))
     if (token) {
       return token.logoURI
     }
@@ -103,7 +106,7 @@ const AdvancedTradeForm = () => {
         s.tradeForm.price = e.value
         if (s.tradeForm.baseSize && !Number.isNaN(Number(e.value))) {
           s.tradeForm.quoteSize = (
-            parseFloat(e.value) * parseFloat(s.tradeForm.baseSize)
+            (parseFloat(e.value) || 0) * parseFloat(s.tradeForm.baseSize)
           ).toString()
         }
       })
@@ -115,15 +118,11 @@ const AdvancedTradeForm = () => {
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
+        const price = parseFloat(s.tradeForm.price)
+
         s.tradeForm.baseSize = e.value
-        if (
-          s.tradeForm.price &&
-          e.value !== '' &&
-          !Number.isNaN(Number(e.value))
-        ) {
-          s.tradeForm.quoteSize = (
-            parseFloat(s.tradeForm.price) * parseFloat(e.value)
-          ).toString()
+        if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
+          s.tradeForm.quoteSize = (price * parseFloat(e.value)).toString()
         } else {
           s.tradeForm.quoteSize = ''
         }
@@ -135,18 +134,12 @@ const AdvancedTradeForm = () => {
   const handleQuoteSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
-
       set((s) => {
-        s.tradeForm.quoteSize = e.value
+        const price = parseFloat(s.tradeForm.price)
 
-        if (
-          s.tradeForm.price &&
-          e.value !== '' &&
-          !Number.isNaN(Number(e.value))
-        ) {
-          s.tradeForm.baseSize = (
-            parseFloat(e.value) / parseFloat(s.tradeForm.price)
-          ).toString()
+        s.tradeForm.quoteSize = e.value
+        if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
+          s.tradeForm.baseSize = (parseFloat(e.value) / price).toString()
         } else {
           s.tradeForm.baseSize = ''
         }
@@ -192,18 +185,8 @@ const AdvancedTradeForm = () => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
     if (selectedMarket instanceof Serum3Market) {
-      const baseBank = group?.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
-      )
-      if (baseBank.uiPrice) {
-        const price = baseBank.uiPrice.toString()
-        set((s) => {
-          s.tradeForm.price = price
-        })
-      }
-    } else {
       set((s) => {
-        s.tradeForm.price = selectedMarket._uiPrice.toString()
+        s.tradeForm.price = marketPrice.toString()
       })
     }
   }, [set, selectedMarket])
@@ -235,7 +218,7 @@ const AdvancedTradeForm = () => {
         const tx = await client.serum3PlaceOrder(
           group,
           mangoAccount,
-          selectedMarket!.serumMarketExternal,
+          selectedMarket.serumMarketExternal,
           tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
           price,
           baseSize,

@@ -49,7 +49,7 @@ const TradeAdvancedPage = () => {
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
     const topnavbarHeight = 67
-    const innerHeight = Math.max(height - topnavbarHeight, 800)
+    const innerHeight = Math.max(height - topnavbarHeight, 1000)
     const marketHeaderHeight = 48
 
     return {
