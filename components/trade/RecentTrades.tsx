@@ -16,11 +16,11 @@ const RecentTrades = () => {
   const { selectedMarket, serumOrPerpMarket: market } = useSelectedMarket()
 
   const baseSymbol = useMemo(() => {
-    return selectedMarket?.name.split('/')[0]
+    return selectedMarket?.name.split(/-|\//)[0]
   }, [selectedMarket])
 
   const quoteSymbol = useMemo(() => {
-    return selectedMarket?.name.split('/')[1]
+    return selectedMarket?.name.split(/-|\//)[1]
   }, [selectedMarket])
 
   // const fetchRecentTrades = useCallback(async () => {
