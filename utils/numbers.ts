@@ -7,7 +7,7 @@ const digits9 = new Intl.NumberFormat('en', { maximumFractionDigits: 9 })
 
 export const formatDecimal = (
   value: number,
-  decimals: number = 6,
+  decimals = 6,
   opts = { fixed: false }
 ): string => {
   if (opts?.fixed) return value.toFixed(decimals)
@@ -55,26 +55,6 @@ const usdFormatter4 = Intl.NumberFormat('en', {
   maximumFractionDigits: 4,
   style: 'currency',
   currency: 'USD',
-})
-
-const numberFormatter0 = Intl.NumberFormat('en', {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-})
-
-const numberFormatter2 = Intl.NumberFormat('en', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})
-
-const numberFormatter4 = Intl.NumberFormat('en', {
-  minimumFractionDigits: 4,
-  maximumFractionDigits: 4,
-})
-
-const numberFormatter6 = Intl.NumberFormat('en', {
-  minimumFractionDigits: 6,
-  maximumFractionDigits: 6,
 })
 
 export const formatFixedDecimals = (

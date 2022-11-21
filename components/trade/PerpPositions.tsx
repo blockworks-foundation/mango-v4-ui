@@ -6,6 +6,7 @@ import Decimal from 'decimal.js'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
+import { numberFormat } from 'utils/numbers'
 import { calculateMarketPrice } from 'utils/tradeForm'
 import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
@@ -98,7 +99,12 @@ const PerpPositions = () => {
                   </div>
                 </Td>
                 <Td className="text-right">
-                  <div>{position.quoteEntryNative.toString()}</div>
+                  <div>
+                    $
+                    {numberFormat.format(
+                      position.getEntryPrice(market).toNumber()
+                    )}
+                  </div>
                 </Td>
               </TrBody>
             )
