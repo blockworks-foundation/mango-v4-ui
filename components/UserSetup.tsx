@@ -13,7 +13,6 @@ import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
-import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSolBalance from 'hooks/useSolBalance'
@@ -27,7 +26,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { ALPHA_DEPOSIT_LIMIT, IS_ONBOARDED_KEY } from 'utils/constants'
+import { ALPHA_DEPOSIT_LIMIT } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from 'utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
@@ -61,7 +60,6 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const [sizePercentage, setSizePercentage] = useState('')
   const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
-  const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
 
@@ -165,7 +163,6 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
 
   useEffect(() => {
     if (mangoAccount && showSetupStep === 2) {
-      setIsOnboarded(true)
       onClose()
     }
   }, [mangoAccount, showSetupStep, onClose])
