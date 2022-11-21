@@ -9,7 +9,11 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
 import { useMemo } from 'react'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateMarketPrice } from 'utils/tradeForm'
 import { LinkButton } from './Button'
@@ -27,30 +31,29 @@ const BalancesTable = () => {
   const showTableView = width ? width > breakpoints.md : false
 
   const banks = useMemo(() => {
-    if (group) {
-      const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
-        key,
-        value,
-      }))
-      const sortedBanks = mangoAccount
-        ? rawBanks.sort(
-            (a, b) =>
-              Math.abs(
-                mangoAccount?.getTokenBalanceUi(b.value[0]) * b.value[0].uiPrice
-              ) -
-              Math.abs(
-                mangoAccount?.getTokenBalanceUi(a.value[0]) * a.value[0].uiPrice
-              )
-          )
-        : rawBanks
+    if (!group) return []
 
-      return mangoAccount
-        ? sortedBanks.filter(
-            (b) => mangoAccount?.getTokenBalanceUi(b.value[0]) !== 0
+    const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
+      key,
+      value,
+      balance: mangoAccount?.getTokenBalanceUi(value[0]),
+    }))
+    const sortedBanks = mangoAccount
+      ? rawBanks
+          .sort(
+            (a, b) =>
+              Math.abs(b.balance! * b.value[0].uiPrice) -
+              Math.abs(a.balance! * a.value[0].uiPrice)
           )
-        : sortedBanks
-    }
-    return []
+          .filter(
+            (c) =>
+              Math.abs(
+                floorToDecimal(c.balance!, c.value[0].mintDecimals).toNumber()
+              ) > 0
+          )
+      : rawBanks
+
+    return sortedBanks
   }, [group, mangoAccount])
 
   return banks?.length ? (
@@ -107,13 +110,17 @@ const BalancesTable = () => {
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
-                  <p>{formatDecimal(inOrders)}</p>
+                  <p>
+                    {floorToDecimal(inOrders, bank.mintDecimals).toNumber()}
+                  </p>
                   <p className="text-sm text-th-fgd-4">
                     {formatFixedDecimals(inOrders * bank.uiPrice, true)}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
-                  <p>{formatDecimal(unsettled)}</p>
+                  <p>
+                    {floorToDecimal(unsettled, bank.mintDecimals).toNumber()}
+                  </p>
                   <p className="text-sm text-th-fgd-4">
                     {formatFixedDecimals(unsettled * bank.uiPrice, true)}
                   </p>
@@ -154,13 +161,8 @@ const BalancesTable = () => {
                 <span>{bank.name}</span>
               </div>
               <div className="text-right">
-                <p className="mb-0.5 font-mono text-sm text-th-fgd-1">
-                  {mangoAccount
-                    ? formatDecimal(
-                        mangoAccount.getTokenBalanceUi(bank),
-                        bank.mintDecimals
-                      )
-                    : 0}{' '}
+                <div className="mb-0.5 flex justify-end space-x-1.5">
+                  <Balance bank={bank} />
                   <span className="text-sm text-th-fgd-4">
                     (
                     {mangoAccount
@@ -171,18 +173,18 @@ const BalancesTable = () => {
                       : '$0.00'}
                     )
                   </span>
-                </p>
+                </div>
                 <div className="flex space-x-3">
                   <p className="text-xs text-th-fgd-4">
                     {t('trade:in-orders')}:{' '}
                     <span className="font-mono text-th-fgd-3">
-                      {formatDecimal(inOrders)}
+                      {floorToDecimal(inOrders, bank.mintDecimals).toNumber()}
                     </span>
                   </p>
                   <p className="text-xs text-th-fgd-4">
                     {t('trade:unsettled')}:{' '}
                     <span className="font-mono text-th-fgd-3">
-                      {formatDecimal(unsettled)}
+                      {floorToDecimal(unsettled, bank.mintDecimals).toNumber()}
                     </span>
                   </p>
                 </div>
@@ -269,6 +271,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
       {balance ? (
         isBaseOrQuote ? (
           <LinkButton
+            className="font-normal"
             onClick={() =>
               handleBalanceClick(
                 parseFloat(formatDecimal(balance, bank.mintDecimals)),

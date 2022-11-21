@@ -305,6 +305,13 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
       hasInterestEarned.deposit_interest_usd
     : 0.0
 
+  const tokenBalance = mangoAccount
+    ? floorToDecimal(
+        mangoAccount.getTokenBalanceUi(bank),
+        bank.mintDecimals
+      ).toNumber()
+    : 0.0
+
   const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
 
   const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0.0
@@ -330,9 +337,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
               <span className="mr-1 font-body text-th-fgd-4">
                 {t('balance')}:
               </span>
-              {mangoAccount
-                ? formatDecimal(mangoAccount.getTokenBalanceUi(bank))
-                : 0}
+              {tokenBalance}
             </p>
           </div>
         </div>
@@ -365,7 +370,9 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:in-orders')}</p>
             <div className="flex font-mono">
-              <p className="text-th-fgd-2">{formatDecimal(inOrders)}</p>
+              <p className="text-th-fgd-2">
+                {floorToDecimal(inOrders, bank.mintDecimals).toNumber()}
+              </p>
               <p className="ml-1 text-th-fgd-4">
                 ({formatFixedDecimals(inOrders * oraclePrice!, true)})
               </p>
@@ -374,7 +381,9 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:unsettled')}</p>
             <div className="flex font-mono">
-              <p className="text-th-fgd-2">{formatDecimal(unsettled)}</p>
+              <p className="text-th-fgd-2">
+                {floorToDecimal(unsettled, bank.mintDecimals).toNumber()}
+              </p>
               <p className="ml-1 text-th-fgd-4">
                 ({formatFixedDecimals(unsettled * oraclePrice!, true)})
               </p>
@@ -383,7 +392,9 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('interest-earned-paid')}</p>
             <div className="flex font-mono">
-              <p className="text-th-fgd-2">{formatDecimal(interestAmount)}</p>
+              <p className="text-th-fgd-2">
+                {floorToDecimal(interestAmount, bank.mintDecimals).toNumber()}
+              </p>
               <p className="ml-1 text-th-fgd-4">
                 ({formatFixedDecimals(interestValue, true)})
               </p>
