@@ -21,7 +21,6 @@ import {
   BookSideType,
   MangoClient,
   PerpMarket,
-  Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 
@@ -175,7 +174,7 @@ const depth = 40
 
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { selectedMarket } = useSelectedMarket()
+  const { selectedMarket, serumOrPerpMarket: market } = useSelectedMarket()
 
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)
@@ -195,17 +194,6 @@ const Orderbook = () => {
     const bookDepth = !isMobile ? depth : 7
     return Array(bookDepth).fill(0)
   }, [isMobile])
-
-  const market = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
-
-    if (selectedMarket instanceof Serum3Market) {
-      return group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
-    } else {
-      return selectedMarket
-    }
-  }, [selectedMarket])
 
   useEffect(() => {
     if (!market) return

@@ -20,10 +20,16 @@ export default function useSelectedMarket() {
     } else return 0
   }, [selectedMarket, group])
 
-  const serumOrPerpMarket =
-    selectedMarket instanceof Serum3Market
-      ? group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
-      : selectedMarket
+  const serumOrPerpMarket = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return
+
+    if (selectedMarket instanceof Serum3Market) {
+      return group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+    } else {
+      return selectedMarket
+    }
+  }, [selectedMarket])
 
   return { selectedMarket, price, serumOrPerpMarket }
 }

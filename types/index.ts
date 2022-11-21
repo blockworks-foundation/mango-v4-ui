@@ -1,7 +1,8 @@
 export interface ChartTradeType {
   market: string
   size: number
-  price: number
+  quantity: number | any
+  price: number | any
   orderId: string
   time: number
   side: string

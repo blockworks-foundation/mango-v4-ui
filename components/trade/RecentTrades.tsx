@@ -1,32 +1,19 @@
 import useInterval from '@components/shared/useInterval'
 import mangoStore from '@store/mangoStore'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 // import isEqual from 'lodash/isEqual'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import Decimal from 'decimal.js'
 import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 
 const RecentTrades = () => {
-  const { t } = useTranslation(['common', 'trade'])
   // const [trades, setTrades] = useState<any[]>([])
+  const { t } = useTranslation(['common', 'trade'])
   const fills = mangoStore((s) => s.selectedMarket.fills)
-  console.log('fills', fills)
 
-  const { selectedMarket } = useSelectedMarket()
-
-  const market = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
-
-    if (selectedMarket instanceof Serum3Market) {
-      return group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
-    } else {
-      return selectedMarket
-    }
-  }, [selectedMarket])
+  const { selectedMarket, serumOrPerpMarket: market } = useSelectedMarket()
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split('/')[0]
@@ -57,11 +44,13 @@ const RecentTrades = () => {
   //   }
   // }, [market, trades])
 
-  // useEffect(() => {
-  //   if (CLUSTER === 'mainnet-beta') {
-  //     fetchRecentTrades()
-  //   }
-  // }, [fetchRecentTrades])
+  useEffect(() => {
+    // if (CLUSTER === 'mainnet-beta') {
+    //   fetchRecentTrades()
+    // }
+    const actions = mangoStore.getState().actions
+    actions.loadMarketFills()
+  }, [selectedMarket])
 
   useInterval(async () => {
     // if (CLUSTER === 'mainnet-beta') {
@@ -88,16 +77,31 @@ const RecentTrades = () => {
         <tbody>
           {!!fills.length &&
             fills.map((trade: ChartTradeType, i: number) => {
+              console.log(
+                'price: ',
+                trade.price,
+                ' size: ',
+                trade.size,
+                trade.quantity
+              )
+
+              // const price =
+              typeof trade.price === 'number'
+                ? trade.price
+                : trade.price.toNumber()
               const formattedPrice = market?.tickSize
                 ? floorToDecimal(trade.price, getDecimalCount(market.tickSize))
                 : new Decimal(trade?.price || 0)
 
-              const formattedSize = market?.minOrderSize
-                ? floorToDecimal(
-                    trade.size,
-                    getDecimalCount(market.minOrderSize)
-                  )
-                : new Decimal(trade?.size || 0)
+              // const size = trade?.quantity?.toNumber() || trade?.size
+              const formattedSize =
+                market?.minOrderSize && trade.size
+                  ? floorToDecimal(
+                      trade.size,
+                      getDecimalCount(market.minOrderSize)
+                    )
+                  : new Decimal(trade.size || 0)
+
               return (
                 <tr className="font-mono text-xs" key={i}>
                   <td

@@ -29,9 +29,7 @@ export const floorToDecimal = (
   value: number | string | Decimal,
   decimals: number
 ): Decimal => {
-  const decimal: Decimal = !(value instanceof Decimal)
-    ? new Decimal(value)
-    : value
+  const decimal = value instanceof Decimal ? value : new Decimal(value)
 
   return decimal.toDecimalPlaces(decimals, Decimal.ROUND_DOWN)
 }
