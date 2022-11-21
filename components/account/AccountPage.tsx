@@ -34,6 +34,7 @@ import { IS_ONBOARDED_KEY } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
+import dayjs from 'dayjs'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -125,17 +126,20 @@ const AccountPage = () => {
     setChartToShow('')
   }
 
+  const accountValue = useMemo(() => {
+    if (!group || !mangoAccount) return 0.0
+    return toUiDecimalsForQuote(mangoAccount.getEquity(group)!.toNumber())
+  }, [group, mangoAccount])
+
   const { accountPnl, accountValueChange } = useMemo(() => {
-    if (group && performanceData.length && mangoAccount) {
+    if (accountValue && performanceData.length) {
       return {
         accountPnl: performanceData[performanceData.length - 1].pnl,
-        accountValueChange:
-          performanceData[performanceData.length - 1].account_equity -
-          performanceData[0].account_equity,
+        accountValueChange: accountValue - performanceData[0].account_equity,
       }
     }
     return { accountPnl: 0, accountValueChange: 0 }
-  }, [performanceData, mangoAccount, group])
+  }, [accountValue, performanceData])
 
   const oneDayPnlChange = useMemo(() => {
     if (accountPnl && oneDayPerformanceData.length) {
@@ -192,6 +196,24 @@ const AccountPage = () => {
     }
   }
 
+  const latestAccountData = useMemo(() => {
+    if (!accountValue || !performanceData.length) return []
+    const latestIndex = performanceData.length - 1
+    return [
+      {
+        account_equity: accountValue,
+        time: dayjs(Date.now()).toISOString(),
+        borrow_interest_cumulative_usd:
+          performanceData[latestIndex].borrow_interest_cumulative_usd,
+        deposit_interest_cumulative_usd:
+          performanceData[latestIndex].deposit_interest_cumulative_usd,
+        pnl: performanceData[latestIndex].pnl,
+        spot_value: performanceData[latestIndex].spot_value,
+        transfer_balance: performanceData[latestIndex].transfer_balance,
+      },
+    ]
+  }, [accountValue, performanceData])
+
   return !chartToShow ? (
     <>
       <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 py-3 md:border-b">
@@ -215,12 +237,7 @@ const AccountPage = () => {
                   play
                   delay={0.05}
                   duration={1}
-                  numbers={formatFixedDecimals(
-                    toUiDecimalsForQuote(
-                      mangoAccount.getEquity(group)!.toNumber()
-                    ),
-                    true
-                  )}
+                  numbers={formatFixedDecimals(accountValue, true)}
                 />
               ) : (
                 <FlipNumbers
@@ -255,7 +272,7 @@ const AccountPage = () => {
                       ? COLORS.GREEN[theme]
                       : COLORS.RED[theme]
                   }
-                  data={performanceData}
+                  data={performanceData.concat(latestAccountData)}
                   height={88}
                   name="accountValue"
                   width={180}

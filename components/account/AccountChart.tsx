@@ -1,6 +1,9 @@
-import { MangoAccount } from '@blockworks-foundation/mango-v4'
+import {
+  MangoAccount,
+  toUiDecimalsForQuote,
+} from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import dynamic from 'next/dynamic'
 const DetailedAreaChart = dynamic(
@@ -34,9 +37,21 @@ const AccountChart = ({
     setDaysToShow(days)
   }
 
+  const currentValue = useMemo(() => {
+    if (chartToShow === 'account-value') {
+      const group = mangoStore.getState().group
+      const currentAccountValue = toUiDecimalsForQuote(
+        mangoAccount.getEquity(group!)!.toNumber()
+      )
+      const time = Date.now()
+      return [{ account_equity: currentAccountValue, time: time }]
+    }
+    return []
+  }, [chartToShow, mangoAccount])
+
   return (
     <DetailedAreaChart
-      data={data}
+      data={data.concat(currentValue)}
       daysToShow={daysToShow}
       hideChart={hideChart}
       loading={loading}
