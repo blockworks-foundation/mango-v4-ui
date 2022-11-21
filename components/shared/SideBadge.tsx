@@ -16,7 +16,7 @@ const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
           ? 'border border-th-green text-th-green'
           : 'border border-th-red text-th-red'
       }
-       -my-0.5 px-1.5 py-0.5 text-xs uppercase`}
+       -my-0.5 px-1 text-xs uppercase md:px-1.5 md:py-0.5`}
     >
       {typeof side === 'string'
         ? t(side)

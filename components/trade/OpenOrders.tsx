@@ -131,6 +131,7 @@ const OpenOrders = () => {
                   const group = mangoStore.getState().group!
                   let market: PerpMarket | Serum3Market
                   let tickSize: number
+                  let minOrderSize: number
                   let quoteSymbol
                   if (o instanceof PerpOrder) {
                     market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
@@ -138,6 +139,7 @@ const OpenOrders = () => {
                       market.settleTokenIndex
                     ).name
                     tickSize = market.tickSize
+                    minOrderSize = market.minOrderSize
                   } else {
                     market = group.getSerum3MarketByExternalMarket(
                       new PublicKey(marketPk)
@@ -145,9 +147,11 @@ const OpenOrders = () => {
                     quoteSymbol = group.getFirstBankByTokenIndex(
                       market!.quoteTokenIndex
                     ).name
-                    tickSize = group.getSerum3ExternalMarket(
+                    const serumMarket = group.getSerum3ExternalMarket(
                       market.serumMarketExternal
-                    ).tickSize
+                    )
+                    tickSize = serumMarket.tickSize
+                    minOrderSize = serumMarket.minOrderSize
                   }
                   return (
                     <TrBody
@@ -165,7 +169,7 @@ const OpenOrders = () => {
                       </Td>
                       <Td className="text-right font-mono">
                         {o.size.toLocaleString(undefined, {
-                          maximumFractionDigits: getDecimalCount(o.size),
+                          maximumFractionDigits: getDecimalCount(minOrderSize),
                         })}
                       </Td>
                       <Td className="text-right">
@@ -214,40 +218,53 @@ const OpenOrders = () => {
         <div className="pb-20">
           {Object.entries(openOrders).map(([marketPk, orders]) => {
             return orders.map((o) => {
-              const group = mangoStore.getState().group
-              const serumMarket = group?.getSerum3MarketByExternalMarket(
-                new PublicKey(marketPk)
-              )
-              const quoteSymbol = group?.getFirstBankByTokenIndex(
-                serumMarket!.quoteTokenIndex
-              ).name
+              const group = mangoStore.getState().group!
+              let market: PerpMarket | Serum3Market
+              let tickSize: number
+              let minOrderSize: number
+              let quoteSymbol
+              if (o instanceof PerpOrder) {
+                market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
+                quoteSymbol = group.getFirstBankByTokenIndex(
+                  market.settleTokenIndex
+                ).name
+                tickSize = market.tickSize
+                minOrderSize = market.minOrderSize
+              } else {
+                market = group.getSerum3MarketByExternalMarket(
+                  new PublicKey(marketPk)
+                )
+                quoteSymbol = group.getFirstBankByTokenIndex(
+                  market!.quoteTokenIndex
+                ).name
+                const serumMarket = group.getSerum3ExternalMarket(
+                  market.serumMarketExternal
+                )
+                tickSize = serumMarket.tickSize
+                minOrderSize = serumMarket.minOrderSize
+              }
               return (
                 <div
                   className="flex items-center justify-between border-b border-th-bkg-3 p-4"
                   key={`${o.side}${o.size}${o.price}`}
                 >
                   <div className="flex items-center">
-                    <MarketLogos market={serumMarket!} />
+                    <MarketLogos market={market} />
                     <div>
-                      <p className="text-sm text-th-fgd-1">
-                        {serumMarket?.name}
-                      </p>
-                      <span
-                        className={`capitalize ${
-                          o.side === 'buy' ? 'text-th-green' : 'text-th-red'
-                        }`}
-                      >
+                      <div className="mb-0.5 flex items-center space-x-2">
+                        <p className="text-sm text-th-fgd-1">{market.name}</p>
                         <SideBadge side={o.side} />
-                      </span>{' '}
+                      </div>
                       <span className="font-mono">
                         {o.size.toLocaleString(undefined, {
-                          maximumFractionDigits: getDecimalCount(o.size),
+                          maximumFractionDigits: getDecimalCount(minOrderSize),
                         })}
                       </span>{' '}
                       <span className="text-th-fgd-4">at</span>{' '}
                       <span className="font-mono">
                         {o.price.toLocaleString(undefined, {
-                          maximumFractionDigits: getDecimalCount(o.price),
+                          minimumFractionDigits: getDecimalCount(tickSize),
+                          maximumFractionDigits: getDecimalCount(tickSize),
                         })}
                       </span>{' '}
                       <span className="text-th-fgd-4">{quoteSymbol}</span>
