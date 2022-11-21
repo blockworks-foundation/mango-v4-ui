@@ -18,11 +18,17 @@ const TradeInfoTabs = () => {
   const isMobile = width ? width < breakpoints.lg : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
+    const unsettledTradeCount =
+      Object.values(unsettledSpotBalances).flat().length +
+      perpPositions.filter((p) => !p.basePositionLots.toNumber())?.length
     return [
       ['balances', 0],
       ['trade:orders', Object.values(openOrders).flat().length],
-      ['trade:unsettled', Object.values(unsettledSpotBalances).flat().length],
-      ['Positions', perpPositions.length],
+      ['trade:unsettled', unsettledTradeCount],
+      [
+        'Positions',
+        perpPositions.filter((p) => p.basePositionLots.toNumber())?.length,
+      ],
     ]
   }, [openOrders, perpPositions, unsettledSpotBalances])
 
@@ -40,7 +46,12 @@ const TradeInfoTabs = () => {
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
       {selectedTab === 'trade:orders' ? <OpenOrders /> : null}
       {selectedTab === 'trade:unsettled' ? (
-        <UnsettledTrades unsettledSpotBalances={unsettledSpotBalances} />
+        <UnsettledTrades
+          unsettledSpotBalances={unsettledSpotBalances}
+          unsettledPerpPositions={perpPositions.filter(
+            (p) => !p.basePositionLots.toNumber()
+          )}
+        />
       ) : null}
       {selectedTab === 'Positions' ? <PerpPositions /> : null}
     </div>

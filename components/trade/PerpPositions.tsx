@@ -40,7 +40,11 @@ const PerpPositions = () => {
 
   if (!group) return null
 
-  return Object.entries(perpPositions).length ? (
+  const openPerpPositions = Object.values(perpPositions).filter((p) =>
+    p.basePositionLots.toNumber()
+  )
+
+  return openPerpPositions.length ? (
     <div>
       <Table>
         <thead>
@@ -53,7 +57,7 @@ const PerpPositions = () => {
           </TrHead>
         </thead>
         <tbody>
-          {Object.entries(perpPositions).map(([_mkt, position]) => {
+          {openPerpPositions.map((position) => {
             const market = group.getPerpMarketByMarketIndex(
               position.marketIndex
             )
@@ -61,6 +65,8 @@ const PerpPositions = () => {
             const isSelectedMarket =
               selectedMarket instanceof PerpMarket &&
               selectedMarket.perpMarketIndex === position.marketIndex
+
+            if (!basePosition) return null
 
             return (
               <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
@@ -92,7 +98,7 @@ const PerpPositions = () => {
                   </div>
                 </Td>
                 <Td className="text-right">
-                  <div>{position.quoteEntryNative.toNumber()}</div>
+                  <div>{position.quoteEntryNative.toString()}</div>
                 </Td>
               </TrBody>
             )

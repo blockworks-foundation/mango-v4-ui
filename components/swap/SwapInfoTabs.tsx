@@ -14,6 +14,7 @@ const SwapInfoTabs = () => {
   const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
   const loading = mangoStore((s) => s.mangoAccount.stats.swapHistory.loading)
   const unsettledSpotBalances = useUnsettledSpotBalances()
+  const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     return [
@@ -38,7 +39,12 @@ const SwapInfoTabs = () => {
         <SwapHistoryTable swapHistory={swapHistory} loading={loading} />
       ) : null}
       {selectedTab === 'trade:unsettled' ? (
-        <UnsettledTrades unsettledSpotBalances={unsettledSpotBalances} />
+        <UnsettledTrades
+          unsettledSpotBalances={unsettledSpotBalances}
+          unsettledPerpPositions={perpPositions.filter(
+            (p) => !p.basePositionLots.toNumber()
+          )}
+        />
       ) : null}
     </div>
   )

@@ -254,7 +254,7 @@ const AdvancedTradeForm = () => {
           selectedMarket.perpMarketIndex,
           tradeForm.side === 'buy' ? PerpOrderSide.bid : PerpOrderSide.ask,
           price,
-          baseSize,
+          Math.abs(baseSize),
           undefined, // maxQuoteQuantity
           Date.now(),
           perpOrderType,

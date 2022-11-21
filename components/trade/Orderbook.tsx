@@ -594,7 +594,6 @@ const OrderbookRow = ({
   tickSize: number
 }) => {
   const element = useRef<HTMLDivElement>(null)
-  // const set = mangoStore.getState().set
   const [showOrderbookFlash] = useLocalStorageState(ORDERBOOK_FLASH_KEY, true)
   const flashClassName = side === 'sell' ? 'red-flash' : 'green-flash'
 

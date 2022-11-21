@@ -1,6 +1,6 @@
 {
     "amount": "Amount",
-    "base": "Base Token",
+    "base": "Base",
     "book": "Book",
     "cancel-order-error": "Failed to cancel order",
     "connect-orders": "Connect to view your open orders",
@@ -21,7 +21,7 @@
     "post": "Post",
     "place-order": "Place {{side}} Order",
     "placing-order": "Placing Order",
-    "quote": "Quote Token",
+    "quote": "Quote",
     "settle-funds": "Settle Funds",
     "settle-funds-error": "Failed to settle funds",
     "show-asks": "Show Asks",

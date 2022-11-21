@@ -64,7 +64,7 @@ const RecentTrades = () => {
     if (CLUSTER === 'mainnet-beta') {
       fetchTradesForChart()
     }
-  }, 5000)
+  }, 50000)
   return (
     <div className="thin-scroll h-full overflow-y-scroll px-2">
       <table className="min-w-full">

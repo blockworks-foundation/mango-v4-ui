@@ -13,11 +13,14 @@ import MarketLogos from './MarketLogos'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { PerpPosition } from '@blockworks-foundation/mango-v4'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
+  unsettledPerpPositions,
 }: {
   unsettledSpotBalances: any
+  unsettledPerpPositions: PerpPosition[]
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
@@ -62,8 +65,11 @@ const UnsettledTrades = ({
 
   if (!group) return null
 
+  console.log('unsettledPerpPositions', unsettledPerpPositions)
+
   return mangoAccount ? (
-    Object.values(unsettledSpotBalances).flat().length ? (
+    Object.values(unsettledSpotBalances).flat().concat(unsettledPerpPositions)
+      .length ? (
       showTableView ? (
         <Table>
           <thead>
@@ -86,7 +92,7 @@ const UnsettledTrades = ({
                 <TrBody key={mktAddress} className="text-sm">
                   <Td>
                     <div className="flex items-center">
-                      <MarketLogos market={market!} />
+                      <MarketLogos market={market} />
                       <span>{market ? market.name : ''}</span>
                     </div>
                   </Td>
@@ -121,6 +127,45 @@ const UnsettledTrades = ({
                 </TrBody>
               )
             })}
+            {unsettledPerpPositions.map((position) => {
+              const market = group.getPerpMarketByMarketIndex(
+                position.marketIndex
+              )
+              return (
+                <TrBody key={position.marketIndex} className="text-sm">
+                  <Td>
+                    <div className="flex items-center">
+                      <MarketLogos market={market} />
+                      <span>{market ? market.name : ''}</span>
+                    </div>
+                  </Td>
+                  <Td className="text-right font-mono">
+                    <span></span>
+                  </Td>
+                  <Td className="text-right font-mono">
+                    {position.getUnsettledFunding(market).toNumber()}
+                  </Td>
+                  <Td>
+                    <div className="flex justify-end">
+                      <Tooltip content={t('trade:settle-funds')}>
+                        <IconButton
+                          onClick={() =>
+                            handleSettleFunds(market.publicKey.toString())
+                          }
+                          size="small"
+                        >
+                          {settleMktAddress === market.publicKey.toString() ? (
+                            <Loading className="h-4 w-4" />
+                          ) : (
+                            <CheckIcon className="h-4 w-4" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </Td>
+                </TrBody>
+              )
+            })}
           </tbody>
         </Table>
       ) : (
@@ -138,7 +183,7 @@ const UnsettledTrades = ({
                 className="flex items-center justify-between border-b border-th-bkg-3 p-4"
               >
                 <div className="flex items-center">
-                  <MarketLogos market={market!} />
+                  <MarketLogos market={market} />
                   <span>{market ? market.name : ''}</span>
                 </div>
                 <div className="flex items-center space-x-3">

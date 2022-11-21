@@ -1,13 +1,15 @@
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
+import useMangoAccount from './useMangoAccount'
 import useMangoGroup from './useMangoGroup'
 
 export function useUnsettledSpotBalances() {
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { group } = useMangoGroup()
+  const { mangoAccount } = useMangoAccount()
   const openOrdersAccounts =
     mangoStore.getState().mangoAccount.openOrderAccounts
-  const { group } = useMangoGroup()
+
   const unsettledSpotBalances = useMemo(() => {
     if (!group || !mangoAccount || !openOrdersAccounts) return {}
     const unsettledBalances: Record<string, { base: number; quote: number }> =
