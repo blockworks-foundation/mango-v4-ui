@@ -167,7 +167,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         >
           <h2 className="mb-4 text-center">{t('select-token')}</h2>
           <div className="grid auto-cols-fr grid-flow-col  px-4 pb-2">
-            <div className="">
+            <div className="text-left">
               <p className="text-xs">{t('token')}</p>
             </div>
             <div className="flex justify-end">
