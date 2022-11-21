@@ -1,7 +1,7 @@
 import useInterval from '@components/shared/useInterval'
-import mangoStore, { CLUSTER } from '@store/mangoStore'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import isEqual from 'lodash/isEqual'
+import mangoStore from '@store/mangoStore'
+import { useMemo } from 'react'
+// import isEqual from 'lodash/isEqual'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import Decimal from 'decimal.js'
 import { ChartTradeType } from 'types'
@@ -11,7 +11,10 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 
 const RecentTrades = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const [trades, setTrades] = useState<any[]>([])
+  // const [trades, setTrades] = useState<any[]>([])
+  const fills = mangoStore((s) => s.selectedMarket.fills)
+  console.log('fills', fills)
+
   const { selectedMarket } = useSelectedMarket()
 
   const market = useMemo(() => {
@@ -33,38 +36,41 @@ const RecentTrades = () => {
     return selectedMarket?.name.split('/')[1]
   }, [selectedMarket])
 
-  const fetchTradesForChart = useCallback(async () => {
-    if (!market) return
+  // const fetchRecentTrades = useCallback(async () => {
+  //   if (!market) return
 
-    try {
-      const response = await fetch(
-        `https://event-history-api-candles.herokuapp.com/trades/address/${market.publicKey}`
-      )
-      const parsedResp = await response.json()
-      const newTrades = parsedResp.data
-      if (!newTrades) return null
+  //   try {
+  //     const response = await fetch(
+  //       `https://event-history-api-candles.herokuapp.com/trades/address/${market.publicKey}`
+  //     )
+  //     const parsedResp = await response.json()
+  //     const newTrades = parsedResp.data
+  //     if (!newTrades) return null
 
-      if (newTrades.length && trades.length === 0) {
-        setTrades(newTrades)
-      } else if (newTrades?.length && !isEqual(newTrades[0], trades[0])) {
-        setTrades(newTrades)
-      }
-    } catch (e) {
-      console.error('Unable to fetch recent trades', e)
-    }
-  }, [market, trades])
+  //     if (newTrades.length && trades.length === 0) {
+  //       setTrades(newTrades)
+  //     } else if (newTrades?.length && !isEqual(newTrades[0], trades[0])) {
+  //       setTrades(newTrades)
+  //     }
+  //   } catch (e) {
+  //     console.error('Unable to fetch recent trades', e)
+  //   }
+  // }, [market, trades])
 
-  useEffect(() => {
-    if (CLUSTER === 'mainnet-beta') {
-      fetchTradesForChart()
-    }
-  }, [fetchTradesForChart])
+  // useEffect(() => {
+  //   if (CLUSTER === 'mainnet-beta') {
+  //     fetchRecentTrades()
+  //   }
+  // }, [fetchRecentTrades])
 
   useInterval(async () => {
-    if (CLUSTER === 'mainnet-beta') {
-      fetchTradesForChart()
-    }
-  }, 50000)
+    // if (CLUSTER === 'mainnet-beta') {
+    //   fetchRecentTrades()
+    // }
+    const actions = mangoStore.getState().actions
+    actions.loadMarketFills()
+  }, 5000)
+
   return (
     <div className="thin-scroll h-full overflow-y-scroll px-2">
       <table className="min-w-full">
@@ -76,12 +82,12 @@ const RecentTrades = () => {
             <th className="py-2 font-normal">
               {t('trade:size')} ({baseSymbol})
             </th>
-            <th className="py-2 font-normal">{t('time')}</th>
+            {/* <th className="py-2 font-normal">{t('time')}</th> */}
           </tr>
         </thead>
         <tbody>
-          {!!trades.length &&
-            trades.map((trade: ChartTradeType, i: number) => {
+          {!!fills.length &&
+            fills.map((trade: ChartTradeType, i: number) => {
               const formattedPrice = market?.tickSize
                 ? floorToDecimal(trade.price, getDecimalCount(market.tickSize))
                 : new Decimal(trade?.price || 0)
@@ -104,9 +110,9 @@ const RecentTrades = () => {
                   <td className="pb-1.5 text-right">
                     {formattedSize.toFixed()}
                   </td>
-                  <td className="pb-1.5 text-right text-th-fgd-4">
+                  {/* <td className="pb-1.5 text-right text-th-fgd-4">
                     {trade.time && new Date(trade.time).toLocaleTimeString()}
-                  </td>
+                  </td> */}
                 </tr>
               )
             })}

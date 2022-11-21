@@ -20,5 +20,10 @@ export default function useSelectedMarket() {
     } else return 0
   }, [selectedMarket, group])
 
-  return { selectedMarket, price }
+  const serumOrPerpMarket =
+    selectedMarket instanceof Serum3Market
+      ? group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+      : selectedMarket
+
+  return { selectedMarket, price, serumOrPerpMarket }
 }

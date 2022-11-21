@@ -193,6 +193,7 @@ export type MangoStore = {
   selectedMarket: {
     name: string
     current: Serum3Market | PerpMarket | undefined
+    fills: any
     orderbook: Orderbook
   }
   serumMarkets: Serum3Market[]
@@ -249,6 +250,7 @@ export type MangoStore = {
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     reloadGroup: () => Promise<void>
+    loadMarketFills: () => Promise<void>
   }
 }
 
@@ -291,6 +293,7 @@ const mangoStore = create<MangoStore>()(
       selectedMarket: {
         name: 'ETH/USDC',
         current: undefined,
+        fills: [],
         orderbook: {
           bids: [],
           asks: [],
@@ -807,6 +810,39 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.settings.loading = false
             })
+          }
+        },
+        async loadMarketFills() {
+          const set = get().set
+          const selectedMarket = get().selectedMarket.current
+          const group = get().group
+          const client = get().client
+          const connection = get().connection
+          try {
+            let serumMarket
+            let perpMarket
+            if (!group || !selectedMarket) return
+
+            if (selectedMarket instanceof Serum3Market) {
+              serumMarket = group.getSerum3ExternalMarket(
+                selectedMarket.serumMarketExternal
+              )
+            } else {
+              perpMarket = selectedMarket
+            }
+
+            let loadedFills: any[] = []
+            if (serumMarket) {
+              loadedFills = await serumMarket.loadFills(connection, 10000)
+              loadedFills = loadedFills.filter((f) => !f?.eventFlags?.maker)
+            } else if (perpMarket) {
+              loadedFills = await perpMarket.loadFills(client)
+            }
+            set((state) => {
+              state.selectedMarket.fills = loadedFills
+            })
+          } catch (err) {
+            console.log('Error fetching fills:', err)
           }
         },
       },
