@@ -130,12 +130,14 @@ const OpenOrders = () => {
                 return orders.map((o) => {
                   const group = mangoStore.getState().group!
                   let market: PerpMarket | Serum3Market
+                  let tickSize: number
                   let quoteSymbol
                   if (o instanceof PerpOrder) {
                     market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
                     quoteSymbol = group.getFirstBankByTokenIndex(
                       market.settleTokenIndex
                     ).name
+                    tickSize = market.tickSize
                   } else {
                     market = group.getSerum3MarketByExternalMarket(
                       new PublicKey(marketPk)
@@ -143,6 +145,9 @@ const OpenOrders = () => {
                     quoteSymbol = group.getFirstBankByTokenIndex(
                       market!.quoteTokenIndex
                     ).name
+                    tickSize = group.getSerum3ExternalMarket(
+                      market.serumMarketExternal
+                    ).tickSize
                   }
                   return (
                     <TrBody
@@ -166,7 +171,8 @@ const OpenOrders = () => {
                       <Td className="text-right">
                         <span className="font-mono">
                           {o.price.toLocaleString(undefined, {
-                            maximumFractionDigits: getDecimalCount(o.price),
+                            minimumFractionDigits: getDecimalCount(tickSize),
+                            maximumFractionDigits: getDecimalCount(tickSize),
                           })}{' '}
                           <span className="font-body tracking-wide text-th-fgd-4">
                             {quoteSymbol}
