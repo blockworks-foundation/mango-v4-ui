@@ -1,10 +1,8 @@
 import { useMemo, useState } from 'react'
 import TabButtons from '@components/shared/TabButtons'
 import SwapTradeBalances from '../shared/BalancesTable'
-import UnsettledTrades from '../trade/UnsettledTrades'
 import mangoStore from '@store/mangoStore'
 import SwapHistoryTable from './SwapHistoryTable'
-import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
 import useMangoAccount from 'hooks/useMangoAccount'
 
 const SwapInfoTabs = () => {
@@ -13,14 +11,11 @@ const SwapInfoTabs = () => {
   const { mangoAccount } = useMangoAccount()
   const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
   const loading = mangoStore((s) => s.mangoAccount.stats.swapHistory.loading)
-  const unsettledSpotBalances = useUnsettledSpotBalances()
-  const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     return [
       ['balances', 0],
       ['swap:swap-history', 0],
-      ['trade:unsettled', Object.values(unsettledSpotBalances).flat().length],
     ]
   }, [openOrders, mangoAccount])
 
@@ -37,14 +32,6 @@ const SwapInfoTabs = () => {
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
       {selectedTab === 'swap:swap-history' ? (
         <SwapHistoryTable swapHistory={swapHistory} loading={loading} />
-      ) : null}
-      {selectedTab === 'trade:unsettled' ? (
-        <UnsettledTrades
-          unsettledSpotBalances={unsettledSpotBalances}
-          unsettledPerpPositions={perpPositions.filter(
-            (p) => !p.basePositionLots.toNumber()
-          )}
-        />
       ) : null}
     </div>
   )
