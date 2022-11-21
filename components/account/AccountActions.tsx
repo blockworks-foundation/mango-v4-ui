@@ -19,7 +19,10 @@ import AccountNameModal from '../modals/AccountNameModal'
 import { copyToClipboard } from 'utils'
 import { notify } from 'utils/notifications'
 import { abbreviateAddress } from 'utils/formatting'
-import { HealthType, ZERO_I80F48 } from '@blockworks-foundation/mango-v4'
+import {
+  HealthType,
+  toUiDecimalsForQuote,
+} from '@blockworks-foundation/mango-v4'
 import RepayModal from '@components/modals/RepayModal'
 import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -47,9 +50,12 @@ const AccountActions = () => {
   }
 
   const hasBorrows = useMemo(() => {
-    return mangoAccount && group
-      ? !mangoAccount.getLiabsValue(group, HealthType.init).eq(ZERO_I80F48())
-      : false
+    if (!mangoAccount || !group) return false
+    return (
+      toUiDecimalsForQuote(
+        mangoAccount.getLiabsValue(group, HealthType.init).toNumber()
+      ) >= 10
+    )
   }, [mangoAccount, group])
 
   return (

@@ -74,24 +74,30 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
   }, [walletTokens, selectedToken])
 
   const borrowAmount = useMemo(() => {
-    return mangoAccount && bank ? mangoAccount.getTokenBorrowsUi(bank) : 0
+    if (!mangoAccount || !bank) return 0
+    return floorToDecimal(
+      mangoAccount.getTokenBorrowsUi(bank),
+      bank.mintDecimals
+    ).toNumber()
   }, [bank, mangoAccount])
 
   const setMax = useCallback(() => {
-    setInputAmount(borrowAmount.toString())
+    setInputAmount(borrowAmount.toFixed(bank?.mintDecimals))
     setSizePercentage('100')
-  }, [borrowAmount, selectedToken])
+  }, [bank, borrowAmount, selectedToken])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       setSizePercentage(percentage)
 
-      let amount = new Decimal(borrowAmount).mul(percentage).div(100)
-      amount = floorToDecimal(amount, walletBalance.maxDecimals)
+      let amount: Decimal | number = new Decimal(borrowAmount)
+        .mul(percentage)
+        .div(100)
+      amount = floorToDecimal(amount, bank!.mintDecimals).toNumber()
 
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed(bank?.mintDecimals))
     },
-    [borrowAmount, selectedToken, walletBalance]
+    [bank, borrowAmount, selectedToken]
   )
 
   const handleSelectToken = (token: string) => {
@@ -144,7 +150,10 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
             return {
               key,
               value,
-              borrowAmount: mangoAccount?.getTokenBorrowsUi(value[0]),
+              borrowAmount: floorToDecimal(
+                mangoAccount?.getTokenBorrowsUi(value[0]),
+                value[0].mintDecimals
+              ).toNumber(),
               borrowAmountValue:
                 mangoAccount?.getTokenBorrowsUi(value[0]) * value[0].uiPrice!,
             }

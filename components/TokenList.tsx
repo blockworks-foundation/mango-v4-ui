@@ -1,8 +1,4 @@
-import {
-  Bank,
-  MangoAccount,
-  ZERO_I80F48,
-} from '@blockworks-foundation/mango-v4'
+import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -17,7 +13,11 @@ import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
-import { formatDecimal, formatFixedDecimals } from '../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
 import BorrowModal from './modals/BorrowModal'
@@ -145,6 +145,13 @@ const TokenList = () => {
                 )?.logoURI
               }
 
+              const tokenBalance = mangoAccount
+                ? floorToDecimal(
+                    mangoAccount.getTokenBalanceUi(bank),
+                    bank.mintDecimals
+                  ).toNumber()
+                : 0.0
+
               const hasInterestEarned = totalInterestData.find(
                 (d) => d.symbol === bank.name
               )
@@ -180,38 +187,40 @@ const TokenList = () => {
                     </div>
                   </Td>
                   <Td className="text-right">
-                    <p>
-                      {mangoAccount
-                        ? formatDecimal(
-                            mangoAccount.getTokenBalanceUi(bank),
-                            bank.mintDecimals
-                          )
-                        : 0}
-                    </p>
+                    <p>{tokenBalance}</p>
                     <p className="text-sm text-th-fgd-4">
-                      {mangoAccount
+                      {tokenBalance
                         ? `${formatFixedDecimals(
-                            mangoAccount.getTokenBalanceUi(bank) * oraclePrice!,
+                            tokenBalance * oraclePrice!,
                             true
                           )}`
                         : '$0.00'}
                     </p>
                   </Td>
                   <Td className="text-right">
-                    <p>{formatDecimal(inOrders)}</p>
+                    <p>
+                      {floorToDecimal(inOrders, bank.mintDecimals).toNumber()}
+                    </p>
                     <p className="text-sm text-th-fgd-4">
                       {formatFixedDecimals(inOrders * oraclePrice!, true)}
                     </p>
                   </Td>
                   <Td className="text-right">
-                    <p>{formatDecimal(unsettled)}</p>
+                    <p>
+                      {floorToDecimal(unsettled, bank.mintDecimals).toNumber()}
+                    </p>
                     <p className="text-sm text-th-fgd-4">
                       {formatFixedDecimals(unsettled * oraclePrice!, true)}
                     </p>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatDecimal(interestAmount)}</p>
+                      <p>
+                        {floorToDecimal(
+                          interestAmount,
+                          bank.mintDecimals
+                        ).toNumber()}
+                      </p>
                       <p className="text-sm text-th-fgd-4">
                         {formatFixedDecimals(interestValue, true)}
                       </p>
@@ -470,6 +479,16 @@ const ActionsMenu = ({
     return mangoTokens.find((t) => t.address === bank.mint.toString())?.logoURI
   }, [bank, mangoTokens])
 
+  const hasBorrow = useMemo(() => {
+    if (!mangoAccount || !bank) return false
+    return (
+      floorToDecimal(
+        mangoAccount.getTokenBorrowsUi(bank),
+        bank.mintDecimals
+      ).toNumber() > 0
+    )
+  }, [mangoAccount, bank])
+
   return (
     <>
       <IconDropMenu
@@ -484,15 +503,14 @@ const ActionsMenu = ({
             {formatTokenSymbol(bank.name)}
           </p>
         </div>
-        {mangoAccount?.getTokenBorrows(bank).eq(ZERO_I80F48()) ? (
-          <LinkButton
-            className="w-full text-left"
-            disabled={!mangoAccount}
-            onClick={() => handleShowActionModals(bank.name, 'deposit')}
-          >
-            {t('deposit')}
-          </LinkButton>
-        ) : (
+        <LinkButton
+          className="w-full text-left"
+          disabled={!mangoAccount}
+          onClick={() => handleShowActionModals(bank.name, 'deposit')}
+        >
+          {t('deposit')}
+        </LinkButton>
+        {hasBorrow ? (
           <LinkButton
             className="w-full text-left"
             disabled={!mangoAccount}
@@ -500,7 +518,7 @@ const ActionsMenu = ({
           >
             {t('repay')}
           </LinkButton>
-        )}
+        ) : null}
         <LinkButton
           className="w-full text-left"
           disabled={!mangoAccount}
