@@ -6,6 +6,7 @@ export interface ChartTradeType {
   orderId: string
   time: number
   side: string
+  takerSide: any
   feeCost: number
   marketAddress: string
 }

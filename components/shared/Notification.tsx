@@ -257,7 +257,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
             {txid ? (
               <a
                 href={preferredExplorer.url + txid + '?cluster=' + CLUSTER}
-                className="default-transition mt-1 flex items-center text-xs text-th-fgd-3 hover:text-th-fgd-2"
+                className="default-transition mt-1 flex items-center text-xs text-th-primary underline hover:text-th-fgd-2"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -266,7 +266,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}
                 </div>
-                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-4 w-4" />
+                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-5 w-5" />
               </a>
             ) : null}
           </div>

@@ -77,18 +77,12 @@ const RecentTrades = () => {
         <tbody>
           {!!fills.length &&
             fills.map((trade: ChartTradeType, i: number) => {
-              console.log(
-                'price: ',
-                trade.price,
-                ' size: ',
-                trade.size,
-                trade.quantity
-              )
+              const side = trade.side || Object.keys(trade.takerSide)[0]
 
               // const price =
-              typeof trade.price === 'number'
-                ? trade.price
-                : trade.price.toNumber()
+              // typeof trade.price === 'number'
+              //   ? trade.price
+              //   : trade.price.toNumber()
               const formattedPrice = market?.tickSize
                 ? floorToDecimal(trade.price, getDecimalCount(market.tickSize))
                 : new Decimal(trade?.price || 0)
@@ -106,7 +100,9 @@ const RecentTrades = () => {
                 <tr className="font-mono text-xs" key={i}>
                   <td
                     className={`pb-1.5 text-right ${
-                      trade.side === 'buy' ? `text-th-green` : `text-th-red`
+                      ['buy', 'bid'].includes(side)
+                        ? `text-th-green`
+                        : `text-th-red`
                     }`}
                   >
                     {formattedPrice.toFixed()}
