@@ -150,7 +150,7 @@ const TokenList = () => {
                     mangoAccount.getTokenBalanceUi(bank),
                     bank.mintDecimals
                   ).toNumber()
-                : 0.0
+                : 0
 
               const hasInterestEarned = totalInterestData.find(
                 (d) => d.symbol === bank.name
@@ -166,11 +166,10 @@ const TokenList = () => {
                   hasInterestEarned.deposit_interest_usd
                 : 0.0
 
-              const inOrders =
-                spotBalances[bank.mint.toString()]?.inOrders || 0.0
+              const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
 
               const unsettled =
-                spotBalances[bank.mint.toString()]?.unsettled || 0.0
+                spotBalances[bank.mint.toString()]?.unsettled || 0
 
               return (
                 <TrBody key={key}>
@@ -198,16 +197,14 @@ const TokenList = () => {
                     </p>
                   </Td>
                   <Td className="text-right">
-                    <p>
-                      {floorToDecimal(inOrders, bank.mintDecimals).toNumber()}
-                    </p>
+                    <p>{inOrders}</p>
                     <p className="text-sm text-th-fgd-4">
                       {formatFixedDecimals(inOrders * oraclePrice!, true)}
                     </p>
                   </Td>
                   <Td className="text-right">
                     <p>
-                      {floorToDecimal(unsettled, bank.mintDecimals).toNumber()}
+                      {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
                     </p>
                     <p className="text-sm text-th-fgd-4">
                       {formatFixedDecimals(unsettled * oraclePrice!, true)}
@@ -216,10 +213,9 @@ const TokenList = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>
-                        {floorToDecimal(
-                          interestAmount,
-                          bank.mintDecimals
-                        ).toNumber()}
+                        {interestAmount
+                          ? interestAmount.toFixed(bank.mintDecimals)
+                          : 0}
                       </p>
                       <p className="text-sm text-th-fgd-4">
                         {formatFixedDecimals(interestValue, true)}
@@ -310,11 +306,11 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
         mangoAccount.getTokenBalanceUi(bank),
         bank.mintDecimals
       ).toNumber()
-    : 0.0
+    : 0
 
-  const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
+  const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
 
-  const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0.0
+  const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
 
   const goToTokenPage = (bank: Bank) => {
     router.push(`/token/${bank.name}`, undefined, { shallow: true })
@@ -370,9 +366,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:in-orders')}</p>
             <div className="flex font-mono">
-              <p className="text-th-fgd-2">
-                {floorToDecimal(inOrders, bank.mintDecimals).toNumber()}
-              </p>
+              <p className="text-th-fgd-2">{inOrders}</p>
               <p className="ml-1 text-th-fgd-4">
                 ({formatFixedDecimals(inOrders * oraclePrice!, true)})
               </p>
@@ -382,7 +376,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
             <p className="text-xs text-th-fgd-3">{t('trade:unsettled')}</p>
             <div className="flex font-mono">
               <p className="text-th-fgd-2">
-                {floorToDecimal(unsettled, bank.mintDecimals).toNumber()}
+                {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
               </p>
               <p className="ml-1 text-th-fgd-4">
                 ({formatFixedDecimals(unsettled * oraclePrice!, true)})

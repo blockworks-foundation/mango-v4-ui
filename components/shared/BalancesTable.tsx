@@ -80,9 +80,8 @@ const BalancesTable = () => {
               )?.logoURI
             }
 
-            const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
-            const unsettled =
-              spotBalances[bank.mint.toString()]?.unsettled || 0.0
+            const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
+            const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
 
             return (
               <TrBody key={key} className="text-sm">
@@ -110,17 +109,13 @@ const BalancesTable = () => {
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
-                  <p>
-                    {floorToDecimal(inOrders, bank.mintDecimals).toNumber()}
-                  </p>
+                  <p>{inOrders}</p>
                   <p className="text-sm text-th-fgd-4">
                     {formatFixedDecimals(inOrders * bank.uiPrice, true)}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
-                  <p>
-                    {floorToDecimal(unsettled, bank.mintDecimals).toNumber()}
-                  </p>
+                  <p>{unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}</p>
                   <p className="text-sm text-th-fgd-4">
                     {formatFixedDecimals(unsettled * bank.uiPrice, true)}
                   </p>
@@ -142,8 +137,8 @@ const BalancesTable = () => {
             )?.logoURI
           }
 
-          const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0.0
-          const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0.0
+          const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
+          const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
 
           return (
             <div
@@ -177,14 +172,12 @@ const BalancesTable = () => {
                 <div className="flex space-x-3">
                   <p className="text-xs text-th-fgd-4">
                     {t('trade:in-orders')}:{' '}
-                    <span className="font-mono text-th-fgd-3">
-                      {floorToDecimal(inOrders, bank.mintDecimals).toNumber()}
-                    </span>
+                    <span className="font-mono text-th-fgd-3">{inOrders}</span>
                   </p>
                   <p className="text-xs text-th-fgd-4">
                     {t('trade:unsettled')}:{' '}
                     <span className="font-mono text-th-fgd-3">
-                      {floorToDecimal(unsettled, bank.mintDecimals).toNumber()}
+                      {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
                     </span>
                   </p>
                 </div>
