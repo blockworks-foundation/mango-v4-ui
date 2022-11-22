@@ -1,4 +1,3 @@
-import { Serum3Market, PerpMarket } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
 import TabUnderline from '@components/shared/TabUnderline'
 import { Popover } from '@headlessui/react'
@@ -8,7 +7,8 @@ import { useCoingecko } from 'hooks/useCoingecko'
 import useOraclePrice from 'hooks/useOraclePrice'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import { formatFixedDecimals } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
@@ -17,22 +17,11 @@ const MarketSelectDropdown = () => {
   const { selectedMarket } = useSelectedMarket()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const perpMarkets = mangoStore((s) => s.perpMarkets)
-  const set = mangoStore((s) => s.set)
   const [activeTab, setActiveTab] = useState('perp')
-
-  const handleSelectMarket = useCallback(
-    (market: Serum3Market | PerpMarket, close: any) => {
-      set((s) => {
-        s.selectedMarket.current = market
-      })
-      close()
-    },
-    [set]
-  )
 
   return (
     <Popover>
-      {({ close, open }) => (
+      {({ open }) => (
         <div
           className="relative flex flex-col overflow-visible"
           id="trade-step-one"
@@ -61,22 +50,27 @@ const MarketSelectDropdown = () => {
               ? serumMarkets?.length
                 ? serumMarkets.map((m) => {
                     return (
-                      <div
+                      <Link
+                        href={{
+                          pathname: '/trade',
+                          query: { name: m.name },
+                        }}
                         key={m.publicKey.toString()}
-                        className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
-                        onClick={() => handleSelectMarket(m, close)}
+                        shallow={true}
                       >
-                        <MarketLogos market={m} />
-                        <span
-                          className={
-                            m.name === selectedMarket?.name
-                              ? 'text-th-primary'
-                              : ''
-                          }
-                        >
-                          {m.name}
-                        </span>
-                      </div>
+                        <div className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2">
+                          <MarketLogos market={m} />
+                          <span
+                            className={
+                              m.name === selectedMarket?.name
+                                ? 'text-th-primary'
+                                : ''
+                            }
+                          >
+                            {m.name}
+                          </span>
+                        </div>
+                      </Link>
                     )
                   })
                 : null
@@ -85,22 +79,27 @@ const MarketSelectDropdown = () => {
               ? perpMarkets?.length
                 ? perpMarkets.map((m) => {
                     return (
-                      <div
+                      <Link
+                        href={{
+                          pathname: '/trade',
+                          query: { name: m.name },
+                        }}
                         key={m.publicKey.toString()}
-                        className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2"
-                        onClick={() => handleSelectMarket(m, close)}
+                        shallow={true}
                       >
-                        <MarketLogos market={m} />
-                        <span
-                          className={
-                            m.name === selectedMarket?.name
-                              ? 'text-th-primary'
-                              : ''
-                          }
-                        >
-                          {m.name}
-                        </span>
-                      </div>
+                        <div className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2">
+                          <MarketLogos market={m} />
+                          <span
+                            className={
+                              m.name === selectedMarket?.name
+                                ? 'text-th-primary'
+                                : ''
+                            }
+                          >
+                            {m.name}
+                          </span>
+                        </div>
+                      </Link>
                     )
                   })
                 : null

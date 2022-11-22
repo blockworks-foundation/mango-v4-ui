@@ -292,7 +292,7 @@ const mangoStore = create<MangoStore>()(
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
       },
       selectedMarket: {
-        name: 'ETH/USDC',
+        name: DEFAULT_MARKET_NAME,
         current: undefined,
         fills: [],
         orderbook: {
@@ -471,6 +471,7 @@ const mangoStore = create<MangoStore>()(
             const set = get().set
             const client = get().client
             const group = await client.getGroup(GROUP)
+            const selectedMarketName = get().selectedMarket.name
 
             const inputBank =
               group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
@@ -481,14 +482,18 @@ const mangoStore = create<MangoStore>()(
             )
             const perpMarkets = Array.from(group.perpMarketsMapByName.values())
 
+            const defaultMarket =
+              serumMarkets.find((m) => m.name === selectedMarketName) ||
+              perpMarkets.find((m) => m.name === selectedMarketName)
+            serumMarkets[0]
+
             set((state) => {
               state.group = group
               state.groupLoaded = true
               state.serumMarkets = serumMarkets
               state.perpMarkets = perpMarkets
               state.selectedMarket.current =
-                state.selectedMarket.current ||
-                getDefaultSelectedMarket(serumMarkets)
+                state.selectedMarket.current || defaultMarket
               if (!state.swap.inputBank && !state.swap.outputBank) {
                 state.swap.inputBank = inputBank
                 state.swap.outputBank = outputBank
@@ -857,9 +862,5 @@ mangoStore.subscribe(
   (state) => state.mangoAccount.current,
   perpPositionsUpdater
 )
-
-const getDefaultSelectedMarket = (markets: Serum3Market[]): Serum3Market => {
-  return markets.find((m) => m.name === DEFAULT_MARKET_NAME) || markets[0]
-}
 
 export default mangoStore

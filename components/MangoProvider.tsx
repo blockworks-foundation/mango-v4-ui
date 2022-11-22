@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
 import { PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
@@ -6,15 +6,24 @@ import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 
 const HydrateStore = () => {
-  const actions = mangoStore((s) => s.actions)
+  const router = useRouter()
+  const { name: marketName } = router.query
   const { mangoAccount } = useMangoAccount()
 
+  const fetchData = useCallback(async () => {
+    const actions = mangoStore.getState().actions
+    await actions.fetchGroup()
+  }, [])
+
   useEffect(() => {
-    const fetchData = async () => {
-      await actions.fetchGroup()
+    const set = mangoStore.getState().set
+    if (marketName && typeof marketName === 'string') {
+      set((s) => {
+        s.selectedMarket.name = marketName
+      })
     }
     fetchData()
-  }, [actions])
+  }, [marketName])
 
   // watch selected Mango Account for changes
   useEffect(() => {
