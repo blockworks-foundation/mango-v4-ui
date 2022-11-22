@@ -48,6 +48,7 @@ export const getTokenInMax = (
   const maxAmountWithoutMargin = inputTokenBalance.gt(0)
     ? inputTokenBalance
     : new Decimal(0)
+
   const maxUiAmountWithBorrow = floorToDecimal(
     mangoAccount.getMaxSourceUiForTokenSwap(
       group,
@@ -57,8 +58,10 @@ export const getTokenInMax = (
     ),
     inputBank.mintDecimals
   )
-  const inputBankVaultBalance = group.getTokenVaultBalanceByMintUi(
-    inputBank.mint
+
+  const inputBankVaultBalance = floorToDecimal(
+    group.getTokenVaultBalanceByMintUi(inputBank.mint),
+    inputBank.mintDecimals
   )
 
   const maxAmount = useMargin
