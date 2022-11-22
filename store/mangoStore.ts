@@ -210,6 +210,7 @@ export type MangoStore = {
     outputTokenInfo: Token | undefined
     margin: boolean
     slippage: number
+    success: boolean
   }
   set: (x: (x: MangoStore) => void) => void
   tradeForm: {
@@ -328,6 +329,7 @@ const mangoStore = create<MangoStore>()(
         outputTokenInfo: undefined,
         margin: true,
         slippage: 0.5,
+        success: false,
       },
       wallet: {
         tokens: [],

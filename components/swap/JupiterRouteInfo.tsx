@@ -152,6 +152,7 @@ const JupiterRouteInfo = ({
       const inputBank = mangoStore.getState().swap.inputBank
       const outputBank = mangoStore.getState().swap.outputBank
       const slippage = mangoStore.getState().swap.slippage
+      const set = mangoStore.getState().set
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
 
@@ -172,7 +173,9 @@ const JupiterRouteInfo = ({
           userDefinedInstructions: ixs,
           flashLoanType: { swap: {} },
         })
-
+        set((s) => {
+          s.swap.success = true
+        })
         notify({
           title: 'Transaction confirmed',
           type: 'success',

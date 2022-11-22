@@ -1,5 +1,5 @@
 import SideNav from './SideNav'
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useCallback, useEffect } from 'react'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
@@ -10,6 +10,9 @@ import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
+import SwapSuccessParticles from './swap/SwapSuccessParticles'
+import { tsParticles } from 'tsparticles-engine'
+import { loadFull } from 'tsparticles'
 
 const sideBarAnimationDuration = 500
 
@@ -42,8 +45,19 @@ const Layout = ({ children }: { children: ReactNode }) => {
     setIsCollapsed(!isCollapsed)
   }
 
+  const particlesInit = useCallback(async () => {
+    await loadFull(tsParticles)
+  }, [])
+
+  useEffect(() => {
+    particlesInit()
+  }, [])
+
   return (
     <>
+      <div className="fixed z-30">
+        <SwapSuccessParticles />
+      </div>
       {connected && loadingMangoAccount ? (
         <div className="fixed z-30 flex h-screen w-full items-center justify-center bg-[rgba(0,0,0,0.7)]">
           <BounceLoader />

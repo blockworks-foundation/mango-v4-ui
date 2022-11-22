@@ -1,20 +1,9 @@
-import { useCallback } from 'react'
 import Particles from 'react-tsparticles'
-import { loadFull } from 'tsparticles'
 
 const ParticlesBackground = () => {
-  const particlesInit = useCallback(async (engine: any) => {
-    // you can initialize the tsParticles instance (engine) here, adding custom shapes or presets
-    // this loads the tsparticles package bundle, it's the easiest method for getting everything ready
-    // starting from v2 you can add only the features you need reducing the bundle size
-    await loadFull(engine)
-  }, [])
-
   return (
     <Particles
       id="tsparticles"
-      init={particlesInit}
-      // loaded={particlesLoaded}
       options={{
         fullScreen: false,
         interactivity: {
@@ -33,40 +22,6 @@ const ParticlesBackground = () => {
           },
         },
         particles: {
-          // groups: {
-          //   z5000: {
-          //     number: {
-          //       value: 70,
-          //     },
-          //     zIndex: {
-          //       value: 50,
-          //     },
-          //   },
-          //   z7500: {
-          //     number: {
-          //       value: 30,
-          //     },
-          //     zIndex: {
-          //       value: 75,
-          //     },
-          //   },
-          //   z2500: {
-          //     number: {
-          //       value: 50,
-          //     },
-          //     zIndex: {
-          //       value: 25,
-          //     },
-          //   },
-          //   z1000: {
-          //     number: {
-          //       value: 40,
-          //     },
-          //     zIndex: {
-          //       value: 10,
-          //     },
-          //   },
-          // },
           move: {
             angle: 10,
             attract: {
