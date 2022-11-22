@@ -5,18 +5,15 @@ import {
 import Image from 'next/legacy/image'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useJupiterMints from 'hooks/useJupiterMints'
+import { Bank } from '@blockworks-foundation/mango-v4'
 
 type TokenSelectProps = {
-  tokenSymbol: string | undefined
+  bank: Bank | undefined
   showTokenList: (x: any) => void
   type: 'input' | 'output'
 }
 
-const TokenSelect = ({
-  tokenSymbol,
-  showTokenList,
-  type,
-}: TokenSelectProps) => {
+const TokenSelect = ({ bank, showTokenList, type }: TokenSelectProps) => {
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
 
@@ -24,7 +21,9 @@ const TokenSelect = ({
 
   let logoURI
   if (mangoTokens.length) {
-    logoURI = mangoTokens.find((t) => t.symbol === tokenSymbol)!.logoURI
+    logoURI = mangoTokens.find(
+      (t) => t.address === bank?.mint.toString()
+    )!.logoURI
   }
 
   return (
@@ -41,7 +40,7 @@ const TokenSelect = ({
         )}
       </div>
       <div className="flex w-full items-center justify-between">
-        <div className="text-xl font-bold text-th-fgd-1">{tokenSymbol}</div>
+        <div className="text-xl font-bold text-th-fgd-1">{bank?.name}</div>
         <ChevronDownIcon className="h-6 w-6" />
       </div>
     </div>

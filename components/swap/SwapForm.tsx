@@ -39,6 +39,7 @@ import HealthImpact from '@components/shared/HealthImpact'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { RouteInfo } from 'types/jupiter'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -55,6 +56,7 @@ const SwapForm = () => {
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const { group } = useMangoGroup()
 
   const set = mangoStore.getState().set
   const {
@@ -245,7 +247,9 @@ const SwapForm = () => {
         <div className="mb-3 grid grid-cols-2" id="swap-step-two">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
-              tokenSymbol={inputBank?.name || INPUT_TOKEN_DEFAULT}
+              bank={
+                inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)![0]
+              }
               showTokenList={setShowTokenSelect}
               type="input"
             />
@@ -293,7 +297,10 @@ const SwapForm = () => {
         <div id="swap-step-three" className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
             <TokenSelect
-              tokenSymbol={outputBank?.name || OUTPUT_TOKEN_DEFAULT}
+              bank={
+                outputBank ||
+                group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)![0]
+              }
               showTokenList={setShowTokenSelect}
               type="output"
             />
