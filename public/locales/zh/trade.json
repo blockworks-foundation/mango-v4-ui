@@ -5,6 +5,7 @@
     "cancel-order-error": "Failed to cancel order",
     "connect-orders": "Connect to view your open orders",
     "connect-unsettled": "Connect to view your unsettled trades",
+    "entry-price": "Entry Price",
     "grouping": "Grouping",
     "hide-asks": "Hide Asks",
     "hide-bids": "Hide Bids",

@@ -6,7 +6,7 @@ import Decimal from 'decimal.js'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
-import { numberFormat } from 'utils/numbers'
+import { getDecimalCount, numberFormat } from 'utils/numbers'
 import { calculateMarketPrice } from 'utils/tradeForm'
 import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
@@ -86,10 +86,14 @@ const PerpPositions = () => {
                       <LinkButton
                         onClick={() => handlePositionClick(basePosition)}
                       >
-                        {Math.abs(basePosition)}
+                        {Math.abs(basePosition).toFixed(
+                          getDecimalCount(market.minOrderSize)
+                        )}
                       </LinkButton>
                     ) : (
-                      Math.abs(basePosition)
+                      Math.abs(basePosition).toFixed(
+                        getDecimalCount(market.minOrderSize)
+                      )
                     )}
                   </p>
                 </Td>
