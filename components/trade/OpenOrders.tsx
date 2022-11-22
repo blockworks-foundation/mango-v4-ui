@@ -264,15 +264,6 @@ const OpenOrders = () => {
                   </div>
                   <div className="flex items-center space-x-3 pl-8">
                     <div className="text-right">
-                      {/* <div className="mb-0.5 flex justify-end space-x-1.5">
-                        <p className="font-mono">
-                          {o.size.toLocaleString(undefined, {
-                            maximumFractionDigits:
-                              getDecimalCount(minOrderSize),
-                          })}
-                        </p>{' '}
-                        <p className="text-th-fgd-4">{baseSymbol}</p>
-                      </div> */}
                       <p className="mb-0.5 text-th-fgd-4">
                         <span className="font-mono text-th-fgd-3">
                           {o.size.toLocaleString(undefined, {
