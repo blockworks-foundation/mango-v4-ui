@@ -68,7 +68,10 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const tokenMax = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !bank || !mangoAccount) return new Decimal(0)
-    return getMaxWithdrawForBank(group, bank, mangoAccount, true)
+    const amount = getMaxWithdrawForBank(group, bank, mangoAccount, true)
+    return amount && amount.gt(0)
+      ? amount.toDecimalPlaces(bank.mintDecimals)
+      : new Decimal(0)
   }, [mangoAccount, bank])
 
   const setMax = useCallback(() => {
@@ -181,7 +184,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
       </EnterBottomExitBottom>
       <FadeInFadeOut className="flex flex-col justify-between" show={isOpen}>
         <div>
-          <h2 className="text-center">{t('borrow')}</h2>
+          <h2 className="mb-4 text-center">{t('borrow')}</h2>
           {initHealth && initHealth <= 0 ? (
             <div className="mb-4">
               <InlineNotification
