@@ -71,7 +71,7 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex ${
+      className={`flex flex-shrink-0 ${
         size === 'large'
           ? 'h-12 w-12'
           : size === 'small'

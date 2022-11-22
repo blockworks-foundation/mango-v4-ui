@@ -215,16 +215,18 @@ const OpenOrders = () => {
           </tbody>
         </Table>
       ) : (
-        <div className="pb-20">
+        <div>
           {Object.entries(openOrders).map(([marketPk, orders]) => {
             return orders.map((o) => {
               const group = mangoStore.getState().group!
               let market: PerpMarket | Serum3Market
               let tickSize: number
               let minOrderSize: number
-              let quoteSymbol
+              let quoteSymbol: string
+              let baseSymbol: string
               if (o instanceof PerpOrder) {
                 market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
+                baseSymbol = market.name.split('-')[0]
                 quoteSymbol = group.getFirstBankByTokenIndex(
                   market.settleTokenIndex
                 ).name
@@ -234,6 +236,7 @@ const OpenOrders = () => {
                 market = group.getSerum3MarketByExternalMarket(
                   new PublicKey(marketPk)
                 )
+                baseSymbol = market.name.split('/')[0]
                 quoteSymbol = group.getFirstBankByTokenIndex(
                   market!.quoteTokenIndex
                 ).name
@@ -252,26 +255,43 @@ const OpenOrders = () => {
                     <MarketLogos market={market} />
                     <div>
                       <div className="mb-0.5 flex items-center space-x-2">
-                        <p className="text-sm text-th-fgd-1">{market.name}</p>
+                        <p className="whitespace-nowrap text-sm text-th-fgd-1">
+                          {market.name}
+                        </p>
                         <SideBadge side={o.side} />
                       </div>
-                      <span className="font-mono">
-                        {o.size.toLocaleString(undefined, {
-                          maximumFractionDigits: getDecimalCount(minOrderSize),
-                        })}
-                      </span>{' '}
-                      <span className="text-th-fgd-4">at</span>{' '}
-                      <span className="font-mono">
-                        {o.price.toLocaleString(undefined, {
-                          minimumFractionDigits: getDecimalCount(tickSize),
-                          maximumFractionDigits: getDecimalCount(tickSize),
-                        })}
-                      </span>{' '}
-                      <span className="text-th-fgd-4">{quoteSymbol}</span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 pl-4">
-                    <span>{formatFixedDecimals(o.size * o.price, true)}</span>
+                  <div className="flex items-center space-x-3 pl-8">
+                    <div className="text-right">
+                      {/* <div className="mb-0.5 flex justify-end space-x-1.5">
+                        <p className="font-mono">
+                          {o.size.toLocaleString(undefined, {
+                            maximumFractionDigits:
+                              getDecimalCount(minOrderSize),
+                          })}
+                        </p>{' '}
+                        <p className="text-th-fgd-4">{baseSymbol}</p>
+                      </div> */}
+                      <p className="mb-0.5 text-th-fgd-4">
+                        <span className="font-mono text-th-fgd-3">
+                          {o.size.toLocaleString(undefined, {
+                            maximumFractionDigits:
+                              getDecimalCount(minOrderSize),
+                          })}
+                        </span>{' '}
+                        {baseSymbol}
+                      </p>
+                      <p className="text-xs text-th-fgd-4">
+                        <span className="font-mono text-th-fgd-3">
+                          {o.price.toLocaleString(undefined, {
+                            minimumFractionDigits: getDecimalCount(tickSize),
+                            maximumFractionDigits: getDecimalCount(tickSize),
+                          })}
+                        </span>{' '}
+                        {quoteSymbol}
+                      </p>
+                    </div>
                     <IconButton
                       disabled={cancelId === o.orderId.toString()}
                       onClick={() =>

@@ -169,7 +169,7 @@ const BalancesTable = () => {
                     )
                   </span>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex space-x-2">
                   <p className="text-xs text-th-fgd-4">
                     {t('trade:in-orders')}:{' '}
                     <span className="font-mono text-th-fgd-3">{inOrders}</span>
