@@ -353,6 +353,17 @@ const AdvancedTradeForm = () => {
               <p className="text-xs text-th-fgd-3">{t('trade:limit-price')}</p>
             </div>
             <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+              {quoteLogoURI ? (
+                <Image
+                  className="rounded-full"
+                  alt=""
+                  width="24"
+                  height="24"
+                  src={quoteLogoURI}
+                />
+              ) : (
+                <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+              )}
               <NumberFormat
                 inputMode="decimal"
                 thousandSeparator=","
@@ -361,7 +372,7 @@ const AdvancedTradeForm = () => {
                 decimalScale={6}
                 name="amountIn"
                 id="amountIn"
-                className="w-full bg-transparent font-mono focus:outline-none"
+                className="ml-2 w-full bg-transparent font-mono focus:outline-none"
                 placeholder="0.00"
                 value={tradeForm.price}
                 onValueChange={handlePriceChange}
