@@ -36,6 +36,7 @@ import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
+import { getDecimalCount } from 'utils/numbers'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -189,12 +190,21 @@ const AdvancedTradeForm = () => {
 
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (!group || !marketPrice) return
+    if (!group || !marketPrice || !selectedMarket) return
+    let tickSize: number
+    if (selectedMarket instanceof Serum3Market) {
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      tickSize = market.tickSize
+    } else {
+      tickSize = selectedMarket.tickSize
+    }
 
     set((s) => {
-      s.tradeForm.price = marketPrice.toString()
+      s.tradeForm.price = marketPrice.toFixed(getDecimalCount(tickSize))
     })
-  }, [set, marketPrice])
+  }, [set, marketPrice, selectedMarket])
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
