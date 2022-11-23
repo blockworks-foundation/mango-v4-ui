@@ -34,9 +34,7 @@ const SwapSuccessParticles = () => {
     }
   }, [showSwapAnimation])
 
-  return animationSettings['swap-success'].active &&
-    showSwapAnimation &&
-    tokenLogo ? (
+  return animationSettings['swap-success'] && showSwapAnimation && tokenLogo ? (
     <Particles
       id="tsparticles"
       options={{

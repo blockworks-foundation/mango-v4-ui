@@ -14,7 +14,7 @@ import {
   SOUND_SETTINGS_KEY,
 } from 'utils/constants'
 import Switch from '@components/forms/Switch'
-import { useCallback, useEffect, useMemo, useReducer } from 'react'
+import { useCallback, useMemo, useReducer } from 'react'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import Image from 'next/legacy/image'
 
@@ -63,28 +63,22 @@ const NOTIFICATION_POSITIONS = [
 ]
 
 interface ReducerItems {
-  [key: string]: {
-    active: boolean
-  }
+  [key: string]: boolean
 }
 
 export const INITIAL_ANIMATION_SETTINGS = {
-  'orderbook-flash': {
-    active: true,
-  },
-  'swap-success': {
-    active: true,
-  },
+  'orderbook-flash': true,
+  'swap-success': true,
 }
 
 export const INITIAL_SOUND_SETTINGS = {
-  'swap-success': {
-    active: true,
-  },
+  'swap-success': true,
+  'transaction-success': true,
+  'transaction-fail': true,
 }
 
 const settingsReducer = (state: ReducerItems, name: string) => {
-  const updatedState = { ...state, [name]: { active: !state[name].active } }
+  const updatedState = { ...state, [name]: !state[name] }
   return updatedState
 }
 
@@ -109,30 +103,35 @@ const Settings: NextPage = () => {
   const themes = useMemo(() => {
     return [t('settings:light'), t('settings:mango'), t('settings:dark')]
   }, [t])
-  const [sounds, soundsDispatch] = useReducer(
-    settingsReducer,
-    INITIAL_SOUND_SETTINGS
-  )
-  const [, setSoundSettings] = useLocalStorageState(
+  const [, soundsDispatch] = useReducer(settingsReducer, INITIAL_SOUND_SETTINGS)
+  const [soundSettings, setSoundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
-  const [animations, animationsDispatch] = useReducer(
+  const [, animationsDispatch] = useReducer(
     settingsReducer,
     INITIAL_ANIMATION_SETTINGS
   )
-  const [, setAnimationSettings] = useLocalStorageState(
+  const [animationSettings, setAnimationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
   )
 
-  useEffect(() => {
-    setAnimationSettings(animations)
-  }, [animations])
+  const handleToggleAnimationSetting = (settingName: string) => {
+    animationsDispatch(settingName)
+    setAnimationSettings({
+      ...animationSettings,
+      [settingName]: !animationSettings[settingName],
+    })
+  }
 
-  useEffect(() => {
-    setSoundSettings(sounds)
-  }, [sounds])
+  const handleToggleSoundSetting = (settingName: string) => {
+    soundsDispatch(settingName)
+    setSoundSettings({
+      ...soundSettings,
+      [settingName]: !soundSettings[settingName],
+    })
+  }
 
   const handleLangChange = useCallback(
     (l: string) => {
@@ -206,25 +205,39 @@ const Settings: NextPage = () => {
           <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:orderbook-flash')}</p>
             <Switch
-              checked={animations['orderbook-flash'].active}
-              onChange={() => animationsDispatch('orderbook-flash')}
+              checked={animationSettings['orderbook-flash']}
+              onChange={() => handleToggleAnimationSetting('orderbook-flash')}
             />
           </div>
           <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:swap-success')}</p>
             <Switch
-              checked={animations['swap-success'].active}
-              onChange={() => animationsDispatch('swap-success')}
+              checked={animationSettings['swap-success']}
+              onChange={() => handleToggleAnimationSetting('swap-success')}
             />
           </div>
         </div>
         <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-8 lg:col-start-3">
           <h2 className="mb-4 text-base">{t('settings:sounds')}</h2>
           <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
+            <p className="mb-2 lg:mb-0">{t('settings:transaction-success')}</p>
+            <Switch
+              checked={soundSettings['transaction-success']}
+              onChange={() => handleToggleSoundSetting('transaction-success')}
+            />
+          </div>
+          <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
+            <p className="mb-2 lg:mb-0">{t('settings:transaction-fail')}</p>
+            <Switch
+              checked={soundSettings['transaction-fail']}
+              onChange={() => handleToggleSoundSetting('transaction-fail')}
+            />
+          </div>
+          <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:swap-success')}</p>
             <Switch
-              checked={sounds['swap-success'].active}
-              onChange={() => soundsDispatch('swap-success')}
+              checked={soundSettings['swap-success']}
+              onChange={() => handleToggleSoundSetting('swap-success')}
             />
           </div>
         </div>

@@ -31,10 +31,10 @@ import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 import { Transaction } from '@solana/web3.js'
-import useAudio from 'hooks/useAudio'
 import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_SOUND_SETTINGS } from 'pages/settings'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { Howl } from 'howler'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -109,7 +109,10 @@ const JupiterRouteInfo = ({
   const { mangoTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
-  const { play } = useAudio('/sounds/swap-success.mp3')
+  const successSound = new Howl({
+    src: ['/sounds/swap-success.mp3'],
+    volume: 0.2,
+  })
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
@@ -185,13 +188,14 @@ const JupiterRouteInfo = ({
         set((s) => {
           s.swap.success = true
         })
-        if (soundSettings['swap-success'].active) {
-          play()
+        if (soundSettings['swap-success']) {
+          successSound.play()
         }
         notify({
           title: 'Transaction confirmed',
           type: 'success',
           txid: tx,
+          noSound: true,
         })
         actions.fetchGroup()
         await actions.reloadMangoAccount()

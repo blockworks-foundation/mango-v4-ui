@@ -23,8 +23,10 @@
     "sounds": "Sounds",
     "spanish": "Español",
     "swap-success": "Swap Success",
+    "swap-trade-size-selector": "Swap/Trade Size Selector",
     "theme": "Theme",
     "top-left": "Top-Left",
     "top-right": "Top-Right",
-    "swap-trade-size-selector": "Swap/Trade Size Selector"
+    "transaction-fail": "Transaction Fail",
+    "transaction-success": "Transaction Success"
 }
