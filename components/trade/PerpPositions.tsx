@@ -6,7 +6,7 @@ import Decimal from 'decimal.js'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
-import { getDecimalCount, numberFormat } from 'utils/numbers'
+import { getDecimalCount, numberFormat, trimDecimals } from 'utils/numbers'
 import { calculateMarketPrice } from 'utils/tradeForm'
 import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
@@ -63,6 +63,10 @@ const PerpPositions = () => {
               position.marketIndex
             )
             const basePosition = position.getBasePositionUi(market)
+            const trimmedBasePosition = trimDecimals(
+              basePosition,
+              getDecimalCount(market.minOrderSize)
+            )
             const isSelectedMarket =
               selectedMarket instanceof PerpMarket &&
               selectedMarket.perpMarketIndex === position.marketIndex
@@ -84,22 +88,19 @@ const PerpPositions = () => {
                   <p className="flex justify-end">
                     {isSelectedMarket ? (
                       <LinkButton
-                        onClick={() => handlePositionClick(basePosition)}
+                        onClick={() => handlePositionClick(trimmedBasePosition)}
                       >
-                        {Math.abs(basePosition).toFixed(
-                          getDecimalCount(market.minOrderSize)
-                        )}
+                        {Math.abs(trimmedBasePosition)}
                       </LinkButton>
                     ) : (
-                      Math.abs(basePosition).toFixed(
-                        getDecimalCount(market.minOrderSize)
-                      )
+                      Math.abs(trimmedBasePosition)
                     )}
                   </p>
                 </Td>
                 <Td className="text-right">
                   <div>
-                    ${Math.abs(basePosition * market._uiPrice).toFixed(2)}
+                    $
+                    {Math.abs(trimmedBasePosition * market._uiPrice).toFixed(2)}
                   </div>
                 </Td>
                 <Td className="text-right">
