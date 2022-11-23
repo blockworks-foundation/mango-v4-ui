@@ -8,7 +8,7 @@ import isEqual from 'lodash/isEqual'
 import usePrevious from '@components/shared/usePrevious'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
-import { ORDERBOOK_FLASH_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
 import OrderbookIcon from '@components/icons/OrderbookIcon'
@@ -23,6 +23,7 @@ import {
   PerpMarket,
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
+import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
 
 function decodeBookL2(
   client: MangoClient,
@@ -582,11 +583,14 @@ const OrderbookRow = ({
   tickSize: number
 }) => {
   const element = useRef<HTMLDivElement>(null)
-  const [showOrderbookFlash] = useLocalStorageState(ORDERBOOK_FLASH_KEY, true)
+  const [animationSettings] = useLocalStorageState(
+    ANIMATION_SETTINGS_KEY,
+    INITIAL_ANIMATION_SETTINGS
+  )
   const flashClassName = side === 'sell' ? 'red-flash' : 'green-flash'
 
   useEffect(() => {
-    showOrderbookFlash &&
+    animationSettings['orderbook-flash'].active &&
       !element.current?.classList.contains(`${flashClassName}`) &&
       element.current?.classList.add(`${flashClassName}`)
     const id = setTimeout(

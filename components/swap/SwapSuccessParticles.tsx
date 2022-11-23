@@ -1,13 +1,20 @@
 import mangoStore from '@store/mangoStore'
 import useJupiterMints from 'hooks/useJupiterMints'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
 import { useEffect, useMemo } from 'react'
 import Particles from 'react-tsparticles'
+import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 
 const SwapSuccessParticles = () => {
   const { mangoTokens } = useJupiterMints()
   const showSwapAnimation = mangoStore((s) => s.swap.success)
   const swapTokenMint = mangoStore((s) => s.swap.outputBank)?.mint.toString()
   const set = mangoStore((s) => s.set)
+  const [animationSettings] = useLocalStorageState(
+    ANIMATION_SETTINGS_KEY,
+    INITIAL_ANIMATION_SETTINGS
+  )
 
   const tokenLogo = useMemo(() => {
     if (!mangoTokens.length || !swapTokenMint) return ''
@@ -27,7 +34,9 @@ const SwapSuccessParticles = () => {
     }
   }, [showSwapAnimation])
 
-  return showSwapAnimation && tokenLogo ? (
+  return animationSettings['swap-success'].active &&
+    showSwapAnimation &&
+    tokenLogo ? (
     <Particles
       id="tsparticles"
       options={{
@@ -74,6 +83,9 @@ const SwapSuccessParticles = () => {
           },
           opacity: {
             value: 1,
+          },
+          position: {
+            y: -1000,
           },
         },
       }}

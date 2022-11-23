@@ -7,13 +7,14 @@ import ButtonGroup from '../components/forms/ButtonGroup'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import dayjs from 'dayjs'
 import {
+  ANIMATION_SETTINGS_KEY,
   NOTIFICATION_POSITION_KEY,
-  ORDERBOOK_FLASH_KEY,
   PREFERRED_EXPLORER_KEY,
   SIZE_INPUT_UI_KEY,
+  SOUND_SETTINGS_KEY,
 } from 'utils/constants'
 import Switch from '@components/forms/Switch'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useReducer } from 'react'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import Image from 'next/legacy/image'
 
@@ -61,6 +62,32 @@ const NOTIFICATION_POSITIONS = [
   'top-right',
 ]
 
+interface ReducerItems {
+  [key: string]: {
+    active: boolean
+  }
+}
+
+export const INITIAL_ANIMATION_SETTINGS = {
+  'orderbook-flash': {
+    active: true,
+  },
+  'swap-success': {
+    active: true,
+  },
+}
+
+export const INITIAL_SOUND_SETTINGS = {
+  'swap-success': {
+    active: true,
+  },
+}
+
+const settingsReducer = (state: ReducerItems, name: string) => {
+  const updatedState = { ...state, [name]: { active: !state[name].active } }
+  return updatedState
+}
+
 const Settings: NextPage = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, setTheme } = useTheme()
@@ -71,10 +98,6 @@ const Settings: NextPage = () => {
   )
   const router = useRouter()
   const { pathname, asPath, query } = router
-  const [showOrderbookFlash, setShowOrderbookFlash] = useLocalStorageState(
-    ORDERBOOK_FLASH_KEY,
-    true
-  )
   const [preferredExplorer, setPreferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
@@ -86,6 +109,30 @@ const Settings: NextPage = () => {
   const themes = useMemo(() => {
     return [t('settings:light'), t('settings:mango'), t('settings:dark')]
   }, [t])
+  const [sounds, soundsDispatch] = useReducer(
+    settingsReducer,
+    INITIAL_SOUND_SETTINGS
+  )
+  const [, setSoundSettings] = useLocalStorageState(
+    SOUND_SETTINGS_KEY,
+    INITIAL_SOUND_SETTINGS
+  )
+  const [animations, animationsDispatch] = useReducer(
+    settingsReducer,
+    INITIAL_ANIMATION_SETTINGS
+  )
+  const [, setAnimationSettings] = useLocalStorageState(
+    ANIMATION_SETTINGS_KEY,
+    INITIAL_ANIMATION_SETTINGS
+  )
+
+  useEffect(() => {
+    setAnimationSettings(animations)
+  }, [animations])
+
+  useEffect(() => {
+    setSoundSettings(sounds)
+  }, [sounds])
 
   const handleLangChange = useCallback(
     (l: string) => {
@@ -153,11 +200,31 @@ const Settings: NextPage = () => {
               />
             </div>
           </div>
+        </div>
+        <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-8 lg:col-start-3">
+          <h2 className="mb-4 text-base">{t('settings:animations')}</h2>
           <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:orderbook-flash')}</p>
             <Switch
-              checked={showOrderbookFlash}
-              onChange={(checked) => setShowOrderbookFlash(checked)}
+              checked={animations['orderbook-flash'].active}
+              onChange={() => animationsDispatch('orderbook-flash')}
+            />
+          </div>
+          <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
+            <p className="mb-2 lg:mb-0">{t('settings:swap-success')}</p>
+            <Switch
+              checked={animations['swap-success'].active}
+              onChange={() => animationsDispatch('swap-success')}
+            />
+          </div>
+        </div>
+        <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-8 lg:col-start-3">
+          <h2 className="mb-4 text-base">{t('settings:sounds')}</h2>
+          <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
+            <p className="mb-2 lg:mb-0">{t('settings:swap-success')}</p>
+            <Switch
+              checked={sounds['swap-success'].active}
+              onChange={() => soundsDispatch('swap-success')}
             />
           </div>
         </div>

@@ -19,6 +19,10 @@ export const ONBOARDING_TOUR_KEY = 'showOnboardingTour'
 
 export const PREFERRED_EXPLORER_KEY = 'preferredExplorer'
 
+export const ANIMATION_SETTINGS_KEY = 'animationSettings'
+
+export const SOUND_SETTINGS_KEY = 'soundSettings'
+
 export const SIZE_INPUT_UI_KEY = 'tradeFormUi'
 
 export const PROFILE_CATEGORIES = [
@@ -40,8 +44,6 @@ export const CHART_DATA_FEED = `${baseUrl}/tv`
 export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
 export const GRID_LAYOUT_KEY = 'savedLayouts-0.1'
-
-export const ORDERBOOK_FLASH_KEY = 'showOrderbookFlash-0.1'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition'
 

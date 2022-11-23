@@ -31,6 +31,10 @@ import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 import { Transaction } from '@solana/web3.js'
+import useAudio from 'hooks/useAudio'
+import { SOUND_SETTINGS_KEY } from 'utils/constants'
+import { INITIAL_SOUND_SETTINGS } from 'pages/settings'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -105,6 +109,11 @@ const JupiterRouteInfo = ({
   const { mangoTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
+  const { play } = useAudio('/sounds/swap-success.mp3')
+  const [soundSettings] = useLocalStorageState(
+    SOUND_SETTINGS_KEY,
+    INITIAL_SOUND_SETTINGS
+  )
 
   const inputTokenIconUri = useMemo(() => {
     return inputTokenInfo ? inputTokenInfo.logoURI : ''
@@ -176,6 +185,9 @@ const JupiterRouteInfo = ({
         set((s) => {
           s.swap.success = true
         })
+        if (soundSettings['swap-success'].active) {
+          play()
+        }
         notify({
           title: 'Transaction confirmed',
           type: 'success',

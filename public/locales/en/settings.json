@@ -1,4 +1,5 @@
 {
+    "animations": "Animations",
     "bottom-left": "Bottom-Left",
     "bottom-right": "Bottom-Right",
     "buttons": "Buttons",
@@ -19,7 +20,9 @@
     "solana-explorer": "Solana Explorer",
     "solanafm": "SolanaFM",
     "solscan": "Solscan",
+    "sounds": "Sounds",
     "spanish": "Español",
+    "swap-success": "Swap Success",
     "theme": "Theme",
     "top-left": "Top-Left",
     "top-right": "Top-Right",
