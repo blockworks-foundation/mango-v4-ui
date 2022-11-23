@@ -13,6 +13,8 @@ import {
   floorToDecimal,
   formatDecimal,
   formatFixedDecimals,
+  getDecimalCount,
+  trimDecimals,
 } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateMarketPrice } from 'utils/tradeForm'
@@ -203,7 +205,10 @@ const Balance = ({ bank }: { bank: Bank }) => {
 
   const handleBalanceClick = (balance: number, type: 'base' | 'quote') => {
     const set = mangoStore.getState().set
+    const group = mangoStore.getState().group
     const tradeForm = mangoStore.getState().tradeForm
+
+    if (!group || !selectedMarket) return
 
     let price: number
     if (tradeForm.tradeType === 'Market') {
@@ -216,32 +221,34 @@ const Balance = ({ bank }: { bank: Bank }) => {
     } else {
       price = new Decimal(tradeForm.price).toNumber()
     }
-    console.log('balance', balance)
-
-    if (balance > 0) {
-      if (type === 'quote') {
-        set((s) => {
-          s.tradeForm.baseSize = (balance / price).toString()
-          s.tradeForm.quoteSize = balance.toString()
-        })
-      } else {
-        set((s) => {
-          s.tradeForm.baseSize = balance.toString()
-          s.tradeForm.quoteSize = (balance * price).toString()
-        })
-      }
+    let minOrderDecimals: number
+    let tickSize: number
+    if (selectedMarket instanceof Serum3Market) {
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      minOrderDecimals = getDecimalCount(market.minOrderSize)
+      tickSize = getDecimalCount(market.tickSize)
     } else {
-      if (type === 'quote') {
-        set((s) => {
-          s.tradeForm.baseSize = (balance / price).toString()
-          s.tradeForm.quoteSize = balance.toString()
-        })
-      } else {
-        set((s) => {
-          s.tradeForm.baseSize = balance.toString()
-          s.tradeForm.quoteSize = (balance * price).toString()
-        })
-      }
+      minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
+      tickSize = getDecimalCount(selectedMarket.tickSize)
+    }
+
+    if (type === 'quote') {
+      const trimmedBalance = trimDecimals(balance, tickSize)
+      const baseSize = trimDecimals(trimmedBalance / price, minOrderDecimals)
+      const quoteSize = trimDecimals(baseSize * price, tickSize)
+      set((s) => {
+        s.tradeForm.baseSize = baseSize.toString()
+        s.tradeForm.quoteSize = quoteSize.toString()
+      })
+    } else {
+      const baseSize = trimDecimals(balance, minOrderDecimals)
+      const quoteSize = trimDecimals(baseSize * price, tickSize)
+      set((s) => {
+        s.tradeForm.baseSize = baseSize.toString()
+        s.tradeForm.quoteSize = quoteSize.toString()
+      })
     }
   }
 
@@ -250,7 +257,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
   }, [mangoAccount])
 
   const isBaseOrQuote = useMemo(() => {
-    if (selectedMarket instanceof Serum3Market && asPath === '/trade') {
+    if (selectedMarket instanceof Serum3Market && asPath.includes('/trade')) {
       if (bank.tokenIndex === selectedMarket.baseTokenIndex) {
         return 'base'
       } else if (bank.tokenIndex === selectedMarket.quoteTokenIndex) {
