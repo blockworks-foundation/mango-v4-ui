@@ -15,7 +15,6 @@ import JupiterRouteInfo from './JupiterRouteInfo'
 import TokenSelect from './TokenSelect'
 import useDebounce from '../shared/useDebounce'
 import { floorToDecimal, numberFormat } from '../../utils/numbers'
-import { SwapLeverageSlider } from './LeverageSlider'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
@@ -31,6 +30,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   MANGO_MINT,
   OUTPUT_TOKEN_DEFAULT,
+  SIZE_INPUT_UI_KEY,
   USDC_MINT,
 } from '../../utils/constants'
 import { useTokenMax } from './useTokenMax'
@@ -40,6 +40,8 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { RouteInfo } from 'types/jupiter'
 import useMangoGroup from 'hooks/useMangoGroup'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import SwapSlider from './SwapSlider'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -57,6 +59,7 @@ const SwapForm = () => {
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const { group } = useMangoGroup()
+  const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
 
   const set = mangoStore.getState().set
   const {
@@ -270,13 +273,6 @@ const SwapForm = () => {
               isAllowed={withValueLimit}
             />
           </div>
-          {!useMargin ? (
-            <PercentageSelectButtons
-              amountIn={amountInFormValue}
-              setAmountIn={setAmountInFormValue}
-              useMargin={useMargin}
-            />
-          ) : null}
         </div>
         <div className="-mb-2 flex justify-center">
           <button
@@ -313,9 +309,6 @@ const SwapForm = () => {
                 </SheenLoader>
               </div>
             ) : (
-              // <span className="p-3 font-mono">
-              //   {amountOut ? numberFormat.format(amountOut.toNumber()) : ''}
-              // </span>
               <NumberFormat
                 inputMode="decimal"
                 thousandSeparator=","
@@ -332,20 +325,20 @@ const SwapForm = () => {
             )}
           </div>
         </div>
-        {useMargin ? (
-          <>
-            <div className="mb-1 flex items-center justify-between">
-              <p className="text-th-fgd-3">{t('leverage')}</p>
-              {/* <p className="text-th-fgd-1">0.00x</p> */}
-            </div>
-            <SwapLeverageSlider
-              useMargin={useMargin}
-              amount={amountIn.toNumber()}
-              onChange={setAmountInFormValue}
-              step={1 / 10 ** (inputBank?.mintDecimals || 6)}
-            />
-          </>
-        ) : null}
+        {swapFormSizeUi === 'Slider' ? (
+          <SwapSlider
+            useMargin={useMargin}
+            amount={amountIn.toNumber()}
+            onChange={setAmountInFormValue}
+            step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+          />
+        ) : (
+          <PercentageSelectButtons
+            amountIn={amountIn.toString()}
+            setAmountIn={setAmountInFormValue}
+            useMargin={useMargin}
+          />
+        )}
         <SwapFormSubmitButton
           loadingSwapDetails={loadingSwapDetails}
           useMargin={useMargin}
@@ -478,18 +471,27 @@ const PercentageSelectButtons = ({
   useMargin: boolean
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
-  const { amount: tokenMax, decimals } = useTokenMax(useMargin)
+  const {
+    amount: tokenMax,
+    amountWithBorrow,
+    decimals,
+  } = useTokenMax(useMargin)
+
+  const maxAmount = useMemo(() => {
+    if (!tokenMax && !amountWithBorrow) return new Decimal(0)
+    return useMargin ? amountWithBorrow : tokenMax
+  }, [tokenMax, amountWithBorrow, useMargin])
 
   useEffect(() => {
-    if (tokenMax.gt(0) && amountIn && tokenMax.eq(amountIn)) {
+    if (maxAmount.gt(0) && amountIn && maxAmount.eq(amountIn)) {
       setSizePercentage('100')
     }
-  }, [amountIn, tokenMax])
+  }, [amountIn, maxAmount])
 
   const handleSizePercentage = (percentage: string) => {
     setSizePercentage(percentage)
-    if (tokenMax.gt(0)) {
-      let amount = tokenMax.mul(percentage).div(100)
+    if (maxAmount.gt(0)) {
+      let amount = maxAmount.mul(percentage).div(100)
       if (percentage !== '100') {
         amount = floorToDecimal(amount, decimals)
       }

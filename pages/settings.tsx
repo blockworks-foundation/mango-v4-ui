@@ -10,7 +10,7 @@ import {
   NOTIFICATION_POSITION_KEY,
   ORDERBOOK_FLASH_KEY,
   PREFERRED_EXPLORER_KEY,
-  TRADE_FORM_UI_KEY,
+  SIZE_INPUT_UI_KEY,
 } from 'utils/constants'
 import Switch from '@components/forms/Switch'
 import { useCallback, useMemo } from 'react'
@@ -80,7 +80,7 @@ const Settings: NextPage = () => {
     EXPLORERS[0]
   )
   const [tradeFormUi, setTradeFormUi] = useLocalStorageState(
-    TRADE_FORM_UI_KEY,
+    SIZE_INPUT_UI_KEY,
     'Slider'
   )
   const themes = useMemo(() => {
@@ -141,7 +141,9 @@ const Settings: NextPage = () => {
             </div>
           </div>
           <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-            <p className="mb-2 lg:mb-0">{t('settings:trade-size-ui')}</p>
+            <p className="mb-2 lg:mb-0">
+              {t('settings:swap-trade-size-selector')}
+            </p>
             <div className="w-full min-w-[160px] md:w-auto">
               <ButtonGroup
                 activeValue={tradeFormUi}

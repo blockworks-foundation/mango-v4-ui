@@ -30,7 +30,7 @@ import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider from './PerpSlider'
 import HealthImpact from '@components/shared/HealthImpact'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { TRADE_FORM_UI_KEY } from 'utils/constants'
+import { SIZE_INPUT_UI_KEY } from 'utils/constants'
 import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
@@ -51,7 +51,7 @@ const AdvancedTradeForm = () => {
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
-  const [tradeFormUi] = useLocalStorageState(TRADE_FORM_UI_KEY, 'Slider')
+  const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[0]
@@ -457,14 +457,14 @@ const AdvancedTradeForm = () => {
           </div>
         </div>
       </div>
-      <div className={`${tradeFormUi === 'Slider' ? 'mt-4' : 'mt-2'} flex`}>
+      <div className={`${tradeFormSizeUi === 'Slider' ? 'mt-4' : 'mt-2'} flex`}>
         {selectedMarket instanceof Serum3Market ? (
-          tradeFormUi === 'Slider' ? (
+          tradeFormSizeUi === 'Slider' ? (
             <SpotSlider />
           ) : (
             <SpotButtonGroup />
           )
-        ) : tradeFormUi === 'Slider' ? (
+        ) : tradeFormSizeUi === 'Slider' ? (
           <PerpSlider />
         ) : (
           <PerpButtonGroup />

@@ -1,5 +1,5 @@
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
-import LeverageSlider from '@components/swap/LeverageSlider'
+import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
