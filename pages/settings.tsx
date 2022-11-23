@@ -14,7 +14,7 @@ import {
   SOUND_SETTINGS_KEY,
 } from 'utils/constants'
 import Switch from '@components/forms/Switch'
-import { useCallback, useMemo, useReducer } from 'react'
+import { useCallback, useMemo } from 'react'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import Image from 'next/legacy/image'
 
@@ -62,24 +62,15 @@ const NOTIFICATION_POSITIONS = [
   'top-right',
 ]
 
-interface ReducerItems {
-  [key: string]: boolean
-}
-
 export const INITIAL_ANIMATION_SETTINGS = {
-  'orderbook-flash': true,
-  'swap-success': true,
+  'orderbook-flash': false,
+  'swap-success': false,
 }
 
 export const INITIAL_SOUND_SETTINGS = {
-  'swap-success': true,
-  'transaction-success': true,
-  'transaction-fail': true,
-}
-
-const settingsReducer = (state: ReducerItems, name: string) => {
-  const updatedState = { ...state, [name]: !state[name] }
-  return updatedState
+  'swap-success': false,
+  'transaction-success': false,
+  'transaction-fail': false,
 }
 
 const Settings: NextPage = () => {
@@ -103,14 +94,9 @@ const Settings: NextPage = () => {
   const themes = useMemo(() => {
     return [t('settings:light'), t('settings:mango'), t('settings:dark')]
   }, [t])
-  const [, soundsDispatch] = useReducer(settingsReducer, INITIAL_SOUND_SETTINGS)
   const [soundSettings, setSoundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
-  )
-  const [, animationsDispatch] = useReducer(
-    settingsReducer,
-    INITIAL_ANIMATION_SETTINGS
   )
   const [animationSettings, setAnimationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -118,19 +104,33 @@ const Settings: NextPage = () => {
   )
 
   const handleToggleAnimationSetting = (settingName: string) => {
-    animationsDispatch(settingName)
-    setAnimationSettings({
-      ...animationSettings,
-      [settingName]: !animationSettings[settingName],
-    })
+    if (settingName === 'all') {
+      const toggle = !Object.values(animationSettings).includes(false)
+      Object.keys(animationSettings).forEach((key) => {
+        animationSettings[key] = !toggle
+      })
+      setAnimationSettings(animationSettings)
+    } else {
+      setAnimationSettings({
+        ...animationSettings,
+        [settingName]: !animationSettings[settingName],
+      })
+    }
   }
 
   const handleToggleSoundSetting = (settingName: string) => {
-    soundsDispatch(settingName)
-    setSoundSettings({
-      ...soundSettings,
-      [settingName]: !soundSettings[settingName],
-    })
+    if (settingName === 'all') {
+      const toggle = !Object.values(soundSettings).includes(false)
+      Object.keys(soundSettings).forEach((key) => {
+        soundSettings[key] = !toggle
+      })
+      setSoundSettings(soundSettings)
+    } else {
+      setSoundSettings({
+        ...soundSettings,
+        [settingName]: !soundSettings[settingName],
+      })
+    }
   }
 
   const handleLangChange = useCallback(
@@ -201,7 +201,13 @@ const Settings: NextPage = () => {
           </div>
         </div>
         <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-8 lg:col-start-3">
-          <h2 className="mb-4 text-base">{t('settings:animations')}</h2>
+          <div className="mb-4 flex items-center justify-between pr-4">
+            <h2 className="text-base">{t('settings:animations')}</h2>
+            <Switch
+              checked={!Object.values(animationSettings).includes(false)}
+              onChange={() => handleToggleAnimationSetting('all')}
+            />
+          </div>
           <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:orderbook-flash')}</p>
             <Switch
@@ -218,7 +224,13 @@ const Settings: NextPage = () => {
           </div>
         </div>
         <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-8 lg:col-start-3">
-          <h2 className="mb-4 text-base">{t('settings:sounds')}</h2>
+          <div className="mb-4 flex items-center justify-between pr-4">
+            <h2 className="text-base">{t('settings:sounds')}</h2>
+            <Switch
+              checked={!Object.values(soundSettings).includes(false)}
+              onChange={() => handleToggleSoundSetting('all')}
+            />
+          </div>
           <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:transaction-success')}</p>
             <Switch
