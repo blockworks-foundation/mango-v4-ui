@@ -29,6 +29,9 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { useCoingecko } from 'hooks/useCoingecko'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
 })
@@ -84,6 +87,10 @@ const Token: NextPage = () => {
   const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
   const [loadChartData, setLoadChartData] = useState(true)
   const [daysToShow, setDaysToShow] = useState<number>(1)
+  const [animationSettings] = useLocalStorageState(
+    ANIMATION_SETTINGS_KEY,
+    INITIAL_ANIMATION_SETTINGS
+  )
 
   const bank = useMemo(() => {
     if (group && token) {
@@ -224,15 +231,18 @@ const Token: NextPage = () => {
                 )}
               </div>
               <div className="flex items-end space-x-3 text-5xl font-bold text-th-fgd-1">
-                $
-                <FlipNumbers
-                  height={48}
-                  width={32}
-                  play
-                  delay={0.05}
-                  duration={1}
-                  numbers={formatDecimal(bank.uiPrice, 2)}
-                />
+                {animationSettings['number-scroll'] ? (
+                  <FlipNumbers
+                    height={48}
+                    width={32}
+                    play
+                    delay={0.05}
+                    duration={1}
+                    numbers={formatFixedDecimals(bank.uiPrice, true)}
+                  />
+                ) : (
+                  <span>{formatFixedDecimals(bank.uiPrice, true)}</span>
+                )}
                 {coingeckoData ? (
                   <Change change={price_change_percentage_24h} />
                 ) : null}

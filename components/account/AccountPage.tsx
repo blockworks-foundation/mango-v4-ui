@@ -30,11 +30,12 @@ import AccountChart from './AccountChart'
 import useMangoAccount from '../../hooks/useMangoAccount'
 import Change from '../shared/Change'
 import Tooltip from '@components/shared/Tooltip'
-import { IS_ONBOARDED_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY, IS_ONBOARDED_KEY } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
+import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -75,6 +76,10 @@ const AccountPage = () => {
   const { theme } = useTheme()
   const tourSettings = mangoStore((s) => s.settings.tours)
   const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [animationSettings] = useLocalStorageState(
+    ANIMATION_SETTINGS_KEY,
+    INITIAL_ANIMATION_SETTINGS
+  )
 
   const leverage = useMemo(() => {
     if (!group || !mangoAccount) return 0
@@ -230,24 +235,28 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <div className="mb-2 flex items-center text-5xl font-bold text-th-fgd-1">
-              {group && mangoAccount ? (
-                <FlipNumbers
-                  height={48}
-                  width={32}
-                  play
-                  delay={0.05}
-                  duration={1}
-                  numbers={formatFixedDecimals(accountValue, true)}
-                />
+              {animationSettings['number-scroll'] ? (
+                group && mangoAccount ? (
+                  <FlipNumbers
+                    height={48}
+                    width={32}
+                    play
+                    delay={0.05}
+                    duration={1}
+                    numbers={formatFixedDecimals(accountValue, true)}
+                  />
+                ) : (
+                  <FlipNumbers
+                    height={48}
+                    width={32}
+                    play
+                    delay={0.05}
+                    duration={1}
+                    numbers={'$0.00'}
+                  />
+                )
               ) : (
-                <FlipNumbers
-                  height={48}
-                  width={32}
-                  play
-                  delay={0.05}
-                  duration={1}
-                  numbers={'$0.00'}
-                />
+                <span>{formatFixedDecimals(accountValue, true)}</span>
               )}
             </div>
             <div className="flex items-center space-x-1.5">

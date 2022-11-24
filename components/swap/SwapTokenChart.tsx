@@ -26,6 +26,9 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchChartData } from 'apis/coingecko'
 import mangoStore from '@store/mangoStore'
 import useJupiterSwapData from './useJupiterSwapData'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
 
 dayjs.extend(relativeTime)
 
@@ -75,6 +78,10 @@ const SwapTokenChart = () => {
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState(1)
   const { theme } = useTheme()
+  const [animationSettings] = useLocalStorageState(
+    ANIMATION_SETTINGS_KEY,
+    INITIAL_ANIMATION_SETTINGS
+  )
 
   const chartDataQuery = useQuery(
     ['chart-data', baseTokenId, quoteTokenId, daysToShow],
@@ -178,13 +185,17 @@ const SwapTokenChart = () => {
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="mb-1 flex flex-col text-4xl font-bold text-th-fgd-1 md:flex-row md:items-end">
-                    <FlipNumbers
-                      height={48}
-                      width={32}
-                      play
-                      numbers={formatFixedDecimals(mouseData['price'])}
-                    />
+                  <div className="mb-1 flex flex-col text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                    {animationSettings['number-scroll'] ? (
+                      <FlipNumbers
+                        height={48}
+                        width={32}
+                        play
+                        numbers={formatFixedDecimals(mouseData['price'])}
+                      />
+                    ) : (
+                      <span>{formatFixedDecimals(mouseData['price'])}</span>
+                    )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
@@ -198,14 +209,22 @@ const SwapTokenChart = () => {
               ) : (
                 <>
                   <div className="mb-1 flex flex-col text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
-                    <FlipNumbers
-                      height={48}
-                      width={32}
-                      play
-                      numbers={formatFixedDecimals(
-                        chartData[chartData.length - 1]['price']
-                      )}
-                    />
+                    {animationSettings['number-scroll'] ? (
+                      <FlipNumbers
+                        height={48}
+                        width={32}
+                        play
+                        numbers={formatFixedDecimals(
+                          chartData[chartData.length - 1]['price']
+                        )}
+                      />
+                    ) : (
+                      <span>
+                        {formatFixedDecimals(
+                          chartData[chartData.length - 1]['price']
+                        )}
+                      </span>
+                    )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >

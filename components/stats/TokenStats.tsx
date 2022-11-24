@@ -20,6 +20,9 @@ import { useRouter } from 'next/router'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -29,6 +32,10 @@ const TokenStats = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
+  const [animationSettings] = useLocalStorageState(
+    ANIMATION_SETTINGS_KEY,
+    INITIAL_ANIMATION_SETTINGS
+  )
 
   const banks = useMemo(() => {
     if (group) {
@@ -67,35 +74,43 @@ const TokenStats = () => {
 
   return (
     <ContentBox hideBorder hidePadding>
-      <div className="grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-[40px]">
+      <div className="grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-5xl">
         <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-t-0 ">
-          <p className="mb-2.5 text-base leading-none">
+          <p className="mb-2 text-base leading-none">
             {t('total-deposit-value')}
           </p>
           <div className="flex items-center font-bold">
-            <FlipNumbers
-              height={40}
-              width={24}
-              play
-              delay={0.05}
-              duration={1}
-              numbers={formatFixedDecimals(totalDepositValue || 0.0, true)}
-            />
+            {animationSettings['number-scroll'] ? (
+              <FlipNumbers
+                height={48}
+                width={32}
+                play
+                delay={0.05}
+                duration={1}
+                numbers={formatFixedDecimals(totalDepositValue || 0.0, true)}
+              />
+            ) : (
+              <p>{formatFixedDecimals(totalDepositValue || 0.0, true)}</p>
+            )}
           </div>
         </div>
         <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
-          <p className="mb-2.5 text-base leading-none">
+          <p className="mb-2 text-base leading-none">
             {t('total-borrow-value')}
           </p>
           <div className="flex items-center font-bold">
-            <FlipNumbers
-              height={40}
-              width={24}
-              play
-              delay={0.05}
-              duration={1}
-              numbers={formatFixedDecimals(totalBorrowValue || 0.0, true)}
-            />
+            {animationSettings['number-scroll'] ? (
+              <FlipNumbers
+                height={48}
+                width={32}
+                play
+                delay={0.05}
+                duration={1}
+                numbers={formatFixedDecimals(totalBorrowValue || 0.0, true)}
+              />
+            ) : (
+              <span>{formatFixedDecimals(totalBorrowValue || 0.0, true)}</span>
+            )}
           </div>
         </div>
       </div>

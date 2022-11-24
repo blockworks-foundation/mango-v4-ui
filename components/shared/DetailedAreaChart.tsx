@@ -21,6 +21,10 @@ import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
+import { formatFixedDecimals } from 'utils/numbers'
 
 dayjs.extend(relativeTime)
 
@@ -59,6 +63,10 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
 }) => {
   const [mouseData, setMouseData] = useState<any>(null)
   const { theme } = useTheme()
+  const [animationSettings] = useLocalStorageState(
+    ANIMATION_SETTINGS_KEY,
+    INITIAL_ANIMATION_SETTINGS
+  )
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -105,13 +113,18 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                   {mouseData ? (
                     <div>
                       <div className="mb-1 flex items-end text-4xl font-bold text-th-fgd-1">
-                        $
-                        <FlipNumbers
-                          height={40}
-                          width={26}
-                          play
-                          numbers={mouseData[yKey].toFixed(2)}
-                        />
+                        {animationSettings['number-scroll'] ? (
+                          <FlipNumbers
+                            height={40}
+                            width={26}
+                            play
+                            numbers={formatFixedDecimals(mouseData[yKey], true)}
+                          />
+                        ) : (
+                          <span>
+                            {formatFixedDecimals(mouseData[yKey], true)}
+                          </span>
+                        )}
                         {!hideChange ? (
                           <span className="ml-3">
                             <Change
@@ -128,13 +141,24 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                   ) : (
                     <div>
                       <div className="mb-1 flex items-end text-4xl font-bold text-th-fgd-1">
-                        $
-                        <FlipNumbers
-                          height={40}
-                          width={26}
-                          play
-                          numbers={data[data.length - 1][yKey].toFixed(2)}
-                        />
+                        {animationSettings['number-scroll'] ? (
+                          <FlipNumbers
+                            height={40}
+                            width={26}
+                            play
+                            numbers={formatFixedDecimals(
+                              data[data.length - 1][yKey],
+                              true
+                            )}
+                          />
+                        ) : (
+                          <span>
+                            {formatFixedDecimals(
+                              data[data.length - 1][yKey],
+                              true
+                            )}
+                          </span>
+                        )}
                         {!hideChange ? (
                           <span className="ml-3">
                             <Change

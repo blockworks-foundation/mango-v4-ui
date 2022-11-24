@@ -63,6 +63,7 @@ const NOTIFICATION_POSITIONS = [
 ]
 
 export const INITIAL_ANIMATION_SETTINGS = {
+  'number-scroll': false,
   'orderbook-flash': false,
   'swap-success': false,
 }
@@ -154,7 +155,6 @@ const Settings: NextPage = () => {
                 activeValue={theme}
                 onChange={(t) => setTheme(t)}
                 values={themes}
-                // large={!isMobile}
               />
             </div>
           </div>
@@ -166,7 +166,6 @@ const Settings: NextPage = () => {
                 onChange={(l) => handleLangChange(l)}
                 values={LANGS.map((val) => val.locale)}
                 names={LANGS.map((val) => t(`settings:${val.name}`))}
-                // large={!isMobile}
               />
             </div>
           </div>
@@ -182,7 +181,6 @@ const Settings: NextPage = () => {
                 names={NOTIFICATION_POSITIONS.map((val) =>
                   t(`settings:${val}`)
                 )}
-                // large={!isMobile}
               />
             </div>
           </div>
@@ -195,7 +193,6 @@ const Settings: NextPage = () => {
                 activeValue={tradeFormUi}
                 onChange={(v) => setTradeFormUi(v)}
                 values={[t('settings:slider'), t('settings:buttons')]}
-                // large={!isMobile}
               />
             </div>
           </div>
@@ -206,6 +203,13 @@ const Settings: NextPage = () => {
             <Switch
               checked={!Object.values(animationSettings).includes(false)}
               onChange={() => handleToggleAnimationSetting('all')}
+            />
+          </div>
+          <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
+            <p className="mb-2 lg:mb-0">{t('settings:number-scroll')}</p>
+            <Switch
+              checked={animationSettings['number-scroll']}
+              onChange={() => handleToggleAnimationSetting('number-scroll')}
             />
           </div>
           <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
