@@ -111,7 +111,7 @@ const JupiterRouteInfo = ({
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const successSound = new Howl({
     src: ['/sounds/swap-success.mp3'],
-    volume: 0.2,
+    volume: 0.5,
   })
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,

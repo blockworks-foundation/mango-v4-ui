@@ -35,7 +35,7 @@ export function notify(newNotification: {
   })
   const failSound = new Howl({
     src: ['/sounds/transaction-fail.mp3'],
-    volume: 0.2,
+    volume: 0.5,
   })
   const savedSoundSettings = localStorage.getItem(SOUND_SETTINGS_KEY)
   const soundSettings = savedSoundSettings
