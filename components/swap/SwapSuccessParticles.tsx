@@ -38,52 +38,64 @@ const SwapSuccessParticles = () => {
     <Particles
       id="tsparticles"
       options={{
-        autoPlay: true,
         detectRetina: true,
-        duration: 3000,
         particles: {
-          shape: {
-            type: 'images',
-            options: {
-              image: {
-                src: tokenLogo,
-                width: 48,
-                height: 48,
-              },
-            },
-          },
-          rotate: {
-            value: 0,
-            random: true,
-            direction: 'clockwise',
-            animation: {
-              enable: true,
-              speed: 15,
-              sync: false,
-            },
-          },
-          size: {
-            value: 16,
-            random: false,
-          },
-          move: {
-            angle: 10,
-            attract: {
-              rotate: {
-                x: 600,
-                y: 1200,
-              },
-            },
-            direction: 'bottom',
-            enable: true,
-            speed: { min: 7, max: 15 },
-            outMode: 'destroy',
-          },
           opacity: {
-            value: 1,
+            value: 0,
+          },
+        },
+        emitters: {
+          life: {
+            count: 30,
+            delay: 0,
+            duration: 0.1,
+          },
+          startCount: 0,
+          particles: {
+            shape: {
+              type: 'image',
+              options: {
+                image: {
+                  src: tokenLogo,
+                  width: 48,
+                  height: 48,
+                },
+              },
+            },
+            rotate: {
+              value: 0,
+              random: true,
+              direction: 'clockwise',
+              animation: {
+                enable: true,
+                speed: 15,
+                sync: false,
+              },
+            },
+            opacity: {
+              value: 1,
+            },
+            size: {
+              value: 20,
+              random: false,
+            },
+            move: {
+              angle: 10,
+              attract: {
+                rotate: {
+                  x: 600,
+                  y: 1200,
+                },
+              },
+              direction: 'bottom',
+              enable: true,
+              speed: { min: 8, max: 16 },
+              outMode: 'destroy',
+            },
           },
           position: {
-            y: -1000,
+            x: { random: true },
+            y: 0,
           },
         },
       }}
