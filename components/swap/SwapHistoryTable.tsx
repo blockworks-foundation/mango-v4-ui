@@ -2,8 +2,8 @@ import { Fragment, useState } from 'react'
 import {
   ArrowRightIcon,
   ChevronDownIcon,
-  ClockIcon,
   LinkIcon,
+  NoSymbolIcon,
 } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
@@ -24,9 +24,9 @@ import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { EXPLORERS } from 'pages/settings'
 import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
-import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody } from '@components/shared/TableElements'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const SwapHistoryTable = ({
   swapHistory,
@@ -35,9 +35,9 @@ const SwapHistoryTable = ({
   swapHistory: Array<SwapHistoryItem>
   loading: boolean
 }) => {
-  const { t } = useTranslation(['common', 'settings'])
+  const { t } = useTranslation(['common', 'settings', 'swap'])
+  const { connected } = useWallet()
   const { mangoTokens } = useJupiterMints()
-  const { mangoAccount } = useMangoAccount()
   const [showSwapDetails, setSwapDetails] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -50,7 +50,7 @@ const SwapHistoryTable = ({
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
   }
 
-  return mangoAccount ? (
+  return connected ? (
     !loading ? (
       swapHistory.length ? (
         showTableView ? (
@@ -400,8 +400,8 @@ const SwapHistoryTable = ({
         )
       ) : (
         <div className="flex flex-col items-center p-8">
-          <ClockIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-          <p>No swap history found...</p>
+          <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+          <p>{t('swap:no-history')}</p>
         </div>
       )
     ) : (
@@ -416,7 +416,7 @@ const SwapHistoryTable = ({
   ) : (
     <div className="flex flex-col items-center p-8">
       <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>Connect to view your swap history</p>
+      <p>{t('swap:connect-swap')}</p>
     </div>
   )
 }

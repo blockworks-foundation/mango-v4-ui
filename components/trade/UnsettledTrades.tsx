@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { IconButton } from '@components/shared/Button'
 import { notify } from 'utils/notifications'
-import { CheckIcon, LinkIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import Loading from '@components/shared/Loading'
 import { useViewport } from 'hooks/useViewport'
@@ -216,6 +216,7 @@ const UnsettledTrades = ({
       )
     ) : (
       <div className="flex flex-col items-center p-8">
+        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
         <p>{t('trade:no-unsettled')}</p>
       </div>
     )

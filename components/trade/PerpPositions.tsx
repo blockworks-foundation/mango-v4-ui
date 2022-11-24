@@ -1,7 +1,7 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { LinkButton } from '@components/shared/Button'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
-import { LinkIcon } from '@heroicons/react/20/solid'
+import { LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -127,6 +127,7 @@ const PerpPositions = () => {
       </div>
     ) : (
       <div className="flex flex-col items-center p-8">
+        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
         <p>{t('trade:no-positions')}</p>
       </div>
     )
