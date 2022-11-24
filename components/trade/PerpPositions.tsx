@@ -1,6 +1,8 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { LinkButton } from '@components/shared/Button'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import { LinkIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -13,6 +15,7 @@ import PerpSideBadge from './PerpSideBadge'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
+  const { connected } = useWallet()
   const { group } = useMangoGroup()
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const { selectedMarket } = useSelectedMarket()
@@ -45,81 +48,92 @@ const PerpPositions = () => {
     p.basePositionLots.toNumber()
   )
 
-  return openPerpPositions.length ? (
-    <div>
-      <Table>
-        <thead>
-          <TrHead>
-            <Th className="text-left">{t('market')}</Th>
-            <Th className="text-right">{t('trade:side')}</Th>
-            <Th className="text-right">{t('trade:size')}</Th>
-            <Th className="text-right">{t('value')}</Th>
-            <Th className="text-right">{t('trade:entry-price')}</Th>
-          </TrHead>
-        </thead>
-        <tbody>
-          {openPerpPositions.map((position) => {
-            const market = group.getPerpMarketByMarketIndex(
-              position.marketIndex
-            )
-            const basePosition = position.getBasePositionUi(market)
-            const trimmedBasePosition = trimDecimals(
-              basePosition,
-              getDecimalCount(market.minOrderSize)
-            )
-            const isSelectedMarket =
-              selectedMarket instanceof PerpMarket &&
-              selectedMarket.perpMarketIndex === position.marketIndex
+  return connected ? (
+    openPerpPositions.length ? (
+      <div>
+        <Table>
+          <thead>
+            <TrHead>
+              <Th className="text-left">{t('market')}</Th>
+              <Th className="text-right">{t('trade:side')}</Th>
+              <Th className="text-right">{t('trade:size')}</Th>
+              <Th className="text-right">{t('value')}</Th>
+              <Th className="text-right">{t('trade:entry-price')}</Th>
+            </TrHead>
+          </thead>
+          <tbody>
+            {openPerpPositions.map((position) => {
+              const market = group.getPerpMarketByMarketIndex(
+                position.marketIndex
+              )
+              const basePosition = position.getBasePositionUi(market)
+              const trimmedBasePosition = trimDecimals(
+                basePosition,
+                getDecimalCount(market.minOrderSize)
+              )
+              const isSelectedMarket =
+                selectedMarket instanceof PerpMarket &&
+                selectedMarket.perpMarketIndex === position.marketIndex
 
-            if (!basePosition) return null
+              if (!basePosition) return null
 
-            return (
-              <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
-                <Td>
-                  <div className="flex items-center">
-                    <MarketLogos market={market} />
-                    {market?.name}
-                  </div>
-                </Td>
-                <Td className="text-right">
-                  <PerpSideBadge basePosition={basePosition} />
-                </Td>
-                <Td className="text-right">
-                  <p className="flex justify-end">
-                    {isSelectedMarket ? (
-                      <LinkButton
-                        onClick={() => handlePositionClick(trimmedBasePosition)}
-                      >
-                        {Math.abs(trimmedBasePosition)}
-                      </LinkButton>
-                    ) : (
-                      Math.abs(trimmedBasePosition)
-                    )}
-                  </p>
-                </Td>
-                <Td className="text-right">
-                  <div>
-                    $
-                    {Math.abs(trimmedBasePosition * market._uiPrice).toFixed(2)}
-                  </div>
-                </Td>
-                <Td className="text-right">
-                  <div>
-                    $
-                    {numberFormat.format(
-                      position.getEntryPrice(market).toNumber()
-                    )}
-                  </div>
-                </Td>
-              </TrBody>
-            )
-          })}
-        </tbody>
-      </Table>
-    </div>
+              return (
+                <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
+                  <Td>
+                    <div className="flex items-center">
+                      <MarketLogos market={market} />
+                      {market?.name}
+                    </div>
+                  </Td>
+                  <Td className="text-right">
+                    <PerpSideBadge basePosition={basePosition} />
+                  </Td>
+                  <Td className="text-right">
+                    <p className="flex justify-end">
+                      {isSelectedMarket ? (
+                        <LinkButton
+                          onClick={() =>
+                            handlePositionClick(trimmedBasePosition)
+                          }
+                        >
+                          {Math.abs(trimmedBasePosition)}
+                        </LinkButton>
+                      ) : (
+                        Math.abs(trimmedBasePosition)
+                      )}
+                    </p>
+                  </Td>
+                  <Td className="text-right">
+                    <div>
+                      $
+                      {Math.abs(trimmedBasePosition * market._uiPrice).toFixed(
+                        2
+                      )}
+                    </div>
+                  </Td>
+                  <Td className="text-right">
+                    <div>
+                      $
+                      {numberFormat.format(
+                        position.getEntryPrice(market).toNumber()
+                      )}
+                    </div>
+                  </Td>
+                </TrBody>
+              )
+            })}
+          </tbody>
+        </Table>
+      </div>
+    ) : (
+      <div className="flex flex-col items-center p-8">
+        <p>{t('trade:no-positions')}</p>
+      </div>
+    )
   ) : (
     <div className="flex flex-col items-center p-8">
-      <p>{t('trade:no-positions')}</p>
+      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+      <p>{t('trade:connect-positions')}</p>
     </div>
   )
 }
