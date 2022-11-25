@@ -8,10 +8,10 @@ import useMangoAccount from 'hooks/useMangoAccount'
 
 const HealthImpact = ({
   maintProjectedHealth,
-  responsive,
+  small,
 }: {
   maintProjectedHealth: number
-  responsive?: boolean
+  small?: boolean
 }) => {
   const { t } = useTranslation('common')
   const group = mangoStore.getState().group
@@ -27,16 +27,14 @@ const HealthImpact = ({
       <Tooltip content={t('health-tooltip')}>
         <p
           className={`tooltip-underline mr-4 mb-1 ${
-            responsive ? 'text-xs lg:text-sm' : ''
+            small ? 'text-xs' : 'text-sm'
           }`}
         >
           {t('health-impact')}
         </p>
       </Tooltip>
       <div className="flex items-center space-x-1.5 font-mono">
-        <p
-          className={`text-th-fgd-1 ${responsive ? 'text-xs lg:text-sm' : ''}`}
-        >
+        <p className={`text-th-fgd-1 ${small ? 'text-xs' : 'text-sm'}`}>
           {currentMaintHealth}%
         </p>
         <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
@@ -47,7 +45,7 @@ const HealthImpact = ({
               : maintProjectedHealth <= 15
               ? 'text-th-red'
               : 'text-th-green'
-          } ${responsive ? 'text-xs lg:text-sm' : ''}`}
+          } ${small ? 'text-xs' : 'text-sm'}`}
         >
           {maintProjectedHealth}%
         </p>

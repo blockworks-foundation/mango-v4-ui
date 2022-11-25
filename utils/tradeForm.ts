@@ -27,3 +27,21 @@ export const calculateMarketPrice = (
     return selectedOrder[0] * 0.95
   }
 }
+
+export const calculateSlippage = (
+  orderBook: Orderbook,
+  size: number,
+  side: 'buy' | 'sell',
+  markPrice: number
+): number => {
+  const bb = orderBook?.bids?.length > 0 && Number(orderBook.bids[0][0])
+  const ba = orderBook?.asks?.length > 0 && Number(orderBook.asks[0][0])
+  const referencePrice = bb && ba ? (bb + ba) / 2 : markPrice
+
+  const estimatedPrice = calculateMarketPrice(orderBook, Number(size), side)
+
+  const slippageAbs =
+    Number(size) > 0 ? Math.abs(estimatedPrice - referencePrice) : 0
+  const slippageRel = (slippageAbs / referencePrice) * 100
+  return slippageRel
+}

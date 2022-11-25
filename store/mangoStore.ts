@@ -195,6 +195,7 @@ export type MangoStore = {
     current: Serum3Market | PerpMarket | undefined
     fills: any
     orderbook: Orderbook
+    markPrice: number
   }
   serumMarkets: Serum3Market[]
   serumOrders: Order[] | undefined
@@ -299,6 +300,7 @@ const mangoStore = create<MangoStore>()(
           bids: [],
           asks: [],
         },
+        markPrice: 0,
       },
       serumMarkets: [],
       serumOrders: undefined,
