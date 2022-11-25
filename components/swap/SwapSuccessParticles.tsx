@@ -1,7 +1,7 @@
+import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import mangoStore from '@store/mangoStore'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
 import { useEffect, useMemo } from 'react'
 import Particles from 'react-tsparticles'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'

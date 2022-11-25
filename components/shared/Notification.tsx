@@ -16,9 +16,9 @@ import {
   PREFERRED_EXPLORER_KEY,
 } from '../../utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { EXPLORERS } from 'pages/settings'
 import { useTranslation } from 'next-i18next'
 import useSolBalance from 'hooks/useSolBalance'
+import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 
 const setMangoStore = mangoStore.getState().set
 

@@ -21,12 +21,12 @@ import {
 } from '../../utils/numbers'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
-import { EXPLORERS } from 'pages/settings'
 import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody } from '@components/shared/TableElements'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 
 const SwapHistoryTable = ({
   swapHistory,

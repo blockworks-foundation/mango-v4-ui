@@ -32,9 +32,9 @@ import { RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 import { Transaction } from '@solana/web3.js'
 import { SOUND_SETTINGS_KEY } from 'utils/constants'
-import { INITIAL_SOUND_SETTINGS } from 'pages/settings'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
+import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
