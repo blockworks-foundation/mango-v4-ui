@@ -69,6 +69,7 @@ export const INITIAL_ANIMATION_SETTINGS = {
 }
 
 export const INITIAL_SOUND_SETTINGS = {
+  'recent-trades': false,
   'swap-success': false,
   'transaction-success': false,
   'transaction-fail': false,
@@ -236,6 +237,20 @@ const Settings: NextPage = () => {
             />
           </div>
           <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
+            <p className="mb-2 lg:mb-0">{t('settings:recent-trades')}</p>
+            <Switch
+              checked={soundSettings['recent-trades']}
+              onChange={() => handleToggleSoundSetting('recent-trades')}
+            />
+          </div>
+          <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
+            <p className="mb-2 lg:mb-0">{t('settings:swap-success')}</p>
+            <Switch
+              checked={soundSettings['swap-success']}
+              onChange={() => handleToggleSoundSetting('swap-success')}
+            />
+          </div>
+          <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
             <p className="mb-2 lg:mb-0">{t('settings:transaction-success')}</p>
             <Switch
               checked={soundSettings['transaction-success']}
@@ -247,13 +262,6 @@ const Settings: NextPage = () => {
             <Switch
               checked={soundSettings['transaction-fail']}
               onChange={() => handleToggleSoundSetting('transaction-fail')}
-            />
-          </div>
-          <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
-            <p className="mb-2 lg:mb-0">{t('settings:swap-success')}</p>
-            <Switch
-              checked={soundSettings['swap-success']}
-              onChange={() => handleToggleSoundSetting('swap-success')}
             />
           </div>
         </div>
