@@ -23,7 +23,7 @@ import {
   PerpMarket,
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
+import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 
 function decodeBookL2(
   client: MangoClient,

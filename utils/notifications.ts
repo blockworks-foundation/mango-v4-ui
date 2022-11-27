@@ -1,6 +1,6 @@
+import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import mangoStore from '@store/mangoStore'
 import { Howl } from 'howler'
-import { INITIAL_SOUND_SETTINGS } from 'pages/settings'
 import { SOUND_SETTINGS_KEY } from './constants'
 
 export type Notification = {

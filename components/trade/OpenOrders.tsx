@@ -9,11 +9,11 @@ import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
-import { LinkIcon, TrashIcon } from '@heroicons/react/20/solid'
+import { LinkIcon, NoSymbolIcon, TrashIcon } from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
-import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
@@ -24,7 +24,7 @@ import MarketLogos from './MarketLogos'
 
 const OpenOrders = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [cancelId, setCancelId] = useState<string>('')
   const { width } = useViewport()
@@ -110,7 +110,7 @@ const OpenOrders = () => {
     [t]
   )
 
-  return mangoAccount ? (
+  return connected ? (
     Object.values(openOrders).flat().length ? (
       showTableView ? (
         <Table>
@@ -306,6 +306,7 @@ const OpenOrders = () => {
       )
     ) : (
       <div className="flex flex-col items-center p-8">
+        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
         <p>{t('trade:no-orders')}</p>
       </div>
     )

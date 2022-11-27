@@ -23,8 +23,8 @@ import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
 import { formatFixedDecimals } from 'utils/numbers'
+import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 
 dayjs.extend(relativeTime)
 

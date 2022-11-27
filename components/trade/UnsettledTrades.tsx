@@ -4,16 +4,16 @@ import { useCallback, useState } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { IconButton } from '@components/shared/Button'
 import { notify } from 'utils/notifications'
-import { CheckIcon, LinkIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import Loading from '@components/shared/Loading'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import MarketLogos from './MarketLogos'
-import useMangoAccount from 'hooks/useMangoAccount'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpPosition } from '@blockworks-foundation/mango-v4'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -23,7 +23,7 @@ const UnsettledTrades = ({
   unsettledPerpPositions: PerpPosition[]
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
   const { group } = useMangoGroup()
   const [settleMktAddress, setSettleMktAddress] = useState<string>('')
   const { width } = useViewport()
@@ -65,9 +65,7 @@ const UnsettledTrades = ({
 
   if (!group) return null
 
-  console.log('unsettledPerpPositions', unsettledPerpPositions)
-
-  return mangoAccount ? (
+  return connected ? (
     Object.values(unsettledSpotBalances).flat().concat(unsettledPerpPositions)
       .length ? (
       showTableView ? (
@@ -218,6 +216,7 @@ const UnsettledTrades = ({
       )
     ) : (
       <div className="flex flex-col items-center p-8">
+        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
         <p>{t('trade:no-unsettled')}</p>
       </div>
     )

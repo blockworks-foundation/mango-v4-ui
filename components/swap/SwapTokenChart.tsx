@@ -28,7 +28,7 @@ import mangoStore from '@store/mangoStore'
 import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
+import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 
 dayjs.extend(relativeTime)
 

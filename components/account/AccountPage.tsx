@@ -35,7 +35,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
-import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
+import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {

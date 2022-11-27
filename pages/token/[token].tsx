@@ -31,7 +31,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { useCoingecko } from 'hooks/useCoingecko'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
+import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
 })

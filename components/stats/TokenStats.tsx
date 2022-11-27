@@ -22,7 +22,7 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { INITIAL_ANIMATION_SETTINGS } from 'pages/settings'
+import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])

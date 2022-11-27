@@ -12,9 +12,9 @@ import { Howl } from 'howler'
 import { IconButton } from '@components/shared/Button'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SOUND_SETTINGS_KEY } from 'utils/constants'
-import { INITIAL_SOUND_SETTINGS } from 'pages/settings'
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
+import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 
 const RecentTrades = () => {
   // const [trades, setTrades] = useState<any[]>([])
@@ -44,7 +44,7 @@ const RecentTrades = () => {
     return selectedMarket?.name.split(/-|\//)[1]
   }, [selectedMarket])
 
-  // not sure if this works properly yet
+  // needs more testing
   useEffect(() => {
     if (!fills.length || !previousLatestFill) return
     if (
