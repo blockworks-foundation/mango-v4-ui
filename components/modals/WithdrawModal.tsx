@@ -1,4 +1,4 @@
-import { HealthType } from '@blockworks-foundation/mango-v4'
+import { Bank, HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowUpTrayIcon,
   ChevronDownIcon,
@@ -14,7 +14,7 @@ import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
 import { notify } from '../../utils/notifications'
-import { formatFixedDecimals } from '../../utils/numbers'
+import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Label from '../forms/Label'
@@ -30,6 +30,7 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 
 interface WithdrawModalProps {
   token?: string
@@ -70,7 +71,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     const amount = getMaxWithdrawForBank(group, bank, mangoAccount)
 
     return amount && amount.gt(0)
-      ? amount.toDecimalPlaces(bank.mintDecimals)
+      ? floorToDecimal(amount, bank.mintDecimals)
       : new Decimal(0)
   }, [mangoAccount, bank, group])
 
@@ -127,18 +128,21 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     if (mangoAccount) {
       const banks = group?.banksMapByName
         ? Array.from(group?.banksMapByName, ([key, value]) => {
+            const bank: Bank = value[0]
             const accountBalance = getMaxWithdrawForBank(
               group,
-              value[0],
+              bank,
               mangoAccount
             )
             return {
               key,
               value,
-              accountBalance: accountBalance ? accountBalance.toNumber() : 0,
+              accountBalance: accountBalance
+                ? floorToDecimal(accountBalance, bank.mintDecimals).toNumber()
+                : 0,
               accountBalanceValue:
-                accountBalance && value[0]?.uiPrice
-                  ? accountBalance.toNumber() * value[0]?.uiPrice
+                accountBalance && bank.uiPrice
+                  ? accountBalance.toNumber() * bank.uiPrice
                   : 0,
             }
           })
@@ -300,6 +304,11 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               )}
             </Button>
           </div>
+          {bank ? (
+            <div className="pt-4">
+              <TokenVaultWarnings bank={bank} />
+            </div>
+          ) : null}
         </FadeInFadeOut>
       </div>
     </Modal>

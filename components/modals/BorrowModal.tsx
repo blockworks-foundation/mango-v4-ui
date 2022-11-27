@@ -1,4 +1,4 @@
-import { HealthType } from '@blockworks-foundation/mango-v4'
+import { Bank, HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ChevronDownIcon,
   CurrencyDollarIcon,
@@ -30,6 +30,7 @@ import Tooltip from '@components/shared/Tooltip'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 
 interface BorrowModalProps {
   token?: string
@@ -70,7 +71,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     if (!group || !bank || !mangoAccount) return new Decimal(0)
     const amount = getMaxWithdrawForBank(group, bank, mangoAccount, true)
     return amount && amount.gt(0)
-      ? amount.toDecimalPlaces(bank.mintDecimals)
+      ? floorToDecimal(amount, bank.mintDecimals)
       : new Decimal(0)
   }, [mangoAccount, bank])
 
@@ -132,14 +133,21 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     if (mangoAccount) {
       return group?.banksMapByName
         ? Array.from(group?.banksMapByName, ([key, value]) => {
-            const bank = value[0]
+            const bank: Bank = value[0]
             const maxAmount = getMaxWithdrawForBank(
               group,
               bank,
               mangoAccount,
               true
             )
-            return { key, value, maxAmount: maxAmount.toNumber() }
+            return {
+              key,
+              value,
+              maxAmount: floorToDecimal(
+                maxAmount,
+                bank.mintDecimals
+              ).toNumber(),
+            }
           })
         : []
     }
@@ -313,6 +321,11 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
             </div>
           )}
         </Button>
+        {bank ? (
+          <div className="pt-4">
+            <TokenVaultWarnings bank={bank} />
+          </div>
+        ) : null}
       </FadeInFadeOut>
     </Modal>
   )
