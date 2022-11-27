@@ -11,6 +11,7 @@ interface AllButtonProps {
 
 interface ButtonProps {
   size?: 'large' | 'medium' | 'small'
+  type?: 'button' | 'submit' | 'reset'
 }
 
 type ButtonCombinedProps = AllButtonProps & ButtonProps
@@ -22,6 +23,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
   className,
   secondary,
   size = 'medium',
+  type = 'button',
   ...props
 }) => {
   const { theme } = useTheme()
@@ -44,6 +46,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
           ? 'h-12 px-6'
           : 'h-8 px-3'
       } default-transition font-bold focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
+      type={type}
       {...props}
     >
       {children}
