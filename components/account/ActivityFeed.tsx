@@ -30,6 +30,7 @@ import ActivityFeedTable from './ActivityFeedTable'
 interface Filters {
   deposit: boolean
   liquidate_token_with_token: boolean
+  swap: boolean
   withdraw: boolean
 }
 
@@ -44,6 +45,7 @@ interface AdvancedFilters {
 const DEFAULT_FILTERS = {
   deposit: true,
   liquidate_token_with_token: true,
+  swap: true,
   withdraw: true,
 }
 
@@ -55,7 +57,12 @@ const DEFAULT_ADVANCED_FILTERS = {
   'usd-upper': '',
 }
 
-const DEFAULT_PARAMS = ['deposit', 'liquidate_token_with_token', 'withdraw']
+const DEFAULT_PARAMS = [
+  'deposit',
+  'liquidate_token_with_token',
+  'swap',
+  'withdraw',
+]
 
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
@@ -282,7 +289,7 @@ const ActivityFilters = ({
           <div
             onClick={() => setShowMobileFilters(!showMobileFilters)}
             role="button"
-            className={`default-transition w-full border-b border-th-bkg-3 bg-th-bkg-2 px-6 py-4 hover:bg-th-bkg-3`}
+            className={`default-transition w-full border-b border-th-bkg-3 bg-th-bkg-2 p-4 hover:bg-th-bkg-3`}
           >
             <Disclosure.Button
               className={`flex h-full w-full items-center justify-between rounded-none`}
@@ -359,6 +366,14 @@ const ActivityTypeFiltersForm = ({
           onChange={(e) => updateFilters(e, 'withdraw')}
         >
           <span className="text-sm">{t('withdrawals')}</span>
+        </Checkbox>
+      </div>
+      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
+        <Checkbox
+          checked={filters.swap}
+          onChange={(e) => updateFilters(e, 'swap')}
+        >
+          <span className="text-sm">{t('swaps')}</span>
         </Checkbox>
       </div>
       <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">

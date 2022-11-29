@@ -32,7 +32,7 @@ const SwapHistoryTable = ({
   swapHistory,
   loading,
 }: {
-  swapHistory: Array<SwapHistoryItem>
+  swapHistory: SwapHistoryItem[]
   loading: boolean
 }) => {
   const { t } = useTranslation(['common', 'settings', 'swap'])

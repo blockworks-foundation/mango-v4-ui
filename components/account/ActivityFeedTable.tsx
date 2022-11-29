@@ -86,6 +86,22 @@ const ActivityFeedTable = ({
       credit = { value: '0', symbol: '' }
       debit = { value: formatDecimal(quantity * -1), symbol }
     }
+    if (activity_type === 'swap') {
+      const {
+        swap_in_amount,
+        swap_in_symbol,
+        swap_out_amount,
+        swap_out_symbol,
+      } = activity.activity_details
+      credit = {
+        value: formatDecimal(swap_out_amount),
+        symbol: swap_out_symbol,
+      }
+      debit = {
+        value: formatDecimal(swap_in_amount * -1),
+        symbol: swap_in_symbol,
+      }
+    }
     return { credit, debit }
   }
 
@@ -105,6 +121,18 @@ const ActivityFeedTable = ({
       const { usd_equivalent } = activity.activity_details
       value =
         activity_type === 'withdraw' ? usd_equivalent * -1 : usd_equivalent
+    }
+    if (activity_type === 'swap') {
+      const {
+        loan_origination_fee,
+        swap_in_amount,
+        swap_in_price_usd,
+        swap_out_amount,
+        swap_out_price_usd,
+      } = activity.activity_details
+      value =
+        (swap_in_amount + loan_origination_fee) * swap_in_price_usd -
+        swap_out_amount * swap_out_price_usd
     }
     return value
   }
@@ -280,10 +308,11 @@ const MobileActivityFeedItem = ({
   const { activity_type, block_datetime } = activity
   const { signature } = activity.activity_details
   const isLiquidation = activity_type === 'liquidate_token_with_token'
+  const isSwap = activity_type === 'swap'
   const activityName = isLiquidation ? 'liquidation' : activity_type
   const value = getValue(activity)
   return (
-    <div key={signature} className="border-b border-th-bkg-3 px-6 py-4">
+    <div key={signature} className="border-b border-th-bkg-3 p-4">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-th-fgd-1">
@@ -301,6 +330,28 @@ const MobileActivityFeedItem = ({
             <p className="text-right font-mono text-sm text-th-fgd-1">
               {isLiquidation ? (
                 formatFixedDecimals(value, true)
+              ) : isSwap ? (
+                <>
+                  <span className="mr-1">
+                    {activity.activity_details.swap_in_amount.toLocaleString(
+                      undefined,
+                      { maximumFractionDigits: 6 }
+                    )}
+                  </span>
+                  <span className="font-body tracking-wide text-th-fgd-3">
+                    {activity.activity_details.swap_in_symbol}
+                  </span>
+                  <span className="mx-1 font-body text-th-fgd-3">for</span>
+                  <span className="mr-1">
+                    {activity.activity_details.swap_out_amount.toLocaleString(
+                      undefined,
+                      { maximumFractionDigits: 6 }
+                    )}
+                  </span>
+                  <span className="font-body tracking-wide text-th-fgd-3">
+                    {activity.activity_details.swap_out_symbol}
+                  </span>
+                </>
               ) : (
                 <>
                   <span className="mr-1">
