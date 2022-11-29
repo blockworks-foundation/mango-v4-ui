@@ -1,13 +1,12 @@
 import useInterval from '@components/shared/useInterval'
 import mangoStore from '@store/mangoStore'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 // import isEqual from 'lodash/isEqual'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import Decimal from 'decimal.js'
 import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import usePrevious from '@components/shared/usePrevious'
 import { Howl } from 'howler'
 import { IconButton } from '@components/shared/Button'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -15,6 +14,7 @@ import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
+import { isEqual } from 'lodash'
 
 const RecentTrades = () => {
   // const [trades, setTrades] = useState<any[]>([])
@@ -24,7 +24,9 @@ const RecentTrades = () => {
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
-  const previousLatestFill = usePrevious(fills[0])
+  const currentFillsData = useRef<any>(null)
+  const nextFillsData = useRef<any>(null)
+
   const buySound = new Howl({
     src: ['/sounds/trade-buy.mp3'],
     volume: 0.5,
@@ -46,16 +48,28 @@ const RecentTrades = () => {
 
   // needs more testing
   useEffect(() => {
-    if (!fills.length || !previousLatestFill) return
-    if (
-      !fills[0].orderId.eq(previousLatestFill.orderId) &&
-      fills[0].openOrdersSlot === previousLatestFill.openOrdersSlot
-    ) {
-      if (soundSettings['recent-trades']) {
+    if (soundSettings['recent-trades']) {
+      mangoStore.subscribe(
+        (state) => [state.selectedMarket.fills],
+        (fills) => (nextFillsData.current = fills[0])
+      )
+    }
+  }, [soundSettings['recent-trades']])
+
+  // needs more testing
+  useInterval(() => {
+    if (soundSettings['recent-trades']) {
+      if (fills.length) {
+        currentFillsData.current = fills
+      }
+      if (
+        nextFillsData?.current &&
+        !isEqual(currentFillsData.current, nextFillsData.current)
+      ) {
         fills[0].side === 'buy' ? buySound.play() : sellSound.play()
       }
     }
-  }, [fills, previousLatestFill])
+  }, 1000)
 
   // const fetchRecentTrades = useCallback(async () => {
   //   if (!market) return
