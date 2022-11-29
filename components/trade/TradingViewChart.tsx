@@ -1,16 +1,15 @@
-import { useEffect, useRef, useMemo, useState } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { useTheme } from 'next-themes'
 import {
-  widget,
   ChartingLibraryWidgetOptions,
   IChartingLibraryWidget,
   ResolutionString,
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
-import { useViewport } from 'hooks/useViewport'
-import { CHART_DATA_FEED, DEFAULT_MARKET_NAME } from 'utils/constants'
-import { breakpoints } from 'utils/theme'
+import { CHART_DATA_FEED } from 'utils/constants'
 import { COLORS } from 'styles/colors'
+import { init, dispose } from 'klinecharts'
+import axios from 'axios'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -30,15 +29,20 @@ export interface ChartContainerProps {
 
 const TradingViewChart = () => {
   const { theme } = useTheme()
-  const { width } = useViewport()
 
-  const [chartReady, setChartReady] = useState(false)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
-  const isMobile = width ? width < breakpoints.sm : false
-
+  const interval = 60
+  console.log(selectedMarketName)
+  const query = {
+    resolution: interval,
+    symbol: 'SOL/USDC',
+    from: Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 14,
+    to: Math.floor(Date.now() / 1000),
+    countback: 2,
+  }
   const defaultProps = useMemo(
     () => ({
-      symbol: DEFAULT_MARKET_NAME,
+      symbol: 'SOL/USDC',
       interval: '60' as ResolutionString,
       theme: 'Dark',
       container: 'tv_chart_container',
@@ -54,7 +58,7 @@ const TradingViewChart = () => {
     }),
     [theme]
   )
-
+  console.log(defaultProps)
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
 
   let chartStyleOverrides = {
@@ -92,7 +96,7 @@ const TradingViewChart = () => {
   })
 
   useEffect(() => {
-    if (tvWidgetRef.current && chartReady && selectedMarketName) {
+    if (tvWidgetRef.current && selectedMarketName) {
       tvWidgetRef.current.setSymbol(
         selectedMarketName!,
         tvWidgetRef.current.activeChart().resolution(),
@@ -101,77 +105,127 @@ const TradingViewChart = () => {
         }
       )
     }
-  }, [selectedMarketName, chartReady])
+  }, [selectedMarketName])
+
+  //   useEffect(() => {
+  //     if (window) {
+  //       const widgetOptions: ChartingLibraryWidgetOptions = {
+  //         // debug: true,
+  //         symbol: defaultProps.symbol,
+  //         // BEWARE: no trailing slash is expected in feed URL
+  //         // tslint:disable-next-line:no-any
+  //         datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(
+  //           defaultProps.datafeedUrl
+  //         ),
+  //         interval:
+  //           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
+  //         container:
+  //           defaultProps.container as ChartingLibraryWidgetOptions['container'],
+  //         library_path: defaultProps.libraryPath as string,
+  //         locale: 'en',
+  //         enabled_features: ['hide_left_toolbar_by_default'],
+  //         disabled_features: [
+  //           'use_localstorage_for_settings',
+  //           'timeframes_toolbar',
+  //           isMobile ? 'left_toolbar' : '',
+  //           'show_logo_on_all_charts',
+  //           'caption_buttons_text_if_possible',
+  //           'header_settings',
+  //           // 'header_chart_type',
+  //           'header_compare',
+  //           'compare_symbol',
+  //           'header_screenshot',
+  //           // 'header_widget_dom_node',
+  //           // 'header_widget',
+  //           'header_saveload',
+  //           'header_undo_redo',
+  //           'header_interval_dialog_button',
+  //           'show_interval_dialog_on_key_press',
+  //           'header_symbol_search',
+  //           'popup_hints',
+  //         ],
+  //         fullscreen: defaultProps.fullscreen,
+  //         autosize: defaultProps.autosize,
+  //         studies_overrides: defaultProps.studiesOverrides,
+  //         theme: theme === 'Light' ? 'Light' : 'Dark',
+  //         custom_css_url: '/styles/tradingview.css',
+  //         loading_screen: {
+  //           backgroundColor:
+  //             theme === 'Dark'
+  //               ? COLORS.BKG1.Dark
+  //               : theme === 'Light'
+  //               ? COLORS.BKG1.Light
+  //               : COLORS.BKG1.Mango,
+  //         },
+  //         overrides: {
+  //           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+
+  //           ...chartStyleOverrides,
+  //         },
+  //       }
+
+  //       const tvWidget = new widget(widgetOptions)
+  //       tvWidgetRef.current = tvWidget
+
+  //       tvWidgetRef.current.onChartReady(function () {
+  //         setChartReady(true)
+  //       })
+  //       //eslint-disable-next-line
+  //     }
+  //   }, [theme, isMobile, defaultProps])
+
+  const generatedKLineDataList = async (dataSize = 336) => {
+    const response = await axios.get(`${CHART_DATA_FEED}/history`, {
+      params: query,
+    })
+    const newData = response.data as any
+
+    const dataList = []
+    for (let i = 0; i < dataSize; i++) {
+      const kLineModel = {
+        open: parseFloat(newData.o[i]),
+        low: parseFloat(newData.l[i]),
+        high: parseFloat(newData.h[i]),
+        close: parseFloat(newData.c[i]),
+        volume: parseFloat(newData.v[i]),
+        timestamp: newData.t[i],
+      }
+      dataList.unshift(kLineModel)
+    }
+    return dataList
+  }
+
+  function updateData(kLineChart: any) {
+    setTimeout(async () => {
+      if (kLineChart) {
+        const newData = (await generatedKLineDataList(1))[0]
+        newData.timestamp += 10000 * 60
+        kLineChart.updateData(newData)
+      }
+      updateData(kLineChart)
+    }, 10000)
+  }
 
   useEffect(() => {
-    if (window) {
-      const widgetOptions: ChartingLibraryWidgetOptions = {
-        // debug: true,
-        symbol: defaultProps.symbol,
-        // BEWARE: no trailing slash is expected in feed URL
-        // tslint:disable-next-line:no-any
-        datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(
-          defaultProps.datafeedUrl
-        ),
-        interval:
-          defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
-        container:
-          defaultProps.container as ChartingLibraryWidgetOptions['container'],
-        library_path: defaultProps.libraryPath as string,
-        locale: 'en',
-        enabled_features: ['hide_left_toolbar_by_default'],
-        disabled_features: [
-          'use_localstorage_for_settings',
-          'timeframes_toolbar',
-          isMobile ? 'left_toolbar' : '',
-          'show_logo_on_all_charts',
-          'caption_buttons_text_if_possible',
-          'header_settings',
-          // 'header_chart_type',
-          'header_compare',
-          'compare_symbol',
-          'header_screenshot',
-          // 'header_widget_dom_node',
-          // 'header_widget',
-          'header_saveload',
-          'header_undo_redo',
-          'header_interval_dialog_button',
-          'show_interval_dialog_on_key_press',
-          'header_symbol_search',
-          'popup_hints',
-        ],
-        fullscreen: defaultProps.fullscreen,
-        autosize: defaultProps.autosize,
-        studies_overrides: defaultProps.studiesOverrides,
-        theme: theme === 'Light' ? 'Light' : 'Dark',
-        custom_css_url: '/styles/tradingview.css',
-        loading_screen: {
-          backgroundColor:
-            theme === 'Dark'
-              ? COLORS.BKG1.Dark
-              : theme === 'Light'
-              ? COLORS.BKG1.Light
-              : COLORS.BKG1.Mango,
-        },
-        overrides: {
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-
-          ...chartStyleOverrides,
-        },
-      }
-
-      const tvWidget = new widget(widgetOptions)
-      tvWidgetRef.current = tvWidget
-
-      tvWidgetRef.current.onChartReady(function () {
-        setChartReady(true)
-      })
-      //eslint-disable-next-line
+    const initKline = async () => {
+      const kLineChart = init('update-k-line')
+      const data = await generatedKLineDataList()
+      kLineChart.applyNewData(data)
+      updateData(kLineChart)
     }
-  }, [theme, isMobile, defaultProps])
-
+    initKline()
+    return () => {
+      dispose('update-k-line')
+    }
+  }, [])
   return (
-    <div id={defaultProps.container as string} className="tradingview-chart" />
+    <>
+      <div
+        style={{ height: '300px' }}
+        id="update-k-line"
+        className="k-line-chart"
+      />
+    </>
   )
 }
 
