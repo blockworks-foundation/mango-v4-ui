@@ -199,11 +199,11 @@ const TradingViewChart = () => {
     setTimeout(async () => {
       if (kLineChart) {
         const newData = (await generatedKLineDataList(1))[0]
-        newData.timestamp += 10000 * 60
+        newData.timestamp += 30000 * 60
         kLineChart.updateData(newData)
       }
       updateData(kLineChart)
-    }, 10000)
+    }, 30000)
   }
 
   useEffect(() => {
