@@ -24,8 +24,8 @@ const RecentTrades = () => {
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
-  const currentFillsData = useRef<any>(null)
-  const nextFillsData = useRef<any>(null)
+  const currentFillsData = useRef<any>([])
+  const nextFillsData = useRef<any>([])
 
   const buySound = new Howl({
     src: ['/sounds/trade-buy.mp3'],
@@ -63,10 +63,12 @@ const RecentTrades = () => {
         currentFillsData.current = fills
       }
       if (
-        nextFillsData?.current &&
+        nextFillsData.current.length &&
         !isEqual(currentFillsData.current, nextFillsData.current)
       ) {
-        fills[0].side === 'buy' ? buySound.play() : sellSound.play()
+        nextFillsData.current[0].side === 'buy'
+          ? buySound.play()
+          : sellSound.play()
       }
     }
   }, 1000)
