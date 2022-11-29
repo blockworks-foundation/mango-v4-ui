@@ -30,6 +30,7 @@ import ActivityFeedTable from './ActivityFeedTable'
 interface Filters {
   deposit: boolean
   liquidate_token_with_token: boolean
+  perp_trade: boolean
   swap: boolean
   withdraw: boolean
 }
@@ -45,6 +46,7 @@ interface AdvancedFilters {
 const DEFAULT_FILTERS = {
   deposit: true,
   liquidate_token_with_token: true,
+  perp_trade: true,
   swap: true,
   withdraw: true,
 }
@@ -61,6 +63,7 @@ const DEFAULT_PARAMS = [
   'deposit',
   'liquidate_token_with_token',
   'swap',
+  'perp_trade',
   'withdraw',
 ]
 
@@ -75,6 +78,8 @@ const ActivityFeed = () => {
     DEFAULT_ADVANCED_FILTERS
   )
   const [params, setParams] = useState<string[]>(DEFAULT_PARAMS)
+
+  console.log(activityFeed)
 
   useEffect(() => {
     if (mangoAccount && !initialLoad) {
@@ -374,6 +379,14 @@ const ActivityTypeFiltersForm = ({
           onChange={(e) => updateFilters(e, 'swap')}
         >
           <span className="text-sm">{t('swaps')}</span>
+        </Checkbox>
+      </div>
+      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
+        <Checkbox
+          checked={filters.perp_trade}
+          onChange={(e) => updateFilters(e, 'perp_trade')}
+        >
+          <span className="text-sm">{t('perps')}</span>
         </Checkbox>
       </div>
       <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
