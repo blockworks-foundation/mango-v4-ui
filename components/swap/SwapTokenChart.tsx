@@ -76,7 +76,7 @@ const SwapTokenChart = () => {
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
   const [mouseData, setMouseData] = useState<any>(null)
-  const [daysToShow, setDaysToShow] = useState(1)
+  const [daysToShow, setDaysToShow] = useState('1')
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -245,7 +245,7 @@ const SwapTokenChart = () => {
               <ChartRangeButtons
                 activeValue={daysToShow}
                 names={['24H', '7D', '30D']}
-                values={[1, 7, 30]}
+                values={['1', '7', '30']}
                 onChange={(v) => setDaysToShow(v)}
               />
             </div>

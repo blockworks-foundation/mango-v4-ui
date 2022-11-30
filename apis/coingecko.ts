@@ -1,7 +1,7 @@
 export const fetchChartData = async (
   baseTokenId: string | undefined,
   quoteTokenId: string | undefined,
-  daysToShow: number
+  daysToShow: string
 ) => {
   console.log('fetching chart:', baseTokenId, quoteTokenId)
 

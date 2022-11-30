@@ -1,4 +1,5 @@
 import Change from '@components/shared/Change'
+import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
 import TabUnderline from '@components/shared/TabUnderline'
 import { Popover } from '@headlessui/react'
@@ -19,6 +20,21 @@ const MarketSelectDropdown = () => {
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const [activeTab, setActiveTab] = useState('perp')
+  const [spotBaseFilter, setSpotBaseFilter] = useState('All')
+
+  const spotBaseTokens: string[] = useMemo(() => {
+    if (serumMarkets.length) {
+      const baseTokens: string[] = []
+      serumMarkets.map((m) => {
+        const base = m.name.split('/')[1]
+        if (!baseTokens.includes(base)) {
+          baseTokens.push(base)
+        }
+      })
+      return baseTokens
+    }
+    return []
+  }, [serumMarkets])
 
   return (
     <Popover>
@@ -47,40 +63,57 @@ const MarketSelectDropdown = () => {
               small
               values={['perp', 'spot']}
             />
-            {activeTab === 'spot'
-              ? serumMarkets?.length
-                ? serumMarkets.map((m) => {
-                    return (
-                      <div
-                        className="flex items-center justify-between py-2 px-4"
-                        key={m.publicKey.toString()}
-                      >
-                        <Link
-                          href={{
-                            pathname: '/trade',
-                            query: { name: m.name },
-                          }}
-                          shallow={true}
+            {activeTab === 'spot' ? (
+              serumMarkets?.length ? (
+                <>
+                  <div className="mb-2 w-56 px-4">
+                    <ChartRangeButtons
+                      activeValue={spotBaseFilter}
+                      values={['All', ...spotBaseTokens]}
+                      onChange={(v) => setSpotBaseFilter(v)}
+                    />
+                  </div>
+                  {serumMarkets
+                    .filter((mkt) => {
+                      if (spotBaseFilter === 'All') {
+                        return mkt
+                      } else {
+                        return mkt.name.split('/')[1] === spotBaseFilter
+                      }
+                    })
+                    .map((m) => {
+                      return (
+                        <div
+                          className="flex items-center justify-between py-2 px-4"
+                          key={m.publicKey.toString()}
                         >
-                          <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-primary">
-                            <MarketLogos market={m} />
-                            <span
-                              className={
-                                m.name === selectedMarket?.name
-                                  ? 'text-th-primary'
-                                  : ''
-                              }
-                            >
-                              {m.name}
-                            </span>
-                          </div>
-                        </Link>
-                        <FavoriteMarketButton market={m} />
-                      </div>
-                    )
-                  })
-                : null
-              : null}
+                          <Link
+                            href={{
+                              pathname: '/trade',
+                              query: { name: m.name },
+                            }}
+                            shallow={true}
+                          >
+                            <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-primary">
+                              <MarketLogos market={m} />
+                              <span
+                                className={
+                                  m.name === selectedMarket?.name
+                                    ? 'text-th-primary'
+                                    : ''
+                                }
+                              >
+                                {m.name}
+                              </span>
+                            </div>
+                          </Link>
+                          <FavoriteMarketButton market={m} />
+                        </div>
+                      )
+                    })}
+                </>
+              ) : null
+            ) : null}
             {activeTab === 'perp'
               ? perpMarkets?.length
                 ? perpMarkets.map((m) => {
