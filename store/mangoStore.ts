@@ -5,6 +5,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
+import { Orderbook as SpotOrderBook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
 import {
   MangoClient,
@@ -15,6 +16,7 @@ import {
   Bank,
   PerpOrder,
   PerpPosition,
+  BookSide,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -194,6 +196,8 @@ export type MangoStore = {
     name: string
     current: Serum3Market | PerpMarket | undefined
     fills: any
+    bidsAccount: BookSide | SpotOrderBook | undefined
+    asksAccount: BookSide | SpotOrderBook | undefined
     orderbook: Orderbook
   }
   serumMarkets: Serum3Market[]
@@ -295,6 +299,8 @@ const mangoStore = create<MangoStore>()(
         name: DEFAULT_MARKET_NAME,
         current: undefined,
         fills: [],
+        bidsAccount: undefined,
+        asksAccount: undefined,
         orderbook: {
           bids: [],
           asks: [],
