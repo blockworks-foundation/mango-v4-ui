@@ -1,4 +1,5 @@
 import Change from '@components/shared/Change'
+import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
 import TabUnderline from '@components/shared/TabUnderline'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -39,7 +40,7 @@ const MarketSelectDropdown = () => {
               } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen bg-th-bkg-2 pb-2 pt-4 sm:w-56 md:top-[37px]">
+          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen bg-th-bkg-2 pb-2 pt-4 sm:w-72 md:top-[37px]">
             <TabUnderline
               activeValue={activeTab}
               onChange={(v) => setActiveTab(v)}
@@ -50,27 +51,32 @@ const MarketSelectDropdown = () => {
               ? serumMarkets?.length
                 ? serumMarkets.map((m) => {
                     return (
-                      <Link
-                        href={{
-                          pathname: '/trade',
-                          query: { name: m.name },
-                        }}
+                      <div
+                        className="flex items-center justify-between py-2 px-4"
                         key={m.publicKey.toString()}
-                        shallow={true}
                       >
-                        <div className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2">
-                          <MarketLogos market={m} />
-                          <span
-                            className={
-                              m.name === selectedMarket?.name
-                                ? 'text-th-primary'
-                                : ''
-                            }
-                          >
-                            {m.name}
-                          </span>
-                        </div>
-                      </Link>
+                        <Link
+                          href={{
+                            pathname: '/trade',
+                            query: { name: m.name },
+                          }}
+                          shallow={true}
+                        >
+                          <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-primary">
+                            <MarketLogos market={m} />
+                            <span
+                              className={
+                                m.name === selectedMarket?.name
+                                  ? 'text-th-primary'
+                                  : ''
+                              }
+                            >
+                              {m.name}
+                            </span>
+                          </div>
+                        </Link>
+                        <FavoriteMarketButton market={m} />
+                      </div>
                     )
                   })
                 : null
@@ -79,27 +85,32 @@ const MarketSelectDropdown = () => {
               ? perpMarkets?.length
                 ? perpMarkets.map((m) => {
                     return (
-                      <Link
-                        href={{
-                          pathname: '/trade',
-                          query: { name: m.name },
-                        }}
+                      <div
+                        className="flex items-center justify-between py-2 px-4"
                         key={m.publicKey.toString()}
-                        shallow={true}
                       >
-                        <div className="default-transition flex items-center py-2 px-4 hover:cursor-pointer hover:bg-th-bkg-2">
-                          <MarketLogos market={m} />
-                          <span
-                            className={
-                              m.name === selectedMarket?.name
-                                ? 'text-th-primary'
-                                : ''
-                            }
-                          >
-                            {m.name}
-                          </span>
-                        </div>
-                      </Link>
+                        <Link
+                          href={{
+                            pathname: '/trade',
+                            query: { name: m.name },
+                          }}
+                          shallow={true}
+                        >
+                          <div className="default-transition flex items-center hover:cursor-pointer hover:bg-th-bkg-2">
+                            <MarketLogos market={m} />
+                            <span
+                              className={
+                                m.name === selectedMarket?.name
+                                  ? 'text-th-primary'
+                                  : ''
+                              }
+                            >
+                              {m.name}
+                            </span>
+                          </div>
+                        </Link>
+                        <FavoriteMarketButton market={m} />
+                      </div>
                     )
                   })
                 : null
