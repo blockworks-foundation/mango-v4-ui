@@ -250,23 +250,23 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
           <p className="mb-4 text-base">{t('onboarding:intro-desc')}</p>
           <div className="mb-6 space-y-2 py-3">
             <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-up" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">{t('onboarding:bullet-1')}</p>
             </div>
             {/* <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-up" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">Deeply liquid markets</p>
             </div> */}
             <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-up" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">{t('onboarding:bullet-2')}</p>
             </div>
             <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-up" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">{t('onboarding:bullet-3')}</p>
             </div>
             <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-up" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">{t('onboarding:bullet-4')}</p>
             </div>
           </div>

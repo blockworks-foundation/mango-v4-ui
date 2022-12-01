@@ -108,8 +108,8 @@ const MangoAccountsListModal = ({
                                     ? maintHealth > 15 && maintHealth < 50
                                       ? 'text-th-warning'
                                       : maintHealth >= 50
-                                      ? 'text-th-up'
-                                      : 'text-th-down'
+                                      ? 'text-th-success'
+                                      : 'text-th-error'
                                     : 'text-th-fgd-4'
                                 }`}
                               >
@@ -120,7 +120,7 @@ const MangoAccountsListModal = ({
                           </div>
                           {acc.publicKey.toString() ===
                           mangoAccount?.publicKey.toString() ? (
-                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-th-up">
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-th-success">
                               <CheckIcon className="h-4 w-4 text-th-bkg-1" />
                             </div>
                           ) : (

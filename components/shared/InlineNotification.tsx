@@ -26,30 +26,30 @@ const InlineNotification: FunctionComponent<InlineNotificationProps> = ({
       !hideBorder
         ? `border text-th-fgd-3 ${
             type === 'error'
-              ? 'border-th-down'
+              ? 'border-th-error'
               : type === 'success'
-              ? 'border-th-up'
+              ? 'border-th-success'
               : type === 'info'
               ? 'border-th-bkg-4'
               : 'border-th-warning'
           }`
         : type === 'error'
-        ? 'text-th-down'
+        ? 'text-th-error'
         : type === 'success'
-        ? 'text-th-up'
+        ? 'text-th-success'
         : type === 'info'
         ? 'text-th-bkg-4'
         : 'text-th-warning'
     } flex items-center rounded-md ${!hidePadding ? 'p-2' : ''}`}
   >
     {type === 'error' ? (
-      <ExclamationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-down" />
+      <ExclamationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-error" />
     ) : null}
     {type === 'success' ? (
-      <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-up" />
+      <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-success" />
     ) : null}
     {type === 'warning' ? (
-      <ExclamationTriangleIcon className="text-th-warning mr-1.5 h-5 w-5 flex-shrink-0" />
+      <ExclamationTriangleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-warning" />
     ) : null}
     {type === 'info' ? (
       <InformationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-fgd-4" />

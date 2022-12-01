@@ -49,8 +49,8 @@ const SolanaTps = () => {
                 tps < tpsWarningThreshold
                   ? 'bg-th-warning'
                   : tps < tpsAlertThreshold
-                  ? 'bg-th-down'
-                  : 'bg-th-up'
+                  ? 'bg-th-error'
+                  : 'bg-th-success'
               }`}
             />
             <div
@@ -58,8 +58,8 @@ const SolanaTps = () => {
                 tps < tpsWarningThreshold
                   ? 'bg-th-warning'
                   : tps < tpsAlertThreshold
-                  ? 'bg-th-down'
-                  : 'bg-th-up'
+                  ? 'bg-th-error'
+                  : 'bg-th-success'
               }`}
             />
           </div>

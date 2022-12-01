@@ -25,7 +25,7 @@ module.exports = {
         'mango-theme': {
           active: {
             DEFAULT: 'hsl(45, 86%, 62%)',
-            dark: 'hsl(45, 86%, 42%)',
+            dark: 'hsl(45, 86%, 52%)',
           },
           button: {
             DEFAULT: 'hsl(251, 41%, 48%)',
@@ -34,13 +34,13 @@ module.exports = {
           link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 37%)' },
           down: {
             DEFAULT: 'hsl(4, 93%, 60%)',
-            dark: 'hsl(4, 93%, 40%)',
-            muted: 'hsl(4, 53%, 40%)',
+            dark: 'hsl(4, 93%, 50%)',
+            muted: 'hsl(4, 53%, 50%)',
           },
           up: {
             DEFAULT: 'hsl(72, 97%, 41%)',
-            dark: 'hsl(72, 97%, 21%)',
-            muted: 'hsl(72, 57%, 21%)',
+            dark: 'hsl(72, 97%, 31%)',
+            muted: 'hsl(72, 57%, 31%)',
           },
           error: 'hsl(4, 93%, 60%)',
           success: 'hsl(72, 97%, 41%)',
@@ -57,22 +57,22 @@ module.exports = {
         'light-theme': {
           active: {
             DEFAULT: 'hsl(33, 100%, 57%)',
-            dark: 'hsl(33, 100%, 37%)',
+            dark: 'hsl(33, 100%, 47%)',
           },
           button: {
             DEFAULT: 'hsl(251, 41%, 56%)',
-            hover: 'hsl(251, 41%, 36%)',
+            hover: 'hsl(251, 41%, 46%)',
           },
           link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 37%)' },
           down: {
             DEFAULT: 'hsl(0, 67%, 48%)',
-            dark: 'hsl(0, 67%, 28%)',
-            muted: 'hsl(0, 27%, 28%)',
+            dark: 'hsl(0, 67%, 38%)',
+            muted: 'hsl(0, 27%, 38%)',
           },
           up: {
             DEFAULT: 'hsl(111, 47%, 53%)',
-            dark: 'hsl(111, 47%, 33%)',
-            muted: 'hsl(111, 7%, 33%)',
+            dark: 'hsl(111, 47%, 43%)',
+            muted: 'hsl(111, 7%, 43%)',
           },
           error: 'hsl(0, 67%, 48%)',
           success: 'hsl(111, 47%, 53%)',
@@ -89,22 +89,22 @@ module.exports = {
         'dark-theme': {
           active: {
             DEFAULT: 'hsl(45, 86%, 62%)',
-            dark: 'hsl(45, 86%, 42%)',
+            dark: 'hsl(45, 86%, 52%)',
           },
           button: {
             DEFAULT: 'hsl(251, 41%, 48%)',
-            hover: 'hsl(251, 41%, 28%)',
+            hover: 'hsl(251, 41%, 38%)',
           },
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 42%)' },
           down: {
             DEFAULT: 'hsl(0, 67%, 48%)',
-            dark: 'hsl(0, 67%, 28%)',
-            muted: 'hsl(0, 27%, 28%)',
+            dark: 'hsl(0, 67%, 38%)',
+            muted: 'hsl(0, 27%, 38%)',
           },
           up: {
             DEFAULT: 'hsl(111, 47%, 53%)',
-            dark: 'hsl(111, 47%, 33%)',
-            muted: 'hsl(111, 7%, 33%)',
+            dark: 'hsl(111, 47%, 43%)',
+            muted: 'hsl(111, 7%, 43%)',
           },
           error: 'hsl(0, 67%, 48%)',
           success: 'hsl(111, 47%, 53%)',

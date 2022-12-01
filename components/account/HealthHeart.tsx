@@ -19,8 +19,8 @@ const HealthHeart = ({
           ? health > 15 && health < 50
             ? 'text-th-warning'
             : health >= 50
-            ? 'text-th-up'
-            : 'text-th-down'
+            ? 'text-th-success'
+            : 'text-th-error'
           : 'text-th-fgd-4'
       }
       style={styles}

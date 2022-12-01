@@ -224,22 +224,22 @@ const Notification = ({ notification }: { notification: Notification }) => {
       <div
         className={`pointer-events-auto w-full rounded-md border bg-th-bkg-2 shadow-lg md:w-auto ${
           type === 'success'
-            ? 'border-th-up'
+            ? 'border-th-success'
             : type === 'error'
-            ? 'border-th-down'
+            ? 'border-th-error'
             : 'border-th-bkg-4'
         }`}
       >
         <div className={`relative flex w-full items-center p-3.5 md:w-96`}>
           <div className={`mr-1 flex-shrink-0`}>
             {type === 'success' ? (
-              <CheckCircleIcon className={`h-6 w-6 text-th-up`} />
+              <CheckCircleIcon className={`h-6 w-6 text-th-success`} />
             ) : null}
             {type === 'info' && (
               <InformationCircleIcon className={`h-6 w-6 text-th-fgd-3`} />
             )}
             {type === 'error' && (
-              <XCircleIcon className={`h-6 w-6 text-th-down`} />
+              <XCircleIcon className={`h-6 w-6 text-th-error`} />
             )}
             {type === 'confirm' && (
               <Loading className="mr-0.5 h-5 w-5 text-th-active" />
@@ -266,7 +266,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}
                 </div>
-                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-5 w-5" />
+                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-5 w-5 flex-shrink-0" />
               </a>
             ) : null}
           </div>

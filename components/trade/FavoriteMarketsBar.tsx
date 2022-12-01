@@ -20,7 +20,7 @@ const FavoriteMarketsBar = () => {
 
   return !isMobile ? (
     <Transition
-      className="flex items-center space-x-4 overflow-hidden border-b border-th-bkg-3 px-6"
+      className="flex items-center space-x-4 overflow-hidden border-b border-th-bkg-3 py-1 px-6"
       show={!!favoriteMarkets.length}
       enter="transition-all ease-in duration-200"
       enterFrom="opacity-0 h-0"

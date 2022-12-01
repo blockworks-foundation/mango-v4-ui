@@ -37,7 +37,7 @@ const PreferredExplorerSettings = () => {
               <p>{t(`settings:${ex.name}`)}</p>
             </div>
             {preferredExplorer.url === ex.url ? (
-              <CheckCircleIcon className="h-5 w-5 text-th-up" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
             ) : null}
           </button>
         ))}
