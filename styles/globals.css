@@ -183,6 +183,32 @@ th {
   --warning: theme('colors.smoothy-theme.warning');
 }
 
+[data-theme='Jungle'] {
+  --active: theme('colors.jungle-theme.active.DEFAULT');
+  --active-dark: theme('colors.jungle-theme.active.dark');
+  --down: theme('colors.jungle-theme.down.DEFAULT');
+  --down-dark: theme('colors.jungle-theme.down.dark');
+  --down-muted: theme('colors.jungle-theme.down.muted');
+  --up: theme('colors.jungle-theme.up.DEFAULT');
+  --up-dark: theme('colors.jungle-theme.up.dark');
+  --up-muted: theme('colors.jungle-theme.up.muted');
+  --link: theme('colors.jungle-theme.link.DEFAULT');
+  --link-hover: theme('colors.jungle-theme.link.hover');
+  --bkg-1: theme('colors.jungle-theme.bkg-1');
+  --bkg-2: theme('colors.jungle-theme.bkg-2');
+  --bkg-3: theme('colors.jungle-theme.bkg-3');
+  --bkg-4: theme('colors.jungle-theme.bkg-4');
+  --fgd-1: theme('colors.jungle-theme.fgd-1');
+  --fgd-2: theme('colors.jungle-theme.fgd-2');
+  --fgd-3: theme('colors.jungle-theme.fgd-3');
+  --fgd-4: theme('colors.jungle-theme.fgd-4');
+  --button: theme('colors.jungle-theme.button.DEFAULT');
+  --button-hover: theme('colors.jungle-theme.button.hover');
+  --error: theme('colors.jungle-theme.error');
+  --success: theme('colors.jungle-theme.success');
+  --warning: theme('colors.jungle-theme.warning');
+}
+
 /* Base */
 
 body {
