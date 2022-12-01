@@ -1,4 +1,3 @@
-import { useTheme } from 'next-themes'
 import { FunctionComponent, ReactNode } from 'react'
 
 interface AllButtonProps {
@@ -24,7 +23,6 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
   size = 'medium',
   ...props
 }) => {
-  const { theme } = useTheme()
   return (
     <button
       onClick={onClick}
@@ -32,9 +30,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       className={`whitespace-nowrap rounded-md ${
         secondary
           ? 'border border-th-bkg-4 text-th-fgd-1 md:hover:border-th-fgd-4'
-          : `bg-th-button md:hover:bg-th-button-hover ${
-              theme === 'Light' ? 'text-th-bkg-1' : 'text-th-fgd-1'
-            }`
+          : 'bg-th-button text-white md:hover:bg-th-button-hover'
       } ${
         size === 'medium'
           ? 'h-10 px-4'

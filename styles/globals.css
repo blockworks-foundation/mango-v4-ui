@@ -157,6 +157,32 @@ th {
   --warning: theme('colors.mango-theme.warning');
 }
 
+[data-theme='Smoothy'] {
+  --active: theme('colors.smoothy-theme.active.DEFAULT');
+  --active-dark: theme('colors.smoothy-theme.active.dark');
+  --down: theme('colors.smoothy-theme.down.DEFAULT');
+  --down-dark: theme('colors.smoothy-theme.down.dark');
+  --down-muted: theme('colors.smoothy-theme.down.muted');
+  --up: theme('colors.smoothy-theme.up.DEFAULT');
+  --up-dark: theme('colors.smoothy-theme.up.dark');
+  --up-muted: theme('colors.smoothy-theme.up.muted');
+  --link: theme('colors.smoothy-theme.link.DEFAULT');
+  --link-hover: theme('colors.smoothy-theme.link.hover');
+  --bkg-1: theme('colors.smoothy-theme.bkg-1');
+  --bkg-2: theme('colors.smoothy-theme.bkg-2');
+  --bkg-3: theme('colors.smoothy-theme.bkg-3');
+  --bkg-4: theme('colors.smoothy-theme.bkg-4');
+  --fgd-1: theme('colors.smoothy-theme.fgd-1');
+  --fgd-2: theme('colors.smoothy-theme.fgd-2');
+  --fgd-3: theme('colors.smoothy-theme.fgd-3');
+  --fgd-4: theme('colors.smoothy-theme.fgd-4');
+  --button: theme('colors.smoothy-theme.button.DEFAULT');
+  --button-hover: theme('colors.smoothy-theme.button.hover');
+  --error: theme('colors.smoothy-theme.error');
+  --success: theme('colors.smoothy-theme.success');
+  --warning: theme('colors.smoothy-theme.warning');
+}
+
 /* Base */
 
 body {
@@ -201,6 +227,12 @@ p {
 
 li {
   @apply text-sm text-th-fgd-3;
+}
+
+/* Forms */
+
+input::placeholder {
+  @apply text-th-fgd-4;
 }
 
 /* Slider */

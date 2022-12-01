@@ -31,7 +31,7 @@ module.exports = {
             DEFAULT: 'hsl(251, 41%, 48%)',
             hover: 'hsl(251, 41%, 38%)',
           },
-          link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 37%)' },
+          link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 47%)' },
           down: {
             DEFAULT: 'hsl(4, 93%, 60%)',
             dark: 'hsl(4, 93%, 50%)',
@@ -63,7 +63,7 @@ module.exports = {
             DEFAULT: 'hsl(251, 41%, 56%)',
             hover: 'hsl(251, 41%, 46%)',
           },
-          link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 37%)' },
+          link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 47%)' },
           down: {
             DEFAULT: 'hsl(0, 67%, 48%)',
             dark: 'hsl(0, 67%, 38%)',
@@ -84,7 +84,7 @@ module.exports = {
           'fgd-1': 'hsl(188, 71%, 8%)',
           'fgd-2': 'hsl(188, 71%, 18%)',
           'fgd-3': 'hsl(188, 71%, 28%)',
-          'fgd-4': 'hsl(188, 71%, 38%))',
+          'fgd-4': 'hsl(188, 71%, 38%)',
         },
         'dark-theme': {
           active: {
@@ -95,7 +95,7 @@ module.exports = {
             DEFAULT: 'hsl(251, 41%, 48%)',
             hover: 'hsl(251, 41%, 38%)',
           },
-          link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 42%)' },
+          link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 52%)' },
           down: {
             DEFAULT: 'hsl(0, 67%, 48%)',
             dark: 'hsl(0, 67%, 38%)',
@@ -117,6 +117,38 @@ module.exports = {
           'fgd-2': 'hsl(0, 0%, 72%)',
           'fgd-3': 'hsl(0, 0%, 62%)',
           'fgd-4': 'hsl(0, 0%, 52%)',
+        },
+        'smoothy-theme': {
+          active: {
+            DEFAULT: 'hsl(321, 100%, 48%)',
+            dark: 'hsl(321, 100%, 38%)',
+          },
+          button: {
+            DEFAULT: 'hsl(284, 100%, 56%)',
+            hover: 'hsl(284, 100%, 46%)',
+          },
+          link: { DEFAULT: 'hsl(21, 100%, 56%)', hover: 'hsl(21, 100%, 46%)' },
+          down: {
+            DEFAULT: 'hsl(0, 100%, 56%)',
+            dark: 'hsl(0, 100%, 46%)',
+            muted: 'hsl(0, 60%, 46%)',
+          },
+          up: {
+            DEFAULT: 'hsl(110, 73%, 40%)',
+            dark: 'hsl(110, 73%, 30%)',
+            muted: 'hsl(110, 33%, 30%)',
+          },
+          error: 'hsl(0, 100%, 56%)',
+          success: 'hsl(110, 73%, 40%)',
+          warning: 'hsl(21, 100%, 56%)',
+          'bkg-1': 'hsl(45, 100%, 96%)',
+          'bkg-2': 'hsl(45, 100%, 91%)',
+          'bkg-3': 'hsl(45, 100%, 86%)',
+          'bkg-4': 'hsl(45, 100%, 81%)',
+          'fgd-1': 'hsl(45, 100%, 4%)',
+          'fgd-2': 'hsl(45, 100%, 14%)',
+          'fgd-3': 'hsl(45, 100%, 24%)',
+          'fgd-4': 'hsl(45, 100%, 34%)',
         },
         'th-bkg-1': 'var(--bkg-1)',
         'th-bkg-2': 'var(--bkg-2)',
