@@ -44,6 +44,7 @@ const DisplaySettings = () => {
   const themes = useMemo(() => {
     return [
       t('settings:light'),
+      'Medium',
       t('settings:dark'),
       'Jungle',
       t('settings:mango'),
