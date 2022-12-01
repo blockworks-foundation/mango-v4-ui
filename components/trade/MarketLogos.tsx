@@ -5,7 +5,13 @@ import Image from 'next/legacy/image'
 import { useMemo } from 'react'
 import useMangoGroup from 'hooks/useMangoGroup'
 
-const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
+const MarketLogos = ({
+  market,
+  small,
+}: {
+  market: Serum3Market | PerpMarket
+  small?: boolean
+}) => {
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
 
@@ -39,8 +45,14 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
 
   return (
     <div
-      className={`relative mr-1.5 h-5 ${
-        market instanceof Serum3Market ? 'w-[34px]' : 'w-[20px]'
+      className={`relative mr-1.5 ${small ? 'h-4' : 'h-5'} ${
+        market instanceof Serum3Market
+          ? small
+            ? 'w-[27px]'
+            : 'w-[34px]'
+          : small
+          ? 'w-[16px]'
+          : 'w-[20px]'
       }`}
     >
       <div className="absolute left-0 top-0">
@@ -48,12 +60,14 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
           <Image
             alt=""
             className="z-10 rounded-full drop-shadow-md"
-            width="20"
-            height="20"
+            width={small ? '16' : '20'}
+            height={small ? '16' : '20'}
             src={logos.baseLogoURI}
           />
         ) : (
-          <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
+          <QuestionMarkCircleIcon
+            className={`${small ? 'h-4 w-4' : 'h-5 w-5'} text-th-fgd-3`}
+          />
         )}
       </div>
       <div className="absolute right-0 top-0">
@@ -61,12 +75,14 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
           <Image
             alt=""
             className="rounded-full opacity-60"
-            width="20"
-            height="20"
+            width={small ? '16' : '20'}
+            height={small ? '16' : '20'}
             src={logos.quoteLogoURI}
           />
         ) : market instanceof PerpMarket ? null : (
-          <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
+          <QuestionMarkCircleIcon
+            className={`${small ? 'h-4 w-4' : 'h-5 w-5'} text-th-fgd-3`}
+          />
         )}
       </div>
     </div>

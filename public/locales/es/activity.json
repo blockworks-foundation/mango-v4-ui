@@ -13,6 +13,8 @@
     "liquidation": "Liquidation",
     "liquidations": "Liquidations",
     "liquidation-details": "Liquidation Details",
+    "perps": "Perps",
+    "perp_trade": "Perp",
     "reset-filters": "Reset Filters",
     "select-tokens": "Select Tokens",
     "swap": "Swap",

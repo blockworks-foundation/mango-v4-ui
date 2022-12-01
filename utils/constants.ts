@@ -48,3 +48,5 @@ export const GRID_LAYOUT_KEY = 'savedLayouts-0.1'
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition'
 
 export const MIN_SOL_BALANCE = 0.04
+
+export const FAVORITE_MARKETS_KEY = 'favoriteMarkets'

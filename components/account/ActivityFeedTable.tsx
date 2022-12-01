@@ -102,6 +102,11 @@ const ActivityFeedTable = ({
         symbol: swap_in_symbol,
       }
     }
+    if (activity_type === 'perp_trade') {
+      const { perp_market, price, quantity } = activity.activity_details
+      credit = { value: quantity, symbol: perp_market }
+      debit = { value: formatDecimal(quantity * price * -1), symbol: 'USDC' }
+    }
     return { credit, debit }
   }
 
@@ -133,6 +138,11 @@ const ActivityFeedTable = ({
       value =
         (swap_in_amount + loan_origination_fee) * swap_in_price_usd -
         swap_out_amount * swap_out_price_usd
+    }
+    if (activity_type === 'perp_trade') {
+      const { maker_fee, price, quantity, taker_fee } =
+        activity.activity_details
+      value = (quantity * price + maker_fee + taker_fee) * -1
     }
     return value
   }
@@ -309,6 +319,7 @@ const MobileActivityFeedItem = ({
   const { signature } = activity.activity_details
   const isLiquidation = activity_type === 'liquidate_token_with_token'
   const isSwap = activity_type === 'swap'
+  const isPerp = activity_type === 'perp_trade'
   const activityName = isLiquidation ? 'liquidation' : activity_type
   const value = getValue(activity)
   return (
@@ -350,6 +361,26 @@ const MobileActivityFeedItem = ({
                   </span>
                   <span className="font-body tracking-wide text-th-fgd-3">
                     {activity.activity_details.swap_out_symbol}
+                  </span>
+                </>
+              ) : isPerp ? (
+                <>
+                  <span
+                    className={`mr-1 font-body ${
+                      activity.activity_details.taker_side === 'bid'
+                        ? 'text-th-green'
+                        : 'text-th-red'
+                    }`}
+                  >
+                    {activity.activity_details.taker_side === 'bid'
+                      ? 'BUY'
+                      : 'SELL'}
+                  </span>
+                  <span className="mr-1">
+                    {activity.activity_details.quantity}
+                  </span>
+                  <span className="font-body text-th-fgd-3">
+                    {activity.activity_details.perp_market}
                   </span>
                 </>
               ) : (

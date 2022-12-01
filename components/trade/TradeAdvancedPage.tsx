@@ -14,6 +14,7 @@ import MobileTradeAdvancedPage from './MobileTradeAdvancedPage'
 import OrderbookAndTrades from './OrderbookAndTrades'
 import { useWallet } from '@solana/wallet-adapter-react'
 import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
+import FavoriteMarketsBar from './FavoriteMarketsBar'
 
 const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
   ssr: false,
@@ -149,6 +150,7 @@ const TradeAdvancedPage = () => {
     <MobileTradeAdvancedPage />
   ) : (
     <>
+      <FavoriteMarketsBar />
       <ResponsiveGridLayout
         // layouts={savedLayouts ? savedLayouts : defaultLayouts}
         layouts={defaultLayouts}

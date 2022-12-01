@@ -26,13 +26,13 @@ const AccountChart = ({
 }) => {
   const { t } = useTranslation('common')
   const actions = mangoStore((s) => s.actions)
-  const [daysToShow, setDaysToShow] = useState<number>(1)
+  const [daysToShow, setDaysToShow] = useState<string>('1')
   const loading = mangoStore((s) => s.mangoAccount.stats.performance.loading)
 
-  const handleDaysToShow = async (days: number) => {
+  const handleDaysToShow = async (days: string) => {
     await actions.fetchAccountPerformance(
       mangoAccount.publicKey.toString(),
-      days
+      parseInt(days)
     )
     setDaysToShow(days)
   }
