@@ -22,7 +22,7 @@ import NumberFormat, {
 } from 'react-number-format'
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
-import { calculateMarketPrice, calculateSlippage } from 'utils/tradeForm'
+import { calculateMarketPrice } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
@@ -37,7 +37,7 @@ import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { getDecimalCount } from 'utils/numbers'
-import useMarkPrice from 'hooks/useMarkPrice'
+import Slippage from './Slippage'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -53,7 +53,6 @@ const AdvancedTradeForm = () => {
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
-  const markPrice = useMarkPrice()
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[0]
@@ -338,19 +337,6 @@ const AdvancedTradeForm = () => {
       : Math.trunc(simulatedHealthRatio!)
   }, [selectedMarket, tradeForm])
 
-  const slippage = useMemo(() => {
-    if (tradeForm.tradeType === 'Market' && markPrice && selectedMarket) {
-      const orderbook = mangoStore.getState().selectedMarket.orderbook
-      return calculateSlippage(
-        orderbook,
-        Number(tradeForm.baseSize),
-        tradeForm.side,
-        markPrice
-      )
-    }
-    return 0
-  }, [tradeForm, markPrice, selectedMarket])
-
   return (
     <div>
       <div className="border-b border-th-bkg-3 md:border-t lg:border-t-0">
@@ -564,26 +550,7 @@ const AdvancedTradeForm = () => {
       </div>
       <div className="mt-4 space-y-1 px-4 lg:mt-6">
         <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
-        {slippage ? (
-          <div className="flex justify-between">
-            <Tooltip content={t('trade:tooltip-slippage')}>
-              <p className="tooltip-underline mr-4 mb-1 text-xs">
-                {t('trade:est-slippage')}
-              </p>
-            </Tooltip>
-            <p
-              className={`text-xs ${
-                slippage <= 1
-                  ? 'text-th-green'
-                  : slippage <= 3
-                  ? 'text-th-orange'
-                  : 'text-th-red'
-              }`}
-            >
-              {slippage.toFixed(2)}%
-            </p>
-          </div>
-        ) : null}
+        <Slippage />
       </div>
     </div>
   )
