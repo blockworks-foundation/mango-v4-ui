@@ -150,6 +150,38 @@ module.exports = {
           'fgd-3': 'hsl(0, 0%, 60%)',
           'fgd-4': 'hsl(0, 0%, 50%)',
         },
+        'ocean-theme': {
+          active: {
+            DEFAULT: 'hsl(45, 86%, 62%)',
+            dark: 'hsl(45, 86%, 52%)',
+          },
+          button: {
+            DEFAULT: 'hsl(222, 74%, 36%)',
+            hover: 'hsl(222, 74%, 26%)',
+          },
+          link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 52%)' },
+          down: {
+            DEFAULT: 'hsl(3, 59%, 56%)',
+            dark: 'hsl(3, 59%, 46%)',
+            muted: 'hsl(3, 19%, 46%)',
+          },
+          up: {
+            DEFAULT: 'hsl(165, 82%, 45%)',
+            dark: 'hsl(165, 82%, 35%)',
+            muted: 'hsl(165, 42%, 35%)',
+          },
+          error: 'hsl(3, 59%, 56%)',
+          success: 'hsl(165, 82%, 45%)',
+          warning: 'hsl(45, 86%, 62%)',
+          'bkg-1': 'hsl(222, 74%, 21%)',
+          'bkg-2': 'hsl(222, 74%, 26%)',
+          'bkg-3': 'hsl(222, 74%, 31%)',
+          'bkg-4': 'hsl(222, 74%, 36%)',
+          'fgd-1': 'hsl(220, 71%, 96%)',
+          'fgd-2': 'hsl(220, 71%, 86%)',
+          'fgd-3': 'hsl(220, 71%, 76%)',
+          'fgd-4': 'hsl(220, 71%, 66%)',
+        },
         'smoothy-theme': {
           active: {
             DEFAULT: 'hsl(321, 100%, 48%)',

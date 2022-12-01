@@ -6,6 +6,7 @@ export const COLORS: any = {
     // Smoothy: 'hsl(45, 100%, 96%)',
     Jungle: 'hsl(120, 18%, 12%)',
     Medium: 'hsl(240, 6%, 12%)',
+    Ocean: 'hsl(222, 74%, 21%)',
   },
   BKG2: {
     Mango: 'hsl(256, 18%, 17%)',
@@ -14,6 +15,7 @@ export const COLORS: any = {
     // Smoothy: 'hsl(45, 100%, 91%)',
     Jungle: 'hsl(120, 18%, 17%)',
     Medium: 'hsl(240, 6%, 17%)',
+    Ocean: 'hsl(222, 74%, 26%)',
   },
   BKG3: {
     Mango: 'hsl(256, 18%, 22%)',
@@ -22,6 +24,7 @@ export const COLORS: any = {
     // Smoothy: 'hsl(45, 100%, 86%)',
     Jungle: 'hsl(120, 18%, 22%)',
     Medium: 'hsl(240, 6%, 22%)',
+    Ocean: 'hsl(222, 74%, 31%)',
   },
   BKG4: {
     Mango: 'hsl(256, 18%, 27%)',
@@ -30,6 +33,7 @@ export const COLORS: any = {
     // Smoothy: 'hsl(45, 100%, 81%)',
     Jungle: 'hsl(120, 18%, 27%)',
     Medium: 'hsl(240, 6%, 27%)',
+    Ocean: 'hsl(222, 74%, 36%)',
   },
   FGD4: {
     Mango: 'hsl(253, 19%, 61%)',
@@ -38,6 +42,7 @@ export const COLORS: any = {
     // Smoothy: 'hsl(45, 100%, 34%)',
     Jungle: 'hsl(120, 20%, 63%)',
     Medium: 'hsl(0, 0%, 50%)',
+    Ocean: 'hsl(220, 71%, 66%)',
   },
   UP: {
     Mango: 'hsl(72, 97%, 41%)',
@@ -46,6 +51,7 @@ export const COLORS: any = {
     // Smoothy: 'hsl(110, 73%, 40%)',
     Jungle: 'hsl(120, 50%, 53%)',
     Medium: 'hsl(111, 47%, 53%)',
+    Ocean: 'hsl(165, 82%, 45%)',
   },
   ACTIVE: {
     Mango: 'hsl(45, 86%, 62%)',
@@ -54,6 +60,7 @@ export const COLORS: any = {
     // Smoothy: 'hsl(321, 100%, 48%)',
     Jungle: 'hsl(120, 100%, 73%)',
     Medium: 'hsl(45, 86%, 62%)',
+    Ocean: 'hsl(45, 86%, 62%)',
   },
   DOWN: {
     Mango: 'hsl(4, 93%, 60%)',
@@ -62,5 +69,6 @@ export const COLORS: any = {
     // Smoothy: 'hsl(0, 100%, 56%)',
     Jungle: 'hsl(0, 100%, 73%)',
     Medium: 'hsl(0, 67%, 48%)',
+    Ocean: 'hsl(3, 59%, 56%)',
   },
 }

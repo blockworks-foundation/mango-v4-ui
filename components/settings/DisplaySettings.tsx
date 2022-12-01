@@ -48,6 +48,7 @@ const DisplaySettings = () => {
       t('settings:dark'),
       'Jungle',
       t('settings:mango'),
+      'Ocean',
       // 'Smoothy',
     ]
   }, [t])
