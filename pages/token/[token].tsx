@@ -323,7 +323,7 @@ const Token: NextPage = () => {
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 pt-4">
                 <p>{t('deposit-rate')}</p>
-                <p className="font-mono text-th-green">
+                <p className="font-mono text-th-up">
                   {formatDecimal(bank.getDepositRateUi(), 2, {
                     fixed: true,
                   })}
@@ -347,7 +347,7 @@ const Token: NextPage = () => {
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 pt-4">
                 <p>{t('borrow-rate')}</p>
-                <p className="font-mono text-th-red">
+                <p className="font-mono text-th-down">
                   {formatDecimal(bank.getBorrowRateUi(), 2, {
                     fixed: true,
                   })}

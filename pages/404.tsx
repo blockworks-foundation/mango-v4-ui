@@ -19,7 +19,7 @@ export default function Custom404() {
       style={{ height: 'calc(100vh - 80px)' }}
     >
       {/* <span className="mb-4 text-lg font-bold text-th-fgd-3">404</span> */}
-      <RektIcon className="mb-4 h-14 w-auto -rotate-6 transform text-th-red" />
+      <RektIcon className="mb-4 h-14 w-auto -rotate-6 transform text-th-down" />
       <h1 className="mt-1 text-3xl text-th-fgd-1 sm:text-4xl">
         404: {t('404-heading')}
       </h1>

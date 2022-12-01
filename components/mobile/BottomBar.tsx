@@ -40,7 +40,7 @@ const BottomBar = () => {
             pathname: '/',
           }}
           className={`${
-            asPath === '/' ? 'text-th-primary' : 'text-th-fgd-3'
+            asPath === '/' ? 'text-th-active' : 'text-th-fgd-3'
           } col-span-1 flex cursor-pointer flex-col items-center`}
         >
           <HomeIcon className="mb-1 h-4 w-4" />
@@ -52,7 +52,7 @@ const BottomBar = () => {
           }}
           shallow={true}
           className={`${
-            asPath === '/swap' ? 'text-th-primary' : 'text-th-fgd-3'
+            asPath === '/swap' ? 'text-th-active' : 'text-th-fgd-3'
           } col-span-1 flex cursor-pointer flex-col items-center`}
         >
           <ArrowsRightLeftIcon className="mb-1 h-4 w-4" />
@@ -62,7 +62,7 @@ const BottomBar = () => {
           href="/trade"
           shallow={true}
           className={`${
-            asPath === '/trade' ? 'text-th-primary' : 'text-th-fgd-3'
+            asPath === '/trade' ? 'text-th-active' : 'text-th-fgd-3'
           } col-span-1 flex cursor-pointer flex-col items-center`}
         >
           <TradeIcon className="mb-1 h-4 w-4" />
@@ -70,7 +70,7 @@ const BottomBar = () => {
         </Link>
         <a
           className={`${
-            showPanel ? 'text-th-primary' : 'text-th-fgd-3'
+            showPanel ? 'text-th-active' : 'text-th-fgd-3'
           } col-span-1 flex cursor-pointer flex-col items-center`}
           onClick={() => setShowPanel(!showPanel)}
         >

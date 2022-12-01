@@ -1,6 +1,5 @@
 import { Popover, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/20/solid'
-import { useTheme } from 'next-themes'
 import { Fragment, ReactNode } from 'react'
 
 const IconDropMenu = ({
@@ -34,7 +33,6 @@ const IconDropMenu = ({
     rightBottom: size === 'large' ? 'left-14 bottom-0' : 'left-12 bottom-0',
     rightTop: size === 'large' ? 'left-14 top-0' : 'left-12 top-0',
   }
-  const { theme } = useTheme()
   return (
     <Popover>
       {({ open }) => (
@@ -46,9 +44,7 @@ const IconDropMenu = ({
                 : size === 'medium'
                 ? 'h-10 w-10'
                 : 'h-8 w-8'
-            } default-transition items-center justify-center rounded-full border border-th-fgd-4 md:hover:border-th-bkg-4 ${
-              theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
-            } md:hover:text-th-fgd-1 ${
+            } default-transition items-center justify-center rounded-full border border-th-bkg-4 text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:text-th-fgd-1 ${
               disabled ? 'cursor-not-allowed opacity-60' : ''
             }`}
             disabled={disabled}

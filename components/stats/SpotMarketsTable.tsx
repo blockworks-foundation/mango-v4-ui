@@ -80,9 +80,7 @@ const SpotMarketsTable = () => {
                       chartData !== undefined ? (
                         <SimpleAreaChart
                           color={
-                            change >= 0
-                              ? COLORS.GREEN[theme]
-                              : COLORS.RED[theme]
+                            change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
                           }
                           data={chartData}
                           height={40}
@@ -178,7 +176,7 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
         {!loadingPrices ? (
           chartData !== undefined ? (
             <SimpleAreaChart
-              color={change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]}
+              color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
               data={chartData}
               height={40}
               name={bank!.name}

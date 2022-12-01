@@ -23,7 +23,7 @@ const DailyRange = ({ high, low, price }: DailyRangeProps) => {
             style={{
               width: `${rangePercent}%`,
             }}
-            className="flex rounded-sm bg-th-primary"
+            className="flex rounded-sm bg-th-active"
           ></div>
         </div>
         <span className={`pl-2 font-mono text-th-fgd-2`}>

@@ -175,8 +175,8 @@ const RecentTrades = () => {
                     <td
                       className={`pb-1.5 text-right ${
                         ['buy', 'bid'].includes(side)
-                          ? `text-th-green`
-                          : `text-th-red`
+                          ? `text-th-up`
+                          : `text-th-down`
                       }`}
                     >
                       {formattedPrice.toFixed()}

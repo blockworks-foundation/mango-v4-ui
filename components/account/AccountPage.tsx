@@ -278,8 +278,8 @@ const AccountPage = () => {
                 <SimpleAreaChart
                   color={
                     accountValueChange >= 0
-                      ? COLORS.GREEN[theme]
-                      : COLORS.RED[theme]
+                      ? COLORS.UP[theme]
+                      : COLORS.DOWN[theme]
                   }
                   data={performanceData.concat(latestAccountData)}
                   height={88}

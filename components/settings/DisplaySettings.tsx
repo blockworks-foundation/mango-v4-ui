@@ -1,4 +1,5 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
+import Select from '@components/forms/Select'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
@@ -41,7 +42,15 @@ const DisplaySettings = () => {
     'Slider'
   )
   const themes = useMemo(() => {
-    return [t('settings:light'), t('settings:mango'), t('settings:dark')]
+    return [
+      t('settings:light'),
+      'Medium',
+      t('settings:dark'),
+      'Jungle',
+      t('settings:mango'),
+      'Ocean',
+      // 'Smoothy',
+    ]
   }, [t])
 
   const handleLangChange = useCallback(
@@ -58,12 +67,25 @@ const DisplaySettings = () => {
       <h2 className="mb-4 text-base">{t('settings:display')}</h2>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 lg:mb-0">{t('settings:theme')}</p>
-        <div className="w-full min-w-[220px] md:w-auto">
-          <ButtonGroup
+        <div className="w-full min-w-[140px] md:w-auto">
+          <Select
+            value={theme}
+            onChange={(t) => setTheme(t)}
+            className="w-full"
+          >
+            {themes.map((t) => (
+              <Select.Option key={t} value={t}>
+                <div className="flex w-full items-center justify-between">
+                  {t}
+                </div>
+              </Select.Option>
+            ))}
+          </Select>
+          {/* <ButtonGroup
             activeValue={theme}
             onChange={(t) => setTheme(t)}
             values={themes}
-          />
+          /> */}
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
