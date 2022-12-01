@@ -1,6 +1,6 @@
 export const COLORS: any = {
   BKG1: {
-    Mango: 'hsl(256, 18%, 12%)',
+    Mango: '#18181C',
     Dark: 'hsl(240, 6%, 7%)',
     Light: 'hsl(0, 0%, 99%)',
     // Smoothy: 'hsl(45, 100%, 96%)',
@@ -45,7 +45,7 @@ export const COLORS: any = {
     Ocean: 'hsl(220, 71%, 66%)',
   },
   UP: {
-    Mango: 'hsl(72, 97%, 41%)',
+    Mango: '#A6CD03',
     Dark: 'hsl(111, 47%, 53%)',
     Light: 'hsl(111, 47%, 53%)',
     // Smoothy: 'hsl(110, 73%, 40%)',
@@ -63,7 +63,7 @@ export const COLORS: any = {
     Ocean: 'hsl(45, 86%, 62%)',
   },
   DOWN: {
-    Mango: 'hsl(4, 93%, 60%)',
+    Mango: '#F84638',
     Dark: 'hsl(0, 67%, 48%)',
     Light: 'hsl(0, 67%, 48%)',
     // Smoothy: 'hsl(0, 100%, 56%)',
