@@ -42,12 +42,12 @@ const FavoriteMarketsBar = () => {
         return (
           <Link href={`/trade?name=${mkt}`} key={mkt} shallow={true}>
             <div
-              className={`default-transition flex items-center whitespace-nowrap py-1 text-xs hover:text-th-primary hover:opacity-100 ${
+              className={`default-transition flex items-center whitespace-nowrap py-1 text-xs hover:text-th-active hover:opacity-100 ${
                 asPath.includes(mkt) ||
                 (asPath === '/trade' &&
                   selectedMarket &&
                   selectedMarket.name === mkt)
-                  ? 'text-th-primary'
+                  ? 'text-th-active'
                   : 'text-th-fgd-1 opacity-60'
               }`}
             >
@@ -58,8 +58,8 @@ const FavoriteMarketsBar = () => {
                   className={`text-xs ${
                     change24h
                       ? change24h >= 0
-                        ? 'text-th-green'
-                        : 'text-th-red'
+                        ? 'text-th-up'
+                        : 'text-th-down'
                       : 'text-th-fgd-4'
                   }`}
                 >

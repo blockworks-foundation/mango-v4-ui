@@ -80,15 +80,16 @@ th {
 /* Theme */
 
 :root {
-  --primary: theme('colors.light-theme.orange.DEFAULT');
-  --primary-dark: theme('colors.light-theme.orange.dark');
-  --red: theme('colors.light-theme.red.DEFAULT');
-  --red-dark: theme('colors.light-theme.red.dark');
-  --red-muted: theme('colors.light-theme.red.muted');
-  --green: theme('colors.light-theme.green.DEFAULT');
-  --green-dark: theme('colors.light-theme.green.dark');
-  --green-muted: theme('colors.light-theme.green.muted');
-  --orange: theme('colors.light-theme.orange.DEFAULT');
+  --active: theme('colors.light-theme.active.DEFAULT');
+  --active-dark: theme('colors.light-theme.active.dark');
+  --down: theme('colors.light-theme.down.DEFAULT');
+  --down-dark: theme('colors.light-theme.down.dark');
+  --down-muted: theme('colors.light-theme.down.muted');
+  --up: theme('colors.light-theme.up.DEFAULT');
+  --up-dark: theme('colors.light-theme.up.dark');
+  --up-muted: theme('colors.light-theme.up.muted');
+  --link: theme('colors.light-theme.link.DEFAULT');
+  --link-hover: theme('colors.light-theme.link.hover');
   --bkg-1: theme('colors.light-theme.bkg-1');
   --bkg-2: theme('colors.light-theme.bkg-2');
   --bkg-3: theme('colors.light-theme.bkg-3');
@@ -97,20 +98,24 @@ th {
   --fgd-2: theme('colors.light-theme.fgd-2');
   --fgd-3: theme('colors.light-theme.fgd-3');
   --fgd-4: theme('colors.light-theme.fgd-4');
-  --button: theme('colors.light-theme.button');
-  --button-hover: theme('colors.light-theme.button-hover');
+  --button: theme('colors.light-theme.button.DEFAULT');
+  --button-hover: theme('colors.light-theme.button.hover');
+  --error: theme('colors.light-theme.error');
+  --success: theme('colors.light-theme.success');
+  --warning: theme('colors.light-theme.warning');
 }
 
 [data-theme='Dark'] {
-  --primary: theme('colors.dark-theme.yellow.DEFAULT');
-  --primary-dark: theme('colors.dark-theme.yellow.dark');
-  --red: theme('colors.dark-theme.red.DEFAULT');
-  --red-dark: theme('colors.dark-theme.red.dark');
-  --red-muted: theme('colors.dark-theme.red.muted');
-  --green: theme('colors.dark-theme.green.DEFAULT');
-  --green-dark: theme('colors.dark-theme.green.dark');
-  --green-muted: theme('colors.dark-theme.green.muted');
-  --orange: theme('colors.dark-theme.orange.DEFAULT');
+  --active: theme('colors.dark-theme.active.DEFAULT');
+  --active-dark: theme('colors.dark-theme.active.dark');
+  --down: theme('colors.dark-theme.down.DEFAULT');
+  --down-dark: theme('colors.dark-theme.down.dark');
+  --down-muted: theme('colors.dark-theme.down.muted');
+  --up: theme('colors.dark-theme.up.DEFAULT');
+  --up-dark: theme('colors.dark-theme.up.dark');
+  --up-muted: theme('colors.dark-theme.up.muted');
+  --link: theme('colors.dark-theme.link.DEFAULT');
+  --link-hover: theme('colors.dark-theme.link.hover');
   --bkg-1: theme('colors.dark-theme.bkg-1');
   --bkg-2: theme('colors.dark-theme.bkg-2');
   --bkg-3: theme('colors.dark-theme.bkg-3');
@@ -119,20 +124,24 @@ th {
   --fgd-2: theme('colors.dark-theme.fgd-2');
   --fgd-3: theme('colors.dark-theme.fgd-3');
   --fgd-4: theme('colors.dark-theme.fgd-4');
-  --button: theme('colors.dark-theme.button');
-  --button-hover: theme('colors.dark-theme.button-hover');
+  --button: theme('colors.dark-theme.button.DEFAULT');
+  --button-hover: theme('colors.dark-theme.button.hover');
+  --error: theme('colors.dark-theme.error');
+  --success: theme('colors.dark-theme.success');
+  --warning: theme('colors.dark-theme.warning');
 }
 
 [data-theme='Mango'] {
-  --primary: theme('colors.mango-theme.yellow.DEFAULT');
-  --primary-dark: theme('colors.mango-theme.yellow.dark');
-  --red: theme('colors.mango-theme.red.DEFAULT');
-  --red-dark: theme('colors.mango-theme.red.dark');
-  --red-muted: theme('colors.mango-theme.red.muted');
-  --green: theme('colors.mango-theme.green.DEFAULT');
-  --green-dark: theme('colors.mango-theme.green.dark');
-  --green-muted: theme('colors.mango-theme.green.muted');
-  --orange: theme('colors.mango-theme.orange.DEFAULT');
+  --active: theme('colors.mango-theme.active.DEFAULT');
+  --active-dark: theme('colors.mango-theme.active.dark');
+  --down: theme('colors.mango-theme.down.DEFAULT');
+  --down-dark: theme('colors.mango-theme.down.dark');
+  --down-muted: theme('colors.mango-theme.down.muted');
+  --up: theme('colors.mango-theme.up.DEFAULT');
+  --up-dark: theme('colors.mango-theme.up.dark');
+  --up-muted: theme('colors.mango-theme.up.muted');
+  --link: theme('colors.mango-theme.link.DEFAULT');
+  --link-hover: theme('colors.mango-theme.link.hover');
   --bkg-1: theme('colors.mango-theme.bkg-1');
   --bkg-2: theme('colors.mango-theme.bkg-2');
   --bkg-3: theme('colors.mango-theme.bkg-3');
@@ -141,8 +150,11 @@ th {
   --fgd-2: theme('colors.mango-theme.fgd-2');
   --fgd-3: theme('colors.mango-theme.fgd-3');
   --fgd-4: theme('colors.mango-theme.fgd-4');
-  --button: theme('colors.mango-theme.button');
-  --button-hover: theme('colors.mango-theme.button-hover');
+  --button: theme('colors.mango-theme.button.DEFAULT');
+  --button-hover: theme('colors.mango-theme.button.hover');
+  --error: theme('colors.mango-theme.error');
+  --success: theme('colors.mango-theme.success');
+  --warning: theme('colors.mango-theme.warning');
 }
 
 /* Base */
@@ -198,7 +210,7 @@ input[type='range']::-webkit-slider-thumb {
   height: 16px;
   width: 16px;
   border-radius: 100%;
-  background: var(--primary);
+  background: var(--active);
   cursor: pointer;
   margin-top: -1px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
 }
@@ -208,7 +220,7 @@ input[type='range']::-moz-range-thumb {
   height: 16px;
   width: 16px;
   border-radius: 100%;
-  background: var(--primary);
+  background: var(--active);
   cursor: pointer;
 }
 
@@ -217,7 +229,7 @@ input[type='range']::-ms-thumb {
   height: 16px;
   width: 16px;
   border-radius: 100%;
-  background: var(--primary);
+  background: var(--active);
   cursor: pointer;
 }
 
@@ -311,7 +323,7 @@ input[type='range'] {
 }
 
 input[type='range']::-webkit-slider-thumb {
-  @apply h-5 w-5 cursor-ew-resize appearance-none rounded-full bg-th-primary;
+  @apply h-5 w-5 cursor-ew-resize appearance-none rounded-full bg-th-active;
 }
 
 input[type='range']::-webkit-slider-runnable-track {
@@ -328,7 +340,7 @@ input[type='range']::-webkit-slider-runnable-track {
 
 @keyframes green-flash {
   from {
-    background-color: var(--green-muted);
+    background-color: var(--up-muted);
   }
   to {
     background-color: transparent;
@@ -337,7 +349,7 @@ input[type='range']::-webkit-slider-runnable-track {
 
 @-webkit-keyframes green-flash {
   from {
-    background-color: var(--green-muted);
+    background-color: var(--up-muted);
   }
   to {
     background-color: transparent;
@@ -345,7 +357,7 @@ input[type='range']::-webkit-slider-runnable-track {
 }
 @-moz-keyframes green-flash {
   from {
-    background-color: var(--green-muted);
+    background-color: var(--up-muted);
   }
   to {
     background-color: transparent;
@@ -354,7 +366,7 @@ input[type='range']::-webkit-slider-runnable-track {
 
 @keyframes red-flash {
   from {
-    background-color: var(--red-muted);
+    background-color: var(--down-muted);
   }
   to {
     background-color: transparent;
@@ -363,7 +375,7 @@ input[type='range']::-webkit-slider-runnable-track {
 
 @-webkit-keyframes red-flash {
   from {
-    background-color: var(--red-muted);
+    background-color: var(--down-muted);
   }
   to {
     background-color: transparent;
@@ -371,7 +383,7 @@ input[type='range']::-webkit-slider-runnable-track {
 }
 @-moz-keyframes red-flash {
   from {
-    background-color: var(--red-muted);
+    background-color: var(--down-muted);
   }
   to {
     background-color: transparent;

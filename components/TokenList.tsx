@@ -224,14 +224,14 @@ const TokenList = () => {
                   </Td>
                   <Td>
                     <div className="flex justify-end space-x-2">
-                      <p className="text-th-green">
+                      <p className="text-th-up">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
                           fixed: true,
                         })}
                         %
                       </p>
                       <span className="text-th-fgd-4">|</span>
-                      <p className="text-th-red">
+                      <p className="text-th-down">
                         {formatDecimal(bank.getBorrowRateUi(), 2, {
                           fixed: true,
                         })}
@@ -397,11 +397,11 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('rates')}</p>
             <p className="space-x-2 font-mono">
-              <span className="text-th-green">
+              <span className="text-th-up">
                 {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
               </span>
               <span className="font-normal text-th-fgd-4">|</span>
-              <span className="text-th-red">
+              <span className="text-th-down">
                 {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
               </span>
             </p>

@@ -34,8 +34,8 @@ const ChartRangeButtons: FunctionComponent<ChartRangeButtonsProps> = ({
             className={`${className} default-transition relative h-6 w-1/2 cursor-pointer rounded-md px-3 text-center text-xs
               ${
                 v === activeValue
-                  ? `text-th-primary`
-                  : `text-th-fgd-3 md:hover:text-th-primary`
+                  ? `text-th-active`
+                  : `text-th-fgd-3 md:hover:text-th-active`
               }
             `}
             key={`${v}${i}`}

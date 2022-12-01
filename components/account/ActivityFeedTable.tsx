@@ -218,7 +218,7 @@ const ActivityFeedTable = ({
                     </Td>
                     <Td
                       className={`text-right font-mono ${
-                        value >= 0 ? 'text-th-green' : 'text-th-red'
+                        value >= 0 ? 'text-th-up' : 'text-th-down'
                       }`}
                     >
                       {value > 0 ? '+' : ''}
@@ -368,8 +368,8 @@ const MobileActivityFeedItem = ({
                   <span
                     className={`mr-1 font-body ${
                       activity.activity_details.taker_side === 'bid'
-                        ? 'text-th-green'
-                        : 'text-th-red'
+                        ? 'text-th-up'
+                        : 'text-th-down'
                     }`}
                   >
                     {activity.activity_details.taker_side === 'bid'

@@ -11,8 +11,8 @@ const OrderbookIcon = ({
   const { theme } = useTheme()
   const oppositeSideColor =
     theme === 'Light' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)'
-  const buyColor = side === 'buy' ? COLORS.GREEN[theme] : oppositeSideColor
-  const sellColor = side === 'sell' ? COLORS.RED[theme] : oppositeSideColor
+  const buyColor = side === 'buy' ? COLORS.UP[theme] : oppositeSideColor
+  const sellColor = side === 'sell' ? COLORS.DOWN[theme] : oppositeSideColor
   return (
     <svg
       className={`${className}`}

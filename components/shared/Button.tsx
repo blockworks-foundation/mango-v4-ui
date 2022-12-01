@@ -31,9 +31,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       disabled={disabled}
       className={`whitespace-nowrap rounded-md ${
         secondary
-          ? `border border-th-fgd-4 md:hover:border-th-bkg-4 ${
-              theme === 'Light' ? 'text-th-button' : 'text-th-fgd-1'
-            }`
+          ? 'border border-th-bkg-4 text-th-fgd-1 md:hover:border-th-fgd-4'
           : `bg-th-button md:hover:bg-th-button-hover ${
               theme === 'Light' ? 'text-th-bkg-1' : 'text-th-fgd-1'
             }`
@@ -78,7 +76,7 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
           ? 'h-8 w-8'
           : 'h-10 w-10'
       } default-transition items-center justify-center rounded-full ${
-        hideBg ? 'md:hover:text-th-primary' : 'bg-th-bkg-4 md:hover:bg-th-bkg-3'
+        hideBg ? 'md:hover:text-th-active' : 'bg-th-bkg-4 md:hover:bg-th-bkg-3'
       } text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:bg-th-bkg-4 
       disabled:text-th-fgd-4 md:disabled:hover:text-th-fgd-4 ${className}`}
       {...props}
@@ -107,7 +105,7 @@ export const LinkButton: FunctionComponent<LinkButtonCombinedProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={`flex items-center border-0 font-bold ${
-        secondary ? 'text-th-primary' : 'text-th-fgd-2'
+        secondary ? 'text-th-active' : 'text-th-fgd-2'
       } underline focus:outline-none disabled:cursor-not-allowed  disabled:opacity-50 md:hover:no-underline  ${className}`}
       {...props}
     >

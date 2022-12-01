@@ -17,10 +17,10 @@ const HealthHeart = ({
       className={
         health
           ? health > 15 && health < 50
-            ? 'text-th-orange'
+            ? 'text-th-warning'
             : health >= 50
-            ? 'text-th-green'
-            : 'text-th-red'
+            ? 'text-th-up'
+            : 'text-th-down'
           : 'text-th-fgd-4'
       }
       style={styles}

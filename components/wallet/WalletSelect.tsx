@@ -13,7 +13,7 @@ const WalletSelect = () => {
       {({ open }) => (
         <>
           <Menu.Button
-            className={`flex h-full w-12 cursor-pointer items-center justify-center rounded-none bg-transparent text-white hover:brightness-[1.1] focus:outline-none disabled:opacity-25`}
+            className={`flex h-full w-12 cursor-pointer items-center justify-center rounded-none bg-transparent text-th-fgd-3 hover:brightness-[1.1] focus:outline-none disabled:opacity-25`}
             disabled={!group}
           >
             <ChevronDownIcon
@@ -37,7 +37,7 @@ const WalletSelect = () => {
               {displayedWallets?.map((wallet, index) => (
                 <Menu.Item key={index}>
                   <button
-                    className="flex w-full flex-row items-center justify-between rounded-none py-1.5 font-normal focus:outline-none md:hover:cursor-pointer md:hover:text-th-primary"
+                    className="flex w-full flex-row items-center justify-between rounded-none py-1.5 font-normal focus:outline-none md:hover:cursor-pointer md:hover:text-th-active"
                     onClick={() => {
                       handleSelect(wallet.adapter.name)
                     }}

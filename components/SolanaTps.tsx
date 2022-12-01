@@ -47,19 +47,19 @@ const SolanaTps = () => {
             <div
               className={`absolute top-0.5 left-0.5 h-2 w-2 rounded-full ${
                 tps < tpsWarningThreshold
-                  ? 'bg-th-orange'
+                  ? 'bg-th-warning'
                   : tps < tpsAlertThreshold
-                  ? 'bg-th-red'
-                  : 'bg-th-green'
+                  ? 'bg-th-down'
+                  : 'bg-th-up'
               }`}
             />
             <div
               className={`absolute h-3 w-3 rounded-full opacity-40 ${
                 tps < tpsWarningThreshold
-                  ? 'bg-th-orange'
+                  ? 'bg-th-warning'
                   : tps < tpsAlertThreshold
-                  ? 'bg-th-red'
-                  : 'bg-th-green'
+                  ? 'bg-th-down'
+                  : 'bg-th-up'
               }`}
             />
           </div>

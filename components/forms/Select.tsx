@@ -70,8 +70,8 @@ const Option = ({ value, children, className }: OptionProps) => {
     <Listbox.Option className="mb-0" value={value}>
       {({ selected }) => (
         <div
-          className={`default-transition rounded p-2 text-th-fgd-1 hover:cursor-pointer hover:bg-th-bkg-3 hover:text-th-primary ${
-            selected ? 'text-th-primary' : ''
+          className={`default-transition rounded p-2 text-th-fgd-1 hover:cursor-pointer hover:bg-th-bkg-3 hover:text-th-active ${
+            selected ? 'text-th-active' : ''
           } ${className}`}
         >
           {children}

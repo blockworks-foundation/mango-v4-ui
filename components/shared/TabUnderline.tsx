@@ -19,10 +19,10 @@ const TabUnderline = ({
       <div
         className={`default-transition absolute bottom-[-1px] left-0 h-0.5 ${
           activeValue === 'buy'
-            ? 'bg-th-green'
+            ? 'bg-th-up'
             : activeValue === 'sell'
-            ? 'bg-th-red'
-            : 'bg-th-primary'
+            ? 'bg-th-down'
+            : 'bg-th-active'
         }`}
         style={{
           // maxWidth: '176px',
@@ -43,10 +43,10 @@ const TabUnderline = ({
             ${
               activeValue === value
                 ? activeValue === 'buy'
-                  ? 'text-th-green'
+                  ? 'text-th-up'
                   : activeValue === 'sell'
-                  ? 'text-th-red'
-                  : 'text-th-primary'
+                  ? 'text-th-down'
+                  : 'text-th-active'
                 : 'text-th-fgd-4 hover:text-th-fgd-3'
             }
           `}

@@ -202,8 +202,8 @@ const MenuItem = ({
       <Link
         href={pagePath}
         shallow={true}
-        className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
-          active ? 'text-th-primary' : 'text-th-fgd-1'
+        className={`default-transition flex cursor-pointer px-4 focus:text-th-active focus:outline-none md:hover:text-th-active ${
+          active ? 'text-th-active' : 'text-th-fgd-1'
         } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
       >
         <div className="flex w-full items-center justify-between">
@@ -288,7 +288,7 @@ export const ExpandableMenuItem = ({
         role="button"
       >
         <Popover.Button
-          className="md:hover:text-th-primary"
+          className="md:hover:text-th-active"
           onClick={() => toggleMenu()}
         >
           <div
@@ -309,13 +309,15 @@ export const ExpandableMenuItem = ({
         {showMenu ? (
           <Popover.Panel
             static
-            className={`absolute z-20 w-56 rounded-md rounded-l-none bg-th-bkg-2 py-2 ${
+            className={`absolute z-20 w-56 rounded-md rounded-l-none bg-th-bkg-1  ${
               alignBottom
                 ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
                 : 'top-1/2 left-[63px] -translate-y-1/2'
             }`}
           >
-            {children}
+            <div className="rounded-md rounded-l-none bg-th-bkg-2 py-2">
+              {children}
+            </div>
           </Popover.Panel>
         ) : null}
       </div>
@@ -330,7 +332,7 @@ export const ExpandableMenuItem = ({
         }`}
       >
         <Disclosure.Button
-          className={`flex h-full w-full items-center justify-between rounded-none md:hover:text-th-primary`}
+          className={`flex h-full w-full items-center justify-between rounded-none md:hover:text-th-active`}
         >
           <div className="flex items-center">
             <div

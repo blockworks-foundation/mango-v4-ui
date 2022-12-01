@@ -315,7 +315,7 @@ const JupiterRouteInfo = ({
                   )}
                 </p>
                 <ArrowsRightLeftIcon
-                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-1 hover:text-th-primary"
+                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-1 hover:text-th-active"
                   onClick={() => setSwapRate(!swapRate)}
                 />
               </div>
@@ -325,8 +325,8 @@ const JupiterRouteInfo = ({
                   <div
                     className={`text-right font-mono ${
                       coinGeckoPriceDifference.gt(0)
-                        ? 'text-th-red'
-                        : 'text-th-green'
+                        ? 'text-th-down'
+                        : 'text-th-up'
                     }`}
                   >
                     {Decimal.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
@@ -415,7 +415,7 @@ const JupiterRouteInfo = ({
                   )
                 })}
               </span>
-              <PencilIcon className="ml-2 h-4 w-4 hover:text-th-primary" />
+              <PencilIcon className="ml-2 h-4 w-4 hover:text-th-active" />
             </div>
           </div>
           {typeof feeValue === 'number' ? (
@@ -492,7 +492,7 @@ const JupiterRouteInfo = ({
                   }
                   placement={'left'}
                 >
-                  <InformationCircleIcon className="ml-1.5 h-3.5 w-3.5 cursor-help text-th-primary" />
+                  <InformationCircleIcon className="ml-1.5 h-3.5 w-3.5 cursor-help text-th-active" />
                 </Tooltip>
               </div>
               <div>

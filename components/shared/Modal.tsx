@@ -33,7 +33,7 @@ function Modal({
           {!hideClose ? (
             <button
               onClick={onClose}
-              className={`absolute right-4 top-4 z-50 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-primary`}
+              className={`absolute right-4 top-4 z-50 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
             >
               <XMarkIcon className={`h-6 w-6`} />
             </button>

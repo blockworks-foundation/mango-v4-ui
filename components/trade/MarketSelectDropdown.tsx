@@ -38,7 +38,7 @@ const MarketSelectDropdown = () => {
           className="relative flex flex-col overflow-visible"
           id="trade-step-one"
         >
-          <Popover.Button className="default-transition flex w-full items-center justify-between hover:text-th-primary">
+          <Popover.Button className="default-transition flex w-full items-center justify-between hover:text-th-active">
             <>
               {selectedMarket ? <MarketLogos market={selectedMarket} /> : null}
             </>
@@ -89,12 +89,12 @@ const MarketSelectDropdown = () => {
                             }}
                             shallow={true}
                           >
-                            <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-primary">
+                            <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-active">
                               <MarketLogos market={m} />
                               <span
                                 className={
                                   m.name === selectedMarket?.name
-                                    ? 'text-th-primary'
+                                    ? 'text-th-active'
                                     : ''
                                 }
                               >
@@ -129,7 +129,7 @@ const MarketSelectDropdown = () => {
                             <span
                               className={
                                 m.name === selectedMarket?.name
-                                  ? 'text-th-primary'
+                                  ? 'text-th-active'
                                   : ''
                               }
                             >

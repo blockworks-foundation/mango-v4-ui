@@ -26,30 +26,30 @@ const InlineNotification: FunctionComponent<InlineNotificationProps> = ({
       !hideBorder
         ? `border text-th-fgd-3 ${
             type === 'error'
-              ? 'border-th-red'
+              ? 'border-th-down'
               : type === 'success'
-              ? 'border-th-green'
+              ? 'border-th-up'
               : type === 'info'
               ? 'border-th-bkg-4'
-              : 'border-th-orange'
+              : 'border-th-warning'
           }`
         : type === 'error'
-        ? 'text-th-red'
+        ? 'text-th-down'
         : type === 'success'
-        ? 'text-th-green'
+        ? 'text-th-up'
         : type === 'info'
         ? 'text-th-bkg-4'
-        : 'text-th-orange'
+        : 'text-th-warning'
     } flex items-center rounded-md ${!hidePadding ? 'p-2' : ''}`}
   >
     {type === 'error' ? (
-      <ExclamationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-red" />
+      <ExclamationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-down" />
     ) : null}
     {type === 'success' ? (
-      <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-green" />
+      <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-up" />
     ) : null}
     {type === 'warning' ? (
-      <ExclamationTriangleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-orange" />
+      <ExclamationTriangleIcon className="text-th-warning mr-1.5 h-5 w-5 flex-shrink-0" />
     ) : null}
     {type === 'info' ? (
       <InformationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-fgd-4" />

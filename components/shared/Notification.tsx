@@ -224,25 +224,25 @@ const Notification = ({ notification }: { notification: Notification }) => {
       <div
         className={`pointer-events-auto w-full rounded-md border bg-th-bkg-2 shadow-lg md:w-auto ${
           type === 'success'
-            ? 'border-th-green'
+            ? 'border-th-up'
             : type === 'error'
-            ? 'border-th-red'
+            ? 'border-th-down'
             : 'border-th-bkg-4'
         }`}
       >
         <div className={`relative flex w-full items-center p-3.5 md:w-96`}>
           <div className={`mr-1 flex-shrink-0`}>
             {type === 'success' ? (
-              <CheckCircleIcon className={`h-6 w-6 text-th-green`} />
+              <CheckCircleIcon className={`h-6 w-6 text-th-up`} />
             ) : null}
             {type === 'info' && (
               <InformationCircleIcon className={`h-6 w-6 text-th-fgd-3`} />
             )}
             {type === 'error' && (
-              <XCircleIcon className={`h-6 w-6 text-th-red`} />
+              <XCircleIcon className={`h-6 w-6 text-th-down`} />
             )}
             {type === 'confirm' && (
-              <Loading className="mr-0.5 h-5 w-5 text-th-primary" />
+              <Loading className="mr-0.5 h-5 w-5 text-th-active" />
             )}
           </div>
           <div className={`ml-2 flex-1`}>
@@ -257,7 +257,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
             {txid ? (
               <a
                 href={preferredExplorer.url + txid + '?cluster=' + CLUSTER}
-                className="default-transition mt-1 flex items-center text-xs text-th-primary underline hover:text-th-fgd-2"
+                className="default-transition mt-1 flex items-center text-xs text-th-active underline hover:text-th-fgd-2"
                 target="_blank"
                 rel="noreferrer"
               >

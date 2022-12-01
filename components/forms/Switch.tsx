@@ -25,7 +25,7 @@ const Switch: FunctionComponent<SwitchProps> = ({
       <button
         type="button"
         className={`${
-          checked ? 'bg-th-primary' : 'bg-th-button'
+          checked ? 'bg-th-success' : 'bg-th-bkg-4'
         } relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full 
         border-2 border-transparent transition-colors duration-200 ease-in-out 
         focus:outline-none ${disabled ? 'opacity-60' : ''}`}
