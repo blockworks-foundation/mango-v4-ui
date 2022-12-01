@@ -138,7 +138,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       <div className="mb-3 flex w-full flex-col items-center sm:mt-3 sm:flex-row sm:justify-between">
         <button
           onClick={onClose}
-          className={`absolute left-2 top-3 z-50 text-th-fgd-4 focus:outline-none md:hover:text-th-primary`}
+          className={`absolute left-2 top-3 z-50 text-th-fgd-4 focus:outline-none md:hover:text-th-active`}
         >
           <ArrowLeftIcon className={`h-5 w-5`} />
         </button>
@@ -161,7 +161,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
               <button
                 className={`default-transition col-span-1 flex items-center justify-center rounded-md border bg-th-bkg-2 py-3 sm:py-4 md:hover:bg-th-bkg-3 ${
                   selectedProfile === n.image
-                    ? 'border-th-primary'
+                    ? 'border-th-active'
                     : 'border-th-bkg-3'
                 }`}
                 key={n.image}

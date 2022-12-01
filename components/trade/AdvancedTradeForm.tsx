@@ -544,8 +544,8 @@ const AdvancedTradeForm = () => {
           onClick={handlePlaceOrder}
           className={`flex w-full items-center justify-center text-white ${
             tradeForm.side === 'buy'
-              ? 'bg-th-green-dark md:hover:bg-th-green'
-              : 'bg-th-red-dark md:hover:bg-th-red'
+              ? 'bg-th-up-dark md:hover:bg-th-up'
+              : 'bg-th-down-dark md:hover:bg-th-down'
           }`}
           disabled={false}
           size="large"

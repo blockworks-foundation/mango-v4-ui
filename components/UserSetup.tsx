@@ -234,7 +234,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
           style={{
             width: `${(showSetupStep / 4) * 100}%`,
           }}
-          className="flex bg-th-primary transition-all duration-700 ease-out"
+          className="flex bg-th-active transition-all duration-700 ease-out"
         />
       </div>
       <div className="absolute top-6 right-6 z-10">
@@ -250,23 +250,23 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
           <p className="mb-4 text-base">{t('onboarding:intro-desc')}</p>
           <div className="mb-6 space-y-2 py-3">
             <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-green" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">{t('onboarding:bullet-1')}</p>
             </div>
             {/* <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-green" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">Deeply liquid markets</p>
             </div> */}
             <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-green" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">{t('onboarding:bullet-2')}</p>
             </div>
             <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-green" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">{t('onboarding:bullet-3')}</p>
             </div>
             <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-green" />
+              <CheckCircleIcon className="h-5 w-5 text-th-success" />
               <p className="text-base">{t('onboarding:bullet-4')}</p>
             </div>
           </div>
@@ -289,7 +289,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                   <button
                     className={`col-span-1 w-full rounded-md border py-3 px-4 text-base font-normal focus:outline-none md:hover:cursor-pointer md:hover:border-th-fgd-4 ${
                       w.adapter.name === wallet?.adapter.name
-                        ? 'border-th-primary text-th-fgd-1 md:hover:border-th-primary'
+                        ? 'border-th-active text-th-fgd-1 md:hover:border-th-active'
                         : 'border-th-bkg-4 text-th-fgd-4'
                     }`}
                     onClick={() => {

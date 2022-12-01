@@ -42,6 +42,7 @@ import { RouteInfo } from 'types/jupiter'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SwapSlider from './SwapSlider'
+import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -276,7 +277,7 @@ const SwapForm = () => {
         </div>
         <div className="-mb-2 flex justify-center">
           <button
-            className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 md:hover:text-th-primary"
+            className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 md:hover:text-th-active"
             onClick={handleSwitchTokens}
           >
             <ArrowDownIcon
@@ -347,6 +348,15 @@ const SwapForm = () => {
           inputSymbol={inputBank?.name}
           amountOut={selectedRoute ? outAmount : undefined}
         />
+        {group ? (
+          <div className="pt-4">
+            <TokenVaultWarnings
+              bank={
+                inputBank || group.banksMapByName.get(INPUT_TOKEN_DEFAULT)![0]
+              }
+            />
+          </div>
+        ) : null}
       </div>
       <div
         id="swap-step-four"

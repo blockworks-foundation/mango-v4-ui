@@ -9,19 +9,19 @@
 }
 
 .nice-dates .nice-dates-navigation_next:before {
-  @apply border-th-fgd-2 hover:border-th-primary;
+  @apply border-th-fgd-2 hover:border-th-active;
 }
 
 .nice-dates .nice-dates-navigation_next:hover:before {
-  @apply border-th-primary;
+  @apply border-th-active;
 }
 
 .nice-dates .nice-dates-navigation_previous:before {
-  @apply border-th-fgd-2 hover:border-th-primary;
+  @apply border-th-fgd-2 hover:border-th-active;
 }
 
 .nice-dates .nice-dates-navigation_previous:hover:before {
-  @apply border-th-primary;
+  @apply border-th-active;
 }
 
 .nice-dates .nice-dates-week-header_day {

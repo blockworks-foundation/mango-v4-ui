@@ -1,10 +1,10 @@
 import { FunctionComponent } from 'react'
 
 interface ChartRangeButtonsProps {
-  activeValue: number
+  activeValue: string
   className?: string
-  onChange: (x: number) => void
-  values: Array<number>
+  onChange: (x: string) => void
+  values: Array<string>
   names?: Array<string>
 }
 
@@ -20,7 +20,7 @@ const ChartRangeButtons: FunctionComponent<ChartRangeButtonsProps> = ({
       <div className="relative flex">
         {activeValue && values.includes(activeValue) ? (
           <div
-            className={`default-transition absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-2`}
+            className={`default-transition absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-3`}
             style={{
               transform: `translateX(${
                 values.findIndex((v) => v === activeValue) * 100
@@ -34,8 +34,8 @@ const ChartRangeButtons: FunctionComponent<ChartRangeButtonsProps> = ({
             className={`${className} default-transition relative h-6 w-1/2 cursor-pointer rounded-md px-3 text-center text-xs
               ${
                 v === activeValue
-                  ? `text-th-primary`
-                  : `text-th-fgd-3 md:hover:text-th-primary`
+                  ? `text-th-active`
+                  : `text-th-fgd-3 md:hover:text-th-active`
               }
             `}
             key={`${v}${i}`}

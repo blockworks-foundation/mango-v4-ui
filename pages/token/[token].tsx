@@ -86,7 +86,7 @@ const Token: NextPage = () => {
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
   const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
   const [loadChartData, setLoadChartData] = useState(true)
-  const [daysToShow, setDaysToShow] = useState<number>(1)
+  const [daysToShow, setDaysToShow] = useState<string>('1')
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
@@ -177,11 +177,11 @@ const Token: NextPage = () => {
   } = coingeckoData ? coingeckoData.market_data : DEFAULT_COINGECKO_VALUES
 
   const loadingChart = useMemo(() => {
-    return daysToShow == 1 ? loadingPrices : loadChartData
+    return daysToShow == '1' ? loadingPrices : loadChartData
   }, [loadChartData, loadingPrices])
 
   const coingeckoTokenPrices = useMemo(() => {
-    if (daysToShow === 1 && coingeckoPrices.length && bank) {
+    if (daysToShow === '1' && coingeckoPrices.length && bank) {
       const tokenPriceData = coingeckoPrices.find(
         (asset) => asset.symbol === bank.name
       )
@@ -197,8 +197,8 @@ const Token: NextPage = () => {
     return []
   }, [coingeckoPrices, bank, daysToShow, chartData, loadingChart])
 
-  const handleDaysToShow = async (days: number) => {
-    if (days !== 1) {
+  const handleDaysToShow = async (days: string) => {
+    if (days !== '1') {
       try {
         const response = await fetch(
           `https://api.coingecko.com/api/v3/coins/${coingeckoId}/market_chart?vs_currency=usd&days=${days}`
@@ -323,7 +323,7 @@ const Token: NextPage = () => {
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 pt-4">
                 <p>{t('deposit-rate')}</p>
-                <p className="font-mono text-th-green">
+                <p className="font-mono text-th-up">
                   {formatDecimal(bank.getDepositRateUi(), 2, {
                     fixed: true,
                   })}
@@ -347,7 +347,7 @@ const Token: NextPage = () => {
               </div>
               <div className="flex justify-between border-t border-th-bkg-3 pt-4">
                 <p>{t('borrow-rate')}</p>
-                <p className="font-mono text-th-red">
+                <p className="font-mono text-th-down">
                   {formatDecimal(bank.getBorrowRateUi(), 2, {
                     fixed: true,
                   })}
@@ -406,12 +406,12 @@ const Token: NextPage = () => {
                       <ChartRangeButtons
                         activeValue={daysToShow}
                         names={['24H', '7D', '30D']}
-                        values={[1, 7, 30]}
+                        values={['1', '7', '30']}
                         onChange={(v) => handleDaysToShow(v)}
                       />
                     </div>
                     <PriceChart
-                      daysToShow={daysToShow}
+                      daysToShow={parseInt(daysToShow)}
                       prices={coingeckoTokenPrices}
                     />
                   </>

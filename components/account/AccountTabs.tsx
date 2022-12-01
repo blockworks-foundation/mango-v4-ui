@@ -7,6 +7,8 @@ import ActivityFeed from './ActivityFeed'
 import UnsettledTrades from '@components/trade/UnsettledTrades'
 import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 const TABS = [
   'balances',
@@ -19,6 +21,8 @@ const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
   const actions = mangoStore((s) => s.actions)
   const { mangoAccount } = useMangoAccount()
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     return TABS.map((t) => [t, 0])
@@ -37,6 +41,7 @@ const AccountTabs = () => {
         onChange={(v) => setActiveTab(v)}
         values={tabsWithCount}
         showBorders
+        fillWidth={isMobile}
       />
       <TabContent activeTab={activeTab} />
     </>

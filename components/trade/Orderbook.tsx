@@ -25,33 +25,38 @@ import {
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 
-function decodeBookL2(
+export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
+  const depth = 40
+  if (book instanceof SpotOrderBook) {
+    book.getL2(depth).map(([price, size]) => [price, size])
+  } else if (book instanceof BookSide) {
+    return book.getL2Ui(depth)
+  }
+  return []
+}
+
+function decodeBook(
   client: MangoClient,
   market: Market | PerpMarket,
   accInfo: AccountInfo<Buffer>,
   side: 'bids' | 'asks'
-): number[][] {
-  if (market && accInfo?.data) {
-    const depth = 40
-    if (market instanceof Market) {
-      const book = SpotOrderBook.decode(market, accInfo.data)
-      return book.getL2(depth).map(([price, size]) => [price, size])
-    } else if (market instanceof PerpMarket) {
-      // FIXME: Review the null being passed here
-      const decodedAcc = client.program.coder.accounts.decode(
-        'bookSide',
-        accInfo.data
-      )
-      const book = BookSide.from(
-        client,
-        market,
-        side === 'bids' ? BookSideType.bids : BookSideType.asks,
-        decodedAcc
-      )
-      return book.getL2Ui(depth)
-    }
+): SpotOrderBook | BookSide {
+  if (market instanceof Market) {
+    const book = SpotOrderBook.decode(market, accInfo.data)
+    return book
+  } else {
+    const decodedAcc = client.program.coder.accounts.decode(
+      'bookSide',
+      accInfo.data
+    )
+    const book = BookSide.from(
+      client,
+      market,
+      side === 'bids' ? BookSideType.bids : BookSideType.asks,
+      decodedAcc
+    )
+    return book
   }
-  return []
 }
 
 // export function decodeBook(
@@ -327,14 +332,10 @@ const Orderbook = () => {
     if (bidsPk) {
       connection.getAccountInfo(bidsPk).then((info) => {
         if (!info) return
+        const decodedBook = decodeBook(client, market, info, 'bids')
         set((state) => {
-          // state.accountInfos[bidsPk.toString()] = info
-          state.selectedMarket.orderbook.bids = decodeBookL2(
-            client,
-            market,
-            info,
-            'bids'
-          )
+          state.selectedMarket.bidsAccount = decodedBook
+          state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
         })
       })
       console.log('bidsPk', bidsPk)
@@ -347,15 +348,10 @@ const Orderbook = () => {
             previousBidInfo.lamports !== info.lamports
           ) {
             previousBidInfo = info
-            // info['parsed'] = decodeBook(serum3MarketExternal, info)
+            const decodedBook = decodeBook(client, market, info, 'bids')
             set((state) => {
-              // state.accountInfos[bidsPk.toString()] = info
-              state.selectedMarket.orderbook.bids = decodeBookL2(
-                client,
-                market,
-                info,
-                'bids'
-              )
+              state.selectedMarket.bidsAccount = decodedBook
+              state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
             })
           }
         }
@@ -367,14 +363,10 @@ const Orderbook = () => {
     if (asksPk) {
       connection.getAccountInfo(asksPk).then((info) => {
         if (!info) return
+        const decodedBook = decodeBook(client, market, info, 'asks')
         set((state) => {
-          // state.accountInfos[bidsPk.toString()] = info
-          state.selectedMarket.orderbook.asks = decodeBookL2(
-            client,
-            market,
-            info,
-            'bids'
-          )
+          state.selectedMarket.asksAccount = decodedBook
+          state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
         })
       })
       askSubscriptionId = connection.onAccountChange(
@@ -386,15 +378,10 @@ const Orderbook = () => {
             previousAskInfo.lamports !== info.lamports
           ) {
             previousAskInfo = info
-            // info['parsed'] = decodeBook(serum3MarketExternal, info)
+            const decodedBook = decodeBook(client, market, info, 'asks')
             set((state) => {
-              // state.accountInfos[asksPk.toString()] = info
-              state.selectedMarket.orderbook.asks = decodeBookL2(
-                client,
-                market,
-                info,
-                'asks'
-              )
+              state.selectedMarket.asksAccount = decodedBook
+              state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
             })
           }
         }
@@ -650,7 +637,7 @@ const OrderbookRow = ({
             <div
               style={{ fontFeatureSettings: 'zero 1' }}
               className={`z-10 w-full text-right font-mono text-xs ${
-                hasOpenOrder ? 'text-th-primary' : ''
+                hasOpenOrder ? 'text-th-active' : ''
               }`}
               // onClick={handleSizeClick}
             >
@@ -664,13 +651,13 @@ const OrderbookRow = ({
 
         <Line
           className={`absolute left-0 opacity-40 brightness-125 ${
-            side === 'buy' ? `bg-th-green-muted` : `bg-th-red-muted`
+            side === 'buy' ? `bg-th-up-muted` : `bg-th-down-muted`
           }`}
           data-width={Math.max(sizePercent, 0.5) + '%'}
         />
         <Line
           className={`absolute left-0 opacity-70 ${
-            side === 'buy' ? `bg-th-green` : `bg-th-red`
+            side === 'buy' ? `bg-th-up` : `bg-th-down`
           }`}
           data-width={
             Math.max((cumulativeSizePercent / 100) * sizePercent, 0.1) + '%'

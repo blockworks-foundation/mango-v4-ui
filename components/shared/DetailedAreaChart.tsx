@@ -30,11 +30,11 @@ dayjs.extend(relativeTime)
 
 interface DetailedAreaChartProps {
   data: any[]
-  daysToShow: number
+  daysToShow: string
   hideChange?: boolean
   hideChart?: () => void
   loading?: boolean
-  setDaysToShow: (x: number) => void
+  setDaysToShow: (x: string) => void
   tickFormat?: (x: any) => string
   title?: string
   xKey: string
@@ -51,7 +51,7 @@ export const formatDateAxis = (date: string, days: number) => {
 
 const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   data,
-  daysToShow = 1,
+  daysToShow = '1',
   hideChange,
   hideChart,
   loading,
@@ -183,7 +183,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                 <ChartRangeButtons
                   activeValue={daysToShow}
                   names={['24H', '7D', '30D']}
-                  values={[1, 7, 30]}
+                  values={['1', '7', '30']}
                   onChange={(v) => setDaysToShow(v)}
                 />
               </div>
@@ -212,8 +212,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           offset="0%"
                           stopColor={
                             calculateChartChange() >= 0
-                              ? COLORS.GREEN[theme]
-                              : COLORS.RED[theme]
+                              ? COLORS.UP[theme]
+                              : COLORS.DOWN[theme]
                           }
                           stopOpacity={0.15}
                         />
@@ -221,8 +221,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           offset="99%"
                           stopColor={
                             calculateChartChange() >= 0
-                              ? COLORS.GREEN[theme]
-                              : COLORS.RED[theme]
+                              ? COLORS.UP[theme]
+                              : COLORS.DOWN[theme]
                           }
                           stopOpacity={0}
                         />
@@ -234,8 +234,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       dataKey={yKey}
                       stroke={
                         calculateChartChange() >= 0
-                          ? COLORS.GREEN[theme]
-                          : COLORS.RED[theme]
+                          ? COLORS.UP[theme]
+                          : COLORS.DOWN[theme]
                       }
                       strokeWidth={1.5}
                       fill="url(#gradientArea)"
@@ -252,7 +252,9 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                         fontSize: 10,
                       }}
                       tickLine={false}
-                      tickFormatter={(d) => formatDateAxis(d, daysToShow)}
+                      tickFormatter={(d) =>
+                        formatDateAxis(d, parseInt(daysToShow))
+                      }
                     />
                     <YAxis
                       axisLine={false}

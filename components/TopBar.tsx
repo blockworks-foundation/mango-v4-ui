@@ -79,7 +79,7 @@ const TopBar = () => {
           ) : null}
         </span>
         {!isOnline ? (
-          <div className="flex items-center rounded-full bg-th-red py-2 px-4">
+          <div className="flex items-center rounded-full bg-th-down py-2 px-4">
             <ExclamationTriangleIcon className="h-5 w-5" />
             <div className="ml-2">
               Your network connection appears to be offline!
@@ -111,7 +111,7 @@ const TopBar = () => {
           <ConnectWalletButton />
         ) : (
           <button
-            className="relative flex h-16 items-center justify-center rounded-none bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark px-6 text-base font-bold text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100"
+            className="from-mango-theme-yellow to-mango-theme-red-dark relative flex h-16 items-center justify-center rounded-none bg-gradient-to-bl px-6 text-base font-bold text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100"
             onClick={handleShowSetup}
           >
             <WalletIcon className="mr-2 h-5 w-5 flex-shrink-0" />

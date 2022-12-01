@@ -158,8 +158,8 @@ const EditProfileForm = ({
         />
         {inputError ? (
           <div className="mt-1.5 flex items-center space-x-1">
-            <ExclamationCircleIcon className="h-4 w-4 text-th-red" />
-            <p className="mb-0 text-xs text-th-red">{inputError}</p>
+            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+            <p className="mb-0 text-xs text-th-down">{inputError}</p>
           </div>
         ) : null}
       </div>

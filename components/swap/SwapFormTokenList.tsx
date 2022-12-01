@@ -233,7 +233,7 @@ const SwapFormTokenList = ({
           <p className="text-xs text-th-fgd-4">{t('max')}</p>
         ) : null}
       </div>
-      <div className="overflow-auto">
+      <div className="overflow-auto pb-2">
         {sortedTokens.map((token) => (
           <TokenItem
             key={token.address}

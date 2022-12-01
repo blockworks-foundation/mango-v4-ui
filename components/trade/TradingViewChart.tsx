@@ -47,8 +47,8 @@ const TradingViewChart = () => {
       fullscreen: false,
       autosize: true,
       studiesOverrides: {
-        'volume.volume.color.0': COLORS.RED[theme],
-        'volume.volume.color.1': COLORS.GREEN[theme],
+        'volume.volume.color.0': COLORS.DOWN[theme],
+        'volume.volume.color.1': COLORS.UP[theme],
         'volume.precision': 4,
       },
     }),
@@ -81,13 +81,13 @@ const TradingViewChart = () => {
       [`mainSeriesProperties.${prop}.barColorsOnPrevClose`]: true,
       [`mainSeriesProperties.${prop}.drawWick`]: true,
       [`mainSeriesProperties.${prop}.drawBorder`]: true,
-      [`mainSeriesProperties.${prop}.upColor`]: COLORS.GREEN[theme],
-      [`mainSeriesProperties.${prop}.downColor`]: COLORS.RED[theme],
-      [`mainSeriesProperties.${prop}.borderColor`]: COLORS.GREEN[theme],
-      [`mainSeriesProperties.${prop}.borderUpColor`]: COLORS.GREEN[theme],
-      [`mainSeriesProperties.${prop}.borderDownColor`]: COLORS.RED[theme],
-      [`mainSeriesProperties.${prop}.wickUpColor`]: COLORS.GREEN[theme],
-      [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.RED[theme],
+      [`mainSeriesProperties.${prop}.upColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.downColor`]: COLORS.DOWN[theme],
+      [`mainSeriesProperties.${prop}.borderColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.borderUpColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.borderDownColor`]: COLORS.DOWN[theme],
+      [`mainSeriesProperties.${prop}.wickUpColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
     }
   })
 

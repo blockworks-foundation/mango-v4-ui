@@ -24,7 +24,7 @@ import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import useJupiterMints from 'hooks/useJupiterMints'
-import { Table, Td, Th, TrBody } from '@components/shared/TableElements'
+import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 
@@ -32,7 +32,7 @@ const SwapHistoryTable = ({
   swapHistory,
   loading,
 }: {
-  swapHistory: Array<SwapHistoryItem>
+  swapHistory: SwapHistoryItem[]
   loading: boolean
 }) => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
@@ -56,13 +56,13 @@ const SwapHistoryTable = ({
         showTableView ? (
           <Table>
             <thead>
-              <TrBody>
+              <TrHead>
                 <Th className="text-left">{t('date')}</Th>
                 <Th className="w-1/3 text-left">{t('swap')}</Th>
                 <Th className="text-right">{t('borrow')}</Th>
                 <Th className="text-right">{t('borrow-fee')}</Th>
                 <Th />
-              </TrBody>
+              </TrHead>
             </thead>
             <tbody>
               {swapHistory.map((h) => {

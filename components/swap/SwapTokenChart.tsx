@@ -76,7 +76,7 @@ const SwapTokenChart = () => {
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
   const [mouseData, setMouseData] = useState<any>(null)
-  const [daysToShow, setDaysToShow] = useState(1)
+  const [daysToShow, setDaysToShow] = useState('1')
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -176,7 +176,7 @@ const SwapTokenChart = () => {
                         )}`}
                   </p>
                   {/* <div
-                    className="px-2 hover:cursor-pointer hover:text-th-primary"
+                    className="px-2 hover:cursor-pointer hover:text-th-active"
                     onClick={handleFlipChart}
                   >
                     <SwitchHorizontalIcon className="h-4 w-4" />
@@ -245,7 +245,7 @@ const SwapTokenChart = () => {
               <ChartRangeButtons
                 activeValue={daysToShow}
                 names={['24H', '7D', '30D']}
-                values={[1, 7, 30]}
+                values={['1', '7', '30']}
                 onChange={(v) => setDaysToShow(v)}
               />
             </div>
@@ -275,8 +275,8 @@ const SwapTokenChart = () => {
                         offset="0%"
                         stopColor={
                           calculateChartChange() >= 0
-                            ? COLORS.GREEN[theme]
-                            : COLORS.RED[theme]
+                            ? COLORS.UP[theme]
+                            : COLORS.DOWN[theme]
                         }
                         stopOpacity={0.25}
                       />
@@ -284,8 +284,8 @@ const SwapTokenChart = () => {
                         offset="99%"
                         stopColor={
                           calculateChartChange() >= 0
-                            ? COLORS.GREEN[theme]
-                            : COLORS.RED[theme]
+                            ? COLORS.UP[theme]
+                            : COLORS.DOWN[theme]
                         }
                         stopOpacity={0}
                       />
@@ -297,8 +297,8 @@ const SwapTokenChart = () => {
                     dataKey="price"
                     stroke={
                       calculateChartChange() >= 0
-                        ? COLORS.GREEN[theme]
-                        : COLORS.RED[theme]
+                        ? COLORS.UP[theme]
+                        : COLORS.DOWN[theme]
                     }
                     strokeWidth={1.5}
                     fill="url(#gradientArea)"
