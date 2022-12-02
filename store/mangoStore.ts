@@ -410,10 +410,11 @@ const mangoStore = create<MangoStore>()(
               state.mangoAccount.stats.performance.data = stats.reverse()
               state.mangoAccount.stats.performance.loading = false
             })
-          } catch {
+          } catch (e) {
             set((state) => {
               state.mangoAccount.stats.performance.loading = false
             })
+            console.error('Failed to load account performance data', e)
             notify({
               title: 'Failed to load account performance data',
               type: 'error',
