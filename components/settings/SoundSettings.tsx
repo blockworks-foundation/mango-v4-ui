@@ -34,7 +34,7 @@ const SoundSettings = () => {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between pr-4">
+      <div className="mb-4 flex items-center justify-between pr-4 md:pr-8">
         <h2 className="text-base">{t('settings:sounds')}</h2>
         <Switch
           checked={!Object.values(soundSettings).includes(false)}

@@ -145,7 +145,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       notify({
         title: 'Transaction failed',
         description: e.message,
-        txid: e?.signature,
+        txid: e?.txid,
         type: 'error',
       })
       console.error('Error depositing:', e)

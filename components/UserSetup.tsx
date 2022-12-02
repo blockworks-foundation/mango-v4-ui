@@ -115,7 +115,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
     } catch (e: any) {
       notify({
         title: t('new-account-failed'),
-        txid: e?.signature,
+        txid: e?.txid,
         type: 'error',
       })
       console.error(e)

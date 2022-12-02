@@ -88,7 +88,7 @@ const CreateAccountForm = ({
       setLoading(false)
       notify({
         title: t('new-account-failed'),
-        txid: e?.signature,
+        txid: e?.txid,
         type: 'error',
       })
       console.error(e)
