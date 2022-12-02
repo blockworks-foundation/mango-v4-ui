@@ -30,7 +30,7 @@ const GroupSize = ({
         {({ open }) => (
           <>
             <Listbox.Button
-              className={`default-transition flex h-6 items-center rounded bg-th-bkg-1 py-1 font-normal text-th-fgd-2 hover:text-th-primary focus:border-th-bkg-4 focus:outline-none`}
+              className={`default-transition flex h-6 items-center rounded bg-th-bkg-1 py-1 font-normal text-th-fgd-2 hover:text-th-active focus:border-th-bkg-4 focus:outline-none`}
             >
               <div
                 className={`flex items-center justify-between font-mono text-xs leading-none`}
@@ -53,8 +53,8 @@ const GroupSize = ({
                   <Listbox.Option key={size} value={size}>
                     {({ selected }) => (
                       <div
-                        className={`default-transition text-right font-mono text-xs text-th-fgd-2 hover:cursor-pointer hover:text-th-primary ${
-                          selected && `text-th-primary`
+                        className={`default-transition text-right font-mono text-xs text-th-fgd-2 hover:cursor-pointer hover:text-th-active ${
+                          selected && `text-th-active`
                         }`}
                       >
                         {size}

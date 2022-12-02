@@ -43,7 +43,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         <input
           className={`${className} default-transition h-12 w-full flex-1 rounded-md border bg-th-bkg-1 px-3 text-base
           text-th-fgd-1 ${
-            error ? 'border-th-red' : 'border-th-bkg-4'
+            error ? 'border-th-down' : 'border-th-bkg-4'
           } hover:border-th-fgd-4 
           focus:outline-none 
           ${
@@ -69,7 +69,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         {charLimit ? (
           <p
             className={`absolute -top-7 right-0 mt-1 flex justify-end text-xs ${
-              value.length === charLimit ? 'text-th-red' : 'text-th-fgd-4'
+              value.length === charLimit ? 'text-th-down' : 'text-th-fgd-4'
             }`}
           >
             {`${value.length}/${charLimit}`}

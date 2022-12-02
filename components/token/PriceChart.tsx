@@ -27,14 +27,14 @@ const PriceChart = ({
                 <stop
                   offset="0%"
                   stopColor={
-                    change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]
+                    change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
                   }
                   stopOpacity={0.15}
                 />
                 <stop
                   offset="99%"
                   stopColor={
-                    change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]
+                    change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
                   }
                   stopOpacity={0}
                 />
@@ -44,7 +44,7 @@ const PriceChart = ({
               isAnimationActive={false}
               type="monotone"
               dataKey="1"
-              stroke={change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]}
+              stroke={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
               strokeWidth={1.5}
               fill="url(#gradientArea)"
             />

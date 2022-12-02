@@ -39,7 +39,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
                 : ''
             } ${
               label === activeValue
-                ? 'bg-th-bkg-2 text-th-primary'
+                ? 'bg-th-bkg-2 text-th-active'
                 : 'hover:cursor-pointer hover:text-th-fgd-2'
             }`}
             key={`${label}${i}`}

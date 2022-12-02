@@ -212,8 +212,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           offset="0%"
                           stopColor={
                             calculateChartChange() >= 0
-                              ? COLORS.GREEN[theme]
-                              : COLORS.RED[theme]
+                              ? COLORS.UP[theme]
+                              : COLORS.DOWN[theme]
                           }
                           stopOpacity={0.15}
                         />
@@ -221,8 +221,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           offset="99%"
                           stopColor={
                             calculateChartChange() >= 0
-                              ? COLORS.GREEN[theme]
-                              : COLORS.RED[theme]
+                              ? COLORS.UP[theme]
+                              : COLORS.DOWN[theme]
                           }
                           stopOpacity={0}
                         />
@@ -234,8 +234,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       dataKey={yKey}
                       stroke={
                         calculateChartChange() >= 0
-                          ? COLORS.GREEN[theme]
-                          : COLORS.RED[theme]
+                          ? COLORS.UP[theme]
+                          : COLORS.DOWN[theme]
                       }
                       strokeWidth={1.5}
                       fill="url(#gradientArea)"

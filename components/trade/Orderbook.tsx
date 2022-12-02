@@ -637,7 +637,7 @@ const OrderbookRow = ({
             <div
               style={{ fontFeatureSettings: 'zero 1' }}
               className={`z-10 w-full text-right font-mono text-xs ${
-                hasOpenOrder ? 'text-th-primary' : ''
+                hasOpenOrder ? 'text-th-active' : ''
               }`}
               // onClick={handleSizeClick}
             >
@@ -651,13 +651,13 @@ const OrderbookRow = ({
 
         <Line
           className={`absolute left-0 opacity-40 brightness-125 ${
-            side === 'buy' ? `bg-th-green-muted` : `bg-th-red-muted`
+            side === 'buy' ? `bg-th-up-muted` : `bg-th-down-muted`
           }`}
           data-width={Math.max(sizePercent, 0.5) + '%'}
         />
         <Line
           className={`absolute left-0 opacity-70 ${
-            side === 'buy' ? `bg-th-green` : `bg-th-red`
+            side === 'buy' ? `bg-th-up` : `bg-th-down`
           }`}
           data-width={
             Math.max((cumulativeSizePercent / 100) * sizePercent, 0.1) + '%'

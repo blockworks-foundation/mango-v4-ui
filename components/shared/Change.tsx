@@ -33,9 +33,9 @@ const Change = ({
           size === 'small' ? 'text-xs' : 'text-sm'
         } ${
           change > 0
-            ? 'text-th-green'
+            ? 'text-th-up'
             : change < 0
-            ? 'text-th-red'
+            ? 'text-th-down'
             : 'text-th-fgd-4'
         }`}
       >

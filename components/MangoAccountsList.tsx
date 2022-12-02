@@ -53,7 +53,7 @@ const MangoAccountsList = ({
       <Popover>
         {({ open }) => (
           <>
-            <Popover.Button className="flex w-full items-center rounded-none text-th-fgd-1 hover:text-th-primary">
+            <Popover.Button className="flex w-full items-center rounded-none text-th-fgd-1 hover:text-th-active">
               <div className="mr-2">
                 <p className="text-right text-xs">{t('accounts')}</p>
                 <p className="text-left text-sm font-bold text-th-fgd-1">
@@ -91,7 +91,7 @@ const MangoAccountsList = ({
                           {acc.name}
                           {acc.publicKey.toString() ===
                           mangoAccount?.publicKey.toString() ? (
-                            <CheckCircleIcon className="h-5 w-5 text-th-green" />
+                            <CheckCircleIcon className="h-5 w-5 text-th-up" />
                           ) : null}
                         </button>
                       </div>
