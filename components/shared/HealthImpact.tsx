@@ -26,9 +26,7 @@ const HealthImpact = ({
     <div className="flex flex-wrap items-start justify-between">
       <Tooltip content={t('health-tooltip')}>
         <p
-          className={`tooltip-underline mr-4 mb-1 ${
-            small ? 'text-xs' : 'text-sm'
-          }`}
+          className={`tooltip-underline mr-4 ${small ? 'text-xs' : 'text-sm'}`}
         >
           {t('health-impact')}
         </p>

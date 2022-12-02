@@ -21,6 +21,7 @@
     "oracle-price": "Oracle Price",
     "orders": "Orders",
     "order-error": "Failed to place order",
+    "order-value": "Order Value",
     "post": "Post",
     "place-order": "Place {{side}} Order",
     "placing-order": "Placing Order",

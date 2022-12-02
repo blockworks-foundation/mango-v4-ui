@@ -36,8 +36,8 @@ import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { getDecimalCount } from 'utils/numbers'
 import Slippage from './Slippage'
+import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -548,7 +548,18 @@ const AdvancedTradeForm = () => {
           )}
         </Button>
       </div>
-      <div className="mt-4 space-y-1 px-4 lg:mt-6">
+      <div className="mt-4 space-y-2 px-4 lg:mt-6">
+        {tradeForm.price && tradeForm.baseSize ? (
+          <div className="flex justify-between text-xs">
+            <p>{t('trade:order-value')}</p>
+            <p className="text-th-fgd-2">
+              {formatFixedDecimals(
+                parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize),
+                true
+              )}
+            </p>
+          </div>
+        ) : null}
         <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
         <Slippage />
       </div>
