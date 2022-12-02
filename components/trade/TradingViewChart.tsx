@@ -78,7 +78,7 @@ const TradingViewChart = () => {
   useEffect(() => {
     const changeResultion = async () => {
       const data = await fetchData()
-      chart!.applyNewData(data)
+      chart?.applyNewData(data)
       updateData(chart)
     }
     if (chart) {
@@ -105,6 +105,20 @@ const TradingViewChart = () => {
         candle: {
           tooltip: {
             labels: ['T: ', 'O: ', 'C: ', 'H: ', 'L: ', 'V: '],
+          },
+        },
+        xAxis: {
+          axisLine: {
+            show: true,
+            color: gridColor,
+            size: 1,
+          },
+        },
+        yAxis: {
+          axisLine: {
+            show: true,
+            color: gridColor,
+            size: 1,
           },
         },
       })
