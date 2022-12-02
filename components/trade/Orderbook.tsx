@@ -28,7 +28,7 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
   const depth = 40
   if (book instanceof SpotOrderBook) {
-    book.getL2(depth).map(([price, size]) => [price, size])
+    return book.getL2(depth).map(([price, size]) => [price, size])
   } else if (book instanceof BookSide) {
     return book.getL2Ui(depth)
   }
