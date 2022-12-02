@@ -22,6 +22,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import HealthHeart from './account/HealthHeart'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { useTheme } from 'next-themes'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
@@ -197,13 +198,18 @@ const MenuItem = ({
   isExternal?: boolean
   showTooltip?: boolean
 }) => {
+  const { theme } = useTheme()
   return (
     <Tooltip content={title} placement="right" show={collapsed && showTooltip}>
       <Link
         href={pagePath}
         shallow={true}
         className={`default-transition flex cursor-pointer px-4 focus:text-th-active focus:outline-none md:hover:text-th-active ${
-          active ? 'text-th-active' : 'text-th-fgd-1'
+          active
+            ? 'text-th-active'
+            : theme === 'Light'
+            ? 'text-th-fgd-3'
+            : 'text-th-fgd-2'
         } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
       >
         <div className="flex w-full items-center justify-between">
@@ -212,7 +218,9 @@ const MenuItem = ({
               className={
                 hideIconBg
                   ? ''
-                  : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
+                  : `flex h-8 w-8 items-center justify-center rounded-full ${
+                      theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                    }`
               }
             >
               {icon}
@@ -255,6 +263,7 @@ export const ExpandableMenuItem = ({
   title: string | ReactNode
 }) => {
   const [showMenu, setShowMenu] = useState(false)
+  const { theme } = useTheme()
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -288,14 +297,18 @@ export const ExpandableMenuItem = ({
         role="button"
       >
         <Popover.Button
-          className="md:hover:text-th-active"
+          className={`${
+            theme === 'Light' ? 'text-th-fgd-3' : 'text-th-fgd-2'
+          } md:hover:text-th-active`}
           onClick={() => toggleMenu()}
         >
           <div
             className={` ${
               hideIconBg
                 ? ''
-                : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
+                : `flex h-8 w-8 items-center justify-center rounded-full ${
+                    theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                  }`
             } ${
               alignBottom
                 ? 'default-transition flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
