@@ -296,9 +296,9 @@ const AdvancedTradeForm = () => {
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !group || !tradeForm.baseSize) return 100
+    if (!mangoAccount || !group || !Number(tradeForm.baseSize)) return 100
 
-    let simulatedHealthRatio: number
+    let simulatedHealthRatio = 0
 
     if (selectedMarket instanceof Serum3Market) {
       simulatedHealthRatio =
@@ -315,26 +315,26 @@ const AdvancedTradeForm = () => {
               selectedMarket.serumMarketExternal,
               HealthType.maint
             )
-    } else {
+    } else if (selectedMarket instanceof PerpMarket) {
       simulatedHealthRatio =
         tradeForm.side === 'sell'
           ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
               group,
-              selectedMarket!.perpMarketIndex,
+              selectedMarket.perpMarketIndex,
               parseFloat(tradeForm.baseSize)
             )
           : mangoAccount.simHealthRatioWithPerpBidUiChanges(
               group,
-              selectedMarket!.perpMarketIndex,
+              selectedMarket.perpMarketIndex,
               parseFloat(tradeForm.baseSize)
             )
     }
 
-    return simulatedHealthRatio! > 100
+    return simulatedHealthRatio > 100
       ? 100
-      : simulatedHealthRatio! < 0
+      : simulatedHealthRatio < 0
       ? 0
-      : Math.trunc(simulatedHealthRatio!)
+      : Math.trunc(simulatedHealthRatio)
   }, [selectedMarket, tradeForm])
 
   return (
