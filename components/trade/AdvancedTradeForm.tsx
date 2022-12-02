@@ -37,6 +37,7 @@ import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { getDecimalCount } from 'utils/numbers'
+import Slippage from './Slippage'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -338,7 +339,7 @@ const AdvancedTradeForm = () => {
 
   return (
     <div>
-      <div className="border-b border-th-bkg-3">
+      <div className="border-b border-th-bkg-3 md:border-t lg:border-t-0">
         <TabButtons
           activeValue={tradeForm.tradeType}
           onChange={(tab: 'Limit' | 'Market') => setTradeType(tab)}
@@ -547,8 +548,9 @@ const AdvancedTradeForm = () => {
           )}
         </Button>
       </div>
-      <div className="mt-4 px-4 lg:mt-6">
-        <HealthImpact maintProjectedHealth={maintProjectedHealth} responsive />
+      <div className="mt-4 space-y-1 px-4 lg:mt-6">
+        <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
+        <Slippage />
       </div>
     </div>
   )
