@@ -1,22 +1,37 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import { CHART_DATA_FEED } from 'utils/constants'
 import { init, dispose } from 'klinecharts'
 import axios from 'axios'
 
 const ONE_HOUR_MINS = 60
-const ONE_H = '1H'
 
-const RESOLUTIONS: {
-  [key: string]: string
+const RES_NAME_TO_RES_VAL: {
+  [key: string]: {
+    val: string
+    seconds: number
+  }
 } = {
-  '1m': '1',
-  '5m': '5',
-  '30m': `${ONE_HOUR_MINS / 2}`,
-  [ONE_H]: `${ONE_HOUR_MINS}`,
-  '2H': `${2 * ONE_HOUR_MINS}`,
-  '4H': `${4 * ONE_HOUR_MINS}`,
-  '1D': '1D',
+  '1m': { val: '1', seconds: 60 },
+  '5m': { val: '5', seconds: 5 * 60 },
+  '30m': {
+    val: `${ONE_HOUR_MINS / 2}`,
+    seconds: (ONE_HOUR_MINS / 2) * 60,
+  },
+  '1H': { val: `${ONE_HOUR_MINS}`, seconds: ONE_HOUR_MINS * 60 },
+  '2H': { val: `${2 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_MINS * 2 * 60 },
+  '4H': { val: `${4 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_MINS * 4 * 60 },
+  '1D': { val: '1D', seconds: 24 * ONE_HOUR_MINS * 60 },
+}
+
+type BASE_CHART_QUERY = {
+  resolution: string
+  symbol: string
+  to: number
+}
+
+type CHART_QUERY = BASE_CHART_QUERY & {
+  from: number
 }
 
 type HISTORY = {
@@ -31,20 +46,15 @@ type HISTORY = {
 const TradingViewChart = () => {
   //const { theme } = useTheme()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
-  const [resolution, setResultion] = useState(RESOLUTIONS['1H'])
+  const [resolution, setResultion] = useState(RES_NAME_TO_RES_VAL['1H'])
   const [chart, setChart] = useState<klinecharts.Chart | null>(null)
-  const query = {
-    resolution: resolution,
-    symbol: 'SOL/USDC',
-    from: Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 30,
-    to: Math.floor(Date.now() / 1000),
-  }
-
-  useEffect(() => {
-    return
-  }, [selectedMarketName])
-
-  const fetchData = async () => {
+  const [baseChartQuery, setQuery] = useState<BASE_CHART_QUERY | null>(null)
+  const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const fetchData = async (baseQuery: BASE_CHART_QUERY, from: number) => {
+    const query: CHART_QUERY = {
+      ...baseQuery,
+      from,
+    }
     const response = await axios.get(`${CHART_DATA_FEED}/history`, {
       params: query,
     })
@@ -65,26 +75,45 @@ const TradingViewChart = () => {
     return dataList
   }
 
-  function updateData(kLineChart: any) {
-    setTimeout(async () => {
+  function updateData(
+    kLineChart: klinecharts.Chart,
+    baseQuery: BASE_CHART_QUERY
+  ) {
+    if (clearTimerRef.current) {
+      clearInterval(clearTimerRef.current)
+    }
+    clearTimerRef.current = setTimeout(async () => {
       if (kLineChart) {
-        const newData = (await fetchData())[0]
-        newData.timestamp += 60000
+        const from = baseQuery.to - resolution.seconds
+        const newData = (await fetchData(baseQuery!, from))[0]
+        newData.timestamp += 10000
         kLineChart.updateData(newData)
+        updateData(kLineChart, baseQuery)
       }
-      updateData(kLineChart)
-    }, 60000)
+    }, 10000)
   }
+
   useEffect(() => {
-    const changeResultion = async () => {
-      const data = await fetchData()
+    const fetchFreshData = async () => {
+      const from = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 365
+      const data = await fetchData(baseChartQuery!, from)
       chart?.applyNewData(data)
-      updateData(chart)
+      updateData(chart!, baseChartQuery!)
     }
-    if (chart) {
-      changeResultion()
+    if (chart && baseChartQuery) {
+      fetchFreshData()
     }
-  }, [resolution])
+  }, [baseChartQuery])
+
+  useEffect(() => {
+    if (selectedMarketName && resolution) {
+      setQuery({
+        resolution: resolution.val,
+        symbol: selectedMarketName,
+        to: Math.floor(Date.now() / 1000),
+      })
+    }
+  }, [selectedMarketName, resolution])
 
   useEffect(() => {
     const initKline = async () => {
@@ -122,10 +151,7 @@ const TradingViewChart = () => {
           },
         },
       })
-      const data = await fetchData()
-      kLineChart.applyNewData(data)
       setChart(kLineChart)
-      updateData(kLineChart)
     }
     initKline()
     return () => {
@@ -135,11 +161,11 @@ const TradingViewChart = () => {
   return (
     <>
       <div className="flex">
-        {Object.keys(RESOLUTIONS).map((key) => (
+        {Object.keys(RES_NAME_TO_RES_VAL).map((key) => (
           <div
             className="cursor-pointer py-1 px-2"
             key={key}
-            onClick={() => setResultion(RESOLUTIONS[key])}
+            onClick={() => setResultion(RES_NAME_TO_RES_VAL[key])}
           >
             {key}
           </div>
