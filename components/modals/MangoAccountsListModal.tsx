@@ -19,6 +19,7 @@ import { EnterRightExitLeft } from '@components/shared/Transitions'
 import { useRouter } from 'next/router'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { notify } from 'utils/notifications'
 
 const MangoAccountsListModal = ({
   isOpen,
@@ -47,7 +48,7 @@ const MangoAccountsListModal = ({
     })
     try {
       const reloadedMangoAccount = await retryFn(() => acc.reload(client))
-      await actions.fetchOpenOrders(reloadedMangoAccount)
+      actions.fetchOpenOrders(reloadedMangoAccount)
 
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
@@ -55,6 +56,11 @@ const MangoAccountsListModal = ({
       setLastAccountViewed(acc.publicKey.toString())
     } catch (e) {
       console.warn('Error selecting account', e)
+      notify({
+        type: 'info',
+        title: 'Unable to load account. Please try again.',
+        description: `${e}`,
+      })
     } finally {
       onClose()
     }

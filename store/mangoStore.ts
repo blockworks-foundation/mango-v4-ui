@@ -628,11 +628,11 @@ const mangoStore = create<MangoStore>()(
         fetchOpenOrders: async (providedMangoAccount) => {
           const set = get().set
           const client = get().client
-          const group = await client.getGroup(GROUP)
+          const group = get().group
           const mangoAccount =
             providedMangoAccount || get().mangoAccount.current
 
-          if (!mangoAccount) return
+          if (!mangoAccount || !group) return
 
           try {
             const openOrders: Record<string, Order[] | PerpOrder[]> = {}
