@@ -8,7 +8,12 @@ import Decimal from 'decimal.js'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
-import { getDecimalCount, numberFormat, trimDecimals } from 'utils/numbers'
+import {
+  formatFixedDecimals,
+  getDecimalCount,
+  numberFormat,
+  trimDecimals,
+} from 'utils/numbers'
 import { calculateMarketPrice } from 'utils/tradeForm'
 import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
@@ -57,8 +62,10 @@ const PerpPositions = () => {
               <Th className="text-left">{t('market')}</Th>
               <Th className="text-right">{t('trade:side')}</Th>
               <Th className="text-right">{t('trade:size')}</Th>
-              <Th className="text-right">{t('value')}</Th>
+              <Th className="text-right">{t('notional')}</Th>
               <Th className="text-right">{t('trade:entry-price')}</Th>
+              <Th className="text-right">Redeemable P&L</Th>
+              <Th className="text-right">Realized P&L</Th>
             </TrHead>
           </thead>
           <tbody>
@@ -76,6 +83,8 @@ const PerpPositions = () => {
                 selectedMarket.perpMarketIndex === position.marketIndex
 
               if (!basePosition) return null
+
+              const unsettledPnl = position.getEquityUi(market)
 
               return (
                 <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
@@ -116,6 +125,21 @@ const PerpPositions = () => {
                       $
                       {numberFormat.format(
                         position.getEntryPrice(market).toNumber()
+                      )}
+                    </div>
+                  </Td>
+                  <Td
+                    className={`text-right ${
+                      unsettledPnl > 0 ? 'text-th-up' : 'text-th-down'
+                    }`}
+                  >
+                    <div>${formatFixedDecimals(unsettledPnl)}</div>
+                  </Td>
+                  <Td className="text-right">
+                    <div>
+                      $
+                      {numberFormat.format(
+                        position.perpSpotTransfers.toNumber()
                       )}
                     </div>
                   </Td>
