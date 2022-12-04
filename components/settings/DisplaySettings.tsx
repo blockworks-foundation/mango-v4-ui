@@ -50,6 +50,7 @@ const DisplaySettings = () => {
       'Avocado',
       'Banana',
       'Blueberry',
+      'Lychee',
       // 'Smoothy',
     ]
   }, [t])

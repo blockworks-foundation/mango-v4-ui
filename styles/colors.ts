@@ -7,6 +7,7 @@ export const COLORS: any = {
     Medium: '#1d1d20',
     Blueberry: '#0e265d',
     Banana: '#fcf9cf',
+    Lychee: '#faebec',
   },
   BKG2: {
     'Mango Classic': '#282433',
@@ -16,6 +17,7 @@ export const COLORS: any = {
     Medium: '#29292e',
     Blueberry: '#112f73',
     Banana: '#f7f2ba',
+    Lychee: '#f4d7d9',
   },
   BKG3: {
     'Mango Classic': '#332e42',
@@ -25,6 +27,7 @@ export const COLORS: any = {
     Medium: '#35353b',
     Blueberry: '#15388a',
     Banana: '#f0eaa8',
+    Lychee: '#efc3c6',
   },
   BKG4: {
     'Mango Classic': '#3f3851',
@@ -34,6 +37,7 @@ export const COLORS: any = {
     Medium: '#414149',
     Blueberry: '#1841a0',
     Banana: '#e6df99',
+    Lychee: '#eaaeb2',
   },
   FGD4: {
     'Mango Classic': '#9189ae',
@@ -43,6 +47,7 @@ export const COLORS: any = {
     Medium: '#808080',
     Blueberry: '#6b94e6',
     Banana: '#7b7b65',
+    Lychee: '#b7343a',
   },
   UP: {
     'Mango Classic': '#A6CD03',
@@ -52,6 +57,7 @@ export const COLORS: any = {
     Medium: '#4aa13a',
     Blueberry: '#15d1a2',
     Banana: '#86AE7E',
+    Lychee: '#2d805e',
   },
   ACTIVE: {
     'Mango Classic': '#f1c84b',
@@ -61,6 +67,7 @@ export const COLORS: any = {
     Medium: '#f1c84b',
     Blueberry: '#f1c84b',
     Banana: '#606afb',
+    Lychee: '#040e9f',
   },
   DOWN: {
     'Mango Classic': '#F84638',
@@ -70,5 +77,6 @@ export const COLORS: any = {
     Medium: '#d35555',
     Blueberry: '#d1534d',
     Banana: '#BE6A6A',
+    Lychee: '#c5303a',
   },
 }
