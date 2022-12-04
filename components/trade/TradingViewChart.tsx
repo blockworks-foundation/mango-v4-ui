@@ -143,7 +143,7 @@ const TradingViewChart = () => {
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,
-        theme: theme === 'Light' ? 'Light' : 'Dark',
+        theme: theme === 'Light' || theme === 'Banana' ? 'Light' : 'Dark',
         custom_css_url: '/styles/tradingview.css',
         loading_screen: {
           backgroundColor:
@@ -151,7 +151,15 @@ const TradingViewChart = () => {
               ? COLORS.BKG1.Dark
               : theme === 'Light'
               ? COLORS.BKG1.Light
-              : COLORS.BKG1.Mango,
+              : theme === 'Mango Classic'
+              ? COLORS.BKG1['Mango Classic']
+              : theme === 'Medium'
+              ? COLORS.BKG1.Medium
+              : theme === 'Avocado'
+              ? COLORS.BKG1.Avocado
+              : theme === 'Blueberry'
+              ? COLORS.BKG1.Blueberry
+              : COLORS.BKG1.Banana,
         },
         overrides: {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

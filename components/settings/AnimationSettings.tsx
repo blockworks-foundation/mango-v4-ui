@@ -33,7 +33,7 @@ const AnimationSettings = () => {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between pr-4 md:pr-8">
+      <div className="mb-4 flex items-center justify-between pr-4">
         <h2 className="text-base">{t('settings:animations')}</h2>
         <Switch
           checked={!Object.values(animationSettings).includes(false)}

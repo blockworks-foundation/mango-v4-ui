@@ -53,10 +53,7 @@ const PriceChart = ({
               dataKey="0"
               padding={{ left: 20, right: 20 }}
               tick={{
-                fill:
-                  theme === 'Light'
-                    ? 'rgba(0,0,0,0.4)'
-                    : 'rgba(255,255,255,0.6)',
+                fill: 'var(--fgd-4)',
                 fontSize: 10,
               }}
               tickLine={false}
@@ -69,10 +66,7 @@ const PriceChart = ({
               domain={['dataMin', 'dataMax']}
               padding={{ top: 20, bottom: 20 }}
               tick={{
-                fill:
-                  theme === 'Light'
-                    ? 'rgba(0,0,0,0.4)'
-                    : 'rgba(255,255,255,0.6)',
+                fill: 'var(--fgd-4)',
                 fontSize: 10,
               }}
               tickFormatter={(x) => `$${x.toFixed(2)}`}

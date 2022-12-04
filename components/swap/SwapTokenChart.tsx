@@ -44,7 +44,6 @@ const CustomizedLabel = ({
   value?: number
 }) => {
   const { width } = useViewport()
-  const { theme } = useTheme()
   const [min, max] = useMemo(() => {
     if (chartData.length) {
       const prices = chartData.map((d: any) => d.price)
@@ -59,7 +58,7 @@ const CustomizedLabel = ({
         x={x}
         y={y}
         dy={value === min ? 16 : -8}
-        fill={theme === 'Light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)'}
+        fill="var(--fgd-4)"
         fontSize={10}
         textAnchor={x && y && x > width / 3 ? 'end' : 'start'}
         className="font-mono"
