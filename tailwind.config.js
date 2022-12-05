@@ -156,8 +156,8 @@ module.exports = {
             dark: 'hsl(45, 86%, 57%)',
           },
           button: {
-            DEFAULT: 'hsl(220, 91%, 64%)',
-            hover: 'hsl(220, 91%, 59%)',
+            DEFAULT: 'hsl(220, 91%, 44%)',
+            hover: 'hsl(220, 91%, 39%)',
           },
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
           down: {
@@ -166,12 +166,12 @@ module.exports = {
             muted: 'hsl(3, 19%, 51%)',
           },
           up: {
-            DEFAULT: 'hsl(165, 82%, 45%)',
-            dark: 'hsl(165, 82%, 40%)',
-            muted: 'hsl(165, 42%, 40%)',
+            DEFAULT: 'hsl(165, 82%, 37%)',
+            dark: 'hsl(165, 82%, 32%)',
+            muted: 'hsl(165, 42%, 32%)',
           },
           error: 'hsl(3, 59%, 56%)',
-          success: 'hsl(165, 82%, 45%)',
+          success: 'hsl(165, 82%, 37%)',
           warning: 'hsl(45, 86%, 62%)',
           'bkg-1': 'hsl(222, 74%, 21%)',
           'bkg-2': 'hsl(222, 74%, 26%)',

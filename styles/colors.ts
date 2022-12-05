@@ -55,7 +55,7 @@ export const COLORS: any = {
     Light: '#60bf4f',
     Avocado: '#4bc34b',
     Medium: '#4aa13a',
-    Blueberry: '#15d1a2',
+    Blueberry: '#11ac85',
     Banana: '#86AE7E',
     Lychee: '#2d805e',
   },
