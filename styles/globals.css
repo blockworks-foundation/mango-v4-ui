@@ -131,30 +131,30 @@ th {
   --warning: theme('colors.dark-theme.warning');
 }
 
-[data-theme='Mango'] {
-  --active: theme('colors.mango-theme.active.DEFAULT');
-  --active-dark: theme('colors.mango-theme.active.dark');
-  --down: theme('colors.mango-theme.down.DEFAULT');
-  --down-dark: theme('colors.mango-theme.down.dark');
-  --down-muted: theme('colors.mango-theme.down.muted');
-  --up: theme('colors.mango-theme.up.DEFAULT');
-  --up-dark: theme('colors.mango-theme.up.dark');
-  --up-muted: theme('colors.mango-theme.up.muted');
-  --link: theme('colors.mango-theme.link.DEFAULT');
-  --link-hover: theme('colors.mango-theme.link.hover');
-  --bkg-1: theme('colors.mango-theme.bkg-1');
-  --bkg-2: theme('colors.mango-theme.bkg-2');
-  --bkg-3: theme('colors.mango-theme.bkg-3');
-  --bkg-4: theme('colors.mango-theme.bkg-4');
-  --fgd-1: theme('colors.mango-theme.fgd-1');
-  --fgd-2: theme('colors.mango-theme.fgd-2');
-  --fgd-3: theme('colors.mango-theme.fgd-3');
-  --fgd-4: theme('colors.mango-theme.fgd-4');
-  --button: theme('colors.mango-theme.button.DEFAULT');
-  --button-hover: theme('colors.mango-theme.button.hover');
-  --error: theme('colors.mango-theme.error');
-  --success: theme('colors.mango-theme.success');
-  --warning: theme('colors.mango-theme.warning');
+[data-theme='Mango Classic'] {
+  --active: theme('colors.mango-classic-theme.active.DEFAULT');
+  --active-dark: theme('colors.mango-classic-theme.active.dark');
+  --down: theme('colors.mango-classic-theme.down.DEFAULT');
+  --down-dark: theme('colors.mango-classic-theme.down.dark');
+  --down-muted: theme('colors.mango-classic-theme.down.muted');
+  --up: theme('colors.mango-classic-theme.up.DEFAULT');
+  --up-dark: theme('colors.mango-classic-theme.up.dark');
+  --up-muted: theme('colors.mango-classic-theme.up.muted');
+  --link: theme('colors.mango-classic-theme.link.DEFAULT');
+  --link-hover: theme('colors.mango-classic-theme.link.hover');
+  --bkg-1: theme('colors.mango-classic-theme.bkg-1');
+  --bkg-2: theme('colors.mango-classic-theme.bkg-2');
+  --bkg-3: theme('colors.mango-classic-theme.bkg-3');
+  --bkg-4: theme('colors.mango-classic-theme.bkg-4');
+  --fgd-1: theme('colors.mango-classic-theme.fgd-1');
+  --fgd-2: theme('colors.mango-classic-theme.fgd-2');
+  --fgd-3: theme('colors.mango-classic-theme.fgd-3');
+  --fgd-4: theme('colors.mango-classic-theme.fgd-4');
+  --button: theme('colors.mango-classic-theme.button.DEFAULT');
+  --button-hover: theme('colors.mango-classic-theme.button.hover');
+  --error: theme('colors.mango-classic-theme.error');
+  --success: theme('colors.mango-classic-theme.success');
+  --warning: theme('colors.mango-classic-theme.warning');
 }
 
 [data-theme='Medium'] {
@@ -183,30 +183,134 @@ th {
   --warning: theme('colors.medium-theme.warning');
 }
 
-[data-theme='Ocean'] {
-  --active: theme('colors.ocean-theme.active.DEFAULT');
-  --active-dark: theme('colors.ocean-theme.active.dark');
-  --down: theme('colors.ocean-theme.down.DEFAULT');
-  --down-dark: theme('colors.ocean-theme.down.dark');
-  --down-muted: theme('colors.ocean-theme.down.muted');
-  --up: theme('colors.ocean-theme.up.DEFAULT');
-  --up-dark: theme('colors.ocean-theme.up.dark');
-  --up-muted: theme('colors.ocean-theme.up.muted');
-  --link: theme('colors.ocean-theme.link.DEFAULT');
-  --link-hover: theme('colors.ocean-theme.link.hover');
-  --bkg-1: theme('colors.ocean-theme.bkg-1');
-  --bkg-2: theme('colors.ocean-theme.bkg-2');
-  --bkg-3: theme('colors.ocean-theme.bkg-3');
-  --bkg-4: theme('colors.ocean-theme.bkg-4');
-  --fgd-1: theme('colors.ocean-theme.fgd-1');
-  --fgd-2: theme('colors.ocean-theme.fgd-2');
-  --fgd-3: theme('colors.ocean-theme.fgd-3');
-  --fgd-4: theme('colors.ocean-theme.fgd-4');
-  --button: theme('colors.ocean-theme.button.DEFAULT');
-  --button-hover: theme('colors.ocean-theme.button.hover');
-  --error: theme('colors.ocean-theme.error');
-  --success: theme('colors.ocean-theme.success');
-  --warning: theme('colors.ocean-theme.warning');
+[data-theme='High Contrast'] {
+  --active: theme('colors.high-contrast-theme.active.DEFAULT');
+  --active-dark: theme('colors.high-contrast-theme.active.dark');
+  --down: theme('colors.high-contrast-theme.down.DEFAULT');
+  --down-dark: theme('colors.high-contrast-theme.down.dark');
+  --down-muted: theme('colors.high-contrast-theme.down.muted');
+  --up: theme('colors.high-contrast-theme.up.DEFAULT');
+  --up-dark: theme('colors.high-contrast-theme.up.dark');
+  --up-muted: theme('colors.high-contrast-theme.up.muted');
+  --link: theme('colors.high-contrast-theme.link.DEFAULT');
+  --link-hover: theme('colors.high-contrast-theme.link.hover');
+  --bkg-1: theme('colors.high-contrast-theme.bkg-1');
+  --bkg-2: theme('colors.high-contrast-theme.bkg-2');
+  --bkg-3: theme('colors.high-contrast-theme.bkg-3');
+  --bkg-4: theme('colors.high-contrast-theme.bkg-4');
+  --fgd-1: theme('colors.high-contrast-theme.fgd-1');
+  --fgd-2: theme('colors.high-contrast-theme.fgd-2');
+  --fgd-3: theme('colors.high-contrast-theme.fgd-3');
+  --fgd-4: theme('colors.high-contrast-theme.fgd-4');
+  --button: theme('colors.high-contrast-theme.button.DEFAULT');
+  --button-hover: theme('colors.high-contrast-theme.button.hover');
+  --error: theme('colors.high-contrast-theme.error');
+  --success: theme('colors.high-contrast-theme.success');
+  --warning: theme('colors.high-contrast-theme.warning');
+}
+
+[data-theme='Blueberry'] {
+  --active: theme('colors.blueberry-theme.active.DEFAULT');
+  --active-dark: theme('colors.blueberry-theme.active.dark');
+  --down: theme('colors.blueberry-theme.down.DEFAULT');
+  --down-dark: theme('colors.blueberry-theme.down.dark');
+  --down-muted: theme('colors.blueberry-theme.down.muted');
+  --up: theme('colors.blueberry-theme.up.DEFAULT');
+  --up-dark: theme('colors.blueberry-theme.up.dark');
+  --up-muted: theme('colors.blueberry-theme.up.muted');
+  --link: theme('colors.blueberry-theme.link.DEFAULT');
+  --link-hover: theme('colors.blueberry-theme.link.hover');
+  --bkg-1: theme('colors.blueberry-theme.bkg-1');
+  --bkg-2: theme('colors.blueberry-theme.bkg-2');
+  --bkg-3: theme('colors.blueberry-theme.bkg-3');
+  --bkg-4: theme('colors.blueberry-theme.bkg-4');
+  --fgd-1: theme('colors.blueberry-theme.fgd-1');
+  --fgd-2: theme('colors.blueberry-theme.fgd-2');
+  --fgd-3: theme('colors.blueberry-theme.fgd-3');
+  --fgd-4: theme('colors.blueberry-theme.fgd-4');
+  --button: theme('colors.blueberry-theme.button.DEFAULT');
+  --button-hover: theme('colors.blueberry-theme.button.hover');
+  --error: theme('colors.blueberry-theme.error');
+  --success: theme('colors.blueberry-theme.success');
+  --warning: theme('colors.blueberry-theme.warning');
+}
+
+[data-theme='Banana'] {
+  --active: theme('colors.banana-theme.active.DEFAULT');
+  --active-dark: theme('colors.banana-theme.active.dark');
+  --down: theme('colors.banana-theme.down.DEFAULT');
+  --down-dark: theme('colors.banana-theme.down.dark');
+  --down-muted: theme('colors.banana-theme.down.muted');
+  --up: theme('colors.banana-theme.up.DEFAULT');
+  --up-dark: theme('colors.banana-theme.up.dark');
+  --up-muted: theme('colors.banana-theme.up.muted');
+  --link: theme('colors.banana-theme.link.DEFAULT');
+  --link-hover: theme('colors.banana-theme.link.hover');
+  --bkg-1: theme('colors.banana-theme.bkg-1');
+  --bkg-2: theme('colors.banana-theme.bkg-2');
+  --bkg-3: theme('colors.banana-theme.bkg-3');
+  --bkg-4: theme('colors.banana-theme.bkg-4');
+  --fgd-1: theme('colors.banana-theme.fgd-1');
+  --fgd-2: theme('colors.banana-theme.fgd-2');
+  --fgd-3: theme('colors.banana-theme.fgd-3');
+  --fgd-4: theme('colors.banana-theme.fgd-4');
+  --button: theme('colors.banana-theme.button.DEFAULT');
+  --button-hover: theme('colors.banana-theme.button.hover');
+  --error: theme('colors.banana-theme.error');
+  --success: theme('colors.banana-theme.success');
+  --warning: theme('colors.banana-theme.warning');
+}
+
+[data-theme='Olive'] {
+  --active: theme('colors.olive-theme.active.DEFAULT');
+  --active-dark: theme('colors.olive-theme.active.dark');
+  --down: theme('colors.olive-theme.down.DEFAULT');
+  --down-dark: theme('colors.olive-theme.down.dark');
+  --down-muted: theme('colors.olive-theme.down.muted');
+  --up: theme('colors.olive-theme.up.DEFAULT');
+  --up-dark: theme('colors.olive-theme.up.dark');
+  --up-muted: theme('colors.olive-theme.up.muted');
+  --link: theme('colors.olive-theme.link.DEFAULT');
+  --link-hover: theme('colors.olive-theme.link.hover');
+  --bkg-1: theme('colors.olive-theme.bkg-1');
+  --bkg-2: theme('colors.olive-theme.bkg-2');
+  --bkg-3: theme('colors.olive-theme.bkg-3');
+  --bkg-4: theme('colors.olive-theme.bkg-4');
+  --fgd-1: theme('colors.olive-theme.fgd-1');
+  --fgd-2: theme('colors.olive-theme.fgd-2');
+  --fgd-3: theme('colors.olive-theme.fgd-3');
+  --fgd-4: theme('colors.olive-theme.fgd-4');
+  --button: theme('colors.olive-theme.button.DEFAULT');
+  --button-hover: theme('colors.olive-theme.button.hover');
+  --error: theme('colors.olive-theme.error');
+  --success: theme('colors.olive-theme.success');
+  --warning: theme('colors.olive-theme.warning');
+}
+
+[data-theme='Lychee'] {
+  --active: theme('colors.lychee-theme.active.DEFAULT');
+  --active-dark: theme('colors.lychee-theme.active.dark');
+  --down: theme('colors.lychee-theme.down.DEFAULT');
+  --down-dark: theme('colors.lychee-theme.down.dark');
+  --down-muted: theme('colors.lychee-theme.down.muted');
+  --up: theme('colors.lychee-theme.up.DEFAULT');
+  --up-dark: theme('colors.lychee-theme.up.dark');
+  --up-muted: theme('colors.lychee-theme.up.muted');
+  --link: theme('colors.lychee-theme.link.DEFAULT');
+  --link-hover: theme('colors.lychee-theme.link.hover');
+  --bkg-1: theme('colors.lychee-theme.bkg-1');
+  --bkg-2: theme('colors.lychee-theme.bkg-2');
+  --bkg-3: theme('colors.lychee-theme.bkg-3');
+  --bkg-4: theme('colors.lychee-theme.bkg-4');
+  --fgd-1: theme('colors.lychee-theme.fgd-1');
+  --fgd-2: theme('colors.lychee-theme.fgd-2');
+  --fgd-3: theme('colors.lychee-theme.fgd-3');
+  --fgd-4: theme('colors.lychee-theme.fgd-4');
+  --button: theme('colors.lychee-theme.button.DEFAULT');
+  --button-hover: theme('colors.lychee-theme.button.hover');
+  --error: theme('colors.lychee-theme.error');
+  --success: theme('colors.lychee-theme.success');
+  --warning: theme('colors.lychee-theme.warning');
 }
 
 /* [data-theme='Smoothy'] {
@@ -235,30 +339,30 @@ th {
   --warning: theme('colors.smoothy-theme.warning');
 } */
 
-[data-theme='Jungle'] {
-  --active: theme('colors.jungle-theme.active.DEFAULT');
-  --active-dark: theme('colors.jungle-theme.active.dark');
-  --down: theme('colors.jungle-theme.down.DEFAULT');
-  --down-dark: theme('colors.jungle-theme.down.dark');
-  --down-muted: theme('colors.jungle-theme.down.muted');
-  --up: theme('colors.jungle-theme.up.DEFAULT');
-  --up-dark: theme('colors.jungle-theme.up.dark');
-  --up-muted: theme('colors.jungle-theme.up.muted');
-  --link: theme('colors.jungle-theme.link.DEFAULT');
-  --link-hover: theme('colors.jungle-theme.link.hover');
-  --bkg-1: theme('colors.jungle-theme.bkg-1');
-  --bkg-2: theme('colors.jungle-theme.bkg-2');
-  --bkg-3: theme('colors.jungle-theme.bkg-3');
-  --bkg-4: theme('colors.jungle-theme.bkg-4');
-  --fgd-1: theme('colors.jungle-theme.fgd-1');
-  --fgd-2: theme('colors.jungle-theme.fgd-2');
-  --fgd-3: theme('colors.jungle-theme.fgd-3');
-  --fgd-4: theme('colors.jungle-theme.fgd-4');
-  --button: theme('colors.jungle-theme.button.DEFAULT');
-  --button-hover: theme('colors.jungle-theme.button.hover');
-  --error: theme('colors.jungle-theme.error');
-  --success: theme('colors.jungle-theme.success');
-  --warning: theme('colors.jungle-theme.warning');
+[data-theme='Avocado'] {
+  --active: theme('colors.avocado-theme.active.DEFAULT');
+  --active-dark: theme('colors.avocado-theme.active.dark');
+  --down: theme('colors.avocado-theme.down.DEFAULT');
+  --down-dark: theme('colors.avocado-theme.down.dark');
+  --down-muted: theme('colors.avocado-theme.down.muted');
+  --up: theme('colors.avocado-theme.up.DEFAULT');
+  --up-dark: theme('colors.avocado-theme.up.dark');
+  --up-muted: theme('colors.avocado-theme.up.muted');
+  --link: theme('colors.avocado-theme.link.DEFAULT');
+  --link-hover: theme('colors.avocado-theme.link.hover');
+  --bkg-1: theme('colors.avocado-theme.bkg-1');
+  --bkg-2: theme('colors.avocado-theme.bkg-2');
+  --bkg-3: theme('colors.avocado-theme.bkg-3');
+  --bkg-4: theme('colors.avocado-theme.bkg-4');
+  --fgd-1: theme('colors.avocado-theme.fgd-1');
+  --fgd-2: theme('colors.avocado-theme.fgd-2');
+  --fgd-3: theme('colors.avocado-theme.fgd-3');
+  --fgd-4: theme('colors.avocado-theme.fgd-4');
+  --button: theme('colors.avocado-theme.button.DEFAULT');
+  --button-hover: theme('colors.avocado-theme.button.hover');
+  --error: theme('colors.avocado-theme.error');
+  --success: theme('colors.avocado-theme.success');
+  --warning: theme('colors.avocado-theme.warning');
 }
 
 /* Base */
@@ -315,33 +419,33 @@ input::placeholder {
 
 /* Slider */
 
-input[type='range']::-webkit-slider-thumb {
+/* input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  height: 16px;
+  height: 18px;
   width: 16px;
   border-radius: 100%;
   background: var(--active);
   cursor: pointer;
   margin-top: -1px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
-}
+/* } */
 
 /* All the same stuff for Firefox */
-input[type='range']::-moz-range-thumb {
-  height: 16px;
+/* input[type='range']::-moz-range-thumb {
+  height: 18px;
   width: 16px;
   border-radius: 100%;
   background: var(--active);
   cursor: pointer;
-}
+} */
 
 /* All the same stuff for IE */
-input[type='range']::-ms-thumb {
-  height: 16px;
+/* input[type='range']::-ms-thumb {
+  height: 18px;
   width: 16px;
   border-radius: 100%;
   background: var(--active);
   cursor: pointer;
-}
+} */
 
 /* Animations */
 
@@ -429,7 +533,7 @@ table p {
 /* slider */
 
 input[type='range'] {
-  @apply h-2 appearance-none rounded bg-th-bkg-4 bg-gradient-to-r from-gradient-start via-gradient-mid to-gradient-end bg-[length:50%_100%] bg-no-repeat;
+  @apply h-1.5 appearance-none rounded bg-th-bkg-4 bg-gradient-to-r from-gradient-start via-gradient-mid to-gradient-end bg-[length:50%_100%] bg-no-repeat;
 }
 
 input[type='range']::-webkit-slider-thumb {

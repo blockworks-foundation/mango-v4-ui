@@ -36,7 +36,8 @@ import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { getDecimalCount } from 'utils/numbers'
+import Slippage from './Slippage'
+import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -295,9 +296,9 @@ const AdvancedTradeForm = () => {
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !group || !tradeForm.baseSize) return 100
+    if (!mangoAccount || !group || !Number(tradeForm.baseSize)) return 100
 
-    let simulatedHealthRatio: number
+    let simulatedHealthRatio = 0
 
     if (selectedMarket instanceof Serum3Market) {
       simulatedHealthRatio =
@@ -314,31 +315,31 @@ const AdvancedTradeForm = () => {
               selectedMarket.serumMarketExternal,
               HealthType.maint
             )
-    } else {
+    } else if (selectedMarket instanceof PerpMarket) {
       simulatedHealthRatio =
         tradeForm.side === 'sell'
           ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
               group,
-              selectedMarket!.perpMarketIndex,
+              selectedMarket.perpMarketIndex,
               parseFloat(tradeForm.baseSize)
             )
           : mangoAccount.simHealthRatioWithPerpBidUiChanges(
               group,
-              selectedMarket!.perpMarketIndex,
+              selectedMarket.perpMarketIndex,
               parseFloat(tradeForm.baseSize)
             )
     }
 
-    return simulatedHealthRatio! > 100
+    return simulatedHealthRatio > 100
       ? 100
-      : simulatedHealthRatio! < 0
+      : simulatedHealthRatio < 0
       ? 0
-      : Math.trunc(simulatedHealthRatio!)
+      : Math.trunc(simulatedHealthRatio)
   }, [selectedMarket, tradeForm])
 
   return (
     <div>
-      <div className="border-b border-th-bkg-3">
+      <div className="border-b border-th-bkg-3 md:border-t lg:border-t-0">
         <TabButtons
           activeValue={tradeForm.tradeType}
           onChange={(tab: 'Limit' | 'Market') => setTradeType(tab)}
@@ -547,8 +548,20 @@ const AdvancedTradeForm = () => {
           )}
         </Button>
       </div>
-      <div className="mt-4 px-4 lg:mt-6">
-        <HealthImpact maintProjectedHealth={maintProjectedHealth} responsive />
+      <div className="mt-4 space-y-2 px-4 lg:mt-6">
+        {tradeForm.price && tradeForm.baseSize ? (
+          <div className="flex justify-between text-xs">
+            <p>{t('trade:order-value')}</p>
+            <p className="text-th-fgd-2">
+              {formatFixedDecimals(
+                parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize),
+                true
+              )}
+            </p>
+          </div>
+        ) : null}
+        <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
+        <Slippage />
       </div>
     </div>
   )

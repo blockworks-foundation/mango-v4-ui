@@ -67,7 +67,6 @@ const DEFAULT_PARAMS = [
 
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
-  const initialLoad = mangoStore((s) => s.activityFeed.initialLoad)
   const actions = mangoStore((s) => s.actions)
   const { mangoAccount } = useMangoAccount()
   const [showActivityDetail, setShowActivityDetail] = useState(null)
@@ -78,11 +77,11 @@ const ActivityFeed = () => {
   const [params, setParams] = useState<string[]>(DEFAULT_PARAMS)
 
   useEffect(() => {
-    if (mangoAccount && !initialLoad) {
+    if (mangoAccount) {
       const pubKey = mangoAccount.publicKey.toString()
       actions.fetchActivityFeed(pubKey)
     }
-  }, [actions, initialLoad, mangoAccount])
+  }, [actions, mangoAccount])
 
   const handleShowActivityDetails = (activity: any) => {
     setShowActivityDetail(activity)

@@ -199,6 +199,7 @@ export type MangoStore = {
     bidsAccount: BookSide | SpotOrderBook | undefined
     asksAccount: BookSide | SpotOrderBook | undefined
     orderbook: Orderbook
+    markPrice: number
   }
   serumMarkets: Serum3Market[]
   serumOrders: Order[] | undefined
@@ -305,6 +306,7 @@ const mangoStore = create<MangoStore>()(
           bids: [],
           asks: [],
         },
+        markPrice: 0,
       },
       serumMarkets: [],
       serumOrders: undefined,
@@ -408,10 +410,11 @@ const mangoStore = create<MangoStore>()(
               state.mangoAccount.stats.performance.data = stats.reverse()
               state.mangoAccount.stats.performance.loading = false
             })
-          } catch {
+          } catch (e) {
             set((state) => {
               state.mangoAccount.stats.performance.loading = false
             })
+            console.error('Failed to load account performance data', e)
             notify({
               title: 'Failed to load account performance data',
               type: 'error',
@@ -425,6 +428,9 @@ const mangoStore = create<MangoStore>()(
         ) => {
           const set = get().set
           const currentFeed = mangoStore.getState().activityFeed.feed
+          const connectedMangoAccountPk = mangoStore
+            .getState()
+            .mangoAccount.current?.publicKey.toString()
           try {
             const response = await fetch(
               `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
@@ -436,21 +442,27 @@ const mangoStore = create<MangoStore>()(
               b[0].localeCompare(a[0])
             )
 
-            const feed = currentFeed.concat(
-              entries
-                .map(([key, value]: Array<{ key: string; value: number }>) => {
-                  return { ...value, symbol: key }
-                })
-                .filter((x: string) => x)
-                .sort(
-                  (
-                    a: DepositWithdrawFeedItem | LiquidationFeedItem,
-                    b: DepositWithdrawFeedItem | LiquidationFeedItem
-                  ) =>
-                    dayjs(b.block_datetime).unix() -
-                    dayjs(a.block_datetime).unix()
-                )
-            )
+            const latestFeed = entries
+              .map(([key, value]: Array<{ key: string; value: number }>) => {
+                return { ...value, symbol: key }
+              })
+              .filter((x: string) => x)
+              .sort(
+                (
+                  a: DepositWithdrawFeedItem | LiquidationFeedItem,
+                  b: DepositWithdrawFeedItem | LiquidationFeedItem
+                ) =>
+                  dayjs(b.block_datetime).unix() -
+                  dayjs(a.block_datetime).unix()
+              )
+
+            // only add to current feed if current feed has length and the mango account hasn't changed
+            const feed =
+              currentFeed.length &&
+              connectedMangoAccountPk ===
+                currentFeed[0].activity_details.mango_account
+                ? currentFeed.concat(latestFeed)
+                : latestFeed
 
             set((state) => {
               state.activityFeed.feed = feed
@@ -625,11 +637,11 @@ const mangoStore = create<MangoStore>()(
         fetchOpenOrders: async (providedMangoAccount) => {
           const set = get().set
           const client = get().client
-          const group = await client.getGroup(GROUP)
+          const group = get().group
           const mangoAccount =
             providedMangoAccount || get().mangoAccount.current
 
-          if (!mangoAccount) return
+          if (!mangoAccount || !group) return
 
           try {
             const openOrders: Record<string, Order[] | PerpOrder[]> = {}

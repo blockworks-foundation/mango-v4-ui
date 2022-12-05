@@ -1,3 +1,4 @@
+import { useTheme } from 'next-themes'
 import { FunctionComponent, ReactNode } from 'react'
 
 interface AllButtonProps {
@@ -23,21 +24,26 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
   size = 'medium',
   ...props
 }) => {
+  const { theme } = useTheme()
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={`whitespace-nowrap rounded-md ${
         secondary
-          ? 'border border-th-bkg-4 text-th-fgd-1 md:hover:border-th-fgd-4'
-          : 'bg-th-button text-white md:hover:bg-th-button-hover'
+          ? 'border border-th-button md:hover:border-th-button-hover'
+          : 'bg-th-button md:hover:bg-th-button-hover'
       } ${
         size === 'medium'
           ? 'h-10 px-4'
           : size === 'large'
           ? 'h-12 px-6'
           : 'h-8 px-3'
-      } default-transition font-bold focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
+      } default-transition font-bold ${
+        theme === 'High Contrast' && !secondary
+          ? 'text-th-bkg-1'
+          : 'text-th-fgd-1'
+      } focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
       {...props}
     >
       {children}
@@ -72,7 +78,9 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
           ? 'h-8 w-8'
           : 'h-10 w-10'
       } default-transition items-center justify-center rounded-full ${
-        hideBg ? 'md:hover:text-th-active' : 'bg-th-bkg-4 md:hover:bg-th-bkg-3'
+        hideBg
+          ? 'md:hover:text-th-active'
+          : 'border border-th-button md:hover:border-th-button-hover'
       } text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:bg-th-bkg-4 
       disabled:text-th-fgd-4 md:disabled:hover:text-th-fgd-4 ${className}`}
       {...props}

@@ -7,6 +7,7 @@
     "connect-positions": "Connect to view your positions",
     "connect-unsettled": "Connect to view your unsettled funds",
     "entry-price": "Entry Price",
+    "est-slippage": "Est. Slippage",
     "grouping": "Grouping",
     "hide-asks": "Hide Asks",
     "hide-bids": "Hide Bids",
@@ -20,6 +21,7 @@
     "oracle-price": "Oracle Price",
     "orders": "Orders",
     "order-error": "Failed to place order",
+    "order-value": "Order Value",
     "post": "Post",
     "place-order": "Place {{side}} Order",
     "placing-order": "Placing Order",
@@ -34,6 +36,7 @@
     "tooltip-enable-margin": "Enable spot margin for this trade",
     "tooltip-ioc": "Immediate-Or-Cancel (IOC) orders are guaranteed to be the taker and must be executed immediately. Any portion of the order that can't be filled immediately will be cancelled",
     "tooltip-post": "Post orders are guaranteed to be the maker or they will be canceled",
+    "tooltip-slippage": "An estimate of the differnece between the current price and the price your trade will be executed at",
     "trade-sounds-tooltip": "Play a sound alert for every new trade",
     "trades": "Trades",
     "unsettled": "Unsettled"

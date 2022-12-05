@@ -4,6 +4,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useInterval from './shared/useInterval'
 
 const HydrateStore = () => {
   const router = useRouter()
@@ -24,6 +25,10 @@ const HydrateStore = () => {
     }
     fetchData()
   }, [marketName])
+
+  useInterval(() => {
+    fetchData()
+  }, 15000)
 
   // watch selected Mango Account for changes
   useEffect(() => {

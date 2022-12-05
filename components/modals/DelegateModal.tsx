@@ -56,7 +56,7 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
     } catch (e: any) {
       notify({
         title: t('account-update-failed'),
-        txid: e?.signature,
+        txid: e?.txid,
         type: 'error',
       })
       console.error(e)

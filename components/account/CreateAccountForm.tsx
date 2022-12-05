@@ -88,7 +88,7 @@ const CreateAccountForm = ({
       setLoading(false)
       notify({
         title: t('new-account-failed'),
-        txid: e?.signature,
+        txid: e?.txid,
         type: 'error',
       })
       console.error(e)
@@ -108,7 +108,8 @@ const CreateAccountForm = ({
               <ArrowLeftIcon className="h-5 w-5" />
             </IconButton>
           ) : null}
-          <h2>{t('create-account')}</h2>
+          <h2 className="w-full text-center">{t('create-account')}</h2>
+          {handleBack ? <div className="h-5 w-5" /> : null}
         </div>
         {isFirstAccount ? (
           <p className="mt-1">You need a Mango Account to get started.</p>
