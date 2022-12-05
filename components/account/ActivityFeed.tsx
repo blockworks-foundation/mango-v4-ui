@@ -12,6 +12,7 @@ import {
   ArrowLeftIcon,
   ArrowPathIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/20/solid'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
@@ -415,11 +416,13 @@ const AdvancedFiltersForm = ({
   return (
     <>
       <Label text={t('tokens')} />
-      <MultiSelectDropdown
-        options={symbols}
-        selected={advancedFilters.symbol || []}
-        toggleOption={toggleOption}
-      />
+      <div className="w-full lg:w-1/2 lg:pr-4">
+        <MultiSelectDropdown
+          options={symbols}
+          selected={advancedFilters.symbol || []}
+          toggleOption={toggleOption}
+        />
+      </div>
       <div className="my-4 w-full">
         <MangoDateRangePicker
           startDate={dateFrom}
@@ -428,8 +431,8 @@ const AdvancedFiltersForm = ({
           setEndDate={setDateTo}
         />
       </div>
-      <div className="flex items-center space-x-2 pb-6">
-        <div className="w-1/2">
+      <div className="flex items-end pb-6">
+        <div className="w-full">
           <Label text={t('activity:value-from')} />
           <Input
             type="text"
@@ -440,7 +443,10 @@ const AdvancedFiltersForm = ({
             }
           />
         </div>
-        <div className="w-1/2">
+        <div className="flex h-12 items-center justify-center">
+          <ChevronRightIcon className="mx-1 h-5 w-5 flex-shrink-0 text-th-fgd-3" />
+        </div>
+        <div className="w-full">
           <Label text={t('activity:value-to')} />
           <Input
             type="text"

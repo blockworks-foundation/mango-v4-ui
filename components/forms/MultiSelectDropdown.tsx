@@ -50,8 +50,8 @@ const MultiSelectDropdown = ({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Popover.Panel className="absolute top-14 z-10 h-72 w-full overflow-y-auto">
-              <div className="relative space-y-2.5 rounded-md bg-th-bkg-3 p-3">
+            <Popover.Panel className="absolute top-14 z-10 h-72 max-h-60 w-full overflow-y-auto rounded-md">
+              <div className="relative space-y-2.5 bg-th-bkg-3 p-3">
                 {options.map((option: string) => {
                   const isSelected = selected.includes(option)
                   return (
@@ -71,7 +71,7 @@ const MultiSelectDropdown = ({
         </div>
       )}
     </Popover>
-  );
+  )
 }
 
 export default MultiSelectDropdown
