@@ -1,3 +1,4 @@
+import { useTheme } from 'next-themes'
 import { FunctionComponent, ReactNode } from 'react'
 
 interface AllButtonProps {
@@ -23,6 +24,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
   size = 'medium',
   ...props
 }) => {
+  const { theme } = useTheme()
   return (
     <button
       onClick={onClick}
@@ -37,7 +39,11 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
           : size === 'large'
           ? 'h-12 px-6'
           : 'h-8 px-3'
-      } default-transition font-bold text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:text-th-fgd-3 disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
+      } default-transition font-bold ${
+        theme === 'High Contrast' && !secondary
+          ? 'text-th-bkg-1'
+          : 'text-th-fgd-1'
+      } focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
       {...props}
     >
       {children}

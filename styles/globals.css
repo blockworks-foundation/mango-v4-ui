@@ -183,6 +183,32 @@ th {
   --warning: theme('colors.medium-theme.warning');
 }
 
+[data-theme='High Contrast'] {
+  --active: theme('colors.high-contrast-theme.active.DEFAULT');
+  --active-dark: theme('colors.high-contrast-theme.active.dark');
+  --down: theme('colors.high-contrast-theme.down.DEFAULT');
+  --down-dark: theme('colors.high-contrast-theme.down.dark');
+  --down-muted: theme('colors.high-contrast-theme.down.muted');
+  --up: theme('colors.high-contrast-theme.up.DEFAULT');
+  --up-dark: theme('colors.high-contrast-theme.up.dark');
+  --up-muted: theme('colors.high-contrast-theme.up.muted');
+  --link: theme('colors.high-contrast-theme.link.DEFAULT');
+  --link-hover: theme('colors.high-contrast-theme.link.hover');
+  --bkg-1: theme('colors.high-contrast-theme.bkg-1');
+  --bkg-2: theme('colors.high-contrast-theme.bkg-2');
+  --bkg-3: theme('colors.high-contrast-theme.bkg-3');
+  --bkg-4: theme('colors.high-contrast-theme.bkg-4');
+  --fgd-1: theme('colors.high-contrast-theme.fgd-1');
+  --fgd-2: theme('colors.high-contrast-theme.fgd-2');
+  --fgd-3: theme('colors.high-contrast-theme.fgd-3');
+  --fgd-4: theme('colors.high-contrast-theme.fgd-4');
+  --button: theme('colors.high-contrast-theme.button.DEFAULT');
+  --button-hover: theme('colors.high-contrast-theme.button.hover');
+  --error: theme('colors.high-contrast-theme.error');
+  --success: theme('colors.high-contrast-theme.success');
+  --warning: theme('colors.high-contrast-theme.warning');
+}
+
 [data-theme='Blueberry'] {
   --active: theme('colors.blueberry-theme.active.DEFAULT');
   --active-dark: theme('colors.blueberry-theme.active.dark');
@@ -233,6 +259,32 @@ th {
   --error: theme('colors.banana-theme.error');
   --success: theme('colors.banana-theme.success');
   --warning: theme('colors.banana-theme.warning');
+}
+
+[data-theme='Olive'] {
+  --active: theme('colors.olive-theme.active.DEFAULT');
+  --active-dark: theme('colors.olive-theme.active.dark');
+  --down: theme('colors.olive-theme.down.DEFAULT');
+  --down-dark: theme('colors.olive-theme.down.dark');
+  --down-muted: theme('colors.olive-theme.down.muted');
+  --up: theme('colors.olive-theme.up.DEFAULT');
+  --up-dark: theme('colors.olive-theme.up.dark');
+  --up-muted: theme('colors.olive-theme.up.muted');
+  --link: theme('colors.olive-theme.link.DEFAULT');
+  --link-hover: theme('colors.olive-theme.link.hover');
+  --bkg-1: theme('colors.olive-theme.bkg-1');
+  --bkg-2: theme('colors.olive-theme.bkg-2');
+  --bkg-3: theme('colors.olive-theme.bkg-3');
+  --bkg-4: theme('colors.olive-theme.bkg-4');
+  --fgd-1: theme('colors.olive-theme.fgd-1');
+  --fgd-2: theme('colors.olive-theme.fgd-2');
+  --fgd-3: theme('colors.olive-theme.fgd-3');
+  --fgd-4: theme('colors.olive-theme.fgd-4');
+  --button: theme('colors.olive-theme.button.DEFAULT');
+  --button-hover: theme('colors.olive-theme.button.hover');
+  --error: theme('colors.olive-theme.error');
+  --success: theme('colors.olive-theme.success');
+  --warning: theme('colors.olive-theme.warning');
 }
 
 [data-theme='Lychee'] {

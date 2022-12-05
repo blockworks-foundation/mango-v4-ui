@@ -150,6 +150,38 @@ module.exports = {
           'fgd-3': 'hsl(0, 0%, 60%)',
           'fgd-4': 'hsl(0, 0%, 50%)',
         },
+        'high-contrast-theme': {
+          active: {
+            DEFAULT: 'hsl(62, 96%, 54%)',
+            dark: 'hsl(62, 96%, 49%)',
+          },
+          button: {
+            DEFAULT: 'hsl(62, 96%, 54%)',
+            hover: 'hsl(62, 96%, 49%)',
+          },
+          link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
+          down: {
+            DEFAULT: 'hsl(0, 100%, 58%)',
+            dark: 'hsl(0, 100%, 58%)',
+            muted: 'hsl(0, 49%, 48%)',
+          },
+          up: {
+            DEFAULT: 'hsl(111, 90%, 58%)',
+            dark: 'hsl(111, 90%, 58%)',
+            muted: 'hsl(111, 40%, 48%)',
+          },
+          error: 'hsl(0, 100%, 58%)',
+          success: 'hsl(111, 90%, 58%)',
+          warning: 'hsl(45, 86%, 62%)',
+          'bkg-1': 'hsl(0, 0%, 0%)',
+          'bkg-2': 'hsl(0, 0%, 7%)',
+          'bkg-3': 'hsl(0, 0%, 14%)',
+          'bkg-4': 'hsl(0, 0%, 21%)',
+          'fgd-1': 'hsl(0, 0%, 100%)',
+          'fgd-2': 'hsl(0, 0%, 95%)',
+          'fgd-3': 'hsl(0, 0%, 90%)',
+          'fgd-4': 'hsl(0, 0%, 85%)',
+        },
         'blueberry-theme': {
           active: {
             DEFAULT: 'hsl(45, 86%, 62%)',
@@ -246,7 +278,38 @@ module.exports = {
           'fgd-3': 'hsl(120, 20%, 73%)',
           'fgd-4': 'hsl(120, 20%, 63%)',
         },
-
+        'olive-theme': {
+          active: {
+            DEFAULT: 'hsl(53, 68%, 71%)',
+            dark: 'hsl(53, 68%, 66%)',
+          },
+          button: {
+            DEFAULT: 'hsl(51, 13%, 44%)',
+            hover: 'hsl(51, 13%, 39%)',
+          },
+          link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
+          down: {
+            DEFAULT: 'hsl(3, 85%, 56%)',
+            dark: 'hsl(3, 85%, 51%)',
+            muted: 'hsl(3, 45%, 51%)',
+          },
+          up: {
+            DEFAULT: 'hsl(102, 63%, 41%)',
+            dark: 'hsl(102, 63%, 36%)',
+            muted: 'hsl(102, 23%, 36%)',
+          },
+          error: 'hsl(3, 59%, 76%)',
+          success: 'hsl(102, 63%, 41%)',
+          warning: 'hsl(45, 86%, 62%)',
+          'bkg-1': 'hsl(51, 16%, 19%)',
+          'bkg-2': 'hsl(51, 16%, 24%)',
+          'bkg-3': 'hsl(51, 16%, 29%)',
+          'bkg-4': 'hsl(51, 16%, 34%)',
+          'fgd-1': 'hsl(55, 47%, 91%)',
+          'fgd-2': 'hsl(55, 37%, 81%)',
+          'fgd-3': 'hsl(55, 27%, 71%)',
+          'fgd-4': 'hsl(55, 17%, 61%)',
+        },
         'lychee-theme': {
           active: {
             DEFAULT: 'hsl(236, 95%, 32%)',

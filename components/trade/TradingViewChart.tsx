@@ -164,7 +164,11 @@ const TradingViewChart = () => {
               ? COLORS.BKG1.Blueberry
               : theme === 'Banana'
               ? COLORS.BKG1.Banana
-              : COLORS.BKG1.Lychee,
+              : theme === 'Lychee'
+              ? COLORS.BKG1.Lychee
+              : theme === 'Olive'
+              ? COLORS.BKG1.Olive
+              : COLORS.BKG1['High Contrast'],
         },
         overrides: {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

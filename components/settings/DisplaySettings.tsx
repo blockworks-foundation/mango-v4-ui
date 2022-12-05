@@ -46,11 +46,13 @@ const DisplaySettings = () => {
       t('settings:light'),
       t('settings:medium'),
       t('settings:dark'),
+      t('settings:high-contrast'),
       t('settings:mango-classic'),
       t('settings:avocado'),
       t('settings:banana'),
       t('settings:blueberry'),
       t('settings:lychee'),
+      t('settings:olive'),
     ]
   }, [t])
 
