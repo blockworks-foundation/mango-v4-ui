@@ -428,6 +428,9 @@ const mangoStore = create<MangoStore>()(
         ) => {
           const set = get().set
           const currentFeed = mangoStore.getState().activityFeed.feed
+          const connectedMangoAccountPk = mangoStore
+            .getState()
+            .mangoAccount.current?.publicKey.toString()
           try {
             const response = await fetch(
               `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
@@ -439,21 +442,27 @@ const mangoStore = create<MangoStore>()(
               b[0].localeCompare(a[0])
             )
 
-            const feed = currentFeed.concat(
-              entries
-                .map(([key, value]: Array<{ key: string; value: number }>) => {
-                  return { ...value, symbol: key }
-                })
-                .filter((x: string) => x)
-                .sort(
-                  (
-                    a: DepositWithdrawFeedItem | LiquidationFeedItem,
-                    b: DepositWithdrawFeedItem | LiquidationFeedItem
-                  ) =>
-                    dayjs(b.block_datetime).unix() -
-                    dayjs(a.block_datetime).unix()
-                )
-            )
+            const latestFeed = entries
+              .map(([key, value]: Array<{ key: string; value: number }>) => {
+                return { ...value, symbol: key }
+              })
+              .filter((x: string) => x)
+              .sort(
+                (
+                  a: DepositWithdrawFeedItem | LiquidationFeedItem,
+                  b: DepositWithdrawFeedItem | LiquidationFeedItem
+                ) =>
+                  dayjs(b.block_datetime).unix() -
+                  dayjs(a.block_datetime).unix()
+              )
+
+            // only add to current feed if current feed has length and the mango account hasn't changed
+            const feed =
+              currentFeed.length &&
+              connectedMangoAccountPk ===
+                currentFeed[0].activity_details.mango_account
+                ? currentFeed.concat(latestFeed)
+                : latestFeed
 
             set((state) => {
               state.activityFeed.feed = feed
