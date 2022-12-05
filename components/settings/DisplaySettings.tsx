@@ -44,14 +44,13 @@ const DisplaySettings = () => {
   const themes = useMemo(() => {
     return [
       t('settings:light'),
-      'Medium',
+      t('settings:medium'),
       t('settings:dark'),
-      'Mango Classic',
-      'Avocado',
-      'Banana',
-      'Blueberry',
-      'Lychee',
-      // 'Smoothy',
+      t('settings:mango-classic'),
+      t('settings:avocado'),
+      t('settings:banana'),
+      t('settings:blueberry'),
+      t('settings:lychee'),
     ]
   }, [t])
 
