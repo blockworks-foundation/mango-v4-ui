@@ -23,7 +23,7 @@ function Modal({
       className="relative z-50 overflow-y-auto"
     >
       <div
-        className={`fixed inset-0 bg-black opacity-50 ${
+        className={`fixed inset-0 bg-th-bkg-1 opacity-50 ${
           disableOutsideClose ? 'pointer-events-none' : ''
         }`}
         aria-hidden="true"

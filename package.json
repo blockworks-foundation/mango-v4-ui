@@ -33,7 +33,7 @@
     "howler": "^2.2.3",
     "html-react-parser": "^3.0.4",
     "immer": "^9.0.12",
-    "klinecharts": "8.5.0",
+    "klinecharts": "^8.6.3",
     "lodash": "^4.17.21",
     "next": "^13.0.0",
     "next-i18next": "^11.1.1",

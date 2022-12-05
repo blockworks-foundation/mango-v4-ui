@@ -338,7 +338,7 @@ const Orderbook = () => {
           state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
         })
       })
-      console.log('bidsPk', bidsPk)
+
       bidSubscriptionId = connection.onAccountChange(
         bidsPk,
         (info, _context) => {

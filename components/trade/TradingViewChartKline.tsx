@@ -7,71 +7,18 @@ import { useViewport } from 'hooks/useViewport'
 import usePrevious from '@components/shared/usePrevious'
 import Modal from '@components/shared/Modal'
 import Switch from '@components/forms/Switch'
-
-const ONE_HOUR_MINS = 60
-const ONE_MINUTE_SECONDS = 60
-const ONE_HOUR_SECONDS = ONE_HOUR_MINS * ONE_MINUTE_SECONDS
-const ONE_DAY_SECONDS = ONE_HOUR_SECONDS * 24
-
-type BASE_CHART_QUERY = {
-  resolution: string
-  symbol: string
-  to: number
-}
-
-type CHART_QUERY = BASE_CHART_QUERY & {
-  from: number
-}
-
-type HISTORY = {
-  c: string[]
-  h: string[]
-  l: string[]
-  o: string[]
-  t: number[]
-  v: string[]
-}
-
-//Translate values that api accepts to chart seconds
-const RES_NAME_TO_RES_VAL: {
-  [key: string]: {
-    val: string
-    seconds: number
-  }
-} = {
-  '1m': { val: '1', seconds: ONE_MINUTE_SECONDS },
-  '5m': { val: '5', seconds: 5 * ONE_MINUTE_SECONDS },
-  '30m': {
-    val: `${ONE_HOUR_MINS / 2}`,
-    seconds: (ONE_HOUR_MINS / 2) * ONE_MINUTE_SECONDS,
-  },
-  '1H': { val: `${ONE_HOUR_MINS}`, seconds: ONE_HOUR_SECONDS },
-  '2H': { val: `${2 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_SECONDS * 2 },
-  '4H': { val: `${4 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_SECONDS * 4 },
-  '1D': { val: '1D', seconds: 24 * ONE_HOUR_SECONDS },
-}
-
-const mainTechnicalIndicatorTypes = [
-  'MA',
-  'EMA',
-  'SAR',
-  'BOLL',
-  'SMA',
-  'BBI',
-  'TRIX',
-]
-const subTechnicalIndicatorTypes = [
-  'VOL',
-  'MACD',
-  'RSI',
-  'KDJ',
-  'OBV',
-  'CCI',
-  'WR',
-  'DMI',
-  'MTM',
-  'EMV',
-]
+import {
+  BASE_CHART_QUERY,
+  CHART_QUERY,
+  DEFAULT_SUB_INDICATOR,
+  HISTORY,
+  mainTechnicalIndicatorTypes,
+  MAIN_INDICATOR_CLASS,
+  ONE_DAY_SECONDS,
+  RES_NAME_TO_RES_VAL,
+  subTechnicalIndicatorTypes,
+} from 'utils/kLineChart'
+import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
 
 const TradingViewChartKline = () => {
   const { width } = useViewport()
@@ -81,6 +28,10 @@ const TradingViewChartKline = () => {
   const [mainTechnicalIndicators, setMainTechnicalIndicators] = useState<
     string[]
   >([])
+  const [subTechnicalIndicators, setSubTechnicalIndicators] = useState<{
+    //indicatorName: class
+    [indicatorName: string]: string
+  }>({})
   const [resolution, setResultion] = useState(RES_NAME_TO_RES_VAL['1H'])
   const [chart, setChart] = useState<klinecharts.Chart | null>(null)
   const [baseChartQuery, setQuery] = useState<BASE_CHART_QUERY | null>(null)
@@ -150,7 +101,7 @@ const TradingViewChartKline = () => {
       //wait for event que to be empty
       //to have current width
       setTimeout(() => {
-        chart.resize()
+        chart?.resize()
       }, 0)
     }
   }, [width])
@@ -183,7 +134,7 @@ const TradingViewChartKline = () => {
       const style = getComputedStyle(document.body)
       const gridColor = style.getPropertyValue('--bkg-3')
       const kLineChart = init('update-k-line')
-      kLineChart!.setStyleOptions({
+      kLineChart.setStyleOptions({
         grid: {
           show: true,
           horizontal: {
@@ -214,6 +165,10 @@ const TradingViewChartKline = () => {
             size: 1,
           },
         },
+        separator: {
+          size: 2,
+          color: gridColor,
+        },
       })
       setChart(kLineChart)
     }
@@ -222,10 +177,15 @@ const TradingViewChartKline = () => {
       dispose('update-k-line')
     }
   }, [])
-
+  useEffect(() => {
+    if (chart !== null && DEFAULT_SUB_INDICATOR) {
+      const subId = chart.createTechnicalIndicator(DEFAULT_SUB_INDICATOR, true)
+      setSubTechnicalIndicators({ [DEFAULT_SUB_INDICATOR]: subId })
+    }
+  }, [chart !== null])
   return (
-    <>
-      <div className="flex">
+    <div className="fixed h-full w-full">
+      <div className="flex w-full">
         {Object.keys(RES_NAME_TO_RES_VAL).map((key) => (
           <div
             className={`cursor-pointer py-1 px-2 ${
@@ -243,6 +203,9 @@ const TradingViewChartKline = () => {
         >
           Indicator
         </div>
+        <div className="py-1 px-2">
+          <ArrowsPointingOutIcon className="w-5"></ArrowsPointingOutIcon>
+        </div>
       </div>
       <div
         style={{ height: 'calc(100% - 30px)', width: '100%' }}
@@ -254,46 +217,75 @@ const TradingViewChartKline = () => {
         onClose={() => setIsTechnicalModalOpen(false)}
       >
         <div className="flex max-h-96 flex-col overflow-auto text-left">
-          <h2 className="pb-4">Main Indicator</h2>
+          <h2 className="py-4">Main Indicator</h2>
           {mainTechnicalIndicatorTypes.map((type) => {
             return (
               <IndicatorSwitch
                 key={type}
                 type={type}
-                chart={chart}
-                mainTechnicalIndicators={mainTechnicalIndicators}
-                setMainTechnicalIndicators={setMainTechnicalIndicators}
+                checked={!!mainTechnicalIndicators.find((x) => x === type)}
+                onChange={(check) => {
+                  if (check) {
+                    chart?.createTechnicalIndicator(type, true, {
+                      id: MAIN_INDICATOR_CLASS,
+                    })
+                    setMainTechnicalIndicators([
+                      ...mainTechnicalIndicators,
+                      type,
+                    ])
+                  } else {
+                    chart?.removeTechnicalIndicator(MAIN_INDICATOR_CLASS, type)
+                    setMainTechnicalIndicators([
+                      ...mainTechnicalIndicators.filter((x) => x !== type),
+                    ])
+                  }
+                }}
               ></IndicatorSwitch>
             )
           })}
-          <h2 className="pb-4">Sub Indicator</h2>
+          <h2 className="py-4">Sub Indicator</h2>
           {subTechnicalIndicatorTypes.map((type) => {
             return (
               <IndicatorSwitch
                 key={type}
                 type={type}
-                chart={chart}
-                mainTechnicalIndicators={mainTechnicalIndicators}
-                setMainTechnicalIndicators={setMainTechnicalIndicators}
+                checked={
+                  !!Object.keys(subTechnicalIndicators).find((x) => x === type)
+                }
+                onChange={(check) => {
+                  if (check) {
+                    const subId = chart?.createTechnicalIndicator(type, true)
+                    setSubTechnicalIndicators({
+                      ...subTechnicalIndicators,
+                      [type]: subId!,
+                    })
+                  } else {
+                    chart?.removeTechnicalIndicator(
+                      subTechnicalIndicators[type],
+                      type
+                    )
+                    const newItems = { ...subTechnicalIndicators }
+                    delete newItems[type] // or whichever key you want
+                    setSubTechnicalIndicators(newItems)
+                  }
+                }}
               ></IndicatorSwitch>
             )
           })}
         </div>
       </Modal>
-    </>
+    </div>
   )
 }
 
 const IndicatorSwitch = ({
   type,
-  mainTechnicalIndicators,
-  chart,
-  setMainTechnicalIndicators,
+  onChange,
+  checked,
 }: {
   type: string
-  mainTechnicalIndicators: string[]
-  chart: klinecharts.Chart | null
-  setMainTechnicalIndicators: (indicators: string[]) => void
+  onChange: (checked: boolean) => void
+  checked: boolean
 }) => {
   return (
     <div
@@ -301,22 +293,7 @@ const IndicatorSwitch = ({
       key={type}
     >
       {type}
-      <Switch
-        checked={!!mainTechnicalIndicators.find((x) => x === type)}
-        onChange={(check) => {
-          let newInidicatorsArray = [...mainTechnicalIndicators]
-          if (check) {
-            newInidicatorsArray.push(type)
-            chart?.createTechnicalIndicator(type, true, {
-              id: 'candle_pane',
-            })
-          } else {
-            newInidicatorsArray = newInidicatorsArray.filter((x) => x !== type)
-            chart?.removeTechnicalIndicator('candle_pane', type)
-          }
-          setMainTechnicalIndicators(newInidicatorsArray)
-        }}
-      />
+      <Switch checked={checked} onChange={onChange} />
     </div>
   )
 }
