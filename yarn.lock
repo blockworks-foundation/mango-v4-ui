@@ -4435,10 +4435,10 @@ keyvaluestorage-interface@^1.0.0:
   resolved "https://registry.yarnpkg.com/keyvaluestorage-interface/-/keyvaluestorage-interface-1.0.0.tgz#13ebdf71f5284ad54be94bd1ad9ed79adad515ff"
   integrity sha512-8t6Q3TclQ4uZynJY9IGr2+SsIGwK9JHcO6ootkHCGA0CrQCRy+VkouYNO2xicET6b9al7QKzpebNow+gkpCL8g==
 
-klinecharts@^8.6.3:
-  version "8.6.3"
-  resolved "https://registry.yarnpkg.com/klinecharts/-/klinecharts-8.6.3.tgz#9ff2c40e31d86ca0600abc5fb8bf546c61daf130"
-  integrity sha512-hGDtWiMNywEDneZFmt+vZ6tOYutCDWV5FPBcXcn7L8kGwe73Q5yJayk8UzP9pIQSBWyxswWIySKh/BVFA6GhuQ==
+klinecharts@8.5.0:
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/klinecharts/-/klinecharts-8.5.0.tgz#48337c79c76100738e307267cd4d3c43578ce195"
+  integrity sha512-7F34LO3N1F/2qK4xlDSFQ4UXFE1Skvo754lXHfOdI4KtkV0Fo65lJzdpShTCdB6r1BzWxIfBOHufzRjTPfrLHA==
 
 language-subtag-registry@~0.3.2:
   version "0.3.21"

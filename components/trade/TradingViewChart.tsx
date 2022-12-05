@@ -1,182 +1,194 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useMemo, useState } from 'react'
+import { useTheme } from 'next-themes'
+import {
+  widget,
+  ChartingLibraryWidgetOptions,
+  IChartingLibraryWidget,
+  ResolutionString,
+} from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
-import { CHART_DATA_FEED } from 'utils/constants'
-import { init, dispose } from 'klinecharts'
-import axios from 'axios'
+import { useViewport } from 'hooks/useViewport'
+import { CHART_DATA_FEED, DEFAULT_MARKET_NAME } from 'utils/constants'
+import { breakpoints } from 'utils/theme'
+import { COLORS } from 'styles/colors'
 
-const ONE_HOUR_MINS = 60
-
-const RES_NAME_TO_RES_VAL: {
-  [key: string]: {
-    val: string
-    seconds: number
-  }
-} = {
-  '1m': { val: '1', seconds: 60 },
-  '5m': { val: '5', seconds: 5 * 60 },
-  '30m': {
-    val: `${ONE_HOUR_MINS / 2}`,
-    seconds: (ONE_HOUR_MINS / 2) * 60,
-  },
-  '1H': { val: `${ONE_HOUR_MINS}`, seconds: ONE_HOUR_MINS * 60 },
-  '2H': { val: `${2 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_MINS * 2 * 60 },
-  '4H': { val: `${4 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_MINS * 4 * 60 },
-  '1D': { val: '1D', seconds: 24 * ONE_HOUR_MINS * 60 },
-}
-
-type BASE_CHART_QUERY = {
-  resolution: string
-  symbol: string
-  to: number
-}
-
-type CHART_QUERY = BASE_CHART_QUERY & {
-  from: number
-}
-
-type HISTORY = {
-  c: string[]
-  h: string[]
-  l: string[]
-  o: string[]
-  t: number[]
-  v: string[]
+export interface ChartContainerProps {
+  container: ChartingLibraryWidgetOptions['container']
+  symbol: ChartingLibraryWidgetOptions['symbol']
+  interval: ChartingLibraryWidgetOptions['interval']
+  datafeedUrl: string
+  libraryPath: ChartingLibraryWidgetOptions['library_path']
+  chartsStorageUrl: ChartingLibraryWidgetOptions['charts_storage_url']
+  chartsStorageApiVersion: ChartingLibraryWidgetOptions['charts_storage_api_version']
+  clientId: ChartingLibraryWidgetOptions['client_id']
+  userId: ChartingLibraryWidgetOptions['user_id']
+  fullscreen: ChartingLibraryWidgetOptions['fullscreen']
+  autosize: ChartingLibraryWidgetOptions['autosize']
+  studiesOverrides: ChartingLibraryWidgetOptions['studies_overrides']
+  theme: string
 }
 
 const TradingViewChart = () => {
-  //const { theme } = useTheme()
+  const { theme } = useTheme()
+  const { width } = useViewport()
+
+  const [chartReady, setChartReady] = useState(false)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
-  const [resolution, setResultion] = useState(RES_NAME_TO_RES_VAL['1H'])
-  const [chart, setChart] = useState<klinecharts.Chart | null>(null)
-  const [baseChartQuery, setQuery] = useState<BASE_CHART_QUERY | null>(null)
-  const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const fetchData = async (baseQuery: BASE_CHART_QUERY, from: number) => {
-    const query: CHART_QUERY = {
-      ...baseQuery,
-      from,
-    }
-    const response = await axios.get(`${CHART_DATA_FEED}/history`, {
-      params: query,
-    })
-    const newData = response.data as HISTORY
-    const dataSize = newData.t.length
-    const dataList = []
-    for (let i = 0; i < dataSize; i++) {
-      const kLineModel = {
-        open: parseFloat(newData.o[i]),
-        low: parseFloat(newData.l[i]),
-        high: parseFloat(newData.h[i]),
-        close: parseFloat(newData.c[i]),
-        volume: parseFloat(newData.v[i]),
-        timestamp: newData.t[i] * 1000,
-      }
-      dataList.push(kLineModel)
-    }
-    return dataList
+  const isMobile = width ? width < breakpoints.sm : false
+
+  const defaultProps = useMemo(
+    () => ({
+      symbol: DEFAULT_MARKET_NAME,
+      interval: '60' as ResolutionString,
+      theme: 'Dark',
+      container: 'tv_chart_container',
+      datafeedUrl: CHART_DATA_FEED,
+      libraryPath: '/charting_library/',
+      fullscreen: false,
+      autosize: true,
+      studiesOverrides: {
+        'volume.volume.color.0': COLORS.DOWN[theme],
+        'volume.volume.color.1': COLORS.UP[theme],
+        'volume.precision': 4,
+      },
+    }),
+    [theme]
+  )
+
+  const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
+
+  let chartStyleOverrides = {
+    'paneProperties.background': 'rgba(0,0,0,0)',
+    'paneProperties.backgroundType': 'solid',
+    'paneProperties.legendProperties.showBackground': false,
+    'paneProperties.vertGridProperties.color': 'rgba(0,0,0,0)',
+    'paneProperties.horzGridProperties.color': 'rgba(0,0,0,0)',
+    'paneProperties.legendProperties.showStudyTitles': false,
+    'scalesProperties.showStudyLastValue': false,
+    'scalesProperties.fontSize': 11,
   }
 
-  function updateData(
-    kLineChart: klinecharts.Chart,
-    baseQuery: BASE_CHART_QUERY
-  ) {
-    if (clearTimerRef.current) {
-      clearInterval(clearTimerRef.current)
+  const mainSeriesProperties = [
+    'candleStyle',
+    'hollowCandleStyle',
+    'haStyle',
+    'barStyle',
+  ]
+
+  mainSeriesProperties.forEach((prop) => {
+    chartStyleOverrides = {
+      ...chartStyleOverrides,
+      [`mainSeriesProperties.${prop}.barColorsOnPrevClose`]: true,
+      [`mainSeriesProperties.${prop}.drawWick`]: true,
+      [`mainSeriesProperties.${prop}.drawBorder`]: true,
+      [`mainSeriesProperties.${prop}.upColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.downColor`]: COLORS.DOWN[theme],
+      [`mainSeriesProperties.${prop}.borderColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.borderUpColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.borderDownColor`]: COLORS.DOWN[theme],
+      [`mainSeriesProperties.${prop}.wickUpColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
     }
-    clearTimerRef.current = setTimeout(async () => {
-      if (kLineChart) {
-        const from = baseQuery.to - resolution.seconds
-        const newData = (await fetchData(baseQuery!, from))[0]
-        newData.timestamp += 10000
-        kLineChart.updateData(newData)
-        updateData(kLineChart, baseQuery)
+  })
+
+  useEffect(() => {
+    if (tvWidgetRef.current && chartReady && selectedMarketName) {
+      tvWidgetRef.current.setSymbol(
+        selectedMarketName!,
+        tvWidgetRef.current.activeChart().resolution(),
+        () => {
+          return
+        }
+      )
+    }
+  }, [selectedMarketName, chartReady])
+
+  useEffect(() => {
+    if (window) {
+      const widgetOptions: ChartingLibraryWidgetOptions = {
+        // debug: true,
+        symbol: defaultProps.symbol,
+        // BEWARE: no trailing slash is expected in feed URL
+        // tslint:disable-next-line:no-any
+        datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(
+          defaultProps.datafeedUrl
+        ),
+        interval:
+          defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
+        container:
+          defaultProps.container as ChartingLibraryWidgetOptions['container'],
+        library_path: defaultProps.libraryPath as string,
+        locale: 'en',
+        enabled_features: ['hide_left_toolbar_by_default'],
+        disabled_features: [
+          'use_localstorage_for_settings',
+          'timeframes_toolbar',
+          isMobile ? 'left_toolbar' : '',
+          'show_logo_on_all_charts',
+          'caption_buttons_text_if_possible',
+          'header_settings',
+          // 'header_chart_type',
+          'header_compare',
+          'compare_symbol',
+          'header_screenshot',
+          // 'header_widget_dom_node',
+          // 'header_widget',
+          'header_saveload',
+          'header_undo_redo',
+          'header_interval_dialog_button',
+          'show_interval_dialog_on_key_press',
+          'header_symbol_search',
+          'popup_hints',
+        ],
+        fullscreen: defaultProps.fullscreen,
+        autosize: defaultProps.autosize,
+        studies_overrides: defaultProps.studiesOverrides,
+        theme:
+          theme === 'Light' || theme === 'Banana' || theme === 'Lychee'
+            ? 'Light'
+            : 'Dark',
+        custom_css_url: '/styles/tradingview.css',
+        loading_screen: {
+          backgroundColor:
+            theme === 'Dark'
+              ? COLORS.BKG1.Dark
+              : theme === 'Light'
+              ? COLORS.BKG1.Light
+              : theme === 'Mango Classic'
+              ? COLORS.BKG1['Mango Classic']
+              : theme === 'Medium'
+              ? COLORS.BKG1.Medium
+              : theme === 'Avocado'
+              ? COLORS.BKG1.Avocado
+              : theme === 'Blueberry'
+              ? COLORS.BKG1.Blueberry
+              : theme === 'Banana'
+              ? COLORS.BKG1.Banana
+              : theme === 'Lychee'
+              ? COLORS.BKG1.Lychee
+              : theme === 'Olive'
+              ? COLORS.BKG1.Olive
+              : COLORS.BKG1['High Contrast'],
+        },
+        overrides: {
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+
+          ...chartStyleOverrides,
+        },
       }
-    }, 10000)
-  }
 
-  useEffect(() => {
-    const fetchFreshData = async () => {
-      const from = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 365
-      const data = await fetchData(baseChartQuery!, from)
-      chart?.applyNewData(data)
-      updateData(chart!, baseChartQuery!)
-    }
-    if (chart && baseChartQuery) {
-      fetchFreshData()
-    }
-  }, [baseChartQuery])
+      const tvWidget = new widget(widgetOptions)
+      tvWidgetRef.current = tvWidget
 
-  useEffect(() => {
-    if (selectedMarketName && resolution) {
-      setQuery({
-        resolution: resolution.val,
-        symbol: selectedMarketName,
-        to: Math.floor(Date.now() / 1000),
+      tvWidgetRef.current.onChartReady(function () {
+        setChartReady(true)
       })
+      //eslint-disable-next-line
     }
-  }, [selectedMarketName, resolution])
+  }, [theme, isMobile, defaultProps])
 
-  useEffect(() => {
-    const initKline = async () => {
-      const style = getComputedStyle(document.body)
-      const gridColor = style.getPropertyValue('--bkg-3')
-      const kLineChart = init('update-k-line')
-
-      kLineChart.setStyleOptions({
-        grid: {
-          show: true,
-          horizontal: {
-            color: gridColor,
-          },
-          vertical: {
-            color: gridColor,
-          },
-        },
-        candle: {
-          tooltip: {
-            labels: ['T: ', 'O: ', 'C: ', 'H: ', 'L: ', 'V: '],
-          },
-        },
-        xAxis: {
-          axisLine: {
-            show: true,
-            color: gridColor,
-            size: 1,
-          },
-        },
-        yAxis: {
-          axisLine: {
-            show: true,
-            color: gridColor,
-            size: 1,
-          },
-        },
-      })
-      setChart(kLineChart)
-    }
-    initKline()
-    return () => {
-      dispose('update-k-line')
-    }
-  }, [])
   return (
-    <>
-      <div className="flex">
-        {Object.keys(RES_NAME_TO_RES_VAL).map((key) => (
-          <div
-            className="cursor-pointer py-1 px-2"
-            key={key}
-            onClick={() => setResultion(RES_NAME_TO_RES_VAL[key])}
-          >
-            {key}
-          </div>
-        ))}
-      </div>
-      <div
-        style={{ height: 'calc(100% - 30px)' }}
-        id="update-k-line"
-        className="k-line-chart"
-      />
-    </>
+    <div id={defaultProps.container as string} className="tradingview-chart" />
   )
 }
 

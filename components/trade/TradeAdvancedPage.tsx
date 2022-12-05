@@ -16,7 +16,11 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
 import FavoriteMarketsBar from './FavoriteMarketsBar'
 
-const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
+//const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
+//  ssr: false,
+//})
+
+const TradingViewChartKline = dynamic(() => import('./TradingViewChartKline'), {
   ssr: false,
 })
 
@@ -179,7 +183,7 @@ const TradeAdvancedPage = () => {
           className="h-full border border-x-0 border-th-bkg-3"
         >
           <div className={`relative h-full overflow-auto`}>
-            <TradingViewChart />
+            <TradingViewChartKline />
           </div>
         </div>
         <div key="balances">
