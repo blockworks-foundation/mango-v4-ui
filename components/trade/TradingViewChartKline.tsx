@@ -20,6 +20,7 @@ import {
 } from 'utils/kLineChart'
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
 import Loading from '@components/shared/Loading'
+import clsx from 'clsx'
 
 type Props = {
   setIsFullView?: Dispatch<SetStateAction<boolean>>
@@ -196,18 +197,19 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   }, [chart !== null])
   return (
     <div
-      className={`fixed h-full w-full ${
-        isFullView
-          ? 'left-[64px] top-0 right-0 bottom-0 bg-th-bkg-1 text-th-fgd-1'
-          : ''
-      }`}
+      className={clsx(
+        'fixed h-full w-full',
+        isFullView &&
+          'left-[64px] top-0 right-0 bottom-0 bg-th-bkg-1 text-th-fgd-1'
+      )}
     >
       <div className="flex w-full">
         {Object.keys(RES_NAME_TO_RES_VAL).map((key) => (
           <div
-            className={`cursor-pointer py-1 px-2 ${
-              resolution === RES_NAME_TO_RES_VAL[key] ? 'text-th-active' : ''
-            }`}
+            className={clsx(
+              'cursor-pointer py-1 px-2',
+              resolution === RES_NAME_TO_RES_VAL[key] && 'text-th-active'
+            )}
             key={key}
             onClick={() => setResolution(RES_NAME_TO_RES_VAL[key])}
           >
