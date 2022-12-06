@@ -30,11 +30,11 @@ dayjs.extend(relativeTime)
 
 interface DetailedAreaChartProps {
   data: any[]
-  daysToShow: string
+  daysToShow?: string
   hideChange?: boolean
   hideChart?: () => void
   loading?: boolean
-  setDaysToShow: (x: string) => void
+  setDaysToShow?: (x: string) => void
   tickFormat?: (x: any) => string
   title?: string
   xKey: string
@@ -81,8 +81,9 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   const calculateChartChange = () => {
     if (data.length) {
       if (mouseData) {
+        console.log(mouseData)
         const index = data.findIndex((d: any) => d[xKey] === mouseData[xKey])
-        const change = data[index][yKey] - data[0][yKey]
+        const change = index >= 0 ? data[index][yKey] - data[0][yKey] : 0
         return isNaN(change) ? 0 : change
       } else return data[data.length - 1][yKey] - data[0][yKey]
     }
@@ -105,9 +106,11 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
           <div className="relative">
             <div className="flex items-start justify-between">
               <div className="flex flex-col md:flex-row md:items-start md:space-x-6">
-                <IconButton className="mb-6" onClick={hideChart}>
-                  <ArrowLeftIcon className="h-5 w-5" />
-                </IconButton>
+                {hideChart ? (
+                  <IconButton className="mb-6" onClick={hideChart}>
+                    <ArrowLeftIcon className="h-5 w-5" />
+                  </IconButton>
+                ) : null}
                 <div>
                   <p className="mb-0.5 text-base text-th-fgd-3">{title}</p>
                   {mouseData ? (
@@ -179,14 +182,16 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
               </div>
             </div>
             <div className="-mt-1 h-96 w-auto">
-              <div className="absolute -top-1 right-0 -mb-2 flex justify-end">
-                <ChartRangeButtons
-                  activeValue={daysToShow}
-                  names={['24H', '7D', '30D']}
-                  values={['1', '7', '30']}
-                  onChange={(v) => setDaysToShow(v)}
-                />
-              </div>
+              {setDaysToShow ? (
+                <div className="absolute -top-1 right-0 -mb-2 flex justify-end">
+                  <ChartRangeButtons
+                    activeValue={daysToShow}
+                    names={['24H', '7D', '30D']}
+                    values={['1', '7', '30']}
+                    onChange={(v) => setDaysToShow(v)}
+                  />
+                </div>
+              ) : null}
               <div className="-mx-6 mt-6 h-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
