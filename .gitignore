@@ -7,6 +7,10 @@
 /.pnp
 .pnp.js
 
+# TradingView
+public/charting_library
+public/datafeeds
+
 # testing
 /coverage
 
@@ -34,4 +38,4 @@ yarn-error.log*
 .vercel
 
 # typescript
-*.tsbuildinfo
+tsconfig.tsbuildinfo
