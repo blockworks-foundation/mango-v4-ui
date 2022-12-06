@@ -1,6 +1,10 @@
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import TradingViewChartKline from './TradingViewChartKline'
+
+const TradingViewChartKline = dynamic(() => import('./TradingViewChartKline'), {
+  ssr: false,
+})
 
 const TradingViewChartKlineContainer = () => {
   const [isFullView, setIsFullView] = useState<boolean>(false)

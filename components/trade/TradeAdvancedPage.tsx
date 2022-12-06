@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
-
 import mangoStore from '@store/mangoStore'
 import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -16,16 +15,9 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
 import FavoriteMarketsBar from './FavoriteMarketsBar'
 
-//const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
-//  ssr: false,
-//})
-
-const TradingViewChartKlineContainer = dynamic(
-  () => import('./TradingViewChartKlineContainer'),
-  {
-    ssr: false,
-  }
-)
+const TradingChartContainer = dynamic(() => import('./TradingChartContainer'), {
+  ssr: false,
+})
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
 
@@ -186,7 +178,7 @@ const TradeAdvancedPage = () => {
           className="h-full border border-x-0 border-th-bkg-3"
         >
           <div className={`relative h-full overflow-auto`}>
-            <TradingViewChartKlineContainer />
+            <TradingChartContainer />
           </div>
         </div>
         <div key="balances">

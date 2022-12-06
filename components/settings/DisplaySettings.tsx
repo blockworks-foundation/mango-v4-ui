@@ -6,7 +6,11 @@ import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'
 import { useCallback, useMemo } from 'react'
-import { NOTIFICATION_POSITION_KEY, SIZE_INPUT_UI_KEY } from 'utils/constants'
+import {
+  NOTIFICATION_POSITION_KEY,
+  SIZE_INPUT_UI_KEY,
+  TRADE_CHART_UI_KEY,
+} from 'utils/constants'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -40,6 +44,10 @@ const DisplaySettings = () => {
   const [tradeFormUi, setTradeFormUi] = useLocalStorageState(
     SIZE_INPUT_UI_KEY,
     'Slider'
+  )
+  const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
+    TRADE_CHART_UI_KEY,
+    'Original'
   )
   const themes = useMemo(() => {
     return [
@@ -120,6 +128,16 @@ const DisplaySettings = () => {
             activeValue={tradeFormUi}
             onChange={(v) => setTradeFormUi(v)}
             values={[t('settings:slider'), t('settings:buttons')]}
+          />
+        </div>
+      </div>
+      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
+        <p className="mb-2 lg:mb-0">{t('settings:swap-trade-size-selector')}</p>
+        <div className="w-full min-w-[160px] md:w-auto">
+          <ButtonGroup
+            activeValue={tradeChartUi}
+            onChange={(v) => setTradeChartUi(v)}
+            values={[t('settings:original'), t('settings:trading')]}
           />
         </div>
       </div>

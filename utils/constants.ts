@@ -24,6 +24,7 @@ export const ANIMATION_SETTINGS_KEY = 'animationSettings'
 export const SOUND_SETTINGS_KEY = 'soundSettings'
 
 export const SIZE_INPUT_UI_KEY = 'tradeFormUi'
+export const TRADE_CHART_UI_KEY = 'tradeChart'
 
 export const PROFILE_CATEGORIES = [
   'borrower',
