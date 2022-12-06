@@ -4,12 +4,14 @@ import { DownTriangle, UpTriangle } from './DirectionTriangles'
 
 const Change = ({
   change,
-  isCurrency,
+  prefix,
   size,
+  suffix,
 }: {
   change: number | typeof NaN
-  isCurrency?: boolean
+  prefix?: string
   size?: 'small'
+  suffix?: string
 }) => {
   return (
     <div className="flex items-center space-x-1.5">
@@ -39,11 +41,11 @@ const Change = ({
             : 'text-th-fgd-4'
         }`}
       >
-        {isCurrency ? '$' : ''}
+        {prefix ? prefix : ''}
         {isNaN(change)
           ? '0.00'
           : formatFixedDecimals(Math.abs(change), false, true)}
-        {!isCurrency ? '%' : ''}
+        {suffix ? suffix : ''}
       </p>
     </div>
   )

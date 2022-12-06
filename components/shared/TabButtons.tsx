@@ -18,7 +18,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
   rounded = false,
   fillWidth = false,
 }) => {
-  const { t } = useTranslation(['common', 'swap', 'trade'])
+  const { t } = useTranslation(['common', 'swap', 'token', 'trade'])
 
   return (
     <div

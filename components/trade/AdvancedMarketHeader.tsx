@@ -51,7 +51,7 @@ const AdvancedMarketHeader = () => {
       </div>
       <div className="ml-6 flex-col">
         <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
-        <Change change={change} size="small" />
+        <Change change={change} size="small" suffix="%" />
       </div>
       {selectedMarket instanceof PerpMarket ? (
         <div className="ml-6 flex-col">

@@ -198,7 +198,7 @@ const SwapTokenChart = () => {
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      <Change change={calculateChartChange()} />
+                      <Change change={calculateChartChange()} suffix="%" />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
@@ -227,7 +227,7 @@ const SwapTokenChart = () => {
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      <Change change={calculateChartChange()} />
+                      <Change change={calculateChartChange()} suffix="%" />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">

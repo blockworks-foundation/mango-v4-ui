@@ -260,7 +260,7 @@ const AccountPage = () => {
               )}
             </div>
             <div className="flex items-center space-x-1.5">
-              <Change change={accountValueChange} isCurrency />
+              <Change change={accountValueChange} prefix="$" />
               <p className="text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
@@ -451,7 +451,7 @@ const AccountPage = () => {
               {formatFixedDecimals(accountPnl, true)}
             </p>
             <div className="flex space-x-1">
-              <Change change={oneDayPnlChange} isCurrency size="small" />
+              <Change change={oneDayPnlChange} prefix="$" size="small" />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
@@ -482,7 +482,7 @@ const AccountPage = () => {
               {formatFixedDecimals(interestTotalValue, true)}
             </p>
             <div className="flex space-x-1">
-              <Change change={oneDayInterestChange} isCurrency size="small" />
+              <Change change={oneDayInterestChange} prefix="$" size="small" />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>

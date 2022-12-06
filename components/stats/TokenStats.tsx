@@ -47,7 +47,9 @@ const TokenStats = () => {
   const router = useRouter()
 
   useEffect(() => {
-    actions.fetchTokenStats()
+    if (group && !tokenStats.length) {
+      actions.fetchTokenStats()
+    }
   }, [group])
 
   const totalValues = useMemo(() => {
@@ -128,6 +130,7 @@ const TokenStats = () => {
                 },
               ])}
               daysToShow={'999'}
+              prefix="$"
               tickFormat={(x) => `$${x.toFixed(2)}`}
               title={t('total-deposit-value')}
               xKey="date"
@@ -152,7 +155,7 @@ const TokenStats = () => {
                 },
               ])}
               daysToShow={'999'}
-              // setDaysToShow={() => console.log('fuck')}
+              prefix="$"
               tickFormat={(x) => `$${x.toFixed(2)}`}
               title={t('total-borrow-value')}
               xKey="date"
