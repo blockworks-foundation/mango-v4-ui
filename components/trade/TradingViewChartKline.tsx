@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import { CHART_DATA_FEED } from 'utils/constants'
 import klinecharts, { init, dispose } from 'klinecharts'
@@ -19,8 +19,14 @@ import {
   subTechnicalIndicatorTypes,
 } from 'utils/kLineChart'
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
+import Loading from '@components/shared/Loading'
 
-const TradingViewChartKline = () => {
+type Props = {
+  setIsFullView?: Dispatch<SetStateAction<boolean>>
+  isFullView?: boolean
+}
+
+const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   const { width } = useViewport()
   const prevWidth = usePrevious(width)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
@@ -32,12 +38,15 @@ const TradingViewChartKline = () => {
     //indicatorName: class
     [indicatorName: string]: string
   }>({})
-  const [resolution, setResultion] = useState(RES_NAME_TO_RES_VAL['1H'])
+  const [isLoading, setIsLoading] = useState(false)
+  const [resolution, setResolution] = useState(RES_NAME_TO_RES_VAL['1H'])
   const [chart, setChart] = useState<klinecharts.Chart | null>(null)
+  const previousChart = usePrevious(chart)
   const [baseChartQuery, setQuery] = useState<BASE_CHART_QUERY | null>(null)
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
   const fetchData = async (baseQuery: BASE_CHART_QUERY, from: number) => {
     try {
+      setIsLoading(true)
       const query: CHART_QUERY = {
         ...baseQuery,
         from,
@@ -59,8 +68,10 @@ const TradingViewChartKline = () => {
         }
         dataList.push(kLineModel)
       }
+      setIsLoading(false)
       return dataList
     } catch (e) {
+      setIsLoading(false)
       console.log(e)
       return []
     }
@@ -178,13 +189,19 @@ const TradingViewChartKline = () => {
     }
   }, [])
   useEffect(() => {
-    if (chart !== null && DEFAULT_SUB_INDICATOR) {
+    if (chart !== null && previousChart === null && DEFAULT_SUB_INDICATOR) {
       const subId = chart.createTechnicalIndicator(DEFAULT_SUB_INDICATOR, true)
       setSubTechnicalIndicators({ [DEFAULT_SUB_INDICATOR]: subId })
     }
   }, [chart !== null])
   return (
-    <div className="fixed h-full w-full">
+    <div
+      className={`fixed h-full w-full ${
+        isFullView
+          ? 'left-[64px] top-0 right-0 bottom-0 bg-th-bkg-1 text-th-fgd-1'
+          : ''
+      }`}
+    >
       <div className="flex w-full">
         {Object.keys(RES_NAME_TO_RES_VAL).map((key) => (
           <div
@@ -192,7 +209,7 @@ const TradingViewChartKline = () => {
               resolution === RES_NAME_TO_RES_VAL[key] ? 'text-th-active' : ''
             }`}
             key={key}
-            onClick={() => setResultion(RES_NAME_TO_RES_VAL[key])}
+            onClick={() => setResolution(RES_NAME_TO_RES_VAL[key])}
           >
             {key}
           </div>
@@ -203,8 +220,16 @@ const TradingViewChartKline = () => {
         >
           Indicator
         </div>
+        {setIsFullView && (
+          <div className="cursor-pointer py-1 px-2">
+            <ArrowsPointingOutIcon
+              onClick={() => setIsFullView(!isFullView)}
+              className="w-5"
+            ></ArrowsPointingOutIcon>
+          </div>
+        )}
         <div className="py-1 px-2">
-          <ArrowsPointingOutIcon className="w-5"></ArrowsPointingOutIcon>
+          {isLoading && <Loading className="w-4"></Loading>}
         </div>
       </div>
       <div

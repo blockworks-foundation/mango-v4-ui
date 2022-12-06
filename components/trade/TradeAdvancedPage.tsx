@@ -20,9 +20,12 @@ import FavoriteMarketsBar from './FavoriteMarketsBar'
 //  ssr: false,
 //})
 
-const TradingViewChartKline = dynamic(() => import('./TradingViewChartKline'), {
-  ssr: false,
-})
+const TradingViewChartKlineContainer = dynamic(
+  () => import('./TradingViewChartKlineContainer'),
+  {
+    ssr: false,
+  }
+)
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
 
@@ -183,7 +186,7 @@ const TradeAdvancedPage = () => {
           className="h-full border border-x-0 border-th-bkg-3"
         >
           <div className={`relative h-full overflow-auto`}>
-            <TradingViewChartKline />
+            <TradingViewChartKlineContainer />
           </div>
         </div>
         <div key="balances">
