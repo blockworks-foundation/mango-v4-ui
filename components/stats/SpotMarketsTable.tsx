@@ -99,7 +99,7 @@ const SpotMarketsTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col items-end">
-                      <Change change={change} />
+                      <Change change={change} suffix="%" />
                     </div>
                   </Td>
                 </TrBody>
@@ -169,7 +169,7 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
               <p className="font-mono">
                 {bank?.uiPrice ? formatFixedDecimals(bank.uiPrice, true) : '-'}
               </p>
-              <Change change={change} />
+              <Change change={change} suffix="%" />
             </div>
           </div>
         </div>

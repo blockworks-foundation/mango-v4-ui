@@ -11,7 +11,7 @@ import {
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
-import { startCase } from 'lodash'
+import startCase from 'lodash/startCase'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useState } from 'react'
 import { notify } from 'utils/notifications'

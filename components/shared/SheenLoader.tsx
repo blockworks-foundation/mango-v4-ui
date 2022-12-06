@@ -12,7 +12,7 @@ const SheenLoader = ({
   return (
     <div className="flex items-center">
       <div
-        className={`relative ${className} overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_4s_infinite] before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-50`}
+        className={`relative rounded-md ${className} overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_4s_infinite] before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-50`}
       >
         {children}
       </div>

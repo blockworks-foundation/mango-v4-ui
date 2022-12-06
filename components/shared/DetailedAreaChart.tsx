@@ -25,17 +25,22 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { formatFixedDecimals } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import { AxisDomain } from 'recharts/types/util/types'
 
 dayjs.extend(relativeTime)
 
 interface DetailedAreaChartProps {
   data: any[]
-  daysToShow: string
+  daysToShow?: string
+  domain?: AxisDomain
   hideChange?: boolean
   hideChart?: () => void
   loading?: boolean
-  setDaysToShow: (x: string) => void
-  tickFormat?: (x: any) => string
+  prefix?: string
+  setDaysToShow?: (x: string) => void
+  small?: boolean
+  suffix?: string
+  tickFormat?: (x: number) => string
   title?: string
   xKey: string
   yKey: string
@@ -52,10 +57,14 @@ export const formatDateAxis = (date: string, days: number) => {
 const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   data,
   daysToShow = '1',
+  domain,
   hideChange,
   hideChart,
   loading,
+  prefix = '',
   setDaysToShow,
+  small,
+  suffix = '',
   tickFormat,
   title,
   xKey,
@@ -82,7 +91,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     if (data.length) {
       if (mouseData) {
         const index = data.findIndex((d: any) => d[xKey] === mouseData[xKey])
-        const change = data[index][yKey] - data[0][yKey]
+        const change = index >= 0 ? data[index][yKey] - data[0][yKey] : 0
         return isNaN(change) ? 0 : change
       } else return data[data.length - 1][yKey] - data[0][yKey]
     }
@@ -105,70 +114,106 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
           <div className="relative">
             <div className="flex items-start justify-between">
               <div className="flex flex-col md:flex-row md:items-start md:space-x-6">
-                <IconButton className="mb-6" onClick={hideChart}>
-                  <ArrowLeftIcon className="h-5 w-5" />
-                </IconButton>
+                {hideChart ? (
+                  <IconButton className="mb-6" onClick={hideChart}>
+                    <ArrowLeftIcon className="h-5 w-5" />
+                  </IconButton>
+                ) : null}
                 <div>
-                  <p className="mb-0.5 text-base text-th-fgd-3">{title}</p>
+                  <p
+                    className={`${
+                      small ? 'text-sm' : 'mb-0.5 text-base'
+                    } text-th-fgd-3`}
+                  >
+                    {title}
+                  </p>
                   {mouseData ? (
                     <div>
-                      <div className="mb-1 flex items-end text-4xl font-bold text-th-fgd-1">
+                      <div
+                        className={`flex ${
+                          small
+                            ? 'h-8 items-center text-2xl'
+                            : 'mb-1 items-end text-4xl'
+                        } font-bold text-th-fgd-1`}
+                      >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
-                            height={40}
-                            width={26}
+                            height={24}
+                            width={15}
                             play
-                            numbers={formatFixedDecimals(mouseData[yKey], true)}
+                            numbers={
+                              prefix +
+                              formatFixedDecimals(mouseData[yKey]) +
+                              suffix
+                            }
                           />
                         ) : (
                           <span>
-                            {formatFixedDecimals(mouseData[yKey], true)}
+                            {prefix +
+                              formatFixedDecimals(mouseData[yKey]) +
+                              suffix}
                           </span>
                         )}
                         {!hideChange ? (
                           <span className="ml-3">
                             <Change
                               change={calculateChartChange()}
-                              isCurrency
+                              prefix={prefix}
+                              suffix={suffix}
                             />
                           </span>
                         ) : null}
                       </div>
-                      <p className="text-sm text-th-fgd-4">
+                      <p
+                        className={`${
+                          small ? 'text-xs' : 'text-sm'
+                        } text-th-fgd-4`}
+                      >
                         {dayjs(mouseData[xKey]).format('DD MMM YY, h:mma')}
                       </p>
                     </div>
                   ) : (
                     <div>
-                      <div className="mb-1 flex items-end text-4xl font-bold text-th-fgd-1">
+                      <div
+                        className={`flex ${
+                          small
+                            ? 'h-8 items-center text-2xl'
+                            : 'mb-1 items-end text-4xl'
+                        } font-bold text-th-fgd-1`}
+                      >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
-                            height={40}
-                            width={26}
+                            height={24}
+                            width={15}
                             play
-                            numbers={formatFixedDecimals(
-                              data[data.length - 1][yKey],
-                              true
-                            )}
+                            numbers={
+                              prefix +
+                              formatFixedDecimals(data[data.length - 1][yKey]) +
+                              suffix
+                            }
                           />
                         ) : (
                           <span>
-                            {formatFixedDecimals(
-                              data[data.length - 1][yKey],
-                              true
-                            )}
+                            {prefix +
+                              formatFixedDecimals(data[data.length - 1][yKey]) +
+                              suffix}
                           </span>
                         )}
                         {!hideChange ? (
                           <span className="ml-3">
                             <Change
                               change={calculateChartChange()}
-                              isCurrency
+                              prefix={prefix}
+                              suffix={suffix}
                             />
                           </span>
                         ) : null}
                       </div>
-                      <p className="text-sm text-th-fgd-4">
+                      <p
+                        className={`${
+                          small ? 'text-xs' : 'text-sm'
+                        } text-th-fgd-4`}
+                      >
                         {dayjs(data[data.length - 1][xKey]).format(
                           'DD MMM YY, h:mma'
                         )}
@@ -179,14 +224,16 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
               </div>
             </div>
             <div className="-mt-1 h-96 w-auto">
-              <div className="absolute -top-1 right-0 -mb-2 flex justify-end">
-                <ChartRangeButtons
-                  activeValue={daysToShow}
-                  names={['24H', '7D', '30D']}
-                  values={['1', '7', '30']}
-                  onChange={(v) => setDaysToShow(v)}
-                />
-              </div>
+              {setDaysToShow ? (
+                <div className="absolute -top-1 right-0 -mb-2 flex justify-end">
+                  <ChartRangeButtons
+                    activeValue={daysToShow}
+                    names={['24H', '7D', '30D']}
+                    values={['1', '7', '30']}
+                    onChange={(v) => setDaysToShow(v)}
+                  />
+                </div>
+              ) : null}
               <div className="-mx-6 mt-6 h-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
@@ -243,6 +290,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                     <XAxis
                       axisLine={false}
                       dataKey={xKey}
+                      minTickGap={20}
                       padding={{ left: 20, right: 20 }}
                       tick={{
                         fill: 'var(--fgd-4)',
@@ -256,8 +304,9 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                     <YAxis
                       axisLine={false}
                       dataKey={yKey}
+                      minTickGap={20}
                       type="number"
-                      domain={['dataMin', 'dataMax']}
+                      domain={domain ? domain : ['dataMin', 'dataMax']}
                       padding={{ top: 20, bottom: 20 }}
                       tick={{
                         fill: 'var(--fgd-4)',

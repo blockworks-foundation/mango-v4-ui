@@ -77,7 +77,7 @@ const DisplaySettings = () => {
     <>
       <h2 className="mb-4 text-base">{t('settings:display')}</h2>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:theme')}</p>
+        <p className="mb-2 md:mb-0">{t('settings:theme')}</p>
         <div className="w-full min-w-[140px] md:w-auto">
           <Select
             value={theme}
@@ -92,15 +92,10 @@ const DisplaySettings = () => {
               </Select.Option>
             ))}
           </Select>
-          {/* <ButtonGroup
-            activeValue={theme}
-            onChange={(t) => setTheme(t)}
-            values={themes}
-          /> */}
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:language')}</p>
+        <p className="mb-2 md:mb-0">{t('settings:language')}</p>
         <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
           <ButtonGroup
             activeValue={savedLanguage}
@@ -111,7 +106,7 @@ const DisplaySettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:notification-position')}</p>
+        <p className="mb-2 md:mb-0">{t('settings:notification-position')}</p>
         <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
           <ButtonGroup
             activeValue={notificationPosition}
@@ -122,7 +117,7 @@ const DisplaySettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:swap-trade-size-selector')}</p>
+        <p className="mb-2 md:mb-0">{t('settings:swap-trade-size-selector')}</p>
         <div className="w-full min-w-[160px] md:w-auto">
           <ButtonGroup
             activeValue={tradeFormUi}

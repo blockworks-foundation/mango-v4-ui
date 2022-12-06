@@ -37,6 +37,7 @@ import { Orderbook, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
+import { token } from '@project-serum/anchor/dist/cjs/utils'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
@@ -144,6 +145,21 @@ interface TourSettings {
   wallet_pk: string
 }
 
+export interface TokenStatsItem {
+  borrow_apr: number
+  borrow_rate: number
+  collected_fees: number
+  date_hour: string
+  deposit_apr: number
+  deposit_rate: number
+  mango_group: string
+  price: number
+  symbol: string
+  token_index: number
+  total_borrows: number
+  total_deposits: number
+}
+
 // const defaultUserSettings = {
 //   account_tour_seen: false,
 //   default_language: 'English',
@@ -218,6 +234,10 @@ export type MangoStore = {
     success: boolean
   }
   set: (x: (x: MangoStore) => void) => void
+  tokenStats: {
+    loading: boolean
+    data: TokenStatsItem[]
+  }
   tradeForm: {
     side: 'buy' | 'sell'
     price: string
@@ -252,6 +272,7 @@ export type MangoStore = {
     fetchOpenOrders: (ma?: MangoAccount) => Promise<void>
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (mangoAccountPk: string) => Promise<void>
+    fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
@@ -320,6 +341,10 @@ const mangoStore = create<MangoStore>()(
           wallet_pk: '',
         },
         uiLocked: true,
+      },
+      tokenStats: {
+        loading: false,
+        data: [],
       },
       tradeForm: {
         side: 'buy',
@@ -718,6 +743,34 @@ const mangoStore = create<MangoStore>()(
             })
             notify({
               title: 'Failed to load account swap history data',
+              type: 'error',
+            })
+          }
+        },
+        fetchTokenStats: async () => {
+          const set = get().set
+          const group = get().group
+          const stats = get().tokenStats.data
+          if (stats.length || !group) return
+          set((state) => {
+            state.tokenStats.loading = true
+          })
+          try {
+            const response = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/token-historical-stats?mango-group=${group?.publicKey.toString()}`
+            )
+            const data = await response.json()
+
+            set((state) => {
+              state.tokenStats.data = data
+              state.tokenStats.loading = false
+            })
+          } catch {
+            set((state) => {
+              state.tokenStats.loading = false
+            })
+            notify({
+              title: 'Failed to token stats data',
               type: 'error',
             })
           }

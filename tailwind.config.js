@@ -253,7 +253,7 @@ module.exports = {
           },
           button: {
             DEFAULT: 'hsl(156, 55%, 26%)',
-            hover: 'hsl(202, 5%, 40%)',
+            hover: 'hsl(156, 55%, 21%)',
           },
           link: { DEFAULT: 'hsl(31, 100%, 57%)', hover: 'hsl(31, 100%, 42%)' },
           down: {

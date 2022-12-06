@@ -322,13 +322,16 @@ const Orderbook = () => {
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
 
+    if (!market || !group) return
+
     let previousBidInfo: AccountInfo<Buffer> | null = null
     let previousAskInfo: AccountInfo<Buffer> | null = null
-    if (!market || !group) return
-    console.log('in orderbook WS useEffect')
+    let bidSubscriptionId: number
+    let askSubscriptionId: number
+
     const bidsPk =
       market instanceof Market ? market['_decoded'].bids : market.bids
-    let bidSubscriptionId: number
+    console.log('bidsPk', bidsPk?.toString())
     if (bidsPk) {
       connection.getAccountInfo(bidsPk).then((info) => {
         if (!info) return
@@ -338,7 +341,6 @@ const Orderbook = () => {
           state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
         })
       })
-
       bidSubscriptionId = connection.onAccountChange(
         bidsPk,
         (info, _context) => {
@@ -357,9 +359,10 @@ const Orderbook = () => {
         }
       )
     }
+
     const asksPk =
       market instanceof Market ? market['_decoded'].asks : market.asks
-    let askSubscriptionId: number
+    console.log('asksPk', asksPk?.toString())
     if (asksPk) {
       connection.getAccountInfo(asksPk).then((info) => {
         if (!info) return

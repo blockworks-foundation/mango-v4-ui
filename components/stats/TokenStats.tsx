@@ -6,36 +6,74 @@ import {
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import { IconButton, LinkButton } from '../shared/Button'
 import ContentBox from '../shared/ContentBox'
-import FlipNumbers from 'react-flip-numbers'
 import Tooltip from '@components/shared/Tooltip'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import { useRouter } from 'next/router'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
-import useLocalStorageState from 'hooks/useLocalStorageState'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import dayjs from 'dayjs'
+import mangoStore, { TokenStatsItem } from '@store/mangoStore'
+import SheenLoader from '@components/shared/SheenLoader'
+import dynamic from 'next/dynamic'
+const DetailedAreaChart = dynamic(
+  () => import('@components/shared/DetailedAreaChart'),
+  { ssr: false }
+)
+
+interface TotalValueItem {
+  date: string
+  borrowValue: number
+  depositValue: number
+}
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
+  const actions = mangoStore((s) => s.actions)
+  const tokenStats = mangoStore((s) => s.tokenStats.data)
+  const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
-  const [animationSettings] = useLocalStorageState(
-    ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
-  )
+
+  useEffect(() => {
+    if (group && !tokenStats.length) {
+      actions.fetchTokenStats()
+    }
+  }, [group])
+
+  const totalValues = useMemo(() => {
+    if (!tokenStats.length) return []
+    const values: TotalValueItem[] = tokenStats.reduce(
+      (a: TotalValueItem[], c: TokenStatsItem) => {
+        const hasDate = a.find((d: TotalValueItem) => d.date === c.date_hour)
+        if (!hasDate) {
+          a.push({
+            date: c.date_hour,
+            depositValue: c.total_deposits * c.price,
+            borrowValue: c.total_borrows * c.price,
+          })
+        } else {
+          hasDate.depositValue =
+            hasDate.depositValue + c.total_deposits * c.price
+          hasDate.borrowValue = hasDate.borrowValue + c.total_borrows * c.price
+        }
+        return a
+      },
+      []
+    )
+    return values.reverse()
+  }, [tokenStats])
 
   const banks = useMemo(() => {
     if (group) {
@@ -75,44 +113,56 @@ const TokenStats = () => {
   return (
     <ContentBox hideBorder hidePadding>
       <div className="grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-5xl">
-        <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-t-0 ">
-          <p className="mb-2 text-base leading-none">
-            {t('total-deposit-value')}
-          </p>
-          <div className="flex items-center font-bold">
-            {animationSettings['number-scroll'] ? (
-              <FlipNumbers
-                height={48}
-                width={32}
-                play
-                delay={0.05}
-                duration={1}
-                numbers={formatFixedDecimals(totalDepositValue || 0.0, true)}
-              />
-            ) : (
-              <p>{formatFixedDecimals(totalDepositValue || 0.0, true)}</p>
-            )}
+        {loadingStats ? (
+          <div className="col-span-2 py-4 px-6 md:col-span-1">
+            <SheenLoader className="flex flex-1">
+              <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
+            </SheenLoader>
           </div>
-        </div>
-        <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
-          <p className="mb-2 text-base leading-none">
-            {t('total-borrow-value')}
-          </p>
-          <div className="flex items-center font-bold">
-            {animationSettings['number-scroll'] ? (
-              <FlipNumbers
-                height={48}
-                width={32}
-                play
-                delay={0.05}
-                duration={1}
-                numbers={formatFixedDecimals(totalBorrowValue || 0.0, true)}
-              />
-            ) : (
-              <span>{formatFixedDecimals(totalBorrowValue || 0.0, true)}</span>
-            )}
+        ) : totalValues.length ? (
+          <div className="col-span-2 py-4 px-6 md:col-span-1">
+            <DetailedAreaChart
+              data={totalValues.concat([
+                {
+                  date: dayjs().toISOString(),
+                  depositValue: totalDepositValue!,
+                  borrowValue: totalBorrowValue!,
+                },
+              ])}
+              daysToShow={'999'}
+              prefix="$"
+              tickFormat={(x) => `$${x.toFixed(2)}`}
+              title={t('total-deposit-value')}
+              xKey="date"
+              yKey={'depositValue'}
+            />
           </div>
-        </div>
+        ) : null}
+        {loadingStats ? (
+          <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+            <SheenLoader className="flex flex-1">
+              <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
+            </SheenLoader>
+          </div>
+        ) : totalValues.length ? (
+          <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+            <DetailedAreaChart
+              data={totalValues.concat([
+                {
+                  date: dayjs().toISOString(),
+                  borrowValue: totalBorrowValue!,
+                  depositValue: totalDepositValue!,
+                },
+              ])}
+              daysToShow={'999'}
+              prefix="$"
+              tickFormat={(x) => `$${x.toFixed(2)}`}
+              title={t('total-borrow-value')}
+              xKey="date"
+              yKey={'borrowValue'}
+            />
+          </div>
+        ) : null}
       </div>
       {showTableView ? (
         <Table>

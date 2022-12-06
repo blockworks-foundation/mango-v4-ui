@@ -1,7 +1,7 @@
 import useInterval from '@components/shared/useInterval'
 import mangoStore from '@store/mangoStore'
 import { useEffect, useMemo, useRef } from 'react'
-// import isEqual from 'lodash/isEqual'
+import isEqual from 'lodash/isEqual'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import Decimal from 'decimal.js'
 import { ChartTradeType } from 'types'
@@ -14,7 +14,6 @@ import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
-import { isEqual } from 'lodash'
 
 const RecentTrades = () => {
   // const [trades, setTrades] = useState<any[]>([])

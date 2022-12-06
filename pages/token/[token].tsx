@@ -1,6 +1,6 @@
 import Change from '@components/shared/Change'
 import DailyRange from '@components/shared/DailyRange'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { TokenStatsItem } from '@store/mangoStore'
 import type { NextPage } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -32,9 +32,14 @@ import { useCoingecko } from 'hooks/useCoingecko'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import TabButtons from '@components/shared/TabButtons'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
 })
+const DetailedAreaChart = dynamic(
+  () => import('@components/shared/DetailedAreaChart'),
+  { ssr: false }
+)
 dayjs.extend(relativeTime)
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -73,6 +78,9 @@ const DEFAULT_COINGECKO_VALUES = {
 
 const Token: NextPage = () => {
   const { t } = useTranslation(['common', 'token'])
+  const actions = mangoStore((s) => s.actions)
+  const tokenStats = mangoStore((s) => s.tokenStats.data)
+  const loadingTokenStats = mangoStore((s) => s.tokenStats.loading)
   const [showFullDesc, setShowFullDesc] = useState(false)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showBorrowModal, setShowBorrowModal] = useState(false)
@@ -87,10 +95,34 @@ const Token: NextPage = () => {
   const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
   const [loadChartData, setLoadChartData] = useState(true)
   const [daysToShow, setDaysToShow] = useState<string>('1')
+  const [activeDepositsTab, setActiveDepositsTab] = useState('token:deposits')
+  const [activeBorrowsTab, setActiveBorrowsTab] = useState('token:borrows')
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
   )
+
+  useEffect(() => {
+    if (group && !tokenStats.length) {
+      actions.fetchTokenStats()
+    }
+  }, [group])
+
+  const statsHistory = useMemo(() => {
+    if (!tokenStats.length) return []
+    return tokenStats.reduce((a: TokenStatsItem[], c: TokenStatsItem) => {
+      if (c.symbol === token) {
+        const copy = { ...c }
+        copy.deposit_apr = copy.deposit_apr * 100
+        copy.borrow_apr = copy.borrow_apr * 100
+        a.push(copy)
+      }
+      return a.sort(
+        (a, b) =>
+          new Date(a.date_hour).getTime() - new Date(b.date_hour).getTime()
+      )
+    }, [])
+  }, [tokenStats])
 
   const bank = useMemo(() => {
     if (group && token) {
@@ -217,7 +249,7 @@ const Token: NextPage = () => {
     <div className="pb-20 md:pb-16">
       {bank ? (
         <>
-          <div className="flex flex-col border-b border-th-bkg-3 px-6 py-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col border-b border-th-bkg-3 px-6 py-5 md:flex-row md:items-center md:justify-between">
             <div className="mb-4 md:mb-1">
               <div className="mb-1.5 flex items-center space-x-2">
                 <Image src={logoURI!} height="20" width="20" />
@@ -244,7 +276,7 @@ const Token: NextPage = () => {
                   <span>{formatFixedDecimals(bank.uiPrice, true)}</span>
                 )}
                 {coingeckoData ? (
-                  <Change change={price_change_percentage_24h} />
+                  <Change change={price_change_percentage_24h} suffix="%" />
                 ) : null}
               </div>
               {coingeckoData ? (
@@ -306,53 +338,97 @@ const Token: NextPage = () => {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2">
-            <div className="col-span-1 border-b border-r border-th-bkg-3 px-6 py-4 sm:border-b-0">
-              <h2 className="mb-4 text-base">{t('token:lending')}</h2>
-              <div className="flex justify-between border-t border-th-bkg-3 py-4">
-                <p>{t('total-deposits')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(bank.uiDeposits())}
-                </p>
-              </div>
-              <div className="flex justify-between border-t border-th-bkg-3 py-4">
-                <p>{t('token:total-value')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(bank.uiDeposits() * bank.uiPrice, true)}
-                </p>
-              </div>
-              <div className="flex justify-between border-t border-th-bkg-3 pt-4">
-                <p>{t('deposit-rate')}</p>
-                <p className="font-mono text-th-up">
-                  {formatDecimal(bank.getDepositRateUi(), 2, {
-                    fixed: true,
-                  })}
-                  %
-                </p>
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            <div className="col-span-1 border-b border-th-bkg-3 md:border-r md:border-b-0">
+              <div className="w-full">
+                {statsHistory.length ? (
+                  <>
+                    <TabButtons
+                      activeValue={activeDepositsTab}
+                      onChange={(v) => setActiveDepositsTab(v)}
+                      showBorders
+                      values={[
+                        ['token:deposits', 0],
+                        ['token:deposit-rates', 0],
+                      ]}
+                    />
+                    <div className="px-6 pt-5 pb-2">
+                      {activeDepositsTab === 'token:deposits' ? (
+                        <DetailedAreaChart
+                          data={statsHistory}
+                          daysToShow={'999'}
+                          // domain={[0, 'dataMax']}
+                          loading={loadingTokenStats}
+                          small
+                          tickFormat={(x) => x.toFixed(2)}
+                          title={`${token} ${t('token:deposits')}`}
+                          xKey="date_hour"
+                          yKey={'total_deposits'}
+                        />
+                      ) : (
+                        <DetailedAreaChart
+                          data={statsHistory}
+                          daysToShow={'999'}
+                          // domain={[0, 'dataMax']}
+                          loading={loadingTokenStats}
+                          hideChange
+                          small
+                          suffix="%"
+                          tickFormat={(x) => `${x.toFixed(2)}%`}
+                          title={`${token} ${t('token:deposit-rates')} (APR)`}
+                          xKey="date_hour"
+                          yKey={'deposit_apr'}
+                        />
+                      )}
+                    </div>
+                  </>
+                ) : null}
               </div>
             </div>
-            <div className="col-span-1 px-6 py-4">
-              <h2 className="mb-4 text-base">{t('token:borrowing')}</h2>
-              <div className="flex justify-between border-t border-th-bkg-3 py-4">
-                <p>{t('total-borrows')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(bank.uiBorrows())}
-                </p>
-              </div>
-              <div className="flex justify-between border-t border-th-bkg-3 py-4">
-                <p>{t('token:total-value')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(bank.uiBorrows() * bank.uiPrice, true)}
-                </p>
-              </div>
-              <div className="flex justify-between border-t border-th-bkg-3 pt-4">
-                <p>{t('borrow-rate')}</p>
-                <p className="font-mono text-th-down">
-                  {formatDecimal(bank.getBorrowRateUi(), 2, {
-                    fixed: true,
-                  })}
-                  %
-                </p>
+            <div className="col-span-1">
+              <div className="w-full">
+                {statsHistory.length ? (
+                  <>
+                    <TabButtons
+                      activeValue={activeBorrowsTab}
+                      onChange={(v) => setActiveBorrowsTab(v)}
+                      showBorders
+                      values={[
+                        ['token:borrows', 0],
+                        ['token:borrow-rates', 0],
+                      ]}
+                    />
+                    <div className="px-6 pt-5 pb-2">
+                      {activeBorrowsTab === 'token:borrows' ? (
+                        <DetailedAreaChart
+                          data={statsHistory}
+                          daysToShow={'999'}
+                          // domain={[0, 'dataMax']}
+                          loading={loadingTokenStats}
+                          small
+                          tickFormat={(x) => x.toFixed(2)}
+                          title={`${token} ${t('token:borrows')}`}
+                          xKey="date_hour"
+                          yKey={'total_borrows'}
+                        />
+                      ) : (
+                        <DetailedAreaChart
+                          data={statsHistory}
+                          daysToShow={'999'}
+                          // domain={[0, 'dataMax']}
+                          loading={loadingTokenStats}
+                          small
+                          hideChange
+                          suffix="%"
+                          tickFormat={(x) => `${x.toFixed(2)}%`}
+                          title={`${token} ${t('token:borrow-rates')} (APR)`}
+                          xKey="date_hour"
+                          yKey={'borrow_apr'}
+                        />
+                      )}
+                    </div>
+                  </>
+                ) : null}
               </div>
             </div>
           </div>
@@ -426,8 +502,8 @@ const Token: NextPage = () => {
               ) : (
                 <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
               )}
-              <div className="grid grid-cols-1 border-b border-th-bkg-3 sm:grid-cols-2">
-                <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 sm:col-span-2">
+              <div className="grid grid-cols-1 border-b border-th-bkg-3 md:grid-cols-2">
+                <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 md:col-span-2">
                   <h2 className="text-base">{bank.name} Stats</h2>
                 </div>
                 <div className="col-span-1 border-r border-th-bkg-3 px-6 py-4">
@@ -453,7 +529,7 @@ const Token: NextPage = () => {
                         <span className="mr-2">
                           {formatFixedDecimals(ath.usd, true)}
                         </span>
-                        <Change change={ath_change_percentage.usd} />
+                        <Change change={ath_change_percentage.usd} suffix="%" />
                       </div>
                       <p className="text-xs text-th-fgd-4">
                         {dayjs(ath_date.usd).format('MMM, D, YYYY')} (
@@ -461,14 +537,14 @@ const Token: NextPage = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex justify-between border-b border-t border-th-bkg-3 py-4 sm:border-b-0 sm:pb-0">
+                  <div className="flex justify-between border-b border-t border-th-bkg-3 py-4 md:border-b-0 md:pb-0">
                     <p>{t('token:all-time-low')}</p>
                     <div className="flex flex-col items-end">
                       <div className="flex items-center font-mono text-th-fgd-2">
                         <span className="mr-2">
                           {formatFixedDecimals(atl.usd, true)}
                         </span>
-                        <Change change={atl_change_percentage.usd} />
+                        <Change change={atl_change_percentage.usd} suffix="%" />
                       </div>
                       <p className="text-xs text-th-fgd-4">
                         {dayjs(atl_date.usd).format('MMM, D, YYYY')} (
@@ -477,7 +553,7 @@ const Token: NextPage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="col-span-1 px-6 pb-4 sm:pt-4">
+                <div className="col-span-1 px-6 pb-4 md:pt-4">
                   {fully_diluted_valuation.usd ? (
                     <div className="flex justify-between pb-4">
                       <p>{t('token:fdv')}</p>
@@ -500,7 +576,7 @@ const Token: NextPage = () => {
                   </div>
                   <div
                     className={`flex justify-between border-t border-th-bkg-3 ${
-                      max_supply ? 'py-4' : 'border-b pt-4 sm:pb-4'
+                      max_supply ? 'py-4' : 'border-b pt-4 md:pb-4'
                     }`}
                   >
                     <p>{t('token:total-supply')}</p>
