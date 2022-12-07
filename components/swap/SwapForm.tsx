@@ -385,7 +385,7 @@ const SwapForm = () => {
                 decimalScale={outputBank?.mintDecimals || 6}
                 name="amountOut"
                 id="amountOut"
-                className="w-full rounded-r-lg bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-3 focus:outline-none lg:text-lg xl:text-xl"
+                className="w-full rounded-l-none rounded-r-lg bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
                 placeholder="0.00"
                 value={amountOutFormValue}
                 onValueChange={handleAmountOutChange}
@@ -420,16 +420,16 @@ const SwapForm = () => {
             <TokenVaultWarnings bank={inputBank} />
           </div>
         ) : null}
-        <div id="swap-step-four" className={`px-2 py-4`}>
-          <HealthImpact maintProjectedHealth={maintProjectedHealth} />
-        </div>
-        <div className={`px-2`}>
+        <div className="space-y-2 pt-2">
+          <div id="swap-step-four">
+            <HealthImpact maintProjectedHealth={maintProjectedHealth} />
+          </div>
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
             <p className="text-right font-mono text-sm text-th-fgd-3">
               {selectedRoute?.priceImpactPct
                 ? selectedRoute?.priceImpactPct * 100 < 0.1
-                  ? '< 0.1%'
+                  ? '<0.1%'
                   : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
                 : '0.00%'}
             </p>
