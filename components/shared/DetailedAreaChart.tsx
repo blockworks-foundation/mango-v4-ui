@@ -143,14 +143,14 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             play
                             numbers={
                               prefix +
-                              formatFixedDecimals(mouseData[yKey]) +
+                              formatFixedDecimals(mouseData[yKey] ?? 0) +
                               suffix
                             }
                           />
                         ) : (
                           <span>
                             {prefix +
-                              formatFixedDecimals(mouseData[yKey]) +
+                              formatFixedDecimals(mouseData[yKey] ?? 0) +
                               suffix}
                           </span>
                         )}
