@@ -267,7 +267,7 @@ const SwapForm = () => {
               decimalScale={inputBank?.mintDecimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-r-lg border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+              className="w-full rounded-l-none rounded-r-lg border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}

@@ -417,6 +417,12 @@ input::placeholder {
   @apply text-th-fgd-4;
 }
 
+/* Remove inner shadow from inputs on mobile iOS */
+textarea,
+input[type='text'] {
+  -webkit-appearance: none;
+}
+
 /* Slider */
 
 /* input[type='range']::-webkit-slider-thumb {
