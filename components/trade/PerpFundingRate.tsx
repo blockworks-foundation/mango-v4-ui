@@ -54,6 +54,13 @@ const PerpFundingRate = () => {
           : '-'}
         %
       </div>
+      {/* <div className="font-mono text-xs text-th-fgd-2">
+        {selectedMarket instanceof PerpMarket &&
+        bids instanceof BookSide &&
+        asks instanceof BookSide
+          ? selectedMarket.getCurrentFundingRate(bids, asks)
+          : '-'}
+      </div> */}
     </>
   )
 }

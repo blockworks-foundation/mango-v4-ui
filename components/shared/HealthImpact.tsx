@@ -32,7 +32,7 @@ const HealthImpact = ({
         </p>
       </Tooltip>
       <div className="flex items-center space-x-1.5 font-mono">
-        <p className={`text-th-fgd-1 ${small ? 'text-xs' : 'text-sm'}`}>
+        <p className={`text-th-fgd-2 ${small ? 'text-xs' : 'text-sm'}`}>
           {currentMaintHealth}%
         </p>
         <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />

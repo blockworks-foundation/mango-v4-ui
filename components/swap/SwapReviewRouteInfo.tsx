@@ -93,7 +93,7 @@ const EMPTY_COINGECKO_PRICES = {
   outputCoingeckoPrice: 0,
 }
 
-const JupiterRouteInfo = ({
+const SwapReviewRouteInfo = ({
   amountIn,
   onClose,
   routes,
@@ -570,4 +570,4 @@ const JupiterRouteInfo = ({
   ) : null
 }
 
-export default React.memo(JupiterRouteInfo)
+export default React.memo(SwapReviewRouteInfo)

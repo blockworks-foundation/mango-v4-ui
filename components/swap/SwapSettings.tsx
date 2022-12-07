@@ -38,7 +38,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
       </IconButton>
 
       <div className="mt-4">
-        <p className="mb-2 text-th-fgd-1">{t('swap:slippage')}</p>
+        <p className="mb-2 text-th-fgd-1">Max {t('swap:slippage')}</p>
         {showCustomSlippageForm ? (
           <Input
             type="text"
