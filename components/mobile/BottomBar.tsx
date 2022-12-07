@@ -73,7 +73,7 @@ const BottomBar = () => {
           href="/settings"
           shallow={true}
           className={`${
-            asPath === '/trade' ? 'text-th-active' : 'text-th-fgd-3'
+            asPath === '/settings' ? 'text-th-active' : 'text-th-fgd-3'
           } col-span-1 flex cursor-pointer flex-col items-center`}
         >
           <Cog8ToothIcon className="mb-1 h-4 w-4" />
