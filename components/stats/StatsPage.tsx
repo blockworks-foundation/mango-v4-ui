@@ -1,9 +1,10 @@
 import TabButtons from '@components/shared/TabButtons'
 import { useMemo, useState } from 'react'
+import PerpMarketsTable from './PerpMarketsTable'
 import SpotMarketsTable from './SpotMarketsTable'
 import TokenStats from './TokenStats'
 
-const TABS = ['tokens', 'spot']
+const TABS = ['tokens', 'perp', 'spot']
 
 const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')
@@ -29,6 +30,8 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case 'tokens':
       return <TokenStats />
+    case 'perp':
+      return <PerpMarketsTable />
     case 'spot':
       return <SpotMarketsTable />
     default:

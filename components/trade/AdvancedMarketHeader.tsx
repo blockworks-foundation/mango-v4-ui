@@ -55,7 +55,7 @@ const AdvancedMarketHeader = () => {
       </div>
       {selectedMarket instanceof PerpMarket ? (
         <div className="ml-6 flex-col">
-          <div className="text-xs text-th-fgd-4">Funding Rate</div>
+          <div className="text-xs text-th-fgd-4">{t('trade:funding-rate')}</div>
           <PerpFundingRate />
         </div>
       ) : null}
