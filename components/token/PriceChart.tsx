@@ -51,6 +51,7 @@ const PriceChart = ({
             <XAxis
               axisLine={false}
               dataKey="0"
+              minTickGap={20}
               padding={{ left: 20, right: 20 }}
               tick={{
                 fill: 'var(--fgd-4)',
