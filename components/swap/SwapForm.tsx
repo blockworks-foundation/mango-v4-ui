@@ -227,7 +227,7 @@ const SwapForm = () => {
           },
           {
             mintPk: outputBank.mint,
-            uiTokenAmount: amountInAsDecimal.toNumber(),
+            uiTokenAmount: amountOutAsDecimal.toNumber(),
           },
         ],
         HealthType.maint
