@@ -99,6 +99,9 @@ th {
   --fgd-3: theme('colors.light-theme.fgd-3');
   --fgd-4: theme('colors.light-theme.fgd-4');
   --button: theme('colors.light-theme.button.DEFAULT');
+  --input-bkg: theme('colors.light-theme.input.bkg');
+  --input-border: theme('colors.light-theme.input.border');
+  --input-border-hover: theme('colors.light-theme.input.borderDark');
   --button-hover: theme('colors.light-theme.button.hover');
   --error: theme('colors.light-theme.error');
   --success: theme('colors.light-theme.success');
@@ -126,6 +129,9 @@ th {
   --fgd-4: theme('colors.dark-theme.fgd-4');
   --button: theme('colors.dark-theme.button.DEFAULT');
   --button-hover: theme('colors.dark-theme.button.hover');
+  --input-bkg: theme('colors.dark-theme.input.bkg');
+  --input-border: theme('colors.dark-theme.input.border');
+  --input-border-hover: theme('colors.dark-theme.input.borderDark');
   --error: theme('colors.dark-theme.error');
   --success: theme('colors.dark-theme.success');
   --warning: theme('colors.dark-theme.warning');
@@ -152,6 +158,9 @@ th {
   --fgd-4: theme('colors.mango-classic-theme.fgd-4');
   --button: theme('colors.mango-classic-theme.button.DEFAULT');
   --button-hover: theme('colors.mango-classic-theme.button.hover');
+  --input-bkg: theme('colors.mango-classic-theme.input.bkg');
+  --input-border: theme('colors.mango-classic-theme.input.border');
+  --input-border-hover: theme('colors.mango-classic-theme.input.borderDark');
   --error: theme('colors.mango-classic-theme.error');
   --success: theme('colors.mango-classic-theme.success');
   --warning: theme('colors.mango-classic-theme.warning');
@@ -178,6 +187,9 @@ th {
   --fgd-4: theme('colors.medium-theme.fgd-4');
   --button: theme('colors.medium-theme.button.DEFAULT');
   --button-hover: theme('colors.medium-theme.button.hover');
+  --input-bkg: theme('colors.medium-theme.input.bkg');
+  --input-border: theme('colors.medium-theme.input.border');
+  --input-border-hover: theme('colors.medium-theme.input.borderDark');
   --error: theme('colors.medium-theme.error');
   --success: theme('colors.medium-theme.success');
   --warning: theme('colors.medium-theme.warning');
@@ -204,6 +216,9 @@ th {
   --fgd-4: theme('colors.high-contrast-theme.fgd-4');
   --button: theme('colors.high-contrast-theme.button.DEFAULT');
   --button-hover: theme('colors.high-contrast-theme.button.hover');
+  --input-bkg: theme('colors.high-contrast-theme.input.bkg');
+  --input-border: theme('colors.high-contrast-theme.input.border');
+  --input-border-hover: theme('colors.high-contrast-theme.input.borderDark');
   --error: theme('colors.high-contrast-theme.error');
   --success: theme('colors.high-contrast-theme.success');
   --warning: theme('colors.high-contrast-theme.warning');
@@ -230,6 +245,9 @@ th {
   --fgd-4: theme('colors.blueberry-theme.fgd-4');
   --button: theme('colors.blueberry-theme.button.DEFAULT');
   --button-hover: theme('colors.blueberry-theme.button.hover');
+  --input-bkg: theme('colors.blueberry-theme.input.bkg');
+  --input-border: theme('colors.blueberry-theme.input.border');
+  --input-border-hover: theme('colors.blueberry-theme.input.borderDark');
   --error: theme('colors.blueberry-theme.error');
   --success: theme('colors.blueberry-theme.success');
   --warning: theme('colors.blueberry-theme.warning');
@@ -256,6 +274,9 @@ th {
   --fgd-4: theme('colors.banana-theme.fgd-4');
   --button: theme('colors.banana-theme.button.DEFAULT');
   --button-hover: theme('colors.banana-theme.button.hover');
+  --input-bkg: theme('colors.banana-theme.input.bkg');
+  --input-border: theme('colors.banana-theme.input.border');
+  --input-border-hover: theme('colors.banana-theme.input.borderDark');
   --error: theme('colors.banana-theme.error');
   --success: theme('colors.banana-theme.success');
   --warning: theme('colors.banana-theme.warning');
@@ -282,6 +303,9 @@ th {
   --fgd-4: theme('colors.olive-theme.fgd-4');
   --button: theme('colors.olive-theme.button.DEFAULT');
   --button-hover: theme('colors.olive-theme.button.hover');
+  --input-bkg: theme('colors.olive-theme.input.bkg');
+  --input-border: theme('colors.olive-theme.input.border');
+  --input-border-hover: theme('colors.olive-theme.input.borderDark');
   --error: theme('colors.olive-theme.error');
   --success: theme('colors.olive-theme.success');
   --warning: theme('colors.olive-theme.warning');
@@ -308,36 +332,13 @@ th {
   --fgd-4: theme('colors.lychee-theme.fgd-4');
   --button: theme('colors.lychee-theme.button.DEFAULT');
   --button-hover: theme('colors.lychee-theme.button.hover');
+  --input-bkg: theme('colors.lychee-theme.input.bkg');
+  --input-border: theme('colors.lychee-theme.input.border');
+  --input-border-hover: theme('colors.lychee-theme.input.borderDark');
   --error: theme('colors.lychee-theme.error');
   --success: theme('colors.lychee-theme.success');
   --warning: theme('colors.lychee-theme.warning');
 }
-
-/* [data-theme='Smoothy'] {
-  --active: theme('colors.smoothy-theme.active.DEFAULT');
-  --active-dark: theme('colors.smoothy-theme.active.dark');
-  --down: theme('colors.smoothy-theme.down.DEFAULT');
-  --down-dark: theme('colors.smoothy-theme.down.dark');
-  --down-muted: theme('colors.smoothy-theme.down.muted');
-  --up: theme('colors.smoothy-theme.up.DEFAULT');
-  --up-dark: theme('colors.smoothy-theme.up.dark');
-  --up-muted: theme('colors.smoothy-theme.up.muted');
-  --link: theme('colors.smoothy-theme.link.DEFAULT');
-  --link-hover: theme('colors.smoothy-theme.link.hover');
-  --bkg-1: theme('colors.smoothy-theme.bkg-1');
-  --bkg-2: theme('colors.smoothy-theme.bkg-2');
-  --bkg-3: theme('colors.smoothy-theme.bkg-3');
-  --bkg-4: theme('colors.smoothy-theme.bkg-4');
-  --fgd-1: theme('colors.smoothy-theme.fgd-1');
-  --fgd-2: theme('colors.smoothy-theme.fgd-2');
-  --fgd-3: theme('colors.smoothy-theme.fgd-3');
-  --fgd-4: theme('colors.smoothy-theme.fgd-4');
-  --button: theme('colors.smoothy-theme.button.DEFAULT');
-  --button-hover: theme('colors.smoothy-theme.button.hover');
-  --error: theme('colors.smoothy-theme.error');
-  --success: theme('colors.smoothy-theme.success');
-  --warning: theme('colors.smoothy-theme.warning');
-} */
 
 [data-theme='Avocado'] {
   --active: theme('colors.avocado-theme.active.DEFAULT');
@@ -360,6 +361,9 @@ th {
   --fgd-4: theme('colors.avocado-theme.fgd-4');
   --button: theme('colors.avocado-theme.button.DEFAULT');
   --button-hover: theme('colors.avocado-theme.button.hover');
+  --input-bkg: theme('colors.avocado-theme.input.bkg');
+  --input-border: theme('colors.avocado-theme.input.border');
+  --input-border-hover: theme('colors.avocado-theme.input.borderDark');
   --error: theme('colors.avocado-theme.error');
   --success: theme('colors.avocado-theme.success');
   --warning: theme('colors.avocado-theme.warning');
@@ -415,6 +419,12 @@ li {
 
 input::placeholder {
   @apply text-th-fgd-4;
+}
+
+/* Remove inner shadow from inputs on mobile iOS */
+textarea,
+input[type='text'] {
+  -webkit-appearance: none;
 }
 
 /* Slider */
@@ -533,11 +543,11 @@ table p {
 /* slider */
 
 input[type='range'] {
-  @apply h-1.5 appearance-none rounded bg-th-bkg-4 bg-gradient-to-r from-gradient-start via-gradient-mid to-gradient-end bg-[length:50%_100%] bg-no-repeat;
+  @apply h-1.5 appearance-none rounded bg-th-bkg-2 bg-gradient-to-r from-th-active to-th-active bg-no-repeat;
 }
 
 input[type='range']::-webkit-slider-thumb {
-  @apply h-5 w-5 cursor-ew-resize appearance-none rounded-full bg-th-active;
+  @apply h-5 w-5 cursor-ew-resize appearance-none rounded-full bg-th-active-dark shadow;
 }
 
 input[type='range']::-webkit-slider-runnable-track {

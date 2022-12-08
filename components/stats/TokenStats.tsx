@@ -60,13 +60,14 @@ const TokenStats = () => {
         if (!hasDate) {
           a.push({
             date: c.date_hour,
-            depositValue: c.total_deposits * c.price,
-            borrowValue: c.total_borrows * c.price,
+            depositValue: Math.floor(c.total_deposits * c.price),
+            borrowValue: Math.floor(c.total_borrows * c.price),
           })
         } else {
           hasDate.depositValue =
-            hasDate.depositValue + c.total_deposits * c.price
-          hasDate.borrowValue = hasDate.borrowValue + c.total_borrows * c.price
+            hasDate.depositValue + Math.floor(c.total_deposits * c.price)
+          hasDate.borrowValue =
+            hasDate.borrowValue + Math.floor(c.total_borrows * c.price)
         }
         return a
       },
@@ -103,7 +104,7 @@ const TokenStats = () => {
         ),
       ]
     }
-    return []
+    return [0, 0]
   }, [banks])
 
   const goToTokenPage = (bank: Bank) => {
@@ -125,8 +126,8 @@ const TokenStats = () => {
               data={totalValues.concat([
                 {
                   date: dayjs().toISOString(),
-                  depositValue: totalDepositValue!,
-                  borrowValue: totalBorrowValue!,
+                  depositValue: Math.floor(totalDepositValue),
+                  borrowValue: Math.floor(totalBorrowValue),
                 },
               ])}
               daysToShow={'999'}
@@ -150,8 +151,8 @@ const TokenStats = () => {
               data={totalValues.concat([
                 {
                   date: dayjs().toISOString(),
-                  borrowValue: totalBorrowValue!,
-                  depositValue: totalDepositValue!,
+                  borrowValue: Math.floor(totalBorrowValue),
+                  depositValue: Math.floor(totalDepositValue),
                 },
               ])}
               daysToShow={'999'}

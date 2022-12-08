@@ -63,7 +63,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <ConnectionProvider endpoint={endpoint}>
           <WalletProvider wallets={wallets} onError={onError}>
             <EnhancedWalletProvider>
-              <ThemeProvider defaultTheme="Dark">
+              <ThemeProvider defaultTheme="Mango Classic">
                 <ViewportProvider>
                   <Layout>
                     <Component {...pageProps} />

@@ -24,7 +24,7 @@ const HealthImpact = ({
 
   return (
     <div className="flex flex-wrap items-start justify-between">
-      <Tooltip content={t('health-tooltip')}>
+      <Tooltip content={t('health-tooltip')} delay={250}>
         <p
           className={`tooltip-underline mr-4 ${small ? 'text-xs' : 'text-sm'}`}
         >
@@ -32,7 +32,7 @@ const HealthImpact = ({
         </p>
       </Tooltip>
       <div className="flex items-center space-x-1.5 font-mono">
-        <p className={`text-th-fgd-1 ${small ? 'text-xs' : 'text-sm'}`}>
+        <p className={`text-th-fgd-2 ${small ? 'text-xs' : 'text-sm'}`}>
           {currentMaintHealth}%
         </p>
         <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
@@ -41,13 +41,13 @@ const HealthImpact = ({
             maintProjectedHealth < 50 && maintProjectedHealth > 15
               ? 'text-th-warning'
               : maintProjectedHealth <= 15
-              ? 'text-th-red'
-              : 'text-th-green'
+              ? 'text-th-down'
+              : 'text-th-up'
           } ${small ? 'text-xs' : 'text-sm'}`}
         >
           {maintProjectedHealth}%
         </p>
-        <span
+        {/* <span
           className={`text-xs ${
             maintProjectedHealth >= currentMaintHealth!
               ? 'text-th-up'
@@ -56,7 +56,7 @@ const HealthImpact = ({
         >
           ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
           {maintProjectedHealth - currentMaintHealth!}%)
-        </span>
+        </span> */}
       </div>
     </div>
   )

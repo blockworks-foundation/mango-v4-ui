@@ -19,8 +19,8 @@ const MultiSelectDropdown = ({
       {({ open }) => (
         <div className="flex flex-col">
           <Popover.Button
-            className={`default-transition h-12 rounded-md bg-th-bkg-1 px-3 text-th-fgd-1 ring-1 ring-inset ring-th-bkg-4 hover:ring-th-fgd-4  ${
-              open ? 'ring-th-fgd-4' : 'ring-th-bkg-4'
+            className={`default-transition h-12 rounded-md bg-th-input-bkg px-3 text-th-fgd-1 ring-1 ring-inset ring-th-input-border md:hover:ring-th-input-border-hover  ${
+              open ? 'ring-th-input-border-hover' : 'ring-th-input-border'
             }`}
           >
             <div className={`flex items-center justify-between`}>

@@ -6,13 +6,14 @@ import { useTranslation } from 'next-i18next'
 import { IconButton } from '../shared/Button'
 import {
   ChartBarIcon,
-  HomeIcon,
   Bars3Icon,
   XMarkIcon,
   ChevronRightIcon,
-  CurrencyDollarIcon as FeesIcon,
   LightBulbIcon,
   ArrowsRightLeftIcon,
+  CurrencyDollarIcon,
+  Cog8ToothIcon,
+  BuildingLibraryIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 
@@ -34,7 +35,7 @@ const BottomBar = () => {
 
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-1 bg-th-bkg-2 py-2.5">
+      <div className="grid grid-cols-5 grid-rows-1 bg-th-bkg-2 py-2.5">
         <Link
           href={{
             pathname: '/',
@@ -43,7 +44,7 @@ const BottomBar = () => {
             asPath === '/' ? 'text-th-active' : 'text-th-fgd-3'
           } col-span-1 flex cursor-pointer flex-col items-center`}
         >
-          <HomeIcon className="mb-1 h-4 w-4" />
+          <CurrencyDollarIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('account')}</StyledBarItemLabel>
         </Link>
         <Link
@@ -67,6 +68,16 @@ const BottomBar = () => {
         >
           <TradeIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
+        </Link>
+        <Link
+          href="/settings"
+          shallow={true}
+          className={`${
+            asPath === '/settings' ? 'text-th-active' : 'text-th-fgd-3'
+          } col-span-1 flex cursor-pointer flex-col items-center`}
+        >
+          <Cog8ToothIcon className="mb-1 h-4 w-4" />
+          <StyledBarItemLabel>{t('settings')}</StyledBarItemLabel>
         </Link>
         <a
           className={`${
@@ -115,14 +126,15 @@ const MoreMenuPanel = ({
           icon={<ChartBarIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
-          title={t('fees')}
-          path="/fees"
-          icon={<FeesIcon className="h-5 w-5" />}
-        />
-        <MoreMenuItem
           title={t('learn')}
           path="https://docs.mango.markets/"
           icon={<LightBulbIcon className="h-5 w-5" />}
+          isExternal
+        />
+        <MoreMenuItem
+          title={t('governance')}
+          path="https://dao.mango.markets/"
+          icon={<BuildingLibraryIcon className="h-5 w-5" />}
           isExternal
         />
       </div>

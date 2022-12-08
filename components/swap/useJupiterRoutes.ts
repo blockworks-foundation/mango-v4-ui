@@ -6,8 +6,9 @@ import useJupiterSwapData from './useJupiterSwapData'
 type useJupiterPropTypes = {
   inputMint: string
   outputMint: string
-  inputAmount: string
+  amount: string
   slippage: number
+  swapMode: string
 }
 
 const fetchJupiterRoutes = async (
@@ -15,19 +16,20 @@ const fetchJupiterRoutes = async (
   outputMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   amount = 0,
   slippage = 50,
+  swapMode = 'ExactIn',
   feeBps = 0
 ) => {
   {
-    const params: any = {
+    const paramsString = new URLSearchParams({
       inputMint: inputMint.toString(),
       outputMint: outputMint.toString(),
-      amount,
-      slippageBps: Math.ceil(slippage * 100),
+      amount: amount.toString(),
+      slippageBps: Math.ceil(slippage * 100).toString(),
       onlyDirectRoutes: 'true',
-      feeBps,
-    }
+      feeBps: feeBps.toString(),
+      swapMode,
+    }).toString()
 
-    const paramsString = new URLSearchParams(params).toString()
     const response = await fetch(
       `https://quote-api.jup.ag/v3/quote?${paramsString}`
     )
@@ -45,25 +47,39 @@ const fetchJupiterRoutes = async (
 const useJupiterRoutes = ({
   inputMint,
   outputMint,
-  inputAmount,
+  amount,
   slippage,
+  swapMode,
 }: useJupiterPropTypes) => {
-  const { inputTokenInfo } = useJupiterSwapData()
+  console.log('amount: ', amount)
 
-  const amount = inputAmount
-    ? new Decimal(inputAmount).mul(10 ** (inputTokenInfo?.decimals || 6))
+  const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
+
+  const decimals =
+    swapMode === 'ExactIn'
+      ? inputTokenInfo?.decimals || 6
+      : outputTokenInfo?.decimals || 6
+
+  const nativeAmount = amount
+    ? new Decimal(amount).mul(10 ** decimals)
     : new Decimal(0)
 
   const res = useQuery<{ routes: RouteInfo[]; bestRoute: RouteInfo }, Error>(
-    ['swap-routes', inputMint, outputMint, inputAmount, slippage],
+    ['swap-routes', inputMint, outputMint, amount, slippage, swapMode],
     async () =>
-      fetchJupiterRoutes(inputMint, outputMint, amount.toNumber(), slippage),
+      fetchJupiterRoutes(
+        inputMint,
+        outputMint,
+        nativeAmount.toNumber(),
+        slippage,
+        swapMode
+      ),
     {
-      enabled: inputAmount ? true : false,
+      enabled: amount ? true : false,
     }
   )
 
-  return inputAmount
+  return amount
     ? {
         ...(res.data ?? {
           routes: [],

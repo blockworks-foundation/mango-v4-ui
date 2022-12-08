@@ -59,7 +59,7 @@ const MarketLogos = ({
         {logos.baseLogoURI ? (
           <Image
             alt=""
-            className="z-10 rounded-full drop-shadow-md"
+            className="z-10 drop-shadow-md"
             width={small ? '16' : '20'}
             height={small ? '16' : '20'}
             src={logos.baseLogoURI}
@@ -74,7 +74,7 @@ const MarketLogos = ({
         {logos.quoteLogoURI && market instanceof Serum3Market ? (
           <Image
             alt=""
-            className="rounded-full opacity-60"
+            className="opacity-60"
             width={small ? '16' : '20'}
             height={small ? '16' : '20'}
             src={logos.quoteLogoURI}

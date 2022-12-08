@@ -6,7 +6,7 @@ import MultiSelectDropdown from '@components/forms/MultiSelectDropdown'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import Button, { IconButton } from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
-import { Disclosure, Transition } from '@headlessui/react'
+import { Disclosure } from '@headlessui/react'
 import {
   AdjustmentsVerticalIcon,
   ArrowLeftIcon,
@@ -244,37 +244,26 @@ const ActivityFilters = ({
           </Disclosure.Button>
         </div>
       </div>
-      <Transition
-        appear={true}
-        show={showMobileFilters}
-        enter="transition-all ease-in duration-300"
-        enterFrom="opacity-100 max-h-0"
-        enterTo="opacity-100 max-h-full"
-        leave="transition-all ease-out duration-300"
-        leaveFrom="opacity-100 max-h-full"
-        leaveTo="opacity-0 max-h-0"
-      >
-        <Disclosure.Panel className="bg-th-bkg-2 px-6 pb-6">
-          <div className="py-4">
-            <Label text={t('activity:activity-type')} />
-            <ActivityTypeFiltersForm
-              filters={filters}
-              updateFilters={updateFilters}
-            />
-          </div>
-          <AdvancedFiltersForm
-            advancedFilters={advancedFilters}
-            setAdvancedFilters={setAdvancedFilters}
+      <Disclosure.Panel className="bg-th-bkg-2 px-6 pb-6">
+        <div className="py-4">
+          <Label text={t('activity:activity-type')} />
+          <ActivityTypeFiltersForm
+            filters={filters}
+            updateFilters={updateFilters}
           />
-          <Button
-            className="w-full md:w-auto"
-            size="large"
-            onClick={handleUpdateMobileResults}
-          >
-            {t('activity:update')}
-          </Button>
-        </Disclosure.Panel>
-      </Transition>
+        </div>
+        <AdvancedFiltersForm
+          advancedFilters={advancedFilters}
+          setAdvancedFilters={setAdvancedFilters}
+        />
+        <Button
+          className="w-full md:w-auto"
+          size="large"
+          onClick={handleUpdateMobileResults}
+        >
+          {t('activity:update')}
+        </Button>
+      </Disclosure.Panel>
     </Disclosure>
   ) : null
 }

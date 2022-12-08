@@ -14,5 +14,7 @@
     "review-swap": "Review Swap",
     "slippage": "Slippage",
     "swap-history": "Swap History",
+    "tooltip-borrow-balance": "You'll use your {{balance}} {{token}} balance and borrow {{borrowAmount}} {{token}} to execute this swap",
+    "tooltip-borrow-no-balance": "You'll borrow {{borrowAmount}} {{token}} to execute this swap",
     "use-margin": "Allow Margin"
 }

@@ -138,19 +138,19 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
-                            height={24}
-                            width={15}
+                            height={small ? 24 : 40}
+                            width={small ? 15 : 26}
                             play
                             numbers={
                               prefix +
-                              formatFixedDecimals(mouseData[yKey]) +
+                              formatFixedDecimals(mouseData[yKey] ?? 0) +
                               suffix
                             }
                           />
                         ) : (
                           <span>
                             {prefix +
-                              formatFixedDecimals(mouseData[yKey]) +
+                              formatFixedDecimals(mouseData[yKey] ?? 0) +
                               suffix}
                           </span>
                         )}
@@ -183,8 +183,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
-                            height={24}
-                            width={15}
+                            height={small ? 24 : 40}
+                            width={small ? 15 : 26}
                             play
                             numbers={
                               prefix +

@@ -7,19 +7,20 @@ import {
   ExclamationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
-import NumberFormat, { NumberFormatValues } from 'react-number-format'
+import NumberFormat, {
+  NumberFormatValues,
+  SourceInfo,
+} from 'react-number-format'
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
 import ContentBox from '../shared/ContentBox'
-import JupiterRouteInfo from './JupiterRouteInfo'
+import SwapReviewRouteInfo from './SwapReviewRouteInfo'
 import TokenSelect from './TokenSelect'
 import useDebounce from '../shared/useDebounce'
-import { floorToDecimal, numberFormat } from '../../utils/numbers'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
 import Button, { IconButton } from '../shared/Button'
-import ButtonGroup from '../forms/ButtonGroup'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useJupiterRoutes from './useJupiterRoutes'
@@ -34,7 +35,6 @@ import {
   USDC_MINT,
 } from '../../utils/constants'
 import { useTokenMax } from './useTokenMax'
-import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpact from '@components/shared/HealthImpact'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -43,6 +43,10 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SwapSlider from './SwapSlider'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
+import MaxSwapAmount from './MaxSwapAmount'
+import PercentageSelectButtons from './PercentageSelectButtons'
+import BorrowInfo from './BorrowInfo'
+import Tooltip from '@components/shared/Tooltip'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -52,9 +56,8 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
 }
 
 const SwapForm = () => {
-  const { t } = useTranslation(['common', 'swap'])
+  const { t } = useTranslation(['common', 'swap', 'trade'])
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
-  const [amountInFormValue, setAmountInFormValue] = useState('')
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [showSettings, setShowSettings] = useState(false)
@@ -68,77 +71,140 @@ const SwapForm = () => {
     slippage,
     inputBank,
     outputBank,
+    amountIn: amountInFormValue,
+    amountOut: amountOutFormValue,
+    swapMode,
   } = mangoStore((s) => s.swap)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
+  const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
 
-  const amountIn: Decimal | null = useMemo(() => {
+  const amountInAsDecimal: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
       ? new Decimal(debouncedAmountIn)
       : new Decimal(0)
   }, [debouncedAmountIn])
 
+  const amountOutAsDecimal: Decimal | null = useMemo(() => {
+    return Number(debouncedAmountOut)
+      ? new Decimal(debouncedAmountOut)
+      : new Decimal(0)
+  }, [debouncedAmountOut])
+
   const { bestRoute, routes } = useJupiterRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
-    inputAmount: debouncedAmountIn,
+    amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
     slippage,
+    swapMode,
   })
 
-  const outAmount: number = useMemo(() => {
-    return selectedRoute?.outAmount.toString()
-      ? new Decimal(selectedRoute.outAmount.toString())
-          .div(10 ** outputBank!.mintDecimals)
-          .toNumber()
-      : 0
-  }, [selectedRoute, outputBank])
+  const setAmountInFormValue = useCallback(
+    (amountIn: string, setSwapMode?: boolean) => {
+      set((s) => {
+        s.swap.amountIn = amountIn
+        if (!parseFloat(amountIn)) {
+          s.swap.amountOut = ''
+        }
+        if (setSwapMode) {
+          s.swap.swapMode = 'ExactIn'
+        }
+      })
+    },
+    []
+  )
 
+  const setAmountOutFormValue = useCallback((amountOut: string) => {
+    set((s) => {
+      s.swap.amountOut = amountOut
+      if (!parseFloat(amountOut)) {
+        s.swap.amountIn = ''
+      }
+    })
+  }, [])
+
+  /* 
+    Once a route is returned from the Jupiter API, use the inAmount or outAmount
+    depending on the swapMode and set those values in state
+  */
   useEffect(() => {
     if (bestRoute) {
       setSelectedRoute(bestRoute)
-    }
-  }, [bestRoute])
 
+      if (inputBank && swapMode === 'ExactOut') {
+        const inAmount = new Decimal(bestRoute.inAmount)
+          .div(10 ** inputBank.mintDecimals)
+          .toString()
+        setAmountInFormValue(inAmount)
+      } else if (outputBank && swapMode === 'ExactIn') {
+        const outAmount = new Decimal(bestRoute.outAmount)
+          .div(10 ** outputBank.mintDecimals)
+          .toString()
+        setAmountOutFormValue(outAmount)
+      }
+    }
+  }, [bestRoute, swapMode, inputBank, outputBank])
+
+  /* 
+    If the use margin setting is toggled, clear the form values
+  */
   useEffect(() => {
     setAmountInFormValue('')
+    setAmountOutFormValue('')
   }, [useMargin])
 
-  const handleAmountInChange = useCallback((e: NumberFormatValues) => {
-    setAmountInFormValue(e.value)
+  const handleAmountInChange = useCallback(
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
+      if (swapMode === 'ExactOut') {
+        set((s) => {
+          s.swap.swapMode = 'ExactIn'
+        })
+      }
+      setAmountInFormValue(e.value)
+    },
+    [swapMode]
+  )
+
+  const handleAmountOutChange = useCallback(
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
+      if (swapMode === 'ExactIn') {
+        set((s) => {
+          s.swap.swapMode = 'ExactOut'
+        })
+      }
+      setAmountOutFormValue(e.value)
+    },
+    [swapMode]
+  )
+
+  const handleTokenInSelect = useCallback((mintAddress: string) => {
+    const group = mangoStore.getState().group
+    if (group) {
+      const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
+      set((s) => {
+        s.swap.inputBank = bank
+      })
+    }
+    setShowTokenSelect('')
   }, [])
 
-  const handleTokenInSelect = useCallback(
-    (mintAddress: string) => {
-      const group = mangoStore.getState().group
-      if (group) {
-        const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
-        set((s) => {
-          s.swap.inputBank = bank
-        })
-      }
-      setShowTokenSelect('')
-    },
-    [set]
-  )
-
-  const handleTokenOutSelect = useCallback(
-    (mintAddress: string) => {
-      const group = mangoStore.getState().group
-      if (group) {
-        const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
-        set((s) => {
-          s.swap.outputBank = bank
-        })
-      }
-      setShowTokenSelect('')
-    },
-    [set]
-  )
+  const handleTokenOutSelect = useCallback((mintAddress: string) => {
+    const group = mangoStore.getState().group
+    if (group) {
+      const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
+      set((s) => {
+        s.swap.outputBank = bank
+      })
+    }
+    setShowTokenSelect('')
+  }, [])
 
   const handleSwitchTokens = useCallback(() => {
-    if (amountIn?.gt(0) && outAmount) {
-      setAmountInFormValue(outAmount.toString())
+    if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
+      setAmountInFormValue(amountOutAsDecimal.toString())
     }
     const inputBank = mangoStore.getState().swap.inputBank
     const outputBank = mangoStore.getState().swap.outputBank
@@ -149,11 +215,17 @@ const SwapForm = () => {
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
     )
-  }, [set, outAmount, amountIn])
+  }, [set, amountOutAsDecimal, amountInAsDecimal])
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!inputBank || !mangoAccount || !outputBank || !outAmount || !group)
+    if (
+      !inputBank ||
+      !mangoAccount ||
+      !outputBank ||
+      !amountOutAsDecimal ||
+      !group
+    )
       return 0
 
     const simulatedHealthRatio =
@@ -162,25 +234,31 @@ const SwapForm = () => {
         [
           {
             mintPk: inputBank.mint,
-            uiTokenAmount: amountIn.toNumber() * -1,
+            uiTokenAmount: amountInAsDecimal.toNumber() * -1,
           },
           {
             mintPk: outputBank.mint,
-            uiTokenAmount: outAmount,
+            uiTokenAmount: amountOutAsDecimal.toNumber(),
           },
         ],
         HealthType.maint
       )
-    return simulatedHealthRatio! > 100
+    return simulatedHealthRatio > 100
       ? 100
-      : simulatedHealthRatio! < 0
+      : simulatedHealthRatio < 0
       ? 0
-      : Math.trunc(simulatedHealthRatio!)
-  }, [mangoAccount, inputBank, outputBank, amountIn, outAmount])
+      : Math.trunc(simulatedHealthRatio)
+  }, [
+    mangoAccount,
+    inputBank,
+    outputBank,
+    amountInAsDecimal,
+    amountOutAsDecimal,
+  ])
 
   const loadingSwapDetails: boolean = useMemo(() => {
-    return !!amountIn.toNumber() && connected && !selectedRoute
-  }, [amountIn, connected, selectedRoute])
+    return !!amountInAsDecimal.toNumber() && connected && !selectedRoute
+  }, [amountInAsDecimal, connected, selectedRoute])
 
   return (
     <ContentBox
@@ -199,9 +277,9 @@ const SwapForm = () => {
           leaveFrom="translate-x-0"
           leaveTo="translate-x-full"
         >
-          <JupiterRouteInfo
+          <SwapReviewRouteInfo
             onClose={() => setShowConfirm(false)}
-            amountIn={amountIn}
+            amountIn={amountInAsDecimal}
             slippage={slippage}
             routes={routes}
             selectedRoute={selectedRoute}
@@ -242,17 +320,17 @@ const SwapForm = () => {
           </div>
         </div>
         <div className="mb-2 flex items-end justify-between">
-          <p className="text-th-fgd-3">{t('swap:pay')}</p>
+          <p className="text-th-fgd-2 lg:text-base">{t('swap:pay')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
-            setAmountIn={setAmountInFormValue}
+            setAmountIn={(v) => setAmountInFormValue(v, true)}
           />
         </div>
         <div className="mb-3 grid grid-cols-2" id="swap-step-two">
-          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
             <TokenSelect
               bank={
-                inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)![0]
+                inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
               }
               showTokenList={setShowTokenSelect}
               type="input"
@@ -267,7 +345,7 @@ const SwapForm = () => {
               decimalScale={inputBank?.mintDecimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-r-lg border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+              className="w-full rounded-l-none rounded-r-lg border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -290,19 +368,19 @@ const SwapForm = () => {
             />
           </button>
         </div>
-        <p className="mb-2 text-th-fgd-3">{t('swap:receive')}</p>
+        <p className="mb-2 text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
         <div id="swap-step-three" className="mb-3 grid grid-cols-2">
-          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
             <TokenSelect
               bank={
                 outputBank ||
-                group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)![0]
+                group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
               }
               showTokenList={setShowTokenSelect}
               type="output"
             />
           </div>
-          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 bg-th-bkg-3 text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
+          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-input-border text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
             {loadingSwapDetails ? (
               <div className="w-full">
                 <SheenLoader className="flex flex-1 rounded-l-none">
@@ -318,10 +396,10 @@ const SwapForm = () => {
                 decimalScale={outputBank?.mintDecimals || 6}
                 name="amountOut"
                 id="amountOut"
-                className="w-full rounded-r-lg bg-th-bkg-3 p-3 text-right font-mono text-base font-bold text-th-fgd-3 focus:outline-none lg:text-lg xl:text-xl"
+                className="w-full rounded-l-none rounded-r-lg bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
                 placeholder="0.00"
-                disabled
-                value={outAmount ? numberFormat.format(outAmount) : ''}
+                value={amountOutFormValue}
+                onValueChange={handleAmountOutChange}
               />
             )}
           </div>
@@ -329,14 +407,14 @@ const SwapForm = () => {
         {swapFormSizeUi === 'Slider' ? (
           <SwapSlider
             useMargin={useMargin}
-            amount={amountIn.toNumber()}
-            onChange={setAmountInFormValue}
+            amount={amountInAsDecimal.toNumber()}
+            onChange={(v) => setAmountInFormValue(v, true)}
             step={1 / 10 ** (inputBank?.mintDecimals || 6)}
           />
         ) : (
           <PercentageSelectButtons
-            amountIn={amountIn.toString()}
-            setAmountIn={setAmountInFormValue}
+            amountIn={amountInAsDecimal.toString()}
+            setAmountIn={(v) => setAmountInFormValue(v, true)}
             useMargin={useMargin}
           />
         )}
@@ -344,25 +422,38 @@ const SwapForm = () => {
           loadingSwapDetails={loadingSwapDetails}
           useMargin={useMargin}
           setShowConfirm={setShowConfirm}
-          amountIn={amountIn}
+          amountIn={amountInAsDecimal}
           inputSymbol={inputBank?.name}
-          amountOut={selectedRoute ? outAmount : undefined}
+          amountOut={selectedRoute ? amountOutAsDecimal.toNumber() : undefined}
         />
-        {group ? (
+        {group && inputBank ? (
           <div className="pt-4">
-            <TokenVaultWarnings
-              bank={
-                inputBank || group.banksMapByName.get(INPUT_TOKEN_DEFAULT)![0]
-              }
-            />
+            <TokenVaultWarnings bank={inputBank} />
           </div>
         ) : null}
-      </div>
-      <div
-        id="swap-step-four"
-        className={`border-t border-th-bkg-3 px-6 py-4 transition-all`}
-      >
-        <HealthImpact maintProjectedHealth={maintProjectedHealth} />
+        <div className="space-y-2">
+          <div id="swap-step-four">
+            <HealthImpact maintProjectedHealth={maintProjectedHealth} />
+          </div>
+          <div className="flex justify-between">
+            <Tooltip content={t('trade:tooltip-slippage')} delay={250}>
+              <p className="tooltip-underline text-sm text-th-fgd-3">
+                Est. {t('swap:slippage')}
+              </p>
+            </Tooltip>
+            <p className="text-right font-mono text-sm text-th-fgd-3">
+              {selectedRoute?.priceImpactPct
+                ? selectedRoute?.priceImpactPct * 100 < 0.1
+                  ? '<0.1%'
+                  : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
+                : '0.00%'}
+            </p>
+          </div>
+          <BorrowInfo
+            amount={parseFloat(amountInFormValue)}
+            useMargin={useMargin}
+          />
+        </div>
       </div>
     </ContentBox>
   )
@@ -382,7 +473,7 @@ const SwapFormSubmitButton = ({
   amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
-  setShowConfirm: (x: any) => any
+  setShowConfirm: (x: boolean) => void
   useMargin: boolean
 }) => {
   const { t } = useTranslation('common')
@@ -431,94 +522,5 @@ const SwapFormSubmitButton = ({
         </div>
       )}
     </Button>
-  )
-}
-
-const MaxSwapAmount = ({
-  setAmountIn,
-  useMargin,
-}: {
-  setAmountIn: (x: string) => void
-  useMargin: boolean
-}) => {
-  const { t } = useTranslation('common')
-  const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
-  const {
-    amount: tokenMax,
-    amountWithBorrow,
-    decimals,
-  } = useTokenMax(useMargin)
-
-  if (mangoAccountLoading) return null
-
-  return (
-    <div className="flex flex-wrap justify-end pl-6 text-xs">
-      <MaxAmountButton
-        className="mb-0.5"
-        label="Bal"
-        onClick={() => setAmountIn(tokenMax.toFixed(decimals))}
-        value={tokenMax.toFixed()}
-      />
-      {useMargin ? (
-        <MaxAmountButton
-          className="mb-0.5 ml-2"
-          label={t('max')}
-          onClick={() => setAmountIn(amountWithBorrow.toFixed(decimals))}
-          value={amountWithBorrow.toFixed()}
-        />
-      ) : null}
-    </div>
-  )
-}
-
-const PercentageSelectButtons = ({
-  amountIn,
-  setAmountIn,
-  useMargin,
-}: {
-  amountIn: string
-  setAmountIn: (x: string) => any
-  useMargin: boolean
-}) => {
-  const [sizePercentage, setSizePercentage] = useState('')
-  const {
-    amount: tokenMax,
-    amountWithBorrow,
-    decimals,
-  } = useTokenMax(useMargin)
-
-  const maxAmount = useMemo(() => {
-    if (!tokenMax && !amountWithBorrow) return new Decimal(0)
-    return useMargin ? amountWithBorrow : tokenMax
-  }, [tokenMax, amountWithBorrow, useMargin])
-
-  useEffect(() => {
-    if (maxAmount.gt(0) && amountIn && maxAmount.eq(amountIn)) {
-      setSizePercentage('100')
-    }
-  }, [amountIn, maxAmount])
-
-  const handleSizePercentage = (percentage: string) => {
-    setSizePercentage(percentage)
-    if (maxAmount.gt(0)) {
-      let amount = maxAmount.mul(percentage).div(100)
-      if (percentage !== '100') {
-        amount = floorToDecimal(amount, decimals)
-      }
-      setAmountIn(amount.toFixed())
-    } else {
-      setAmountIn('0')
-    }
-  }
-
-  return (
-    <div className="col-span-2 mt-2">
-      <ButtonGroup
-        activeValue={sizePercentage}
-        onChange={(p) => handleSizePercentage(p)}
-        values={['10', '25', '50', '75', '100']}
-        unit="%"
-      />
-    </div>
   )
 }

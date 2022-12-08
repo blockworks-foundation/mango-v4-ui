@@ -93,7 +93,12 @@ const EMPTY_COINGECKO_PRICES = {
   outputCoingeckoPrice: 0,
 }
 
-const JupiterRouteInfo = ({
+const successSound = new Howl({
+  src: ['/sounds/swap-success.mp3'],
+  volume: 0.5,
+})
+
+const SwapReviewRouteInfo = ({
   amountIn,
   onClose,
   routes,
@@ -109,10 +114,6 @@ const JupiterRouteInfo = ({
   const { mangoTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
-  const successSound = new Howl({
-    src: ['/sounds/swap-success.mp3'],
-    volume: 0.5,
-  })
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
@@ -362,7 +363,7 @@ const JupiterRouteInfo = ({
               <div className="flex justify-between">
                 <p className="text-sm text-th-fgd-3">{t('borrow-amount')}</p>
                 <p className="text-right font-mono text-sm text-th-fgd-1">
-                  ~ {formatFixedDecimals(borrowAmount)}{' '}
+                  ~{formatFixedDecimals(borrowAmount)}{' '}
                   <span className="font-body tracking-wide">
                     {inputTokenInfo?.symbol}
                   </span>
@@ -371,7 +372,7 @@ const JupiterRouteInfo = ({
               <div className="flex justify-between">
                 <p className="text-sm text-th-fgd-3">Borrow Fee</p>
                 <p className="text-right font-mono text-sm text-th-fgd-1">
-                  ~{' '}
+                  ~
                   {formatFixedDecimals(
                     amountIn
                       .mul(inputBank!.loanOriginationFeeRate.toFixed())
@@ -388,7 +389,7 @@ const JupiterRouteInfo = ({
             <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
             <p className="text-right font-mono text-sm text-th-fgd-1">
               {selectedRoute?.priceImpactPct * 100 < 0.1
-                ? '< 0.1%'
+                ? '<0.1%'
                 : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
             </p>
           </div>
@@ -570,4 +571,4 @@ const JupiterRouteInfo = ({
   ) : null
 }
 
-export default React.memo(JupiterRouteInfo)
+export default React.memo(SwapReviewRouteInfo)

@@ -37,7 +37,6 @@ import { Orderbook, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
-import { token } from '@project-serum/anchor/dist/cjs/utils'
 
 const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
 
@@ -232,6 +231,9 @@ export type MangoStore = {
     margin: boolean
     slippage: number
     success: boolean
+    swapMode: 'ExactIn' | 'ExactOut'
+    amountIn: string
+    amountOut: string
   }
   set: (x: (x: MangoStore) => void) => void
   tokenStats: {
@@ -342,6 +344,18 @@ const mangoStore = create<MangoStore>()(
         },
         uiLocked: true,
       },
+      swap: {
+        inputBank: undefined,
+        outputBank: undefined,
+        inputTokenInfo: undefined,
+        outputTokenInfo: undefined,
+        margin: true,
+        slippage: 0.5,
+        success: false,
+        swapMode: 'ExactIn',
+        amountIn: '',
+        amountOut: '',
+      },
       tokenStats: {
         loading: false,
         data: [],
@@ -354,15 +368,6 @@ const mangoStore = create<MangoStore>()(
         tradeType: 'Limit',
         postOnly: false,
         ioc: false,
-      },
-      swap: {
-        inputBank: undefined,
-        outputBank: undefined,
-        inputTokenInfo: undefined,
-        outputTokenInfo: undefined,
-        margin: true,
-        slippage: 0.5,
-        success: false,
       },
       wallet: {
         tokens: [],

@@ -111,11 +111,13 @@ const TopBar = () => {
           <ConnectWalletButton />
         ) : (
           <button
-            className="relative flex h-16 items-center justify-center rounded-none bg-th-bkg-2 bg-gradient-to-bl px-6 text-base font-bold text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100"
+            className="relative h-16 rounded-none bg-th-bkg-2 bg-gradient-to-bl px-6 text-base font-bold text-th-fgd-1 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100"
             onClick={handleShowSetup}
           >
-            <WalletIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-            {t('connect')}
+            <div className="relative z-10 flex items-center justify-center">
+              <WalletIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+              {t('connect')}
+            </div>
           </button>
         )}
       </div>

@@ -38,20 +38,20 @@ const MarketSelectDropdown = () => {
           className="relative flex flex-col overflow-visible"
           id="trade-step-one"
         >
-          <Popover.Button className="default-transition flex w-full items-center justify-between hover:text-th-active">
-            <>
+          <Popover.Button className="default-transition flex h-12 items-center justify-between hover:text-th-active">
+            <div className="flex items-center">
               {selectedMarket ? <MarketLogos market={selectedMarket} /> : null}
-            </>
-            <div className="text-xl font-bold text-th-fgd-1 md:text-base">
-              {selectedMarket?.name || DEFAULT_MARKET_NAME}
+              <div className="whitespace-nowrap text-xl font-bold text-th-fgd-1 md:text-base">
+                {selectedMarket?.name || DEFAULT_MARKET_NAME}
+              </div>
             </div>
             <ChevronDownIcon
               className={`${
                 open ? 'rotate-180' : 'rotate-360'
-              } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+              } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute -left-5 top-[46px] z-50 mr-4 w-screen bg-th-bkg-2 pb-2 pt-4 sm:w-72 md:top-[37px]">
+          <Popover.Panel className="absolute -left-5 top-12 z-50 mr-4 w-screen bg-th-bkg-2 pb-2 pt-4 md:w-72">
             <TabUnderline
               activeValue={activeTab}
               onChange={(v) => setActiveTab(v)}
