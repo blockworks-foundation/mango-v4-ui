@@ -35,6 +35,7 @@ import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
+import Tooltip from '@components/shared/Tooltip'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -218,16 +219,15 @@ const SwapReviewRouteInfo = ({
     }
   }
 
-  const borrowAmount = useMemo(() => {
+  const [balance, borrowAmount] = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const inputBank = mangoStore.getState().swap.inputBank
-    if (!mangoAccount || !inputBank) return 0
-
-    const remainingBalance =
-      mangoAccount.getTokenDepositsUi(inputBank) - amountIn.toNumber()
-    const x = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
-    console.log('borrowAmount', x)
-    return x
+    if (!mangoAccount || !inputBank) return [0, 0]
+    const balance = mangoAccount.getTokenDepositsUi(inputBank)
+    const remainingBalance = balance - amountIn.toNumber()
+    const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+    console.log('borrowAmount', borrowAmount)
+    return [balance, borrowAmount]
   }, [amountIn])
 
   const coinGeckoPriceDifference = useMemo(() => {
@@ -361,7 +361,24 @@ const SwapReviewRouteInfo = ({
           {borrowAmount ? (
             <>
               <div className="flex justify-between">
-                <p className="text-sm text-th-fgd-3">{t('borrow-amount')}</p>
+                <Tooltip
+                  content={
+                    balance
+                      ? t('swap:tooltip-borrow-balance', {
+                          balance: balance,
+                          borrowAmount: borrowAmount,
+                          token: inputTokenInfo?.symbol,
+                        })
+                      : t('swap:tooltip-borrow-no-balance', {
+                          borrowAmount: borrowAmount,
+                          token: inputTokenInfo?.symbol,
+                        })
+                  }
+                >
+                  <p className="tooltip-underline text-sm text-th-fgd-3">
+                    {t('borrow-amount')}
+                  </p>
+                </Tooltip>
                 <p className="text-right font-mono text-sm text-th-fgd-1">
                   ~{formatFixedDecimals(borrowAmount)}{' '}
                   <span className="font-body tracking-wide">
@@ -370,7 +387,7 @@ const SwapReviewRouteInfo = ({
                 </p>
               </div>
               <div className="flex justify-between">
-                <p className="text-sm text-th-fgd-3">Borrow Fee</p>
+                <p className="text-sm text-th-fgd-3">{t('borrow-fee')}</p>
                 <p className="text-right font-mono text-sm text-th-fgd-1">
                   ~
                   {formatFixedDecimals(
@@ -381,6 +398,19 @@ const SwapReviewRouteInfo = ({
                   <span className="font-body tracking-wide">
                     {inputBank!.name}
                   </span>
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <Tooltip content={t('tooltip-borrow-rate')}>
+                  <p className="tooltip-underline text-sm text-th-fgd-3">
+                    {t('borrow-rate')}
+                  </p>
+                </Tooltip>
+                <p className="text-right font-mono text-sm text-th-down">
+                  {formatDecimal(inputBank!.getBorrowRateUi(), 2, {
+                    fixed: true,
+                  })}
+                  %
                 </p>
               </div>
             </>

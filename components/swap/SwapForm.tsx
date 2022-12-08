@@ -441,12 +441,12 @@ const SwapForm = () => {
                 Est. {t('swap:slippage')}
               </p>
             </Tooltip>
-            <p className="text-right font-mono text-sm text-th-fgd-3">
+            <p className="text-right font-mono text-sm text-th-fgd-2">
               {selectedRoute?.priceImpactPct
                 ? selectedRoute?.priceImpactPct * 100 < 0.1
                   ? '<0.1%'
                   : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                : '0.00%'}
+                : '–'}
             </p>
           </div>
         </div>

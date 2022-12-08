@@ -31,23 +31,24 @@ const HealthImpact = ({
           {t('health-impact')}
         </p>
       </Tooltip>
-      <div className="flex items-center space-x-1.5 font-mono">
-        <p className={`text-th-fgd-2 ${small ? 'text-xs' : 'text-sm'}`}>
-          {currentMaintHealth}%
-        </p>
-        <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
-        <p
-          className={`${
-            maintProjectedHealth < 50 && maintProjectedHealth > 15
-              ? 'text-th-warning'
-              : maintProjectedHealth <= 15
-              ? 'text-th-down'
-              : 'text-th-up'
-          } ${small ? 'text-xs' : 'text-sm'}`}
-        >
-          {maintProjectedHealth}%
-        </p>
-        {/* <span
+      {currentMaintHealth ? (
+        <div className="flex items-center space-x-1.5 font-mono">
+          <p className={`text-th-fgd-2 ${small ? 'text-xs' : 'text-sm'}`}>
+            {currentMaintHealth}%
+          </p>
+          <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
+          <p
+            className={`${
+              maintProjectedHealth < 50 && maintProjectedHealth > 15
+                ? 'text-th-warning'
+                : maintProjectedHealth <= 15
+                ? 'text-th-down'
+                : 'text-th-up'
+            } ${small ? 'text-xs' : 'text-sm'}`}
+          >
+            {maintProjectedHealth}%
+          </p>
+          {/* <span
           className={`text-xs ${
             maintProjectedHealth >= currentMaintHealth!
               ? 'text-th-up'
@@ -57,7 +58,10 @@ const HealthImpact = ({
           ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
           {maintProjectedHealth - currentMaintHealth!}%)
         </span> */}
-      </div>
+        </div>
+      ) : (
+        <span>–</span>
+      )}
     </div>
   )
 }
