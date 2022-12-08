@@ -93,6 +93,11 @@ const EMPTY_COINGECKO_PRICES = {
   outputCoingeckoPrice: 0,
 }
 
+const successSound = new Howl({
+  src: ['/sounds/swap-success.mp3'],
+  volume: 0.5,
+})
+
 const SwapReviewRouteInfo = ({
   amountIn,
   onClose,
@@ -109,10 +114,6 @@ const SwapReviewRouteInfo = ({
   const { mangoTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
-  const successSound = new Howl({
-    src: ['/sounds/swap-success.mp3'],
-    volume: 0.5,
-  })
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS

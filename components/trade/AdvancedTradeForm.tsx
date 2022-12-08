@@ -363,7 +363,7 @@ const AdvancedTradeForm = () => {
             <div className="mb-2 mt-4 flex items-center justify-between">
               <p className="text-xs text-th-fgd-3">{t('trade:limit-price')}</p>
             </div>
-            <div className="default-transition md:hover:border-input-border-hover flex items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 text-xs font-bold text-th-fgd-1 lg:text-base">
+            <div className="default-transition flex items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
               {quoteLogoURI ? (
                 <Image
                   className="rounded-full"

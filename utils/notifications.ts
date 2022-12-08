@@ -12,11 +12,14 @@ export type Notification = {
   id: number
 }
 
-interface ReducerItems {
-  [key: string]: {
-    active: boolean
-  }
-}
+const successSound = new Howl({
+  src: ['/sounds/transaction-success.mp3'],
+  volume: 0.5,
+})
+const failSound = new Howl({
+  src: ['/sounds/transaction-fail.mp3'],
+  volume: 0.5,
+})
 
 export function notify(newNotification: {
   type?: 'success' | 'info' | 'error' | 'confirm'
@@ -29,14 +32,6 @@ export function notify(newNotification: {
   const notifications = mangoStore.getState().notifications
   const lastId = mangoStore.getState().notificationIdCounter
   const newId = lastId + 1
-  const successSound = new Howl({
-    src: ['/sounds/transaction-success.mp3'],
-    volume: 0.5,
-  })
-  const failSound = new Howl({
-    src: ['/sounds/transaction-fail.mp3'],
-    volume: 0.5,
-  })
   const savedSoundSettings = localStorage.getItem(SOUND_SETTINGS_KEY)
   const soundSettings = savedSoundSettings
     ? JSON.parse(savedSoundSettings)
