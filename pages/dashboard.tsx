@@ -73,8 +73,20 @@ const Dashboard: NextPage = () => {
                       </div>
                       <VaultData bank={bank} />
                       <div>
+                        <span>Loan Fee Rate: </span>
+                        <span>{bank.loanFeeRate.toNumber()}</span>
+                      </div>
+                      <div>
+                        <span>Loan origination fee rate: </span>
+                        <span>{bank.loanOriginationFeeRate.toNumber()}</span>
+                      </div>
+                      <div>
                         <span>Collected fees native: </span>
                         <span>{bank.collectedFeesNative.toString()}</span>
+                      </div>
+                      <div>
+                        <span>Liquidation fee: </span>
+                        <span>{bank.liquidationFee.toNumber()}</span>
                       </div>
                       <div>
                         <span>Dust: </span>
@@ -172,7 +184,9 @@ const Dashboard: NextPage = () => {
                         </span>
                       </div>
                       <div>
-                        <span>Net borrows in window: </span>
+                        <span>
+                          netBorrowsInWindow / netBorrowLimitPerWindowQuote:{' '}
+                        </span>
                         <span>
                           {`${bank.netBorrowsInWindow.toNumber()} / ${bank.netBorrowLimitPerWindowQuote.toNumber()}`}
                         </span>
