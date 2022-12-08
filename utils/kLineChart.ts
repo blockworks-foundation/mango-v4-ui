@@ -58,4 +58,5 @@ export const subTechnicalIndicatorTypes = [
   'EMV',
 ]
 export const DEFAULT_SUB_INDICATOR = 'VOL'
+export const DEFAULT_MAIN_INDICATORS = ['EMA']
 export const MAIN_INDICATOR_CLASS = 'candle_pane'

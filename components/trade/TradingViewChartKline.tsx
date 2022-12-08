@@ -10,6 +10,7 @@ import Switch from '@components/forms/Switch'
 import {
   BASE_CHART_QUERY,
   CHART_QUERY,
+  DEFAULT_MAIN_INDICATORS,
   DEFAULT_SUB_INDICATOR,
   HISTORY,
   mainTechnicalIndicatorTypes,
@@ -21,6 +22,8 @@ import {
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
 import Loading from '@components/shared/Loading'
 import clsx from 'clsx'
+
+const UPDATE_INTERVAL = 10000
 
 type Props = {
   setIsFullView?: Dispatch<SetStateAction<boolean>>
@@ -78,6 +81,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     }
   }
 
+  //update data every 10 secs
   function updateData(
     kLineChart: klinecharts.Chart,
     baseQuery: BASE_CHART_QUERY
@@ -90,12 +94,12 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         const from = baseQuery.to - resolution.seconds
         const newData = (await fetchData(baseQuery!, from))[0]
         if (newData) {
-          newData.timestamp += 10000
+          newData.timestamp += UPDATE_INTERVAL
           kLineChart.updateData(newData)
           updateData(kLineChart, baseQuery)
         }
       }
-    }, 10000)
+    }, UPDATE_INTERVAL)
   }
   const fetchFreshData = async (daysToSubtractFromToday: number) => {
     const from =
@@ -108,6 +112,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     }
   }
 
+  //size change
   useEffect(() => {
     if (width !== prevWidth && chart) {
       //wait for event que to be empty
@@ -118,7 +123,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     }
   }, [width])
 
-  //when base query change we refetch fresh data
+  //when base query change we refetch with fresh data
   useEffect(() => {
     if (chart && baseChartQuery) {
       fetchFreshData(14)
@@ -139,6 +144,27 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       })
     }
   }, [selectedMarketName, resolution])
+
+  //init default technical indicators after init of chart
+  useEffect(() => {
+    if (chart !== null && previousChart === null) {
+      if (DEFAULT_SUB_INDICATOR) {
+        const subId = chart.createTechnicalIndicator(
+          DEFAULT_SUB_INDICATOR,
+          true
+        )
+        setSubTechnicalIndicators({ [DEFAULT_SUB_INDICATOR]: subId })
+      }
+      if (DEFAULT_MAIN_INDICATORS?.length) {
+        for (const type of DEFAULT_MAIN_INDICATORS) {
+          chart?.createTechnicalIndicator(type, true, {
+            id: MAIN_INDICATOR_CLASS,
+          })
+        }
+        setMainTechnicalIndicators(DEFAULT_MAIN_INDICATORS)
+      }
+    }
+  }, [chart !== null])
 
   //init chart without data
   useEffect(() => {
@@ -189,12 +215,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       dispose('update-k-line')
     }
   }, [])
-  useEffect(() => {
-    if (chart !== null && previousChart === null && DEFAULT_SUB_INDICATOR) {
-      const subId = chart.createTechnicalIndicator(DEFAULT_SUB_INDICATOR, true)
-      setSubTechnicalIndicators({ [DEFAULT_SUB_INDICATOR]: subId })
-    }
-  }, [chart !== null])
+
   return (
     <div
       className={clsx(
