@@ -1,4 +1,4 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { BookSide, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 import { useViewport } from '../../hooks/useViewport'
@@ -13,6 +13,8 @@ import dynamic from 'next/dynamic'
 import { useCoingecko } from 'hooks/useCoingecko'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
+import { useEffect } from 'react'
+import useMangoGroup from 'hooks/useMangoGroup'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -21,13 +23,24 @@ const SimpleAreaChart = dynamic(
 const PerpMarketsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
+  const actions = mangoStore((s) => s.actions)
+  const perpStats = mangoStore((s) => s.perpStats.data)
+  const { group } = useMangoGroup()
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  // const bids = mangoStore((s) => s.selectedMarket.bidsAccount)
-  // const asks = mangoStore((s) => s.selectedMarket.asksAccount)
+  const bids = mangoStore((s) => s.selectedMarket.bidsAccount)
+  const asks = mangoStore((s) => s.selectedMarket.asksAccount)
   const rate = usePerpFundingRate()
+
+  useEffect(() => {
+    if (group) {
+      actions.fetchPerpStats()
+    }
+  }, [group])
+
+  console.log(perpStats)
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -64,10 +77,11 @@ const PerpMarketsTable = () => {
 
               let fundingRate
               if (
-                rate.isSuccess
-                // && bids instanceof BookSide &&
-                // asks instanceof BookSide
+                rate.isSuccess &&
+                bids instanceof BookSide &&
+                asks instanceof BookSide
               ) {
+                console.log(rate)
                 const marketRate = rate.data.find(
                   (r) => r.market_index === market.perpMarketIndex
                 )
