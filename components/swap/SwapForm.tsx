@@ -429,7 +429,7 @@ const SwapForm = () => {
             <TokenVaultWarnings bank={inputBank} />
           </div>
         ) : null}
-        <div className="space-y-2 pt-2">
+        <div className="space-y-2">
           <div id="swap-step-four">
             <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           </div>
@@ -480,7 +480,7 @@ const SwapFormSubmitButton = ({
   return (
     <Button
       onClick={() => setShowConfirm(true)}
-      className="mt-6 flex w-full items-center justify-center text-base"
+      className="mt-7 flex w-full items-center justify-center text-base"
       disabled={disabled}
       size="large"
     >
