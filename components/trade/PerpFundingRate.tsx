@@ -7,7 +7,7 @@ import { useMemo } from 'react'
 
 const fetchFundingRate = async (groupPk: string | undefined) => {
   const res = await fetch(
-    `https://mango-transaction-log.herokuapp.com/v4/one-hour-funding-apr?mango-group=${groupPk}`
+    `https://mango-transaction-log.herokuapp.com/v4/one-hour-funding-rate?mango-group=${groupPk}`
   )
   return await res.json()
 }
@@ -37,10 +37,10 @@ const PerpFundingRate = () => {
 
   const fundingRate = useMemo(() => {
     if (rate.isSuccess && selectedMarket instanceof PerpMarket) {
-      const marketRate = rate.data.find(
+      const marketRate = rate?.data.find(
         (r) => r.market_index === selectedMarket.perpMarketIndex
       )
-      return marketRate?.funding_apr
+      return marketRate?.funding_rate_hourly
     }
   }, [rate])
 
@@ -50,7 +50,7 @@ const PerpFundingRate = () => {
         {selectedMarket instanceof PerpMarket &&
         bids instanceof BookSide &&
         asks instanceof BookSide
-          ? fundingRate
+          ? fundingRate.toFixed(4)
           : '-'}
         %
       </div>

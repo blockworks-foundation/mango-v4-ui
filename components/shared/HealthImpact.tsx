@@ -41,13 +41,13 @@ const HealthImpact = ({
             maintProjectedHealth < 50 && maintProjectedHealth > 15
               ? 'text-th-warning'
               : maintProjectedHealth <= 15
-              ? 'text-th-red'
-              : 'text-th-green'
+              ? 'text-th-down'
+              : 'text-th-up'
           } ${small ? 'text-xs' : 'text-sm'}`}
         >
           {maintProjectedHealth}%
         </p>
-        <span
+        {/* <span
           className={`text-xs ${
             maintProjectedHealth >= currentMaintHealth!
               ? 'text-th-up'
@@ -56,7 +56,7 @@ const HealthImpact = ({
         >
           ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
           {maintProjectedHealth - currentMaintHealth!}%)
-        </span>
+        </span> */}
       </div>
     </div>
   )

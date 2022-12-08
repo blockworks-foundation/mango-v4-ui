@@ -310,7 +310,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
       {balance ? (
         isBaseOrQuote ? (
           <LinkButton
-            className="font-normal"
+            className="font-normal underline-offset-4"
             onClick={() => handleClick(balance, isBaseOrQuote)}
           >
             {formatDecimal(balance, bank.mintDecimals)}
