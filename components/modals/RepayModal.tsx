@@ -84,7 +84,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const setMax = useCallback(() => {
     setInputAmount(borrowAmount.toFixed(bank?.mintDecimals))
     setSizePercentage('100')
-  }, [bank, borrowAmount, selectedToken])
+  }, [bank, borrowAmount])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -97,7 +97,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
       setInputAmount(amount.toFixed(bank?.mintDecimals))
     },
-    [bank, borrowAmount, selectedToken]
+    [bank, borrowAmount]
   )
 
   const handleSelectToken = (token: string) => {
@@ -144,7 +144,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
       onClose()
     },
-    [bank, wallet]
+    [bank, wallet, onClose]
   )
 
   const banks = useMemo(() => {
@@ -164,7 +164,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
           }).filter((b) => b.borrowAmount > 0)
         : []
     return banks
-  }, [group?.banksMapByName, walletTokens, mangoAccount])
+  }, [group?.banksMapByName, mangoAccount])
 
   useEffect(() => {
     if (!token && banks.length) {
