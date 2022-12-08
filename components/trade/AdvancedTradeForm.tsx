@@ -400,13 +400,7 @@ const AdvancedTradeForm = () => {
         <div className="flex flex-col">
           <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-xs font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
             {baseLogoURI ? (
-              <Image
-                className="rounded-full"
-                alt=""
-                width="24"
-                height="24"
-                src={baseLogoURI}
-              />
+              <Image alt="" width="24" height="24" src={baseLogoURI} />
             ) : (
               <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
             )}
@@ -429,13 +423,7 @@ const AdvancedTradeForm = () => {
           </div>
           <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
             {quoteLogoURI ? (
-              <Image
-                className="rounded-full"
-                alt=""
-                width="24"
-                height="24"
-                src={quoteLogoURI}
-              />
+              <Image alt="" width="24" height="24" src={quoteLogoURI} />
             ) : (
               <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
             )}

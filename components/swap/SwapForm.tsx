@@ -318,7 +318,7 @@ const SwapForm = () => {
           </div>
         </div>
         <div className="mb-2 flex items-end justify-between">
-          <p className="text-base text-th-fgd-2">{t('swap:pay')}</p>
+          <p className="text-th-fgd-2 lg:text-base">{t('swap:pay')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
             setAmountIn={(v) => setAmountInFormValue(v, true)}
@@ -366,7 +366,7 @@ const SwapForm = () => {
             />
           </button>
         </div>
-        <p className="mb-2 text-base text-th-fgd-2">{t('swap:receive')}</p>
+        <p className="mb-2 text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
         <div id="swap-step-three" className="mb-3 grid grid-cols-2">
           <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
             <TokenSelect
