@@ -363,7 +363,7 @@ const SwapReviewRouteInfo = ({
               <div className="flex justify-between">
                 <p className="text-sm text-th-fgd-3">{t('borrow-amount')}</p>
                 <p className="text-right font-mono text-sm text-th-fgd-1">
-                  ~ {formatFixedDecimals(borrowAmount)}{' '}
+                  ~{formatFixedDecimals(borrowAmount)}{' '}
                   <span className="font-body tracking-wide">
                     {inputTokenInfo?.symbol}
                   </span>
@@ -372,7 +372,7 @@ const SwapReviewRouteInfo = ({
               <div className="flex justify-between">
                 <p className="text-sm text-th-fgd-3">Borrow Fee</p>
                 <p className="text-right font-mono text-sm text-th-fgd-1">
-                  ~{' '}
+                  ~
                   {formatFixedDecimals(
                     amountIn
                       .mul(inputBank!.loanOriginationFeeRate.toFixed())

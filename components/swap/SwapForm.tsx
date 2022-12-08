@@ -45,6 +45,8 @@ import SwapSlider from './SwapSlider'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
+import BorrowInfo from './BorrowInfo'
+import Tooltip from '@components/shared/Tooltip'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -54,7 +56,7 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
 }
 
 const SwapForm = () => {
-  const { t } = useTranslation(['common', 'swap'])
+  const { t } = useTranslation(['common', 'swap', 'trade'])
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
@@ -434,7 +436,11 @@ const SwapForm = () => {
             <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           </div>
           <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
+            <Tooltip content={t('trade:tooltip-slippage')} delay={250}>
+              <p className="tooltip-underline text-sm text-th-fgd-3">
+                Est. {t('swap:slippage')}
+              </p>
+            </Tooltip>
             <p className="text-right font-mono text-sm text-th-fgd-3">
               {selectedRoute?.priceImpactPct
                 ? selectedRoute?.priceImpactPct * 100 < 0.1
@@ -443,6 +449,10 @@ const SwapForm = () => {
                 : '0.00%'}
             </p>
           </div>
+          <BorrowInfo
+            amount={parseFloat(amountInFormValue)}
+            useMargin={useMargin}
+          />
         </div>
       </div>
     </ContentBox>
@@ -480,7 +490,7 @@ const SwapFormSubmitButton = ({
   return (
     <Button
       onClick={() => setShowConfirm(true)}
-      className="mt-7 flex w-full items-center justify-center text-base"
+      className="mt-6 flex w-full items-center justify-center text-base"
       disabled={disabled}
       size="large"
     >

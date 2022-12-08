@@ -24,7 +24,7 @@ const HealthImpact = ({
 
   return (
     <div className="flex flex-wrap items-start justify-between">
-      <Tooltip content={t('health-tooltip')}>
+      <Tooltip content={t('health-tooltip')} delay={250}>
         <p
           className={`tooltip-underline mr-4 ${small ? 'text-xs' : 'text-sm'}`}
         >
