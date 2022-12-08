@@ -45,7 +45,6 @@ import SwapSlider from './SwapSlider'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
-import BorrowInfo from './BorrowInfo'
 import Tooltip from '@components/shared/Tooltip'
 
 const MAX_DIGITS = 11
@@ -450,10 +449,6 @@ const SwapForm = () => {
                 : '0.00%'}
             </p>
           </div>
-          <BorrowInfo
-            amount={parseFloat(amountInFormValue)}
-            useMargin={useMargin}
-          />
         </div>
       </div>
     </ContentBox>
