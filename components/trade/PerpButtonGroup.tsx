@@ -11,6 +11,7 @@ const PerpButtonGroup = () => {
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
   const [sizePercentage, setSizePercentage] = useState('')
+  const tradeFormPrice = mangoStore((s) => s.tradeForm.price)
 
   const leverageMax = useMemo(() => {
     const group = mangoStore.getState().group
@@ -21,12 +22,14 @@ const PerpButtonGroup = () => {
       if (side === 'buy') {
         return mangoAccount.getMaxQuoteForPerpBidUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
+          parseFloat(tradeFormPrice)
         )
       } else {
         return mangoAccount.getMaxBaseForPerpAskUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
+          parseFloat(tradeFormPrice)
         )
       }
     } catch (e) {
@@ -37,7 +40,7 @@ const PerpButtonGroup = () => {
       })
       return 0
     }
-  }, [side, selectedMarket, mangoAccount])
+  }, [side, selectedMarket, mangoAccount, tradeFormPrice])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -67,7 +70,7 @@ const PerpButtonGroup = () => {
         }
       })
     },
-    [side, selectedMarket, mangoAccount]
+    [leverageMax]
   )
 
   return (

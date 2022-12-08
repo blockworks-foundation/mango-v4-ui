@@ -84,7 +84,7 @@ const PerpPositions = () => {
 
               if (!basePosition) return null
 
-              const unsettledPnl = position.getEquityUi(market)
+              const unsettledPnl = position.getEquityUi(group, market)
 
               return (
                 <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
@@ -124,7 +124,7 @@ const PerpPositions = () => {
                     <div>
                       $
                       {numberFormat.format(
-                        position.getEntryPrice(market).toNumber()
+                        position.getAverageEntryPriceUi(market)
                       )}
                     </div>
                   </Td>

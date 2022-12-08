@@ -28,12 +28,14 @@ const PerpSlider = () => {
       if (side === 'buy') {
         return mangoAccount.getMaxQuoteForPerpBidUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
+          parseFloat(tradeForm.price)
         )
       } else {
         return mangoAccount.getMaxBaseForPerpAskUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
+          parseFloat(tradeForm.price)
         )
       }
     } catch (e) {

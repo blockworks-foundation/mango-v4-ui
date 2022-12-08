@@ -38,7 +38,7 @@ import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 
-const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
+const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
 export const connection = new web3.Connection(
   'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
@@ -53,8 +53,9 @@ const DEFAULT_CLIENT = MangoClient.connect(
   DEFAULT_PROVIDER,
   CLUSTER,
   MANGO_V4_ID[CLUSTER],
-  null,
-  'get-program-accounts'
+  {
+    idsSource: 'get-program-accounts',
+  }
 )
 
 export interface TotalInterestDataItem {
@@ -813,6 +814,7 @@ const mangoStore = create<MangoStore>()(
               CLUSTER,
               MANGO_V4_ID[CLUSTER],
               {
+                idsSource: 'get-program-accounts',
                 prioritizationFee: 2,
                 postSendTxCallback: ({ txid }: { txid: string }) => {
                   notify({
@@ -822,8 +824,7 @@ const mangoStore = create<MangoStore>()(
                     txid: txid,
                   })
                 },
-              },
-              'get-program-accounts'
+              }
             )
             set((s) => {
               s.client = client

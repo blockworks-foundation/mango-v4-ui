@@ -321,12 +321,14 @@ const AdvancedTradeForm = () => {
           ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
               group,
               selectedMarket.perpMarketIndex,
-              parseFloat(tradeForm.baseSize)
+              parseFloat(tradeForm.baseSize),
+              parseFloat(tradeForm.price)
             )
           : mangoAccount.simHealthRatioWithPerpBidUiChanges(
               group,
               selectedMarket.perpMarketIndex,
-              parseFloat(tradeForm.baseSize)
+              parseFloat(tradeForm.baseSize),
+              parseFloat(tradeForm.price)
             )
     }
 

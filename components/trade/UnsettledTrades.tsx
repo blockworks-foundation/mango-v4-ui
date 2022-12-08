@@ -76,7 +76,7 @@ const UnsettledTrades = ({
     try {
       const mangoAccounts = await client.getAllMangoAccounts(group)
       const perpPosition = mangoAccount.getPerpPosition(market.perpMarketIndex)
-      const mangoAccountPnl = perpPosition?.getEquityUi(market)
+      const mangoAccountPnl = perpPosition?.getEquityUi(group, market)
 
       if (mangoAccountPnl === undefined)
         throw new Error('Unable to get account P&L')
@@ -86,8 +86,9 @@ const UnsettledTrades = ({
         .map((m) => ({
           mangoAccount: m,
           pnl:
-            m?.getPerpPosition(market.perpMarketIndex)?.getEquityUi(market) ||
-            0,
+            m
+              ?.getPerpPosition(market.perpMarketIndex)
+              ?.getEquityUi(group, market) || 0,
         }))
         .sort((a, b) => sign * (a.pnl - b.pnl))
       console.log(
@@ -211,7 +212,7 @@ const UnsettledTrades = ({
                     <span></span>
                   </Td>
                   <Td className="text-right font-mono">
-                    {position.getEquityUi(market)}
+                    {position.getEquityUi(group, market)}
                   </Td>
                   <Td>
                     <div className="flex justify-end">

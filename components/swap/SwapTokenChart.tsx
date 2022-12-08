@@ -153,9 +153,6 @@ const SwapTokenChart = () => {
           <SheenLoader className="mt-2 w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />
           </SheenLoader>
-          <SheenLoader className="mt-4 w-full rounded-md">
-            <div className="h-[308px] bg-th-bkg-2" />
-          </SheenLoader>
         </>
       ) : chartData?.length && baseTokenId && quoteTokenId ? (
         <div className="relative">
