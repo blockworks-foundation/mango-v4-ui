@@ -138,9 +138,9 @@ const PerpPositions = () => {
                   <Td className="text-right">
                     <div>
                       $
-                      {numberFormat.format(
+                      {/* {numberFormat.format(
                         position.perpSpotTransfers.toNumber()
-                      )}
+                      )} */}
                     </div>
                   </Td>
                 </TrBody>
