@@ -101,12 +101,18 @@ const SwapForm = () => {
   const setAmountInFormValue = useCallback((amountIn: string) => {
     set((s) => {
       s.swap.amountIn = amountIn
+      if (!parseFloat(amountIn)) {
+        s.swap.amountOut = ''
+      }
     })
   }, [])
 
   const setAmountOutFormValue = useCallback((amountOut: string) => {
     set((s) => {
       s.swap.amountOut = amountOut
+      if (!parseFloat(amountOut)) {
+        s.swap.amountIn = ''
+      }
     })
   }, [])
 
