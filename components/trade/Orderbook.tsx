@@ -611,11 +611,12 @@ const OrderbookRow = ({
     })
   }, [formattedPrice])
 
-  // const handleSizeClick = () => {
-  //   set((state) => {
-  //     state.tradeForm.baseSize = Number(formattedSize)
-  //   })
-  // }
+  const handleSizeClick = useCallback(() => {
+    const set = mangoStore.getState().set
+    set((state) => {
+      state.tradeForm.baseSize = formattedSize.toString()
+    })
+  }, [formattedSize])
 
   const groupingDecimalCount = useMemo(
     () => getDecimalCount(grouping),
@@ -632,11 +633,13 @@ const OrderbookRow = ({
     <div
       className={`relative flex h-[24px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
       ref={element}
-      onClick={handlePriceClick}
     >
       <>
-        <div className="flex w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">
-          <div className="flex w-full justify-start pl-2">
+        <div className="flex h-full w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">
+          <div
+            className="flex h-full w-full items-center justify-start pl-2 hover:underline"
+            onClick={handleSizeClick}
+          >
             <div
               style={{ fontFeatureSettings: 'zero 1' }}
               className={`z-10 w-full text-right font-mono text-xs ${
@@ -647,8 +650,13 @@ const OrderbookRow = ({
               {formattedSize.toFixed(minOrderSizeDecimals)}
             </div>
           </div>
-          <div className={`z-10 w-full pr-4 text-right font-mono text-xs`}>
-            {formattedPrice.toFixed(groupingDecimalCount)}
+          <div
+            className={`z-10 flex h-full w-full items-center pr-4 hover:underline`}
+            onClick={handlePriceClick}
+          >
+            <div className="w-full text-right font-mono text-xs">
+              {formattedPrice.toFixed(groupingDecimalCount)}
+            </div>
           </div>
         </div>
 
