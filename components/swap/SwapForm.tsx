@@ -55,6 +55,8 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
     : true
 }
 
+const set = mangoStore.getState().set
+
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
@@ -65,7 +67,6 @@ const SwapForm = () => {
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
 
-  const set = mangoStore.getState().set
   const {
     margin: useMargin,
     slippage,
@@ -152,7 +153,7 @@ const SwapForm = () => {
   useEffect(() => {
     setAmountInFormValue('')
     setAmountOutFormValue('')
-  }, [useMargin])
+  }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
   const handleAmountInChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
@@ -164,7 +165,7 @@ const SwapForm = () => {
       }
       setAmountInFormValue(e.value)
     },
-    [swapMode]
+    [swapMode, setAmountInFormValue]
   )
 
   const handleAmountOutChange = useCallback(
@@ -177,7 +178,7 @@ const SwapForm = () => {
       }
       setAmountOutFormValue(e.value)
     },
-    [swapMode]
+    [swapMode, setAmountOutFormValue]
   )
 
   const handleTokenInSelect = useCallback((mintAddress: string) => {
@@ -215,7 +216,7 @@ const SwapForm = () => {
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
     )
-  }, [set, amountOutAsDecimal, amountInAsDecimal])
+  }, [setAmountInFormValue, amountOutAsDecimal, amountInAsDecimal])
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
