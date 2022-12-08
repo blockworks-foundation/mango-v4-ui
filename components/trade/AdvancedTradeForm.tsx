@@ -363,7 +363,7 @@ const AdvancedTradeForm = () => {
             <div className="mb-2 mt-4 flex items-center justify-between">
               <p className="text-xs text-th-fgd-3">{t('trade:limit-price')}</p>
             </div>
-            <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+            <div className="default-transition md:hover:border-input-border-hover flex items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 text-xs font-bold text-th-fgd-1 lg:text-base">
               {quoteLogoURI ? (
                 <Image
                   className="rounded-full"
@@ -398,7 +398,7 @@ const AdvancedTradeForm = () => {
           <p className="text-xs text-th-fgd-3">{t('trade:amount')}</p>
         </div>
         <div className="flex flex-col">
-          <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+          <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-xs font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
             {baseLogoURI ? (
               <Image
                 className="rounded-full"
@@ -427,7 +427,7 @@ const AdvancedTradeForm = () => {
               {baseSymbol}
             </div>
           </div>
-          <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+          <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
             {quoteLogoURI ? (
               <Image
                 className="rounded-full"

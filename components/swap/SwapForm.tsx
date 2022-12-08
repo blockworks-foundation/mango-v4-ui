@@ -318,14 +318,14 @@ const SwapForm = () => {
           </div>
         </div>
         <div className="mb-2 flex items-end justify-between">
-          <p className="text-th-fgd-3">{t('swap:pay')}</p>
+          <p className="text-base text-th-fgd-2">{t('swap:pay')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
             setAmountIn={(v) => setAmountInFormValue(v, true)}
           />
         </div>
         <div className="mb-3 grid grid-cols-2" id="swap-step-two">
-          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
             <TokenSelect
               bank={
                 inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
@@ -343,7 +343,7 @@ const SwapForm = () => {
               decimalScale={inputBank?.mintDecimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-l-none rounded-r-lg border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+              className="w-full rounded-l-none rounded-r-lg border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -366,9 +366,9 @@ const SwapForm = () => {
             />
           </button>
         </div>
-        <p className="mb-2 text-th-fgd-3">{t('swap:receive')}</p>
+        <p className="mb-2 text-base text-th-fgd-2">{t('swap:receive')}</p>
         <div id="swap-step-three" className="mb-3 grid grid-cols-2">
-          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
             <TokenSelect
               bank={
                 outputBank ||
@@ -378,7 +378,7 @@ const SwapForm = () => {
               type="output"
             />
           </div>
-          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
+          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-input-border text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
             {loadingSwapDetails ? (
               <div className="w-full">
                 <SheenLoader className="flex flex-1 rounded-l-none">
@@ -394,7 +394,7 @@ const SwapForm = () => {
                 decimalScale={outputBank?.mintDecimals || 6}
                 name="amountOut"
                 id="amountOut"
-                className="w-full rounded-l-none rounded-r-lg bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+                className="w-full rounded-l-none rounded-r-lg bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
                 placeholder="0.00"
                 value={amountOutFormValue}
                 onValueChange={handleAmountOutChange}

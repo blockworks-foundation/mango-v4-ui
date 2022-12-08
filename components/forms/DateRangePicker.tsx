@@ -34,7 +34,7 @@ const MangoDateRangePicker = ({
           <div className="w-full">
             <Label text={t('date-from')} />
             <input
-              className="default-transition h-12 w-full rounded-md border border-th-bkg-4 bg-th-bkg-1 px-3 text-th-fgd-1 hover:border-th-fgd-4 focus:border-th-fgd-4 focus:outline-none"
+              className="default-transition h-12 w-full rounded-md border border-th-input-border bg-th-input-bkg px-3 text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
               {...startDateInputProps}
               placeholder="Start Date"
             />
@@ -45,7 +45,7 @@ const MangoDateRangePicker = ({
           <div className="w-full">
             <Label text={t('date-to')} />
             <input
-              className="default-transition h-12 w-full rounded-md border border-th-bkg-4 bg-th-bkg-1 px-3 text-th-fgd-1 hover:border-th-fgd-4 focus:border-th-fgd-4 focus:outline-none"
+              className="default-transition h-12 w-full rounded-md border border-th-input-border bg-th-input-bkg px-3 text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
               {...endDateInputProps}
               placeholder="End Date"
             />

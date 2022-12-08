@@ -209,7 +209,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   value={tokenMax.toString()}
                 />
               </div>
-              <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+              <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
                 <button
                   onClick={() => setShowTokenList(true)}
                   className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
@@ -239,7 +239,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   allowNegative={false}
                   isNumericString={true}
                   decimalScale={bank?.mintDecimals || 6}
-                  className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:outline-none"
+                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) =>
