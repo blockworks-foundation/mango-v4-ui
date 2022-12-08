@@ -98,14 +98,20 @@ const SwapForm = () => {
     swapMode,
   })
 
-  const setAmountInFormValue = useCallback((amountIn: string) => {
-    set((s) => {
-      s.swap.amountIn = amountIn
-      if (!parseFloat(amountIn)) {
-        s.swap.amountOut = ''
-      }
-    })
-  }, [])
+  const setAmountInFormValue = useCallback(
+    (amountIn: string, setSwapMode?: boolean) => {
+      set((s) => {
+        s.swap.amountIn = amountIn
+        if (!parseFloat(amountIn)) {
+          s.swap.amountOut = ''
+        }
+        if (setSwapMode) {
+          s.swap.swapMode = 'ExactIn'
+        }
+      })
+    },
+    []
+  )
 
   const setAmountOutFormValue = useCallback((amountOut: string) => {
     set((s) => {
@@ -197,9 +203,6 @@ const SwapForm = () => {
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
       setAmountInFormValue(amountOutAsDecimal.toString())
-      set((s) => {
-        s.swap.swapMode = 'ExactIn'
-      })
     }
     const inputBank = mangoStore.getState().swap.inputBank
     const outputBank = mangoStore.getState().swap.outputBank
@@ -318,7 +321,7 @@ const SwapForm = () => {
           <p className="text-th-fgd-3">{t('swap:pay')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
-            setAmountIn={setAmountInFormValue}
+            setAmountIn={(v) => setAmountInFormValue(v, true)}
           />
         </div>
         <div className="mb-3 grid grid-cols-2" id="swap-step-two">
@@ -403,13 +406,13 @@ const SwapForm = () => {
           <SwapSlider
             useMargin={useMargin}
             amount={amountInAsDecimal.toNumber()}
-            onChange={setAmountInFormValue}
+            onChange={(v) => setAmountInFormValue(v, true)}
             step={1 / 10 ** (inputBank?.mintDecimals || 6)}
           />
         ) : (
           <PercentageSelectButtons
             amountIn={amountInAsDecimal.toString()}
-            setAmountIn={setAmountInFormValue}
+            setAmountIn={(v) => setAmountInFormValue(v, true)}
             useMargin={useMargin}
           />
         )}
