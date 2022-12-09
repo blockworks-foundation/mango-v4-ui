@@ -4,6 +4,7 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Image from 'next/legacy/image'
 import { useMemo } from 'react'
 import useMangoGroup from 'hooks/useMangoGroup'
+import LogoWithFallback from '@components/shared/LogoWithFallback'
 
 const MarketLogos = ({
   market,
@@ -40,6 +41,7 @@ const MarketLogos = ({
     return {
       baseLogoURI,
       quoteLogoURI,
+      name: market.name.split(/-|\//)[0],
     }
   }, [group, mangoTokens, market])
 
@@ -56,19 +58,14 @@ const MarketLogos = ({
       }`}
     >
       <div className="absolute left-0 top-0">
-        {logos.baseLogoURI ? (
-          <Image
-            alt=""
-            className="z-10 drop-shadow-md"
-            width={small ? '16' : '20'}
-            height={small ? '16' : '20'}
-            src={logos.baseLogoURI}
-          />
-        ) : (
-          <QuestionMarkCircleIcon
-            className={`${small ? 'h-4 w-4' : 'h-5 w-5'} text-th-fgd-3`}
-          />
-        )}
+        <LogoWithFallback
+          alt=""
+          className="z-10 drop-shadow-md"
+          width={small ? '16' : '20'}
+          height={small ? '16' : '20'}
+          src={logos.baseLogoURI}
+          fallback={<div></div>}
+        />
       </div>
       <div className="absolute right-0 top-0">
         {logos.quoteLogoURI && market instanceof Serum3Market ? (
