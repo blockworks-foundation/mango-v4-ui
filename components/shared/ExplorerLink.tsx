@@ -1,3 +1,4 @@
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import { CLUSTER } from '@store/mangoStore'
 
 type ExplorerLinkProps = {
@@ -16,11 +17,12 @@ const ExplorerLink = ({
       href={`https://explorer.solana.com/address/${address}${
         anchorData ? '/anchor-account' : ''
       }?cluster=${CLUSTER}`}
-      className={`ml-1 hover:text-th-active hover:underline ${className}`}
+      className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3 ${className}`}
       target="_blank"
       rel="noreferrer"
     >
       {address}
+      <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
     </a>
   )
 }
