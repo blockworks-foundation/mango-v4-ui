@@ -32,7 +32,7 @@ const Dashboard: NextPage = () => {
 
   return (
     <div className="grid grid-cols-12">
-      <div className="col-span-12 border-b border-th-bkg-3 lg:col-span-8 lg:col-start-3">
+      <div className="col-span-12 border-b border-th-bkg-3 lg:col-span-8 lg:col-start-3 xl:col-span-6 xl:col-start-4">
         <div className="p-8 pb-20 md:pb-16 lg:p-10">
           <h1>Dashboard</h1>
           {group ? (
@@ -71,7 +71,11 @@ const Dashboard: NextPage = () => {
                             ?.logoURI
                         : ''
                       return (
-                        <div key={bank.publicKey.toString()} id={bank.name}>
+                        <div
+                          key={bank.publicKey.toString()}
+                          id={bank.name}
+                          className="scroll-mt-28"
+                        >
                           <div className="mb-3 flex items-center">
                             {logoUri ? (
                               <Image
@@ -259,8 +263,8 @@ const KeyValuePair = ({
   value: number | ReactNode | string
 }) => {
   return (
-    <div className="flex justify-between border-t border-th-bkg-3 py-4">
-      <span className="mr-4 whitespace-nowrap">{label}</span>
+    <div className="flex justify-between border-t border-th-bkg-3 py-4 xl:py-1.5">
+      <span className="mr-4 whitespace-nowrap text-th-fgd-3">{label}</span>
       {value}
     </div>
   )
