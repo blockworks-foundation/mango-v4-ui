@@ -63,8 +63,12 @@ const MarketLogos = ({
           className="z-10 drop-shadow-md"
           width={small ? '16' : '20'}
           height={small ? '16' : '20'}
-          src={logos.baseLogoURI}
-          fallback={<div></div>}
+          src={logos.baseLogoURI || `/icons/${logos?.name?.toLowerCase()}.svg`}
+          fallback={
+            <QuestionMarkCircleIcon
+              className={`${small ? 'h-4 w-4' : 'h-5 w-5'} text-th-fgd-3`}
+            />
+          }
         />
       </div>
       <div className="absolute right-0 top-0">

@@ -24,7 +24,7 @@ const LogoWithFallback = ({
         <Image
           alt={alt}
           onError={(e) => {
-            console.error('error', e)
+            console.warn('error', e)
             setError(true)
           }}
           src={src}
