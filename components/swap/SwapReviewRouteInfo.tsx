@@ -223,15 +223,16 @@ const SwapReviewRouteInfo = ({
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const inputBank = mangoStore.getState().swap.inputBank
     if (!mangoAccount || !inputBank) return [0, 0]
+
     const balance = mangoAccount.getTokenDepositsUi(inputBank)
     const remainingBalance = balance - amountIn.toNumber()
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
-    console.log('borrowAmount', borrowAmount)
+
     return [balance, borrowAmount]
   }, [amountIn])
 
   const coinGeckoPriceDifference = useMemo(() => {
-    return amountOut
+    return amountOut?.toNumber()
       ? floorToDecimal(
           amountIn
             .div(amountOut)
@@ -240,13 +241,12 @@ const SwapReviewRouteInfo = ({
                 coingeckoPrices?.inputCoingeckoPrice
               )
             )
-            .div(amountIn.div(amountOut)),
+            .div(amountIn.div(amountOut))
+            .mul(100),
           1
         )
       : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
-
-  console.log('selectedRoute', selectedRoute)
 
   return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (
     <div className="flex h-full flex-col justify-between">
