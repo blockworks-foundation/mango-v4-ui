@@ -38,6 +38,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import Slippage from './Slippage'
 import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
+import LogoWithFallback from '@components/shared/LogoWithFallback'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -401,11 +402,16 @@ const AdvancedTradeForm = () => {
         </div>
         <div className="flex flex-col">
           <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
-            {baseLogoURI ? (
-              <Image alt="" width="24" height="24" src={baseLogoURI} />
-            ) : (
-              <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-            )}
+            <LogoWithFallback
+              alt=""
+              className="z-10 drop-shadow-md"
+              width={'24'}
+              height={'24'}
+              src={baseLogoURI || `/icons/${baseSymbol?.toLowerCase()}.svg`}
+              fallback={
+                <QuestionMarkCircleIcon className={`h-5 w-5 text-th-fgd-3`} />
+              }
+            />
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
