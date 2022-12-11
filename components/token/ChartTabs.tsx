@@ -14,12 +14,13 @@ const ChartTabs = ({ token }: { token: string }) => {
   const [activeDepositsTab, setActiveDepositsTab] = useState('token:deposits')
   const [activeBorrowsTab, setActiveBorrowsTab] = useState('token:borrows')
   const tokenStats = mangoStore((s) => s.tokenStats.data)
+  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingTokenStats = mangoStore((s) => s.tokenStats.loading)
   const actions = mangoStore((s) => s.actions)
   const { group } = useMangoGroup()
 
   useEffect(() => {
-    if (group && !tokenStats.length) {
+    if (group && !initialStatsLoad) {
       actions.fetchTokenStats()
     }
   }, [group])
@@ -53,7 +54,7 @@ const ChartTabs = ({ token }: { token: string }) => {
               ['token:deposit-rates', 0],
             ]}
           />
-          <div className="px-6 pt-5 pb-2">
+          <div className="px-6 py-4">
             {activeDepositsTab === 'token:deposits' ? (
               <DetailedAreaChart
                 data={statsHistory}
@@ -95,7 +96,7 @@ const ChartTabs = ({ token }: { token: string }) => {
               ['token:borrow-rates', 0],
             ]}
           />
-          <div className="px-6 pt-5 pb-2">
+          <div className="px-6 py-4">
             {activeBorrowsTab === 'token:borrows' ? (
               <DetailedAreaChart
                 data={statsHistory}

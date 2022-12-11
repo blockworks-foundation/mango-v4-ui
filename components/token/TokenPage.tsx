@@ -192,9 +192,7 @@ const TokenPage = () => {
           <p className="mb-2">
             {t('token:token-not-found-desc', { token: token })}
           </p>
-          <Link href="/">
-            <a>{t('token:go-to-account')}</a>
-          </Link>
+          <Link href="/">{t('token:go-to-account')}</Link>
         </div>
       )}
     </>

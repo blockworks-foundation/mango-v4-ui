@@ -427,11 +427,11 @@ const SwapForm = () => {
           amountOut={selectedRoute ? amountOutAsDecimal.toNumber() : undefined}
         />
         {group && inputBank ? (
-          <div className="pt-4">
+          <div className="mt-4">
             <TokenVaultWarnings bank={inputBank} />
           </div>
         ) : null}
-        <div className="space-y-2">
+        <div className="mt-4 space-y-2">
           <div id="swap-step-four">
             <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           </div>

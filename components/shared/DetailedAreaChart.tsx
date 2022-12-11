@@ -98,10 +98,12 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     return 0
   }
 
-  const flipGradientCoords = useMemo(
-    () => data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey],
-    [data]
-  )
+  const flipGradientCoords = useMemo(() => {
+    if (!data.length) return
+    return data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey]
+  }, [data])
+
+  console.log(data)
 
   return (
     <FadeInFadeOut show={true}>

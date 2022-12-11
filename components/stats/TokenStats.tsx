@@ -38,6 +38,7 @@ const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
   const actions = mangoStore((s) => s.actions)
   const tokenStats = mangoStore((s) => s.tokenStats.data)
+  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const { group } = useMangoGroup()
@@ -47,7 +48,7 @@ const TokenStats = () => {
   const router = useRouter()
 
   useEffect(() => {
-    if (group && !tokenStats.length) {
+    if (group && !initialStatsLoad) {
       actions.fetchTokenStats()
     }
   }, [group])
@@ -113,7 +114,7 @@ const TokenStats = () => {
 
   return (
     <ContentBox hideBorder hidePadding>
-      <div className="grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-5xl">
+      <div className="grid grid-cols-2 gap-x-6">
         {loadingStats ? (
           <div className="col-span-2 py-4 px-6 md:col-span-1">
             <SheenLoader className="flex flex-1">

@@ -238,6 +238,7 @@ export type MangoStore = {
   }
   set: (x: (x: MangoStore) => void) => void
   tokenStats: {
+    initialLoad: boolean
     loading: boolean
     data: TokenStatsItem[]
   }
@@ -358,6 +359,7 @@ const mangoStore = create<MangoStore>()(
         amountOut: '',
       },
       tokenStats: {
+        initialLoad: false,
         loading: false,
         data: [],
       },
@@ -756,8 +758,7 @@ const mangoStore = create<MangoStore>()(
         fetchTokenStats: async () => {
           const set = get().set
           const group = get().group
-          const stats = get().tokenStats.data
-          if (stats.length || !group) return
+          if (!group) return
           set((state) => {
             state.tokenStats.loading = true
           })
@@ -769,6 +770,7 @@ const mangoStore = create<MangoStore>()(
 
             set((state) => {
               state.tokenStats.data = data
+              state.tokenStats.initialLoad = true
               state.tokenStats.loading = false
             })
           } catch {
