@@ -8,7 +8,7 @@ import { useCoingecko } from 'hooks/useCoingecko'
 import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { formatFixedDecimals } from 'utils/numbers'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
@@ -48,6 +48,14 @@ const CoingeckoStats = ({
   const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
   const [loadChartData, setLoadChartData] = useState(true)
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
+  const descWidthRef = useRef<any>(null)
+
+  const [width, setWidth] = useState<number>(0)
+
+  useLayoutEffect(() => {
+    if (!descWidthRef.current) return
+    setWidth(descWidthRef.current.clientWidth)
+  }, [])
 
   const handleDaysToShow = async (days: string) => {
     if (days !== '1') {
@@ -110,20 +118,23 @@ const CoingeckoStats = ({
             className={`${
               showFullDesc ? 'h-full' : 'h-5'
             } max-w-[720px] overflow-hidden`}
+            ref={descWidthRef}
           >
             {parse(coingeckoData.description.en)}
           </p>
-          <span
-            className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
-            onClick={() => setShowFullDesc(!showFullDesc)}
-          >
-            {showFullDesc ? 'Less' : 'More'}
-            <ArrowSmallUpIcon
-              className={`h-5 w-5 ${
-                showFullDesc ? 'rotate-360' : 'rotate-180'
-              } default-transition`}
-            />
-          </span>
+          {width === 720 ? (
+            <span
+              className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
+              onClick={() => setShowFullDesc(!showFullDesc)}
+            >
+              {showFullDesc ? 'Less' : 'More'}
+              <ArrowSmallUpIcon
+                className={`h-5 w-5 ${
+                  showFullDesc ? 'rotate-360' : 'rotate-180'
+                } default-transition`}
+              />
+            </span>
+          ) : null}
         </div>
       </div>
       {!loadingChart ? (
