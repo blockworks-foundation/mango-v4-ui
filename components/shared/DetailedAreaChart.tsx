@@ -103,8 +103,6 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     return data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey]
   }, [data])
 
-  console.log(data)
-
   return (
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
