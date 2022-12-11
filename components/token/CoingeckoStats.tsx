@@ -163,16 +163,30 @@ const CoingeckoStats = ({
           <div className="flex justify-between pb-4">
             <p>{t('token:market-cap')}</p>
             <p className="font-mono text-th-fgd-2">
-              {formatFixedDecimals(market_cap.usd, true)}{' '}
+              {market_cap?.usd ? (
+                formatFixedDecimals(market_cap.usd, true)
+              ) : (
+                <span className="font-body text-th-fgd-4">
+                  {t('unavailable')}
+                </span>
+              )}{' '}
               <span className="text-th-fgd-4">
-                #{coingeckoData.market_cap_rank}
+                {coingeckoData.market_cap_rank
+                  ? `#${coingeckoData.market_cap_rank}`
+                  : ''}
               </span>
             </p>
           </div>
           <div className="flex justify-between border-t border-th-bkg-3 py-4">
             <p>{t('token:volume')}</p>
             <p className="font-mono text-th-fgd-2">
-              {formatFixedDecimals(total_volume.usd, true)}
+              {total_volume?.usd ? (
+                formatFixedDecimals(total_volume.usd, true)
+              ) : (
+                <span className="font-body text-th-fgd-4">
+                  {t('unavailable')}
+                </span>
+              )}
             </p>
           </div>
           <div className="flex justify-between border-t border-th-bkg-3 py-4">
@@ -180,9 +194,17 @@ const CoingeckoStats = ({
             <div className="flex flex-col items-end">
               <div className="flex items-center font-mono text-th-fgd-2">
                 <span className="mr-2">
-                  {formatFixedDecimals(ath.usd, true)}
+                  {ath?.usd ? (
+                    formatFixedDecimals(ath.usd, true)
+                  ) : (
+                    <span className="font-body text-th-fgd-4">
+                      {t('unavailable')}
+                    </span>
+                  )}
                 </span>
-                <Change change={ath_change_percentage.usd} suffix="%" />
+                {ath_change_percentage.usd ? (
+                  <Change change={ath_change_percentage.usd} suffix="%" />
+                ) : null}
               </div>
               <p className="text-xs text-th-fgd-4">
                 {dayjs(ath_date.usd).format('MMM, D, YYYY')} (
@@ -195,7 +217,13 @@ const CoingeckoStats = ({
             <div className="flex flex-col items-end">
               <div className="flex items-center font-mono text-th-fgd-2">
                 <span className="mr-2">
-                  {formatFixedDecimals(atl.usd, true)}
+                  {atl?.usd ? (
+                    formatFixedDecimals(atl.usd, true)
+                  ) : (
+                    <span className="font-body text-th-fgd-4">
+                      {t('unavailable')}
+                    </span>
+                  )}
                 </span>
                 <Change change={atl_change_percentage.usd} suffix="%" />
               </div>
@@ -211,7 +239,13 @@ const CoingeckoStats = ({
             <div className="flex justify-between pb-4">
               <p>{t('token:fdv')}</p>
               <p className="font-mono text-th-fgd-2">
-                {formatFixedDecimals(fully_diluted_valuation.usd, true)}
+                {fully_diluted_valuation?.usd ? (
+                  formatFixedDecimals(fully_diluted_valuation.usd, true)
+                ) : (
+                  <span className="font-body text-th-fgd-4">
+                    {t('unavailable')}
+                  </span>
+                )}
               </p>
             </div>
           ) : null}
@@ -224,7 +258,13 @@ const CoingeckoStats = ({
           >
             <p>{t('token:circulating-supply')}</p>
             <p className="font-mono text-th-fgd-2">
-              {formatFixedDecimals(circulating_supply)}
+              {circulating_supply ? (
+                formatFixedDecimals(circulating_supply)
+              ) : (
+                <span className="font-body text-th-fgd-4">
+                  {t('unavailable')}
+                </span>
+              )}
             </p>
           </div>
           <div
@@ -234,14 +274,26 @@ const CoingeckoStats = ({
           >
             <p>{t('token:total-supply')}</p>
             <p className="font-mono text-th-fgd-2">
-              {formatFixedDecimals(total_supply)}
+              {total_supply ? (
+                formatFixedDecimals(total_supply)
+              ) : (
+                <span className="font-body text-th-fgd-4">
+                  {t('unavailable')}
+                </span>
+              )}
             </p>
           </div>
           {max_supply ? (
             <div className="flex justify-between border-t border-th-bkg-3 pt-4">
               <p>{t('token:max-supply')}</p>
               <p className="font-mono text-th-fgd-2">
-                {formatFixedDecimals(max_supply)}
+                {max_supply ? (
+                  formatFixedDecimals(max_supply)
+                ) : (
+                  <span className="font-body text-th-fgd-4">
+                    {t('unavailable')}
+                  </span>
+                )}
               </p>
             </div>
           ) : null}
