@@ -1,4 +1,4 @@
-import { Bank, toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { Bank, toUiDecimals, I80F48 } from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
 import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
 import mangoStore from '@store/mangoStore'
@@ -88,7 +88,7 @@ const Dashboard: NextPage = () => {
                               <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                             )}
                             <h4 className="ml-2 text-lg font-bold text-th-fgd-2">
-                              {bank.name}
+                              {bank.name} Bank
                             </h4>
                           </div>
                           <KeyValuePair
@@ -114,25 +114,34 @@ const Dashboard: NextPage = () => {
                             }
                           />
                           <KeyValuePair
+                            label="Oracle"
+                            value={
+                              <ExplorerLink
+                                address={bank.oracle.toString()}
+                                anchorData
+                              />
+                            }
+                          />
+                          <KeyValuePair
                             label="Token Index"
                             value={bank.tokenIndex}
                           />
                           <KeyValuePair
-                            label="Price"
-                            value={bank.price.toNumber()}
+                            label="Oracle Price"
+                            value={`$${bank.uiPrice}`}
                           />
                           <KeyValuePair
-                            label="UI Price"
-                            value={`$${bank.uiPrice}`}
+                            label="Stable Price"
+                            value={`$${group.toUiPrice(I80F48.fromNumber(bank.stablePriceModel.stablePrice), bank.mintDecimals)}`}
                           />
                           <VaultData bank={bank} />
                           <KeyValuePair
                             label="Loan Fee Rate"
-                            value={bank.loanFeeRate.toNumber()}
+                            value={`${(10000 * bank.loanFeeRate.toNumber()).toFixed(2)} bps`}
                           />
                           <KeyValuePair
                             label="Loan origination fee rate"
-                            value={bank.loanOriginationFeeRate.toNumber()}
+                            value={`${(10000 * bank.loanOriginationFeeRate.toNumber()).toFixed(2)} bps`}
                           />
                           <KeyValuePair
                             label="Collected fees native"
@@ -140,7 +149,7 @@ const Dashboard: NextPage = () => {
                           />
                           <KeyValuePair
                             label="Liquidation fee"
-                            value={bank.liquidationFee.toNumber()}
+                            value={`${(10000 * bank.liquidationFee.toNumber()).toFixed(2)} bps`}
                           />
                           <KeyValuePair
                             label="Dust"
@@ -180,17 +189,10 @@ const Dashboard: NextPage = () => {
                           />
                           <KeyValuePair
                             label="Scaled Init Asset/Liab Weight"
-                            value=""
+                            value={`${bank.scaledInitAssetWeight().toFixed(4)}/
+                              ${bank.scaledInitLiabWeight().toFixed(4)}`
+                            }
                           />
-                          {/* <div className="flex justify-between border-t border-th-bkg-3 py-4">
-                            <span className="mr-4 whitespace-nowrap">
-                              Scaled Init Asset/Liab Weight
-                            </span>
-                            <span>
-                              {bank.scaledInitAssetWeight().toFixed(4)}
-                              {bank.scaledInitLiabWeight().toFixed(4)}
-                            </span>
-                          </div> */}
                           <KeyValuePair
                             label="Deposit weight scale start quote"
                             value={bank.depositWeightScaleStartQuote}
@@ -203,14 +205,14 @@ const Dashboard: NextPage = () => {
                             label="Rate params"
                             value={
                               <span className="text-right">
-                                {`${100 * bank.rate0.toNumber()}% @ ${
-                                  100 * bank.util0.toNumber()
+                                {`${(100 * bank.rate0.toNumber()).toFixed(2)}% @ ${
+                                  (100 * bank.util0.toNumber()).toFixed()
                                 }% util, `}
-                                {`${100 * bank.rate1.toNumber()}% @ ${
-                                  100 * bank.util1.toNumber()
+                                {`${(100 * bank.rate1.toNumber()).toFixed(2)}% @ ${
+                                  (100 * bank.util1.toNumber()).toFixed()
                                 }% util, `}
                                 {`${
-                                  100 * bank.maxRate.toNumber()
+                                  (100 * bank.maxRate.toNumber()).toFixed(2)
                                 }% @ 100% util`}
                               </span>
                             }
@@ -234,6 +236,28 @@ const Dashboard: NextPage = () => {
                             value={new Date(
                               1000 * bank.bankRateLastUpdated.toNumber()
                             ).toUTCString()}
+                          />
+                          <KeyValuePair
+                            label="Last stable price updated"
+                            value={new Date(
+                              1000 * bank.stablePriceModel.lastUpdateTimestamp.toNumber()
+                            ).toUTCString()}
+                          />
+                          <KeyValuePair
+                            label="Stable Price: delay interval"
+                            value={`${bank.stablePriceModel.delayIntervalSeconds}s`}
+                          />
+                          <KeyValuePair
+                            label="Stable Price: growth limits"
+                            value={`${(100 * bank.stablePriceModel.delayGrowthLimit).toFixed(2)}% delay / ${(100 * bank.stablePriceModel.stableGrowthLimit).toFixed(2)}% stable`}
+                          />
+                          <KeyValuePair
+                            label="Oracle: Conf Filter"
+                            value={`${(100 * bank.oracleConfig.confFilter.toNumber()).toFixed(2)}%`}
+                          />
+                          <KeyValuePair
+                            label="Oracle: Max Staleness"
+                            value={`${bank.oracleConfig.maxStalenessSlots} slots`}
                           />
                           <KeyValuePair
                             label="netBorrowsInWindow / netBorrowLimitPerWindowQuote"
