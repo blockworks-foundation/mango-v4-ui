@@ -42,9 +42,8 @@ const Dashboard: NextPage = () => {
                 address={group?.publicKey.toString()}
                 anchorData
               ></ExplorerLink>
-              <h3 className="mt-6 text-sm text-th-fgd-3">Banks</h3>
               <div className="sticky top-2 z-10 mt-2 flex flex-col rounded-md bg-th-bkg-2 p-4 md:flex-row md:items-center md:justify-between">
-                <p className="whitespace-nowrap">Jump to:</p>
+                <p className="whitespace-nowrap">Jump to Bank:</p>
                 <div className="flex flex-wrap">
                   {Array.from(group.banksMapByMint).map(
                     ([mintAddress, banks]) => (
@@ -58,7 +57,24 @@ const Dashboard: NextPage = () => {
                     )
                   )}
                 </div>
+                <p className="whitespace-nowrap">Jump to Perp Market:</p>
+                <div className="flex flex-wrap">
+                  {Array.from(group.perpMarketsMapByOracle).map(
+                    ([oracle, perpMarket]) => (
+                      <button
+                        className="mr-2 mt-2 rounded bg-th-bkg-3 px-2 py-1 md:mt-0"
+                        key={oracle.toString()}
+                        onClick={() => handleClickScroll(perpMarket.name)}
+                      >
+                        {perpMarket.name}
+                      </button>
+                    )
+                  )}
+                </div>
               </div>
+
+
+              <h3 className="mt-6 text-sm text-th-fgd-3">Banks</h3>
               {Array.from(group.banksMapByMint).map(([mintAddress, banks]) => {
                 return (
                   <div
@@ -118,7 +134,6 @@ const Dashboard: NextPage = () => {
                             value={
                               <ExplorerLink
                                 address={bank.oracle.toString()}
-                                anchorData
                               />
                             }
                           />
@@ -269,6 +284,59 @@ const Dashboard: NextPage = () => {
                   </div>
                 )
               })}
+
+
+              <h3 className="mt-6 text-sm text-th-fgd-3">Perp Markets</h3>
+              {Array.from(group.perpMarketsMapByOracle).map(([oracle, perpMarket]) => {
+                return (
+                  <div
+                    key={oracle.toString()}
+                    className="mt-6 border-b border-th-bkg-3"
+                  >
+                    <div
+                      key={perpMarket.publicKey.toString()}
+                      id={perpMarket.name}
+                      className="scroll-mt-28"
+                    >
+                      <div className="mb-3 flex items-center">
+                        <h4 className="ml-2 text-lg font-bold text-th-fgd-2">
+                          {perpMarket.name} Perp Market
+                        </h4>
+                      </div>
+                      <KeyValuePair
+                        label="Oracle"
+                        value={
+                          <ExplorerLink
+                            address={perpMarket.oracle.toString()}
+                          />
+                        }
+                      />
+                      <KeyValuePair
+                        label="Perp Market Index"
+                        value={perpMarket.perpMarketIndex}
+                      />
+                      <KeyValuePair
+                        label="Oracle Price"
+                        value={`$${perpMarket.uiPrice}`}
+                      />
+                      <KeyValuePair
+                        label="Stable Price"
+                        value={`$${group.toUiPrice(I80F48.fromNumber(perpMarket.stablePriceModel.stablePrice), perpMarket.baseDecimals)}`}
+                      />
+                      <KeyValuePair
+                        label="Oracle: Conf Filter"
+                        value={`${(100 * perpMarket.oracleConfig.confFilter.toNumber()).toFixed(2)}%`}
+                      />
+                      <KeyValuePair
+                        label="Oracle: Max Staleness"
+                        value={`${perpMarket.oracleConfig.maxStalenessSlots} slots`}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+
+
             </div>
           ) : (
             'Loading'
