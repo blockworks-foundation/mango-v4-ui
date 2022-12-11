@@ -10,14 +10,12 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
-
-import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from './Button'
-import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
@@ -26,6 +24,7 @@ import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { formatFixedDecimals } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
+import { useTranslation } from 'next-i18next'
 
 dayjs.extend(relativeTime)
 
@@ -70,6 +69,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   xKey,
   yKey,
 }) => {
+  const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
@@ -323,10 +323,10 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex h-96 items-center justify-center rounded-lg bg-th-bkg-2 p-4 text-th-fgd-3">
+          <div className="flex h-96 items-center justify-center p-4 text-th-fgd-3">
             <div className="">
-              <LineChartIcon className="mx-auto h-10 w-10 text-th-fgd-4" />
-              <p className="text-th-fgd-4">Chart not available</p>
+              <NoSymbolIcon className="mx-auto mb-1 h-6 w-6 text-th-fgd-4" />
+              <p className="text-th-fgd-4">{t('chart-unavailable')}</p>
             </div>
           </div>
         )}

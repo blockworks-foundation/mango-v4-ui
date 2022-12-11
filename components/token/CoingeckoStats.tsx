@@ -1,10 +1,7 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
-import {
-  ArrowSmallUpIcon,
-  ArrowTrendingUpIcon,
-} from '@heroicons/react/20/solid'
+import { ArrowSmallUpIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useCoingecko } from 'hooks/useCoingecko'
@@ -117,7 +114,7 @@ const CoingeckoStats = ({
             {parse(coingeckoData.description.en)}
           </p>
           <span
-            className="default-transition flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
+            className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
             onClick={() => setShowFullDesc(!showFullDesc)}
           >
             {showFullDesc ? 'Less' : 'More'}
@@ -148,7 +145,7 @@ const CoingeckoStats = ({
           </>
         ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
           <div className="flex flex-col items-center p-6">
-            <ArrowTrendingUpIcon className="h-5 w-5 text-th-fgd-3" />
+            <NoSymbolIcon className="mb-1 h-6 w-6 text-th-fgd-4" />
             <p className="mb-0 text-th-fgd-4">{t('token:chart-unavailable')}</p>
           </div>
         )

@@ -11,8 +11,6 @@ import {
   Text,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
-
-import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
 import { formatFixedDecimals } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
@@ -29,6 +27,8 @@ import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import { useTranslation } from 'next-i18next'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
 
 dayjs.extend(relativeTime)
 
@@ -70,6 +70,7 @@ const CustomizedLabel = ({
 }
 
 const SwapTokenChart = () => {
+  const { t } = useTranslation('common')
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
@@ -314,10 +315,10 @@ const SwapTokenChart = () => {
           </div>
         </div>
       ) : (
-        <div className="mt-4 flex h-full items-center justify-center rounded-lg bg-th-bkg-2 p-4 text-th-fgd-3 md:mt-0">
+        <div className="mt-4 flex h-full items-center justify-center p-4 text-th-fgd-3 md:mt-0">
           <div className="">
-            <LineChartIcon className="mx-auto h-10 w-10 text-th-fgd-4" />
-            <p className="text-th-fgd-4">Chart not available</p>
+            <NoSymbolIcon className="mx-auto mb-1 h-6 w-6 text-th-fgd-4" />
+            <p className="text-th-fgd-4">{t('chart-unavailable')}</p>
           </div>
         </div>
       )}
