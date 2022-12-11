@@ -304,6 +304,42 @@ const Dashboard: NextPage = () => {
                         </h4>
                       </div>
                       <KeyValuePair
+                        label="Perp Market"
+                        value={
+                          <ExplorerLink
+                            address={perpMarket.publicKey.toString()}
+                            anchorData
+                          />
+                        }
+                      />
+                      <KeyValuePair
+                        label="Bids"
+                        value={
+                          <ExplorerLink
+                            address={perpMarket.bids.toString()}
+                            anchorData
+                          />
+                        }
+                      />
+                      <KeyValuePair
+                        label="Asks"
+                        value={
+                          <ExplorerLink
+                            address={perpMarket.asks.toString()}
+                            anchorData
+                          />
+                        }
+                      />
+                      <KeyValuePair
+                        label="Event Queue"
+                        value={
+                          <ExplorerLink
+                            address={perpMarket.eventQueue.toString()}
+                            anchorData
+                          />
+                        }
+                      />
+                      <KeyValuePair
                         label="Oracle"
                         value={
                           <ExplorerLink
@@ -324,12 +360,59 @@ const Dashboard: NextPage = () => {
                         value={`$${group.toUiPrice(I80F48.fromNumber(perpMarket.stablePriceModel.stablePrice), perpMarket.baseDecimals)}`}
                       />
                       <KeyValuePair
+                        label="Open Interest"
+                        value={`${perpMarket.openInterest} lots`}
+                      />
+                      <KeyValuePair
+                        label="Lot Sizes"
+                        value={`${perpMarket.baseLotSize} base /
+                          ${perpMarket.quoteLotSize} quote`}
+                      />
+                      <KeyValuePair
+                        label="Maint Asset/Liab Weight"
+                        value={`${perpMarket.maintAssetWeight.toFixed(4)}/
+                          ${perpMarket.maintLiabWeight.toFixed(4)}`}
+                      />
+                      <KeyValuePair
+                        label="Init Asset/Liab Weight"
+                        value={`${perpMarket.initAssetWeight.toFixed(4)}/
+                          ${perpMarket.initLiabWeight.toFixed(4)}`}
+                      />
+                      <KeyValuePair
+                        label="Liquidation Fee"
+                        value={`${(100 * perpMarket.liquidationFee.toNumber()).toFixed(4)}%`}
+                      />
+                      <KeyValuePair
+                        label="Trading Fees"
+                        value={`${(10000 * perpMarket.makerFee.toNumber()).toFixed(2)} bps maker / ${(10000 * perpMarket.takerFee.toNumber()).toFixed(2)} bps taker`}
+                      />
+                      <KeyValuePair
+                        label="Funding Limits"
+                        value={`${(100 * perpMarket.minFunding.toNumber()).toFixed(2)}% to ${(100 * perpMarket.maxFunding.toNumber()).toFixed(2)}%`}
+                      />
+                      <KeyValuePair
+                        label="Fees Accrued"
+                        value={`$${toUiDecimals(perpMarket.feesAccrued, 6)}`}
+                      />
+                      <KeyValuePair
+                        label="Fees Settled"
+                        value={`$${toUiDecimals(perpMarket.feesSettled, 6)}`}
+                      />
+                      <KeyValuePair
                         label="Oracle: Conf Filter"
                         value={`${(100 * perpMarket.oracleConfig.confFilter.toNumber()).toFixed(2)}%`}
                       />
                       <KeyValuePair
                         label="Oracle: Max Staleness"
                         value={`${perpMarket.oracleConfig.maxStalenessSlots} slots`}
+                      />
+                      <KeyValuePair
+                        label="Trusted Market"
+                        value={`${perpMarket.trustedMarket}`}
+                      />
+                      <KeyValuePair
+                        label="Group Insurance Fund"
+                        value={`${perpMarket.groupInsuranceFund}`}
                       />
                     </div>
                   </div>
