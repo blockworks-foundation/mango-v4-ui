@@ -57,10 +57,10 @@ const MarketLogos = ({
           : 'w-[20px]'
       }`}
     >
-      <div className="absolute left-0 top-0">
+      <div className="absolute left-0 top-0 z-10">
         <LogoWithFallback
           alt=""
-          className="z-10 drop-shadow-md"
+          className="drop-shadow-md"
           width={small ? '16' : '20'}
           height={small ? '16' : '20'}
           src={logos.baseLogoURI || `/icons/${logos?.name?.toLowerCase()}.svg`}
