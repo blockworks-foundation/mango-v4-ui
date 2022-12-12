@@ -324,10 +324,10 @@ const Orderbook = () => {
 
     if (!market || !group) return
 
-    let previousBidInfo: AccountInfo<Buffer> | null = null
-    let previousAskInfo: AccountInfo<Buffer> | null = null
-    let bidSubscriptionId: number
-    let askSubscriptionId: number
+    let previousBidInfo: AccountInfo<Buffer> | undefined = undefined
+    let previousAskInfo: AccountInfo<Buffer> | undefined = undefined
+    let bidSubscriptionId: number | undefined = undefined
+    let askSubscriptionId: number | undefined = undefined
 
     const bidsPk =
       market instanceof Market ? market['_decoded'].bids : market.bids
@@ -391,10 +391,10 @@ const Orderbook = () => {
       )
     }
     return () => {
-      if (bidSubscriptionId) {
+      if (typeof bidSubscriptionId !== 'undefined') {
         connection.removeAccountChangeListener(bidSubscriptionId)
       }
-      if (askSubscriptionId) {
+      if (typeof askSubscriptionId !== 'undefined') {
         connection.removeAccountChangeListener(askSubscriptionId)
       }
     }
