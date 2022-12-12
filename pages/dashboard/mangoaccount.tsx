@@ -135,6 +135,46 @@ const Dashboard: NextPage = () => {
                       value={perp.marketIndex}
                     />
                     <KeyValuePair label="Name" value={market.name} />
+                    <KeyValuePair
+                      label="Base Position Ui"
+                      value={perp.getBasePositionUi(market)}
+                    />
+                    <KeyValuePair
+                      label="Quote Position Native"
+                      value={perp.quotePositionNative.toNumber()}
+                    />
+                    <KeyValuePair
+                      label="Quote Running Native"
+                      value={perp.quoteRunningNative.toNumber()}
+                    />
+                    <KeyValuePair
+                      label="Taker Quote Lots"
+                      value={perp.takerQuoteLots.toNumber()}
+                    />
+                    <KeyValuePair
+                      label="Unsettled Funding"
+                      value={perp.getUnsettledFunding(market).toNumber()}
+                    />
+                    <KeyValuePair
+                      label="Equity UI"
+                      value={perp.getEquityUi(group, market)}
+                    />
+                    <KeyValuePair
+                      label="Has open orders"
+                      value={perp.hasOpenOrders().toString()}
+                    />
+                    <KeyValuePair
+                      label="Avg Entry Price UI"
+                      value={perp.getAverageEntryPriceUi(market)}
+                    />
+                    <KeyValuePair
+                      label="Break even price UI"
+                      value={perp.getBreakEvenPriceUi(market)}
+                    />
+                    <KeyValuePair
+                      label="Pnl"
+                      value={perp.getPnl(market).toNumber()}
+                    />
                   </div>
                 )
               })}
