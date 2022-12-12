@@ -105,6 +105,7 @@
   "tokens": "Tokens",
   "token-collateral-multiplier": "{{token}} Collateral Multiplier",
   "tooltip-borrow-rate": "The variable interest rate you'll pay on your borrowed balance annually",
+  "tooltip-collateral-value": "The USD amount you can trade or borrow against",
   "total-borrows": "Total Borrows",
   "total-borrow-value": "Total Borrow Value",
   "total-collateral": "Total Collateral",

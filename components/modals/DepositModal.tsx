@@ -321,7 +321,9 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
             </div>
             <div className="flex justify-between">
-              <p>{t('collateral-value')}</p>
+              <Tooltip content={t('tooltip-collateral-value')}>
+                <p className="tooltip-underline">{t('collateral-value')}</p>
+              </Tooltip>
               <p className="font-mono">
                 {formatFixedDecimals(
                   bank!.uiPrice! *
