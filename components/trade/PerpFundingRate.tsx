@@ -49,10 +49,11 @@ const PerpFundingRate = () => {
   return (
     <>
       <div className="font-mono text-xs text-th-fgd-2">
-        {selectedMarket instanceof PerpMarket && fundingRate
-          ? fundingRate.toFixed(4)
-          : '-'}
-        %
+        {selectedMarket instanceof PerpMarket && fundingRate ? (
+          `${fundingRate.toFixed(4)}%`
+        ) : (
+          <span className="text-th-fgd-4">-</span>
+        )}
       </div>
       {/* <div className="font-mono text-xs text-th-fgd-2">
         {selectedMarket instanceof PerpMarket &&
