@@ -9,11 +9,11 @@ import Tooltip from '@components/shared/Tooltip'
 import Loading from '@components/shared/Loading'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
-import MarketLogos from './MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
+import TableMarketName from './TableMarketName'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -160,10 +160,7 @@ const UnsettledTrades = ({
               return (
                 <TrBody key={mktAddress} className="text-sm">
                   <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <span>{market ? market.name : ''}</span>
-                    </div>
+                    <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right font-mono">
                     {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
@@ -203,10 +200,7 @@ const UnsettledTrades = ({
               return (
                 <TrBody key={position.marketIndex} className="text-sm">
                   <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <span>{market ? market.name : ''}</span>
-                    </div>
+                    <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right font-mono">
                     <span></span>
@@ -249,10 +243,7 @@ const UnsettledTrades = ({
                 key={mktAddress}
                 className="flex items-center justify-between border-b border-th-bkg-3 p-4"
               >
-                <div className="flex items-center">
-                  <MarketLogos market={market} />
-                  <span>{market ? market.name : ''}</span>
-                </div>
+                <TableMarketName market={market} />
                 <div className="flex items-center space-x-3">
                   {unsettledSpotBalances[mktAddress].base ? (
                     <span className="font-mono text-sm">

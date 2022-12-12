@@ -20,7 +20,7 @@ import { useCallback, useState } from 'react'
 import { notify } from 'utils/notifications'
 import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
-import MarketLogos from './MarketLogos'
+import TableMarketName from './TableMarketName'
 
 const OpenOrders = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -159,10 +159,7 @@ const OpenOrders = () => {
                       className="my-1 p-2"
                     >
                       <Td>
-                        <div className="flex items-center">
-                          <MarketLogos market={market!} />
-                          {market?.name}
-                        </div>
+                        <TableMarketName market={market} />
                       </Td>
                       <Td className="text-right">
                         <SideBadge side={o.side} />
@@ -251,16 +248,9 @@ const OpenOrders = () => {
                   className="flex items-center justify-between border-b border-th-bkg-3 p-4"
                   key={`${o.side}${o.size}${o.price}`}
                 >
-                  <div className="flex items-center">
-                    <MarketLogos market={market} />
-                    <div>
-                      <div className="mb-0.5 flex items-center space-x-2">
-                        <p className="whitespace-nowrap text-sm text-th-fgd-1">
-                          {market.name}
-                        </p>
-                        <SideBadge side={o.side} />
-                      </div>
-                    </div>
+                  <div className="flex items-center space-x-2">
+                    <TableMarketName market={market} />
+                    <SideBadge side={o.side} />
                   </div>
                   <div className="flex items-center space-x-3 pl-8">
                     <div className="text-right">

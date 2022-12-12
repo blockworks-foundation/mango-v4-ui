@@ -15,8 +15,8 @@ import {
   trimDecimals,
 } from 'utils/numbers'
 import { calculateMarketPrice } from 'utils/tradeForm'
-import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
+import TableMarketName from './TableMarketName'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -64,8 +64,8 @@ const PerpPositions = () => {
               <Th className="text-right">{t('trade:size')}</Th>
               <Th className="text-right">{t('notional')}</Th>
               <Th className="text-right">{t('trade:entry-price')}</Th>
-              <Th className="text-right">Redeemable P&L</Th>
-              <Th className="text-right">Realized P&L</Th>
+              <Th className="text-right">Redeemable PnL</Th>
+              <Th className="text-right">Realized PnL</Th>
             </TrHead>
           </thead>
           <tbody>
@@ -89,10 +89,7 @@ const PerpPositions = () => {
               return (
                 <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
                   <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      {market?.name}
-                    </div>
+                    <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right">
                     <PerpSideBadge basePosition={basePosition} />
