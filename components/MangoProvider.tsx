@@ -90,7 +90,7 @@ const HydrateStore = () => {
 const ReadOnlyMangoAccount = () => {
   const router = useRouter()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
-  const ma = router.query?.mangoAccount
+  const ma = router.query?.address
 
   useEffect(() => {
     if (!groupLoaded) return
