@@ -581,7 +581,7 @@ const SwapReviewRouteInfo = ({
           />
         ) : null}
       </div>
-      <div className="flex items-center justify-center pb-6">
+      <div className="flex items-center justify-center py-6">
         <Button
           onClick={onSwap}
           className="flex w-full items-center justify-center text-base"
