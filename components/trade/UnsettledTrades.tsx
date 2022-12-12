@@ -144,8 +144,7 @@ const UnsettledTrades = ({
           <thead>
             <TrHead>
               <Th className="bg-th-bkg-1 text-left">{t('market')}</Th>
-              <Th className="bg-th-bkg-1 text-right">{t('trade:base')}</Th>
-              <Th className="bg-th-bkg-1 text-right">{t('trade:quote')}</Th>
+              <Th className="bg-th-bkg-1 text-right">{t('trade:amount')}</Th>
               <Th className="bg-th-bkg-1 text-right" />
             </TrHead>
           </thead>
@@ -163,16 +162,20 @@ const UnsettledTrades = ({
                     <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right font-mono">
-                    {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {base}
-                    </span>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {quote}
-                    </span>
+                    <div className="flex">
+                      <div>
+                        {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
+                        <span className="font-body tracking-wide text-th-fgd-4">
+                          {base}
+                        </span>
+                      </div>
+                      <div>
+                        {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
+                        <span className="font-body tracking-wide text-th-fgd-4">
+                          {quote}
+                        </span>
+                      </div>
+                    </div>
                   </Td>
                   <Td>
                     <div className="flex justify-end">
@@ -201,9 +204,6 @@ const UnsettledTrades = ({
                 <TrBody key={position.marketIndex} className="text-sm">
                   <Td>
                     <TableMarketName market={market} />
-                  </Td>
-                  <Td className="text-right font-mono">
-                    <span></span>
                   </Td>
                   <Td className="text-right font-mono">
                     {position.getEquityUi(group, market)}
