@@ -9,6 +9,7 @@ import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 
 const TABS = [
   'balances',
@@ -52,7 +53,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
   const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
   const loading = mangoStore((s) => s.mangoAccount.stats.swapHistory.loading)
   const unsettledSpotBalances = useUnsettledSpotBalances()
-  const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
+  const unsettledPerpPositions = useUnsettledPerpPositions()
   switch (activeTab) {
     case 'balances':
       return <TokenList />
@@ -64,9 +65,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
       return (
         <UnsettledTrades
           unsettledSpotBalances={unsettledSpotBalances}
-          unsettledPerpPositions={perpPositions.filter(
-            (p) => !p.basePositionLots.toNumber()
-          )}
+          unsettledPerpPositions={unsettledPerpPositions}
         />
       )
     default:
