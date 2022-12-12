@@ -4,7 +4,7 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
-import { notify } from 'utils/notifications'
+// import { notify } from 'utils/notifications'
 
 const PerpSlider = () => {
   const side = mangoStore((s) => s.tradeForm.side)
@@ -39,11 +39,11 @@ const PerpSlider = () => {
         )
       }
     } catch (e) {
-      console.error('PerpSlider: ', e)
-      notify({
-        type: 'error',
-        title: 'Error calculating max leverage.',
-      })
+      console.error('Error calculating max leverage for PerpSlider: ', e)
+      // notify({
+      //   type: 'error',
+      //   title: 'Error calculating max leverage.',
+      // })
       return 0
     }
   }, [side, selectedMarket, mangoAccount])

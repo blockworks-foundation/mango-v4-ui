@@ -4,7 +4,7 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo, useState } from 'react'
-import { notify } from 'utils/notifications'
+// import { notify } from 'utils/notifications'
 
 const PerpButtonGroup = () => {
   const side = mangoStore((s) => s.tradeForm.side)
@@ -33,11 +33,11 @@ const PerpButtonGroup = () => {
         )
       }
     } catch (e) {
-      console.error('PerpSlider: ', e)
-      notify({
-        type: 'error',
-        title: 'Error calculating max leverage.',
-      })
+      console.error('Error calculating max leverage perp btn grp: ', e)
+      // notify({
+      //   type: 'error',
+      //   title: 'Error calculating max leverage.',
+      // })
       return 0
     }
   }, [side, selectedMarket, mangoAccount, tradeFormPrice])
