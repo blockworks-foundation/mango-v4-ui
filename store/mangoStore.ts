@@ -41,7 +41,8 @@ import perpPositionsUpdater from './perpPositionsUpdater'
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
 export const connection = new web3.Connection(
-  'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+  process.env.NEXT_PUBLIC_ENDPOINT ||
+    'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
   'processed'
 )
 const options = AnchorProvider.defaultOptions()
