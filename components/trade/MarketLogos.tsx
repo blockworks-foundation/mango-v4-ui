@@ -47,7 +47,7 @@ const MarketLogos = ({
 
   return (
     <div
-      className={`relative mr-1.5 ${small ? 'h-4' : 'h-5'} ${
+      className={`relative ${small ? 'mr-1.5 h-4' : 'mr-2 h-5'} ${
         market instanceof Serum3Market
           ? small
             ? 'w-[27px]'
