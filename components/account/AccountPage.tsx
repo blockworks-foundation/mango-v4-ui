@@ -234,12 +234,12 @@ const AccountPage = () => {
                 {t('account-value')}
               </p>
             </Tooltip>
-            <div className="mb-2 flex items-center text-5xl font-bold text-th-fgd-1">
+            <div className="mb-2 flex items-center font-display text-5xl text-th-fgd-1">
               {animationSettings['number-scroll'] ? (
                 group && mangoAccount ? (
                   <FlipNumbers
                     height={48}
-                    width={32}
+                    width={38}
                     play
                     delay={0.05}
                     duration={1}
@@ -248,7 +248,7 @@ const AccountPage = () => {
                 ) : (
                   <FlipNumbers
                     height={48}
-                    width={32}
+                    width={38}
                     play
                     delay={0.05}
                     duration={1}
@@ -357,7 +357,7 @@ const AccountPage = () => {
                 </div>
               }
             >
-              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+              <p className="tooltip-underline text-sm font-normal text-th-fgd-3 xl:text-base">
                 {t('health')}
               </p>
             </Tooltip>

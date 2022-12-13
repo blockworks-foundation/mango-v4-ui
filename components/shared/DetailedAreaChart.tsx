@@ -139,7 +139,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
                             height={small ? 24 : 40}
-                            width={small ? 15 : 26}
+                            width={small ? 18 : 31}
                             play
                             numbers={
                               prefix +
@@ -184,7 +184,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
                             height={small ? 24 : 40}
-                            width={small ? 15 : 26}
+                            width={small ? 18 : 31}
                             play
                             numbers={
                               prefix +

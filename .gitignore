@@ -11,6 +11,9 @@
 public/charting_library
 public/datafeeds
 
+# Fonts
+public/fonts
+
 # testing
 /coverage
 
