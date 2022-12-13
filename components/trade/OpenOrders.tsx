@@ -4,19 +4,27 @@ import {
   Serum3Market,
   Serum3Side,
 } from '@blockworks-foundation/mango-v4'
+import Input from '@components/forms/Input'
 import { IconButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
-import { LinkIcon, NoSymbolIcon, TrashIcon } from '@heroicons/react/20/solid'
+import {
+  CheckIcon,
+  LinkIcon,
+  NoSymbolIcon,
+  PencilIcon,
+  TrashIcon,
+  XMarkIcon,
+} from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 import { notify } from 'utils/notifications'
 import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
@@ -27,6 +35,11 @@ const OpenOrders = () => {
   const { connected } = useWallet()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [cancelId, setCancelId] = useState<string>('')
+  const [modifyOrderId, setModifyOrderId] = useState<string | undefined>(
+    undefined
+  )
+  const [modifiedOrderSize, setModifiedOrderSize] = useState('')
+  const [modifiedOrderPrice, setModifiedOrderPrice] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
@@ -110,18 +123,24 @@ const OpenOrders = () => {
     [t]
   )
 
+  const showEditOrderForm = (order: Order | PerpOrder) => {
+    setModifyOrderId(order.orderId.toString())
+    setModifiedOrderSize(order.size.toString())
+    setModifiedOrderPrice(order.price.toString())
+  }
+
   return connected ? (
     Object.values(openOrders).flat().length ? (
       showTableView ? (
         <Table>
           <thead>
             <TrHead>
-              <Th className="text-left">{t('market')}</Th>
-              <Th className="text-right">{t('trade:side')}</Th>
-              <Th className="text-right">{t('trade:size')}</Th>
-              <Th className="text-right">{t('price')}</Th>
-              <Th className="text-right">{t('value')}</Th>
-              <Th className="text-right"></Th>
+              <Th className="w-[16.67%] text-left">{t('market')}</Th>
+              <Th className="w-[16.67%] text-right">{t('trade:side')}</Th>
+              <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
+              <Th className="w-[16.67%] text-right">{t('price')}</Th>
+              <Th className="w-[16.67%] text-right">{t('value')}</Th>
+              <Th className="w-[16.67%] text-right"></Th>
             </TrHead>
           </thead>
           <tbody>
@@ -158,50 +177,106 @@ const OpenOrders = () => {
                       key={`${o.side}${o.size}${o.price}`}
                       className="my-1 p-2"
                     >
-                      <Td>
+                      <Td className="w-[16.67%]">
                         <TableMarketName market={market} />
                       </Td>
-                      <Td className="text-right">
+                      <Td className="w-[16.67%] text-right">
                         <SideBadge side={o.side} />
                       </Td>
-                      <Td className="text-right font-mono">
-                        {o.size.toLocaleString(undefined, {
-                          maximumFractionDigits: getDecimalCount(minOrderSize),
-                        })}
-                      </Td>
-                      <Td className="text-right">
-                        <span className="font-mono">
-                          {o.price.toLocaleString(undefined, {
-                            minimumFractionDigits: getDecimalCount(tickSize),
-                            maximumFractionDigits: getDecimalCount(tickSize),
-                          })}{' '}
-                          <span className="font-body tracking-wide text-th-fgd-4">
-                            {quoteSymbol}
-                          </span>
-                        </span>
-                      </Td>
-                      <Td className="text-right">
+                      {modifyOrderId !== o.orderId.toString() ? (
+                        <>
+                          <Td className="w-[16.67%] text-right font-mono">
+                            {o.size.toLocaleString(undefined, {
+                              maximumFractionDigits:
+                                getDecimalCount(minOrderSize),
+                            })}
+                          </Td>
+                          <Td className="w-[16.67%] text-right">
+                            <span className="font-mono">
+                              {o.price.toLocaleString(undefined, {
+                                minimumFractionDigits:
+                                  getDecimalCount(tickSize),
+                                maximumFractionDigits:
+                                  getDecimalCount(tickSize),
+                              })}{' '}
+                              <span className="font-body tracking-wide text-th-fgd-4">
+                                {quoteSymbol}
+                              </span>
+                            </span>
+                          </Td>
+                        </>
+                      ) : (
+                        <>
+                          <Td className="w-[16.67%]">
+                            <Input
+                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                              type="text"
+                              value={modifiedOrderSize}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                setModifiedOrderSize(e.target.value)
+                              }
+                            />
+                          </Td>
+                          <Td className="w-[16.67%]">
+                            <Input
+                              autoFocus
+                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                              type="text"
+                              value={modifiedOrderPrice}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                setModifiedOrderPrice(e.target.value)
+                              }
+                            />
+                          </Td>
+                        </>
+                      )}
+                      <Td className="w-[16.67%] text-right">
                         {formatFixedDecimals(o.size * o.price, true)}
                       </Td>
-                      <Td>
-                        <div className="flex justify-end">
-                          <Tooltip content={t('cancel')}>
-                            <IconButton
-                              disabled={cancelId === o.orderId.toString()}
-                              onClick={() =>
-                                o instanceof PerpOrder
-                                  ? handleCancelPerpOrder(o)
-                                  : handleCancelSerumOrder(o)
-                              }
-                              size="small"
-                            >
-                              {cancelId === o.orderId.toString() ? (
-                                <Loading className="h-4 w-4" />
-                              ) : (
-                                <TrashIcon className="h-4 w-4" />
-                              )}
-                            </IconButton>
-                          </Tooltip>
+                      <Td className="w-[16.67%]">
+                        <div className="flex justify-end space-x-2">
+                          {modifyOrderId !== o.orderId.toString() ? (
+                            <>
+                              <IconButton
+                                onClick={() => showEditOrderForm(o)}
+                                size="small"
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </IconButton>
+                              <Tooltip content={t('cancel')}>
+                                <IconButton
+                                  disabled={cancelId === o.orderId.toString()}
+                                  onClick={() =>
+                                    o instanceof PerpOrder
+                                      ? handleCancelPerpOrder(o)
+                                      : handleCancelSerumOrder(o)
+                                  }
+                                  size="small"
+                                >
+                                  {cancelId === o.orderId.toString() ? (
+                                    <Loading className="h-4 w-4" />
+                                  ) : (
+                                    <TrashIcon className="h-4 w-4" />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <>
+                              <IconButton
+                                onClick={() => console.log('save')}
+                                size="small"
+                              >
+                                <CheckIcon className="h-4 w-4" />
+                              </IconButton>
+                              <IconButton
+                                onClick={() => setModifyOrderId(undefined)}
+                                size="small"
+                              >
+                                <XMarkIcon className="h-4 w-4" />
+                              </IconButton>
+                            </>
+                          )}
                         </div>
                       </Td>
                     </TrBody>
@@ -273,20 +348,36 @@ const OpenOrders = () => {
                         {quoteSymbol}
                       </p>
                     </div>
-                    <IconButton
-                      disabled={cancelId === o.orderId.toString()}
-                      onClick={() =>
-                        o instanceof PerpOrder
-                          ? handleCancelPerpOrder(o)
-                          : handleCancelSerumOrder(o)
-                      }
-                    >
-                      {cancelId === o.orderId.toString() ? (
-                        <Loading className="h-4 w-4" />
-                      ) : (
-                        <TrashIcon className="h-4 w-4" />
-                      )}
-                    </IconButton>
+                    <div className="flex items-center space-x-2">
+                      <IconButton
+                        disabled={cancelId === o.orderId.toString()}
+                        onClick={() =>
+                          o instanceof PerpOrder
+                            ? handleCancelPerpOrder(o)
+                            : handleCancelSerumOrder(o)
+                        }
+                      >
+                        {cancelId === o.orderId.toString() ? (
+                          <Loading className="h-4 w-4" />
+                        ) : (
+                          <PencilIcon className="h-4 w-4" />
+                        )}
+                      </IconButton>
+                      <IconButton
+                        disabled={cancelId === o.orderId.toString()}
+                        onClick={() =>
+                          o instanceof PerpOrder
+                            ? handleCancelPerpOrder(o)
+                            : handleCancelSerumOrder(o)
+                        }
+                      >
+                        {cancelId === o.orderId.toString() ? (
+                          <Loading className="h-4 w-4" />
+                        ) : (
+                          <TrashIcon className="h-4 w-4" />
+                        )}
+                      </IconButton>
+                    </div>
                   </div>
                 </div>
               )
