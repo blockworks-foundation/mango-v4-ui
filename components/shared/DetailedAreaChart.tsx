@@ -134,7 +134,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           small
                             ? 'h-8 items-center text-2xl'
                             : 'mb-1 items-end text-4xl'
-                        } font-bold text-th-fgd-1`}
+                        } font-mono font-bold text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
@@ -179,7 +179,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           small
                             ? 'h-8 items-center text-2xl'
                             : 'mb-1 items-end text-4xl'
-                        } font-bold text-th-fgd-1`}
+                        } font-mono font-bold text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers

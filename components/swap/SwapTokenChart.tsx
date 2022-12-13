@@ -182,7 +182,7 @@ const SwapTokenChart = () => {
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="mb-1 flex flex-col font-body text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col font-mono text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     {animationSettings['number-scroll'] ? (
                       <FlipNumbers
                         height={48}
@@ -205,7 +205,7 @@ const SwapTokenChart = () => {
                 </>
               ) : (
                 <>
-                  <div className="mb-1 flex flex-col text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col font-mono text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
                     {animationSettings['number-scroll'] ? (
                       <FlipNumbers
                         height={48}

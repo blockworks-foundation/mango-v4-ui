@@ -234,7 +234,7 @@ const AccountPage = () => {
                 {t('account-value')}
               </p>
             </Tooltip>
-            <div className="mb-2 flex items-center text-5xl font-bold text-th-fgd-1">
+            <div className="mb-2 flex items-center font-mono text-5xl font-bold text-th-fgd-1">
               {animationSettings['number-scroll'] ? (
                 group && mangoAccount ? (
                   <FlipNumbers
@@ -361,7 +361,7 @@ const AccountPage = () => {
                 {t('health')}
               </p>
             </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mt-1 font-mono text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {maintHealth}%
             </p>
           </div>
@@ -378,7 +378,7 @@ const AccountPage = () => {
                 {t('free-collateral')}
               </p>
             </Tooltip>
-            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mt-1 mb-0.5 font-mono text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {group && mangoAccount
                 ? formatFixedDecimals(
                     toUiDecimalsForQuote(
@@ -424,7 +424,7 @@ const AccountPage = () => {
                 {t('leverage')}
               </p>
             </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mt-1 font-mono text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {leverage.toFixed(2)}x
             </p>
           </div>
@@ -447,7 +447,7 @@ const AccountPage = () => {
                 {t('pnl')}
               </p>
             </Tooltip>
-            <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mt-1 mb-0.5 text-left font-mono text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {formatFixedDecimals(accountPnl, true)}
             </p>
             <div className="flex space-x-1">
@@ -478,7 +478,7 @@ const AccountPage = () => {
                 {t('total-interest-earned')}
               </p>
             </Tooltip>
-            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mt-1 mb-0.5 font-mono text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {formatFixedDecimals(interestTotalValue, true)}
             </p>
             <div className="flex space-x-1">

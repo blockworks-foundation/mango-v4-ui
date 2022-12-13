@@ -7,7 +7,7 @@ module.exports = {
     fontFamily: {
       // display: ['TT Expanded Bold, sans-serif'],
       body: 'TT Commons, sans-serif',
-      mono: ['TT Mono, mono'],
+      mono: ['TT Commons Mono, mono'],
     },
     extend: {
       animation: {
