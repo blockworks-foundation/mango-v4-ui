@@ -120,7 +120,7 @@ const TokenPage = () => {
                 {animationSettings['number-scroll'] ? (
                   <FlipNumbers
                     height={48}
-                    width={36}
+                    width={35}
                     play
                     delay={0.05}
                     duration={1}
