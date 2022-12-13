@@ -104,6 +104,7 @@ const Risk: NextPage = () => {
   //   }
   // }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [assetStats, setAssetStats] = useState<AssetStats[]>([])
   const [form, setForm] = useState<AssetStats[]>([])
   const onItemInRowChange = (
@@ -120,6 +121,7 @@ const Risk: NextPage = () => {
         return obj
       })
       debounce.debounceFcn(async () => {
+        //will be called after someone stop typing
         calc(newState)
       })
       return newState
@@ -127,6 +129,7 @@ const Risk: NextPage = () => {
   }
   const calc = (form: AssetStats[]) => {
     console.log(form)
+    //calc and update state
   }
   useEffect(() => {
     let active = true
@@ -838,10 +841,8 @@ export default Risk
 
 class Debounce {
   typingTimeout: null | ReturnType<typeof setTimeout>
-  debounce: Debounce = new Debounce()
   constructor() {
     this.typingTimeout = null
-    return this.debounce
   }
   debounceFcn = (callback: any, timeoutDuration = 900) => {
     if (!callback) {
