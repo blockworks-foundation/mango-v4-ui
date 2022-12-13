@@ -5,7 +5,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import Button from '../shared/Button'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import DepositModal from '../modals/DepositModal'
 import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
@@ -21,18 +21,18 @@ const MangoAccountSummary = () => {
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
 
-  const leverage = useMemo(() => {
-    if (!group || !mangoAccount) return 0
-    const liabsValue = mangoAccount
-      .getLiabsValue(group, HealthType.init)
-      .toNumber()
-    const totalCollateral = mangoAccount
-      .getAssetsValue(group, HealthType.init)
-      .toNumber()
-    if (isNaN(liabsValue / totalCollateral)) {
-      return 0
-    } else return liabsValue / totalCollateral
-  }, [mangoAccount])
+  // const leverage = useMemo(() => {
+  //   if (!group || !mangoAccount) return 0
+  //   const liabsValue = mangoAccount
+  //     .getLiabsValue(group, HealthType.init)
+  //     .toNumber()
+  //   const totalCollateral = mangoAccount
+  //     .getAssetsValue(group, HealthType.init)
+  //     .toNumber()
+  //   if (isNaN(liabsValue / totalCollateral)) {
+  //     return 0
+  //   } else return liabsValue / totalCollateral
+  // }, [mangoAccount])
 
   return (
     <>
@@ -88,12 +88,12 @@ const MangoAccountSummary = () => {
               : `$${(0).toFixed(2)}`}
           </p>
         </div>
-        <div>
+        {/* <div>
           <p className="text-sm text-th-fgd-3">{t('leverage')}</p>
           <p className="font-mono text-sm text-th-fgd-1">
             {leverage.toFixed(2)}x
           </p>
-        </div>
+        </div> */}
       </div>
       <div className="space-y-2">
         <Button
