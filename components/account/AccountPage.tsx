@@ -81,19 +81,19 @@ const AccountPage = () => {
     INITIAL_ANIMATION_SETTINGS
   )
 
-  const leverage = useMemo(() => {
-    if (!group || !mangoAccount) return 0
-    const liabsValue = mangoAccount
-      .getLiabsValue(group, HealthType.init)!
-      .toNumber()
-    const totalCollateral = mangoAccount
-      .getAssetsValue(group, HealthType.init)!
-      .toNumber()
+  // const leverage = useMemo(() => {
+  //   if (!group || !mangoAccount) return 0
+  //   const liabsValue = mangoAccount
+  //     .getLiabsValue(group, HealthType.init)!
+  //     .toNumber()
+  //   const totalCollateral = mangoAccount
+  //     .getAssetsValue(group, HealthType.init)!
+  //     .toNumber()
 
-    if (isNaN(liabsValue / totalCollateral)) {
-      return 0
-    } else return liabsValue / totalCollateral
-  }, [mangoAccount, group])
+  //   if (isNaN(liabsValue / totalCollateral)) {
+  //     return 0
+  //   } else return liabsValue / totalCollateral
+  // }, [mangoAccount, group])
 
   useEffect(() => {
     if (mangoAccount) {
@@ -412,7 +412,7 @@ const AccountPage = () => {
             </span>
           </div>
         </div>
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+        {/* <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-six">
             <Tooltip
               content="Total position size divided by total collateral."
@@ -428,7 +428,7 @@ const AccountPage = () => {
               {leverage.toFixed(2)}x
             </p>
           </div>
-        </div>
+        </div> */}
         <button
           className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
             performanceData.length > 4
