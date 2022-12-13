@@ -5,7 +5,7 @@ module.exports = {
   ],
   theme: {
     fontFamily: {
-      // display: ['TT Expanded Bold, sans-serif'],
+      display: ['TT Commons Expanded, sans-serif'],
       body: 'TT Commons, sans-serif',
       mono: ['TT Mono, mono'],
     },

@@ -134,12 +134,12 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           small
                             ? 'h-8 items-center text-2xl'
                             : 'mb-1 items-end text-4xl'
-                        } font-bold text-th-fgd-1`}
+                        } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
                             height={small ? 24 : 40}
-                            width={small ? 15 : 26}
+                            width={small ? 18 : 31}
                             play
                             numbers={
                               prefix +
@@ -179,12 +179,12 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           small
                             ? 'h-8 items-center text-2xl'
                             : 'mb-1 items-end text-4xl'
-                        } font-bold text-th-fgd-1`}
+                        } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
                             height={small ? 24 : 40}
-                            width={small ? 15 : 26}
+                            width={small ? 18 : 31}
                             play
                             numbers={
                               prefix +

@@ -182,11 +182,11 @@ const SwapTokenChart = () => {
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="mb-1 flex flex-col font-body text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col font-body font-display text-5xl text-th-fgd-1 md:flex-row md:items-end">
                     {animationSettings['number-scroll'] ? (
                       <FlipNumbers
                         height={48}
-                        width={32}
+                        width={36}
                         play
                         numbers={formatFixedDecimals(mouseData['price'])}
                       />
@@ -205,11 +205,11 @@ const SwapTokenChart = () => {
                 </>
               ) : (
                 <>
-                  <div className="mb-1 flex flex-col text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col font-display text-5xl text-th-fgd-1 md:flex-row md:items-end">
                     {animationSettings['number-scroll'] ? (
                       <FlipNumbers
                         height={48}
-                        width={32}
+                        width={36}
                         play
                         numbers={formatFixedDecimals(
                           chartData[chartData.length - 1]['price']

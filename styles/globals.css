@@ -7,10 +7,10 @@
   src: url('/fonts/TT_Commons_Pro_Mono_Regular.woff2') format('woff2');
 }
 
-/* @font-face {
-  font-family: 'TT Expanded Bold';
-  src: url('/fonts/TT_Commons_Pro_Expanded_Bold.woff2') format('woff2');
-} */
+@font-face {
+  font-family: 'TT Commons Expanded';
+  src: url('/fonts/TT_Commons_Pro_Expanded_DemiBold.woff2') format('woff2');
+}
 
 @font-face {
   font-family: 'TT Commons';

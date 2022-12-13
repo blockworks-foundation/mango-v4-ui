@@ -244,7 +244,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
       </div>
       <div className="col-span-1 flex flex-col items-center justify-center p-6 pt-24">
         <UserSetupTransition show={showSetupStep === 0}>
-          <h2 className="mb-4 text-5xl font-bold tracking-normal lg:text-6xl">
+          <h2 className="mb-4 font-display text-5xl tracking-normal lg:text-6xl">
             {t('onboarding:intro-heading')}
           </h2>
           <p className="mb-4 text-base">{t('onboarding:intro-desc')}</p>
@@ -280,7 +280,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
         <UserSetupTransition delay show={showSetupStep === 1}>
           {showSetupStep === 1 ? (
             <div>
-              <h2 className="mb-6 text-5xl font-bold tracking-normal lg:text-6xl">
+              <h2 className="mb-6 font-display text-5xl tracking-normal lg:text-6xl">
                 {t('onboarding:connect-wallet')}
               </h2>
               <p className="mb-2 text-base">{t('onboarding:choose-wallet')}</p>
@@ -333,7 +333,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
           {showSetupStep === 2 ? (
             <div>
               <div className="pb-6">
-                <h2 className="mb-4 text-5xl font-bold tracking-normal lg:text-6xl">
+                <h2 className="mb-4 font-display text-5xl tracking-normal lg:text-6xl">
                   {t('onboarding:create-account')}
                 </h2>
                 <p className="text-base">
@@ -386,7 +386,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
         <UserSetupTransition delay show={showSetupStep === 3}>
           {showSetupStep === 3 ? (
             <div className="relative">
-              <h2 className="mb-6 text-5xl font-bold tracking-normal lg:text-6xl">
+              <h2 className="mb-6 font-display text-5xl tracking-normal lg:text-6xl">
                 {t('onboarding:fund-account')}
               </h2>
               <UserSetupTransition show={depositToken.length > 0}>
@@ -542,7 +542,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
         <UserSetupTransition delay show={showSetupStep === 4}>
           {showSetupStep === 4 ? (
             <div className="relative">
-              <h2 className="mb-4 text-5xl font-bold tracking-normal lg:text-6xl">
+              <h2 className="mb-4 font-display text-5xl tracking-normal lg:text-6xl">
                 {t('onboarding:your-profile')}
               </h2>
               <p className="text-base">{t('onboarding:profile-desc')}</p>
@@ -595,7 +595,7 @@ const UserSetupTransition = ({
   return (
     <Transition
       appear
-      className="h-full w-full max-w-md"
+      className="h-full w-full max-w-lg"
       show={show}
       enter={`transition ease-in duration-300 ${delay ? 'delay-300' : ''}`}
       enterFrom="opacity-0"
