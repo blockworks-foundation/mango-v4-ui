@@ -512,7 +512,6 @@ table p {
 /* Scrollbars */
 
 .font-mono {
-  @apply tracking-normal;
   -webkit-font-feature-settings: 'zero' 1;
   font-feature-settings: 'zero' 1;
 }
