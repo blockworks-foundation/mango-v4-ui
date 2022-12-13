@@ -12,6 +12,7 @@ import type { NextPage } from 'next'
 import { useEffect, useState } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { RouteInfo } from 'types/jupiter'
+import Input from '@components/forms/Input'
 
 function sumMap<T>(is: T[], f: (i: T) => number | undefined) {
   return is.reduce((a, i) => a + (f(i) || 0), 0)
@@ -75,20 +76,20 @@ interface AssetStats {
   banks: Bank[]
   nativeDeposits: I80F48
   nativeBorrows: I80F48
-  uiDeposits: number
-  uiBorrows: number
-  util: number
-  initAssetWeight: I80F48
-  maintAssetWeight: I80F48
-  initLiabWeight: I80F48
-  maintLiabWeight: I80F48
-  oraclePrice: I80F48
+  uiDeposits: string
+  uiBorrows: string
+  util: string
+  initAssetWeight: string
+  maintAssetWeight: string
+  initLiabWeight: string
+  maintLiabWeight: string
+  oraclePrice: string
   stablePrice: I80F48
-  assetPrice: number
-  liabPrice: number
-  assetValue: number
-  liabValue: number
-  liqFee: I80F48
+  assetPrice: string
+  liabPrice: string
+  assetValue: string
+  liabValue: string
+  liqFee: string
 }
 
 const Risk: NextPage = () => {
@@ -104,7 +105,29 @@ const Risk: NextPage = () => {
   // }
 
   const [assetStats, setAssetStats] = useState<AssetStats[]>([])
+  const [form, setForm] = useState<AssetStats[]>([])
+  const onItemInRowChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    idx: number,
+    name: string
+  ) => {
+    setForm((prevState) => {
+      const newState = prevState.map((obj, objIdx) => {
+        if (objIdx === idx) {
+          return { ...obj, [name]: e.target.value }
+        }
 
+        return obj
+      })
+      debounce.debounceFcn(async () => {
+        calc(newState)
+      })
+      return newState
+    })
+  }
+  const calc = (form: AssetStats[]) => {
+    console.log(form)
+  }
   useEffect(() => {
     let active = true
     load()
@@ -171,20 +194,20 @@ const Risk: NextPage = () => {
               banks,
               nativeDeposits,
               nativeBorrows,
-              uiDeposits,
-              uiBorrows,
-              util,
-              initAssetWeight,
-              maintAssetWeight,
-              initLiabWeight,
-              maintLiabWeight,
-              oraclePrice,
+              uiDeposits: uiDeposits.toFixed(1),
+              uiBorrows: uiBorrows.toFixed(1),
+              util: util.toFixed(4),
+              initAssetWeight: initAssetWeight.toFixed(4),
+              maintAssetWeight: maintAssetWeight.toFixed(4),
+              initLiabWeight: initLiabWeight.toFixed(4),
+              maintLiabWeight: maintLiabWeight.toFixed(4),
+              oraclePrice: oraclePrice.toFixed(4),
               stablePrice,
-              assetPrice,
-              liabPrice,
-              assetValue,
-              liabValue,
-              liqFee,
+              assetPrice: assetPrice.toFixed(4),
+              liabPrice: liabPrice.toFixed(4),
+              assetValue: assetValue.toFixed(0),
+              liabValue: liabValue.toFixed(0),
+              liqFee: liqFee.toFixed(4),
             }
           }
         )
@@ -192,9 +215,11 @@ const Risk: NextPage = () => {
       if (!active) {
         return
       }
+
       setAssetStats(res)
+      setForm(res)
     }
-  }, [group])
+  }, [group?.publicKey.toBase58()])
 
   return (
     <div className="grid grid-cols-12">
@@ -226,21 +251,24 @@ const Risk: NextPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {assetStats.map((s) => {
+                  {form.map((s) => {
                     return (
                       <tr key={s.mint}>
                         <th>{s.name}</th>
                         <th>{s.banks.length}</th>
-                        <th>{s.util.toFixed(4)}</th>
-                        <th>{s.initAssetWeight.toFixed(4)}</th>
-                        <th>{s.maintAssetWeight.toFixed(4)}</th>
-                        <th>{s.initLiabWeight.toFixed(4)}</th>
-                        <th>{s.maintLiabWeight.toFixed(4)}</th>
-                        <th>{s.liqFee.toFixed(4)}</th>
-                        <th>{s.uiBorrows.toFixed(1)}</th>
-                        <th>${s.oraclePrice.toFixed(4)}</th>
+                        <th>{s.util}</th>
+                        <th>{s.initAssetWeight.toString()}</th>
+                        <th>{s.maintAssetWeight.toString()}</th>
+                        <th>{s.initLiabWeight.toString()}</th>
+                        <th>{s.maintLiabWeight.toString()}</th>
+                        <th>{s.liqFee.toString()}</th>
+                        <th>{s.uiBorrows.toString()}</th>
+                        <th>${s.oraclePrice.toString()}</th>
                         <th>
-                          ${(s.oraclePrice.toNumber() * s.uiBorrows).toFixed(0)}
+                          $
+                          {(
+                            Number(s.oraclePrice) * Number(s.uiBorrows)
+                          ).toFixed(0)}
                         </th>
                       </tr>
                     )
@@ -248,7 +276,7 @@ const Risk: NextPage = () => {
                 </tbody>
               </table>
 
-              <table className="table-auto border-spacing-4 border-4">
+              <table className="mt-4 w-full table-auto border-spacing-4 border-4">
                 <thead>
                   <tr className="border-4">
                     <th className="border-x p-2">Token</th>
@@ -262,7 +290,7 @@ const Risk: NextPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {assetStats.map((s) => {
+                  {form.map((s, idx) => {
                     const borderStyleCell = 'border-x border-slate-300 p-1'
                     return (
                       <>
@@ -270,44 +298,99 @@ const Risk: NextPage = () => {
                           <th className={borderStyleCell}>{s.name}</th>
                           <th className={borderStyleCell}>As</th>
                           <th className={borderStyleCell}>
-                            {s.initAssetWeight.toFixed(4)}
+                            <Input
+                              value={s.initAssetWeight}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => onItemInRowChange(e, idx, 'initAssetWeight')}
+                            ></Input>
                           </th>
                           <th className={borderStyleCell}>
-                            {s.maintAssetWeight.toFixed(4)}
+                            <Input
+                              value={s.maintAssetWeight}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                onItemInRowChange(e, idx, 'maintAssetWeight')
+                              }
+                            ></Input>
                           </th>
                           <th className={borderStyleCell}>
-                            {s.uiDeposits.toFixed(1)}
+                            <Input
+                              value={s.uiDeposits}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => onItemInRowChange(e, idx, 'uiDeposits')}
+                            ></Input>
                           </th>
                           <th className={borderStyleCell}>
-                            ${s.assetPrice.toFixed(4)}
+                            <Input
+                              value={s.assetPrice}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => onItemInRowChange(e, idx, 'assetPrice')}
+                            ></Input>
                           </th>
                           <th className={borderStyleCell}>
-                            ${(s.uiDeposits * s.assetPrice).toFixed(0)}
+                            ${Number(s.uiDeposits) * Number(s.assetPrice)}
                           </th>
                           <th className={borderStyleCell}>
-                            ${s.assetValue.toFixed(0)}
+                            <Input
+                              value={s.assetValue}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => onItemInRowChange(e, idx, 'assetValue')}
+                            ></Input>
                           </th>
                         </tr>
                         <tr key={`${s.mint}-liabs`} className="border-b">
                           <th className={borderStyleCell}></th>
                           <th className={borderStyleCell}>Li</th>
                           <th className={borderStyleCell}>
-                            {s.initLiabWeight.toFixed(4)}
+                            <Input
+                              value={s.initLiabWeight}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => onItemInRowChange(e, idx, 'initLiabWeight')}
+                            ></Input>
                           </th>
                           <th className={borderStyleCell}>
-                            {s.maintLiabWeight.toFixed(4)}
+                            <Input
+                              value={s.maintLiabWeight}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => onItemInRowChange(e, idx, 'maintLiabWeight')}
+                            ></Input>
                           </th>
                           <th className={borderStyleCell}>
-                            {s.uiBorrows.toFixed(1)}
+                            <Input
+                              value={s.uiBorrows}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => onItemInRowChange(e, idx, 'uiBorrows')}
+                            ></Input>
                           </th>
                           <th className={borderStyleCell}>
-                            ${s.liabPrice.toFixed(4)}
+                            <Input
+                              value={s.liabPrice}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => onItemInRowChange(e, idx, 'liabPrice')}
+                            ></Input>
                           </th>
                           <th className={borderStyleCell}>
-                            ${(s.uiBorrows * s.liabPrice).toFixed(0)}
+                            $
+                            {(
+                              Number(s.uiBorrows) * Number(s.liabPrice)
+                            ).toFixed(0)}
                           </th>
                           <th className={borderStyleCell}>
-                            ${s.liabValue.toFixed(0)}
+                            <Input
+                              value={s.liabValue}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => onItemInRowChange(e, idx, 'liabValue')}
+                            ></Input>
                           </th>
                         </tr>
                       </>
@@ -752,3 +835,24 @@ const VaultData = ({ bank }: { bank: Bank }) => {
 */
 
 export default Risk
+
+class Debounce {
+  typingTimeout: null | ReturnType<typeof setTimeout>
+  debounce: Debounce = new Debounce()
+  constructor() {
+    this.typingTimeout = null
+    return this.debounce
+  }
+  debounceFcn = (callback: any, timeoutDuration = 900) => {
+    if (!callback) {
+      console.log('missing argument callback')
+    }
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout)
+    }
+    this.typingTimeout = setTimeout(() => {
+      callback()
+    }, timeoutDuration)
+  }
+}
+export const debounce = new Debounce()
