@@ -105,6 +105,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     return data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey]
   }, [data])
 
+  console.log('title', title?.replace(/\s/g, ''))
+
   return (
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
@@ -257,7 +259,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                     />
                     <defs>
                       <linearGradient
-                        id="gradientArea"
+                        id={`gradientArea-${title?.replace(/\s/g, '')}`}
                         x1="0"
                         y1={flipGradientCoords ? '1' : '0'}
                         x2="0"
@@ -293,7 +295,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           : COLORS.DOWN[theme]
                       }
                       strokeWidth={1.5}
-                      fill="url(#gradientArea)"
+                      fill={`url(#gradientArea-${title?.replace(/\s/g, '')})`}
                     />
                     <XAxis
                       axisLine={false}
