@@ -38,10 +38,13 @@ export const calculateSlippage = (
   const ba = orderBook?.asks?.length > 0 && Number(orderBook.asks[0][0])
   const referencePrice = bb && ba ? (bb + ba) / 2 : markPrice
 
-  const estimatedPrice = calculateMarketPrice(orderBook, Number(size), side)
+  if (Number(size)) {
+    const estimatedPrice = calculateMarketPrice(orderBook, Number(size), side)
 
-  const slippageAbs =
-    Number(size) > 0 ? Math.abs(estimatedPrice - referencePrice) : 0
-  const slippageRel = (slippageAbs / referencePrice) * 100
-  return slippageRel
+    const slippageAbs =
+      Number(size) > 0 ? Math.abs(estimatedPrice - referencePrice) : 0
+    const slippageRel = (slippageAbs / referencePrice) * 100
+    return slippageRel
+  }
+  return 0
 }
