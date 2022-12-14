@@ -313,7 +313,11 @@ const AdvancedTradeForm = () => {
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !group || !Number.isInteger(tradeForm.baseSize))
+    if (
+      !mangoAccount ||
+      !group ||
+      !Number.isInteger(Number(tradeForm.baseSize))
+    )
       return 100
 
     let simulatedHealthRatio = 0
