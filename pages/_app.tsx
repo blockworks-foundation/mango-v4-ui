@@ -27,6 +27,12 @@ import MangoProvider from '@components/MangoProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import EnhancedWalletProvider from '@components/wallet/EnhancedWalletProvider'
 import { notify } from 'utils/notifications'
+import { useRouter } from 'next/router'
+import useSelectedMarket from 'hooks/useSelectedMarket'
+import Head from 'next/head'
+import useMangoGroup from 'hooks/useMangoGroup'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { getDecimalCount } from 'utils/numbers'
 
 // Do not add hooks to this component that will cause unnecessary rerenders
 // Top level state hydrating/updating should go in MangoProvider
@@ -63,8 +69,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         <ConnectionProvider endpoint={endpoint}>
           <WalletProvider wallets={wallets} onError={onError}>
             <EnhancedWalletProvider>
-              <ThemeProvider defaultTheme="Dark">
+              <ThemeProvider defaultTheme="Mango Classic">
                 <ViewportProvider>
+                  <PageTitle />
                   <Layout>
                     <Component {...pageProps} />
                   </Layout>
@@ -80,3 +87,37 @@ function MyApp({ Component, pageProps }: AppProps) {
 }
 
 export default appWithTranslation(MyApp)
+
+const PageTitle = () => {
+  const router = useRouter()
+  const { selectedMarket } = useSelectedMarket()
+  const { group } = useMangoGroup()
+
+  const [market, price] = useMemo(() => {
+    if (!selectedMarket || !group) return []
+    if (selectedMarket instanceof PerpMarket) {
+      return [selectedMarket, selectedMarket.uiPrice]
+    } else {
+      const price = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex
+      ).uiPrice
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      return [market, price]
+    }
+  }, [selectedMarket, group])
+
+  const marketTitleString =
+    market && selectedMarket && router.pathname == '/trade'
+      ? `${price?.toFixed(getDecimalCount(market.tickSize))} ${
+          selectedMarket.name
+        } - `
+      : ''
+
+  return (
+    <Head>
+      <title>{marketTitleString}Mango Markets</title>
+    </Head>
+  )
+}

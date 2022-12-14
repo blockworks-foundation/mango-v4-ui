@@ -9,11 +9,11 @@ import Tooltip from '@components/shared/Tooltip'
 import Loading from '@components/shared/Loading'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
-import MarketLogos from './MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
-import { PerpPosition } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
+import TableMarketName from './TableMarketName'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -29,7 +29,7 @@ const UnsettledTrades = ({
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
-  const handleSettleFunds = useCallback(async (mktAddress: string) => {
+  const handleSettleSerumFunds = useCallback(async (mktAddress: string) => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -37,6 +37,7 @@ const UnsettledTrades = ({
 
     if (!group || !mangoAccount) return
     setSettleMktAddress(mktAddress)
+
     try {
       const txid = await client.serum3SettleFunds(
         group,
@@ -63,6 +64,76 @@ const UnsettledTrades = ({
     }
   }, [])
 
+  const handleSettlePerpFunds = useCallback(async (market: PerpMarket) => {
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const actions = mangoStore.getState().actions
+
+    if (!group || !mangoAccount) return
+    setSettleMktAddress(market.publicKey.toString())
+
+    try {
+      const mangoAccounts = await client.getAllMangoAccounts(group)
+      const perpPosition = mangoAccount.getPerpPosition(market.perpMarketIndex)
+      const mangoAccountPnl = perpPosition?.getEquityUi(group, market)
+
+      if (mangoAccountPnl === undefined)
+        throw new Error('Unable to get account P&L')
+
+      const sign = Math.sign(mangoAccountPnl)
+      const filteredAccounts = mangoAccounts
+        .map((m) => ({
+          mangoAccount: m,
+          pnl:
+            m
+              ?.getPerpPosition(market.perpMarketIndex)
+              ?.getEquityUi(group, market) || 0,
+        }))
+        .sort((a, b) => sign * (a.pnl - b.pnl))
+      console.log(
+        'pnl',
+        filteredAccounts.map((m) => [
+          m.mangoAccount.publicKey.toString(),
+          m.pnl,
+        ])
+      )
+
+      const profitableAccount =
+        mangoAccountPnl >= 0 ? mangoAccount : filteredAccounts[0].mangoAccount
+      const unprofitableAccount =
+        mangoAccountPnl < 0 ? mangoAccount : filteredAccounts[0].mangoAccount
+      // const profitableAccount = mangoAccount
+      // const unprofitableAccount =
+      //   filteredAccounts[filteredAccounts.length - 1].mangoAccount
+      // console.log('unprofitableAccount', unprofitableAccount)
+
+      const txid = await client.perpSettlePnl(
+        group,
+        profitableAccount,
+        unprofitableAccount,
+        mangoAccount,
+        market.perpMarketIndex
+      )
+      actions.reloadMangoAccount()
+      notify({
+        type: 'success',
+        title: 'Successfully settled P&L',
+        txid,
+      })
+    } catch (e: any) {
+      notify({
+        type: 'error',
+        title: 'Settle P&L error',
+        description: e?.message,
+        txid: e?.txid,
+      })
+      console.error('Settle P&L error:', e)
+    } finally {
+      setSettleMktAddress('')
+    }
+  }, [])
+
   if (!group) return null
 
   return connected ? (
@@ -73,8 +144,7 @@ const UnsettledTrades = ({
           <thead>
             <TrHead>
               <Th className="bg-th-bkg-1 text-left">{t('market')}</Th>
-              <Th className="bg-th-bkg-1 text-right">{t('trade:base')}</Th>
-              <Th className="bg-th-bkg-1 text-right">{t('trade:quote')}</Th>
+              <Th className="bg-th-bkg-1 text-right">{t('trade:amount')}</Th>
               <Th className="bg-th-bkg-1 text-right" />
             </TrHead>
           </thead>
@@ -89,28 +159,29 @@ const UnsettledTrades = ({
               return (
                 <TrBody key={mktAddress} className="text-sm">
                   <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <span>{market ? market.name : ''}</span>
+                    <TableMarketName market={market} />
+                  </Td>
+                  <Td className="text-right font-mono">
+                    <div className="flex">
+                      <div>
+                        {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
+                        <span className="font-body tracking-wide text-th-fgd-4">
+                          {base}
+                        </span>
+                      </div>
+                      <div>
+                        {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
+                        <span className="font-body tracking-wide text-th-fgd-4">
+                          {quote}
+                        </span>
+                      </div>
                     </div>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {base}
-                    </span>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {quote}
-                    </span>
                   </Td>
                   <Td>
                     <div className="flex justify-end">
                       <Tooltip content={t('trade:settle-funds')}>
                         <IconButton
-                          onClick={() => handleSettleFunds(mktAddress)}
+                          onClick={() => handleSettleSerumFunds(mktAddress)}
                           size="small"
                         >
                           {settleMktAddress === mktAddress ? (
@@ -132,24 +203,16 @@ const UnsettledTrades = ({
               return (
                 <TrBody key={position.marketIndex} className="text-sm">
                   <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <span>{market ? market.name : ''}</span>
-                    </div>
+                    <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right font-mono">
-                    <span></span>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {position.getUnsettledFunding(market).toNumber()}
+                    {position.getEquityUi(group, market)}
                   </Td>
                   <Td>
                     <div className="flex justify-end">
                       <Tooltip content={t('trade:settle-funds')}>
                         <IconButton
-                          onClick={() =>
-                            handleSettleFunds(market.publicKey.toString())
-                          }
+                          onClick={() => handleSettlePerpFunds(market)}
                           size="small"
                         >
                           {settleMktAddress === market.publicKey.toString() ? (
@@ -180,10 +243,7 @@ const UnsettledTrades = ({
                 key={mktAddress}
                 className="flex items-center justify-between border-b border-th-bkg-3 p-4"
               >
-                <div className="flex items-center">
-                  <MarketLogos market={market} />
-                  <span>{market ? market.name : ''}</span>
-                </div>
+                <TableMarketName market={market} />
                 <div className="flex items-center space-x-3">
                   {unsettledSpotBalances[mktAddress].base ? (
                     <span className="font-mono text-sm">
@@ -201,7 +261,9 @@ const UnsettledTrades = ({
                       </span>
                     </span>
                   ) : null}
-                  <IconButton onClick={() => handleSettleFunds(mktAddress)}>
+                  <IconButton
+                    onClick={() => handleSettleSerumFunds(mktAddress)}
+                  >
                     {settleMktAddress === mktAddress ? (
                       <Loading className="h-4 w-4" />
                     ) : (

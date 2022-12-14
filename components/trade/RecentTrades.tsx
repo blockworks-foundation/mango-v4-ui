@@ -15,6 +15,15 @@ import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 
+const buySound = new Howl({
+  src: ['/sounds/trade-buy.mp3'],
+  volume: 0.5,
+})
+const sellSound = new Howl({
+  src: ['/sounds/trade-sell.mp3'],
+  volume: 0.5,
+})
+
 const RecentTrades = () => {
   // const [trades, setTrades] = useState<any[]>([])
   const { t } = useTranslation(['common', 'trade'])
@@ -25,15 +34,6 @@ const RecentTrades = () => {
   )
   const currentFillsData = useRef<any>([])
   const nextFillsData = useRef<any>([])
-
-  const buySound = new Howl({
-    src: ['/sounds/trade-buy.mp3'],
-    volume: 0.5,
-  })
-  const sellSound = new Howl({
-    src: ['/sounds/trade-sell.mp3'],
-    volume: 0.5,
-  })
 
   const { selectedMarket, serumOrPerpMarket: market } = useSelectedMarket()
 

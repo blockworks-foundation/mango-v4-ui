@@ -84,7 +84,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const setMax = useCallback(() => {
     setInputAmount(borrowAmount.toFixed(bank?.mintDecimals))
     setSizePercentage('100')
-  }, [bank, borrowAmount, selectedToken])
+  }, [bank, borrowAmount])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -97,7 +97,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
       setInputAmount(amount.toFixed(bank?.mintDecimals))
     },
-    [bank, borrowAmount, selectedToken]
+    [bank, borrowAmount]
   )
 
   const handleSelectToken = (token: string) => {
@@ -105,43 +105,47 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
     setShowTokenList(false)
   }
 
-  const handleDeposit = useCallback(async () => {
-    const client = mangoStore.getState().client
-    const group = mangoStore.getState().group
-    const actions = mangoStore.getState().actions
-    const mangoAccount = mangoStore.getState().mangoAccount.current
+  const handleDeposit = useCallback(
+    async (amount: string) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const actions = mangoStore.getState().actions
+      const mangoAccount = mangoStore.getState().mangoAccount.current
 
-    if (!mangoAccount || !group || !bank || !wallet) return
+      if (!mangoAccount || !group || !bank || !wallet) return
+      console.log('inputAmount: ', amount)
 
-    try {
-      setSubmitting(true)
-      const tx = await client.tokenDeposit(
-        group,
-        mangoAccount,
-        bank.mint,
-        parseFloat(inputAmount)
-      )
-      notify({
-        title: 'Transaction confirmed',
-        type: 'success',
-        txid: tx,
-      })
+      try {
+        setSubmitting(true)
+        const tx = await client.tokenDeposit(
+          group,
+          mangoAccount,
+          bank.mint,
+          parseFloat(amount)
+        )
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: tx,
+        })
 
-      await actions.reloadMangoAccount()
-      actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)
-      setSubmitting(false)
-    } catch (e: any) {
-      notify({
-        title: 'Transaction failed',
-        description: e.message,
-        txid: e?.txid,
-        type: 'error',
-      })
-      console.error('Error repaying:', e)
-    }
+        await actions.reloadMangoAccount()
+        actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)
+        setSubmitting(false)
+      } catch (e: any) {
+        notify({
+          title: 'Transaction failed',
+          description: e.message,
+          txid: e?.txid,
+          type: 'error',
+        })
+        console.error('Error repaying:', e)
+      }
 
-    onClose()
-  }, [bank, wallet])
+      onClose()
+    },
+    [bank, wallet, onClose]
+  )
 
   const banks = useMemo(() => {
     const banks =
@@ -160,7 +164,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
           }).filter((b) => b.borrowAmount > 0)
         : []
     return banks
-  }, [group?.banksMapByName, walletTokens, mangoAccount])
+  }, [group?.banksMapByName, mangoAccount])
 
   useEffect(() => {
     if (!token && banks.length) {
@@ -216,7 +220,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 ).toFixed()}
               />
             </div>
-            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
               <button
                 onClick={() => setShowTokenList(true)}
                 className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
@@ -243,7 +247,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 allowNegative={false}
                 isNumericString={true}
                 decimalScale={bank?.mintDecimals || 6}
-                className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:outline-none"
+                className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                 placeholder="0.00"
                 value={inputAmount}
                 onValueChange={(e: NumberFormatValues) => {
@@ -295,7 +299,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
             </div>
           </div>
           <Button
-            onClick={handleDeposit}
+            onClick={() => handleDeposit(inputAmount)}
             className="flex w-full items-center justify-center"
             disabled={!inputAmount || showInsufficientBalance}
             size="large"

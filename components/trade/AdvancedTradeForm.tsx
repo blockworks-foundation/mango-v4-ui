@@ -38,6 +38,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import Slippage from './Slippage'
 import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
+import LogoWithFallback from '@components/shared/LogoWithFallback'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -191,21 +192,37 @@ const AdvancedTradeForm = () => {
 
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (!group || !marketPrice || !selectedMarket) return
-    let tickSize: number
-    if (selectedMarket instanceof Serum3Market) {
-      const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
-      )
-      tickSize = market.tickSize
-    } else {
-      tickSize = selectedMarket.tickSize
+    if (
+      tradeForm.tradeType === 'Market' &&
+      marketPrice &&
+      selectedMarket &&
+      group
+    ) {
+      let tickSize: number
+      if (selectedMarket instanceof Serum3Market) {
+        const market = group.getSerum3ExternalMarket(
+          selectedMarket.serumMarketExternal
+        )
+        tickSize = market.tickSize
+      } else {
+        tickSize = selectedMarket.tickSize
+      }
+      if (tradeForm.baseSize) {
+        const baseSize = new Decimal(tradeForm.baseSize).toNumber()
+        const orderbook = mangoStore.getState().selectedMarket.orderbook
+        const price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
+        const quoteSize = baseSize * price
+        set((s) => {
+          s.tradeForm.price = price.toFixed(getDecimalCount(tickSize))
+          s.tradeForm.quoteSize = quoteSize.toFixed(getDecimalCount(tickSize))
+        })
+      } else {
+        set((s) => {
+          s.tradeForm.price = marketPrice.toFixed(getDecimalCount(tickSize))
+        })
+      }
     }
-
-    set((s) => {
-      s.tradeForm.price = marketPrice.toFixed(getDecimalCount(tickSize))
-    })
-  }, [set, marketPrice, selectedMarket])
+  }, [marketPrice, selectedMarket, tradeForm])
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -321,12 +338,14 @@ const AdvancedTradeForm = () => {
           ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
               group,
               selectedMarket.perpMarketIndex,
-              parseFloat(tradeForm.baseSize)
+              parseFloat(tradeForm.baseSize),
+              parseFloat(tradeForm.price)
             )
           : mangoAccount.simHealthRatioWithPerpBidUiChanges(
               group,
               selectedMarket.perpMarketIndex,
-              parseFloat(tradeForm.baseSize)
+              parseFloat(tradeForm.baseSize),
+              parseFloat(tradeForm.price)
             )
     }
 
@@ -347,23 +366,23 @@ const AdvancedTradeForm = () => {
           fillWidth
         />
       </div>
-      <div className="mt-4 px-4">
+      <div className="px-3 md:px-4">
         <SolBalanceWarnings />
       </div>
-      <div className="mt-1 px-4 md:mt-6">
+      <div className="mt-1 px-2 md:mt-6 md:px-4">
         <TabUnderline
           activeValue={tradeForm.side}
           values={['buy', 'sell']}
           onChange={(v) => handleSetSide(v)}
         />
       </div>
-      <div className="mt-4 px-4">
+      <div className="mt-4 px-3 md:px-4">
         {tradeForm.tradeType === 'Limit' ? (
           <>
             <div className="mb-2 mt-4 flex items-center justify-between">
               <p className="text-xs text-th-fgd-3">{t('trade:limit-price')}</p>
             </div>
-            <div className="default-transition flex items-center rounded-md border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+            <div className="default-transition flex items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
               {quoteLogoURI ? (
                 <Image
                   className="rounded-full"
@@ -394,22 +413,21 @@ const AdvancedTradeForm = () => {
             </div>
           </>
         ) : null}
-        <div className="my-2 flex items-center justify-between">
+        <div className="mb-2 mt-3 flex items-center justify-between">
           <p className="text-xs text-th-fgd-3">{t('trade:amount')}</p>
         </div>
         <div className="flex flex-col">
-          <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
-            {baseLogoURI ? (
-              <Image
-                className="rounded-full"
-                alt=""
-                width="24"
-                height="24"
-                src={baseLogoURI}
-              />
-            ) : (
-              <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-            )}
+          <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
+            <LogoWithFallback
+              alt=""
+              className="z-10 drop-shadow-md"
+              width={'24'}
+              height={'24'}
+              src={baseLogoURI || `/icons/${baseSymbol?.toLowerCase()}.svg`}
+              fallback={
+                <QuestionMarkCircleIcon className={`h-5 w-5 text-th-fgd-3`} />
+              }
+            />
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
@@ -427,15 +445,9 @@ const AdvancedTradeForm = () => {
               {baseSymbol}
             </div>
           </div>
-          <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-bkg-4 bg-th-bkg-1 p-2 text-xs font-bold text-th-fgd-1 md:hover:border-th-fgd-4 md:hover:bg-th-bkg-2 lg:text-base">
+          <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
             {quoteLogoURI ? (
-              <Image
-                className="rounded-full"
-                alt=""
-                width="24"
-                height="24"
-                src={quoteLogoURI}
-              />
+              <Image alt="" width="24" height="24" src={quoteLogoURI} />
             ) : (
               <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
             )}
@@ -458,7 +470,7 @@ const AdvancedTradeForm = () => {
           </div>
         </div>
       </div>
-      <div className={`${tradeFormSizeUi === 'Slider' ? 'mt-4' : 'mt-2'} flex`}>
+      <div className="mt-2 flex">
         {selectedMarket instanceof Serum3Market ? (
           tradeFormSizeUi === 'Slider' ? (
             <SpotSlider />
@@ -525,7 +537,7 @@ const AdvancedTradeForm = () => {
           </div>
         ) : null}
       </div>
-      <div className="mt-6 flex px-4">
+      <div className="mt-6 flex px-3 md:px-4">
         <Button
           onClick={handlePlaceOrder}
           className={`flex w-full items-center justify-center text-white ${
@@ -548,7 +560,7 @@ const AdvancedTradeForm = () => {
           )}
         </Button>
       </div>
-      <div className="mt-4 space-y-2 px-4 lg:mt-6">
+      <div className="mt-4 space-y-2 px-3 md:px-4 lg:mt-6">
         {tradeForm.price && tradeForm.baseSize ? (
           <div className="flex justify-between text-xs">
             <p>{t('trade:order-value')}</p>

@@ -35,6 +35,7 @@ import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
+import Tooltip from '@components/shared/Tooltip'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -93,6 +94,11 @@ const EMPTY_COINGECKO_PRICES = {
   outputCoingeckoPrice: 0,
 }
 
+const successSound = new Howl({
+  src: ['/sounds/swap-success.mp3'],
+  volume: 0.5,
+})
+
 const SwapReviewRouteInfo = ({
   amountIn,
   onClose,
@@ -109,10 +115,6 @@ const SwapReviewRouteInfo = ({
   const { mangoTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
-  const successSound = new Howl({
-    src: ['/sounds/swap-success.mp3'],
-    volume: 0.5,
-  })
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
@@ -217,20 +219,20 @@ const SwapReviewRouteInfo = ({
     }
   }
 
-  const borrowAmount = useMemo(() => {
+  const [balance, borrowAmount] = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const inputBank = mangoStore.getState().swap.inputBank
-    if (!mangoAccount || !inputBank) return 0
+    if (!mangoAccount || !inputBank) return [0, 0]
 
-    const remainingBalance =
-      mangoAccount.getTokenDepositsUi(inputBank) - amountIn.toNumber()
-    const x = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
-    console.log('borrowAmount', x)
-    return x
+    const balance = mangoAccount.getTokenDepositsUi(inputBank)
+    const remainingBalance = balance - amountIn.toNumber()
+    const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+
+    return [balance, borrowAmount]
   }, [amountIn])
 
   const coinGeckoPriceDifference = useMemo(() => {
-    return amountOut
+    return amountOut?.toNumber()
       ? floorToDecimal(
           amountIn
             .div(amountOut)
@@ -239,13 +241,12 @@ const SwapReviewRouteInfo = ({
                 coingeckoPrices?.inputCoingeckoPrice
               )
             )
-            .div(amountIn.div(amountOut)),
+            .div(amountIn.div(amountOut))
+            .mul(100),
           1
         )
       : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
-
-  console.log('selectedRoute', selectedRoute)
 
   return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (
     <div className="flex h-full flex-col justify-between">
@@ -360,18 +361,35 @@ const SwapReviewRouteInfo = ({
           {borrowAmount ? (
             <>
               <div className="flex justify-between">
-                <p className="text-sm text-th-fgd-3">{t('borrow-amount')}</p>
+                <Tooltip
+                  content={
+                    balance
+                      ? t('swap:tooltip-borrow-balance', {
+                          balance: balance,
+                          borrowAmount: borrowAmount,
+                          token: inputTokenInfo?.symbol,
+                        })
+                      : t('swap:tooltip-borrow-no-balance', {
+                          borrowAmount: borrowAmount,
+                          token: inputTokenInfo?.symbol,
+                        })
+                  }
+                >
+                  <p className="tooltip-underline text-sm text-th-fgd-3">
+                    {t('borrow-amount')}
+                  </p>
+                </Tooltip>
                 <p className="text-right font-mono text-sm text-th-fgd-1">
-                  ~ {formatFixedDecimals(borrowAmount)}{' '}
+                  ~{formatFixedDecimals(borrowAmount)}{' '}
                   <span className="font-body tracking-wide">
                     {inputTokenInfo?.symbol}
                   </span>
                 </p>
               </div>
               <div className="flex justify-between">
-                <p className="text-sm text-th-fgd-3">Borrow Fee</p>
+                <p className="text-sm text-th-fgd-3">{t('borrow-fee')}</p>
                 <p className="text-right font-mono text-sm text-th-fgd-1">
-                  ~{' '}
+                  ~
                   {formatFixedDecimals(
                     amountIn
                       .mul(inputBank!.loanOriginationFeeRate.toFixed())
@@ -380,6 +398,19 @@ const SwapReviewRouteInfo = ({
                   <span className="font-body tracking-wide">
                     {inputBank!.name}
                   </span>
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <Tooltip content={t('tooltip-borrow-rate')}>
+                  <p className="tooltip-underline text-sm text-th-fgd-3">
+                    {t('borrow-rate')}
+                  </p>
+                </Tooltip>
+                <p className="text-right font-mono text-sm text-th-down">
+                  {formatDecimal(inputBank!.getBorrowRateUi(), 2, {
+                    fixed: true,
+                  })}
+                  %
                 </p>
               </div>
             </>
@@ -550,7 +581,7 @@ const SwapReviewRouteInfo = ({
           />
         ) : null}
       </div>
-      <div className="flex items-center justify-center pb-6">
+      <div className="flex items-center justify-center py-6">
         <Button
           onClick={onSwap}
           className="flex w-full items-center justify-center text-base"

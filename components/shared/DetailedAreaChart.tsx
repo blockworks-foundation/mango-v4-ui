@@ -10,14 +10,12 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
-
-import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from './Button'
-import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
@@ -26,6 +24,7 @@ import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { formatFixedDecimals } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
+import { useTranslation } from 'next-i18next'
 
 dayjs.extend(relativeTime)
 
@@ -33,6 +32,7 @@ interface DetailedAreaChartProps {
   data: any[]
   daysToShow?: string
   domain?: AxisDomain
+  heightClass?: string
   hideChange?: boolean
   hideChart?: () => void
   loading?: boolean
@@ -58,6 +58,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   data,
   daysToShow = '1',
   domain,
+  heightClass,
   hideChange,
   hideChart,
   loading,
@@ -70,6 +71,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   xKey,
   yKey,
 }) => {
+  const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
@@ -98,17 +100,23 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     return 0
   }
 
-  const flipGradientCoords = useMemo(
-    () => data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey],
-    [data]
-  )
+  const flipGradientCoords = useMemo(() => {
+    if (!data.length) return
+    return data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey]
+  }, [data])
+
+  console.log('title', title?.replace(/\s/g, ''))
 
   return (
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
         {loading ? (
           <SheenLoader className="flex flex-1">
-            <div className="h-[448px] w-full rounded-lg bg-th-bkg-2" />
+            <div
+              className={`${
+                heightClass ? heightClass : 'h-96'
+              } w-full rounded-lg bg-th-bkg-2`}
+            />
           </SheenLoader>
         ) : data.length ? (
           <div className="relative">
@@ -134,12 +142,12 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           small
                             ? 'h-8 items-center text-2xl'
                             : 'mb-1 items-end text-4xl'
-                        } font-bold text-th-fgd-1`}
+                        } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
                             height={small ? 24 : 40}
-                            width={small ? 15 : 26}
+                            width={small ? 17 : 30}
                             play
                             numbers={
                               prefix +
@@ -179,12 +187,12 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           small
                             ? 'h-8 items-center text-2xl'
                             : 'mb-1 items-end text-4xl'
-                        } font-bold text-th-fgd-1`}
+                        } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
                           <FlipNumbers
                             height={small ? 24 : 40}
-                            width={small ? 15 : 26}
+                            width={small ? 17 : 30}
                             play
                             numbers={
                               prefix +
@@ -223,7 +231,9 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                 </div>
               </div>
             </div>
-            <div className="-mt-1 h-96 w-auto">
+            <div
+              className={`-mt-1 ${heightClass ? heightClass : 'h-96'} w-auto`}
+            >
               {setDaysToShow ? (
                 <div className="absolute -top-1 right-0 -mb-2 flex justify-end">
                   <ChartRangeButtons
@@ -249,7 +259,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                     />
                     <defs>
                       <linearGradient
-                        id="gradientArea"
+                        id={`gradientArea-${title?.replace(/\s/g, '')}`}
                         x1="0"
                         y1={flipGradientCoords ? '1' : '0'}
                         x2="0"
@@ -285,7 +295,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           : COLORS.DOWN[theme]
                       }
                       strokeWidth={1.5}
-                      fill="url(#gradientArea)"
+                      fill={`url(#gradientArea-${title?.replace(/\s/g, '')})`}
                     />
                     <XAxis
                       axisLine={false}
@@ -323,10 +333,14 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex h-96 items-center justify-center rounded-lg bg-th-bkg-2 p-4 text-th-fgd-3">
+          <div
+            className={`flex ${
+              heightClass ? heightClass : 'h-96'
+            } items-center justify-center p-4 text-th-fgd-3`}
+          >
             <div className="">
-              <LineChartIcon className="mx-auto h-10 w-10 text-th-fgd-4" />
-              <p className="text-th-fgd-4">Chart not available</p>
+              <NoSymbolIcon className="mx-auto mb-1 h-6 w-6 text-th-fgd-4" />
+              <p className="text-th-fgd-4">{t('chart-unavailable')}</p>
             </div>
           </div>
         )}

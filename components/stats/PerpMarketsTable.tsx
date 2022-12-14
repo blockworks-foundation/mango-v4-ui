@@ -1,4 +1,4 @@
-import { BookSide, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 import { useViewport } from '../../hooks/useViewport'
@@ -30,9 +30,9 @@ const PerpMarketsTable = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const bids = mangoStore((s) => s.selectedMarket.bidsAccount)
-  const asks = mangoStore((s) => s.selectedMarket.asksAccount)
-  const rate = usePerpFundingRate()
+  // const bids = mangoStore((s) => s.selectedMarket.bidsAccount)
+  // const asks = mangoStore((s) => s.selectedMarket.asksAccount)
+  const rates = usePerpFundingRate()
 
   useEffect(() => {
     if (group) {
@@ -76,13 +76,8 @@ const PerpMarketsTable = () => {
               const chartData = coingeckoData ? coingeckoData.prices : undefined
 
               let fundingRate
-              if (
-                rate.isSuccess &&
-                bids instanceof BookSide &&
-                asks instanceof BookSide
-              ) {
-                console.log(rate)
-                const marketRate = rate.data.find(
+              if (rates.isSuccess && rates.data) {
+                const marketRate = rates.data.find(
                   (r) => r.market_index === market.perpMarketIndex
                 )
                 fundingRate = `${marketRate?.funding_apr.toFixed(2)}%`

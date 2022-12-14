@@ -38,10 +38,11 @@ import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 
-const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
+const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
 export const connection = new web3.Connection(
-  'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+  process.env.NEXT_PUBLIC_ENDPOINT ||
+    'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
   'processed'
 )
 const options = AnchorProvider.defaultOptions()
@@ -53,8 +54,9 @@ const DEFAULT_CLIENT = MangoClient.connect(
   DEFAULT_PROVIDER,
   CLUSTER,
   MANGO_V4_ID[CLUSTER],
-  null,
-  'get-program-accounts'
+  {
+    idsSource: 'get-program-accounts',
+  }
 )
 
 export interface TotalInterestDataItem {
@@ -241,6 +243,7 @@ export type MangoStore = {
   }
   set: (x: (x: MangoStore) => void) => void
   tokenStats: {
+    initialLoad: boolean
     loading: boolean
     data: TokenStatsItem[]
   }
@@ -366,6 +369,7 @@ const mangoStore = create<MangoStore>()(
         amountOut: '',
       },
       tokenStats: {
+        initialLoad: false,
         loading: false,
         data: [],
       },
@@ -792,8 +796,7 @@ const mangoStore = create<MangoStore>()(
         fetchTokenStats: async () => {
           const set = get().set
           const group = get().group
-          const stats = get().tokenStats.data
-          if (stats.length || !group) return
+          if (!group) return
           set((state) => {
             state.tokenStats.loading = true
           })
@@ -805,6 +808,7 @@ const mangoStore = create<MangoStore>()(
 
             set((state) => {
               state.tokenStats.data = data
+              state.tokenStats.initialLoad = true
               state.tokenStats.loading = false
             })
           } catch {
@@ -850,6 +854,7 @@ const mangoStore = create<MangoStore>()(
               CLUSTER,
               MANGO_V4_ID[CLUSTER],
               {
+                idsSource: 'get-program-accounts',
                 prioritizationFee: 2,
                 postSendTxCallback: ({ txid }: { txid: string }) => {
                   notify({
@@ -859,8 +864,7 @@ const mangoStore = create<MangoStore>()(
                     txid: txid,
                   })
                 },
-              },
-              'get-program-accounts'
+              }
             )
             set((s) => {
               s.client = client

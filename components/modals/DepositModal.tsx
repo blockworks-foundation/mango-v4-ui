@@ -44,7 +44,7 @@ export const walletBalanceForToken = (
   token: string
 ): { maxAmount: number; maxDecimals: number } => {
   const group = mangoStore.getState().group
-  const bank = group?.banksMapByName.get(token)![0]
+  const bank = group?.banksMapByName.get(token)?.[0]
 
   let walletToken
   if (bank) {
@@ -97,7 +97,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const setMax = useCallback(() => {
     setInputAmount(tokenMax.maxAmount.toString())
     setSizePercentage('100')
-  }, [tokenMax, selectedToken])
+  }, [tokenMax])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -108,7 +108,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
       setInputAmount(amount.toString())
     },
-    [tokenMax, selectedToken]
+    [tokenMax]
   )
 
   const handleSelectToken = (token: string) => {
@@ -152,7 +152,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     }
 
     onClose()
-  }, [bank, wallet, inputAmount])
+  }, [bank, wallet, inputAmount, onClose])
 
   // TODO extract into a shared hook for UserSetup.tsx
   const banks = useMemo(() => {
@@ -175,6 +175,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const group = mangoStore.getState().group
     if (!group || !mangoAccount) return
     if (
       mangoAccount.owner.toString() ===
@@ -182,7 +183,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     )
       return false
     const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group)!.toNumber()
+      mangoAccount.getEquity(group).toNumber()
     )
     return (
       parseFloat(inputAmount) > ALPHA_DEPOSIT_LIMIT ||
@@ -247,7 +248,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 ).toFixed()}
               />
             </div>
-            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
               <button
                 onClick={() => setShowTokenList(true)}
                 className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
@@ -275,7 +276,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 allowNegative={false}
                 isNumericString={true}
                 decimalScale={bank?.mintDecimals || 6}
-                className="w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:outline-none"
+                className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                 placeholder="0.00"
                 value={inputAmount}
                 onValueChange={(e: NumberFormatValues) => {
@@ -320,7 +321,9 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
             </div>
             <div className="flex justify-between">
-              <p>{t('collateral-value')}</p>
+              <Tooltip content={t('tooltip-collateral-value')}>
+                <p className="tooltip-underline">{t('collateral-value')}</p>
+              </Tooltip>
               <p className="font-mono">
                 {formatFixedDecimals(
                   bank!.uiPrice! *

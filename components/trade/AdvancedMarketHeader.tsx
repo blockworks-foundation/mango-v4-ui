@@ -5,7 +5,6 @@ import useOraclePrice from 'hooks/useOraclePrice'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
-import { formatFixedDecimals } from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
 
@@ -42,7 +41,7 @@ const AdvancedMarketHeader = () => {
           <div className="text-xs text-th-fgd-4">{t('trade:oracle-price')}</div>
           <div className="font-mono text-xs text-th-fgd-2">
             {oraclePrice ? (
-              `$${formatFixedDecimals(oraclePrice)}`
+              `$${oraclePrice}`
             ) : (
               <span className="text-th-fgd-4">–</span>
             )}

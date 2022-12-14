@@ -1,7 +1,7 @@
 import TokenPage from '@components/token/TokenPage'
+import { CLUSTER } from '@store/mangoStore'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import { LISTED_TOKENS } from 'utils/tokens'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -12,8 +12,14 @@ export async function getStaticProps({ locale }: { locale: string }) {
 }
 
 export const getStaticPaths = async () => {
-  const paths = LISTED_TOKENS.map((token) => ({
-    params: { token: token },
+  const url =
+    CLUSTER === 'devnet'
+      ? 'https://api.jup.ag/api/tokens/devnet'
+      : 'https://cache.jup.ag/tokens'
+  const response = await fetch(url)
+  const data = await response.json()
+  const paths = data.map((t: any) => ({
+    params: { token: t.symbol },
   }))
 
   return { paths, fallback: false }

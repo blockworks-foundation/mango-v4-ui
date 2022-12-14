@@ -51,8 +51,6 @@ const useJupiterRoutes = ({
   slippage,
   swapMode,
 }: useJupiterPropTypes) => {
-  console.log('amount: ', amount)
-
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
 
   const decimals =

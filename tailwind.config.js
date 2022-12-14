@@ -5,9 +5,9 @@ module.exports = {
   ],
   theme: {
     fontFamily: {
-      display: ['Lato, sans-serif'],
-      body: ['Lato, sans-serif'],
-      mono: ['Roboto Mono'],
+      display: ['TT Commons Expanded, sans-serif'],
+      body: 'TT Commons, sans-serif',
+      mono: ['TT Mono, mono'],
     },
     extend: {
       animation: {
@@ -19,9 +19,6 @@ module.exports = {
       },
       // each color category in a theme has a single base color with the variations acheived by adjusting lightness (dark and hover variants) and lightness and saturation for muted variants
       colors: {
-        'gradient-start': '#AFD803',
-        'gradient-mid': '#F2C94C',
-        'gradient-end': '#E54033',
         'mango-classic-theme': {
           active: {
             DEFAULT: 'hsl(45, 86%, 62%)',
@@ -30,6 +27,11 @@ module.exports = {
           button: {
             DEFAULT: 'hsl(269, 23%, 48%)',
             hover: 'hsl(269, 23%, 43%)',
+          },
+          input: {
+            bkg: 'hsl(256, 18%, 10%)',
+            border: 'hsl(253, 19%, 41%)',
+            borderDark: 'hsl(253, 19%, 31%)',
           },
           link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 52%)' },
           down: {
@@ -63,6 +65,11 @@ module.exports = {
             DEFAULT: 'hsl(0, 0%, 84%)',
             hover: 'hsl(0, 0%, 74%)',
           },
+          input: {
+            bkg: 'hsl(0, 0%, 97%)',
+            border: 'hsl(0, 0%, 33%)',
+            borderDark: 'hsl(0, 0%, 23%)',
+          },
           link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 52%)' },
           down: {
             DEFAULT: 'hsl(0, 39%, 58%)',
@@ -94,6 +101,11 @@ module.exports = {
           button: {
             DEFAULT: 'hsl(269, 0%, 38%)',
             hover: 'hsl(269, 0%, 33%)',
+          },
+          input: {
+            bkg: 'hsl(240, 6%, 5%)',
+            border: 'hsl(0, 0%, 32%)',
+            borderDark: 'hsl(0, 0%, 22%)',
           },
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
           down: {
@@ -127,6 +139,11 @@ module.exports = {
             DEFAULT: 'hsl(269, 0%, 43%)',
             hover: 'hsl(269, 0%, 38%)',
           },
+          input: {
+            bkg: 'hsl(240, 6%, 10%)',
+            border: 'hsl(0, 0%, 30%)',
+            borderDark: 'hsl(0, 0%, 20%)',
+          },
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
           down: {
             DEFAULT: 'hsl(0, 59%, 58%)',
@@ -158,6 +175,11 @@ module.exports = {
           button: {
             DEFAULT: 'hsl(62, 96%, 54%)',
             hover: 'hsl(62, 96%, 49%)',
+          },
+          input: {
+            bkg: 'hsl(0, 0%, 0%)',
+            border: 'hsl(0, 0%, 65%)',
+            borderDark: 'hsl(0, 0%, 55%)',
           },
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
           down: {
@@ -191,6 +213,11 @@ module.exports = {
             DEFAULT: 'hsl(220, 91%, 44%)',
             hover: 'hsl(220, 91%, 39%)',
           },
+          input: {
+            bkg: 'hsl(222, 74%, 19%)',
+            border: 'hsl(220, 71%, 46%)',
+            borderDark: 'hsl(220, 71%, 36%)',
+          },
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
           down: {
             DEFAULT: 'hsl(3, 59%, 56%)',
@@ -222,6 +249,11 @@ module.exports = {
           button: {
             DEFAULT: 'hsl(51, 95%, 72%)',
             hover: 'hsl(51, 95%, 68%)',
+          },
+          input: {
+            bkg: 'hsl(55, 90%, 88%)',
+            border: 'hsl(60, 10%, 24%)',
+            borderDark: 'hsl(60, 10%, 14%)',
           },
           link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 52%)' },
           down: {
@@ -255,6 +287,11 @@ module.exports = {
             DEFAULT: 'hsl(156, 55%, 26%)',
             hover: 'hsl(156, 55%, 21%)',
           },
+          input: {
+            bkg: 'hsl(156, 48%, 7%)',
+            border: 'hsl(120, 20%, 43%)',
+            borderDark: 'hsl(120, 20%, 33%)',
+          },
           link: { DEFAULT: 'hsl(31, 100%, 57%)', hover: 'hsl(31, 100%, 42%)' },
           down: {
             DEFAULT: 'hsl(3, 59%, 56%)',
@@ -287,6 +324,11 @@ module.exports = {
             DEFAULT: 'hsl(51, 13%, 44%)',
             hover: 'hsl(51, 13%, 39%)',
           },
+          input: {
+            bkg: 'hsl(51, 16%, 17%)',
+            border: 'hsl(55, 17%, 41%)',
+            borderDark: 'hsl(55, 17%, 31%)',
+          },
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
           down: {
             DEFAULT: 'hsl(3, 85%, 56%)',
@@ -318,6 +360,11 @@ module.exports = {
           button: {
             DEFAULT: 'hsl(356, 61%, 80%)',
             hover: 'hsl(356, 61%, 75%)',
+          },
+          input: {
+            bkg: 'hsl(356, 58%, 93%)',
+            border: 'hsl(357, 41%, 31%)',
+            borderDark: 'hsl(357, 41%, 21%)',
           },
           link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 52%)' },
           down: {
@@ -366,6 +413,9 @@ module.exports = {
         'th-button': 'var(--button)',
         'th-button-hover': 'var(--button-hover)',
         'th-warning': 'var(--warning)',
+        'th-input-bkg': 'var(--input-bkg)',
+        'th-input-border': 'var(--input-border)',
+        'th-input-border-hover': 'var(--input-border-hover)',
       },
       fontSize: {
         xxs: '.65rem',

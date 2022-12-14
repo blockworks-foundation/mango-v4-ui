@@ -41,11 +41,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           </div>
         ) : null}
         <input
-          className={`${className} default-transition h-12 w-full flex-1 rounded-md border bg-th-bkg-1 px-3 text-base
+          className={`${className} default-transition h-12 w-full flex-1 rounded-md border bg-th-input-bkg px-3 text-base
           text-th-fgd-1 ${
-            error ? 'border-th-down' : 'border-th-bkg-4'
-          } hover:border-th-fgd-4 
-          focus:outline-none 
+            error ? 'border-th-down' : 'border-th-input-border'
+          } focus:outline-none 
+          md:hover:border-th-input-border-hover 
           ${
             disabled
               ? 'cursor-not-allowed bg-th-bkg-3 text-th-fgd-3 hover:border-th-fgd-4'

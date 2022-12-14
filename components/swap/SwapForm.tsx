@@ -45,6 +45,7 @@ import SwapSlider from './SwapSlider'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
+import Tooltip from '@components/shared/Tooltip'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -53,8 +54,10 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
     : true
 }
 
+const set = mangoStore.getState().set
+
 const SwapForm = () => {
-  const { t } = useTranslation(['common', 'swap'])
+  const { t } = useTranslation(['common', 'swap', 'trade'])
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
@@ -63,7 +66,6 @@ const SwapForm = () => {
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
 
-  const set = mangoStore.getState().set
   const {
     margin: useMargin,
     slippage,
@@ -98,15 +100,27 @@ const SwapForm = () => {
     swapMode,
   })
 
-  const setAmountInFormValue = useCallback((amountIn: string) => {
-    set((s) => {
-      s.swap.amountIn = amountIn
-    })
-  }, [])
+  const setAmountInFormValue = useCallback(
+    (amountIn: string, setSwapMode?: boolean) => {
+      set((s) => {
+        s.swap.amountIn = amountIn
+        if (!parseFloat(amountIn)) {
+          s.swap.amountOut = ''
+        }
+        if (setSwapMode) {
+          s.swap.swapMode = 'ExactIn'
+        }
+      })
+    },
+    []
+  )
 
   const setAmountOutFormValue = useCallback((amountOut: string) => {
     set((s) => {
       s.swap.amountOut = amountOut
+      if (!parseFloat(amountOut)) {
+        s.swap.amountIn = ''
+      }
     })
   }, [])
 
@@ -138,7 +152,7 @@ const SwapForm = () => {
   useEffect(() => {
     setAmountInFormValue('')
     setAmountOutFormValue('')
-  }, [useMargin])
+  }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
   const handleAmountInChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
@@ -150,7 +164,7 @@ const SwapForm = () => {
       }
       setAmountInFormValue(e.value)
     },
-    [swapMode]
+    [swapMode, setAmountInFormValue]
   )
 
   const handleAmountOutChange = useCallback(
@@ -163,7 +177,7 @@ const SwapForm = () => {
       }
       setAmountOutFormValue(e.value)
     },
-    [swapMode]
+    [swapMode, setAmountOutFormValue]
   )
 
   const handleTokenInSelect = useCallback((mintAddress: string) => {
@@ -191,9 +205,6 @@ const SwapForm = () => {
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
       setAmountInFormValue(amountOutAsDecimal.toString())
-      set((s) => {
-        s.swap.swapMode = 'ExactIn'
-      })
     }
     const inputBank = mangoStore.getState().swap.inputBank
     const outputBank = mangoStore.getState().swap.outputBank
@@ -204,7 +215,7 @@ const SwapForm = () => {
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
     )
-  }, [set, amountOutAsDecimal, amountInAsDecimal])
+  }, [setAmountInFormValue, amountOutAsDecimal, amountInAsDecimal])
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
@@ -309,14 +320,14 @@ const SwapForm = () => {
           </div>
         </div>
         <div className="mb-2 flex items-end justify-between">
-          <p className="text-th-fgd-3">{t('swap:pay')}</p>
+          <p className="text-th-fgd-2 lg:text-base">{t('swap:pay')}</p>
           <MaxSwapAmount
             useMargin={useMargin}
-            setAmountIn={setAmountInFormValue}
+            setAmountIn={(v) => setAmountInFormValue(v, true)}
           />
         </div>
         <div className="mb-3 grid grid-cols-2" id="swap-step-two">
-          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
             <TokenSelect
               bank={
                 inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
@@ -334,7 +345,7 @@ const SwapForm = () => {
               decimalScale={inputBank?.mintDecimals || 6}
               name="amountIn"
               id="amountIn"
-              className="w-full rounded-l-none rounded-r-lg border border-th-bkg-4 bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+              className="w-full rounded-l-none rounded-r-lg border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
               placeholder="0.00"
               value={amountInFormValue}
               onValueChange={handleAmountInChange}
@@ -357,9 +368,9 @@ const SwapForm = () => {
             />
           </button>
         </div>
-        <p className="mb-2 text-th-fgd-3">{t('swap:receive')}</p>
+        <p className="mb-2 text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
         <div id="swap-step-three" className="mb-3 grid grid-cols-2">
-          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-th-bkg-1">
+          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
             <TokenSelect
               bank={
                 outputBank ||
@@ -369,7 +380,7 @@ const SwapForm = () => {
               type="output"
             />
           </div>
-          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-bkg-4 text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
+          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-input-border text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
             {loadingSwapDetails ? (
               <div className="w-full">
                 <SheenLoader className="flex flex-1 rounded-l-none">
@@ -385,7 +396,7 @@ const SwapForm = () => {
                 decimalScale={outputBank?.mintDecimals || 6}
                 name="amountOut"
                 id="amountOut"
-                className="w-full rounded-l-none rounded-r-lg bg-th-bkg-1 p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+                className="w-full rounded-l-none rounded-r-lg bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
                 placeholder="0.00"
                 value={amountOutFormValue}
                 onValueChange={handleAmountOutChange}
@@ -397,13 +408,13 @@ const SwapForm = () => {
           <SwapSlider
             useMargin={useMargin}
             amount={amountInAsDecimal.toNumber()}
-            onChange={setAmountInFormValue}
+            onChange={(v) => setAmountInFormValue(v, true)}
             step={1 / 10 ** (inputBank?.mintDecimals || 6)}
           />
         ) : (
           <PercentageSelectButtons
             amountIn={amountInAsDecimal.toString()}
-            setAmountIn={setAmountInFormValue}
+            setAmountIn={(v) => setAmountInFormValue(v, true)}
             useMargin={useMargin}
           />
         )}
@@ -416,22 +427,26 @@ const SwapForm = () => {
           amountOut={selectedRoute ? amountOutAsDecimal.toNumber() : undefined}
         />
         {group && inputBank ? (
-          <div className="pt-4">
+          <div className="mt-4">
             <TokenVaultWarnings bank={inputBank} />
           </div>
         ) : null}
-        <div className="space-y-2 pt-2">
+        <div className="mt-4 space-y-2">
           <div id="swap-step-four">
             <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           </div>
           <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
-            <p className="text-right font-mono text-sm text-th-fgd-3">
+            <Tooltip content={t('trade:tooltip-slippage')} delay={250}>
+              <p className="tooltip-underline text-sm text-th-fgd-3">
+                Est. {t('swap:slippage')}
+              </p>
+            </Tooltip>
+            <p className="text-right font-mono text-sm text-th-fgd-2">
               {selectedRoute?.priceImpactPct
                 ? selectedRoute?.priceImpactPct * 100 < 0.1
                   ? '<0.1%'
                   : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                : '0.00%'}
+                : '–'}
             </p>
           </div>
         </div>

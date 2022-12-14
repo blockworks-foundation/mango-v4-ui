@@ -38,6 +38,7 @@ const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
   const actions = mangoStore((s) => s.actions)
   const tokenStats = mangoStore((s) => s.tokenStats.data)
+  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const { group } = useMangoGroup()
@@ -47,7 +48,7 @@ const TokenStats = () => {
   const router = useRouter()
 
   useEffect(() => {
-    if (group && !tokenStats.length) {
+    if (group && !initialStatsLoad) {
       actions.fetchTokenStats()
     }
   }, [group])
@@ -113,15 +114,15 @@ const TokenStats = () => {
 
   return (
     <ContentBox hideBorder hidePadding>
-      <div className="grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-5xl">
+      <div className="grid grid-cols-2">
         {loadingStats ? (
-          <div className="col-span-2 py-4 px-6 md:col-span-1">
+          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
             <SheenLoader className="flex flex-1">
               <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
             </SheenLoader>
           </div>
         ) : totalValues.length ? (
-          <div className="col-span-2 py-4 px-6 md:col-span-1">
+          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
             <DetailedAreaChart
               data={totalValues.concat([
                 {
@@ -131,6 +132,7 @@ const TokenStats = () => {
                 },
               ])}
               daysToShow={'999'}
+              heightClass="h-72"
               prefix="$"
               tickFormat={(x) => `$${x.toFixed(2)}`}
               title={t('total-deposit-value')}
@@ -140,13 +142,13 @@ const TokenStats = () => {
           </div>
         ) : null}
         {loadingStats ? (
-          <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
             <SheenLoader className="flex flex-1">
               <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
             </SheenLoader>
           </div>
         ) : totalValues.length ? (
-          <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
+          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
             <DetailedAreaChart
               data={totalValues.concat([
                 {
@@ -156,6 +158,7 @@ const TokenStats = () => {
                 },
               ])}
               daysToShow={'999'}
+              heightClass="h-72"
               prefix="$"
               tickFormat={(x) => `$${x.toFixed(2)}`}
               title={t('total-borrow-value')}

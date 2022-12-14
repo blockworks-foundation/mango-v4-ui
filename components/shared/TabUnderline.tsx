@@ -13,9 +13,7 @@ const TabUnderline = ({
 }) => {
   const { t } = useTranslation('common')
   return (
-    <div
-      className={`relative mb-3 pb-1 md:-mt-2.5 md:border-b md:border-th-bkg-3`}
-    >
+    <div className={`relative mb-3 border-b border-th-bkg-3 pb-1 md:-mt-2.5`}>
       <div
         className={`default-transition absolute bottom-[-1px] left-0 h-0.5 ${
           activeValue === 'buy'
