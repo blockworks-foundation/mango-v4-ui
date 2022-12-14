@@ -3,8 +3,31 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Roboto Mono';
-  src: url('/fonts/roboto.woff');
+  font-family: 'TT Mono';
+  src: url('/fonts/TT_Commons_Pro_Mono_Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons Expanded';
+  src: url('/fonts/TT_Commons_Pro_Expanded_DemiBold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons';
+  font-weight: normal;
+  src: url('/fonts/TT_Commons_Pro_Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons';
+  font-weight: medium;
+  src: url('/fonts/TT_Commons_Pro_Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons';
+  font-weight: bold;
+  src: url('/fonts/TT_Commons_Pro_DemiBold.woff2') format('woff2');
 }
 
 /* Reset */

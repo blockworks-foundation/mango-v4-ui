@@ -31,14 +31,12 @@ const Slippage = () => {
   }, [tradeForm, markPrice, selectedMarket])
 
   return slippage ? (
-    <div className="flex justify-between">
+    <div className="flex justify-between text-xs">
       <Tooltip content={t('trade:tooltip-slippage')}>
-        <p className="tooltip-underline mr-4 mb-1 text-xs">
-          {t('trade:est-slippage')}
-        </p>
+        <p className="tooltip-underline mr-4">{t('trade:est-slippage')}</p>
       </Tooltip>
       <p
-        className={`text-xs ${
+        className={`${
           slippage <= 1
             ? 'text-th-success'
             : slippage <= 3

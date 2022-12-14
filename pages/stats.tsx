@@ -10,6 +10,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'onboarding',
         'profile',
         'token',
+        'trade',
       ])),
     },
   }

@@ -62,7 +62,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <span className="ml-3 text-lg font-bold text-th-fgd-1">
+                  <span className="ml-3 font-display text-lg text-th-fgd-1">
                     Mango
                   </span>
                 </Transition>

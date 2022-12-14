@@ -39,7 +39,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
           : size === 'large'
           ? 'h-12 px-6'
           : 'h-8 px-3'
-      } default-transition font-bold ${
+      } default-transition font-display ${
         theme === 'High Contrast' && !secondary
           ? 'text-th-bkg-1'
           : 'text-th-fgd-1'

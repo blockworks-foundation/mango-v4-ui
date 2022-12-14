@@ -559,6 +559,7 @@ const mangoStore = create<MangoStore>()(
               }
             })
           } catch (e) {
+            notify({ type: 'info', title: 'Unable to refresh data' })
             console.error('Error fetching group', e)
           }
         },
