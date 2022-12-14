@@ -64,6 +64,7 @@ const OpenOrders = () => {
             o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
             o.orderId
           )
+
           actions.fetchOpenOrders()
           notify({
             type: 'success',
@@ -124,20 +125,21 @@ const OpenOrders = () => {
     },
     [t]
   )
-
   const modifyOrder = useCallback(
     async (o: PerpOrder | Order) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
-      const selectedMarket = mangoStore.getState().selectedMarket.current
       const actions = mangoStore.getState().actions
-      const baseSize = new Decimal(modifiedOrderSize).toNumber()
-      const price = new Decimal(modifiedOrderPrice).toNumber()
+      const baseSize = modifiedOrderSize
+        ? new Decimal(modifiedOrderSize).toNumber()
+        : o.size
+      const price = modifiedOrderPrice
+        ? new Decimal(modifiedOrderPrice).toNumber()
+        : o.price
       if (!group || !mangoAccount) return
-      setCancelId(o.orderId.toString())
       try {
-        if (selectedMarket instanceof PerpMarket && o instanceof PerpOrder) {
+        if (o instanceof PerpOrder) {
           const tx = await client.modifyPerpOrder(
             group,
             mangoAccount,
@@ -152,6 +154,7 @@ const OpenOrders = () => {
             undefined,
             undefined
           )
+          actions.reloadMangoAccount()
           actions.fetchOpenOrders()
           notify({
             type: 'success',
@@ -168,16 +171,21 @@ const OpenOrders = () => {
           type: 'error',
         })
       } finally {
-        setCancelId('')
+        cancelEditOrderForm()
       }
     },
-    [t]
+    [t, modifiedOrderSize, modifiedOrderPrice]
   )
 
   const showEditOrderForm = (order: Order | PerpOrder) => {
     setModifyOrderId(order.orderId.toString())
     setModifiedOrderSize(order.size.toString())
     setModifiedOrderPrice(order.price.toString())
+  }
+  const cancelEditOrderForm = () => {
+    setModifyOrderId(undefined)
+    setModifiedOrderSize('')
+    setModifiedOrderPrice('')
   }
 
   return connected ? (
@@ -321,7 +329,7 @@ const OpenOrders = () => {
                                 <CheckIcon className="h-4 w-4" />
                               </IconButton>
                               <IconButton
-                                onClick={() => setModifyOrderId(undefined)}
+                                onClick={cancelEditOrderForm}
                                 size="small"
                               >
                                 <XMarkIcon className="h-4 w-4" />
