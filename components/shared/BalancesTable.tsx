@@ -2,7 +2,6 @@ import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
-import Decimal from 'decimal.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
@@ -220,7 +219,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
             : 'sell'
         price = calculateMarketPrice(orderbook, balance, side)
       } else {
-        price = new Decimal(tradeForm.price).toNumber()
+        price = Number(tradeForm.price)
       }
 
       let minOrderDecimals: number

@@ -4,7 +4,6 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
-import Decimal from 'decimal.js'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
@@ -29,7 +28,7 @@ const PerpPositions = () => {
     const tradeForm = mangoStore.getState().tradeForm
     const set = mangoStore.getState().set
 
-    let price = new Decimal(tradeForm.price).toNumber()
+    let price = Number(tradeForm.price)
     if (tradeForm.tradeType === 'Market') {
       const orderbook = mangoStore.getState().selectedMarket.orderbook
       price = calculateMarketPrice(orderbook, positionSize, tradeForm.side)

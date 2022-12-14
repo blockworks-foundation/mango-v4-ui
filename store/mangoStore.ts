@@ -175,6 +175,26 @@ export interface TokenStatsItem {
 //   wallet_pk: '',
 // }
 
+interface TradeForm {
+  side: 'buy' | 'sell'
+  price: string | undefined
+  baseSize: string
+  quoteSize: string
+  tradeType: 'Market' | 'Limit'
+  postOnly: boolean
+  ioc: boolean
+}
+
+export const DEFAULT_TRADE_FORM: TradeForm = {
+  side: 'buy',
+  price: undefined,
+  baseSize: '',
+  quoteSize: '',
+  tradeType: 'Limit',
+  postOnly: false,
+  ioc: false,
+}
+
 export type MangoStore = {
   activityFeed: {
     feed: Array<DepositWithdrawFeedItem | LiquidationFeedItem>
@@ -243,15 +263,7 @@ export type MangoStore = {
     loading: boolean
     data: TokenStatsItem[]
   }
-  tradeForm: {
-    side: 'buy' | 'sell'
-    price: string
-    baseSize: string
-    quoteSize: string
-    tradeType: 'Market' | 'Limit'
-    postOnly: boolean
-    ioc: boolean
-  }
+  tradeForm: TradeForm
   wallet: {
     tokens: TokenAccount[]
     nfts: {
@@ -364,15 +376,7 @@ const mangoStore = create<MangoStore>()(
         loading: false,
         data: [],
       },
-      tradeForm: {
-        side: 'buy',
-        price: '',
-        baseSize: '',
-        quoteSize: '',
-        tradeType: 'Limit',
-        postOnly: false,
-        ioc: false,
-      },
+      tradeForm: DEFAULT_TRADE_FORM,
       wallet: {
         tokens: [],
         nfts: {
