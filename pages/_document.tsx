@@ -6,14 +6,10 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <link
+          {/* <link
             href="https://fonts.googleapis.com/css2?family=Lato:wght@200;300;400;500;600;700&display=swap"
             rel="stylesheet"
-          />
-          {/* <link
-            href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono&display=swap"
-            rel="stylesheet"
-          ></link> */}
+          /> */}
           <Script
             src="/datafeeds/udf/dist/bundle.js"
             strategy="beforeInteractive"

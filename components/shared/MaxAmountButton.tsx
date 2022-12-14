@@ -15,11 +15,11 @@ const MaxAmountButton = ({
 }) => {
   return (
     <LinkButton
-      className={`no-underline ${className}`}
+      className={`font-normal no-underline ${className}`}
       disabled={disabled}
       onClick={onClick}
     >
-      <span className="mr-1 font-normal text-th-fgd-4">{label}:</span>
+      <p className="mr-1 text-th-fgd-4">{label}:</p>
       <span className="font-mono text-th-fgd-2 underline">{value}</span>
     </LinkButton>
   )

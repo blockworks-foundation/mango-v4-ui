@@ -1,4 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400&display=swap'); */
+
+@font-face {
+  font-family: 'TT Commons';
+  font-weight: normal;
+  src: url('/fonts/TT_Commons_Pro_Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons';
+  font-weight: medium;
+  src: url('/fonts/TT_Commons_Pro_Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons';
+  font-weight: bold;
+  src: url('/fonts/TT_Commons_Pro_DemiBold.woff2') format('woff2');
+}
 
 :root:not(.theme-dark) {
   --black: #fff;
@@ -57,7 +75,7 @@ html .chart-page .chart-container-border {
 }
 
 html .chart-page {
-  font-family: 'Lato', sans-serif;
+  font-family: 'TT Commons', sans-serif;
 }
 
 html .loading-indicator {
@@ -156,7 +174,7 @@ html.theme-dark .chart-page .chart-container-border {
 }
 
 html.theme-dark .chart-page {
-  font-family: 'Lato', sans-serif;
+  font-family: 'TT Commons', sans-serif;
 }
 
 html.theme-dark .loading-indicator {
