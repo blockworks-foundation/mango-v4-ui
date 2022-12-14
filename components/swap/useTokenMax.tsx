@@ -66,6 +66,16 @@ export const getTokenInMax = (
     inputBank.mintDecimals
   )
 
+  console.log(
+    'getMaxSourceUiForTokenSwap',
+    mangoAccount.getMaxSourceUiForTokenSwap(
+      group,
+      inputBank.mint,
+      outputBank.mint,
+      1
+    )
+  )
+
   const maxAmount = useMargin
     ? Decimal.min(
         maxAmountWithoutMargin,
