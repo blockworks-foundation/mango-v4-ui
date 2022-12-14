@@ -32,6 +32,7 @@ interface DetailedAreaChartProps {
   data: any[]
   daysToShow?: string
   domain?: AxisDomain
+  heightClass?: string
   hideChange?: boolean
   hideChart?: () => void
   loading?: boolean
@@ -57,6 +58,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   data,
   daysToShow = '1',
   domain,
+  heightClass,
   hideChange,
   hideChart,
   loading,
@@ -108,7 +110,11 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
       <ContentBox hideBorder hidePadding>
         {loading ? (
           <SheenLoader className="flex flex-1">
-            <div className="h-[448px] w-full rounded-lg bg-th-bkg-2" />
+            <div
+              className={`${
+                heightClass ? heightClass : 'h-96'
+              } w-full rounded-lg bg-th-bkg-2`}
+            />
           </SheenLoader>
         ) : data.length ? (
           <div className="relative">
@@ -223,7 +229,9 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                 </div>
               </div>
             </div>
-            <div className="-mt-1 h-96 w-auto">
+            <div
+              className={`-mt-1 ${heightClass ? heightClass : 'h-96'} w-auto`}
+            >
               {setDaysToShow ? (
                 <div className="absolute -top-1 right-0 -mb-2 flex justify-end">
                   <ChartRangeButtons
@@ -323,7 +331,11 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex h-96 items-center justify-center p-4 text-th-fgd-3">
+          <div
+            className={`flex ${
+              heightClass ? heightClass : 'h-96'
+            } items-center justify-center p-4 text-th-fgd-3`}
+          >
             <div className="">
               <NoSymbolIcon className="mx-auto mb-1 h-6 w-6 text-th-fgd-4" />
               <p className="text-th-fgd-4">{t('chart-unavailable')}</p>
