@@ -1,6 +1,7 @@
 import {
   PerpMarket,
   PerpOrder,
+  PerpOrderType,
   Serum3Market,
   Serum3Side,
 } from '@blockworks-foundation/mango-v4'
@@ -22,6 +23,7 @@ import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
+import Decimal from 'decimal.js'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
@@ -100,6 +102,55 @@ const OpenOrders = () => {
             mangoAccount,
             o.perpMarketIndex,
             o.orderId
+          )
+          actions.fetchOpenOrders()
+          notify({
+            type: 'success',
+            title: 'Transaction successful',
+            txid: tx,
+          })
+        }
+      } catch (e: any) {
+        console.error('Error canceling', e)
+        notify({
+          title: t('trade:cancel-order-error'),
+          description: e.message,
+          txid: e.txid,
+          type: 'error',
+        })
+      } finally {
+        setCancelId('')
+      }
+    },
+    [t]
+  )
+
+  const modifyOrder = useCallback(
+    async (o: PerpOrder | Order) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const selectedMarket = mangoStore.getState().selectedMarket.current
+      const actions = mangoStore.getState().actions
+      const baseSize = new Decimal(modifiedOrderSize).toNumber()
+      const price = new Decimal(modifiedOrderPrice).toNumber()
+      if (!group || !mangoAccount) return
+      setCancelId(o.orderId.toString())
+      try {
+        if (selectedMarket instanceof PerpMarket && o instanceof PerpOrder) {
+          const tx = await client.modifyPerpOrder(
+            group,
+            mangoAccount,
+            o.perpMarketIndex,
+            o.orderId,
+            o.side,
+            price,
+            Math.abs(baseSize),
+            undefined, // maxQuoteQuantity
+            Date.now(),
+            PerpOrderType.limit,
+            undefined,
+            undefined
           )
           actions.fetchOpenOrders()
           notify({
@@ -264,7 +315,7 @@ const OpenOrders = () => {
                           ) : (
                             <>
                               <IconButton
-                                onClick={() => console.log('save')}
+                                onClick={() => modifyOrder(o)}
                                 size="small"
                               >
                                 <CheckIcon className="h-4 w-4" />
