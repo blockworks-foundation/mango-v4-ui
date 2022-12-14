@@ -192,21 +192,37 @@ const AdvancedTradeForm = () => {
 
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (!group || !marketPrice || !selectedMarket) return
-    let tickSize: number
-    if (selectedMarket instanceof Serum3Market) {
-      const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
-      )
-      tickSize = market.tickSize
-    } else {
-      tickSize = selectedMarket.tickSize
+    if (
+      tradeForm.tradeType === 'Market' &&
+      marketPrice &&
+      selectedMarket &&
+      group
+    ) {
+      let tickSize: number
+      if (selectedMarket instanceof Serum3Market) {
+        const market = group.getSerum3ExternalMarket(
+          selectedMarket.serumMarketExternal
+        )
+        tickSize = market.tickSize
+      } else {
+        tickSize = selectedMarket.tickSize
+      }
+      if (tradeForm.baseSize) {
+        const baseSize = new Decimal(tradeForm.baseSize).toNumber()
+        const orderbook = mangoStore.getState().selectedMarket.orderbook
+        const price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
+        const quoteSize = baseSize * price
+        set((s) => {
+          s.tradeForm.price = price.toFixed(getDecimalCount(tickSize))
+          s.tradeForm.quoteSize = quoteSize.toFixed(getDecimalCount(tickSize))
+        })
+      } else {
+        set((s) => {
+          s.tradeForm.price = marketPrice.toFixed(getDecimalCount(tickSize))
+        })
+      }
     }
-
-    set((s) => {
-      s.tradeForm.price = marketPrice.toFixed(getDecimalCount(tickSize))
-    })
-  }, [set, marketPrice, selectedMarket])
+  }, [marketPrice, selectedMarket, tradeForm])
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
