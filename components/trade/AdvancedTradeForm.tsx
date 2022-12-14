@@ -313,40 +313,48 @@ const AdvancedTradeForm = () => {
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !group || !Number(tradeForm.baseSize)) return 100
+    if (
+      !mangoAccount ||
+      !group ||
+      !Number.isInteger(Number(tradeForm.baseSize))
+    )
+      return 100
 
     let simulatedHealthRatio = 0
-
-    if (selectedMarket instanceof Serum3Market) {
-      simulatedHealthRatio =
-        tradeForm.side === 'sell'
-          ? mangoAccount.simHealthRatioWithSerum3AskUiChanges(
-              group,
-              parseFloat(tradeForm.baseSize),
-              selectedMarket.serumMarketExternal,
-              HealthType.maint
-            )
-          : mangoAccount.simHealthRatioWithSerum3BidUiChanges(
-              group,
-              parseFloat(tradeForm.baseSize),
-              selectedMarket.serumMarketExternal,
-              HealthType.maint
-            )
-    } else if (selectedMarket instanceof PerpMarket) {
-      simulatedHealthRatio =
-        tradeForm.side === 'sell'
-          ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
-              group,
-              selectedMarket.perpMarketIndex,
-              parseFloat(tradeForm.baseSize),
-              parseFloat(tradeForm.price)
-            )
-          : mangoAccount.simHealthRatioWithPerpBidUiChanges(
-              group,
-              selectedMarket.perpMarketIndex,
-              parseFloat(tradeForm.baseSize),
-              parseFloat(tradeForm.price)
-            )
+    try {
+      if (selectedMarket instanceof Serum3Market) {
+        simulatedHealthRatio =
+          tradeForm.side === 'sell'
+            ? mangoAccount.simHealthRatioWithSerum3AskUiChanges(
+                group,
+                parseFloat(tradeForm.baseSize),
+                selectedMarket.serumMarketExternal,
+                HealthType.maint
+              )
+            : mangoAccount.simHealthRatioWithSerum3BidUiChanges(
+                group,
+                parseFloat(tradeForm.baseSize),
+                selectedMarket.serumMarketExternal,
+                HealthType.maint
+              )
+      } else if (selectedMarket instanceof PerpMarket) {
+        simulatedHealthRatio =
+          tradeForm.side === 'sell'
+            ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
+                group,
+                selectedMarket.perpMarketIndex,
+                parseFloat(tradeForm.baseSize),
+                parseFloat(tradeForm.price)
+              )
+            : mangoAccount.simHealthRatioWithPerpBidUiChanges(
+                group,
+                selectedMarket.perpMarketIndex,
+                parseFloat(tradeForm.baseSize),
+                parseFloat(tradeForm.price)
+              )
+      }
+    } catch (e) {
+      console.warn('Error calculating projected health: ', e)
     }
 
     return simulatedHealthRatio > 100
