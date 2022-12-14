@@ -1,7 +1,7 @@
-import { Orderbook } from 'types'
+import { OrderbookL2 } from 'types'
 
 export const calculateMarketPrice = (
-  orderBook: Orderbook,
+  orderBook: OrderbookL2,
   size: number,
   side: 'buy' | 'sell'
 ): number => {
@@ -29,7 +29,7 @@ export const calculateMarketPrice = (
 }
 
 export const calculateSlippage = (
-  orderBook: Orderbook,
+  orderBook: OrderbookL2,
   size: number,
   side: 'buy' | 'sell',
   markPrice: number
