@@ -67,7 +67,7 @@ const PerpMarketsTable = () => {
                 const marketRate = rates.data.find(
                   (r) => r.market_index === market.perpMarketIndex
                 )
-                fundingRate = `${marketRate?.funding_apr.toFixed(2)}%`
+                fundingRate = `${marketRate?.funding_apr?.toFixed(2)}%`
               } else {
                 fundingRate = '–'
               }
