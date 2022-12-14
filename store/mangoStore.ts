@@ -940,6 +940,10 @@ const mangoStore = create<MangoStore>()(
 
 mangoStore.subscribe((state) => state.mangoAccount.current, spotBalancesUpdater)
 mangoStore.subscribe(
+  (state) => state.mangoAccount.openOrderAccounts,
+  spotBalancesUpdater
+)
+mangoStore.subscribe(
   (state) => state.mangoAccount.current,
   perpPositionsUpdater
 )

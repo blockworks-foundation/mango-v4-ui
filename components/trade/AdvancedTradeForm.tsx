@@ -207,8 +207,8 @@ const AdvancedTradeForm = () => {
       } else {
         tickSize = selectedMarket.tickSize
       }
-      if (tradeForm.baseSize) {
-        const baseSize = new Decimal(tradeForm.baseSize).toNumber()
+      if (!isNaN(parseFloat(tradeForm.baseSize))) {
+        const baseSize = new Decimal(tradeForm.baseSize)?.toNumber()
         const orderbook = mangoStore.getState().selectedMarket.orderbook
         const price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
         const quoteSize = baseSize * price

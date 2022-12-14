@@ -162,14 +162,14 @@ const UnsettledTrades = ({
                     <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right font-mono">
-                    <div className="flex">
+                    <div className="flex justify-end">
                       <div>
                         {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
                         <span className="font-body tracking-wide text-th-fgd-4">
                           {base}
                         </span>
                       </div>
-                      <div>
+                      <div className="ml-4">
                         {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
                         <span className="font-body tracking-wide text-th-fgd-4">
                           {quote}
