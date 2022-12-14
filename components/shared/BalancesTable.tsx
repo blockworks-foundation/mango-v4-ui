@@ -16,7 +16,7 @@ import {
   trimDecimals,
 } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
-import { calculateMarketPrice } from 'utils/tradeForm'
+import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import { LinkButton } from './Button'
 import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -217,7 +217,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
           (balance > 0 && type === 'quote') || (balance < 0 && type === 'base')
             ? 'buy'
             : 'sell'
-        price = calculateMarketPrice(orderbook, balance, side)
+        price = calculateLimitPriceForMarketOrder(orderbook, balance, side)
       } else {
         price = Number(tradeForm.price)
       }

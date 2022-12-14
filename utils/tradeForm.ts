@@ -1,6 +1,6 @@
 import { OrderbookL2 } from 'types'
 
-export const calculateMarketPrice = (
+export const calculateLimitPriceForMarketOrder = (
   orderBook: OrderbookL2,
   size: number,
   side: 'buy' | 'sell'
@@ -39,7 +39,11 @@ export const calculateSlippage = (
   const referencePrice = bb && ba ? (bb + ba) / 2 : markPrice
 
   if (Number(size)) {
-    const estimatedPrice = calculateMarketPrice(orderBook, Number(size), side)
+    const estimatedPrice = calculateLimitPriceForMarketOrder(
+      orderBook,
+      Number(size),
+      side
+    )
 
     const slippageAbs =
       Number(size) > 0 ? Math.abs(estimatedPrice - referencePrice) : 0

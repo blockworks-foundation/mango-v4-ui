@@ -13,7 +13,7 @@ import {
   numberFormat,
   trimDecimals,
 } from 'utils/numbers'
-import { calculateMarketPrice } from 'utils/tradeForm'
+import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 
@@ -31,7 +31,11 @@ const PerpPositions = () => {
     let price = Number(tradeForm.price)
     if (tradeForm.tradeType === 'Market') {
       const orderbook = mangoStore.getState().selectedMarket.orderbook
-      price = calculateMarketPrice(orderbook, positionSize, tradeForm.side)
+      price = calculateLimitPriceForMarketOrder(
+        orderbook,
+        positionSize,
+        tradeForm.side
+      )
     }
     const newSide = positionSize > 0 ? 'sell' : 'buy'
 

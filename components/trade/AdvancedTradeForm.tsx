@@ -22,7 +22,7 @@ import NumberFormat, {
 } from 'react-number-format'
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
-import { calculateMarketPrice } from 'utils/tradeForm'
+import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
@@ -243,7 +243,11 @@ const AdvancedTradeForm = () => {
       let price = Number(tradeForm.price)
       if (tradeForm.tradeType === 'Market') {
         const orderbook = mangoStore.getState().selectedMarket.orderbook
-        price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
+        price = calculateLimitPriceForMarketOrder(
+          orderbook,
+          baseSize,
+          tradeForm.side
+        )
       }
 
       if (selectedMarket instanceof Serum3Market) {
