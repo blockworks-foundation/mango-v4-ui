@@ -23,7 +23,6 @@ import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
-import Decimal from 'decimal.js'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
@@ -131,12 +130,8 @@ const OpenOrders = () => {
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
-      const baseSize = modifiedOrderSize
-        ? new Decimal(modifiedOrderSize).toNumber()
-        : o.size
-      const price = modifiedOrderPrice
-        ? new Decimal(modifiedOrderPrice).toNumber()
-        : o.price
+      const baseSize = modifiedOrderSize ? Number(modifiedOrderSize) : o.size
+      const price = modifiedOrderPrice ? Number(modifiedOrderPrice) : o.price
       if (!group || !mangoAccount) return
       try {
         if (o instanceof PerpOrder) {
@@ -154,7 +149,6 @@ const OpenOrders = () => {
             undefined,
             undefined
           )
-          actions.reloadMangoAccount()
           actions.fetchOpenOrders()
           notify({
             type: 'success',
