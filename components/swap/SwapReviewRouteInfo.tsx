@@ -12,8 +12,6 @@ import {
   Connection,
   TransactionMessage,
   AddressLookupTableAccount,
-  MessageAddressTableLookup,
-  // VersionedMessage,
 } from '@solana/web3.js'
 import Decimal from 'decimal.js'
 
@@ -63,7 +61,7 @@ const deserializeJupiterIxAndAlt = async (
     Buffer.from(swapTransaction, 'base64')
   )
   const message = parsedSwapTransaction.message
-  const lookups = message.addressTableLookups
+  // const lookups = message.addressTableLookups
   const addressLookupTablesResponses = await Promise.all(
     message.addressTableLookups.map((alt) =>
       connection.getAddressLookupTable(alt.accountKey)
@@ -73,45 +71,12 @@ const deserializeJupiterIxAndAlt = async (
     addressLookupTablesResponses
       .map((alt) => alt.value)
       .filter((x): x is AddressLookupTableAccount => x !== null)
-  const accountKeys = message.staticAccountKeys
-
-  const zippedLookupsAndAddressLookupTables: [
-    MessageAddressTableLookup,
-    AddressLookupTableAccount
-  ][] = lookups.map((l, index) => [l, addressLookupTables[index]])
-
-  for (const [lookups, table] of zippedLookupsAndAddressLookupTables) {
-    accountKeys.concat(
-      lookups.writableIndexes.map((_, index) => table.state.addresses[index])
-    )
-  }
-
-  for (const [lookups, table] of zippedLookupsAndAddressLookupTables) {
-    accountKeys.concat(
-      lookups.readonlyIndexes.map((_, index) => table.state.addresses[index])
-    )
-  }
-  console.log('message before decompile', message)
 
   const decompiledMessage = TransactionMessage.decompile(message, {
     addressLookupTableAccounts: addressLookupTables,
   })
 
-  const txInstructions: TransactionInstruction[] =
-    decompiledMessage.instructions.map(
-      (ix) =>
-        new TransactionInstruction({
-          data: ix.data,
-          programId: ix.programId,
-          keys: ix.keys.map((_, index) => ({
-            pubkey: accountKeys[index],
-            isSigner: message.isAccountSigner(index),
-            isWritable: message.isAccountWritable(index),
-          })),
-        })
-    )
-
-  return [txInstructions, addressLookupTables]
+  return [decompiledMessage.instructions, addressLookupTables]
 }
 
 const fetchJupiterTransaction = async (
@@ -150,11 +115,7 @@ const fetchJupiterTransaction = async (
   const isJupiterIx = (pk: PublicKey): boolean =>
     pk.toString() === JUPITER_V4_PROGRAM_ID
 
-  console.log('ixs', ixs)
-
   const filtered_jup_ixs = ixs.filter((ix) => isJupiterIx(ix.programId))
-  console.log('filtered_jup_ixs', filtered_jup_ixs)
-
   return [filtered_jup_ixs, alts]
 }
 
