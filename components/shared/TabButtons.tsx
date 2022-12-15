@@ -45,7 +45,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
             key={`${label}${i}`}
             onClick={() => onChange(label)}
           >
-            <span className="">{t(label)} </span>
+            <span className="font-medium">{t(label)} </span>
             {count ? (
               <div
                 className={`ml-1.5 rounded ${

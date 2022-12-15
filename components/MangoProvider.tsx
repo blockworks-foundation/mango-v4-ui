@@ -34,6 +34,7 @@ const HydrateStore = () => {
   useEffect(() => {
     const connection = mangoStore.getState().connection
     const client = mangoStore.getState().client
+    const set = mangoStore.getState().set
 
     if (!mangoAccount) return
 
@@ -68,12 +69,9 @@ const HydrateStore = () => {
           // newMangoAccount.spotOpenOrdersAccounts =
           //   mangoAccount.spotOpenOrdersAccounts
           // newMangoAccount.advancedOrders = mangoAccount.advancedOrders
-          mangoStore.setState({
-            mangoAccount: {
-              ...mangoStore.getState().mangoAccount,
-              current: newMangoAccount,
-              lastSlot: context.slot,
-            },
+          set((s) => {
+            s.mangoAccount.current = newMangoAccount
+            s.mangoAccount.lastSlot = context.slot
           })
         }
       }
@@ -90,7 +88,7 @@ const HydrateStore = () => {
 const ReadOnlyMangoAccount = () => {
   const router = useRouter()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
-  const ma = router.query?.mangoAccount
+  const ma = router.query?.address
 
   useEffect(() => {
     if (!groupLoaded) return

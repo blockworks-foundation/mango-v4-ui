@@ -4,7 +4,7 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
-import { notify } from 'utils/notifications'
+// import { notify } from 'utils/notifications'
 
 const PerpSlider = () => {
   const side = mangoStore((s) => s.tradeForm.side)
@@ -28,20 +28,22 @@ const PerpSlider = () => {
       if (side === 'buy') {
         return mangoAccount.getMaxQuoteForPerpBidUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
+          Number(tradeForm.price)
         )
       } else {
         return mangoAccount.getMaxBaseForPerpAskUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
+          Number(tradeForm.price)
         )
       }
     } catch (e) {
-      console.error('PerpSlider: ', e)
-      notify({
-        type: 'error',
-        title: 'Error calculating max leverage.',
-      })
+      console.error('Error calculating max leverage for PerpSlider: ', e)
+      // notify({
+      //   type: 'error',
+      //   title: 'Error calculating max leverage.',
+      // })
       return 0
     }
   }, [side, selectedMarket, mangoAccount])
@@ -54,7 +56,7 @@ const PerpSlider = () => {
         const price =
           s.tradeForm.tradeType === 'Market'
             ? marketPrice
-            : parseFloat(s.tradeForm.price)
+            : Number(s.tradeForm.price)
 
         if (s.tradeForm.side === 'buy') {
           s.tradeForm.quoteSize = val

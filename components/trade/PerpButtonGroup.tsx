@@ -4,13 +4,14 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo, useState } from 'react'
-import { notify } from 'utils/notifications'
+// import { notify } from 'utils/notifications'
 
 const PerpButtonGroup = () => {
   const side = mangoStore((s) => s.tradeForm.side)
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
   const [sizePercentage, setSizePercentage] = useState('')
+  const tradeFormPrice = mangoStore((s) => s.tradeForm.price)
 
   const leverageMax = useMemo(() => {
     const group = mangoStore.getState().group
@@ -21,23 +22,25 @@ const PerpButtonGroup = () => {
       if (side === 'buy') {
         return mangoAccount.getMaxQuoteForPerpBidUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
+          Number(tradeFormPrice)
         )
       } else {
         return mangoAccount.getMaxBaseForPerpAskUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
+          Number(tradeFormPrice)
         )
       }
     } catch (e) {
-      console.error('PerpSlider: ', e)
-      notify({
-        type: 'error',
-        title: 'Error calculating max leverage.',
-      })
+      console.error('Error calculating max leverage perp btn grp: ', e)
+      // notify({
+      //   type: 'error',
+      //   title: 'Error calculating max leverage.',
+      // })
       return 0
     }
-  }, [side, selectedMarket, mangoAccount])
+  }, [side, selectedMarket, mangoAccount, tradeFormPrice])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -50,9 +53,7 @@ const PerpButtonGroup = () => {
           s.tradeForm.quoteSize = size.toString()
 
           if (Number(s.tradeForm.price)) {
-            s.tradeForm.baseSize = (
-              size / parseFloat(s.tradeForm.price)
-            ).toString()
+            s.tradeForm.baseSize = (size / Number(s.tradeForm.price)).toString()
           } else {
             s.tradeForm.baseSize = ''
           }
@@ -61,13 +62,13 @@ const PerpButtonGroup = () => {
 
           if (Number(s.tradeForm.price)) {
             s.tradeForm.quoteSize = (
-              size * parseFloat(s.tradeForm.price)
+              size * Number(s.tradeForm.price)
             ).toString()
           }
         }
       })
     },
-    [side, selectedMarket, mangoAccount]
+    [leverageMax]
   )
 
   return (

@@ -45,7 +45,6 @@ import SwapSlider from './SwapSlider'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
-import BorrowInfo from './BorrowInfo'
 import Tooltip from '@components/shared/Tooltip'
 
 const MAX_DIGITS = 11
@@ -54,6 +53,8 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
     ? values.floatValue.toFixed(0).length <= MAX_DIGITS
     : true
 }
+
+const set = mangoStore.getState().set
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
@@ -65,7 +66,6 @@ const SwapForm = () => {
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
 
-  const set = mangoStore.getState().set
   const {
     margin: useMargin,
     slippage,
@@ -152,7 +152,7 @@ const SwapForm = () => {
   useEffect(() => {
     setAmountInFormValue('')
     setAmountOutFormValue('')
-  }, [useMargin])
+  }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
   const handleAmountInChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
@@ -164,7 +164,7 @@ const SwapForm = () => {
       }
       setAmountInFormValue(e.value)
     },
-    [swapMode]
+    [swapMode, setAmountInFormValue]
   )
 
   const handleAmountOutChange = useCallback(
@@ -177,7 +177,7 @@ const SwapForm = () => {
       }
       setAmountOutFormValue(e.value)
     },
-    [swapMode]
+    [swapMode, setAmountOutFormValue]
   )
 
   const handleTokenInSelect = useCallback((mintAddress: string) => {
@@ -215,7 +215,7 @@ const SwapForm = () => {
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
     )
-  }, [set, amountOutAsDecimal, amountInAsDecimal])
+  }, [setAmountInFormValue, amountOutAsDecimal, amountInAsDecimal])
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
@@ -427,11 +427,11 @@ const SwapForm = () => {
           amountOut={selectedRoute ? amountOutAsDecimal.toNumber() : undefined}
         />
         {group && inputBank ? (
-          <div className="pt-4">
+          <div className="mt-4">
             <TokenVaultWarnings bank={inputBank} />
           </div>
         ) : null}
-        <div className="space-y-2">
+        <div className="mt-4 space-y-2">
           <div id="swap-step-four">
             <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           </div>
@@ -441,18 +441,14 @@ const SwapForm = () => {
                 Est. {t('swap:slippage')}
               </p>
             </Tooltip>
-            <p className="text-right font-mono text-sm text-th-fgd-3">
+            <p className="text-right font-mono text-sm text-th-fgd-2">
               {selectedRoute?.priceImpactPct
                 ? selectedRoute?.priceImpactPct * 100 < 0.1
                   ? '<0.1%'
                   : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                : '0.00%'}
+                : '–'}
             </p>
           </div>
-          <BorrowInfo
-            amount={parseFloat(amountInFormValue)}
-            useMargin={useMargin}
-          />
         </div>
       </div>
     </ContentBox>

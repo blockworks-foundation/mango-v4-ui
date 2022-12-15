@@ -4,7 +4,6 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
-import Decimal from 'decimal.js'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
@@ -14,9 +13,9 @@ import {
   numberFormat,
   trimDecimals,
 } from 'utils/numbers'
-import { calculateMarketPrice } from 'utils/tradeForm'
-import MarketLogos from './MarketLogos'
+import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import PerpSideBadge from './PerpSideBadge'
+import TableMarketName from './TableMarketName'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -29,10 +28,14 @@ const PerpPositions = () => {
     const tradeForm = mangoStore.getState().tradeForm
     const set = mangoStore.getState().set
 
-    let price = new Decimal(tradeForm.price).toNumber()
+    let price = Number(tradeForm.price)
     if (tradeForm.tradeType === 'Market') {
       const orderbook = mangoStore.getState().selectedMarket.orderbook
-      price = calculateMarketPrice(orderbook, positionSize, tradeForm.side)
+      price = calculateLimitPriceForMarketOrder(
+        orderbook,
+        positionSize,
+        tradeForm.side
+      )
     }
     const newSide = positionSize > 0 ? 'sell' : 'buy'
 
@@ -64,8 +67,8 @@ const PerpPositions = () => {
               <Th className="text-right">{t('trade:size')}</Th>
               <Th className="text-right">{t('notional')}</Th>
               <Th className="text-right">{t('trade:entry-price')}</Th>
-              <Th className="text-right">Redeemable P&L</Th>
-              <Th className="text-right">Realized P&L</Th>
+              <Th className="text-right">Redeemable PnL</Th>
+              <Th className="text-right">Realized PnL</Th>
             </TrHead>
           </thead>
           <tbody>
@@ -84,15 +87,12 @@ const PerpPositions = () => {
 
               if (!basePosition) return null
 
-              const unsettledPnl = position.getEquityUi(market)
+              const unsettledPnl = position.getEquityUi(group, market)
 
               return (
                 <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
                   <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      {market?.name}
-                    </div>
+                    <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right">
                     <PerpSideBadge basePosition={basePosition} />
@@ -124,7 +124,7 @@ const PerpPositions = () => {
                     <div>
                       $
                       {numberFormat.format(
-                        position.getEntryPrice(market).toNumber()
+                        position.getAverageEntryPriceUi(market)
                       )}
                     </div>
                   </Td>

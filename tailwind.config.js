@@ -5,9 +5,9 @@ module.exports = {
   ],
   theme: {
     fontFamily: {
-      display: ['Lato, sans-serif'],
-      body: ['Lato, sans-serif'],
-      mono: ['Roboto Mono'],
+      display: ['TT Commons Expanded, sans-serif'],
+      body: 'TT Commons, sans-serif',
+      mono: ['TT Mono, mono'],
     },
     extend: {
       animation: {

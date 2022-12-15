@@ -25,8 +25,6 @@ const PerpMarketsTable = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  // const bids = mangoStore((s) => s.selectedMarket.bidsAccount)
-  // const asks = mangoStore((s) => s.selectedMarket.asksAccount)
   const rate = usePerpFundingRate()
 
   return (
@@ -63,15 +61,13 @@ const PerpMarketsTable = () => {
               const chartData = coingeckoData ? coingeckoData.prices : undefined
 
               let fundingRate
-              if (
-                rate.isSuccess
-                // && bids instanceof BookSide &&
-                // asks instanceof BookSide
-              ) {
-                const marketRate = rate.data.find(
+              if (rate.isSuccess && market instanceof PerpMarket) {
+                const marketRate = rate?.data?.find(
                   (r) => r.market_index === market.perpMarketIndex
                 )
-                fundingRate = `${marketRate?.funding_apr.toFixed(2)}%`
+                fundingRate = marketRate
+                  ? `${marketRate.funding_rate_hourly.toFixed(4)}%`
+                  : '–'
               } else {
                 fundingRate = '–'
               }

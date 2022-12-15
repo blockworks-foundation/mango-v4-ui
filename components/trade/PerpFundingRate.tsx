@@ -27,31 +27,33 @@ export const usePerpFundingRate = () => {
     }
   )
 
-  return res
+  return Array.isArray(res?.data) ? res : { isSuccess: false, data: null }
 }
 
 const PerpFundingRate = () => {
   const { selectedMarket } = useSelectedMarket()
   const rate = usePerpFundingRate()
+
   // const bids = mangoStore((s) => s.selectedMarket.bidsAccount)
   // const asks = mangoStore((s) => s.selectedMarket.asksAccount)
 
   const fundingRate = useMemo(() => {
     if (rate.isSuccess && selectedMarket instanceof PerpMarket) {
-      const marketRate = rate?.data.find(
+      const marketRate = rate?.data?.find(
         (r) => r.market_index === selectedMarket.perpMarketIndex
       )
       return marketRate?.funding_rate_hourly
     }
-  }, [rate])
+  }, [rate, selectedMarket])
 
   return (
     <>
       <div className="font-mono text-xs text-th-fgd-2">
-        {selectedMarket instanceof PerpMarket && fundingRate
-          ? fundingRate.toFixed(4)
-          : '-'}
-        %
+        {selectedMarket instanceof PerpMarket && fundingRate ? (
+          `${fundingRate.toFixed(4)}%`
+        ) : (
+          <span className="text-th-fgd-4">-</span>
+        )}
       </div>
       {/* <div className="font-mono text-xs text-th-fgd-2">
         {selectedMarket instanceof PerpMarket &&

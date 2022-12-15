@@ -38,9 +38,7 @@ export const PROFILE_CATEGORIES = [
   'yolo',
 ]
 
-const baseUrl = 'https://event-history-api-candles.herokuapp.com'
-
-export const CHART_DATA_FEED = `${baseUrl}/tv`
+export const CHART_DATA_FEED = `https://dry-ravine-67635.herokuapp.com/tv`
 
 export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 

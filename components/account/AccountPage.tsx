@@ -81,19 +81,19 @@ const AccountPage = () => {
     INITIAL_ANIMATION_SETTINGS
   )
 
-  const leverage = useMemo(() => {
-    if (!group || !mangoAccount) return 0
-    const liabsValue = mangoAccount
-      .getLiabsValue(group, HealthType.init)!
-      .toNumber()
-    const totalCollateral = mangoAccount
-      .getAssetsValue(group, HealthType.init)!
-      .toNumber()
+  // const leverage = useMemo(() => {
+  //   if (!group || !mangoAccount) return 0
+  //   const liabsValue = mangoAccount
+  //     .getLiabsValue(group, HealthType.init)!
+  //     .toNumber()
+  //   const totalCollateral = mangoAccount
+  //     .getAssetsValue(group, HealthType.init)!
+  //     .toNumber()
 
-    if (isNaN(liabsValue / totalCollateral)) {
-      return 0
-    } else return liabsValue / totalCollateral
-  }, [mangoAccount, group])
+  //   if (isNaN(liabsValue / totalCollateral)) {
+  //     return 0
+  //   } else return liabsValue / totalCollateral
+  // }, [mangoAccount, group])
 
   useEffect(() => {
     if (mangoAccount) {
@@ -234,12 +234,12 @@ const AccountPage = () => {
                 {t('account-value')}
               </p>
             </Tooltip>
-            <div className="mb-2 flex items-center text-5xl font-bold text-th-fgd-1">
+            <div className="mb-2 flex items-center font-display text-5xl text-th-fgd-1">
               {animationSettings['number-scroll'] ? (
                 group && mangoAccount ? (
                   <FlipNumbers
                     height={48}
-                    width={32}
+                    width={35}
                     play
                     delay={0.05}
                     duration={1}
@@ -248,7 +248,7 @@ const AccountPage = () => {
                 ) : (
                   <FlipNumbers
                     height={48}
-                    width={32}
+                    width={36}
                     play
                     delay={0.05}
                     duration={1}
@@ -319,8 +319,8 @@ const AccountPage = () => {
           <AccountActions />
         </div>
       </div>
-      <div className="grid grid-cols-5 border-b border-th-bkg-3">
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1">
+      <div className="grid grid-cols-4 border-b border-th-bkg-3">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
@@ -357,7 +357,7 @@ const AccountPage = () => {
                 </div>
               }
             >
-              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+              <p className="tooltip-underline text-sm font-normal text-th-fgd-3 xl:text-base">
                 {t('health')}
               </p>
             </Tooltip>
@@ -366,7 +366,7 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-five">
             <Tooltip
               content="The value of collateral you have to open new trades or borrows. When your free collateral reaches $0 you won't be able to make withdrawals."
@@ -412,7 +412,7 @@ const AccountPage = () => {
             </span>
           </div>
         </div>
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+        {/* <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-six">
             <Tooltip
               content="Total position size divided by total collateral."
@@ -428,9 +428,9 @@ const AccountPage = () => {
               {leverage.toFixed(2)}x
             </p>
           </div>
-        </div>
+        </div> */}
         <button
-          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
             performanceData.length > 4
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'cursor-default'
@@ -460,7 +460,7 @@ const AccountPage = () => {
           ) : null}
         </button>
         <button
-          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
             interestTotalValue > 1 || interestTotalValue < -1
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'cursor-default'

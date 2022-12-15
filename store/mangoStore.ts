@@ -5,7 +5,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
-import { Orderbook as SpotOrderBook } from '@project-serum/serum'
+import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
 import {
   MangoClient,
@@ -33,15 +33,16 @@ import {
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
 } from '../utils/constants'
-import { Orderbook, SpotBalances } from 'types'
+import { OrderbookL2, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 
-const GROUP = new PublicKey('DLdcpC6AsAJ9xeKMR3WhHrN5sM5o7GVVXQhQ5vwisTtz')
+const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
 export const connection = new web3.Connection(
-  'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+  process.env.NEXT_PUBLIC_ENDPOINT ||
+    'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
   'processed'
 )
 const options = AnchorProvider.defaultOptions()
@@ -53,8 +54,9 @@ const DEFAULT_CLIENT = MangoClient.connect(
   DEFAULT_PROVIDER,
   CLUSTER,
   MANGO_V4_ID[CLUSTER],
-  null,
-  'get-program-accounts'
+  {
+    idsSource: 'get-program-accounts',
+  }
 )
 
 export interface TotalInterestDataItem {
@@ -173,6 +175,26 @@ export interface TokenStatsItem {
 //   wallet_pk: '',
 // }
 
+interface TradeForm {
+  side: 'buy' | 'sell'
+  price: string | undefined
+  baseSize: string
+  quoteSize: string
+  tradeType: 'Market' | 'Limit'
+  postOnly: boolean
+  ioc: boolean
+}
+
+export const DEFAULT_TRADE_FORM: TradeForm = {
+  side: 'buy',
+  price: undefined,
+  baseSize: '',
+  quoteSize: '',
+  tradeType: 'Limit',
+  postOnly: false,
+  ioc: false,
+}
+
 export type MangoStore = {
   activityFeed: {
     feed: Array<DepositWithdrawFeedItem | LiquidationFeedItem>
@@ -211,9 +233,9 @@ export type MangoStore = {
     name: string
     current: Serum3Market | PerpMarket | undefined
     fills: any
-    bidsAccount: BookSide | SpotOrderBook | undefined
-    asksAccount: BookSide | SpotOrderBook | undefined
-    orderbook: Orderbook
+    bidsAccount: BookSide | Orderbook | undefined
+    asksAccount: BookSide | Orderbook | undefined
+    orderbook: OrderbookL2
     markPrice: number
   }
   serumMarkets: Serum3Market[]
@@ -237,18 +259,11 @@ export type MangoStore = {
   }
   set: (x: (x: MangoStore) => void) => void
   tokenStats: {
+    initialLoad: boolean
     loading: boolean
     data: TokenStatsItem[]
   }
-  tradeForm: {
-    side: 'buy' | 'sell'
-    price: string
-    baseSize: string
-    quoteSize: string
-    tradeType: 'Market' | 'Limit'
-    postOnly: boolean
-    ioc: boolean
-  }
+  tradeForm: TradeForm
   wallet: {
     tokens: TokenAccount[]
     nfts: {
@@ -357,18 +372,11 @@ const mangoStore = create<MangoStore>()(
         amountOut: '',
       },
       tokenStats: {
+        initialLoad: false,
         loading: false,
         data: [],
       },
-      tradeForm: {
-        side: 'buy',
-        price: '',
-        baseSize: '',
-        quoteSize: '',
-        tradeType: 'Limit',
-        postOnly: false,
-        ioc: false,
-      },
+      tradeForm: DEFAULT_TRADE_FORM,
       wallet: {
         tokens: [],
         nfts: {
@@ -555,6 +563,7 @@ const mangoStore = create<MangoStore>()(
               }
             })
           } catch (e) {
+            notify({ type: 'info', title: 'Unable to refresh data' })
             console.error('Error fetching group', e)
           }
         },
@@ -668,6 +677,9 @@ const mangoStore = create<MangoStore>()(
           const set = get().set
           const client = get().client
           const group = get().group
+          if (!providedMangoAccount) {
+            await get().actions.reloadMangoAccount()
+          }
           const mangoAccount =
             providedMangoAccount || get().mangoAccount.current
 
@@ -755,8 +767,7 @@ const mangoStore = create<MangoStore>()(
         fetchTokenStats: async () => {
           const set = get().set
           const group = get().group
-          const stats = get().tokenStats.data
-          if (stats.length || !group) return
+          if (!group) return
           set((state) => {
             state.tokenStats.loading = true
           })
@@ -768,6 +779,7 @@ const mangoStore = create<MangoStore>()(
 
             set((state) => {
               state.tokenStats.data = data
+              state.tokenStats.initialLoad = true
               state.tokenStats.loading = false
             })
           } catch {
@@ -813,6 +825,7 @@ const mangoStore = create<MangoStore>()(
               CLUSTER,
               MANGO_V4_ID[CLUSTER],
               {
+                idsSource: 'get-program-accounts',
                 prioritizationFee: 2,
                 postSendTxCallback: ({ txid }: { txid: string }) => {
                   notify({
@@ -822,8 +835,7 @@ const mangoStore = create<MangoStore>()(
                     txid: txid,
                   })
                 },
-              },
-              'get-program-accounts'
+              }
             )
             set((s) => {
               s.client = client
@@ -934,6 +946,10 @@ const mangoStore = create<MangoStore>()(
 )
 
 mangoStore.subscribe((state) => state.mangoAccount.current, spotBalancesUpdater)
+mangoStore.subscribe(
+  (state) => state.mangoAccount.openOrderAccounts,
+  spotBalancesUpdater
+)
 mangoStore.subscribe(
   (state) => state.mangoAccount.current,
   perpPositionsUpdater

@@ -5,10 +5,10 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
 import { Transition } from '@headlessui/react'
 import {
-  BoltIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   LinkIcon,
+  NoSymbolIcon,
 } from '@heroicons/react/20/solid'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
@@ -288,14 +288,14 @@ const ActivityFeedTable = ({
       </>
     ) : (
       <div className="flex flex-col items-center p-8">
-        <BoltIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-        <p>No account activity found...</p>
+        <NoSymbolIcon className="mb-1 h-6 w-6 text-th-fgd-4" />
+        <p>{t('activity:no-activity')}</p>
       </div>
     )
   ) : (
     <div className="flex flex-col items-center p-8">
       <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>Connect to view your account activity</p>
+      <p>{t('activity:connect-activity')}</p>
     </div>
   )
 }

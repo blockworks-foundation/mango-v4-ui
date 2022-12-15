@@ -9,11 +9,11 @@ import Tooltip from '@components/shared/Tooltip'
 import Loading from '@components/shared/Loading'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
-import MarketLogos from './MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
+import TableMarketName from './TableMarketName'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -45,7 +45,6 @@ const UnsettledTrades = ({
         new PublicKey(mktAddress)
       )
       actions.fetchOpenOrders()
-      actions.reloadMangoAccount()
       notify({
         type: 'success',
         title: 'Successfully settled funds',
@@ -76,7 +75,7 @@ const UnsettledTrades = ({
     try {
       const mangoAccounts = await client.getAllMangoAccounts(group)
       const perpPosition = mangoAccount.getPerpPosition(market.perpMarketIndex)
-      const mangoAccountPnl = perpPosition?.getEquityUi(market)
+      const mangoAccountPnl = perpPosition?.getEquityUi(group, market)
 
       if (mangoAccountPnl === undefined)
         throw new Error('Unable to get account P&L')
@@ -86,8 +85,9 @@ const UnsettledTrades = ({
         .map((m) => ({
           mangoAccount: m,
           pnl:
-            m?.getPerpPosition(market.perpMarketIndex)?.getEquityUi(market) ||
-            0,
+            m
+              ?.getPerpPosition(market.perpMarketIndex)
+              ?.getEquityUi(group, market) || 0,
         }))
         .sort((a, b) => sign * (a.pnl - b.pnl))
       console.log(
@@ -143,8 +143,7 @@ const UnsettledTrades = ({
           <thead>
             <TrHead>
               <Th className="bg-th-bkg-1 text-left">{t('market')}</Th>
-              <Th className="bg-th-bkg-1 text-right">{t('trade:base')}</Th>
-              <Th className="bg-th-bkg-1 text-right">{t('trade:quote')}</Th>
+              <Th className="bg-th-bkg-1 text-right">{t('trade:amount')}</Th>
               <Th className="bg-th-bkg-1 text-right" />
             </TrHead>
           </thead>
@@ -159,22 +158,23 @@ const UnsettledTrades = ({
               return (
                 <TrBody key={mktAddress} className="text-sm">
                   <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <span>{market ? market.name : ''}</span>
+                    <TableMarketName market={market} />
+                  </Td>
+                  <Td className="text-right font-mono">
+                    <div className="flex justify-end">
+                      <div>
+                        {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
+                        <span className="font-body tracking-wide text-th-fgd-4">
+                          {base}
+                        </span>
+                      </div>
+                      <div className="ml-4">
+                        {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
+                        <span className="font-body tracking-wide text-th-fgd-4">
+                          {quote}
+                        </span>
+                      </div>
                     </div>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {base}
-                    </span>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {quote}
-                    </span>
                   </Td>
                   <Td>
                     <div className="flex justify-end">
@@ -202,16 +202,10 @@ const UnsettledTrades = ({
               return (
                 <TrBody key={position.marketIndex} className="text-sm">
                   <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <span>{market ? market.name : ''}</span>
-                    </div>
+                    <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right font-mono">
-                    <span></span>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {position.getEquityUi(market)}
+                    {position.getEquityUi(group, market)}
                   </Td>
                   <Td>
                     <div className="flex justify-end">
@@ -248,10 +242,7 @@ const UnsettledTrades = ({
                 key={mktAddress}
                 className="flex items-center justify-between border-b border-th-bkg-3 p-4"
               >
-                <div className="flex items-center">
-                  <MarketLogos market={market} />
-                  <span>{market ? market.name : ''}</span>
-                </div>
+                <TableMarketName market={market} />
                 <div className="flex items-center space-x-3">
                   {unsettledSpotBalances[mktAddress].base ? (
                     <span className="font-mono text-sm">

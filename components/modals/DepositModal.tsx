@@ -44,7 +44,7 @@ export const walletBalanceForToken = (
   token: string
 ): { maxAmount: number; maxDecimals: number } => {
   const group = mangoStore.getState().group
-  const bank = group?.banksMapByName.get(token)![0]
+  const bank = group?.banksMapByName.get(token)?.[0]
 
   let walletToken
   if (bank) {
@@ -97,7 +97,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const setMax = useCallback(() => {
     setInputAmount(tokenMax.maxAmount.toString())
     setSizePercentage('100')
-  }, [tokenMax, selectedToken])
+  }, [tokenMax])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -108,7 +108,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
       setInputAmount(amount.toString())
     },
-    [tokenMax, selectedToken]
+    [tokenMax]
   )
 
   const handleSelectToken = (token: string) => {
@@ -152,7 +152,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     }
 
     onClose()
-  }, [bank, wallet, inputAmount])
+  }, [bank, wallet, inputAmount, onClose])
 
   // TODO extract into a shared hook for UserSetup.tsx
   const banks = useMemo(() => {
@@ -175,6 +175,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const group = mangoStore.getState().group
     if (!group || !mangoAccount) return
     if (
       mangoAccount.owner.toString() ===
@@ -182,7 +183,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     )
       return false
     const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group)!.toNumber()
+      mangoAccount.getEquity(group).toNumber()
     )
     return (
       parseFloat(inputAmount) > ALPHA_DEPOSIT_LIMIT ||
@@ -320,7 +321,9 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
             </div>
             <div className="flex justify-between">
-              <p>{t('collateral-value')}</p>
+              <Tooltip content={t('tooltip-collateral-value')}>
+                <p className="tooltip-underline">{t('collateral-value')}</p>
+              </Tooltip>
               <p className="font-mono">
                 {formatFixedDecimals(
                   bank!.uiPrice! *
