@@ -1,16 +1,6 @@
-import {
-  PublicKey,
-  Connection,
-  RpcResponseAndContext,
-  AccountInfo,
-} from '@solana/web3.js'
+import { PublicKey, Connection } from '@solana/web3.js'
 import { TokenInstructions } from '@project-serum/serum'
-import {
-  Group,
-  Serum3Market,
-  toUiDecimals,
-} from '@blockworks-foundation/mango-v4'
-import { Token } from 'types/jupiter'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 
 export class TokenAccount {
   publicKey!: PublicKey

@@ -24,7 +24,7 @@ const RoutesModal = ({
   inputTokenSymbol,
   outputTokenInfo,
 }: RoutesModalProps) => {
-  const { mangoTokens } = useJupiterMints()
+  const { jupiterTokens } = useJupiterMints()
 
   const handleSelectRoute = (route: RouteInfo) => {
     setSelectedRoute(route)
@@ -79,7 +79,7 @@ const RoutesModal = ({
                           <span key={index}>
                             <span>
                               {
-                                mangoTokens.find(
+                                jupiterTokens.find(
                                   (item) =>
                                     item?.address === r?.outputMint?.toString()
                                 )?.symbol

@@ -5,7 +5,14 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { TransactionInstruction, PublicKey } from '@solana/web3.js'
+import {
+  TransactionInstruction,
+  PublicKey,
+  VersionedTransaction,
+  Connection,
+  TransactionMessage,
+  AddressLookupTableAccount,
+} from '@solana/web3.js'
 import Decimal from 'decimal.js'
 
 import mangoStore from '@store/mangoStore'
@@ -30,8 +37,8 @@ import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
-import { Transaction } from '@solana/web3.js'
-import { SOUND_SETTINGS_KEY } from 'utils/constants'
+// import { Transaction } from '@solana/web3.js'
+import { JUPITER_V4_PROGRAM_ID, SOUND_SETTINGS_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
@@ -46,13 +53,40 @@ type JupiterRouteInfoProps = {
   slippage: number
 }
 
-const parseJupiterRoute = async (
+const deserializeJupiterIxAndAlt = async (
+  connection: Connection,
+  swapTransaction: string
+): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
+  const parsedSwapTransaction = VersionedTransaction.deserialize(
+    Buffer.from(swapTransaction, 'base64')
+  )
+  const message = parsedSwapTransaction.message
+  // const lookups = message.addressTableLookups
+  const addressLookupTablesResponses = await Promise.all(
+    message.addressTableLookups.map((alt) =>
+      connection.getAddressLookupTable(alt.accountKey)
+    )
+  )
+  const addressLookupTables: AddressLookupTableAccount[] =
+    addressLookupTablesResponses
+      .map((alt) => alt.value)
+      .filter((x): x is AddressLookupTableAccount => x !== null)
+
+  const decompiledMessage = TransactionMessage.decompile(message, {
+    addressLookupTableAccounts: addressLookupTables,
+  })
+
+  return [decompiledMessage.instructions, addressLookupTables]
+}
+
+const fetchJupiterTransaction = async (
+  connection: Connection,
   selectedRoute: RouteInfo,
   userPublicKey: PublicKey,
   slippage: number
-): Promise<TransactionInstruction[]> => {
+): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const transactions = await (
-    await fetch('https://quote-api.jup.ag/v3/swap', {
+    await fetch('https://quote-api.jup.ag/v4/swap', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,8 +96,6 @@ const parseJupiterRoute = async (
         route: selectedRoute,
         // user public key to be used for the swap
         userPublicKey,
-        // auto wrap and unwrap SOL. default is true
-        wrapUnwrapSOL: true,
         // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
         // This is the ATA account for the output token where the fee will be sent to. If you are swapping from SOL->USDC then this would be the USDC ATA you want to collect the fee.
         // feeAccount: 'fee_account_public_key',
@@ -73,20 +105,18 @@ const parseJupiterRoute = async (
   ).json()
 
   const { swapTransaction } = transactions
-  const parsedSwapTransaction = Transaction.from(
-    Buffer.from(swapTransaction, 'base64')
+
+  const [ixs, alts] = await deserializeJupiterIxAndAlt(
+    connection,
+    swapTransaction
   )
 
-  const instructions = []
-  for (const ix of parsedSwapTransaction.instructions) {
-    if (
-      ix.programId.toBase58() === 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
-    ) {
-      instructions.push(ix)
-    }
-  }
+  // const isSetupIx = (pk: PublicKey): boolean => { k == ata_program || k == token_program };
+  const isJupiterIx = (pk: PublicKey): boolean =>
+    pk.toString() === JUPITER_V4_PROGRAM_ID
 
-  return instructions
+  const filtered_jup_ixs = ixs.filter((ix) => isJupiterIx(ix.programId))
+  return [filtered_jup_ixs, alts]
 }
 
 const EMPTY_COINGECKO_PRICES = {
@@ -112,7 +142,7 @@ const SwapReviewRouteInfo = ({
   const [feeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [coingeckoPrices, setCoingeckoPrices] = useState(EMPTY_COINGECKO_PRICES)
-  const { mangoTokens } = useJupiterMints()
+  const { jupiterTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const [soundSettings] = useLocalStorageState(
@@ -167,10 +197,12 @@ const SwapReviewRouteInfo = ({
       const outputBank = mangoStore.getState().swap.outputBank
       const slippage = mangoStore.getState().swap.slippage
       const set = mangoStore.getState().set
+      const connection = mangoStore.getState().connection
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
 
-      const ixs = await parseJupiterRoute(
+      const [ixs, alts] = await fetchJupiterTransaction(
+        connection,
         selectedRoute,
         mangoAccount.owner,
         slippage
@@ -185,6 +217,7 @@ const SwapReviewRouteInfo = ({
           amountIn: amountIn.toNumber(),
           outputMintPk: outputBank.mint,
           userDefinedInstructions: ixs,
+          userDefinedAlts: alts,
           flashLoanType: { swap: {} },
         })
         set((s) => {
@@ -460,7 +493,7 @@ const SwapReviewRouteInfo = ({
             </div>
           ) : (
             selectedRoute?.marketInfos.map((info, index) => {
-              const feeToken = mangoTokens.find(
+              const feeToken = jupiterTokens.find(
                 (item) => item?.address === info.lpFee?.mint
               )
               return (
