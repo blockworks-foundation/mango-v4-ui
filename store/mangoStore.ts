@@ -5,7 +5,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
-import { Orderbook as SpotOrderBook } from '@project-serum/serum'
+import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
 import {
   MangoClient,
@@ -33,7 +33,7 @@ import {
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
 } from '../utils/constants'
-import { Orderbook, SpotBalances } from 'types'
+import { OrderbookL2, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
@@ -175,6 +175,26 @@ export interface TokenStatsItem {
 //   wallet_pk: '',
 // }
 
+interface TradeForm {
+  side: 'buy' | 'sell'
+  price: string | undefined
+  baseSize: string
+  quoteSize: string
+  tradeType: 'Market' | 'Limit'
+  postOnly: boolean
+  ioc: boolean
+}
+
+export const DEFAULT_TRADE_FORM: TradeForm = {
+  side: 'buy',
+  price: undefined,
+  baseSize: '',
+  quoteSize: '',
+  tradeType: 'Limit',
+  postOnly: false,
+  ioc: false,
+}
+
 export type MangoStore = {
   activityFeed: {
     feed: Array<DepositWithdrawFeedItem | LiquidationFeedItem>
@@ -213,9 +233,9 @@ export type MangoStore = {
     name: string
     current: Serum3Market | PerpMarket | undefined
     fills: any
-    bidsAccount: BookSide | SpotOrderBook | undefined
-    asksAccount: BookSide | SpotOrderBook | undefined
-    orderbook: Orderbook
+    bidsAccount: BookSide | Orderbook | undefined
+    asksAccount: BookSide | Orderbook | undefined
+    orderbook: OrderbookL2
     markPrice: number
   }
   serumMarkets: Serum3Market[]
@@ -243,15 +263,7 @@ export type MangoStore = {
     loading: boolean
     data: TokenStatsItem[]
   }
-  tradeForm: {
-    side: 'buy' | 'sell'
-    price: string
-    baseSize: string
-    quoteSize: string
-    tradeType: 'Market' | 'Limit'
-    postOnly: boolean
-    ioc: boolean
-  }
+  tradeForm: TradeForm
   wallet: {
     tokens: TokenAccount[]
     nfts: {
@@ -364,15 +376,7 @@ const mangoStore = create<MangoStore>()(
         loading: false,
         data: [],
       },
-      tradeForm: {
-        side: 'buy',
-        price: '',
-        baseSize: '',
-        quoteSize: '',
-        tradeType: 'Limit',
-        postOnly: false,
-        ioc: false,
-      },
+      tradeForm: DEFAULT_TRADE_FORM,
       wallet: {
         tokens: [],
         nfts: {
@@ -673,6 +677,9 @@ const mangoStore = create<MangoStore>()(
           const set = get().set
           const client = get().client
           const group = get().group
+          if (!providedMangoAccount) {
+            await get().actions.reloadMangoAccount()
+          }
           const mangoAccount =
             providedMangoAccount || get().mangoAccount.current
 

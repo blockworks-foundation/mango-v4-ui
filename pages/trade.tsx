@@ -1,5 +1,10 @@
+import {
+  Group,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import TradeAdvancedPage from '@components/trade/TradeAdvancedPage'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { DEFAULT_TRADE_FORM } from '@store/mangoStore'
 // import mangoStore from '@store/mangoStore'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -20,6 +25,23 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
+const getOraclePriceForMarket = (
+  group: Group,
+  mkt: Serum3Market | PerpMarket
+): number => {
+  let price: number
+  if (mkt instanceof Serum3Market) {
+    const baseBank = group.getFirstBankByTokenIndex(mkt.baseTokenIndex)
+
+    price = baseBank.uiPrice
+  } else if (mkt) {
+    price = mkt._uiPrice
+  } else {
+    price = 0
+  }
+  return price
+}
+
 const Trade: NextPage = () => {
   const router = useRouter()
   const { name: marketName } = router.query
@@ -34,10 +56,15 @@ const Trade: NextPage = () => {
       const mkt =
         serumMarkets.find((m) => m.name === marketName) ||
         perpMarkets.find((m) => m.name === marketName)
+
       if (mkt) {
         set((s) => {
           s.selectedMarket.name = marketName
           s.selectedMarket.current = mkt
+          s.tradeForm = {
+            ...DEFAULT_TRADE_FORM,
+            price: getOraclePriceForMarket(group, mkt).toString(),
+          }
         })
       }
     }

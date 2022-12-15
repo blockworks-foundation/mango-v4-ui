@@ -11,7 +11,7 @@ export interface ChartTradeType {
   marketAddress: string
 }
 
-export interface Orderbook {
+export interface OrderbookL2 {
   bids: number[][]
   asks: number[][]
 }

@@ -22,7 +22,7 @@ import NumberFormat, {
 } from 'react-number-format'
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
-import { calculateMarketPrice } from 'utils/tradeForm'
+import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
@@ -45,12 +45,13 @@ const TABS: [string, number][] = [
   ['Market', 0],
 ]
 
+const set = mangoStore.getState().set
+
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const set = mangoStore.getState().set
   const tradeForm = mangoStore((s) => s.tradeForm)
   const { mangoTokens } = useJupiterMints()
-  const { selectedMarket, price: marketPrice } = useSelectedMarket()
+  const { selectedMarket, price: oraclePrice } = useSelectedMarket()
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
@@ -93,14 +94,11 @@ const AdvancedTradeForm = () => {
     return ''
   }, [quoteSymbol, mangoTokens])
 
-  const setTradeType = useCallback(
-    (tradeType: 'Limit' | 'Market') => {
-      set((s) => {
-        s.tradeForm.tradeType = tradeType
-      })
-    },
-    [set]
-  )
+  const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
+    set((s) => {
+      s.tradeForm.tradeType = tradeType
+    })
+  }, [])
 
   const handlePriceChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
@@ -114,7 +112,7 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [set]
+    []
   )
 
   const handleBaseSizeChange = useCallback(
@@ -123,8 +121,8 @@ const AdvancedTradeForm = () => {
       set((s) => {
         const price =
           s.tradeForm.tradeType === 'Market'
-            ? marketPrice
-            : parseFloat(s.tradeForm.price)
+            ? oraclePrice
+            : Number(s.tradeForm.price)
 
         s.tradeForm.baseSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
@@ -134,7 +132,7 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [set, marketPrice]
+    [oraclePrice]
   )
 
   const handleQuoteSizeChange = useCallback(
@@ -143,8 +141,8 @@ const AdvancedTradeForm = () => {
       set((s) => {
         const price =
           s.tradeForm.tradeType === 'Market'
-            ? marketPrice
-            : parseFloat(s.tradeForm.price)
+            ? oraclePrice
+            : Number(s.tradeForm.price)
 
         s.tradeForm.quoteSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
@@ -154,47 +152,55 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [set, marketPrice]
+    [oraclePrice]
   )
 
-  const handlePostOnlyChange = useCallback(
-    (postOnly: boolean) => {
+  const handlePostOnlyChange = useCallback((postOnly: boolean) => {
+    set((s) => {
+      s.tradeForm.postOnly = postOnly
+      if (s.tradeForm.ioc === true) {
+        s.tradeForm.ioc = !postOnly
+      }
+    })
+  }, [])
+
+  const handleIocChange = useCallback((ioc: boolean) => {
+    set((s) => {
+      s.tradeForm.ioc = ioc
+      if (s.tradeForm.postOnly === true) {
+        s.tradeForm.postOnly = !ioc
+      }
+    })
+  }, [])
+
+  const handleSetSide = useCallback((side: 'buy' | 'sell') => {
+    set((s) => {
+      s.tradeForm.side = side
+    })
+  }, [])
+
+  /*
+   * Updates the limit price on page load
+   */
+  useEffect(() => {
+    if (tradeForm.price === undefined) {
+      const group = mangoStore.getState().group
+      if (!group || !oraclePrice) return
+
       set((s) => {
-        s.tradeForm.postOnly = postOnly
-        if (s.tradeForm.ioc === true) {
-          s.tradeForm.ioc = !postOnly
-        }
+        s.tradeForm.price = oraclePrice.toString()
       })
-    },
-    [set]
-  )
+    }
+  }, [oraclePrice, tradeForm.price])
 
-  const handleIocChange = useCallback(
-    (ioc: boolean) => {
-      set((s) => {
-        s.tradeForm.ioc = ioc
-        if (s.tradeForm.postOnly === true) {
-          s.tradeForm.postOnly = !ioc
-        }
-      })
-    },
-    [set]
-  )
-
-  const handleSetSide = useCallback(
-    (side: 'buy' | 'sell') => {
-      set((s) => {
-        s.tradeForm.side = side
-      })
-    },
-    [set]
-  )
-
+  /*
+   * Updates the price and the quote size when a Market order is selected
+   */
   useEffect(() => {
     const group = mangoStore.getState().group
     if (
       tradeForm.tradeType === 'Market' &&
-      marketPrice &&
+      oraclePrice &&
       selectedMarket &&
       group
     ) {
@@ -209,20 +215,18 @@ const AdvancedTradeForm = () => {
       }
       if (!isNaN(parseFloat(tradeForm.baseSize))) {
         const baseSize = new Decimal(tradeForm.baseSize)?.toNumber()
-        const orderbook = mangoStore.getState().selectedMarket.orderbook
-        const price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
-        const quoteSize = baseSize * price
+        const quoteSize = baseSize * oraclePrice
         set((s) => {
-          s.tradeForm.price = price.toFixed(getDecimalCount(tickSize))
+          s.tradeForm.price = oraclePrice.toFixed(getDecimalCount(tickSize))
           s.tradeForm.quoteSize = quoteSize.toFixed(getDecimalCount(tickSize))
         })
       } else {
         set((s) => {
-          s.tradeForm.price = marketPrice.toFixed(getDecimalCount(tickSize))
+          s.tradeForm.price = oraclePrice.toFixed(getDecimalCount(tickSize))
         })
       }
     }
-  }, [marketPrice, selectedMarket, tradeForm])
+  }, [oraclePrice, selectedMarket, tradeForm])
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -235,11 +239,15 @@ const AdvancedTradeForm = () => {
     if (!group || !mangoAccount) return
     setPlacingOrder(true)
     try {
-      const baseSize = new Decimal(tradeForm.baseSize).toNumber()
-      let price = new Decimal(tradeForm.price).toNumber()
+      const baseSize = Number(tradeForm.baseSize)
+      let price = Number(tradeForm.price)
       if (tradeForm.tradeType === 'Market') {
         const orderbook = mangoStore.getState().selectedMarket.orderbook
-        price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
+        price = calculateLimitPriceForMarketOrder(
+          orderbook,
+          baseSize,
+          tradeForm.side
+        )
       }
 
       if (selectedMarket instanceof Serum3Market) {
@@ -260,7 +268,6 @@ const AdvancedTradeForm = () => {
           Date.now(),
           10
         )
-        actions.reloadMangoAccount()
         actions.fetchOpenOrders()
         notify({
           type: 'success',
@@ -289,7 +296,6 @@ const AdvancedTradeForm = () => {
           undefined,
           undefined
         )
-        actions.reloadMangoAccount()
         actions.fetchOpenOrders()
         notify({
           type: 'success',
@@ -308,7 +314,7 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [t])
+  }, [])
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
@@ -344,13 +350,13 @@ const AdvancedTradeForm = () => {
                 group,
                 selectedMarket.perpMarketIndex,
                 parseFloat(tradeForm.baseSize),
-                parseFloat(tradeForm.price)
+                Number(tradeForm.price)
               )
             : mangoAccount.simHealthRatioWithPerpBidUiChanges(
                 group,
                 selectedMarket.perpMarketIndex,
                 parseFloat(tradeForm.baseSize),
-                parseFloat(tradeForm.price)
+                Number(tradeForm.price)
               )
       }
     } catch (e) {

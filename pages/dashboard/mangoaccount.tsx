@@ -4,7 +4,10 @@ import type { NextPage } from 'next'
 import { ReactNode } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { toUiDecimalsForQuote, HealthType } from '@blockworks-foundation/mango-v4';
+import {
+  toUiDecimalsForQuote,
+  HealthType,
+} from '@blockworks-foundation/mango-v4'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -56,19 +59,27 @@ const Dashboard: NextPage = () => {
               />
               <KeyValuePair
                 label="Init Health"
-                value={`$${toUiDecimalsForQuote(mangoAccount.getHealth(group, HealthType.init)).toFixed(4)}`}
+                value={`$${toUiDecimalsForQuote(
+                  mangoAccount.getHealth(group, HealthType.init)
+                ).toFixed(4)}`}
               />
               <KeyValuePair
                 label="Maint Health"
-                value={`$${toUiDecimalsForQuote(mangoAccount.getHealth(group, HealthType.maint)).toFixed(4)}`}
+                value={`$${toUiDecimalsForQuote(
+                  mangoAccount.getHealth(group, HealthType.maint)
+                ).toFixed(4)}`}
               />
               <KeyValuePair
                 label="Perp Settle Health"
-                value={`$${toUiDecimalsForQuote(mangoAccount.getPerpSettleHealth(group)).toFixed(4)}`}
+                value={`$${toUiDecimalsForQuote(
+                  mangoAccount.getPerpSettleHealth(group)
+                ).toFixed(4)}`}
               />
               <KeyValuePair
                 label="Net Deposits"
-                value={`$${toUiDecimalsForQuote(mangoAccount.netDeposits).toFixed(4)}`}
+                value={`$${toUiDecimalsForQuote(
+                  mangoAccount.netDeposits
+                ).toFixed(4)}`}
               />
               <KeyValuePair
                 label="Perp Spot Transfers"
@@ -154,7 +165,9 @@ const Dashboard: NextPage = () => {
                     />
                     <KeyValuePair
                       label="Quote Position UI"
-                      value={`$${toUiDecimalsForQuote(perp.quotePositionNative).toFixed(4)}`}
+                      value={`$${toUiDecimalsForQuote(
+                        perp.quotePositionNative
+                      ).toFixed(4)}`}
                     />
                     <KeyValuePair
                       label="Quote Running Native"
