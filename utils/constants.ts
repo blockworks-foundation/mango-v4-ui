@@ -48,3 +48,5 @@ export const NOTIFICATION_POSITION_KEY = 'notificationPosition'
 export const MIN_SOL_BALANCE = 0.04
 
 export const FAVORITE_MARKETS_KEY = 'favoriteMarkets'
+
+export const RPC_PROVIDER_KEY = 'rpcProviderKey'
