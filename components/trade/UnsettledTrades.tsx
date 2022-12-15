@@ -45,7 +45,6 @@ const UnsettledTrades = ({
         new PublicKey(mktAddress)
       )
       actions.fetchOpenOrders()
-      actions.reloadMangoAccount()
       notify({
         type: 'success',
         title: 'Successfully settled funds',

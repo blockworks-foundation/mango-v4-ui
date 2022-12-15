@@ -268,7 +268,6 @@ const AdvancedTradeForm = () => {
           Date.now(),
           10
         )
-        actions.reloadMangoAccount()
         actions.fetchOpenOrders()
         notify({
           type: 'success',
@@ -297,7 +296,6 @@ const AdvancedTradeForm = () => {
           undefined,
           undefined
         )
-        actions.reloadMangoAccount()
         actions.fetchOpenOrders()
         notify({
           type: 'success',

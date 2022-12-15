@@ -677,6 +677,9 @@ const mangoStore = create<MangoStore>()(
           const set = get().set
           const client = get().client
           const group = get().group
+          if (!providedMangoAccount) {
+            await get().actions.reloadMangoAccount()
+          }
           const mangoAccount =
             providedMangoAccount || get().mangoAccount.current
 
