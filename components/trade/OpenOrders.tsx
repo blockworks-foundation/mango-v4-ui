@@ -3,6 +3,8 @@ import {
   PerpOrder,
   PerpOrderType,
   Serum3Market,
+  Serum3OrderType,
+  Serum3SelfTradeBehavior,
   Serum3Side,
 } from '@blockworks-foundation/mango-v4'
 import Input from '@components/forms/Input'
@@ -44,33 +46,50 @@ const OpenOrders = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
+  const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
+    const openOrders = mangoStore.getState().mangoAccount.openOrders
+    let foundedMarketPk: string | undefined = undefined
+    for (const [marketPk, orders] of Object.entries(openOrders)) {
+      for (const order of orders) {
+        if (order.orderId.eq(o.orderId)) {
+          foundedMarketPk = marketPk
+          break
+        }
+      }
+      break
+    }
+    return foundedMarketPk
+  }
+
   const handleCancelSerumOrder = useCallback(
     async (o: Order) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
-      const selectedMarket = mangoStore.getState().selectedMarket.current
       const actions = mangoStore.getState().actions
-
       if (!group || !mangoAccount) return
+      const marketPk = findSerum3MarketPkInOpenOrders(o)
+      if (!marketPk) return
+      const market = group.getSerum3MarketByExternalMarket(
+        new PublicKey(marketPk)
+      )
+
       setCancelId(o.orderId.toString())
       try {
-        if (selectedMarket instanceof Serum3Market) {
-          const tx = await client.serum3CancelOrder(
-            group,
-            mangoAccount,
-            selectedMarket!.serumMarketExternal,
-            o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-            o.orderId
-          )
+        const tx = await client.serum3CancelOrder(
+          group,
+          mangoAccount,
+          market!.serumMarketExternal,
+          o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+          o.orderId
+        )
 
-          actions.fetchOpenOrders()
-          notify({
-            type: 'success',
-            title: 'Transaction successful',
-            txid: tx,
-          })
-        }
+        actions.fetchOpenOrders()
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
       } catch (e: any) {
         console.error('Error canceling', e)
         notify({
@@ -83,47 +102,9 @@ const OpenOrders = () => {
         setCancelId('')
       }
     },
-    [t]
+    [t, openOrders]
   )
 
-  const handleCancelPerpOrder = useCallback(
-    async (o: PerpOrder) => {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const selectedMarket = mangoStore.getState().selectedMarket.current
-      const actions = mangoStore.getState().actions
-      if (!group || !mangoAccount) return
-      setCancelId(o.orderId.toString())
-      try {
-        if (selectedMarket instanceof PerpMarket) {
-          const tx = await client.perpCancelOrder(
-            group,
-            mangoAccount,
-            o.perpMarketIndex,
-            o.orderId
-          )
-          actions.fetchOpenOrders()
-          notify({
-            type: 'success',
-            title: 'Transaction successful',
-            txid: tx,
-          })
-        }
-      } catch (e: any) {
-        console.error('Error canceling', e)
-        notify({
-          title: t('trade:cancel-order-error'),
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
-      } finally {
-        setCancelId('')
-      }
-    },
-    [t]
-  )
   const modifyOrder = useCallback(
     async (o: PerpOrder | Order) => {
       const client = mangoStore.getState().client
@@ -134,8 +115,9 @@ const OpenOrders = () => {
       const price = modifiedOrderPrice ? Number(modifiedOrderPrice) : o.price
       if (!group || !mangoAccount) return
       try {
+        let tx = ''
         if (o instanceof PerpOrder) {
-          const tx = await client.modifyPerpOrder(
+          tx = await client.modifyPerpOrder(
             group,
             mangoAccount,
             o.perpMarketIndex,
@@ -149,13 +131,32 @@ const OpenOrders = () => {
             undefined,
             undefined
           )
-          actions.fetchOpenOrders()
-          notify({
-            type: 'success',
-            title: 'Transaction successful',
-            txid: tx,
-          })
+        } else {
+          const marketPk = findSerum3MarketPkInOpenOrders(o)
+          if (!marketPk) return
+          const market = group.getSerum3MarketByExternalMarket(
+            new PublicKey(marketPk)
+          )
+          tx = await client.modifySerum3Order(
+            group,
+            o.orderId,
+            mangoAccount,
+            market.serumMarketExternal,
+            o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+            price,
+            baseSize,
+            Serum3SelfTradeBehavior.decrementTake,
+            Serum3OrderType.limit,
+            Date.now(),
+            10
+          )
         }
+        actions.fetchOpenOrders()
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
       } catch (e: any) {
         console.error('Error canceling', e)
         notify({
@@ -169,6 +170,42 @@ const OpenOrders = () => {
       }
     },
     [t, modifiedOrderSize, modifiedOrderPrice]
+  )
+
+  const handleCancelPerpOrder = useCallback(
+    async (o: PerpOrder) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const actions = mangoStore.getState().actions
+      if (!group || !mangoAccount) return
+      setCancelId(o.orderId.toString())
+      try {
+        const tx = await client.perpCancelOrder(
+          group,
+          mangoAccount,
+          o.perpMarketIndex,
+          o.orderId
+        )
+        actions.fetchOpenOrders()
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      } catch (e: any) {
+        console.error('Error canceling', e)
+        notify({
+          title: t('trade:cancel-order-error'),
+          description: e.message,
+          txid: e.txid,
+          type: 'error',
+        })
+      } finally {
+        setCancelId('')
+      }
+    },
+    [t]
   )
 
   const showEditOrderForm = (order: Order | PerpOrder) => {
