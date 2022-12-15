@@ -9,9 +9,10 @@ import {
   TransactionInstruction,
   PublicKey,
   VersionedTransaction,
-  MessageCompiledInstruction,
   Connection,
-  MessageV0,
+  TransactionMessage,
+  AddressLookupTableAccount,
+  MessageAddressTableLookup,
   // VersionedMessage,
 } from '@solana/web3.js'
 import Decimal from 'decimal.js'
@@ -39,7 +40,7 @@ import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 // import { Transaction } from '@solana/web3.js'
-import { SOUND_SETTINGS_KEY } from 'utils/constants'
+import { JUPITER_V4_PROGRAM_ID, SOUND_SETTINGS_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
@@ -54,12 +55,71 @@ type JupiterRouteInfoProps = {
   slippage: number
 }
 
-const parseJupiterRoute = async (
+const deserializeJupiterIxAndAlt = async (
+  connection: Connection,
+  swapTransaction: string
+): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
+  const parsedSwapTransaction = VersionedTransaction.deserialize(
+    Buffer.from(swapTransaction, 'base64')
+  )
+  const message = parsedSwapTransaction.message
+  const lookups = message.addressTableLookups
+  const addressLookupTablesResponses = await Promise.all(
+    message.addressTableLookups.map((alt) =>
+      connection.getAddressLookupTable(alt.accountKey)
+    )
+  )
+  const addressLookupTables: AddressLookupTableAccount[] =
+    addressLookupTablesResponses
+      .map((alt) => alt.value)
+      .filter((x): x is AddressLookupTableAccount => x !== null)
+  const accountKeys = message.staticAccountKeys
+
+  const zippedLookupsAndAddressLookupTables: [
+    MessageAddressTableLookup,
+    AddressLookupTableAccount
+  ][] = lookups.map((l, index) => [l, addressLookupTables[index]])
+
+  for (const [lookups, table] of zippedLookupsAndAddressLookupTables) {
+    accountKeys.concat(
+      lookups.writableIndexes.map((_, index) => table.state.addresses[index])
+    )
+  }
+
+  for (const [lookups, table] of zippedLookupsAndAddressLookupTables) {
+    accountKeys.concat(
+      lookups.readonlyIndexes.map((_, index) => table.state.addresses[index])
+    )
+  }
+  console.log('message before decompile', message)
+
+  const decompiledMessage = TransactionMessage.decompile(message, {
+    addressLookupTableAccounts: addressLookupTables,
+  })
+
+  const txInstructions: TransactionInstruction[] =
+    decompiledMessage.instructions.map(
+      (ix) =>
+        new TransactionInstruction({
+          data: ix.data,
+          programId: ix.programId,
+          keys: ix.keys.map((_, index) => ({
+            pubkey: accountKeys[index],
+            isSigner: message.isAccountSigner(index),
+            isWritable: message.isAccountWritable(index),
+          })),
+        })
+    )
+
+  return [txInstructions, addressLookupTables]
+}
+
+const fetchJupiterTransaction = async (
   connection: Connection,
   selectedRoute: RouteInfo,
   userPublicKey: PublicKey,
   slippage: number
-): Promise<MessageCompiledInstruction[]> => {
+): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const transactions = await (
     await fetch('https://quote-api.jup.ag/v4/swap', {
       method: 'POST',
@@ -80,31 +140,22 @@ const parseJupiterRoute = async (
   ).json()
 
   const { swapTransaction } = transactions
-  const parsedSwapTransaction = VersionedTransaction.deserialize(
-    Buffer.from(swapTransaction, 'base64')
+
+  const [ixs, alts] = await deserializeJupiterIxAndAlt(
+    connection,
+    swapTransaction
   )
 
-  console.log('parsedSwapTransaction: ', parsedSwapTransaction)
+  // const isSetupIx = (pk: PublicKey): boolean => { k == ata_program || k == token_program };
+  const isJupiterIx = (pk: PublicKey): boolean =>
+    pk.toString() === JUPITER_V4_PROGRAM_ID
 
-  for (const alt of parsedSwapTransaction.message.addressTableLookups) {
-    const lookupTableAccount = await connection.getAddressLookupTable(
-      alt.accountKey
-    )
-    const accountKeys = parsedSwapTransaction.message.staticAccountKeys
+  console.log('ixs', ixs)
 
-    console.log('lookupTableAccount', lookupTableAccount)
-  }
+  const filtered_jup_ixs = ixs.filter((ix) => isJupiterIx(ix.programId))
+  console.log('filtered_jup_ixs', filtered_jup_ixs)
 
-  // const instructions = []
-  // for (const ix of parsedSwapTransaction.instructions) {
-  //   if (
-  //     ix.programId.toBase58() === 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
-  //   ) {
-  //     instructions.push(ix)
-  //   }
-  // }
-
-  return parsedSwapTransaction.message.compiledInstructions
+  return [filtered_jup_ixs, alts]
 }
 
 const EMPTY_COINGECKO_PRICES = {
@@ -130,7 +181,7 @@ const SwapReviewRouteInfo = ({
   const [feeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [coingeckoPrices, setCoingeckoPrices] = useState(EMPTY_COINGECKO_PRICES)
-  const { mangoTokens } = useJupiterMints()
+  const { jupiterTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const [soundSettings] = useLocalStorageState(
@@ -189,7 +240,7 @@ const SwapReviewRouteInfo = ({
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
 
-      const ixs = await parseJupiterRoute(
+      const [ixs, alts] = await fetchJupiterTransaction(
         connection,
         selectedRoute,
         mangoAccount.owner,
@@ -205,6 +256,7 @@ const SwapReviewRouteInfo = ({
           amountIn: amountIn.toNumber(),
           outputMintPk: outputBank.mint,
           userDefinedInstructions: ixs,
+          userDefinedAlts: alts,
           flashLoanType: { swap: {} },
         })
         set((s) => {
@@ -480,7 +532,7 @@ const SwapReviewRouteInfo = ({
             </div>
           ) : (
             selectedRoute?.marketInfos.map((info, index) => {
-              const feeToken = mangoTokens.find(
+              const feeToken = jupiterTokens.find(
                 (item) => item?.address === info.lpFee?.mint
               )
               return (
