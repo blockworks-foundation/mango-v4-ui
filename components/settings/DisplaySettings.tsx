@@ -44,19 +44,34 @@ export const CURRENCIES = [
     id: 'FX.EUR/USD',
   },
   {
-    locale: 'en-AU',
-    currency: 'AUD',
-    id: 'FX.AUD/USD',
-  },
-  {
     locale: 'en-GB',
     currency: 'GBP',
     id: 'FX.GBP/USD',
   },
   {
+    locale: 'zh-CN',
+    currency: 'CNY',
+    id: 'FX.USD/CNH',
+  },
+  {
     locale: 'ja-JP',
     currency: 'JPY',
     id: 'FX.USD/JPY',
+  },
+  {
+    locale: 'en-CA',
+    currency: 'CAD',
+    id: 'FX.USD/CAD',
+  },
+  {
+    locale: 'en-AU',
+    currency: 'AUD',
+    id: 'FX.AUD/USD',
+  },
+  {
+    locale: 'en-NZ',
+    currency: 'NZD',
+    id: 'FX.NZD/USD',
   },
 ]
 

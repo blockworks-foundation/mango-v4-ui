@@ -30,5 +30,5 @@ export default function useCurrencyConversion() {
     return savedCurrencyData?.price ? savedCurrencyData.price : 1
   }, [savedCurrency, currencyData.length])
 
-  return convertedPrice || 1
+  return convertedPrice
 }
