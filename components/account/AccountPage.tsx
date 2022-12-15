@@ -36,6 +36,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -80,6 +81,7 @@ const AccountPage = () => {
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
   )
+  const currencyConversionPrice = useCurrencyConversion()
 
   // const leverage = useMemo(() => {
   //   if (!group || !mangoAccount) return 0
@@ -243,7 +245,10 @@ const AccountPage = () => {
                     play
                     delay={0.05}
                     duration={1}
-                    numbers={formatFixedDecimals(accountValue, true)}
+                    numbers={formatFixedDecimals(
+                      accountValue / currencyConversionPrice,
+                      true
+                    )}
                   />
                 ) : (
                   <FlipNumbers
@@ -252,15 +257,20 @@ const AccountPage = () => {
                     play
                     delay={0.05}
                     duration={1}
-                    numbers={'$0.00'}
+                    numbers={formatFixedDecimals(0, true)}
                   />
                 )
               ) : (
-                <span>{formatFixedDecimals(accountValue, true)}</span>
+                <span>
+                  {formatFixedDecimals(
+                    accountValue / currencyConversionPrice,
+                    true
+                  )}
+                </span>
               )}
             </div>
             <div className="flex items-center space-x-1.5">
-              <Change change={accountValueChange} prefix="$" />
+              <Change change={accountValueChange} isCurrency />
               <p className="text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
@@ -319,8 +329,8 @@ const AccountPage = () => {
           <AccountActions />
         </div>
       </div>
-      <div className="grid grid-cols-5 border-b border-th-bkg-3">
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1">
+      <div className="grid grid-cols-4 border-b border-th-bkg-3">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
@@ -366,7 +376,7 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-five">
             <Tooltip
               content="The value of collateral you have to open new trades or borrows. When your free collateral reaches $0 you won't be able to make withdrawals."
@@ -383,7 +393,7 @@ const AccountPage = () => {
                 ? formatFixedDecimals(
                     toUiDecimalsForQuote(
                       mangoAccount.getCollateralValue(group)!.toNumber()
-                    ),
+                    ) / currencyConversionPrice,
                     true
                   )
                 : (0).toFixed(2)}
@@ -403,7 +413,7 @@ const AccountPage = () => {
                           mangoAccount
                             .getAssetsValue(group, HealthType.init)!
                             .toNumber()
-                        ),
+                        ) / currencyConversionPrice,
                         true
                       )
                     : `$${(0).toFixed(2)}`}
@@ -430,7 +440,7 @@ const AccountPage = () => {
           </div>
         </div> */}
         <button
-          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
             performanceData.length > 4
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'cursor-default'
@@ -448,10 +458,10 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {formatFixedDecimals(accountPnl, true)}
+              {formatFixedDecimals(accountPnl / currencyConversionPrice, true)}
             </p>
             <div className="flex space-x-1">
-              <Change change={oneDayPnlChange} prefix="$" size="small" />
+              <Change change={oneDayPnlChange} isCurrency size="small" />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
@@ -460,7 +470,7 @@ const AccountPage = () => {
           ) : null}
         </button>
         <button
-          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
             interestTotalValue > 1 || interestTotalValue < -1
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'cursor-default'
@@ -479,10 +489,13 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {formatFixedDecimals(interestTotalValue, true)}
+              {formatFixedDecimals(
+                interestTotalValue / currencyConversionPrice,
+                true
+              )}
             </p>
             <div className="flex space-x-1">
-              <Change change={oneDayInterestChange} prefix="$" size="small" />
+              <Change change={oneDayInterestChange} isCurrency size="small" />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>

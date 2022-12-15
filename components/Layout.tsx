@@ -8,22 +8,34 @@ import BottomBar from './mobile/BottomBar'
 import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
-import { SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
+import { SAVED_CURRENCY_KEY, SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import SwapSuccessParticles from './swap/SwapSuccessParticles'
 import { tsParticles } from 'tsparticles-engine'
 import { loadFull } from 'tsparticles'
+import { CURRENCIES } from './settings/DisplaySettings'
 
 const sideBarAnimationDuration = 500
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const { connected } = useWallet()
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
+  const actions = mangoStore((s) => s.actions)
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
     false
   )
+  const [savedCurrency] = useLocalStorageState(
+    SAVED_CURRENCY_KEY,
+    CURRENCIES[0]
+  )
   const { width } = useViewport()
+
+  useEffect(() => {
+    if (savedCurrency.currency !== 'USD') {
+      actions.fetchCurrencyData()
+    }
+  }, [savedCurrency])
 
   useEffect(() => {
     if (width < breakpoints.lg) {

@@ -55,7 +55,7 @@ const AccountChart = ({
       daysToShow={daysToShow}
       hideChart={hideChart}
       loading={loading}
-      prefix="$"
+      isCurrency
       setDaysToShow={handleDaysToShow}
       tickFormat={(x) => `$${x.toFixed(2)}`}
       title={t(chartToShow)}

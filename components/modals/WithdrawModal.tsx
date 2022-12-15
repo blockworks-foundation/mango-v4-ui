@@ -31,6 +31,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 interface WithdrawModalProps {
   token?: string
@@ -50,6 +51,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
+  const currencyConversionPrice = useCurrencyConversion()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -270,7 +272,8 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 <p className="font-mono text-th-fgd-1">
                   {bank?.uiPrice
                     ? formatFixedDecimals(
-                        bank.uiPrice * Number(inputAmount),
+                        (bank.uiPrice * Number(inputAmount)) /
+                          currencyConversionPrice,
                         true
                       )
                     : '-'}

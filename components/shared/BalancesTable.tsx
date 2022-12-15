@@ -21,6 +21,7 @@ import { LinkButton } from './Button'
 import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useMangoGroup from 'hooks/useMangoGroup'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -30,6 +31,7 @@ const BalancesTable = () => {
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const currencyConversionPrice = useCurrencyConversion()
 
   const banks = useMemo(() => {
     if (!group) return []
@@ -103,22 +105,30 @@ const BalancesTable = () => {
                   <p className="text-sm text-th-fgd-4">
                     {mangoAccount
                       ? `${formatFixedDecimals(
-                          mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
+                          (mangoAccount.getTokenBalanceUi(bank) *
+                            bank.uiPrice) /
+                            currencyConversionPrice,
                           true
                         )}`
-                      : '$0.00'}
+                      : formatFixedDecimals(0, true)}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
                   <p>{inOrders}</p>
                   <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(inOrders * bank.uiPrice, true)}
+                    {formatFixedDecimals(
+                      (inOrders * bank.uiPrice) / currencyConversionPrice,
+                      true
+                    )}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
                   <p>{unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}</p>
                   <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(unsettled * bank.uiPrice, true)}
+                    {formatFixedDecimals(
+                      (unsettled * bank.uiPrice) / currencyConversionPrice,
+                      true
+                    )}
                   </p>
                 </Td>
               </TrBody>
@@ -163,10 +173,12 @@ const BalancesTable = () => {
                     (
                     {mangoAccount
                       ? `${formatFixedDecimals(
-                          mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
+                          (mangoAccount.getTokenBalanceUi(bank) *
+                            bank.uiPrice) /
+                            currencyConversionPrice,
                           true
                         )}`
-                      : '$0.00'}
+                      : formatFixedDecimals(0, true)}
                     )
                   </span>
                 </div>

@@ -5,6 +5,7 @@ import { ArrowSmallUpIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useCoingecko } from 'hooks/useCoingecko'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
@@ -49,6 +50,7 @@ const CoingeckoStats = ({
   const [loadChartData, setLoadChartData] = useState(true)
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
   const descWidthRef = useRef<any>(null)
+  const currencyConversionPrice = useCurrencyConversion()
 
   const [width, setWidth] = useState<number>(0)
 
@@ -172,7 +174,10 @@ const CoingeckoStats = ({
             <p>{t('token:market-cap')}</p>
             <p className="font-mono text-th-fgd-2">
               {market_cap?.usd ? (
-                formatFixedDecimals(market_cap.usd, true)
+                formatFixedDecimals(
+                  market_cap.usd / currencyConversionPrice,
+                  true
+                )
               ) : (
                 <span className="font-body text-th-fgd-4">
                   {t('unavailable')}
@@ -189,7 +194,10 @@ const CoingeckoStats = ({
             <p>{t('token:volume')}</p>
             <p className="font-mono text-th-fgd-2">
               {total_volume?.usd ? (
-                formatFixedDecimals(total_volume.usd, true)
+                formatFixedDecimals(
+                  total_volume.usd / currencyConversionPrice,
+                  true
+                )
               ) : (
                 <span className="font-body text-th-fgd-4">
                   {t('unavailable')}
@@ -203,7 +211,7 @@ const CoingeckoStats = ({
               <div className="flex items-center font-mono text-th-fgd-2">
                 <span className="mr-2">
                   {ath?.usd ? (
-                    formatFixedDecimals(ath.usd, true)
+                    formatFixedDecimals(ath.usd / currencyConversionPrice, true)
                   ) : (
                     <span className="font-body text-th-fgd-4">
                       {t('unavailable')}
@@ -226,7 +234,7 @@ const CoingeckoStats = ({
               <div className="flex items-center font-mono text-th-fgd-2">
                 <span className="mr-2">
                   {atl?.usd ? (
-                    formatFixedDecimals(atl.usd, true)
+                    formatFixedDecimals(atl.usd / currencyConversionPrice, true)
                   ) : (
                     <span className="font-body text-th-fgd-4">
                       {t('unavailable')}
@@ -248,7 +256,10 @@ const CoingeckoStats = ({
               <p>{t('token:fdv')}</p>
               <p className="font-mono text-th-fgd-2">
                 {fully_diluted_valuation?.usd ? (
-                  formatFixedDecimals(fully_diluted_valuation.usd, true)
+                  formatFixedDecimals(
+                    fully_diluted_valuation.usd / currencyConversionPrice,
+                    true
+                  )
                 ) : (
                   <span className="font-body text-th-fgd-4">
                     {t('unavailable')}

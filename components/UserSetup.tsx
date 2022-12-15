@@ -13,6 +13,7 @@ import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSolBalance from 'hooks/useSolBalance'
@@ -62,6 +63,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
+  const currencyConversionPrice = useCurrencyConversion()
 
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -468,8 +470,9 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     <p className="font-mono">
                       {depositBank
                         ? formatFixedDecimals(
-                            depositBank.value[0].uiPrice *
-                              Number(depositAmount),
+                            (depositBank.value[0].uiPrice *
+                              Number(depositAmount)) /
+                              currencyConversionPrice,
                             true
                           )
                         : ''}

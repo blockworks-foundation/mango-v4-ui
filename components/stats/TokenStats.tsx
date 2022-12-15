@@ -133,7 +133,7 @@ const TokenStats = () => {
               ])}
               daysToShow={'999'}
               heightClass="h-64"
-              prefix="$"
+              isCurrency
               tickFormat={(x) => `$${x.toFixed(2)}`}
               title={t('total-deposit-value')}
               xKey="date"
@@ -159,7 +159,7 @@ const TokenStats = () => {
               ])}
               daysToShow={'999'}
               heightClass="h-64"
-              prefix="$"
+              isCurrency
               tickFormat={(x) => `$${x.toFixed(2)}`}
               title={t('total-borrow-value')}
               xKey="date"

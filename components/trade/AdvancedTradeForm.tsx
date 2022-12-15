@@ -39,6 +39,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import Slippage from './Slippage'
 import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -55,6 +56,7 @@ const AdvancedTradeForm = () => {
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
+  const currencyConversionPrice = useCurrencyConversion()
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[0]
@@ -582,7 +584,8 @@ const AdvancedTradeForm = () => {
             <p>{t('trade:order-value')}</p>
             <p className="text-th-fgd-2">
               {formatFixedDecimals(
-                parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize),
+                (parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize)) /
+                  currencyConversionPrice,
                 true
               )}
             </p>

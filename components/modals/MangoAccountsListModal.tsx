@@ -20,6 +20,7 @@ import { useRouter } from 'next/router'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { notify } from 'utils/notifications'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 const MangoAccountsListModal = ({
   isOpen,
@@ -37,6 +38,7 @@ const MangoAccountsListModal = ({
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
   const router = useRouter()
   const { asPath } = useRouter()
+  const currencyConversionPrice = useCurrencyConversion()
 
   const handleSelectMangoAccount = async (acc: MangoAccount) => {
     const set = mangoStore.getState().set
@@ -85,7 +87,8 @@ const MangoAccountsListModal = ({
               <div className="thin-scroll mt-4 max-h-[280px] space-y-2 overflow-y-auto">
                 {mangoAccounts.map((acc) => {
                   const accountValue = formatFixedDecimals(
-                    toUiDecimalsForQuote(Number(acc.getEquity(group!))),
+                    toUiDecimalsForQuote(Number(acc.getEquity(group!))) /
+                      currencyConversionPrice,
                     true
                   )
                   const maintHealth = acc.getHealthRatioUi(

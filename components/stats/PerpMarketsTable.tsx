@@ -13,6 +13,7 @@ import dynamic from 'next/dynamic'
 import { useCoingecko } from 'hooks/useCoingecko'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -26,6 +27,7 @@ const PerpMarketsTable = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
+  const currencyConversionPrice = useCurrencyConversion()
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -82,7 +84,12 @@ const PerpMarketsTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(market.uiPrice, true)}</p>
+                      <p>
+                        {formatFixedDecimals(
+                          market.uiPrice / currencyConversionPrice,
+                          true
+                        )}
+                      </p>
                     </div>
                   </Td>
                   <Td>
@@ -148,6 +155,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
   const { t } = useTranslation('common')
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
   const { theme } = useTheme()
+  const currencyConversionPrice = useCurrencyConversion()
   // const rate = usePerpFundingRate()
 
   const symbol = market.name.split('-')[0]
@@ -188,7 +196,10 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
             <p className="text-th-fgd-1">{market.name}</p>
             <div className="flex items-center space-x-3">
               <p className="font-mono">
-                {formatFixedDecimals(market.uiPrice, true)}
+                {formatFixedDecimals(
+                  market.uiPrice / currencyConversionPrice,
+                  true
+                )}
               </p>
               <Change change={change} suffix="%" />
             </div>

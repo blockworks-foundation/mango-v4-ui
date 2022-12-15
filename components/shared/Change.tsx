@@ -1,18 +1,22 @@
 import { MinusSmallIcon } from '@heroicons/react/20/solid'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 import { formatFixedDecimals } from 'utils/numbers'
 import { DownTriangle, UpTriangle } from './DirectionTriangles'
 
 const Change = ({
   change,
+  isCurrency,
   prefix,
   size,
   suffix,
 }: {
   change: number | typeof NaN
+  isCurrency?: boolean
   prefix?: string
   size?: 'small'
   suffix?: string
 }) => {
+  const currencyConversionPrice = useCurrencyConversion()
   return (
     <div className="flex items-center space-x-1.5">
       {change > 0 ? (
@@ -44,6 +48,11 @@ const Change = ({
         {prefix ? prefix : ''}
         {isNaN(change)
           ? '0.00'
+          : isCurrency
+          ? formatFixedDecimals(
+              Math.abs(change) / currencyConversionPrice,
+              true
+            )
           : formatFixedDecimals(Math.abs(change), false, true)}
         {suffix ? suffix : ''}
       </p>

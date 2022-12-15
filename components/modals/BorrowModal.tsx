@@ -31,6 +31,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 interface BorrowModalProps {
   token?: string
@@ -50,6 +51,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
+  const currencyConversionPrice = useCurrencyConversion()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -279,7 +281,8 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 <p>{t('borrow-value')}</p>
                 <p className="font-mono text-th-fgd-1">
                   {formatFixedDecimals(
-                    bank.uiPrice * Number(inputAmount),
+                    (bank.uiPrice * Number(inputAmount)) /
+                      currencyConversionPrice,
                     true
                   )}
                 </p>
@@ -292,8 +295,9 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 </Tooltip>
                 <p className="font-mono text-th-fgd-1">
                   {formatFixedDecimals(
-                    bank.loanOriginationFeeRate.toNumber() *
-                      Number(inputAmount),
+                    (bank.loanOriginationFeeRate.toNumber() *
+                      Number(inputAmount)) /
+                      currencyConversionPrice,
                     true
                   )}
                 </p>

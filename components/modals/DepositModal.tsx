@@ -32,6 +32,7 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 interface DepositModalProps {
   token?: string
@@ -71,6 +72,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
+  const currencyConversionPrice = useCurrencyConversion()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -306,7 +308,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p className="font-mono">
                 {bank?.uiPrice
                   ? formatFixedDecimals(
-                      bank.uiPrice * Number(inputAmount),
+                      (bank.uiPrice * Number(inputAmount)) /
+                        currencyConversionPrice,
                       true
                     )
                   : '-'}
@@ -326,9 +329,10 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </Tooltip>
               <p className="font-mono">
                 {formatFixedDecimals(
-                  bank!.uiPrice! *
+                  (bank!.uiPrice! *
                     Number(inputAmount) *
-                    Number(bank!.initAssetWeight),
+                    Number(bank!.initAssetWeight)) /
+                    currencyConversionPrice,
                   true
                 )}
               </p>

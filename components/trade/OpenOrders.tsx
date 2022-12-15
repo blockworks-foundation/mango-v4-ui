@@ -14,6 +14,7 @@ import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
@@ -29,6 +30,7 @@ const OpenOrders = () => {
   const [cancelId, setCancelId] = useState<string>('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const currencyConversionPrice = useCurrencyConversion()
 
   const handleCancelSerumOrder = useCallback(
     async (o: Order) => {
@@ -181,7 +183,10 @@ const OpenOrders = () => {
                         </span>
                       </Td>
                       <Td className="text-right">
-                        {formatFixedDecimals(o.size * o.price, true)}
+                        {formatFixedDecimals(
+                          (o.size * o.price) / currencyConversionPrice,
+                          true
+                        )}
                       </Td>
                       <Td>
                         <div className="flex justify-end">

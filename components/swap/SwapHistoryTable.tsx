@@ -27,6 +27,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 const SwapHistoryTable = ({
   swapHistory,
@@ -45,6 +46,7 @@ const SwapHistoryTable = ({
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
   )
+  const currencyConversionPrice = useCurrencyConversion()
 
   const handleShowSwapDetails = (signature: string) => {
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
@@ -140,7 +142,10 @@ const SwapHistoryTable = ({
                               <span className="font-body text-th-fgd-4">
                                 {t('price')}:
                               </span>{' '}
-                              {formatFixedDecimals(swap_in_price_usd, true)}
+                              {formatFixedDecimals(
+                                swap_in_price_usd / currencyConversionPrice,
+                                true
+                              )}
                             </p>
                           </div>
                         </div>
@@ -165,7 +170,10 @@ const SwapHistoryTable = ({
                               <span className="font-body text-th-fgd-4">
                                 {t('price')}:
                               </span>{' '}
-                              {formatFixedDecimals(swap_out_price_usd, true)}
+                              {formatFixedDecimals(
+                                swap_out_price_usd / currencyConversionPrice,
+                                true
+                              )}
                             </p>
                           </div>
                         </div>
@@ -174,7 +182,8 @@ const SwapHistoryTable = ({
                     <Td>
                       <p className="text-right">
                         {formatFixedDecimals(
-                          swap_out_price_usd * swap_out_amount,
+                          (swap_out_price_usd * swap_out_amount) /
+                            currencyConversionPrice,
                           true
                         )}
                       </p>
@@ -291,7 +300,10 @@ const SwapHistoryTable = ({
                             <span className="font-body text-th-fgd-4">
                               {t('price')}:
                             </span>{' '}
-                            {formatFixedDecimals(swap_in_price_usd, true)}
+                            {formatFixedDecimals(
+                              swap_in_price_usd / currencyConversionPrice,
+                              true
+                            )}
                           </p>
                         </div>
                       </div>
@@ -316,7 +328,10 @@ const SwapHistoryTable = ({
                             <span className="font-body text-th-fgd-4">
                               {t('price')}:
                             </span>{' '}
-                            {formatFixedDecimals(swap_out_price_usd, true)}
+                            {formatFixedDecimals(
+                              swap_out_price_usd / currencyConversionPrice,
+                              true
+                            )}
                           </p>
                         </div>
                       </div>

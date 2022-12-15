@@ -1,12 +1,17 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
 import Select from '@components/forms/Select'
+import mangoStore from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'
-import { useCallback, useMemo } from 'react'
-import { NOTIFICATION_POSITION_KEY, SIZE_INPUT_UI_KEY } from 'utils/constants'
+import { useCallback, useEffect, useMemo } from 'react'
+import {
+  NOTIFICATION_POSITION_KEY,
+  SAVED_CURRENCY_KEY,
+  SIZE_INPUT_UI_KEY,
+} from 'utils/constants'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -27,10 +32,43 @@ const LANGS = [
   { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
 ]
 
+export const CURRENCIES = [
+  {
+    locale: 'en-US',
+    currency: 'USD',
+    id: 'FX.USD',
+  },
+  {
+    locale: 'en-IE',
+    currency: 'EUR',
+    id: 'FX.EUR/USD',
+  },
+  {
+    locale: 'en-AU',
+    currency: 'AUD',
+    id: 'FX.AUD/USD',
+  },
+  {
+    locale: 'en-GB',
+    currency: 'GBP',
+    id: 'FX.GBP/USD',
+  },
+  {
+    locale: 'ja-JP',
+    currency: 'JPY',
+    id: 'FX.USD/JPY',
+  },
+]
+
 const DisplaySettings = () => {
   const { t } = useTranslation(['common', 'settings'])
+  const actions = mangoStore((s) => s.actions)
   const { theme, setTheme } = useTheme()
   const [savedLanguage, setSavedLanguage] = useLocalStorageState('language', '')
+  const [savedCurrency, setSavedCurrency] = useLocalStorageState(
+    SAVED_CURRENCY_KEY,
+    JSON.stringify(CURRENCIES[0])
+  )
   const router = useRouter()
   const { pathname, asPath, query } = router
   const [notificationPosition, setNotificationPosition] = useLocalStorageState(
@@ -56,6 +94,10 @@ const DisplaySettings = () => {
     ]
   }, [t])
 
+  useEffect(() => {
+    actions.fetchCurrencyData()
+  }, [])
+
   const handleLangChange = useCallback(
     (l: string) => {
       setSavedLanguage(l)
@@ -64,6 +106,11 @@ const DisplaySettings = () => {
     },
     [router]
   )
+
+  const handleSaveCurrency = (currency: string) => {
+    const currencyInfo = CURRENCIES.find((c) => c.currency === currency)
+    setSavedCurrency(JSON.stringify(currencyInfo))
+  }
 
   return (
     <>
@@ -95,6 +142,24 @@ const DisplaySettings = () => {
             values={LANGS.map((val) => val.locale)}
             names={LANGS.map((val) => t(`settings:${val.name}`))}
           />
+        </div>
+      </div>
+      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
+        <p className="mb-2 md:mb-0">{t('settings:currency')}</p>
+        <div className="w-full min-w-[140px] md:w-auto">
+          <Select
+            value={JSON.parse(savedCurrency).currency}
+            onChange={(t) => handleSaveCurrency(t)}
+            className="w-full"
+          >
+            {CURRENCIES.map((t) => (
+              <Select.Option key={t.id} value={t.currency}>
+                <div className="flex w-full items-center justify-between">
+                  {t.currency}
+                </div>
+              </Select.Option>
+            ))}
+          </Select>
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">

@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/20/solid'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
@@ -42,6 +43,7 @@ const ActivityFeedTable = ({
   )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const currencyConversionPrice = useCurrencyConversion()
 
   const handleShowMore = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -222,7 +224,10 @@ const ActivityFeedTable = ({
                       }`}
                     >
                       {value > 0 ? '+' : ''}
-                      {formatFixedDecimals(value, true)}
+                      {formatFixedDecimals(
+                        value / currencyConversionPrice,
+                        true
+                      )}
                     </Td>
                     <Td>
                       {activity_type !== 'liquidate_token_with_token' ? (
@@ -322,6 +327,8 @@ const MobileActivityFeedItem = ({
   const isPerp = activity_type === 'perp_trade'
   const activityName = isLiquidation ? 'liquidation' : activity_type
   const value = getValue(activity)
+  const currencyConversionPrice = useCurrencyConversion()
+
   return (
     <div key={signature} className="border-b border-th-bkg-3 p-4">
       <div className="flex items-center justify-between">
@@ -340,7 +347,7 @@ const MobileActivityFeedItem = ({
             </p>
             <p className="text-right font-mono text-sm text-th-fgd-1">
               {isLiquidation ? (
-                formatFixedDecimals(value, true)
+                formatFixedDecimals(value / currencyConversionPrice, true)
               ) : isSwap ? (
                 <>
                   <span className="mr-1">
@@ -445,12 +452,16 @@ const MobileActivityFeedItem = ({
               <span className="ml-2 font-body tracking-wide text-th-fgd-3">
                 at
               </span>{' '}
-              {formatFixedDecimals(activity.activity_details.asset_price, true)}
+              {formatFixedDecimals(
+                activity.activity_details.asset_price / currencyConversionPrice,
+                true
+              )}
             </p>
             <p className="font-mono text-xs text-th-fgd-3">
               {formatFixedDecimals(
-                activity.activity_details.asset_price *
-                  activity.activity_details.asset_amount,
+                (activity.activity_details.asset_price *
+                  activity.activity_details.asset_amount) /
+                  currencyConversionPrice,
                 true
               )}
             </p>
@@ -465,12 +476,16 @@ const MobileActivityFeedItem = ({
               <span className="ml-2 font-body tracking-wide text-th-fgd-3">
                 at
               </span>{' '}
-              {formatFixedDecimals(activity.activity_details.liab_price, true)}
+              {formatFixedDecimals(
+                activity.activity_details.liab_price / currencyConversionPrice,
+                true
+              )}
             </p>
             <p className="font-mono text-xs text-th-fgd-3">
               {formatFixedDecimals(
-                activity.activity_details.liab_price *
-                  activity.activity_details.liab_amount,
+                (activity.activity_details.liab_price *
+                  activity.activity_details.liab_amount) /
+                  currencyConversionPrice,
                 true
               )}
             </p>

@@ -14,6 +14,7 @@ import dynamic from 'next/dynamic'
 import { useCoingecko } from 'hooks/useCoingecko'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -27,6 +28,7 @@ const SpotMarketsTable = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const currencyConversionPrice = useCurrencyConversion()
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -72,7 +74,12 @@ const SpotMarketsTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(oraclePrice!, true)}</p>
+                      <p>
+                        {formatFixedDecimals(
+                          oraclePrice! / currencyConversionPrice,
+                          true
+                        )}
+                      </p>
                     </div>
                   </Td>
                   <Td>
@@ -130,6 +137,7 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
   const { group } = useMangoGroup()
   const { theme } = useTheme()
+  const currencyConversionPrice = useCurrencyConversion()
   const bank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
 
   const coingeckoData = useMemo(() => {
@@ -167,7 +175,12 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
             <p className="text-th-fgd-1">{market.name}</p>
             <div className="flex items-center space-x-3">
               <p className="font-mono">
-                {bank?.uiPrice ? formatFixedDecimals(bank.uiPrice, true) : '-'}
+                {bank?.uiPrice
+                  ? formatFixedDecimals(
+                      bank.uiPrice / currencyConversionPrice,
+                      true
+                    )
+                  : '-'}
               </p>
               <Change change={change} suffix="%" />
             </div>

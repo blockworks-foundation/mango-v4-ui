@@ -30,6 +30,7 @@ import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 interface RepayModalProps {
   token?: string
@@ -48,6 +49,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
   // const { maxSolDeposit } = useSolBalance()
+  const currencyConversionPrice = useCurrencyConversion()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -279,7 +281,8 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
               <p className="font-mono">
                 {bank?.uiPrice
                   ? formatFixedDecimals(
-                      bank.uiPrice * Number(inputAmount),
+                      (bank.uiPrice * Number(inputAmount)) /
+                        currencyConversionPrice,
                       true
                     )
                   : '-'}

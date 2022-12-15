@@ -25,6 +25,7 @@ import { formatFixedDecimals } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
 import { useTranslation } from 'next-i18next'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 dayjs.extend(relativeTime)
 
@@ -35,6 +36,7 @@ interface DetailedAreaChartProps {
   heightClass?: string
   hideChange?: boolean
   hideChart?: () => void
+  isCurrency?: boolean
   loading?: boolean
   prefix?: string
   setDaysToShow?: (x: string) => void
@@ -61,6 +63,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   heightClass,
   hideChange,
   hideChart,
+  isCurrency,
   loading,
   prefix = '',
   setDaysToShow,
@@ -78,6 +81,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
   )
+  const currencyConversionPrice = useCurrencyConversion()
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -150,22 +154,33 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             width={small ? 17 : 30}
                             play
                             numbers={
-                              prefix +
-                              formatFixedDecimals(mouseData[yKey] ?? 0) +
-                              suffix
+                              prefix + isCurrency
+                                ? formatFixedDecimals(
+                                    mouseData[yKey] / currencyConversionPrice ??
+                                      0,
+                                    true
+                                  )
+                                : formatFixedDecimals(mouseData[yKey] ?? 0) +
+                                  suffix
                             }
                           />
                         ) : (
                           <span>
-                            {prefix +
-                              formatFixedDecimals(mouseData[yKey] ?? 0) +
-                              suffix}
+                            {prefix + isCurrency
+                              ? formatFixedDecimals(
+                                  mouseData[yKey] / currencyConversionPrice ??
+                                    0,
+                                  true
+                                )
+                              : formatFixedDecimals(mouseData[yKey] ?? 0) +
+                                suffix}
                           </span>
                         )}
                         {!hideChange ? (
                           <span className="ml-3">
                             <Change
                               change={calculateChartChange()}
+                              isCurrency
                               prefix={prefix}
                               suffix={suffix}
                             />
@@ -195,22 +210,35 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             width={small ? 17 : 30}
                             play
                             numbers={
-                              prefix +
-                              formatFixedDecimals(data[data.length - 1][yKey]) +
-                              suffix
+                              prefix + isCurrency
+                                ? formatFixedDecimals(
+                                    data[data.length - 1][yKey] /
+                                      currencyConversionPrice ?? 0,
+                                    true
+                                  )
+                                : formatFixedDecimals(
+                                    data[data.length - 1][yKey]
+                                  ) + suffix
                             }
                           />
                         ) : (
                           <span>
-                            {prefix +
-                              formatFixedDecimals(data[data.length - 1][yKey]) +
-                              suffix}
+                            {prefix + isCurrency
+                              ? formatFixedDecimals(
+                                  data[data.length - 1][yKey] /
+                                    currencyConversionPrice ?? 0,
+                                  true
+                                )
+                              : formatFixedDecimals(
+                                  data[data.length - 1][yKey]
+                                ) + suffix}
                           </span>
                         )}
                         {!hideChange ? (
                           <span className="ml-3">
                             <Change
                               change={calculateChartChange()}
+                              isCurrency
                               prefix={prefix}
                               suffix={suffix}
                             />

@@ -1,3 +1,4 @@
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 import { useMemo } from 'react'
 import { formatFixedDecimals } from 'utils/numbers'
 
@@ -8,6 +9,7 @@ interface DailyRangeProps {
 }
 
 const DailyRange = ({ high, low, price }: DailyRangeProps) => {
+  const currencyConversionPrice = useCurrencyConversion()
   const rangePercent = useMemo(() => {
     return ((price - low) * 100) / (high - low)
   }, [high, low, price])
@@ -16,7 +18,7 @@ const DailyRange = ({ high, low, price }: DailyRangeProps) => {
     <div className="flex items-center justify-between md:block">
       <div className="flex items-center">
         <span className={`pr-2 font-mono text-th-fgd-2`}>
-          {formatFixedDecimals(low, true)}
+          {formatFixedDecimals(low / currencyConversionPrice, true)}
         </span>
         <div className="mt-[2px] flex h-2 w-32 rounded-sm bg-th-bkg-3">
           <div
@@ -27,7 +29,7 @@ const DailyRange = ({ high, low, price }: DailyRangeProps) => {
           ></div>
         </div>
         <span className={`pl-2 font-mono text-th-fgd-2`}>
-          {formatFixedDecimals(high, true)}
+          {formatFixedDecimals(high / currencyConversionPrice, true)}
         </span>
       </div>
     </div>

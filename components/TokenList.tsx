@@ -33,6 +33,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from '../hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -48,6 +49,7 @@ const TokenList = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
+  const currencyConversionPrice = useCurrencyConversion()
 
   const banks = useMemo(() => {
     if (group) {
@@ -190,16 +192,20 @@ const TokenList = () => {
                     <p className="text-sm text-th-fgd-4">
                       {tokenBalance
                         ? `${formatFixedDecimals(
-                            tokenBalance * oraclePrice!,
+                            (tokenBalance * oraclePrice!) /
+                              currencyConversionPrice,
                             true
                           )}`
-                        : '$0.00'}
+                        : formatFixedDecimals(0, true)}
                     </p>
                   </Td>
                   <Td className="text-right">
                     <p>{inOrders}</p>
                     <p className="text-sm text-th-fgd-4">
-                      {formatFixedDecimals(inOrders * oraclePrice!, true)}
+                      {formatFixedDecimals(
+                        (inOrders * oraclePrice!) / currencyConversionPrice,
+                        true
+                      )}
                     </p>
                   </Td>
                   <Td className="text-right">
@@ -207,7 +213,10 @@ const TokenList = () => {
                       {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
                     </p>
                     <p className="text-sm text-th-fgd-4">
-                      {formatFixedDecimals(unsettled * oraclePrice!, true)}
+                      {formatFixedDecimals(
+                        (unsettled * oraclePrice!) / currencyConversionPrice,
+                        true
+                      )}
                     </p>
                   </Td>
                   <Td>
@@ -218,7 +227,10 @@ const TokenList = () => {
                           : 0}
                       </p>
                       <p className="text-sm text-th-fgd-4">
-                        {formatFixedDecimals(interestValue, true)}
+                        {formatFixedDecimals(
+                          interestValue / currencyConversionPrice,
+                          true
+                        )}
                       </p>
                     </div>
                   </Td>
@@ -280,6 +292,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const symbol = bank.name
   const oraclePrice = bank.uiPrice
   const router = useRouter()
+  const currencyConversionPrice = useCurrencyConversion()
 
   let logoURI
   if (mangoTokens?.length) {
@@ -368,7 +381,12 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
             <div className="flex font-mono">
               <p className="text-th-fgd-2">{inOrders}</p>
               <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(inOrders * oraclePrice!, true)})
+                (
+                {formatFixedDecimals(
+                  (inOrders * oraclePrice!) / currencyConversionPrice,
+                  true
+                )}
+                )
               </p>
             </div>
           </div>
@@ -379,7 +397,12 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
                 {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
               </p>
               <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(unsettled * oraclePrice!, true)})
+                (
+                {formatFixedDecimals(
+                  (unsettled * oraclePrice!) / currencyConversionPrice,
+                  true
+                )}
+                )
               </p>
             </div>
           </div>
@@ -390,7 +413,12 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
                 {floorToDecimal(interestAmount, bank.mintDecimals).toNumber()}
               </p>
               <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(interestValue, true)})
+                (
+                {formatFixedDecimals(
+                  interestValue / currencyConversionPrice,
+                  true
+                )}
+                )
               </p>
             </div>
           </div>

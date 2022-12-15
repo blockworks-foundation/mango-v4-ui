@@ -4,6 +4,7 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
@@ -23,6 +24,7 @@ const PerpPositions = () => {
   const { group } = useMangoGroup()
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const { selectedMarket } = useSelectedMarket()
+  const currencyConversionPrice = useCurrencyConversion()
 
   const handlePositionClick = (positionSize: number) => {
     const tradeForm = mangoStore.getState().tradeForm
@@ -133,7 +135,12 @@ const PerpPositions = () => {
                       unsettledPnl > 0 ? 'text-th-up' : 'text-th-down'
                     }`}
                   >
-                    <div>${formatFixedDecimals(unsettledPnl)}</div>
+                    <div>
+                      {formatFixedDecimals(
+                        unsettledPnl / currencyConversionPrice,
+                        true
+                      )}
+                    </div>
                   </Td>
                   <Td className="text-right">
                     <div>

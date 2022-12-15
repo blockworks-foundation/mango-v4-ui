@@ -17,6 +17,7 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import ActionPanel from './ActionPanel'
 import ChartTabs from './ChartTabs'
 import CoingeckoStats from './CoingeckoStats'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -48,6 +49,7 @@ const TokenPage = () => {
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
   )
+  const currencyConversionPrice = useCurrencyConversion()
 
   const bank = useMemo(() => {
     if (group && token) {
@@ -124,10 +126,18 @@ const TokenPage = () => {
                     play
                     delay={0.05}
                     duration={1}
-                    numbers={formatFixedDecimals(bank.uiPrice, true)}
+                    numbers={formatFixedDecimals(
+                      bank.uiPrice / currencyConversionPrice,
+                      true
+                    )}
                   />
                 ) : (
-                  <span>{formatFixedDecimals(bank.uiPrice, true)}</span>
+                  <span>
+                    {formatFixedDecimals(
+                      bank.uiPrice / currencyConversionPrice,
+                      true
+                    )}
+                  </span>
                 )}
                 {coingeckoData ? (
                   <Change change={price_change_percentage_24h} suffix="%" />

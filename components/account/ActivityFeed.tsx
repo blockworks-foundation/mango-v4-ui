@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/20/solid'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -463,6 +464,7 @@ const ActivityDetails = ({
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
   )
+  const currencyConversionPrice = useCurrencyConversion()
   const { block_datetime } = activity
   const {
     asset_amount,
@@ -502,10 +504,13 @@ const ActivityDetails = ({
             <span className="ml-2 font-body tracking-wide text-th-fgd-3">
               at
             </span>{' '}
-            {formatFixedDecimals(asset_price, true)}
+            {formatFixedDecimals(asset_price / currencyConversionPrice, true)}
           </p>
           <p className="font-mono text-xs text-th-fgd-3">
-            {formatFixedDecimals(asset_price * asset_amount, true)}
+            {formatFixedDecimals(
+              (asset_price * asset_amount) / currencyConversionPrice,
+              true
+            )}
           </p>
         </div>
         <div className="col-span-1">
@@ -516,10 +521,13 @@ const ActivityDetails = ({
             <span className="ml-2 font-body tracking-wide text-th-fgd-3">
               at
             </span>{' '}
-            {formatFixedDecimals(liab_price, true)}
+            {formatFixedDecimals(liab_price / currencyConversionPrice, true)}
           </p>
           <p className="font-mono text-xs text-th-fgd-3">
-            {formatFixedDecimals(liab_price * liab_amount, true)}
+            {formatFixedDecimals(
+              (liab_price * liab_amount) / currencyConversionPrice,
+              true
+            )}
           </p>
         </div>
       </div>

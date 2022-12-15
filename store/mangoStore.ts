@@ -37,8 +37,12 @@ import { OrderbookL2, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
+import { PythHttpClient } from '@pythnetwork/client'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
+const PYTH_PROGRAM_KEY = new PublicKey(
+  'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+)
 
 export const connection = new web3.Connection(
   process.env.NEXT_PUBLIC_ENDPOINT ||
@@ -161,6 +165,11 @@ export interface TokenStatsItem {
   total_deposits: number
 }
 
+interface Currency {
+  symbol: string
+  price: number | undefined
+}
+
 // const defaultUserSettings = {
 //   account_tour_seen: false,
 //   default_language: 'English',
@@ -203,6 +212,10 @@ export type MangoStore = {
   }
   connected: boolean
   connection: Connection
+  currencies: {
+    loading: boolean
+    data: Currency[]
+  }
   group: Group | undefined
   groupLoaded: boolean
   client: MangoClient
@@ -282,6 +295,7 @@ export type MangoStore = {
       mangoAccountPk: string,
       range: number
     ) => Promise<void>
+    fetchCurrencyData: () => Promise<void>
     fetchGroup: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (wallet: Wallet) => Promise<void>
@@ -308,6 +322,10 @@ const mangoStore = create<MangoStore>()(
       },
       connected: false,
       connection,
+      currencies: {
+        loading: false,
+        data: [],
+      },
       group: undefined,
       groupLoaded: false,
       client: DEFAULT_CLIENT,
@@ -520,6 +538,42 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.activityFeed.loading = false
             })
+          }
+        },
+        fetchCurrencyData: async () => {
+          const set = get().set
+          const connection = mangoStore.getState().connection
+          try {
+            set((state) => {
+              state.currencies.loading = true
+            })
+            const pythClient = new PythHttpClient(connection, PYTH_PROGRAM_KEY)
+            const data = await pythClient.getData()
+            const currencies: Currency[] = []
+            for (let symbol of data.symbols) {
+              const price = data.productPrice.get(symbol)!
+
+              if (symbol.includes('FX.')) {
+                const quote = symbol.slice(-3)
+                const currencyPrice =
+                  quote === 'USD'
+                    ? price.price
+                    : price.price
+                    ? 1 / price.price
+                    : undefined
+                currencies.push({ symbol, price: currencyPrice })
+              }
+            }
+            set((state) => {
+              state.currencies.data = currencies
+              state.currencies.loading = false
+            })
+          } catch (e) {
+            set((state) => {
+              state.currencies.loading = false
+            })
+            notify({ type: 'error', title: 'Unable to fetch currency data' })
+            console.error('Error fetching currency data', e)
           }
         },
         fetchGroup: async () => {

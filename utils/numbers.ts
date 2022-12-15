@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js'
+import { SAVED_CURRENCY_KEY } from './constants'
 
 const digits2 = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
 const digits6 = new Intl.NumberFormat('en', { maximumFractionDigits: 6 })
@@ -34,35 +35,76 @@ export const floorToDecimal = (
   return decimal.toDecimalPlaces(decimals, Decimal.ROUND_DOWN)
 }
 
-const usdFormatter0 = Intl.NumberFormat('en', {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-  style: 'currency',
-  currency: 'USD',
-})
+const usdFormatter0 = (
+  value: number,
+  currency?: { locale: string; currency: string }
+) => {
+  return currency
+    ? Intl.NumberFormat(currency.locale, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+        style: 'currency',
+        currency: currency.currency,
+      }).format(value)
+    : Intl.NumberFormat('en', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+        style: 'currency',
+        currency: 'USD',
+      }).format(value)
+}
 
-const usdFormatter2 = Intl.NumberFormat('en', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-  style: 'currency',
-  currency: 'USD',
-})
+const usdFormatter2 = (
+  value: number,
+  currency?: { locale: string; currency: string }
+) => {
+  return currency
+    ? Intl.NumberFormat(currency.locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        style: 'currency',
+        currency: currency.currency,
+      }).format(value)
+    : Intl.NumberFormat('en', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        style: 'currency',
+        currency: 'USD',
+      }).format(value)
+}
 
-const usdFormatter4 = Intl.NumberFormat('en', {
-  minimumFractionDigits: 4,
-  maximumFractionDigits: 4,
-  style: 'currency',
-  currency: 'USD',
-})
+const usdFormatter4 = (
+  value: number,
+  currency?: { locale: string; currency: string }
+) => {
+  return currency
+    ? Intl.NumberFormat(currency.locale, {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+        style: 'currency',
+        currency: currency.currency,
+      }).format(value)
+    : Intl.NumberFormat('en', {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+        style: 'currency',
+        currency: 'USD',
+      }).format(value)
+}
 
 export const formatFixedDecimals = (
   value: number,
   isCurrency?: boolean,
   isPercentage?: boolean
 ): string => {
+  let currencyInfo
+  const savedCurrency = localStorage.getItem(SAVED_CURRENCY_KEY)
+  if (savedCurrency) {
+    currencyInfo = JSON.parse(JSON.parse(savedCurrency))
+  }
   let formattedValue
   if (value === 0) {
-    formattedValue = isCurrency ? '$0.00' : '0'
+    formattedValue = isCurrency ? usdFormatter2(0, currencyInfo) : '0'
   } else if (isPercentage) {
     formattedValue = Number(floorToDecimal(value, 2)).toLocaleString(
       undefined,
@@ -72,19 +114,19 @@ export const formatFixedDecimals = (
     )
   } else if (Math.abs(value) >= 1000) {
     formattedValue = isCurrency
-      ? usdFormatter0.format(value)
+      ? usdFormatter0(value, currencyInfo)
       : Number(floorToDecimal(value, 0)).toLocaleString(undefined, {
           maximumFractionDigits: 0,
         })
   } else if (Math.abs(value) >= 0.1) {
     formattedValue = isCurrency
-      ? usdFormatter2.format(value)
+      ? usdFormatter2(value, currencyInfo)
       : Number(floorToDecimal(value, 3)).toLocaleString(undefined, {
           maximumFractionDigits: 3,
         })
   } else {
     formattedValue = isCurrency
-      ? usdFormatter4.format(value)
+      ? usdFormatter4(value, currencyInfo)
       : Number(floorToDecimal(value, 4)).toLocaleString(undefined, {
           maximumFractionDigits: 4,
         })
@@ -93,6 +135,13 @@ export const formatFixedDecimals = (
   if (formattedValue === '-$0.00') return '$0.00'
   return formattedValue
 }
+
+// export const formatCurrency = (value: number) => {
+// const savedCurrency = localStorage.getItem(SAVED_CURRENCY_KEY)
+// if (savedCurrency) {
+//   const currencyInfo = JSON.parse(savedCurrency)
+// }
+// }
 
 export const countLeadingZeros = (x: number) => {
   if (x % 1 == 0) {

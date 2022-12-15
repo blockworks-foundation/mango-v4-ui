@@ -12,6 +12,7 @@ import { useTranslation } from 'next-i18next'
 import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useCurrencyConversion from 'hooks/useCurrencyConversion'
 
 const MangoAccountSummary = () => {
   const { t } = useTranslation('common')
@@ -20,6 +21,7 @@ const MangoAccountSummary = () => {
   const { mangoAccount } = useMangoAccount()
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+  const currencyConversionPrice = useCurrencyConversion()
 
   // const leverage = useMemo(() => {
   //   if (!group || !mangoAccount) return 0
@@ -67,7 +69,7 @@ const MangoAccountSummary = () => {
               ? formatFixedDecimals(
                   toUiDecimalsForQuote(
                     mangoAccount.getCollateralValue(group).toNumber()
-                  ),
+                  ) / currencyConversionPrice,
                   true
                 )
               : `$${(0).toFixed(2)}`}
@@ -82,7 +84,7 @@ const MangoAccountSummary = () => {
                     mangoAccount
                       .getAssetsValue(group, HealthType.init)
                       .toNumber()
-                  ),
+                  ) / currencyConversionPrice,
                   true
                 )
               : `$${(0).toFixed(2)}`}
