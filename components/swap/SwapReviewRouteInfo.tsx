@@ -5,7 +5,15 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { TransactionInstruction, PublicKey } from '@solana/web3.js'
+import {
+  TransactionInstruction,
+  PublicKey,
+  VersionedTransaction,
+  MessageCompiledInstruction,
+  Connection,
+  MessageV0,
+  // VersionedMessage,
+} from '@solana/web3.js'
 import Decimal from 'decimal.js'
 
 import mangoStore from '@store/mangoStore'
@@ -30,7 +38,7 @@ import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
-import { Transaction } from '@solana/web3.js'
+// import { Transaction } from '@solana/web3.js'
 import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
@@ -47,12 +55,13 @@ type JupiterRouteInfoProps = {
 }
 
 const parseJupiterRoute = async (
+  connection: Connection,
   selectedRoute: RouteInfo,
   userPublicKey: PublicKey,
   slippage: number
-): Promise<TransactionInstruction[]> => {
+): Promise<MessageCompiledInstruction[]> => {
   const transactions = await (
-    await fetch('https://quote-api.jup.ag/v3/swap', {
+    await fetch('https://quote-api.jup.ag/v4/swap', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,8 +71,6 @@ const parseJupiterRoute = async (
         route: selectedRoute,
         // user public key to be used for the swap
         userPublicKey,
-        // auto wrap and unwrap SOL. default is true
-        wrapUnwrapSOL: true,
         // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
         // This is the ATA account for the output token where the fee will be sent to. If you are swapping from SOL->USDC then this would be the USDC ATA you want to collect the fee.
         // feeAccount: 'fee_account_public_key',
@@ -73,20 +80,31 @@ const parseJupiterRoute = async (
   ).json()
 
   const { swapTransaction } = transactions
-  const parsedSwapTransaction = Transaction.from(
+  const parsedSwapTransaction = VersionedTransaction.deserialize(
     Buffer.from(swapTransaction, 'base64')
   )
 
-  const instructions = []
-  for (const ix of parsedSwapTransaction.instructions) {
-    if (
-      ix.programId.toBase58() === 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
-    ) {
-      instructions.push(ix)
-    }
+  console.log('parsedSwapTransaction: ', parsedSwapTransaction)
+
+  for (const alt of parsedSwapTransaction.message.addressTableLookups) {
+    const lookupTableAccount = await connection.getAddressLookupTable(
+      alt.accountKey
+    )
+    const accountKeys = parsedSwapTransaction.message.staticAccountKeys
+
+    console.log('lookupTableAccount', lookupTableAccount)
   }
 
-  return instructions
+  // const instructions = []
+  // for (const ix of parsedSwapTransaction.instructions) {
+  //   if (
+  //     ix.programId.toBase58() === 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
+  //   ) {
+  //     instructions.push(ix)
+  //   }
+  // }
+
+  return parsedSwapTransaction.message.compiledInstructions
 }
 
 const EMPTY_COINGECKO_PRICES = {
@@ -167,10 +185,12 @@ const SwapReviewRouteInfo = ({
       const outputBank = mangoStore.getState().swap.outputBank
       const slippage = mangoStore.getState().swap.slippage
       const set = mangoStore.getState().set
+      const connection = mangoStore.getState().connection
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
 
       const ixs = await parseJupiterRoute(
+        connection,
         selectedRoute,
         mangoAccount.owner,
         slippage

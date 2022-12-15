@@ -25,13 +25,12 @@ const fetchJupiterRoutes = async (
       outputMint: outputMint.toString(),
       amount: amount.toString(),
       slippageBps: Math.ceil(slippage * 100).toString(),
-      onlyDirectRoutes: 'true',
       feeBps: feeBps.toString(),
       swapMode,
     }).toString()
 
     const response = await fetch(
-      `https://quote-api.jup.ag/v3/quote?${paramsString}`
+      `https://quote-api.jup.ag/v4/quote?${paramsString}`
     )
 
     const res = await response.json()
