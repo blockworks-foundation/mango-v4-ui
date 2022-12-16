@@ -3,6 +3,7 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ExclamationTriangleIcon,
+  UsersIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
@@ -19,6 +20,9 @@ import UserSetup from './UserSetup'
 import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useOnlineStatus from 'hooks/useOnlineStatus'
+import { DEFAULT_DELEGATE } from './modals/DelegateModal'
+import Tooltip from './shared/Tooltip'
+import { abbreviateAddress } from 'utils/formatting'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -96,7 +100,18 @@ const TopBar = () => {
               <p className="text-right text-xs">{t('accounts')}</p>
               <p className="text-left text-sm font-bold text-th-fgd-1">
                 {mangoAccount ? (
-                  mangoAccount.name
+                  <div className="flex items-center">
+                    {mangoAccount.name}
+                    {mangoAccount.delegate.toString() !== DEFAULT_DELEGATE ? (
+                      <Tooltip
+                        content={t('delegate-account-info', {
+                          address: abbreviateAddress(mangoAccount.delegate),
+                        })}
+                      >
+                        <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                      </Tooltip>
+                    ) : null}
+                  </div>
                 ) : (
                   <span>
                     <span className="mr-1.5">🥭</span>

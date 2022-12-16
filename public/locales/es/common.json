@@ -44,6 +44,7 @@
   "date-to": "Date To",
   "delegate": "Delegate",
   "delegate-account": "Delegate Account",
+  "delegate-account-info": "Account delegated to {{address}}",
   "delegate-desc": "Delegate your Mango account to another wallet address",
   "delegate-placeholder": "Enter a wallet address to delegate to",
   "deposit": "Deposit",

@@ -12,7 +12,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { abbreviateAddress } from 'utils/formatting'
 import InlineNotification from '@components/shared/InlineNotification'
 
-const DEFAULT_DELEGATE = '11111111111111111111111111111111'
+export const DEFAULT_DELEGATE = '11111111111111111111111111111111'
 
 const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
@@ -49,9 +49,9 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
       notify({
         title:
           address !== DEFAULT_DELEGATE
-            ? `Account delegated to ${abbreviateAddress(
-                new PublicKey(address)
-              )}`
+            ? t('delegate-account-info', {
+                address: abbreviateAddress(new PublicKey(address)),
+              })
             : 'Account delegation removed',
         type: 'success',
         txid: tx,

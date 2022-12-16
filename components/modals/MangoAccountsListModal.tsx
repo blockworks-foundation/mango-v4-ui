@@ -1,5 +1,10 @@
 import { useState } from 'react'
-import { CheckIcon, HeartIcon, PlusCircleIcon } from '@heroicons/react/20/solid'
+import {
+  CheckIcon,
+  HeartIcon,
+  PlusCircleIcon,
+  UsersIcon,
+} from '@heroicons/react/20/solid'
 import {
   HealthType,
   MangoAccount,
@@ -20,6 +25,9 @@ import { useRouter } from 'next/router'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { notify } from 'utils/notifications'
+import { DEFAULT_DELEGATE } from './DelegateModal'
+import Tooltip from '@components/shared/Tooltip'
+import { abbreviateAddress } from 'utils/formatting'
 
 const MangoAccountsListModal = ({
   isOpen,
@@ -100,9 +108,20 @@ const MangoAccountsListModal = ({
                       >
                         <div className="flex w-full items-center justify-between">
                           <div className="text-left">
-                            <p className="mb-0.5 text-sm font-bold text-th-fgd-1">
-                              {acc.name}
-                            </p>
+                            <div className="mb-0.5 flex items-center">
+                              <p className="text-sm font-bold text-th-fgd-1">
+                                {acc.name}
+                              </p>
+                              {acc.delegate.toString() !== DEFAULT_DELEGATE ? (
+                                <Tooltip
+                                  content={t('delegate-account-info', {
+                                    address: abbreviateAddress(acc.delegate),
+                                  })}
+                                >
+                                  <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                                </Tooltip>
+                              ) : null}
+                            </div>
                             <div className="flex">
                               <span className="text-sm text-th-fgd-3">
                                 {accountValue}
