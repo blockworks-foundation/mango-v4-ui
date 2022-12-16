@@ -160,7 +160,7 @@ const OpenOrders = () => {
       } catch (e: any) {
         console.error('Error canceling', e)
         notify({
-          title: t('trade:cancel-order-error'),
+          title: 'Unable to modify order',
           description: e.message,
           txid: e.txid,
           type: 'error',
@@ -208,10 +208,10 @@ const OpenOrders = () => {
     [t]
   )
 
-  const showEditOrderForm = (order: Order | PerpOrder) => {
+  const showEditOrderForm = (order: Order | PerpOrder, tickSize: number) => {
     setModifyOrderId(order.orderId.toString())
-    setModifiedOrderSize(order.size.toString())
-    setModifiedOrderPrice(order.price.toString())
+    setModifiedOrderSize(order.size.toFixed(getDecimalCount(tickSize)))
+    setModifiedOrderPrice(order.price.toFixed(getDecimalCount(tickSize)))
   }
   const cancelEditOrderForm = () => {
     setModifyOrderId(undefined)
@@ -328,7 +328,7 @@ const OpenOrders = () => {
                           {modifyOrderId !== o.orderId.toString() ? (
                             <>
                               <IconButton
-                                onClick={() => showEditOrderForm(o)}
+                                onClick={() => showEditOrderForm(o, tickSize)}
                                 size="small"
                               >
                                 <PencilIcon className="h-4 w-4" />
