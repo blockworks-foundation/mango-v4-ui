@@ -38,7 +38,7 @@ import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 // import { Transaction } from '@solana/web3.js'
-import { JUPITER_V4_PROGRAM_ID, SOUND_SETTINGS_KEY } from 'utils/constants'
+import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
@@ -111,11 +111,11 @@ const fetchJupiterTransaction = async (
     swapTransaction
   )
 
-  // const isSetupIx = (pk: PublicKey): boolean => { k == ata_program || k == token_program };
-  const isJupiterIx = (pk: PublicKey): boolean =>
-    pk.toString() === JUPITER_V4_PROGRAM_ID
+  const isSetupIx = (pk: PublicKey): boolean =>
+    pk.toString() === 'ComputeBudget111111111111111111111111111111' ||
+    pk.toString() === 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
 
-  const filtered_jup_ixs = ixs.filter((ix) => isJupiterIx(ix.programId))
+  const filtered_jup_ixs = ixs.filter((ix) => !isSetupIx(ix.programId))
   return [filtered_jup_ixs, alts]
 }
 
