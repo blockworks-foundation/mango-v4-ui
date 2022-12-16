@@ -398,15 +398,13 @@ const AdvancedTradeForm = () => {
             </div>
             <div className="default-transition flex items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
               {quoteLogoURI ? (
-                <Image
-                  className="rounded-full"
-                  alt=""
-                  width="24"
-                  height="24"
-                  src={quoteLogoURI}
-                />
+                <div className="h-5 w-5 flex-shrink-0">
+                  <Image alt="" width="20" height="20" src={quoteLogoURI} />
+                </div>
               ) : (
-                <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+                <div className="h-5 w-5 flex-shrink-0">
+                  <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
+                </div>
               )}
               <NumberFormat
                 inputMode="decimal"
@@ -432,16 +430,18 @@ const AdvancedTradeForm = () => {
         </div>
         <div className="flex flex-col">
           <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
-            <LogoWithFallback
-              alt=""
-              className="z-10 drop-shadow-md"
-              width={'24'}
-              height={'24'}
-              src={baseLogoURI || `/icons/${baseSymbol?.toLowerCase()}.svg`}
-              fallback={
-                <QuestionMarkCircleIcon className={`h-5 w-5 text-th-fgd-3`} />
-              }
-            />
+            <div className="h-5 w-5 flex-shrink-0">
+              <LogoWithFallback
+                alt=""
+                className="z-10 drop-shadow-md"
+                width={'24'}
+                height={'24'}
+                src={baseLogoURI || `/icons/${baseSymbol?.toLowerCase()}.svg`}
+                fallback={
+                  <QuestionMarkCircleIcon className={`h-5 w-5 text-th-fgd-3`} />
+                }
+              />
+            </div>
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
@@ -461,9 +461,13 @@ const AdvancedTradeForm = () => {
           </div>
           <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
             {quoteLogoURI ? (
-              <Image alt="" width="24" height="24" src={quoteLogoURI} />
+              <div className="h-5 w-5 flex-shrink-0">
+                <Image alt="" width="20" height="20" src={quoteLogoURI} />
+              </div>
             ) : (
-              <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+              <div className="h-5 w-5 flex-shrink-0">
+                <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
+              </div>
             )}
             <NumberFormat
               inputMode="decimal"
