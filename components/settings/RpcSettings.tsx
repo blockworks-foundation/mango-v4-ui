@@ -1,6 +1,7 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
 import Input from '@components/forms/Input'
 import Button from '@components/shared/Button'
+import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useEffect, useState } from 'react'
@@ -8,19 +9,20 @@ import { RPC_PROVIDER_KEY } from 'utils/constants'
 
 const RPC_URLS = [
   {
+    label: 'Triton',
+    value: 'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+  },
+  {
     label: 'Syndica',
     value:
       'https://solana-api.syndica.io/access-token/4ywEBJNxuwPLXXU9UlMK67fAMZBt1GLdwuXyXSYnoYPn5aXajT8my0R5klXhYRkk/rpc',
-  },
-  {
-    label: 'Triton',
-    value: 'https://mango-mango-d092.mainnet.rpcpool.com/',
   },
   { label: 'Custom', value: '' },
 ]
 
 const RpcSettings = () => {
   const { t } = useTranslation('settings')
+  const actions = mangoStore((s) => s.actions)
   const [customUrl, setCustomUrl] = useState('')
   const [showCustomForm, setShowCustomForm] = useState(false)
   const [rpcEndpointProvider, setRpcEndpointProvider] = useLocalStorageState(
@@ -36,7 +38,7 @@ const RpcSettings = () => {
     setRpcEndpointProvider(endpointProvider)
     if (provider !== 'Custom') {
       setShowCustomForm(false)
-      // update connection to endpointProvider.value
+      actions.updateConnection(endpointProvider!.value)
     }
   }
 
@@ -51,7 +53,7 @@ const RpcSettings = () => {
     if (!customUrl) return
     const provider = { label: 'Custom', value: customUrl }
     setRpcEndpointProvider(provider)
-    // update connection to customUrl
+    actions.updateConnection(customUrl)
   }
 
   return (

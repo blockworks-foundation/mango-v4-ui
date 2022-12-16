@@ -32,6 +32,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
+  RPC_PROVIDER_KEY,
 } from '../utils/constants'
 import { OrderbookL2, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
@@ -40,24 +41,67 @@ import perpPositionsUpdater from './perpPositionsUpdater'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
-export const connection = new web3.Connection(
-  process.env.NEXT_PUBLIC_ENDPOINT ||
-    'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
-  'processed'
-)
+const ENDPOINTS = [
+  {
+    name: 'mainnet-beta',
+    url:
+      process.env.NEXT_PUBLIC_ENDPOINT ||
+      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+    websocket:
+      process.env.NEXT_PUBLIC_ENDPOINT ||
+      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+    custom: false,
+  },
+  {
+    name: 'devnet',
+    // url: 'https://mango.devnet.rpcpool.com',
+    // websocket: 'https://mango.devnet.rpcpool.com',
+    url: 'https://api.devnet.solana.com',
+    websocket: 'https://api.devnet.solana.com',
+    custom: false,
+  },
+  // {
+  //   name: 'testnet',
+  //   url: 'https://api.testnet.solana.com',
+  //   websocket: 'https://api.testnet.solana.com',
+  //   custom: false,
+  // },
+]
+
+// export const connection = new web3.Connection(
+//   process.env.NEXT_PUBLIC_ENDPOINT ||
+//     'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+//   'processed'
+// )
 const options = AnchorProvider.defaultOptions()
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
+const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER)
 const wallet = new EmptyWallet(Keypair.generate())
-const DEFAULT_PROVIDER = new AnchorProvider(connection, wallet, options)
-DEFAULT_PROVIDER.opts.skipPreflight = true
-const DEFAULT_CLIENT = MangoClient.connect(
-  DEFAULT_PROVIDER,
-  CLUSTER,
-  MANGO_V4_ID[CLUSTER],
-  {
+// const DEFAULT_PROVIDER = new AnchorProvider(connection, wallet, options)
+// DEFAULT_PROVIDER.opts.skipPreflight = true
+// const DEFAULT_CLIENT = MangoClient.connect(
+//   DEFAULT_PROVIDER,
+//   CLUSTER,
+//   MANGO_V4_ID[CLUSTER],
+//   {
+//     idsSource: 'get-program-accounts',
+//   }
+// )
+
+const initMangoClient = (provider: AnchorProvider): MangoClient => {
+  return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
+    postSendTxCallback: ({ txid }: { txid: string }) => {
+      notify({
+        title: 'Transaction sent',
+        description: 'Waiting for confirmation',
+        type: 'confirm',
+        txid: txid,
+      })
+    },
+    // blockhashCommitment: 'confirmed',
     idsSource: 'get-program-accounts',
-  }
-)
+  })
+}
 
 export interface TotalInterestDataItem {
   borrow_interest: number
@@ -295,11 +339,24 @@ export type MangoStore = {
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     reloadGroup: () => Promise<void>
     loadMarketFills: () => Promise<void>
+    updateConnection: (url: string) => void
   }
 }
 
 const mangoStore = create<MangoStore>()(
   subscribeWithSelector((_set, get) => {
+    let rpcUrl = ENDPOINT?.url
+    if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
+      const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
+      rpcUrl = urlFromLocalStorage
+        ? JSON.parse(urlFromLocalStorage).value
+        : ENDPOINT?.url
+    }
+
+    const connection = new web3.Connection(rpcUrl!, 'processed')
+    const provider = new AnchorProvider(connection, wallet, options)
+    provider.opts.skipPreflight = true
+    const client = initMangoClient(provider)
     return {
       activityFeed: {
         feed: [],
@@ -310,7 +367,7 @@ const mangoStore = create<MangoStore>()(
       connection,
       group: undefined,
       groupLoaded: false,
-      client: DEFAULT_CLIENT,
+      client,
       mangoAccount: {
         current: undefined,
         initialLoad: true,
@@ -939,6 +996,19 @@ const mangoStore = create<MangoStore>()(
           } catch (err) {
             console.log('Error fetching fills:', err)
           }
+        },
+        updateConnection(endpointUrl) {
+          const set = get().set
+          const newConnection = new web3.Connection(endpointUrl, 'processed')
+
+          const newProvider = new AnchorProvider(connection, wallet, options)
+          newProvider.opts.skipPreflight = true
+          const newClient = initMangoClient(newProvider)
+
+          set((state) => {
+            state.connection = newConnection
+            state.client = newClient
+          })
         },
       },
     }
