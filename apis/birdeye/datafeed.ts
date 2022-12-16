@@ -46,26 +46,27 @@ export default {
   resolveSymbol: async (
     symbolAddress: any,
     onSymbolResolvedCallback: any,
-    onResolveErrorCallback: any,
+    _onResolveErrorCallback: any,
     _extension: any
   ) => {
     console.log('[resolveSymbol]: Method call', symbolAddress)
     const symbols = await getAllSymbols()
-    const symbolItem = symbols.find(
-      (item: any) => item.address === symbolAddress
-    )
+    let symbolItem = symbols.find((item: any) => item.address === symbolAddress)
 
     if (!symbolItem) {
-      console.log('[resolveSymbol]: Cannot resolve symbol', symbolAddress)
-      onResolveErrorCallback('cannot resolve symbol')
-      return
+      symbolItem = {
+        address: symbolAddress,
+        type: 'pair',
+      }
     }
 
     const symbolInfo = {
       address: symbolItem.address,
       ticker: symbolItem.address,
-      name: symbolItem.symbol,
-      description: symbolItem.symbol + '/USD',
+      name: symbolItem.symbol || symbolItem.address,
+      description: symbolItem.symbol
+        ? symbolItem.symbol + '/USD'
+        : symbolItem.address,
       type: symbolItem.type,
       session: '24x7',
       timezone: 'Etc/UTC',
@@ -104,7 +105,7 @@ export default {
       .map((name: any) => `${name}=${encodeURIComponent(urlParameters[name])}`)
       .join('&')
     try {
-      const data = await makeApiRequest(`defi/ohlcv?${query}`)
+      const data = await makeApiRequest(`defi/ohlcv/pair?${query}`)
       if (!data.success || data.data.items.length === 0) {
         // "noData" should be set if there is no data in the requested period.
         onHistoryCallback([], {

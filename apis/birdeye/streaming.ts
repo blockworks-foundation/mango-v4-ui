@@ -73,7 +73,7 @@ export function subscribeOnStream(
     data: {
       chartType: parseResolution(resolution),
       address: symbolInfo.address,
-      currency: 'usd',
+      currency: symbolInfo.type || 'usd',
     },
   }
 

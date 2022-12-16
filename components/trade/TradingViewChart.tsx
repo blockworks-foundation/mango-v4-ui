@@ -108,7 +108,7 @@ const TradingViewChart = () => {
     if (window) {
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
-        symbol: 'So11111111111111111111111111111111111111112',
+        symbol: '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6',
         // BEWARE: no trailing slash is expected in feed URL
         // tslint:disable-next-line:no-any
         datafeed: Datafeed,
