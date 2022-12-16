@@ -56,7 +56,9 @@ const OpenOrders = () => {
           break
         }
       }
-      break
+      if (foundedMarketPk) {
+        break
+      }
     }
     return foundedMarketPk
   }
