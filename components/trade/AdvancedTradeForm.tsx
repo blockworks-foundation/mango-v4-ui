@@ -179,6 +179,21 @@ const AdvancedTradeForm = () => {
     })
   }, [])
 
+  const tickDecimals = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return 1
+    let tickSize: number
+    if (selectedMarket instanceof Serum3Market) {
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      tickSize = market.tickSize
+    } else {
+      tickSize = selectedMarket.tickSize
+    }
+    return getDecimalCount(tickSize)
+  }, [selectedMarket])
+
   /*
    * Updates the limit price on page load
    */
@@ -188,10 +203,10 @@ const AdvancedTradeForm = () => {
       if (!group || !oraclePrice) return
 
       set((s) => {
-        s.tradeForm.price = oraclePrice.toString()
+        s.tradeForm.price = oraclePrice.toFixed(tickDecimals)
       })
     }
-  }, [oraclePrice, tradeForm.price])
+  }, [oraclePrice, tickDecimals, tradeForm.price])
 
   /*
    * Updates the price and the quote size when a Market order is selected
@@ -204,29 +219,20 @@ const AdvancedTradeForm = () => {
       selectedMarket &&
       group
     ) {
-      let tickSize: number
-      if (selectedMarket instanceof Serum3Market) {
-        const market = group.getSerum3ExternalMarket(
-          selectedMarket.serumMarketExternal
-        )
-        tickSize = market.tickSize
-      } else {
-        tickSize = selectedMarket.tickSize
-      }
       if (!isNaN(parseFloat(tradeForm.baseSize))) {
         const baseSize = new Decimal(tradeForm.baseSize)?.toNumber()
         const quoteSize = baseSize * oraclePrice
         set((s) => {
-          s.tradeForm.price = oraclePrice.toFixed(getDecimalCount(tickSize))
-          s.tradeForm.quoteSize = quoteSize.toFixed(getDecimalCount(tickSize))
+          s.tradeForm.price = oraclePrice.toFixed(tickDecimals)
+          s.tradeForm.quoteSize = quoteSize.toFixed(tickDecimals)
         })
       } else {
         set((s) => {
-          s.tradeForm.price = oraclePrice.toFixed(getDecimalCount(tickSize))
+          s.tradeForm.price = oraclePrice.toFixed(tickDecimals)
         })
       }
     }
-  }, [oraclePrice, selectedMarket, tradeForm])
+  }, [oraclePrice, selectedMarket, tickDecimals, tradeForm])
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client

@@ -10,6 +10,7 @@ import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
+import { getDecimalCount } from 'utils/numbers'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -58,12 +59,21 @@ const Trade: NextPage = () => {
         perpMarkets.find((m) => m.name === marketName)
 
       if (mkt) {
+        let tickSize = 4
+        if (mkt instanceof Serum3Market) {
+          const market = group.getSerum3ExternalMarket(mkt.serumMarketExternal)
+          tickSize = market.tickSize
+        } else {
+          tickSize = mkt.tickSize
+        }
         set((s) => {
           s.selectedMarket.name = marketName
           s.selectedMarket.current = mkt
           s.tradeForm = {
             ...DEFAULT_TRADE_FORM,
-            price: getOraclePriceForMarket(group, mkt).toString(),
+            price: getOraclePriceForMarket(group, mkt).toFixed(
+              getDecimalCount(tickSize)
+            ),
           }
         })
       }
