@@ -22,14 +22,12 @@ const PerpButtonGroup = () => {
       if (side === 'buy') {
         return mangoAccount.getMaxQuoteForPerpBidUi(
           group,
-          selectedMarket.perpMarketIndex,
-          Number(tradeFormPrice)
+          selectedMarket.perpMarketIndex
         )
       } else {
         return mangoAccount.getMaxBaseForPerpAskUi(
           group,
-          selectedMarket.perpMarketIndex,
-          Number(tradeFormPrice)
+          selectedMarket.perpMarketIndex
         )
       }
     } catch (e) {
