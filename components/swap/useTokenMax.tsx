@@ -55,8 +55,7 @@ export const getTokenInMax = (
     mangoAccount.getMaxSourceUiForTokenSwap(
       group,
       inputBank.mint,
-      outputBank.mint,
-      inputBank.uiPrice / outputBank.uiPrice
+      outputBank.mint
     ),
     inputBank.mintDecimals
   )

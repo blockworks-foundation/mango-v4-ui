@@ -57,9 +57,10 @@ const useJupiterRoutes = ({
       ? inputTokenInfo?.decimals || 6
       : outputTokenInfo?.decimals || 6
 
-  const nativeAmount = amount
-    ? new Decimal(amount).mul(10 ** decimals)
-    : new Decimal(0)
+  const nativeAmount =
+    amount && !Number.isNaN(+amount)
+      ? new Decimal(amount).mul(10 ** decimals)
+      : new Decimal(0)
 
   const res = useQuery<{ routes: RouteInfo[]; bestRoute: RouteInfo }, Error>(
     ['swap-routes', inputMint, outputMint, amount, slippage, swapMode],

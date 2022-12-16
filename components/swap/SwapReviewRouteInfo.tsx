@@ -28,11 +28,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from '../../utils/numbers'
+import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
@@ -266,18 +262,15 @@ const SwapReviewRouteInfo = ({
 
   const coinGeckoPriceDifference = useMemo(() => {
     return amountOut?.toNumber()
-      ? floorToDecimal(
-          amountIn
-            .div(amountOut)
-            .minus(
-              new Decimal(coingeckoPrices?.outputCoingeckoPrice).div(
-                coingeckoPrices?.inputCoingeckoPrice
-              )
+      ? amountIn
+          .div(amountOut)
+          .minus(
+            new Decimal(coingeckoPrices?.outputCoingeckoPrice).div(
+              coingeckoPrices?.inputCoingeckoPrice
             )
-            .div(amountIn.div(amountOut))
-            .mul(100),
-          1
-        )
+          )
+          .div(amountIn.div(amountOut))
+          .mul(100)
       : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
 
@@ -358,7 +351,7 @@ const SwapReviewRouteInfo = ({
                 coingeckoPrices?.inputCoingeckoPrice ? (
                   <div
                     className={`text-right font-mono ${
-                      coinGeckoPriceDifference.gt(0)
+                      coinGeckoPriceDifference.gt(1)
                         ? 'text-th-down'
                         : 'text-th-up'
                     }`}

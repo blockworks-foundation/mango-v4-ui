@@ -103,7 +103,7 @@ const TopBar = () => {
                 onClick={handleShowAccounts}
               >
                 <p className="text-right text-xs">{t('accounts')}</p>
-                <p className="text-left text-sm font-bold text-th-fgd-1">
+                <div className="text-left text-sm font-bold text-th-fgd-1">
                   {mangoAccount ? (
                     <div className="flex items-center">
                       {mangoAccount.name}
@@ -123,7 +123,7 @@ const TopBar = () => {
                       {t('create-account')}
                     </span>
                   )}
-                </p>
+                </div>
               </button>
               <ConnectedMenu />
             </div>
