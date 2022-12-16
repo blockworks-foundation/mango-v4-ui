@@ -37,7 +37,7 @@ export const ConnectWalletButton: React.FC = () => {
               />
             </div>
             <div className="text-left">
-              <div className="mb-1.5 flex justify-center text-base font-bold leading-none text-th-fgd-1">
+              <div className="mb-1.5 flex justify-center font-display text-base leading-none text-th-fgd-1">
                 {connecting ? <Loading className="h-4 w-4" /> : t('connect')}
               </div>
 

@@ -509,7 +509,7 @@ const ActionsMenu = ({
           </p>
         </div>
         <LinkButton
-          className="w-full text-left"
+          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
           disabled={!mangoAccount}
           onClick={() => handleShowActionModals(bank.name, 'deposit')}
         >
@@ -517,7 +517,7 @@ const ActionsMenu = ({
         </LinkButton>
         {hasBorrow ? (
           <LinkButton
-            className="w-full text-left"
+            className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
             onClick={() => handleShowActionModals(bank.name, 'repay')}
           >
@@ -525,14 +525,14 @@ const ActionsMenu = ({
           </LinkButton>
         ) : null}
         <LinkButton
-          className="w-full text-left"
+          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
           disabled={!mangoAccount}
           onClick={() => handleShowActionModals(bank.name, 'withdraw')}
         >
           {t('withdraw')}
         </LinkButton>
         <LinkButton
-          className="w-full text-left"
+          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
           disabled={!mangoAccount}
           onClick={() => handleShowActionModals(bank.name, 'borrow')}
         >

@@ -94,7 +94,7 @@ const AccountActions = () => {
           size="medium"
         >
           <LinkButton
-            className="whitespace-nowrap"
+            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
             onClick={() =>
               handleCopyAddress(mangoAccount!.publicKey.toString())
@@ -104,7 +104,7 @@ const AccountActions = () => {
             <span className="ml-2">{t('copy-address')}</span>
           </LinkButton>
           <LinkButton
-            className="whitespace-nowrap"
+            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
             onClick={() => setShowEditAccountModal(true)}
           >
@@ -112,7 +112,7 @@ const AccountActions = () => {
             <span className="ml-2">{t('edit-account')}</span>
           </LinkButton>
           <LinkButton
-            className="whitespace-nowrap"
+            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
             onClick={() => setShowDelegateModal(true)}
           >
@@ -120,7 +120,7 @@ const AccountActions = () => {
             <span className="ml-2">{t('delegate-account')}</span>
           </LinkButton>
           <LinkButton
-            className="whitespace-nowrap"
+            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
             onClick={() => setShowCloseAccountModal(true)}
           >
