@@ -279,10 +279,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
   }, [bank, mangoAccount])
 
   const isBaseOrQuote = useMemo(() => {
-    if (
-      selectedMarket instanceof Serum3Market &&
-      (asPath.includes('/trade') || asPath.includes('/swap'))
-    ) {
+    if (selectedMarket instanceof Serum3Market) {
       if (bank.tokenIndex === selectedMarket.baseTokenIndex) {
         return 'base'
       } else if (bank.tokenIndex === selectedMarket.quoteTokenIndex) {
@@ -291,34 +288,35 @@ const Balance = ({ bank }: { bank: Bank }) => {
     }
   }, [bank, selectedMarket])
 
-  const handleClick = (balance: number, type: 'base' | 'quote') => {
-    if (asPath.includes('/trade')) {
-      handleTradeFormBalanceClick(
-        parseFloat(formatDecimal(balance, bank.mintDecimals)),
-        type
-      )
-    } else {
-      handleSwapFormBalanceClick(
-        parseFloat(formatDecimal(balance, bank.mintDecimals))
-      )
-    }
-  }
+  if (!balance) return <p className="flex justify-end">0</p>
 
   return (
     <p className="flex justify-end">
-      {balance ? (
-        isBaseOrQuote ? (
-          <LinkButton
-            className="font-normal underline-offset-4"
-            onClick={() => handleClick(balance, isBaseOrQuote)}
-          >
-            {formatDecimal(balance, bank.mintDecimals)}
-          </LinkButton>
-        ) : (
-          formatDecimal(balance, bank.mintDecimals)
-        )
+      {asPath.includes('/trade') && isBaseOrQuote ? (
+        <LinkButton
+          className="font-normal underline-offset-4"
+          onClick={() =>
+            handleTradeFormBalanceClick(
+              parseFloat(formatDecimal(balance, bank.mintDecimals)),
+              isBaseOrQuote
+            )
+          }
+        >
+          {formatDecimal(balance, bank.mintDecimals)}
+        </LinkButton>
+      ) : asPath.includes('/swap') ? (
+        <LinkButton
+          className="font-normal underline-offset-4"
+          onClick={() =>
+            handleSwapFormBalanceClick(
+              parseFloat(formatDecimal(balance, bank.mintDecimals))
+            )
+          }
+        >
+          {formatDecimal(balance, bank.mintDecimals)}
+        </LinkButton>
       ) : (
-        0
+        formatDecimal(balance, bank.mintDecimals)
       )}
     </p>
   )
