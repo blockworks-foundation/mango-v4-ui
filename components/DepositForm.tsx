@@ -137,6 +137,8 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
 
       await actions.reloadMangoAccount()
       actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
+      setSubmitting(false)
+      onSuccess()
     } catch (e: any) {
       notify({
         title: 'Transaction failed',
@@ -145,9 +147,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         type: 'error',
       })
       console.error('Error depositing:', e)
-    } finally {
       setSubmitting(false)
-      onSuccess()
     }
   }, [bank, wallet, inputAmount])
 

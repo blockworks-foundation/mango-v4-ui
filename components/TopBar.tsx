@@ -98,13 +98,14 @@ const TopBar = () => {
           {/* <div className="px-3 md:px-4">
             <ThemeSwitcher />
           </div> */}
+          <Button
+            disabled={!connected}
+            onClick={() => setShowDepositWithdrawModal(true)}
+            secondary
+            className="mx-4"
+          >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           {connected ? (
             <div className="flex items-center pr-4 md:pr-0">
-              <Button
-                onClick={() => setShowDepositWithdrawModal(true)}
-                secondary
-                className="mx-4"
-              >{`${t('deposit')} / ${t('withdraw')}`}</Button>
               <button
                 className="hidden h-16 border-l border-th-bkg-3 px-4 md:block"
                 id="account-step-two"

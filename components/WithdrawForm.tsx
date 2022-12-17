@@ -101,7 +101,9 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         type: 'success',
         txid: tx,
       })
-      actions.reloadMangoAccount()
+      await actions.reloadMangoAccount()
+      setSubmitting(false)
+      onSuccess()
     } catch (e: any) {
       console.error(e)
       notify({
@@ -110,9 +112,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         txid: e?.txid,
         type: 'error',
       })
-    } finally {
       setSubmitting(false)
-      onSuccess()
     }
   }, [bank, inputAmount])
 
