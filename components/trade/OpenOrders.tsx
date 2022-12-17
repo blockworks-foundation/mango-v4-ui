@@ -301,7 +301,7 @@ const OpenOrders = () => {
                         <>
                           <Td className="w-[16.67%]">
                             <Input
-                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
                               type="text"
                               value={modifiedOrderSize}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -312,7 +312,7 @@ const OpenOrders = () => {
                           <Td className="w-[16.67%]">
                             <Input
                               autoFocus
-                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
                               type="text"
                               value={modifiedOrderPrice}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
