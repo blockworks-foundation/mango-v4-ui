@@ -167,7 +167,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             alignBottom
             hideIconBg
           >
-            <div className="px-4 pb-4 pt-2">
+            <div className="px-4 py-2">
               <MangoAccountSummary />
             </div>
           </ExpandableMenuItem>

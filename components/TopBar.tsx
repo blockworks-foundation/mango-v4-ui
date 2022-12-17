@@ -8,7 +8,7 @@ import {
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from './icons/WalletIcon'
-import { IconButton } from './shared/Button'
+import Button, { IconButton } from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../utils/constants'
@@ -23,7 +23,8 @@ import useOnlineStatus from 'hooks/useOnlineStatus'
 import { DEFAULT_DELEGATE } from './modals/DelegateModal'
 import Tooltip from './shared/Tooltip'
 import { abbreviateAddress } from 'utils/formatting'
-import ThemeSwitcher from './ThemeSwitcher'
+import DepositWithdrawModal from './modals/DepositWithdrawModal'
+// import ThemeSwitcher from './ThemeSwitcher'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -33,6 +34,8 @@ const TopBar = () => {
   const [showUserSetup, setShowUserSetup] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
+  const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
+    useState(false)
   const isOnline = useOnlineStatus()
   const router = useRouter()
   const { query } = router
@@ -92,11 +95,16 @@ const TopBar = () => {
           </div>
         ) : null}
         <div className="flex items-center">
-          <div className="px-3 md:px-4">
+          {/* <div className="px-3 md:px-4">
             <ThemeSwitcher />
-          </div>
+          </div> */}
           {connected ? (
             <div className="flex items-center pr-4 md:pr-0">
+              <Button
+                onClick={() => setShowDepositWithdrawModal(true)}
+                secondary
+                className="mx-4"
+              >{`${t('deposit')} / ${t('withdraw')}`}</Button>
               <button
                 className="hidden h-16 border-l border-th-bkg-3 px-4 md:block"
                 id="account-step-two"
@@ -142,6 +150,13 @@ const TopBar = () => {
           )}
         </div>
       </div>
+      {showDepositWithdrawModal ? (
+        <DepositWithdrawModal
+          action="deposit"
+          isOpen={showDepositWithdrawModal}
+          onClose={() => setShowDepositWithdrawModal(false)}
+        />
+      ) : null}
       {showMangoAccountsModal ? (
         <MangoAccountsListModal
           isOpen={showMangoAccountsModal}

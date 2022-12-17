@@ -21,6 +21,7 @@
   "borrow": "Borrow",
   "borrow-amount": "Borrow Amount",
   "borrow-fee": "Borrow Fee",
+  "borrow-funds": "Borrow Funds",
   "borrow-rate": "Borrow Rate (APR)",
   "borrow-value": "Borrow Value",
   "buy": "Buy",
@@ -93,7 +94,9 @@
   "repayment-value": "Repayment Value",
   "rolling-change": "24h Change",
   "save": "Save",
+  "select-deposit-token": "Select Deposit Token",
   "select-token": "Select Token",
+  "select-withdraw-token": "Select Withdraw Token",
   "sell": "Sell",
   "settings": "Settings",
   "show-zero-balances": "Show Zero Balances",
@@ -127,6 +130,6 @@
   "wallet-balance": "Wallet Balance",
   "wallet-disconnected": "Disconnected from wallet",
   "withdraw": "Withdraw",
-  "withdrawal-value": "Withdrawal Value"
+  "withdraw-value": "Withdraw Value"
  }
  

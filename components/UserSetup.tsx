@@ -34,7 +34,7 @@ import ButtonGroup from './forms/ButtonGroup'
 import Input from './forms/Input'
 import Label from './forms/Label'
 import WalletIcon from './icons/WalletIcon'
-import { walletBalanceForToken } from './modals/DepositModal'
+import { walletBalanceForToken } from './DepositForm'
 import ParticlesBackground from './ParticlesBackground'
 import EditNftProfilePic from './profile/EditNftProfilePic'
 import EditProfileForm from './profile/EditProfileForm'
@@ -393,7 +393,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                 <div className="mb-4">
                   <InlineNotification
                     type="info"
-                    desc={`There is a $${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha testing.`}
+                    desc={`There is a $${ALPHA_DEPOSIT_LIMIT} account value limit during alpha testing.`}
                   />
                   <SolBalanceWarnings
                     amount={depositAmount}

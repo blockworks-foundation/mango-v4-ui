@@ -21,8 +21,6 @@ import {
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
 import BorrowModal from './modals/BorrowModal'
-import DepositModal from './modals/DepositModal'
-import WithdrawModal from './modals/WithdrawModal'
 import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
@@ -33,6 +31,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from '../hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
+import DepositWithdrawModal from './modals/DepositWithdrawModal'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -554,14 +553,16 @@ const ActionsMenu = ({
         </LinkButton> */}
       </IconDropMenu>
       {showDepositModal ? (
-        <DepositModal
+        <DepositWithdrawModal
+          action="deposit"
           isOpen={showDepositModal}
           onClose={() => setShowDepositModal(false)}
           token={selectedToken}
         />
       ) : null}
       {showWithdrawModal ? (
-        <WithdrawModal
+        <DepositWithdrawModal
+          action="withdraw"
           isOpen={showWithdrawModal}
           onClose={() => setShowWithdrawModal(false)}
           token={selectedToken}

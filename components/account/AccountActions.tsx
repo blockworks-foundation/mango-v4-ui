@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
-import DepositModal from '../modals/DepositModal'
-import WithdrawModal from '../modals/WithdrawModal'
 import {
-  ArrowDownTrayIcon,
   ArrowUpTrayIcon,
   BanknotesIcon,
   DocumentDuplicateIcon,
@@ -27,15 +24,15 @@ import RepayModal from '@components/modals/RepayModal'
 import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
+import BorrowModal from '@components/modals/BorrowModal'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
-  const [showDepositModal, setShowDepositModal] = useState(false)
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+  const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [showRepayModal, setShowRepayModal] = useState(false)
   const [showDelegateModal, setShowDelegateModal] = useState(false)
 
@@ -74,20 +71,11 @@ const AccountActions = () => {
         <Button
           className="flex items-center"
           disabled={!mangoAccount}
-          onClick={() => setShowDepositModal(true)}
+          onClick={() => setShowBorrowModal(true)}
           secondary={hasBorrows}
         >
-          <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
-          {t('deposit')}
-        </Button>
-        <Button
-          className="flex items-center"
-          disabled={!mangoAccount}
-          onClick={() => setShowWithdrawModal(true)}
-          secondary
-        >
           <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
-          {t('withdraw')}
+          {t('borrow')}
         </Button>
         <IconDropMenu
           icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
@@ -135,22 +123,16 @@ const AccountActions = () => {
           onClose={() => setShowCloseAccountModal(false)}
         />
       ) : null}
-      {showDepositModal ? (
-        <DepositModal
-          isOpen={showDepositModal}
-          onClose={() => setShowDepositModal(false)}
-        />
-      ) : null}
       {showEditAccountModal ? (
         <AccountNameModal
           isOpen={showEditAccountModal}
           onClose={() => setShowEditAccountModal(false)}
         />
       ) : null}
-      {showWithdrawModal ? (
-        <WithdrawModal
-          isOpen={showWithdrawModal}
-          onClose={() => setShowWithdrawModal(false)}
+      {showBorrowModal ? (
+        <BorrowModal
+          isOpen={showBorrowModal}
+          onClose={() => setShowBorrowModal(false)}
         />
       ) : null}
 
