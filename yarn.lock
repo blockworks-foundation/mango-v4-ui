@@ -52,7 +52,7 @@
 
 "@blockworks-foundation/mango-v4@https://tylersssss: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@github.com/blockworks-foundation/mango-v4.git#main":
   version "0.0.1-beta.6"
-  resolved "https://tylersssss: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@github.com/blockworks-foundation/mango-v4.git#ff37b217772e96c83df2ce190f11e98315200815"
+  resolved "https://tylersssss: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@github.com/blockworks-foundation/mango-v4.git#13f32c8baed8d2d832519d28ef001334bc1aa68c"
   dependencies:
     "@project-serum/anchor" "^0.25.0"
     "@project-serum/serum" "^0.13.65"
@@ -573,9 +573,9 @@
     "@hapi/hoek" "^9.0.0"
 
 "@sideway/formula@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@sideway/formula/-/formula-3.0.0.tgz#fe158aee32e6bd5de85044be615bc08478a0a13c"
-  integrity sha512-vHe7wZ4NOXVfkoRb8T5otiENVlT7a3IAiw7H5M2+GO+9CDgcVUUsX1zalAztCmwyOr2RUTGJdgB+ZvSVqmdHmg==
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@sideway/formula/-/formula-3.0.1.tgz#80fcbcbaf7ce031e0ef2dd29b1bfc7c3f583611f"
+  integrity sha512-/poHZJJVjx3L+zVD6g9KgHfYnb443oi7wLu/XKojDviHy6HOEOA6z1Trk5aR1dGcmPenJEgb2sK2I80LeS3MIg==
 
 "@sideway/pinpoint@^2.0.0":
   version "2.0.0"
@@ -1558,9 +1558,9 @@
   integrity sha512-evMDG1bC4rgQg4ku9tKpuMh5iBNEwNa3tf9zRHdP1qlv+1WUg44xat4IxCE14gIpZRGUUWAx2VhItCZc25NfMA==
 
 "@types/node@*":
-  version "18.11.15"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.15.tgz#de0e1fbd2b22b962d45971431e2ae696643d3f5d"
-  integrity sha512-VkhBbVo2+2oozlkdHXLrb3zjsRkpdnaU2bXmX8Wgle3PUi569eLRaHGlgETQHR7lLL1w7GiG3h9SnePhxNDecw==
+  version "18.11.16"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.16.tgz#966cae211e970199559cfbd295888fca189e49af"
+  integrity sha512-6T7P5bDkRhqRxrQtwj7vru+bWTpelgtcETAZEUSdq0YISKz8WKdoBukQLYQQ6DFHvU9JRsbFq0JH5C51X2ZdnA==
 
 "@types/node@17.0.23":
   version "17.0.23"
