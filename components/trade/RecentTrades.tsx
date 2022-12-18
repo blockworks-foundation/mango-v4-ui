@@ -141,13 +141,13 @@ const RecentTrades = () => {
               <th className="py-2 font-normal">
                 {t('trade:size')} ({baseSymbol})
               </th>
-              {/* <th className="py-2 font-normal">{t('time')}</th> */}
+              <th className="py-2 font-normal">{t('time')}</th>
             </tr>
           </thead>
           <tbody>
             {!!fills.length &&
               fills.map((trade: ChartTradeType, i: number) => {
-                const side = trade.side || Object.keys(trade.takerSide)[0]
+                const side = trade.side || trade.takerSide === 1 ? 'bid' : 'ask'
 
                 // const price =
                 // typeof trade.price === 'number'
@@ -183,9 +183,15 @@ const RecentTrades = () => {
                     <td className="pb-1.5 text-right">
                       {formattedSize.toFixed()}
                     </td>
-                    {/* <td className="pb-1.5 text-right text-th-fgd-4">
-                    {trade.time && new Date(trade.time).toLocaleTimeString()}
-                  </td> */}
+                    <td className="pb-1.5 text-right text-th-fgd-4">
+                      {trade.time
+                        ? new Date(trade.time).toLocaleTimeString()
+                        : trade.timestamp
+                        ? new Date(
+                            trade.timestamp.toNumber()
+                          ).toLocaleTimeString()
+                        : '-'}
+                    </td>
                   </tr>
                 )
               })}
