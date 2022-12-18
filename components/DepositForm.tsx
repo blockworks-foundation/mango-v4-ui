@@ -78,29 +78,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const [chain, setChain] = useState(Chain.SOL)
-
-  const handleSetShowTokenList = (val: boolean) => {
-    if (isEthChain) {
-      return
-    }
-    setShowTokenList(val)
-  }
-  useEffect(() => {
-    if (chain === Chain.ETH) {
-      setSelectedToken('ETH')
-    }
-    if (chain === Chain.SOL) {
-      setSelectedToken(defaultToken)
-    }
-  }, [chain, defaultToken])
-
-  //ETH chain
-  const { open } = useWeb3Modal()
-  const { isConnected } = useAccount()
-  const isEthWalletConnected = isConnected
-  const isEthChain = chain === Chain.ETH
-  //ETH chain
-
   const { mangoTokens } = useJupiterMints()
 
   const bank = useMemo(() => {
@@ -145,6 +122,13 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
     setShowTokenList(false)
+  }
+
+  const handleSetShowTokenList = (val: boolean) => {
+    if (isEthChain) {
+      return
+    }
+    setShowTokenList(val)
   }
 
   const handleDeposit = useCallback(async () => {
@@ -223,6 +207,27 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [inputAmount, bank])
 
   const showInsufficientBalance = tokenMax.maxAmount < Number(inputAmount)
+
+  //ETH chain
+  const { open } = useWeb3Modal()
+  const { isConnected } = useAccount()
+  //const { disconnect } = useDisconnect()
+  const isEthWalletConnected = isConnected
+  const isEthChain = chain === Chain.ETH
+  //ETH chain
+  useEffect(() => {
+    if (chain === Chain.ETH) {
+      setSelectedToken('ETH')
+    }
+    if (chain === Chain.SOL) {
+      setSelectedToken(defaultToken)
+    }
+    // return () => {
+    //   if (isEthWalletConnected) {
+    //     disconnect()
+    //   }
+    // }
+  }, [chain])
 
   return (
     <>
