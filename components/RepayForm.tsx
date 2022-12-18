@@ -1,5 +1,5 @@
 import {
-  BanknotesIcon,
+  ArrowDownRightIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
   QuestionMarkCircleIcon,
@@ -315,7 +315,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
             </div>
           ) : (
             <div className="flex items-center">
-              <BanknotesIcon className="mr-2 h-5 w-5" />
+              <ArrowDownRightIcon className="mr-2 h-5 w-5" />
               {t('repay')}
             </div>
           )}

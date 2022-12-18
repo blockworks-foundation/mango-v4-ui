@@ -1,7 +1,7 @@
 import { Bank, HealthType } from '@blockworks-foundation/mango-v4'
 import {
+  ArrowUpLeftIcon,
   ChevronDownIcon,
-  CurrencyDollarIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
@@ -319,7 +319,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
               </div>
             ) : (
               <div className="flex items-center">
-                <CurrencyDollarIcon className="mr-2 h-5 w-5" />
+                <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
                 {t('borrow')}
               </div>
             )}
