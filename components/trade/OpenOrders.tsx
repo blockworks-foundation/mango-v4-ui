@@ -283,7 +283,7 @@ const OpenOrders = () => {
                                 getDecimalCount(minOrderSize),
                             })}
                           </Td>
-                          <Td className="w-[16.67%] text-right">
+                          <Td className="w-[16.67%] whitespace-nowrap text-right">
                             <span className="font-mono">
                               {o.price.toLocaleString(undefined, {
                                 minimumFractionDigits:
