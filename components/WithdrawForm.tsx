@@ -11,7 +11,10 @@ import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 
 import mangoStore from '@store/mangoStore'
-import { INPUT_TOKEN_DEFAULT } from './../utils/constants'
+import {
+  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  INPUT_TOKEN_DEFAULT,
+} from './../utils/constants'
 import { notify } from './../utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
@@ -184,7 +187,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut
-        className="flex h-[386px] flex-col justify-between"
+        className={`flex h-[${ACCOUNT_ACTION_MODAL_INNER_HEIGHT}] flex-col justify-between`}
         show={!showTokenList}
       >
         <div>

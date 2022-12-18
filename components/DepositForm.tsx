@@ -12,7 +12,11 @@ import Image from 'next/legacy/image'
 import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
-import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from './../utils/constants'
+import {
+  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  ALPHA_DEPOSIT_LIMIT,
+  INPUT_TOKEN_DEFAULT,
+} from './../utils/constants'
 import { notify } from './../utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
 import { TokenAccount } from './../utils/tokens'
@@ -219,7 +223,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut
-        className="flex h-full flex-col justify-between"
+        className={`flex h-[${ACCOUNT_ACTION_MODAL_INNER_HEIGHT}] flex-col justify-between`}
         show={!showTokenList}
       >
         <div>

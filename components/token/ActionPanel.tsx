@@ -1,5 +1,5 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
-import BorrowModal from '@components/modals/BorrowModal'
+import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import Button from '@components/shared/Button'
 import mangoStore from '@store/mangoStore'
@@ -95,7 +95,8 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
         />
       ) : null}
       {showBorrowModal ? (
-        <BorrowModal
+        <BorrowRepayModal
+          action="borrow"
           isOpen={showBorrowModal}
           onClose={() => setShowBorrowModal(false)}
           token={bank!.name}

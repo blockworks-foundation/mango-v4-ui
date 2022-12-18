@@ -10,20 +10,21 @@ import Image from 'next/legacy/image'
 import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
-import { ModalProps } from '../../types/modal'
-import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
-import { notify } from '../../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
-import ActionTokenList from '../account/ActionTokenList'
-import ButtonGroup from '../forms/ButtonGroup'
-import Label from '../forms/Label'
-import Button from '../shared/Button'
-import InlineNotification from '../shared/InlineNotification'
-import Loading from '../shared/Loading'
-import Modal from '../shared/Modal'
-import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
-import { withValueLimit } from '../swap/SwapForm'
-import { getMaxWithdrawForBank } from '../swap/useTokenMax'
+import {
+  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  INPUT_TOKEN_DEFAULT,
+} from './../utils/constants'
+import { notify } from './../utils/notifications'
+import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import ActionTokenList from './account/ActionTokenList'
+import ButtonGroup from './forms/ButtonGroup'
+import Label from './forms/Label'
+import Button from './shared/Button'
+import InlineNotification from './shared/InlineNotification'
+import Loading from './shared/Loading'
+import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
+import { withValueLimit } from './swap/SwapForm'
+import { getMaxWithdrawForBank } from './swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import Tooltip from '@components/shared/Tooltip'
@@ -32,13 +33,12 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 
-interface BorrowModalProps {
+interface BorrowFormProps {
+  onSuccess: () => void
   token?: string
 }
 
-type ModalCombinedProps = BorrowModalProps & ModalProps
-
-function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
+function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
@@ -114,7 +114,9 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         type: 'success',
         txid: tx,
       })
-      actions.reloadMangoAccount()
+      await actions.reloadMangoAccount()
+      setSubmitting(false)
+      onSuccess()
     } catch (e: any) {
       console.error(e)
       notify({
@@ -123,9 +125,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         txid: e?.txid,
         type: 'error',
       })
-    } finally {
       setSubmitting(false)
-      onClose()
     }
   }
 
@@ -165,12 +165,12 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     : false
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <>
       <EnterBottomExitBottom
         className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
         show={showTokenList}
       >
-        <h2 className="mb-4 text-center">{t('select-token')}</h2>
+        <h2 className="mb-4 text-center text-lg">{t('select-borrow-token')}</h2>
         <div className="grid auto-cols-fr grid-flow-col  px-4 pb-2">
           <div className="">
             <p className="text-xs">{t('token')}</p>
@@ -190,9 +190,11 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
           valueKey="maxAmount"
         />
       </EnterBottomExitBottom>
-      <FadeInFadeOut className="flex flex-col justify-between" show={isOpen}>
+      <FadeInFadeOut
+        className={`flex h-[${ACCOUNT_ACTION_MODAL_INNER_HEIGHT}] flex-col justify-between`}
+        show={!showTokenList}
+      >
         <div>
-          <h2 className="mb-4 text-center">{t('borrow')}</h2>
           {initHealth && initHealth <= 0 ? (
             <div className="mb-4">
               <InlineNotification
@@ -203,7 +205,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
           ) : null}
           <div className="grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
-              <Label text={t('token')} />
+              <Label text={`${t('borrow')} ${t('token')}`} />
               <MaxAmountButton
                 className="mb-2"
                 label={t('max')}
@@ -301,34 +303,36 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
             </div>
           ) : null}
         </div>
-        <Button
-          onClick={handleWithdraw}
-          className="flex w-full items-center justify-center"
-          disabled={!inputAmount || showInsufficientBalance}
-          size="large"
-        >
-          {submitting ? (
-            <Loading className="mr-2 h-5 w-5" />
-          ) : showInsufficientBalance ? (
-            <div className="flex items-center">
-              <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-              {t('swap:insufficient-collateral')}
+        <div className="flex justify-center">
+          <Button
+            onClick={handleWithdraw}
+            className="flex w-full items-center justify-center"
+            disabled={!inputAmount || showInsufficientBalance}
+            size="large"
+          >
+            {submitting ? (
+              <Loading className="mr-2 h-5 w-5" />
+            ) : showInsufficientBalance ? (
+              <div className="flex items-center">
+                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                {t('swap:insufficient-collateral')}
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <CurrencyDollarIcon className="mr-2 h-5 w-5" />
+                {t('borrow')}
+              </div>
+            )}
+          </Button>
+          {bank ? (
+            <div className="pt-4">
+              <TokenVaultWarnings bank={bank} />
             </div>
-          ) : (
-            <div className="flex items-center">
-              <CurrencyDollarIcon className="mr-2 h-5 w-5" />
-              {t('borrow')}
-            </div>
-          )}
-        </Button>
-        {bank ? (
-          <div className="pt-4">
-            <TokenVaultWarnings bank={bank} />
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </FadeInFadeOut>
-    </Modal>
+    </>
   )
 }
 
-export default BorrowModal
+export default BorrowForm

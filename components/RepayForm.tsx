@@ -12,32 +12,30 @@ import Image from 'next/legacy/image'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
-import { ModalProps } from '../../types/modal'
-import { notify } from '../../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
-import ActionTokenList from '../account/ActionTokenList'
-import ButtonGroup from '../forms/ButtonGroup'
-import Label from '../forms/Label'
-import Button from '../shared/Button'
-import Loading from '../shared/Loading'
-import Modal from '../shared/Modal'
-import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
-import { withValueLimit } from '../swap/SwapForm'
+import { notify } from './../utils/notifications'
+import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import ActionTokenList from './account/ActionTokenList'
+import ButtonGroup from './forms/ButtonGroup'
+import Label from './forms/Label'
+import Button from './shared/Button'
+import Loading from './shared/Loading'
+import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
+import { withValueLimit } from './swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
-import { walletBalanceForToken } from '../DepositForm'
+import { walletBalanceForToken } from './DepositForm'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { ACCOUNT_ACTION_MODAL_INNER_HEIGHT } from 'utils/constants'
 
-interface RepayModalProps {
+interface RepayFormProps {
+  onSuccess: () => void
   token?: string
 }
 
-type ModalCombinedProps = RepayModalProps & ModalProps
-
-function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
+function RepayForm({ onSuccess, token }: RepayFormProps) {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
@@ -115,8 +113,8 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
       if (!mangoAccount || !group || !bank || !wallet) return
       console.log('inputAmount: ', amount)
 
+      setSubmitting(true)
       try {
-        setSubmitting(true)
         const tx = await client.tokenDeposit(
           group,
           mangoAccount,
@@ -132,6 +130,7 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
         await actions.reloadMangoAccount()
         actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)
         setSubmitting(false)
+        onSuccess()
       } catch (e: any) {
         notify({
           title: 'Transaction failed',
@@ -140,11 +139,10 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
           type: 'error',
         })
         console.error('Error repaying:', e)
+        setSubmitting(false)
       }
-
-      onClose()
     },
-    [bank, wallet, onClose]
+    [bank, wallet]
   )
 
   const banks = useMemo(() => {
@@ -174,13 +172,13 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const showInsufficientBalance = walletBalance.maxAmount < Number(inputAmount)
 
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+  return banks.length ? (
+    <>
       <EnterBottomExitBottom
         className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
         show={showTokenList}
       >
-        <h2 className="mb-4 text-center">{t('select-token')}</h2>
+        <h2 className="mb-4 text-center text-lg">{t('select-repay-token')}</h2>
         <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
           <div className="text-left">
             <p className="text-xs">{t('token')}</p>
@@ -197,19 +195,20 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut
-        className="flex h-full flex-col justify-between"
-        show={isOpen}
+        className={`flex h-[${ACCOUNT_ACTION_MODAL_INNER_HEIGHT}] flex-col justify-between`}
+        show={!showTokenList}
       >
         <div>
-          <h2 className="mb-2 text-center">{t('repay-borrow')}</h2>
-          <SolBalanceWarnings
-            amount={inputAmount}
-            setAmount={setInputAmount}
-            selectedToken={selectedToken}
-          />
-          <div className="mt-4 grid grid-cols-2">
+          <div className="-mt-2 mb-2">
+            <SolBalanceWarnings
+              amount={inputAmount}
+              setAmount={setInputAmount}
+              selectedToken={selectedToken}
+            />
+          </div>
+          <div className="grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
-              <Label text={t('token')} />
+              <Label text={`${t('repay')} ${t('token')}`} />
               <MaxAmountButton
                 className="mb-2"
                 label={t('amount-owed')}
@@ -298,32 +297,37 @@ function RepayModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </p>
             </div>
           </div>
-          <Button
-            onClick={() => handleDeposit(inputAmount)}
-            className="flex w-full items-center justify-center"
-            disabled={!inputAmount || showInsufficientBalance}
-            size="large"
-          >
-            {submitting ? (
-              <Loading className="mr-2 h-5 w-5" />
-            ) : showInsufficientBalance ? (
-              <div className="flex items-center">
-                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('swap:insufficient-balance', {
-                  symbol: selectedToken,
-                })}
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <BanknotesIcon className="mr-2 h-5 w-5" />
-                {t('repay')}
-              </div>
-            )}
-          </Button>
         </div>
+        <Button
+          onClick={() => handleDeposit(inputAmount)}
+          className="flex w-full items-center justify-center"
+          disabled={!inputAmount || showInsufficientBalance}
+          size="large"
+        >
+          {submitting ? (
+            <Loading className="mr-2 h-5 w-5" />
+          ) : showInsufficientBalance ? (
+            <div className="flex items-center">
+              <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+              {t('swap:insufficient-balance', {
+                symbol: selectedToken,
+              })}
+            </div>
+          ) : (
+            <div className="flex items-center">
+              <BanknotesIcon className="mr-2 h-5 w-5" />
+              {t('repay')}
+            </div>
+          )}
+        </Button>
       </FadeInFadeOut>
-    </Modal>
+    </>
+  ) : (
+    <div className="flex h-[356px] flex-col items-center justify-center">
+      <span className="text-2xl">😎</span>
+      <p>No borrows to repay...</p>
+    </div>
   )
 }
 
-export default RepayModal
+export default RepayForm

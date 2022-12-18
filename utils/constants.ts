@@ -48,6 +48,9 @@ export const GRID_LAYOUT_KEY = 'savedLayouts-0.1'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition'
 
+export const FAVORITE_MARKETS_KEY = 'favoriteMarkets'
+
 export const MIN_SOL_BALANCE = 0.04
 
-export const FAVORITE_MARKETS_KEY = 'favoriteMarkets'
+export const ACCOUNT_ACTION_MODAL_HEIGHT = '448px'
+export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '386px'

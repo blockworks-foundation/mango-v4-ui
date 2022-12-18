@@ -20,18 +20,17 @@ import {
 } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
-import BorrowModal from './modals/BorrowModal'
 import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
-import RepayModal from './modals/RepayModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from '../hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
+import BorrowRepayModal from './modals/BorrowRepayModal'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -569,14 +568,16 @@ const ActionsMenu = ({
         />
       ) : null}
       {showBorrowModal ? (
-        <BorrowModal
+        <BorrowRepayModal
+          action="borrow"
           isOpen={showBorrowModal}
           onClose={() => setShowBorrowModal(false)}
           token={selectedToken}
         />
       ) : null}
       {showRepayModal ? (
-        <RepayModal
+        <BorrowRepayModal
+          action="repay"
           isOpen={showRepayModal}
           onClose={() => setShowRepayModal(false)}
           token={selectedToken}

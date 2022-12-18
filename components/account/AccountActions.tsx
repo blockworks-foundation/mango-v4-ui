@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import {
-  ArrowUpTrayIcon,
-  BanknotesIcon,
+  ArrowDownRightIcon,
+  ArrowUpLeftIcon,
   DocumentDuplicateIcon,
   EllipsisHorizontalIcon,
   PencilIcon,
@@ -20,11 +20,10 @@ import {
   HealthType,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
-import RepayModal from '@components/modals/RepayModal'
 import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
-import BorrowModal from '@components/modals/BorrowModal'
+import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
@@ -51,7 +50,7 @@ const AccountActions = () => {
     return (
       toUiDecimalsForQuote(
         mangoAccount.getLiabsValue(group, HealthType.init).toNumber()
-      ) >= 10
+      ) >= 1
     )
   }, [mangoAccount, group])
 
@@ -64,7 +63,7 @@ const AccountActions = () => {
             disabled={!mangoAccount}
             onClick={() => setShowRepayModal(true)}
           >
-            <BanknotesIcon className="mr-2 h-5 w-5" />
+            <ArrowDownRightIcon className="mr-2 h-5 w-5" />
             {t('repay')}
           </Button>
         ) : null}
@@ -74,7 +73,7 @@ const AccountActions = () => {
           onClick={() => setShowBorrowModal(true)}
           secondary={hasBorrows}
         >
-          <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
+          <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
           {t('borrow')}
         </Button>
         <IconDropMenu
@@ -130,14 +129,15 @@ const AccountActions = () => {
         />
       ) : null}
       {showBorrowModal ? (
-        <BorrowModal
+        <BorrowRepayModal
+          action="borrow"
           isOpen={showBorrowModal}
           onClose={() => setShowBorrowModal(false)}
         />
       ) : null}
-
       {showRepayModal ? (
-        <RepayModal
+        <BorrowRepayModal
+          action="repay"
           isOpen={showRepayModal}
           onClose={() => setShowRepayModal(false)}
         />
