@@ -33,12 +33,34 @@ import Head from 'next/head'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
+import {
+  EthereumClient,
+  modalConnectors,
+  walletConnectProvider,
+} from '@web3modal/ethereum'
 
+import { Web3Modal } from '@web3modal/react'
+import { configureChains, createClient, WagmiConfig } from 'wagmi'
+import { arbitrum, mainnet, polygon } from 'wagmi/chains'
 // Do not add hooks to this component that will cause unnecessary rerenders
 // Top level state hydrating/updating should go in MangoProvider
 
 // Create a client
 const queryClient = new QueryClient()
+const chains = [arbitrum, mainnet, polygon]
+
+// Wagmi client
+const { provider } = configureChains(chains, [
+  walletConnectProvider({ projectId: '<YOUR_PROJECT_ID>' }),
+])
+const wagmiClient = createClient({
+  autoConnect: true,
+  connectors: modalConnectors({ appName: 'web3Modal', chains }),
+  provider,
+})
+
+// Web3Modal Ethereum Client
+const ethereumClient = new EthereumClient(wagmiClient, chains)
 
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Devnet
@@ -68,20 +90,23 @@ function MyApp({ Component, pageProps }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <ConnectionProvider endpoint={endpoint}>
           <WalletProvider wallets={wallets} onError={onError}>
-            <EnhancedWalletProvider>
-              <ThemeProvider defaultTheme="Mango Classic">
-                <ViewportProvider>
-                  <PageTitle />
-                  <Layout>
-                    <Component {...pageProps} />
-                  </Layout>
-                </ViewportProvider>
-                <Notifications />
-              </ThemeProvider>
-            </EnhancedWalletProvider>
+            <WagmiConfig client={wagmiClient}>
+              <EnhancedWalletProvider>
+                <ThemeProvider defaultTheme="Mango Classic">
+                  <ViewportProvider>
+                    <PageTitle />
+                    <Layout>
+                      <Component {...pageProps} />
+                    </Layout>
+                  </ViewportProvider>
+                  <Notifications />
+                </ThemeProvider>
+              </EnhancedWalletProvider>
+            </WagmiConfig>
           </WalletProvider>
         </ConnectionProvider>
       </QueryClientProvider>
+      <Web3Modal ethereumClient={ethereumClient} />
     </>
   )
 }

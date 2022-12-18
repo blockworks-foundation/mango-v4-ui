@@ -9,7 +9,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import {
@@ -34,10 +34,17 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { useWeb3Modal } from '@web3modal/react'
+import { useAccount } from 'wagmi'
 
 interface DepositFormProps {
   onSuccess: () => void
   token?: string
+}
+
+enum Chain {
+  SOL,
+  ETH,
 }
 
 export const walletBalanceForToken = (
@@ -62,15 +69,38 @@ export const walletBalanceForToken = (
 }
 
 function DepositForm({ onSuccess, token }: DepositFormProps) {
+  const defaultToken = token || INPUT_TOKEN_DEFAULT
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
-  )
+  const [selectedToken, setSelectedToken] = useState(defaultToken)
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
+  const [chain, setChain] = useState(Chain.SOL)
+
+  const handleSetShowTokenList = (val: boolean) => {
+    if (isEthChain) {
+      return
+    }
+    setShowTokenList(val)
+  }
+  useEffect(() => {
+    if (chain === Chain.ETH) {
+      setSelectedToken('ETH')
+    }
+    if (chain === Chain.SOL) {
+      setSelectedToken(defaultToken)
+    }
+  }, [chain, defaultToken])
+
+  //ETH chain
+  const { open } = useWeb3Modal()
+  const { isConnected } = useAccount()
+  const isEthWalletConnected = isConnected
+  const isEthChain = chain === Chain.ETH
+  //ETH chain
+
   const { mangoTokens } = useJupiterMints()
 
   const bank = useMemo(() => {
@@ -214,6 +244,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             <p className="whitespace-nowrap text-xs">{t('wallet-balance')}</p>
           </div>
         </div>
+
         <ActionTokenList
           banks={banks}
           onSelect={handleSelectToken}
@@ -237,6 +268,10 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             setAmount={setInputAmount}
             selectedToken={selectedToken}
           />
+          <div>
+            <Button onClick={() => setChain(Chain.SOL)}>SOL</Button>
+            <Button onClick={() => setChain(Chain.ETH)}>ETH</Button>
+          </div>
           <div className="mt-4 grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
               <Label text={`${t('deposit')} ${t('token')}`} />
@@ -252,7 +287,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
               <button
-                onClick={() => setShowTokenList(true)}
+                onClick={() => handleSetShowTokenList(true)}
                 className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
               >
                 <div className="mr-2.5 flex min-w-[24px] items-center">
@@ -336,30 +371,34 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
               </p>
             </div>
           </div>
-          <Button
-            onClick={handleDeposit}
-            className="flex w-full items-center justify-center"
-            disabled={
-              !inputAmount || exceedsAlphaMax || showInsufficientBalance
-            }
-            size="large"
-          >
-            {submitting ? (
-              <Loading className="mr-2 h-5 w-5" />
-            ) : showInsufficientBalance ? (
-              <div className="flex items-center">
-                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('swap:insufficient-balance', {
-                  symbol: selectedToken,
-                })}
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
-                {t('deposit')}
-              </div>
-            )}
-          </Button>
+          {!isEthWalletConnected && isEthChain ? (
+            <Button onClick={() => open()}>Connect Ethereum wallet</Button>
+          ) : (
+            <Button
+              onClick={handleDeposit}
+              className="flex w-full items-center justify-center"
+              disabled={
+                !inputAmount || exceedsAlphaMax || showInsufficientBalance
+              }
+              size="large"
+            >
+              {submitting ? (
+                <Loading className="mr-2 h-5 w-5" />
+              ) : showInsufficientBalance ? (
+                <div className="flex items-center">
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  {t('swap:insufficient-balance', {
+                    symbol: selectedToken,
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
+                  {t('deposit')}
+                </div>
+              )}
+            </Button>
+          )}
         </div>
       </FadeInFadeOut>
     </>
