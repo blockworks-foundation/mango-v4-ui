@@ -164,7 +164,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
         ? CLIENT_TX_TIMEOUT
         : type === 'error'
         ? 30000
-        : 8000
+        : 10000
     )
 
     return () => {
