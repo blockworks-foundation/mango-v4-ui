@@ -212,7 +212,7 @@ const OpenOrders = () => {
 
   const showEditOrderForm = (order: Order | PerpOrder, tickSize: number) => {
     setModifyOrderId(order.orderId.toString())
-    setModifiedOrderSize(order.size.toFixed(getDecimalCount(tickSize)))
+    setModifiedOrderSize(order.size.toString())
     setModifiedOrderPrice(order.price.toFixed(getDecimalCount(tickSize)))
   }
   const cancelEditOrderForm = () => {
