@@ -255,24 +255,27 @@ const Balance = ({ bank }: { bank: Bank }) => {
     [selectedMarket]
   )
 
-  const handleSwapFormBalanceClick = useCallback((balance: number) => {
-    const set = mangoStore.getState().set
-    if (balance >= 0) {
-      set((s) => {
-        s.swap.inputBank = bank
-        s.swap.amountIn = balance.toString()
-        s.swap.swapMode = 'ExactIn'
-      })
-    } else {
-      console.log('else')
-
-      set((s) => {
-        s.swap.outputBank = bank
-        s.swap.amountOut = Math.abs(balance).toString()
-        s.swap.swapMode = 'ExactOut'
-      })
-    }
-  }, [])
+  const handleSwapFormBalanceClick = useCallback(
+    (balance: number) => {
+      const set = mangoStore.getState().set
+      if (balance >= 0) {
+        set((s) => {
+          s.swap.inputBank = bank
+          s.swap.amountIn = balance.toString()
+          s.swap.amountOut = ''
+          s.swap.swapMode = 'ExactIn'
+        })
+      } else {
+        set((s) => {
+          s.swap.outputBank = bank
+          s.swap.amountIn = ''
+          s.swap.amountOut = Math.abs(balance).toString()
+          s.swap.swapMode = 'ExactOut'
+        })
+      }
+    },
+    [bank]
+  )
 
   const balance = useMemo(() => {
     return mangoAccount ? mangoAccount.getTokenBalanceUi(bank) : 0
