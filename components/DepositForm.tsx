@@ -36,6 +36,8 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useWeb3Modal } from '@web3modal/react'
 import { useAccount } from 'wagmi'
+import { getDefaultProvider, utils } from 'ethers'
+import usePrevious from './shared/usePrevious'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -208,13 +210,28 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
 
   const showInsufficientBalance = tokenMax.maxAmount < Number(inputAmount)
 
-  //ETH chain
+  //-------ETH chain-----------
+
   const { open } = useWeb3Modal()
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
+  const previousAddress = usePrevious(address)
   //const { disconnect } = useDisconnect()
   const isEthWalletConnected = isConnected
   const isEthChain = chain === Chain.ETH
-  //ETH chain
+  useEffect(() => {
+    const getEthBalance = async () => {
+      const provider = getDefaultProvider()
+      const balance = await provider.getBalance(address!)
+      const balanceInEth = utils.formatEther(balance)
+      console.log(`balance: ${balanceInEth} ETH`)
+    }
+    if (address && address !== previousAddress && isEthChain) {
+      getEthBalance()
+    }
+  }, [address])
+
+  //-------ETH chain-----------
+
   useEffect(() => {
     if (chain === Chain.ETH) {
       setSelectedToken('ETH')
