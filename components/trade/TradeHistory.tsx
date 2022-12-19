@@ -1,4 +1,4 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
 import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
@@ -28,8 +28,8 @@ const parsedPerpEvent = (mangoAccountPk: PublicKey, event: any) => {
   const orderId = maker ? event.makerOrderId : event.takerOrderId
   const value = event.quantity * event.price
   const feeRate = maker
-    ? event.makerFee.val.toNumber()
-    : event.takerFee.val.toNumber()
+    ? new I80F48(event.makerFee.val)
+    : new I80F48(event.takerFee.val)
   const side = maker ? reverseSide(event.takerSide) : event.takerSide
 
   return {
@@ -39,7 +39,7 @@ const parsedPerpEvent = (mangoAccountPk: PublicKey, event: any) => {
     size: event.size,
     price: event.price,
     value,
-    feeCost: (feeRate * value).toFixed(4),
+    feeCost: (feeRate.toNumber() * value).toFixed(4),
     side,
     marketName: event.marketName,
   }
