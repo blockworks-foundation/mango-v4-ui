@@ -115,7 +115,7 @@ const SwapHistoryTable = ({
                   )?.logoURI
                 }
 
-                const inDecimals = countLeadingZeros(swap_in_amount) + 2
+                const inDecimals = countLeadingZeros(swap_in_amount)
                 const outDecimals = countLeadingZeros(swap_out_amount) + 2
                 return (
                   <TrBody key={signature}>
@@ -140,7 +140,7 @@ const SwapHistoryTable = ({
                           </div>
                           <div>
                             <p className="whitespace-nowrap">
-                              {`${trimDecimals(swap_in_amount, inDecimals)}`}
+                              {`${swap_in_amount.toFixed(inDecimals)}`}
                               <span className="ml-1 font-body tracking-wide text-th-fgd-3">
                                 {inSymbol}
                               </span>
