@@ -18,12 +18,24 @@ import { notify } from 'utils/notifications'
 import { abbreviateAddress } from 'utils/formatting'
 import {
   HealthType,
+  MangoAccount,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
+
+export const handleCopyAddress = (
+  mangoAccount: MangoAccount,
+  successMessage: string
+) => {
+  copyToClipboard(mangoAccount.publicKey.toString())
+  notify({
+    title: successMessage,
+    type: 'success',
+  })
+}
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
@@ -34,16 +46,6 @@ const AccountActions = () => {
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [showRepayModal, setShowRepayModal] = useState(false)
   const [showDelegateModal, setShowDelegateModal] = useState(false)
-
-  const handleCopyAddress = (address: string) => {
-    copyToClipboard(address)
-    notify({
-      title: t('copy-address-success', {
-        pk: abbreviateAddress(mangoAccount!.publicKey),
-      }),
-      type: 'success',
-    })
-  }
 
   const hasBorrows = useMemo(() => {
     if (!mangoAccount || !group) return false
@@ -84,7 +86,12 @@ const AccountActions = () => {
             className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
             onClick={() =>
-              handleCopyAddress(mangoAccount!.publicKey.toString())
+              handleCopyAddress(
+                mangoAccount!,
+                t('copy-address-success', {
+                  pk: abbreviateAddress(mangoAccount!.publicKey),
+                })
+              )
             }
           >
             <DocumentDuplicateIcon className="h-4 w-4" />
