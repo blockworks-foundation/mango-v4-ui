@@ -1,6 +1,13 @@
 import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
 import SideBadge from '@components/shared/SideBadge'
-import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import {
+  Table,
+  TableDateDisplay,
+  Td,
+  Th,
+  TrBody,
+  TrHead,
+} from '@components/shared/TableElements'
 import { LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
@@ -22,8 +29,6 @@ const byTimestamp = (a: any, b: any) => {
 const reverseSide = (side: string) => (side === 'buy' ? 'sell' : 'buy')
 
 const parsedPerpEvent = (mangoAccountPk: PublicKey, event: any) => {
-  console.log('event: ', event)
-
   const maker = event.maker.toString() === mangoAccountPk.toString()
   const orderId = maker ? event.makerOrderId : event.takerOrderId
   const value = event.quantity * event.price
@@ -86,11 +91,15 @@ const TradeHistory = () => {
 
   const openOrderOwner = useMemo(() => {
     if (!mangoAccount || !selectedMarket) return
-
-    if (selectedMarket instanceof PerpMarket) {
-      return mangoAccount.publicKey
-    } else {
-      return mangoAccount.getSerum3OoAccount(selectedMarket.marketIndex).address
+    try {
+      if (selectedMarket instanceof PerpMarket) {
+        return mangoAccount.publicKey
+      } else {
+        return mangoAccount.getSerum3OoAccount(selectedMarket.marketIndex)
+          .address
+      }
+    } catch (e) {
+      console.error('Error loading open order account for trade history: ', e)
     }
   }, [mangoAccount, selectedMarket])
 
@@ -129,6 +138,9 @@ const TradeHistory = () => {
               <Th className="text-right">Price</Th>
               <Th className="text-right">Value</Th>
               <Th className="text-right">Fee</Th>
+              {selectedMarket instanceof PerpMarket ? (
+                <Th className="text-right">Time</Th>
+              ) : null}
             </TrHead>
           </thead>
           <tbody>
@@ -148,7 +160,20 @@ const TradeHistory = () => {
                   <Td className="text-right font-mono">
                     ${trade.value.toFixed(2)}
                   </Td>
-                  <Td className="text-right font-mono">{trade.feeCost}</Td>
+                  <Td className="text-right">
+                    <span className="font-mono">{trade.feeCost}</span>
+                    <span className="text-xs text-th-fgd-4">{`${
+                      trade.liquidity ? ` (${trade.liquidity})` : ''
+                    }`}</span>
+                  </Td>
+                  {selectedMarket instanceof PerpMarket ? (
+                    <Td className="whitespace-nowrap text-right font-mono">
+                      <TableDateDisplay
+                        date={trade.timestamp.toNumber() * 1000}
+                        showSeconds
+                      />
+                    </Td>
+                  ) : null}
                 </TrBody>
               )
             })}
