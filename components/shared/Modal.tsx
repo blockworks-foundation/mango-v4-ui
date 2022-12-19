@@ -19,15 +19,10 @@ function Modal({
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
+      onClose={disableOutsideClose ? () => null : onClose}
       className="relative z-40 overflow-y-auto"
     >
-      <div
-        className={`fixed inset-0 backdrop-brightness-50 ${
-          disableOutsideClose ? 'pointer-events-none' : ''
-        }`}
-        aria-hidden="true"
-      />
+      <div className={`fixed inset-0 backdrop-brightness-50`} />
       <div className="fixed inset-0 flex items-center justify-center px-4 text-center">
         <Dialog.Panel className="relative w-full max-w-md rounded-lg border border-th-bkg-3 bg-th-bkg-1 p-6">
           {!hideClose ? (

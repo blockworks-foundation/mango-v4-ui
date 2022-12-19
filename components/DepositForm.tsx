@@ -35,10 +35,9 @@ import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useWeb3Modal } from '@web3modal/react'
-import { useAccount } from 'wagmi'
+import { useAccount, useDisconnect } from 'wagmi'
 import { getDefaultProvider, utils } from 'ethers'
 import usePrevious from './shared/usePrevious'
-
 interface DepositFormProps {
   onSuccess: () => void
   token?: string
@@ -71,6 +70,54 @@ export const walletBalanceForToken = (
 }
 
 function DepositForm({ onSuccess, token }: DepositFormProps) {
+  //-------ETH chain-----------
+
+  //for now we only use ETH
+  //other tokens would need better abstraction
+  //decimals on sol chain
+  const ETH_DECIMALS = 8
+  const [chain, setChain] = useState(Chain.SOL)
+  const { open } = useWeb3Modal()
+  const { isConnected, address } = useAccount()
+  const previousAddress = usePrevious(address)
+  const [ethBalance, setEthBalance] = useState({
+    maxAmount: 0,
+    maxDecimals: ETH_DECIMALS,
+  })
+  const { disconnect } = useDisconnect()
+  const isEthWalletConnected = isConnected
+  const isEthChain = chain === Chain.ETH
+  useEffect(() => {
+    const getEthBalance = async () => {
+      const provider = getDefaultProvider()
+      const balance = await provider.getBalance(address!)
+      const balanceInEth = utils.formatEther(balance)
+      setEthBalance({
+        maxAmount: Number(floorToDecimal(balanceInEth, ETH_DECIMALS).toFixed()),
+        maxDecimals: ETH_DECIMALS,
+      })
+    }
+    if (address && isEthChain && !ethBalance.maxAmount) {
+      getEthBalance()
+    }
+  }, [address, isEthChain, ethBalance, previousAddress])
+
+  useEffect(() => {
+    if (chain === Chain.ETH) {
+      setSelectedToken('ETH')
+    }
+    if (chain === Chain.SOL) {
+      setSelectedToken(defaultToken)
+    }
+    return () => {
+      if (isEthWalletConnected) {
+        disconnect()
+      }
+    }
+  }, [chain])
+
+  //-------ETH chain-----------
+
   const defaultToken = token || INPUT_TOKEN_DEFAULT
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
@@ -79,7 +126,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [selectedToken, setSelectedToken] = useState(defaultToken)
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const [chain, setChain] = useState(Chain.SOL)
   const { mangoTokens } = useJupiterMints()
 
   const bank = useMemo(() => {
@@ -101,8 +147,10 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const tokenMax = useMemo(() => {
-    return walletBalanceForToken(walletTokens, selectedToken)
-  }, [walletTokens, selectedToken])
+    return isEthChain
+      ? ethBalance
+      : walletBalanceForToken(walletTokens, selectedToken)
+  }, [walletTokens, selectedToken, ethBalance.maxAmount, isEthChain])
 
   const setMax = useCallback(() => {
     setInputAmount(tokenMax.maxAmount.toString())
@@ -175,7 +223,9 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const banks = useMemo(() => {
     const banks = group?.banksMapByName
       ? Array.from(group?.banksMapByName, ([key, value]) => {
-          const walletBalance = walletBalanceForToken(walletTokens, key)
+          const walletBalance = isEthChain
+            ? ethBalance
+            : walletBalanceForToken(walletTokens, key)
           return {
             key,
             value,
@@ -188,7 +238,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         })
       : []
     return banks
-  }, [group?.banksMapByName, walletTokens])
+  }, [group?.banksMapByName, walletTokens, isEthChain, ethBalance.maxAmount])
 
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -209,42 +259,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [inputAmount, bank])
 
   const showInsufficientBalance = tokenMax.maxAmount < Number(inputAmount)
-
-  //-------ETH chain-----------
-
-  const { open } = useWeb3Modal()
-  const { isConnected, address } = useAccount()
-  const previousAddress = usePrevious(address)
-  //const { disconnect } = useDisconnect()
-  const isEthWalletConnected = isConnected
-  const isEthChain = chain === Chain.ETH
-  useEffect(() => {
-    const getEthBalance = async () => {
-      const provider = getDefaultProvider()
-      const balance = await provider.getBalance(address!)
-      const balanceInEth = utils.formatEther(balance)
-      console.log(`balance: ${balanceInEth} ETH`)
-    }
-    if (address && address !== previousAddress && isEthChain) {
-      getEthBalance()
-    }
-  }, [address])
-
-  //-------ETH chain-----------
-
-  useEffect(() => {
-    if (chain === Chain.ETH) {
-      setSelectedToken('ETH')
-    }
-    if (chain === Chain.SOL) {
-      setSelectedToken(defaultToken)
-    }
-    // return () => {
-    //   if (isEthWalletConnected) {
-    //     disconnect()
-    //   }
-    // }
-  }, [chain])
 
   return (
     <>
@@ -290,10 +304,36 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             setAmount={setInputAmount}
             selectedToken={selectedToken}
           />
-          <div>
-            <Button onClick={() => setChain(Chain.SOL)}>SOL</Button>
-            <Button onClick={() => setChain(Chain.ETH)}>ETH</Button>
+          <div className="flex justify-between pt-3">
+            <Label text={t('deposit-from')} />
+            <div className="flex space-x-4">
+              <div
+                className={`cursor-pointer ${
+                  chain !== Chain.SOL ? 'grayscale' : ''
+                }`}
+                onClick={() => setChain(Chain.SOL)}
+              >
+                <Image src="/icons/sol.svg" width={24} height={24} />
+              </div>
+              <div
+                className={`cursor-pointer ${
+                  chain !== Chain.ETH ? 'grayscale' : ''
+                }`}
+                onClick={() => setChain(Chain.ETH)}
+              >
+                <Image src="/icons/eth.svg" width={24} height={24} />
+              </div>
+            </div>
           </div>
+          {isEthChain && (
+            <div className="pt-3">
+              <InlineNotification
+                type="info"
+                desc={t('wormhole-deposit-info')}
+              />
+            </div>
+          )}
+
           <div className="mt-4 grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
               <Label text={`${t('deposit')} ${t('token')}`} />

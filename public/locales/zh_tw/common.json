@@ -132,6 +132,8 @@
   "wallet-balance": "Wallet Balance",
   "wallet-disconnected": "Disconnected from wallet",
   "withdraw": "Withdraw",
-  "withdraw-value": "Withdraw Value"
+  "withdraw-value": "Withdraw Value",
+  "deposit-from": "Deposit from",
+  "wormhole-deposit-info": "This is an Ethereum → Solana cross-chain deposit. Powered by Wormhole."
  }
  

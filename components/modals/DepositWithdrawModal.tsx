@@ -21,8 +21,9 @@ const DepositWithdrawModal = ({
   const [activeTab, setActiveTab] = useState(action)
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="h-[448px]">
+    //disable outside click for eth wallet connection
+    <Modal isOpen={isOpen} onClose={onClose} disableOutsideClose={true}>
+      <div className="h-[530px]">
         <div className="pb-2">
           <TabUnderline
             activeValue={activeTab}
