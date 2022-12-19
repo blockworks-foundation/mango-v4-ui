@@ -1,6 +1,7 @@
 import React, {
   Dispatch,
   SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -198,7 +199,7 @@ const SwapReviewRouteInfo = ({
     }
   }, [inputTokenInfo, outputTokenInfo])
 
-  const onSwap = async () => {
+  const onSwap = useCallback(async () => {
     if (!selectedRoute) return
     try {
       const client = mangoStore.getState().client
@@ -246,6 +247,7 @@ const SwapReviewRouteInfo = ({
           noSound: true,
         })
         actions.fetchGroup()
+        actions.fetchSwapHistory(mangoAccount.publicKey.toString())
         await actions.reloadMangoAccount()
       } catch (e: any) {
         console.error('onSwap error: ', e)
@@ -263,7 +265,7 @@ const SwapReviewRouteInfo = ({
     } finally {
       onClose()
     }
-  }
+  }, [amountIn, onClose, selectedRoute, soundSettings])
 
   const [balance, borrowAmount] = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
