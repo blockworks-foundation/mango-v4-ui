@@ -247,7 +247,7 @@ const SwapReviewRouteInfo = ({
           noSound: true,
         })
         actions.fetchGroup()
-        actions.fetchSwapHistory(mangoAccount.publicKey.toString())
+        actions.fetchSwapHistory(mangoAccount.publicKey.toString(), 30000)
         await actions.reloadMangoAccount()
       } catch (e: any) {
         console.error('onSwap error: ', e)
