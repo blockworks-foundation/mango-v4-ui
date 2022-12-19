@@ -66,7 +66,7 @@ const AdvancedTradeForm = () => {
     if (!baseSymbol || !mangoTokens.length) return ''
     const token =
       mangoTokens.find((t) => t.symbol === baseSymbol) ||
-      mangoTokens.find((t) => t.symbol.includes(baseSymbol))
+      mangoTokens.find((t) => t.symbol?.includes(baseSymbol))
     if (token) {
       return token.logoURI
     }
