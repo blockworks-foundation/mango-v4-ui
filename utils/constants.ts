@@ -72,4 +72,9 @@ export const WORMHOLE_RPC_HOSTS = [
   'https://wormhole-v2-mainnet.01node.com',
 ]
 export const SOL_BRIDGE_ADDRESS = 'worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth'
+export const WETH_CONTRACT_ADDRESS =
+  '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 export const MAX_VAA_UPLAOD_RETRIES_SOLANA = 5
+
+export const ETH_DECIMALS = 18
+export const WETH_DECIMALS_SOLANA = 8

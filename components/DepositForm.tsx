@@ -1,4 +1,5 @@
 import {
+  createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddress,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
@@ -25,6 +26,8 @@ import {
   MAX_VAA_UPLAOD_RETRIES_SOLANA,
   SOLANA_TOKEN_BRIDGE_ADDRESS,
   SOL_BRIDGE_ADDRESS,
+  WETH_CONTRACT_ADDRESS,
+  WETH_DECIMALS_SOLANA,
   WORMHOLE_RPC_HOSTS,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
@@ -49,7 +52,6 @@ import { useAccount, useDisconnect, useSigner } from 'wagmi'
 import { getDefaultProvider, utils } from 'ethers'
 import usePrevious from './shared/usePrevious'
 import {
-  transferFromEth,
   getForeignAssetSolana,
   hexToUint8Array,
   nativeToHexString,
@@ -60,8 +62,9 @@ import {
   CHAIN_ID_ETH,
   CHAIN_ID_SOLANA,
   redeemOnSolana,
+  transferFromEthNative,
 } from '@certusone/wormhole-sdk'
-import { PublicKey } from '@solana/web3.js'
+import { PublicKey, Transaction } from '@solana/web3.js'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -99,15 +102,13 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
 
   //for now we only use ETH
   //other tokens would need better abstraction
-  //decimals on sol chain
-  const ETH_DECIMALS = 8
   const [chain, setChain] = useState(Chain.SOL)
   const { open } = useWeb3Modal()
   const { isConnected, address } = useAccount()
   const previousAddress = usePrevious(address)
   const [ethBalance, setEthBalance] = useState({
     maxAmount: 0,
-    maxDecimals: ETH_DECIMALS,
+    maxDecimals: WETH_DECIMALS_SOLANA,
   })
   const { disconnect } = useDisconnect()
   const { data: signer } = useSigner()
@@ -119,11 +120,25 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       const balance = await provider.getBalance(address!)
       const balanceInEth = utils.formatEther(balance)
       setEthBalance({
-        maxAmount: Number(floorToDecimal(balanceInEth, ETH_DECIMALS).toFixed()),
-        maxDecimals: ETH_DECIMALS,
+        maxAmount: Number(
+          floorToDecimal(balanceInEth, WETH_DECIMALS_SOLANA).toFixed()
+        ),
+        maxDecimals: WETH_DECIMALS_SOLANA,
       })
     }
-    if (address && isEthChain && !ethBalance.maxAmount) {
+    console.log(
+      address &&
+        isEthChain &&
+        !ethBalance.maxAmount &&
+        previousAddress !== address
+    )
+    if (
+      address &&
+      isEthChain &&
+      !ethBalance.maxAmount &&
+      previousAddress !== address
+    ) {
+      console.log('123')
       getEthBalance()
     }
   }, [address, isEthChain, ethBalance, previousAddress])
@@ -244,9 +259,8 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       setSubmitting(false)
     }
   }
-
   const handleEthChainDeposit = async () => {
-    const signTransaction = mangoStore.getState().signTransaction
+    const anchorProvider = mangoStore.getState().provider
     const connection = mangoStore.getState().connection
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -255,28 +269,50 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
 
     setSubmitting(true)
     try {
+      const walletPk = wallet!.adapter.publicKey!
       // determine destination address - an associated token account
       const solanaMintKey = new PublicKey(
         (await getForeignAssetSolana(
           connection,
           SOLANA_TOKEN_BRIDGE_ADDRESS,
           CHAIN_ID_ETH,
-          hexToUint8Array(nativeToHexString(address, CHAIN_ID_ETH) || '')
+          hexToUint8Array(
+            nativeToHexString(WETH_CONTRACT_ADDRESS, CHAIN_ID_ETH) || ''
+          )
         )) || ''
       )
+
       const recipientAddress = await getAssociatedTokenAddress(
         solanaMintKey,
-        wallet!.adapter.publicKey!
+        walletPk
       )
-      // Submit transaction - results in a Wormhole message being published
-      const receipt = await transferFromEth(
+
+      try {
+        await connection.getTokenAccountBalance(recipientAddress)
+      } catch (e) {
+        const ix = await createAssociatedTokenAccountIdempotentInstruction(
+          walletPk,
+          walletPk,
+          solanaMintKey
+        )
+        const tx = new Transaction()
+        const recentBlock = await connection.getLatestBlockhash()
+        tx.recentBlockhash = recentBlock.blockhash
+        tx.feePayer = walletPk
+        tx.add(ix)
+        const signed = await anchorProvider.wallet.signTransaction(tx)
+        const txid = await connection.sendRawTransaction(signed.serialize())
+        await connection.confirmTransaction(txid)
+      }
+      const transferAmount = utils.parseEther(inputAmount)
+      const receipt = await transferFromEthNative(
         ETH_TOKEN_BRIDGE_ADDRESS,
         signer!,
-        address,
-        parseFloat(inputAmount),
+        transferAmount,
         CHAIN_ID_SOLANA,
         recipientAddress.toBuffer()
       )
+
       // Get the sequence number and emitter address required to fetch the signedVAA of our message
       const sequence = parseSequenceFromLogEth(receipt, ETH_BRIDGE_ADDRESS)
       const emitterAddress = getEmitterAddressEth(ETH_TOKEN_BRIDGE_ADDRESS)
@@ -285,15 +321,18 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         WORMHOLE_RPC_HOSTS,
         CHAIN_ID_ETH,
         emitterAddress,
-        sequence,
-        {},
-        750,
-        10
+        sequence
       )
       // On Solana, we have to post the signedVAA ourselves
       await postVaaSolanaWithRetry(
         connection,
-        signTransaction,
+        //do not change this to wallet.signTransaction because of this binding inside signTransaction
+        async function (transaction) {
+          const signed = await anchorProvider.wallet.signTransaction(
+            transaction
+          )
+          return signed
+        },
         SOL_BRIDGE_ADDRESS,
         wallet!.adapter.publicKey!,
         Buffer.from(vaaBytesResponse.vaaBytes),
@@ -307,7 +346,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         wallet.adapter.publicKey!,
         vaaBytesResponse.vaaBytes
       )
-      const signed = await signTransaction(transaction)
+      const signed = await anchorProvider.wallet.signTransaction(transaction)
       const txid = await connection.sendRawTransaction(signed.serialize())
       await connection.confirmTransaction(txid)
     } catch (e: any) {
