@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import {
   ArrowDownRightIcon,
@@ -82,9 +82,8 @@ const AccountActions = () => {
           icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
           size="medium"
         >
-          <LinkButton
-            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          <ActionsButton
+            mangoAccount={mangoAccount!}
             onClick={() =>
               handleCopyAddress(
                 mangoAccount!,
@@ -96,31 +95,28 @@ const AccountActions = () => {
           >
             <DocumentDuplicateIcon className="h-4 w-4" />
             <span className="ml-2">{t('copy-address')}</span>
-          </LinkButton>
-          <LinkButton
-            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          </ActionsButton>
+          <ActionsButton
+            mangoAccount={mangoAccount!}
             onClick={() => setShowEditAccountModal(true)}
           >
             <PencilIcon className="h-4 w-4" />
             <span className="ml-2">{t('edit-account')}</span>
-          </LinkButton>
-          <LinkButton
-            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          </ActionsButton>
+          <ActionsButton
+            mangoAccount={mangoAccount!}
             onClick={() => setShowDelegateModal(true)}
           >
             <UsersIcon className="h-4 w-4" />
             <span className="ml-2">{t('delegate-account')}</span>
-          </LinkButton>
-          <LinkButton
-            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          </ActionsButton>
+          <ActionsButton
+            mangoAccount={mangoAccount!}
             onClick={() => setShowCloseAccountModal(true)}
           >
             <TrashIcon className="h-4 w-4" />
             <span className="ml-2">{t('close-account')}</span>
-          </LinkButton>
+          </ActionsButton>
         </IconDropMenu>
       </div>
       {showCloseAccountModal ? (
@@ -160,3 +156,23 @@ const AccountActions = () => {
 }
 
 export default AccountActions
+
+const ActionsButton = ({
+  children,
+  mangoAccount,
+  onClick,
+}: {
+  children: ReactNode
+  mangoAccount: MangoAccount
+  onClick: () => void
+}) => {
+  return (
+    <LinkButton
+      className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
+      disabled={!mangoAccount}
+      onClick={onClick}
+    >
+      {children}
+    </LinkButton>
+  )
+}

@@ -507,7 +507,7 @@ const mangoStore = create<MangoStore>()(
             })
           } catch {
             notify({
-              title: 'Failed to account activity feed',
+              title: 'Failed to fetch account activity feed',
               type: 'error',
             })
           } finally {
