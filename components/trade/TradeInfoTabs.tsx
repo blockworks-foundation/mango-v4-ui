@@ -9,6 +9,7 @@ import PerpPositions from './PerpPositions'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
+import TradeHistory from './TradeHistory'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
@@ -27,6 +28,7 @@ const TradeInfoTabs = () => {
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', unsettledTradeCount],
       ['Positions', unsettledPerpPositions.length],
+      ['Trade History', 0],
     ]
   }, [openOrders, unsettledPerpPositions, unsettledSpotBalances])
 
@@ -50,6 +52,7 @@ const TradeInfoTabs = () => {
         />
       ) : null}
       {selectedTab === 'Positions' ? <PerpPositions /> : null}
+      {selectedTab === 'Trade History' ? <TradeHistory /> : null}
     </div>
   )
 }

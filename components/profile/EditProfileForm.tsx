@@ -132,7 +132,7 @@ const EditProfileForm = ({
       <div className="my-6 flex justify-center">
         <div className="relative ">
           <IconButton
-            className="absolute -top-2 -right-2"
+            className="absolute -top-2 -right-2 bg-th-button md:hover:bg-th-button-hover"
             size="small"
             onClick={onEditProfileImage}
           >

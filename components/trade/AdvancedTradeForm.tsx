@@ -325,11 +325,8 @@ const AdvancedTradeForm = () => {
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (
-      !mangoAccount ||
-      !group ||
-      !Number.isInteger(Number(tradeForm.baseSize))
-    )
+
+    if (!mangoAccount || !group || !Number.isFinite(Number(tradeForm.baseSize)))
       return 100
 
     let simulatedHealthRatio = 0
@@ -339,13 +336,13 @@ const AdvancedTradeForm = () => {
           tradeForm.side === 'sell'
             ? mangoAccount.simHealthRatioWithSerum3AskUiChanges(
                 group,
-                parseFloat(tradeForm.baseSize),
+                Number(tradeForm.baseSize),
                 selectedMarket.serumMarketExternal,
                 HealthType.maint
               )
             : mangoAccount.simHealthRatioWithSerum3BidUiChanges(
                 group,
-                parseFloat(tradeForm.baseSize),
+                Number(tradeForm.baseSize),
                 selectedMarket.serumMarketExternal,
                 HealthType.maint
               )
@@ -372,7 +369,7 @@ const AdvancedTradeForm = () => {
       : simulatedHealthRatio < 0
       ? 0
       : Math.trunc(simulatedHealthRatio)
-  }, [selectedMarket, tradeForm])
+  }, [selectedMarket, tradeForm.baseSize, tradeForm.side])
 
   return (
     <div>

@@ -1,6 +1,7 @@
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import {
   ArrowDownTrayIcon,
+  ArrowLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
@@ -266,6 +267,12 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
         show={showTokenList}
       >
+        <button
+          onClick={() => setShowTokenList(false)}
+          className={`absolute left-4 top-4 z-40 w-6 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
+        >
+          <ArrowLeftIcon className={`h-6 w-6`} />
+        </button>
         <h2 className="mb-4 text-center text-lg">
           {t('select-deposit-token')}
         </h2>

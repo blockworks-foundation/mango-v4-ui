@@ -1,7 +1,6 @@
 import { ReactNode, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import TradeIcon from '../icons/TradeIcon'
 import { useTranslation } from 'next-i18next'
 import { IconButton } from '../shared/Button'
 import {
@@ -14,6 +13,7 @@ import {
   CurrencyDollarIcon,
   Cog8ToothIcon,
   BuildingLibraryIcon,
+  ArrowTrendingUpIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 
@@ -66,7 +66,7 @@ const BottomBar = () => {
             asPath === '/trade' ? 'text-th-active' : 'text-th-fgd-3'
           } col-span-1 flex cursor-pointer flex-col items-center`}
         >
-          <TradeIcon className="mb-1 h-4 w-4" />
+          <ArrowTrendingUpIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
         </Link>
         <Link

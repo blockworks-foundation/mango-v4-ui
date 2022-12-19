@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import {
   ArrowDownRightIcon,
@@ -18,12 +18,24 @@ import { notify } from 'utils/notifications'
 import { abbreviateAddress } from 'utils/formatting'
 import {
   HealthType,
+  MangoAccount,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
+
+export const handleCopyAddress = (
+  mangoAccount: MangoAccount,
+  successMessage: string
+) => {
+  copyToClipboard(mangoAccount.publicKey.toString())
+  notify({
+    title: successMessage,
+    type: 'success',
+  })
+}
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
@@ -34,16 +46,6 @@ const AccountActions = () => {
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [showRepayModal, setShowRepayModal] = useState(false)
   const [showDelegateModal, setShowDelegateModal] = useState(false)
-
-  const handleCopyAddress = (address: string) => {
-    copyToClipboard(address)
-    notify({
-      title: t('copy-address-success', {
-        pk: abbreviateAddress(mangoAccount!.publicKey),
-      }),
-      type: 'success',
-    })
-  }
 
   const hasBorrows = useMemo(() => {
     if (!mangoAccount || !group) return false
@@ -80,40 +82,41 @@ const AccountActions = () => {
           icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
           size="medium"
         >
-          <LinkButton
-            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          <ActionsButton
+            mangoAccount={mangoAccount!}
             onClick={() =>
-              handleCopyAddress(mangoAccount!.publicKey.toString())
+              handleCopyAddress(
+                mangoAccount!,
+                t('copy-address-success', {
+                  pk: abbreviateAddress(mangoAccount!.publicKey),
+                })
+              )
             }
           >
             <DocumentDuplicateIcon className="h-4 w-4" />
             <span className="ml-2">{t('copy-address')}</span>
-          </LinkButton>
-          <LinkButton
-            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          </ActionsButton>
+          <ActionsButton
+            mangoAccount={mangoAccount!}
             onClick={() => setShowEditAccountModal(true)}
           >
             <PencilIcon className="h-4 w-4" />
             <span className="ml-2">{t('edit-account')}</span>
-          </LinkButton>
-          <LinkButton
-            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          </ActionsButton>
+          <ActionsButton
+            mangoAccount={mangoAccount!}
             onClick={() => setShowDelegateModal(true)}
           >
             <UsersIcon className="h-4 w-4" />
             <span className="ml-2">{t('delegate-account')}</span>
-          </LinkButton>
-          <LinkButton
-            className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          </ActionsButton>
+          <ActionsButton
+            mangoAccount={mangoAccount!}
             onClick={() => setShowCloseAccountModal(true)}
           >
             <TrashIcon className="h-4 w-4" />
             <span className="ml-2">{t('close-account')}</span>
-          </LinkButton>
+          </ActionsButton>
         </IconDropMenu>
       </div>
       {showCloseAccountModal ? (
@@ -153,3 +156,23 @@ const AccountActions = () => {
 }
 
 export default AccountActions
+
+const ActionsButton = ({
+  children,
+  mangoAccount,
+  onClick,
+}: {
+  children: ReactNode
+  mangoAccount: MangoAccount
+  onClick: () => void
+}) => {
+  return (
+    <LinkButton
+      className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
+      disabled={!mangoAccount}
+      onClick={onClick}
+    >
+      {children}
+    </LinkButton>
+  )
+}
