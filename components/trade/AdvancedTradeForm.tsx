@@ -342,7 +342,7 @@ const AdvancedTradeForm = () => {
               )
             : mangoAccount.simHealthRatioWithSerum3BidUiChanges(
                 group,
-                Number(tradeForm.baseSize),
+                Number(tradeForm.quoteSize),
                 selectedMarket.serumMarketExternal,
                 HealthType.maint
               )
