@@ -14,7 +14,6 @@ import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import { formatDecimal } from 'utils/numbers'
 import TableMarketName from './TableMarketName'
@@ -83,7 +82,6 @@ const formatTradeHistory = (mangoAccountPk: PublicKey, tradeHistory: any[]) => {
 }
 
 const TradeHistory = () => {
-  const { t } = useTranslation(['common', 'trade'])
   const { connected } = useWallet()
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
@@ -201,7 +199,7 @@ const TradeHistory = () => {
   ) : (
     <div className="flex flex-col items-center p-8">
       <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('trade:connect-positions')}</p>
+      <p>Connect to view your trade history</p>
     </div>
   )
 }

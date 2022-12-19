@@ -17,14 +17,14 @@ const NOTIFICATION_POSITIONS = [
 
 const LANGS = [
   { locale: 'en', name: 'english', description: 'english' },
-  { locale: 'ru', name: 'russian', description: 'russian' },
-  { locale: 'es', name: 'spanish', description: 'spanish' },
-  {
-    locale: 'zh_tw',
-    name: 'chinese-traditional',
-    description: 'traditional chinese',
-  },
-  { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
+  // { locale: 'ru', name: 'russian', description: 'russian' },
+  // { locale: 'es', name: 'spanish', description: 'spanish' },
+  // {
+  //   locale: 'zh_tw',
+  //   name: 'chinese-traditional',
+  //   description: 'traditional chinese',
+  // },
+  // { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
 ]
 
 export const THEMES = [

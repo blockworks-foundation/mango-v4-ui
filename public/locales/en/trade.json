@@ -4,7 +4,7 @@
     "book": "Book",
     "cancel-order-error": "Failed to cancel order",
     "connect-orders": "Connect to view your open orders",
-    "connect-positions": "Connect to view your positions",
+    "connect-positions": "Connect to view your perp positions",
     "connect-unsettled": "Connect to view your unsettled funds",
     "entry-price": "Entry Price",
     "est-slippage": "Est. Slippage",
