@@ -1,5 +1,5 @@
 import { CLUSTER } from '@store/mangoStore'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 const SANCTIONED_COUNTRIES = [
   ['AG', 'Antigua and Barbuda'],
@@ -13,7 +13,6 @@ const SANCTIONED_COUNTRIES = [
   ['CU', 'Cuba'],
   ['CD', 'Democratic Republic of Congo'],
   ['EC', 'Ecuador'],
-  ['GB', 'United Kingdom'],
   ['IR', 'Iran'],
   ['IQ', 'Iraq'],
   ['LR', 'Liberia'],
@@ -42,24 +41,24 @@ export default function useIpAddress() {
   const [spotAllowed, setSpotAllowed] = useState(false)
   const [ipCountry, setIpCountry] = useState('')
 
-  useEffect(() => {
-    const checkIpLocation = async () => {
-      const response = await fetch(
-        `https://country-code.mangomarkets.workers.dev`
-      )
-      const parsedResponse = await response.json()
-      const ipCountryCode = parsedResponse ? parsedResponse?.country : ''
+  const checkIpLocation = useCallback(async () => {
+    const response = await fetch(
+      `https://country-code.mangomarkets.workers.dev`
+    )
+    const parsedResponse = await response.json()
+    const ipCountryCode = parsedResponse ? parsedResponse?.country : ''
 
-      setIpCountry(ipCountryCode)
+    setIpCountry(ipCountryCode)
 
-      if (ipCountryCode) {
-        setIpAllowed(!SANCTIONED_COUNTRY_CODES.includes(ipCountryCode))
-        setSpotAllowed(SPOT_ALLOWED.includes(ipCountryCode))
-      }
+    if (ipCountryCode) {
+      setIpAllowed(!SANCTIONED_COUNTRY_CODES.includes(ipCountryCode))
+      setSpotAllowed(SPOT_ALLOWED.includes(ipCountryCode))
     }
-
-    checkIpLocation()
   }, [])
+
+  useEffect(() => {
+    checkIpLocation()
+  }, [checkIpLocation])
 
   if (CLUSTER === 'mainnet-beta') {
     return { ipAllowed, spotAllowed, ipCountry }

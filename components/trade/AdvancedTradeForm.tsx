@@ -39,6 +39,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import Slippage from './Slippage'
 import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
+import useIpAddress from 'hooks/useIpAddress'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
@@ -55,6 +56,7 @@ const AdvancedTradeForm = () => {
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
+  const { ipAllowed, ipCountry } = useIpAddress()
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[0]
@@ -557,27 +559,41 @@ const AdvancedTradeForm = () => {
         ) : null}
       </div>
       <div className="mt-6 flex px-3 md:px-4">
-        <Button
-          onClick={handlePlaceOrder}
-          className={`flex w-full items-center justify-center text-white ${
-            tradeForm.side === 'buy'
-              ? 'bg-th-up-dark md:hover:bg-th-up'
-              : 'bg-th-down-dark md:hover:bg-th-down'
-          }`}
-          disabled={false}
-          size="large"
-        >
-          {!placingOrder ? (
-            <span className="capitalize">
-              {t('trade:place-order', { side: tradeForm.side })}
-            </span>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Loading />
-              <span>{t('trade:placing-order')}</span>
+        {ipAllowed ? (
+          <Button
+            onClick={handlePlaceOrder}
+            className={`flex w-full items-center justify-center text-white ${
+              tradeForm.side === 'buy'
+                ? 'bg-th-up-dark md:hover:bg-th-up'
+                : 'bg-th-down-dark md:hover:bg-th-down'
+            }`}
+            disabled={false}
+            size="large"
+          >
+            {!placingOrder ? (
+              <span className="capitalize">
+                {t('trade:place-order', { side: tradeForm.side })}
+              </span>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Loading />
+                <span>{t('trade:placing-order')}</span>
+              </div>
+            )}
+          </Button>
+        ) : (
+          <div className="flex-grow">
+            <div className="flex">
+              <Button disabled className="flex-grow">
+                <span>
+                  {t('country-not-allowed', {
+                    country: ipCountry ? `(${ipCountry})` : '(Unknown)',
+                  })}
+                </span>
+              </Button>
             </div>
-          )}
-        </Button>
+          </div>
+        )}
       </div>
       <div className="mt-4 space-y-2 px-3 md:px-4 lg:mt-6">
         {tradeForm.price && tradeForm.baseSize ? (

@@ -45,6 +45,7 @@ import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
 import Tooltip from '@components/shared/Tooltip'
+import useIpAddress from 'hooks/useIpAddress'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -64,6 +65,7 @@ const SwapForm = () => {
   const [showConfirm, setShowConfirm] = useState(false)
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
+  const { ipAllowed, ipCountry } = useIpAddress()
 
   const {
     margin: useMargin,
@@ -418,14 +420,30 @@ const SwapForm = () => {
             useMargin={useMargin}
           />
         )}
-        <SwapFormSubmitButton
-          loadingSwapDetails={loadingSwapDetails}
-          useMargin={useMargin}
-          setShowConfirm={setShowConfirm}
-          amountIn={amountInAsDecimal}
-          inputSymbol={inputBank?.name}
-          amountOut={selectedRoute ? amountOutAsDecimal.toNumber() : undefined}
-        />
+        {ipAllowed ? (
+          <SwapFormSubmitButton
+            loadingSwapDetails={loadingSwapDetails}
+            useMargin={useMargin}
+            setShowConfirm={setShowConfirm}
+            amountIn={amountInAsDecimal}
+            inputSymbol={inputBank?.name}
+            amountOut={
+              selectedRoute ? amountOutAsDecimal.toNumber() : undefined
+            }
+          />
+        ) : (
+          <div className="mt-6 flex-grow">
+            <div className="flex">
+              <Button disabled className="flex-grow">
+                <span>
+                  {t('country-not-allowed', {
+                    country: ipCountry ? `(${ipCountry})` : '(Unknown)',
+                  })}
+                </span>
+              </Button>
+            </div>
+          </div>
+        )}
         {group && inputBank ? (
           <div className="mt-4">
             <TokenVaultWarnings bank={inputBank} />

@@ -37,6 +37,8 @@
   "connect-helper": "Connect to get started",
   "copy-address": "Copy Address",
   "copy-address-success": "Copied address: {{pk}}",
+  "country-not-allowed": "Country {{country}} Not Allowed",
+  "country-not-allowed-tooltip": "You are using an open-source frontend facilitated by the Mango DAO. As such, it restricts access to certain regions out of an abundance of caution, due to regulatory uncertainty.",
   "create-account": "Create Account",
   "creating-account": "Creating Account...",
   "cumulative-interest-value": "Cumulative Interest Earned",
