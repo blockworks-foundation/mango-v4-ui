@@ -193,7 +193,7 @@ const MangoAccountsListModal = ({
               onClick={() => setShowNewAccountForm(true)}
             >
               <PlusCircleIcon className="h-5 w-5" />
-              <span className="ml-2">Add a new sub-account</span>
+              <span className="ml-2">{t('add-new-account')}</span>
             </LinkButton>
           </div>
           <EnterRightExitLeft
