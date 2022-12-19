@@ -3,7 +3,6 @@ import { PublicKey } from '@solana/web3.js'
 import {
   ArrowDownIcon,
   Cog8ToothIcon,
-  MagnifyingGlassIcon,
   ExclamationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
@@ -266,9 +265,9 @@ const SwapForm = () => {
       // showBackground
       className="relative overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
     >
-      <div className="p-6 pt-3">
+      <div className="px-6 pb-8 pt-3">
         <Transition
-          className="thin-scroll absolute top-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
+          className="thin-scroll absolute top-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 pb-0"
           show={showConfirm}
           enter="transition ease-in duration-300"
           enterFrom="translate-x-full"
@@ -284,6 +283,7 @@ const SwapForm = () => {
             routes={routes}
             selectedRoute={selectedRoute}
             setSelectedRoute={setSelectedRoute}
+            maintProjectedHealth={maintProjectedHealth}
           />
         </Transition>
         <EnterBottomExitBottom
@@ -506,10 +506,7 @@ const SwapFormSubmitButton = ({
             No routes found
           </div>
         ) : (
-          <div className="flex items-center">
-            <MagnifyingGlassIcon className="mr-2 h-5 w-5" />
-            {t('swap:review-swap')}
-          </div>
+          <span>{t('swap:review-swap')}</span>
         )
       ) : (
         <div className="flex items-center">
