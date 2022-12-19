@@ -41,13 +41,13 @@ import {
 
 import { Web3Modal } from '@web3modal/react'
 import { configureChains, createClient, WagmiConfig } from 'wagmi'
-import { arbitrum, mainnet, polygon } from 'wagmi/chains'
+import { mainnet } from 'wagmi/chains'
 // Do not add hooks to this component that will cause unnecessary rerenders
 // Top level state hydrating/updating should go in MangoProvider
 
 // Create a client
 const queryClient = new QueryClient()
-const chains = [arbitrum, mainnet, polygon]
+const chains = [mainnet]
 
 // Wagmi client
 const { provider } = configureChains(chains, [

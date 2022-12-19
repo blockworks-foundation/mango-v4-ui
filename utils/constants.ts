@@ -54,3 +54,22 @@ export const MIN_SOL_BALANCE = 0.04
 
 export const ACCOUNT_ACTION_MODAL_HEIGHT = '448px'
 export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '416px'
+
+//ETH wormhole transfers
+//https://book.wormhole.com/reference/contracts.html
+
+export const ETH_BRIDGE_ADDRESS = '0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B'
+export const ETH_TOKEN_BRIDGE_ADDRESS =
+  '0x3ee18B2214AFF97000D974cf647E7C347E8fa585'
+export const SOLANA_TOKEN_BRIDGE_ADDRESS =
+  'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
+export const WORMHOLE_RPC_HOSTS = [
+  'https://wormhole-v2-mainnet-api.certus.one',
+  'https://wormhole.inotel.ro',
+  'https://wormhole-v2-mainnet-api.mcf.rocks',
+  'https://wormhole-v2-mainnet-api.chainlayer.network',
+  'https://wormhole-v2-mainnet-api.staking.fund',
+  'https://wormhole-v2-mainnet.01node.com',
+]
+export const SOL_BRIDGE_ADDRESS = 'worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth'
+export const MAX_VAA_UPLAOD_RETRIES_SOLANA = 5

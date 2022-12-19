@@ -3,7 +3,7 @@ import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
-import { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
@@ -49,6 +49,9 @@ const options = AnchorProvider.defaultOptions()
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
 const wallet = new EmptyWallet(Keypair.generate())
 const DEFAULT_PROVIDER = new AnchorProvider(connection, wallet, options)
+const DEFAULT_SIGN_TRANSACTION = DEFAULT_PROVIDER.wallet.signTransaction
+const DEFAULT_SIGN_ALL_TRANSACTIONS =
+  DEFAULT_PROVIDER.wallet.signAllTransactions
 DEFAULT_PROVIDER.opts.skipPreflight = true
 const DEFAULT_CLIENT = MangoClient.connect(
   DEFAULT_PROVIDER,
@@ -203,6 +206,8 @@ export type MangoStore = {
   }
   connected: boolean
   connection: Connection
+  signTransaction: (tx: Transaction) => Promise<Transaction>
+  signAllTransactions: (txes: Transaction[]) => Promise<Transaction[]>
   group: Group | undefined
   groupLoaded: boolean
   client: MangoClient
@@ -307,7 +312,9 @@ const mangoStore = create<MangoStore>()(
         loading: true,
       },
       connected: false,
-      connection,
+      connection: connection,
+      signAllTransactions: DEFAULT_SIGN_ALL_TRANSACTIONS,
+      signTransaction: DEFAULT_SIGN_TRANSACTION,
       group: undefined,
       groupLoaded: false,
       client: DEFAULT_CLIENT,
@@ -839,6 +846,8 @@ const mangoStore = create<MangoStore>()(
             )
             set((s) => {
               s.client = client
+              s.signAllTransactions = provider.wallet.signAllTransactions
+              s.signTransaction = provider.wallet.signTransaction
             })
           } catch (e: any) {
             if (e.name.includes('WalletLoadError')) {

@@ -1,4 +1,7 @@
-import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
+import {
+  getAssociatedTokenAddress,
+  toUiDecimalsForQuote,
+} from '@blockworks-foundation/mango-v4'
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -16,7 +19,13 @@ import mangoStore from '@store/mangoStore'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
   ALPHA_DEPOSIT_LIMIT,
+  ETH_BRIDGE_ADDRESS,
+  ETH_TOKEN_BRIDGE_ADDRESS,
   INPUT_TOKEN_DEFAULT,
+  MAX_VAA_UPLAOD_RETRIES_SOLANA,
+  SOLANA_TOKEN_BRIDGE_ADDRESS,
+  SOL_BRIDGE_ADDRESS,
+  WORMHOLE_RPC_HOSTS,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
 import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
@@ -36,9 +45,24 @@ import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useWeb3Modal } from '@web3modal/react'
-import { useAccount, useDisconnect } from 'wagmi'
+import { useAccount, useDisconnect, useSigner } from 'wagmi'
 import { getDefaultProvider, utils } from 'ethers'
 import usePrevious from './shared/usePrevious'
+import {
+  transferFromEth,
+  getForeignAssetSolana,
+  hexToUint8Array,
+  nativeToHexString,
+  parseSequenceFromLogEth,
+  getEmitterAddressEth,
+  getSignedVAAWithRetry,
+  postVaaSolanaWithRetry,
+  CHAIN_ID_ETH,
+  CHAIN_ID_SOLANA,
+  redeemOnSolana,
+} from '@certusone/wormhole-sdk'
+import { PublicKey } from '@solana/web3.js'
+
 interface DepositFormProps {
   onSuccess: () => void
   token?: string
@@ -86,6 +110,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     maxDecimals: ETH_DECIMALS,
   })
   const { disconnect } = useDisconnect()
+  const { data: signer } = useSigner()
   const isEthWalletConnected = isConnected
   const isEthChain = chain === Chain.ETH
   useEffect(() => {
@@ -182,7 +207,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     setShowTokenList(val)
   }
 
-  const handleDeposit = useCallback(async () => {
+  const handleSolanaChainDeposit = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
@@ -218,7 +243,92 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       console.error('Error depositing:', e)
       setSubmitting(false)
     }
-  }, [bank, wallet, inputAmount])
+  }
+
+  const handleEthChainDeposit = async () => {
+    const signTransaction = mangoStore.getState().signTransaction
+    const connection = mangoStore.getState().connection
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+
+    if (!mangoAccount || !group || !bank || !address || !wallet) return
+
+    setSubmitting(true)
+    try {
+      // determine destination address - an associated token account
+      const solanaMintKey = new PublicKey(
+        (await getForeignAssetSolana(
+          connection,
+          SOLANA_TOKEN_BRIDGE_ADDRESS,
+          CHAIN_ID_ETH,
+          hexToUint8Array(nativeToHexString(address, CHAIN_ID_ETH) || '')
+        )) || ''
+      )
+      const recipientAddress = await getAssociatedTokenAddress(
+        solanaMintKey,
+        wallet!.adapter.publicKey!
+      )
+      // Submit transaction - results in a Wormhole message being published
+      const receipt = await transferFromEth(
+        ETH_TOKEN_BRIDGE_ADDRESS,
+        signer!,
+        address,
+        parseFloat(inputAmount),
+        CHAIN_ID_SOLANA,
+        recipientAddress.toBuffer()
+      )
+      // Get the sequence number and emitter address required to fetch the signedVAA of our message
+      const sequence = parseSequenceFromLogEth(receipt, ETH_BRIDGE_ADDRESS)
+      const emitterAddress = getEmitterAddressEth(ETH_TOKEN_BRIDGE_ADDRESS)
+      // Fetch the signedVAA from the Wormhole Network (this may require retries while you wait for confirmation)
+      const vaaBytesResponse = await getSignedVAAWithRetry(
+        WORMHOLE_RPC_HOSTS,
+        CHAIN_ID_ETH,
+        emitterAddress,
+        sequence,
+        {},
+        750,
+        10
+      )
+      // On Solana, we have to post the signedVAA ourselves
+      await postVaaSolanaWithRetry(
+        connection,
+        signTransaction,
+        SOL_BRIDGE_ADDRESS,
+        wallet!.adapter.publicKey!,
+        Buffer.from(vaaBytesResponse.vaaBytes),
+        MAX_VAA_UPLAOD_RETRIES_SOLANA
+      )
+      // Finally, redeem on Solana
+      const transaction = await redeemOnSolana(
+        connection,
+        SOL_BRIDGE_ADDRESS,
+        SOLANA_TOKEN_BRIDGE_ADDRESS,
+        wallet.adapter.publicKey!,
+        vaaBytesResponse.vaaBytes
+      )
+      const signed = await signTransaction(transaction)
+      const txid = await connection.sendRawTransaction(signed.serialize())
+      await connection.confirmTransaction(txid)
+    } catch (e: any) {
+      notify({
+        title: 'Transaction failed',
+        description: e.message,
+        txid: e?.txid,
+        type: 'error',
+      })
+      console.error('Error depositing:', e)
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeposit = async () => {
+    if (chain === Chain.ETH) {
+      handleEthChainDeposit()
+      return
+    }
+    handleSolanaChainDeposit()
+  }
 
   // TODO extract into a shared hook for UserSetup.tsx
   const banks = useMemo(() => {
