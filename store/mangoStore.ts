@@ -472,6 +472,13 @@ const mangoStore = create<MangoStore>()(
           const connectedMangoAccountPk = mangoStore
             .getState()
             .mangoAccount.current?.publicKey.toString()
+
+          if (offset === 0) {
+            set((state) => {
+              state.activityFeed.feed = []
+            })
+          }
+
           try {
             const response = await fetch(
               `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
