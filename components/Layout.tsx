@@ -86,7 +86,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           </div>
 
           <div
-            className={`w-full transition-all duration-${sideBarAnimationDuration} ease-in-out ${
+            className={`w-full overflow-x-hidden transition-all duration-${sideBarAnimationDuration} ease-in-out ${
               isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-48 xl:pl-52'
             }`}
           >

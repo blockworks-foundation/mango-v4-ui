@@ -166,7 +166,6 @@ const TradeAdvancedPage = () => {
         rowHeight={1}
         isDraggable={!uiLocked}
         isResizable={!uiLocked}
-        measureBeforeMount
         containerPadding={[0, 0]}
         margin={[0, 0]}
         useCSSTransforms
