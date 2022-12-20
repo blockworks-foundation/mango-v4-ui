@@ -385,7 +385,7 @@ const AccountPage = () => {
                     ),
                     true
                   )
-                : (0).toFixed(2)}
+                : `$${(0).toFixed(2)}`}
             </p>
             <span className="text-xs font-normal text-th-fgd-4">
               <Tooltip
