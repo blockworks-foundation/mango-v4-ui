@@ -62,29 +62,6 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
 
-  const bank = useMemo(() => {
-    const group = mangoStore.getState().group
-    return group?.banksMapByName.get(depositToken)?.[0]
-  }, [depositToken])
-
-  const exceedsAlphaMax = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    const group = mangoStore.getState().group
-    if (!group || !mangoAccount) return
-    if (
-      mangoAccount.owner.toString() ===
-      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
-    )
-      return false
-    const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group).toNumber()
-    )
-    return (
-      parseFloat(depositAmount) * (bank?.uiPrice || 1) > ALPHA_DEPOSIT_LIMIT ||
-      accountValue > ALPHA_DEPOSIT_LIMIT
-    )
-  }, [depositAmount, bank])
-
   useEffect(() => {
     if (connected) {
       setShowSetupStep(2)
@@ -192,8 +169,25 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   }, [group?.banksMapByName, walletTokens])
 
   const depositBank = useMemo(() => {
-    return banks.find((b) => b.key === depositToken)
-  }, [depositToken])
+    return banks.find((b) => b.key === depositToken)?.value[0]
+  }, [depositToken, banks])
+
+  const exceedsAlphaMax = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!group || !mangoAccount) return
+    if (
+      mangoAccount.owner.toString() ===
+      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
+    )
+      return false
+    const accountValue = toUiDecimalsForQuote(
+      mangoAccount.getEquity(group)!.toNumber()
+    )
+    return (
+      parseFloat(depositAmount) * (depositBank?.uiPrice || 1) + accountValue >
+        ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
+    )
+  }, [depositAmount, depositBank, group])
 
   const tokenMax = useMemo(() => {
     const bank = banks.find((bank) => bank.key === depositToken)
@@ -472,8 +466,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     <p className="font-mono">
                       {depositBank
                         ? formatFixedDecimals(
-                            depositBank.value[0].uiPrice *
-                              Number(depositAmount),
+                            depositBank.uiPrice * Number(depositAmount),
                             true
                           )
                         : ''}
