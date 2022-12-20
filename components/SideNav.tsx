@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import TradeIcon from './icons/TradeIcon'
 import {
   EllipsisHorizontalIcon,
   BuildingLibraryIcon,
@@ -10,6 +9,7 @@ import {
   ChartBarIcon,
   Cog8ToothIcon,
   ArrowsRightLeftIcon,
+  ArrowTrendingUpIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -87,7 +87,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             <MenuItem
               active={pathname === '/trade'}
               collapsed={collapsed}
-              icon={<TradeIcon className="h-5 w-5" />}
+              icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
               title={t('trade')}
               pagePath="/trade"
             />
@@ -167,7 +167,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             alignBottom
             hideIconBg
           >
-            <div className="px-4 pb-4 pt-2">
+            <div className="px-4 py-2">
               <MangoAccountSummary />
             </div>
           </ExpandableMenuItem>

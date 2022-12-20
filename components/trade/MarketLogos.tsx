@@ -60,7 +60,7 @@ const MarketLogos = ({
       <div className="absolute left-0 top-0 z-10">
         <LogoWithFallback
           alt=""
-          className="drop-shadow-md"
+          className="flex-shrink-0 drop-shadow-md"
           width={small ? '16' : '20'}
           height={small ? '16' : '20'}
           src={logos.baseLogoURI || `/icons/${logos?.name?.toLowerCase()}.svg`}
@@ -75,14 +75,16 @@ const MarketLogos = ({
         {logos.quoteLogoURI && market instanceof Serum3Market ? (
           <Image
             alt=""
-            className="opacity-60"
+            className="flex-shrink-0 opacity-60"
             width={small ? '16' : '20'}
             height={small ? '16' : '20'}
             src={logos.quoteLogoURI}
           />
         ) : market instanceof PerpMarket ? null : (
           <QuestionMarkCircleIcon
-            className={`${small ? 'h-4 w-4' : 'h-5 w-5'} text-th-fgd-3`}
+            className={`${
+              small ? 'h-4 w-4' : 'h-5 w-5'
+            } flex-shrink-0 text-th-fgd-3`}
           />
         )}
       </div>

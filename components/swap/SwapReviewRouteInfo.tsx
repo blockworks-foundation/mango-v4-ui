@@ -1,6 +1,7 @@
 import React, {
   Dispatch,
   SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -23,29 +24,26 @@ import {
   ArrowLeftIcon,
   PencilIcon,
   ArrowsRightLeftIcon,
-  CheckCircleIcon,
   ArrowRightIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from '../../utils/numbers'
+import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 // import { Transaction } from '@solana/web3.js'
-import { JUPITER_V4_PROGRAM_ID, SOUND_SETTINGS_KEY } from 'utils/constants'
+import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import Tooltip from '@components/shared/Tooltip'
+import HealthImpact from '@components/shared/HealthImpact'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
+  maintProjectedHealth: number
   onClose: () => void
   routes: RouteInfo[] | undefined
   selectedRoute: RouteInfo | undefined
@@ -83,7 +81,8 @@ const fetchJupiterTransaction = async (
   connection: Connection,
   selectedRoute: RouteInfo,
   userPublicKey: PublicKey,
-  slippage: number
+  slippage: number,
+  inputMint: PublicKey
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const transactions = await (
     await fetch('https://quote-api.jup.ag/v4/swap', {
@@ -111,11 +110,24 @@ const fetchJupiterTransaction = async (
     swapTransaction
   )
 
-  // const isSetupIx = (pk: PublicKey): boolean => { k == ata_program || k == token_program };
-  const isJupiterIx = (pk: PublicKey): boolean =>
-    pk.toString() === JUPITER_V4_PROGRAM_ID
+  const isSetupIx = (pk: PublicKey): boolean =>
+    pk.toString() === 'ComputeBudget111111111111111111111111111111' ||
+    pk.toString() === 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
 
-  const filtered_jup_ixs = ixs.filter((ix) => isJupiterIx(ix.programId))
+  const isDuplicateAta = (ix: TransactionInstruction): boolean => {
+    return (
+      ix.programId.toString() ===
+        'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' &&
+      ix.keys[3].pubkey.toString() === inputMint.toString()
+    )
+  }
+
+  const filtered_jup_ixs = ixs.filter(
+    (ix) => !isSetupIx(ix.programId) && !isDuplicateAta(ix)
+  )
+  console.log('ixs: ', ixs)
+  console.log('filtered ixs: ', filtered_jup_ixs)
+
   return [filtered_jup_ixs, alts]
 }
 
@@ -131,6 +143,7 @@ const successSound = new Howl({
 
 const SwapReviewRouteInfo = ({
   amountIn,
+  maintProjectedHealth,
   onClose,
   routes,
   selectedRoute,
@@ -186,7 +199,7 @@ const SwapReviewRouteInfo = ({
     }
   }, [inputTokenInfo, outputTokenInfo])
 
-  const onSwap = async () => {
+  const onSwap = useCallback(async () => {
     if (!selectedRoute) return
     try {
       const client = mangoStore.getState().client
@@ -205,7 +218,8 @@ const SwapReviewRouteInfo = ({
         connection,
         selectedRoute,
         mangoAccount.owner,
-        slippage
+        slippage,
+        inputBank.mint
       )
 
       try {
@@ -233,6 +247,7 @@ const SwapReviewRouteInfo = ({
           noSound: true,
         })
         actions.fetchGroup()
+        actions.fetchSwapHistory(mangoAccount.publicKey.toString(), 30000)
         await actions.reloadMangoAccount()
       } catch (e: any) {
         console.error('onSwap error: ', e)
@@ -250,7 +265,7 @@ const SwapReviewRouteInfo = ({
     } finally {
       onClose()
     }
-  }
+  }, [amountIn, onClose, selectedRoute, soundSettings])
 
   const [balance, borrowAmount] = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -266,18 +281,15 @@ const SwapReviewRouteInfo = ({
 
   const coinGeckoPriceDifference = useMemo(() => {
     return amountOut?.toNumber()
-      ? floorToDecimal(
-          amountIn
-            .div(amountOut)
-            .minus(
-              new Decimal(coingeckoPrices?.outputCoingeckoPrice).div(
-                coingeckoPrices?.inputCoingeckoPrice
-              )
+      ? amountIn
+          .div(amountOut)
+          .minus(
+            new Decimal(coingeckoPrices?.outputCoingeckoPrice).div(
+              coingeckoPrices?.inputCoingeckoPrice
             )
-            .div(amountIn.div(amountOut))
-            .mul(100),
-          1
-        )
+          )
+          .div(amountIn.div(amountOut))
+          .mul(100)
       : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
 
@@ -285,14 +297,14 @@ const SwapReviewRouteInfo = ({
     <div className="flex h-full flex-col justify-between">
       <div>
         <IconButton
-          className="absolute mr-3 text-th-fgd-2"
+          className="absolute top-4 left-4 mr-3 text-th-fgd-2"
           onClick={onClose}
           size="small"
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
-        <div className="mb-6 mt-4 flex justify-center">
-          <div className="flex flex-col items-center">
+        <div className="flex justify-center bg-gradient-to-t from-th-bkg-1 to-th-bkg-2 p-6 pb-0">
+          <div className="mb-4 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
             <div className="relative mb-2 w-[72px]">
               <Image alt="" width="40" height="40" src={inputTokenIconUri} />
               <div className="absolute right-0 top-0">
@@ -318,12 +330,12 @@ const SwapReviewRouteInfo = ({
             </p>
           </div>
         </div>
-        <div className="space-y-2 px-1">
+        <div className="space-y-2 px-6">
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">{t('swap:rate')}</p>
             <div>
               <div className="flex items-center justify-end">
-                <p className="text-right font-mono text-sm text-th-fgd-1">
+                <p className="text-right font-mono text-sm text-th-fgd-2">
                   {swapRate ? (
                     <>
                       1{' '}
@@ -349,7 +361,7 @@ const SwapReviewRouteInfo = ({
                   )}
                 </p>
                 <ArrowsRightLeftIcon
-                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-1 hover:text-th-active"
+                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-2 hover:text-th-active"
                   onClick={() => setSwapRate(!swapRate)}
                 />
               </div>
@@ -358,7 +370,7 @@ const SwapReviewRouteInfo = ({
                 coingeckoPrices?.inputCoingeckoPrice ? (
                   <div
                     className={`text-right font-mono ${
-                      coinGeckoPriceDifference.gt(0)
+                      coinGeckoPriceDifference.gt(1)
                         ? 'text-th-down'
                         : 'text-th-up'
                     }`}
@@ -379,7 +391,7 @@ const SwapReviewRouteInfo = ({
               {t('swap:minimum-received')}
             </p>
             {outputTokenInfo?.decimals ? (
-              <p className="text-right font-mono text-sm text-th-fgd-1">
+              <p className="text-right font-mono text-sm text-th-fgd-2">
                 {formatDecimal(
                   selectedRoute?.otherAmountThreshold /
                     10 ** outputTokenInfo.decimals || 1,
@@ -391,6 +403,7 @@ const SwapReviewRouteInfo = ({
               </p>
             ) : null}
           </div>
+          <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           {borrowAmount ? (
             <>
               <div className="flex justify-between">
@@ -398,12 +411,12 @@ const SwapReviewRouteInfo = ({
                   content={
                     balance
                       ? t('swap:tooltip-borrow-balance', {
-                          balance: balance,
-                          borrowAmount: borrowAmount,
+                          balance: formatFixedDecimals(balance),
+                          borrowAmount: formatFixedDecimals(borrowAmount),
                           token: inputTokenInfo?.symbol,
                         })
                       : t('swap:tooltip-borrow-no-balance', {
-                          borrowAmount: borrowAmount,
+                          borrowAmount: formatFixedDecimals(borrowAmount),
                           token: inputTokenInfo?.symbol,
                         })
                   }
@@ -412,7 +425,7 @@ const SwapReviewRouteInfo = ({
                     {t('borrow-amount')}
                   </p>
                 </Tooltip>
-                <p className="text-right font-mono text-sm text-th-fgd-1">
+                <p className="text-right font-mono text-sm text-th-fgd-2">
                   ~{formatFixedDecimals(borrowAmount)}{' '}
                   <span className="font-body tracking-wide">
                     {inputTokenInfo?.symbol}
@@ -421,7 +434,7 @@ const SwapReviewRouteInfo = ({
               </div>
               <div className="flex justify-between">
                 <p className="text-sm text-th-fgd-3">{t('borrow-fee')}</p>
-                <p className="text-right font-mono text-sm text-th-fgd-1">
+                <p className="text-right font-mono text-sm text-th-fgd-2">
                   ~
                   {formatFixedDecimals(
                     amountIn
@@ -450,7 +463,7 @@ const SwapReviewRouteInfo = ({
           ) : null}
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
-            <p className="text-right font-mono text-sm text-th-fgd-1">
+            <p className="text-right font-mono text-sm text-th-fgd-2">
               {selectedRoute?.priceImpactPct * 100 < 0.1
                 ? '<0.1%'
                 : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
@@ -459,7 +472,7 @@ const SwapReviewRouteInfo = ({
           <div className="flex items-center justify-between">
             <p className="text-sm text-th-fgd-3">Swap Route</p>
             <div
-              className="flex items-center text-th-fgd-1 md:hover:cursor-pointer md:hover:text-th-fgd-3"
+              className="flex items-center text-th-fgd-2 md:hover:cursor-pointer md:hover:text-th-fgd-3"
               role="button"
               onClick={() => setShowRoutesModal(true)}
             >
@@ -486,7 +499,7 @@ const SwapReviewRouteInfo = ({
             <div className="flex justify-between">
               <p className="text-sm text-th-fgd-3">{t('fee')}</p>
               <div className="flex items-center">
-                <p className="text-right font-mono text-sm text-th-fgd-1">
+                <p className="text-right font-mono text-sm text-th-fgd-2">
                   ≈ ${feeValue?.toFixed(2)}
                 </p>
               </div>
@@ -504,14 +517,18 @@ const SwapReviewRouteInfo = ({
                     })}
                   </p>
                   {feeToken?.decimals && (
-                    <p className="text-right font-mono text-sm text-th-fgd-1">
+                    <p className="pl-4 text-right font-mono text-sm text-th-fgd-2">
                       {(
                         info.lpFee?.amount / Math.pow(10, feeToken.decimals)
                       ).toFixed(6)}{' '}
                       <span className="font-body tracking-wide">
                         {feeToken?.symbol}
                       </span>{' '}
-                      ({info.lpFee?.pct * 100}%)
+                      (
+                      {(info.lpFee?.pct * 100).toLocaleString(undefined, {
+                        maximumFractionDigits: 4,
+                      })}
+                      %)
                     </p>
                   )}
                 </div>
@@ -522,7 +539,7 @@ const SwapReviewRouteInfo = ({
         <>
           <div className="flex justify-between">
             <span>{t('swap:transaction-fee')}</span>
-            <div className="text-right text-th-fgd-1">
+            <div className="text-right text-th-fgd-2">
               {depositAndFee
                 ? depositAndFee?.signatureFee / Math.pow(10, 9)
                 : '-'}{' '}
@@ -561,7 +578,7 @@ const SwapReviewRouteInfo = ({
               </div>
               <div>
                 {depositAndFee?.ataDepositLength ? (
-                  <div className="text-right text-th-fgd-1">
+                  <div className="text-right text-th-fgd-2">
                     {depositAndFee?.ataDepositLength === 1
                       ? t('swap:ata-deposit-details', {
                           cost: (
@@ -578,7 +595,7 @@ const SwapReviewRouteInfo = ({
                   </div>
                 ) : null}
                 {depositAndFee?.openOrdersDeposits?.length ? (
-                  <div className="text-right text-th-fgd-1">
+                  <div className="text-right text-th-fgd-2">
                     {depositAndFee?.openOrdersDeposits.length > 1
                       ? t('swap:serum-details_plural', {
                           cost: (
@@ -614,7 +631,7 @@ const SwapReviewRouteInfo = ({
           />
         ) : null}
       </div>
-      <div className="flex items-center justify-center py-6">
+      <div className="flex items-center justify-center p-6">
         <Button
           onClick={onSwap}
           className="flex w-full items-center justify-center text-base"
@@ -624,8 +641,8 @@ const SwapReviewRouteInfo = ({
             <Loading className="mr-2 h-5 w-5" />
           ) : (
             <div className="flex items-center">
-              <CheckCircleIcon className="mr-2 h-5 w-5" />
-              {t('swap:confirm-swap')}
+              <ArrowsRightLeftIcon className="mr-2 h-5 w-5" />
+              {t('swap')}
             </div>
           )}
         </Button>

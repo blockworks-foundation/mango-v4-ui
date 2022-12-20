@@ -51,7 +51,7 @@ const MarketSelectDropdown = () => {
               } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute -left-5 top-12 z-50 mr-4 w-screen bg-th-bkg-2 pb-2 pt-4 md:w-72">
+          <Popover.Panel className="absolute -left-5 top-12 z-40 mr-4 w-screen bg-th-bkg-2 pb-2 pt-4 md:w-72">
             <TabUnderline
               activeValue={activeTab}
               onChange={(v) => setActiveTab(v)}

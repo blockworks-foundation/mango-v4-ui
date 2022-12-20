@@ -56,7 +56,9 @@ const OpenOrders = () => {
           break
         }
       }
-      break
+      if (foundedMarketPk) {
+        break
+      }
     }
     return foundedMarketPk
   }
@@ -160,7 +162,7 @@ const OpenOrders = () => {
       } catch (e: any) {
         console.error('Error canceling', e)
         notify({
-          title: t('trade:cancel-order-error'),
+          title: 'Unable to modify order',
           description: e.message,
           txid: e.txid,
           type: 'error',
@@ -208,10 +210,10 @@ const OpenOrders = () => {
     [t]
   )
 
-  const showEditOrderForm = (order: Order | PerpOrder) => {
+  const showEditOrderForm = (order: Order | PerpOrder, tickSize: number) => {
     setModifyOrderId(order.orderId.toString())
     setModifiedOrderSize(order.size.toString())
-    setModifiedOrderPrice(order.price.toString())
+    setModifiedOrderPrice(order.price.toFixed(getDecimalCount(tickSize)))
   }
   const cancelEditOrderForm = () => {
     setModifyOrderId(undefined)
@@ -281,7 +283,7 @@ const OpenOrders = () => {
                                 getDecimalCount(minOrderSize),
                             })}
                           </Td>
-                          <Td className="w-[16.67%] text-right">
+                          <Td className="w-[16.67%] whitespace-nowrap text-right">
                             <span className="font-mono">
                               {o.price.toLocaleString(undefined, {
                                 minimumFractionDigits:
@@ -299,7 +301,7 @@ const OpenOrders = () => {
                         <>
                           <Td className="w-[16.67%]">
                             <Input
-                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
                               type="text"
                               value={modifiedOrderSize}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -310,7 +312,7 @@ const OpenOrders = () => {
                           <Td className="w-[16.67%]">
                             <Input
                               autoFocus
-                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
                               type="text"
                               value={modifiedOrderPrice}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -328,7 +330,7 @@ const OpenOrders = () => {
                           {modifyOrderId !== o.orderId.toString() ? (
                             <>
                               <IconButton
-                                onClick={() => showEditOrderForm(o)}
+                                onClick={() => showEditOrderForm(o, tickSize)}
                                 size="small"
                               >
                                 <PencilIcon className="h-4 w-4" />

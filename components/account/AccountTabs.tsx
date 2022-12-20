@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import TabButtons from '../shared/TabButtons'
 import TokenList from '../TokenList'
@@ -6,7 +6,6 @@ import SwapHistoryTable from '../swap/SwapHistoryTable'
 import ActivityFeed from './ActivityFeed'
 import UnsettledTrades from '@components/trade/UnsettledTrades'
 import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
-import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
@@ -20,20 +19,12 @@ const TABS = [
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
-  const actions = mangoStore((s) => s.actions)
-  const { mangoAccount } = useMangoAccount()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     return TABS.map((t) => [t, 0])
   }, [])
-
-  useEffect(() => {
-    if (mangoAccount) {
-      actions.fetchSwapHistory(mangoAccount.publicKey.toString())
-    }
-  }, [actions, mangoAccount])
 
   return (
     <>

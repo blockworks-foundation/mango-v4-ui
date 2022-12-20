@@ -6,8 +6,6 @@ import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
-import DepositModal from '../modals/DepositModal'
-import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
@@ -64,8 +62,6 @@ const AccountPage = () => {
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.stats.interestTotals.data
   )
-  const [showDepositModal, setShowDepositModal] = useState<boolean>(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false)
   const [chartToShow, setChartToShow] = useState<
     'account-value' | 'cumulative-interest-value' | 'pnl' | ''
   >('')
@@ -492,18 +488,6 @@ const AccountPage = () => {
         </button>
       </div>
       <AccountTabs />
-      {showDepositModal ? (
-        <DepositModal
-          isOpen={showDepositModal}
-          onClose={() => setShowDepositModal(false)}
-        />
-      ) : null}
-      {showWithdrawModal ? (
-        <WithdrawModal
-          isOpen={showWithdrawModal}
-          onClose={() => setShowWithdrawModal(false)}
-        />
-      ) : null}
       {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
         <AccountOnboardingTour />
       ) : null}
