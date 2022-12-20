@@ -8,6 +8,7 @@ const IconDropMenu = ({
   disabled,
   size,
   postion = 'bottomRight',
+  panelClassName,
 }: {
   icon: ReactNode
   children: ReactNode
@@ -22,6 +23,7 @@ const IconDropMenu = ({
     | 'leftTop'
     | 'rightBottom'
     | 'rightTop'
+  panelClassName?: string
 }) => {
   const panelPosition = {
     bottomLeft: size === 'large' ? 'left-0 top-14' : 'left-0 top-12',
@@ -63,7 +65,7 @@ const IconDropMenu = ({
             leaveTo="opacity-0"
           >
             <Popover.Panel
-              className={`absolute ${panelPosition[postion]} z-20 w-48 space-y-3 rounded-md bg-th-bkg-2 p-4`}
+              className={`absolute ${panelPosition[postion]} thin-scroll z-20 max-h-60 space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4 ${panelClassName}`}
             >
               {children}
             </Popover.Panel>

@@ -2,40 +2,39 @@ import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
-import Button from '../shared/Button'
+import Button, { LinkButton } from '../shared/Button'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useState } from 'react'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import { PublicKey } from '@solana/web3.js'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { abbreviateAddress } from 'utils/formatting'
+import InlineNotification from '@components/shared/InlineNotification'
+
+export const DEFAULT_DELEGATE = '11111111111111111111111111111111'
 
 const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
   const { mangoAccount } = useMangoAccount()
 
   const [delegateAddress, setDelegateAddress] = useState(
-    mangoAccount?.delegate?.toString() !== '11111111111111111111111111111111'
-      ? mangoAccount?.delegate?.toString()
+    mangoAccount?.delegate?.toString() !== DEFAULT_DELEGATE
+      ? mangoAccount!.delegate.toString()
       : ''
   )
 
-  // This doesn't work yet...
-  const handleUpdateccountName = async () => {
+  const handleDelegateAccount = async (address: string) => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     if (!mangoAccount || !group) return
 
-    if (
-      delegateAddress &&
-      delegateAddress !== '' &&
-      !PublicKey.isOnCurve(delegateAddress)
-    ) {
+    if (address && address !== '' && !PublicKey.isOnCurve(address)) {
       notify({
         type: 'error',
-        title: 'Not a valid delegate address',
-        description: 'Enter the public key of the delegate wallet',
+        title: 'Invalid delegate address',
+        description: 'Check the public key of your delegate wallet is correct',
       })
     }
 
@@ -44,11 +43,16 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
         group,
         mangoAccount,
         undefined,
-        delegateAddress ? new PublicKey(delegateAddress) : undefined
+        delegateAddress ? new PublicKey(address) : undefined
       )
       onClose()
       notify({
-        title: t('account-update-success'),
+        title:
+          address !== DEFAULT_DELEGATE
+            ? t('delegate-account-info', {
+                address: abbreviateAddress(new PublicKey(address)),
+              })
+            : 'Account delegation removed',
         type: 'success',
         txid: tx,
       })
@@ -65,11 +69,22 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="h-64">
+      <div className="h-80">
         <div className="flex h-full flex-col justify-between">
           <div className="pb-4">
             <h2 className="mb-1">{t('delegate-account')}</h2>
             <p className="mb-4">{t('delegate-desc')}</p>
+            {mangoAccount &&
+            mangoAccount.delegate.toString() !== DEFAULT_DELEGATE ? (
+              <div className="mb-4">
+                <InlineNotification
+                  type="info"
+                  desc={`Account is delegated to ${abbreviateAddress(
+                    mangoAccount.delegate
+                  )}`}
+                />
+              </div>
+            ) : null}
             <Label text={t('wallet-address')} />
             <Input
               type="text"
@@ -81,13 +96,25 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
               }
             />
           </div>
-          <Button
-            className="w-full"
-            onClick={handleUpdateccountName}
-            size="large"
-          >
-            {t('delegate')}
-          </Button>
+          <div className="flex flex-col items-center">
+            <Button
+              className="w-full"
+              onClick={() => handleDelegateAccount(delegateAddress)}
+              size="large"
+            >
+              {mangoAccount?.delegate.toString() !== DEFAULT_DELEGATE
+                ? t('update-delegate')
+                : t('delegate')}
+            </Button>
+            {mangoAccount?.delegate.toString() !== DEFAULT_DELEGATE ? (
+              <LinkButton
+                className="mt-4"
+                onClick={() => handleDelegateAccount(DEFAULT_DELEGATE)}
+              >
+                {t('remove-delegate')}
+              </LinkButton>
+            ) : null}
+          </div>
         </div>
       </div>
     </Modal>

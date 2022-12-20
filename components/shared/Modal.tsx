@@ -20,10 +20,10 @@ function Modal({
     <Dialog
       open={isOpen}
       onClose={onClose}
-      className="relative z-50 overflow-y-auto"
+      className="relative z-40 overflow-y-auto"
     >
       <div
-        className={`fixed inset-0 backdrop-brightness-75 ${
+        className={`fixed inset-0 backdrop-brightness-50 ${
           disableOutsideClose ? 'pointer-events-none' : ''
         }`}
         aria-hidden="true"
@@ -33,7 +33,7 @@ function Modal({
           {!hideClose ? (
             <button
               onClick={onClose}
-              className={`absolute right-4 top-4 z-50 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
+              className={`absolute right-4 top-4 z-40 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
             >
               <XMarkIcon className={`h-6 w-6`} />
             </button>

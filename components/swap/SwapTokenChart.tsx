@@ -87,7 +87,7 @@ const SwapTokenChart = () => {
     ['chart-data', baseTokenId, quoteTokenId, daysToShow],
     () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
     {
-      cacheTime: 1000 * 60 * 1,
+      cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
       enabled: !!baseTokenId && !!quoteTokenId,
     }

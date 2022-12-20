@@ -160,46 +160,64 @@ const Dashboard: NextPage = () => {
                     />
                     <KeyValuePair label="Name" value={market.name} />
                     <KeyValuePair
+                      label="Base Position Lots"
+                      value={perp.basePositionLots.toNumber()}
+                    />
+                    <KeyValuePair
                       label="Base Position Ui"
                       value={perp.getBasePositionUi(market)}
                     />
                     <KeyValuePair
-                      label="Quote Position UI"
+                      label="Quote Position"
                       value={`$${toUiDecimalsForQuote(
                         perp.quotePositionNative
                       ).toFixed(4)}`}
                     />
                     <KeyValuePair
-                      label="Quote Running Native"
-                      value={perp.quoteRunningNative.toNumber()}
+                      label="Equity"
+                      value={`$${perp.getEquityUi(group, market).toFixed(6)}`}
+                    />
+                    <KeyValuePair
+                      label="Unsettled Funding"
+                      value={`$${toUiDecimalsForQuote(
+                        perp.getUnsettledFunding(market)
+                      ).toFixed(6)}`}
+                    />
+                    <KeyValuePair
+                      label="Avg Entry Price"
+                      value={`$${perp
+                        .getAverageEntryPriceUi(market)
+                        .toFixed(6)}`}
+                    />
+                    <KeyValuePair
+                      label="Break even price"
+                      value={`$${perp.getBreakEvenPriceUi(market).toFixed(6)}`}
+                    />
+                    <KeyValuePair
+                      label="Quote Running"
+                      value={`$${toUiDecimalsForQuote(
+                        perp.quoteRunningNative
+                      ).toFixed(6)}`}
                     />
                     <KeyValuePair
                       label="Taker Quote Lots"
                       value={perp.takerQuoteLots.toNumber()}
                     />
                     <KeyValuePair
-                      label="Unsettled Funding"
-                      value={perp.getUnsettledFunding(market).toNumber()}
-                    />
-                    <KeyValuePair
-                      label="Equity UI"
-                      value={perp.getEquityUi(group, market)}
+                      label="Taker Base Lots"
+                      value={perp.takerBaseLots.toNumber()}
                     />
                     <KeyValuePair
                       label="Has open orders"
                       value={perp.hasOpenOrders().toString()}
                     />
                     <KeyValuePair
-                      label="Avg Entry Price UI"
-                      value={perp.getAverageEntryPriceUi(market)}
+                      label="Bids Base Lots"
+                      value={perp.bidsBaseLots.toNumber()}
                     />
                     <KeyValuePair
-                      label="Break even price UI"
-                      value={perp.getBreakEvenPriceUi(market)}
-                    />
-                    <KeyValuePair
-                      label="Pnl"
-                      value={perp.getPnl(market).toNumber()}
+                      label="Asks Base Lots"
+                      value={perp.asksBaseLots.toNumber()}
                     />
                   </div>
                 )

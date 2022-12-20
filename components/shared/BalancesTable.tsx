@@ -255,34 +255,34 @@ const Balance = ({ bank }: { bank: Bank }) => {
     [selectedMarket]
   )
 
-  const handleSwapFormBalanceClick = useCallback((balance: number) => {
-    const set = mangoStore.getState().set
-    if (balance >= 0) {
-      set((s) => {
-        s.swap.inputBank = bank
-        s.swap.amountIn = balance.toString()
-        s.swap.swapMode = 'ExactIn'
-      })
-    } else {
-      console.log('else')
-
-      set((s) => {
-        s.swap.outputBank = bank
-        s.swap.amountOut = Math.abs(balance).toString()
-        s.swap.swapMode = 'ExactOut'
-      })
-    }
-  }, [])
+  const handleSwapFormBalanceClick = useCallback(
+    (balance: number) => {
+      const set = mangoStore.getState().set
+      if (balance >= 0) {
+        set((s) => {
+          s.swap.inputBank = bank
+          s.swap.amountIn = balance.toString()
+          s.swap.amountOut = ''
+          s.swap.swapMode = 'ExactIn'
+        })
+      } else {
+        set((s) => {
+          s.swap.outputBank = bank
+          s.swap.amountIn = ''
+          s.swap.amountOut = Math.abs(balance).toString()
+          s.swap.swapMode = 'ExactOut'
+        })
+      }
+    },
+    [bank]
+  )
 
   const balance = useMemo(() => {
     return mangoAccount ? mangoAccount.getTokenBalanceUi(bank) : 0
   }, [bank, mangoAccount])
 
   const isBaseOrQuote = useMemo(() => {
-    if (
-      selectedMarket instanceof Serum3Market &&
-      (asPath.includes('/trade') || asPath.includes('/swap'))
-    ) {
+    if (selectedMarket instanceof Serum3Market) {
       if (bank.tokenIndex === selectedMarket.baseTokenIndex) {
         return 'base'
       } else if (bank.tokenIndex === selectedMarket.quoteTokenIndex) {
@@ -291,34 +291,35 @@ const Balance = ({ bank }: { bank: Bank }) => {
     }
   }, [bank, selectedMarket])
 
-  const handleClick = (balance: number, type: 'base' | 'quote') => {
-    if (asPath.includes('/trade')) {
-      handleTradeFormBalanceClick(
-        parseFloat(formatDecimal(balance, bank.mintDecimals)),
-        type
-      )
-    } else {
-      handleSwapFormBalanceClick(
-        parseFloat(formatDecimal(balance, bank.mintDecimals))
-      )
-    }
-  }
+  if (!balance) return <p className="flex justify-end">0</p>
 
   return (
     <p className="flex justify-end">
-      {balance ? (
-        isBaseOrQuote ? (
-          <LinkButton
-            className="font-normal underline-offset-4"
-            onClick={() => handleClick(balance, isBaseOrQuote)}
-          >
-            {formatDecimal(balance, bank.mintDecimals)}
-          </LinkButton>
-        ) : (
-          formatDecimal(balance, bank.mintDecimals)
-        )
+      {asPath.includes('/trade') && isBaseOrQuote ? (
+        <LinkButton
+          className="font-normal underline-offset-4"
+          onClick={() =>
+            handleTradeFormBalanceClick(
+              parseFloat(formatDecimal(balance, bank.mintDecimals)),
+              isBaseOrQuote
+            )
+          }
+        >
+          {formatDecimal(balance, bank.mintDecimals)}
+        </LinkButton>
+      ) : asPath.includes('/swap') ? (
+        <LinkButton
+          className="font-normal underline-offset-4"
+          onClick={() =>
+            handleSwapFormBalanceClick(
+              parseFloat(formatDecimal(balance, bank.mintDecimals))
+            )
+          }
+        >
+          {formatDecimal(balance, bank.mintDecimals)}
+        </LinkButton>
       ) : (
-        0
+        formatDecimal(balance, bank.mintDecimals)
       )}
     </p>
   )

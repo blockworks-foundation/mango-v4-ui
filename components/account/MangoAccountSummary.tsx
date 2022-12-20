@@ -4,22 +4,13 @@ import {
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
-import Button from '../shared/Button'
-import { useState } from 'react'
-import DepositModal from '../modals/DepositModal'
-import WithdrawModal from '../modals/WithdrawModal'
 import { useTranslation } from 'next-i18next'
-import { ArrowDownTrayIcon } from '@heroicons/react/20/solid'
-import { useWallet } from '@solana/wallet-adapter-react'
 import useMangoAccount from 'hooks/useMangoAccount'
 
 const MangoAccountSummary = () => {
   const { t } = useTranslation('common')
-  const { connected } = useWallet()
   const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
-  const [showDepositModal, setShowDepositModal] = useState(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
 
   // const leverage = useMemo(() => {
   //   if (!group || !mangoAccount) return 0
@@ -36,7 +27,7 @@ const MangoAccountSummary = () => {
 
   return (
     <>
-      <div className="mb-4 space-y-2">
+      <div className="space-y-2">
         <div>
           <p className="text-sm text-th-fgd-3">{t('health')}</p>
           <p className="font-mono text-sm text-th-fgd-1">
@@ -95,29 +86,6 @@ const MangoAccountSummary = () => {
           </p>
         </div> */}
       </div>
-      <div className="space-y-2">
-        <Button
-          className="flex w-full items-center justify-center"
-          disabled={!mangoAccount || !connected}
-          onClick={() => setShowDepositModal(true)}
-        >
-          <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
-          {t('deposit')}
-        </Button>
-      </div>
-
-      {showDepositModal ? (
-        <DepositModal
-          isOpen={showDepositModal}
-          onClose={() => setShowDepositModal(false)}
-        />
-      ) : null}
-      {showWithdrawModal ? (
-        <WithdrawModal
-          isOpen={showWithdrawModal}
-          onClose={() => setShowWithdrawModal(false)}
-        />
-      ) : null}
     </>
   )
 }

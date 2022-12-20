@@ -138,7 +138,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       <div className="mb-3 flex w-full flex-col items-center sm:mt-3 sm:flex-row sm:justify-between">
         <button
           onClick={onClose}
-          className={`absolute left-2 top-3 z-50 text-th-fgd-4 focus:outline-none md:hover:text-th-active`}
+          className={`absolute left-2 top-3 z-40 text-th-fgd-4 focus:outline-none md:hover:text-th-active`}
         >
           <ArrowLeftIcon className={`h-5 w-5`} />
         </button>

@@ -9,6 +9,7 @@ import { getTokenInMax } from './useTokenMax'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { PublicKey } from '@solana/web3.js'
 
 // const generateSearchTerm = (item: Token, searchValue: string) => {
 //   const normalizedSearchValue = searchValue.toLowerCase()
@@ -132,7 +133,7 @@ const SwapFormTokenList = ({
         .map((token) => {
           const max = getTokenInMax(
             mangoAccount,
-            inputBank.mint,
+            new PublicKey(token.address),
             outputBank.mint,
             group,
             useMargin
