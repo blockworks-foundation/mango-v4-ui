@@ -473,12 +473,6 @@ const mangoStore = create<MangoStore>()(
             .getState()
             .mangoAccount.current?.publicKey.toString()
 
-          if (offset === 0) {
-            set((state) => {
-              state.activityFeed.feed = []
-            })
-          }
-
           try {
             const response = await fetch(
               `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
@@ -504,9 +498,9 @@ const mangoStore = create<MangoStore>()(
                   dayjs(a.block_datetime).unix()
               )
 
-            // only add to current feed if current feed has length and the mango account hasn't changed
+            // only add to current feed if data request is offset and the mango account hasn't changed
             const feed =
-              currentFeed.length &&
+              offset !== 0 &&
               connectedMangoAccountPk ===
                 currentFeed[0].activity_details.mango_account
                 ? currentFeed.concat(latestFeed)
