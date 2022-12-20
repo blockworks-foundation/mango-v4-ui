@@ -1,13 +1,25 @@
 import TabButtons from '@components/shared/TabButtons'
-import { useMemo, useState } from 'react'
+import mangoStore from '@store/mangoStore'
+import useMangoGroup from 'hooks/useMangoGroup'
+import { useEffect, useMemo, useState } from 'react'
+import MangoStats from './MangoStats'
 import PerpMarketsTable from './PerpMarketsTable'
 import SpotMarketsTable from './SpotMarketsTable'
 import TokenStats from './TokenStats'
 
-const TABS = ['tokens', 'perp', 'spot']
+const TABS = ['tokens', 'perp', 'spot', 'mango']
 
 const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')
+  const actions = mangoStore((s) => s.actions)
+  const { group } = useMangoGroup()
+
+  useEffect(() => {
+    if (group) {
+      actions.fetchPerpStats()
+    }
+  }, [group])
+
   const tabsWithCount: [string, number][] = useMemo(() => {
     return TABS.map((t) => [t, 0])
   }, [])
@@ -34,6 +46,8 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
       return <PerpMarketsTable />
     case 'spot':
       return <SpotMarketsTable />
+    case 'mango':
+      return <MangoStats />
     default:
       return <TokenStats />
   }

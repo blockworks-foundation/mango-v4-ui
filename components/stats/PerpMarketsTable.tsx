@@ -13,8 +13,6 @@ import dynamic from 'next/dynamic'
 import { useCoingecko } from 'hooks/useCoingecko'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
-import { useEffect } from 'react'
-import useMangoGroup from 'hooks/useMangoGroup'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -23,22 +21,14 @@ const SimpleAreaChart = dynamic(
 const PerpMarketsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
-  const actions = mangoStore((s) => s.actions)
-  const perpStats = mangoStore((s) => s.perpStats.data)
-  const { group } = useMangoGroup()
+  // const perpStats = mangoStore((s) => s.perpStats.data)
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
 
-  useEffect(() => {
-    if (group) {
-      actions.fetchPerpStats()
-    }
-  }, [group])
-
-  console.log(perpStats)
+  console.log(perpMarkets)
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -126,7 +116,18 @@ const PerpMarketsTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>${market.openInterest.toString()}</p>
+                      <p>
+                        {market.openInterest.toString()}{' '}
+                        <span className="font-body text-th-fgd-3">
+                          {market.name.slice(0, -5)}
+                        </span>
+                      </p>
+                      <p className="text-xs text-th-fgd-4">
+                        {formatFixedDecimals(
+                          market.openInterest.toNumber() * market.uiPrice,
+                          true
+                        )}
+                      </p>
                     </div>
                   </Td>
                   <Td>
