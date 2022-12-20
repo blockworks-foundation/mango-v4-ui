@@ -61,8 +61,12 @@ const TopBar = () => {
   }, [mangoAccount])
 
   const handleDepositWithdrawModal = (action: 'deposit' | 'withdraw') => {
-    setAction(action)
-    setShowDepositWithdrawModal(true)
+    if (!connected || mangoAccount) {
+      setAction(action)
+      setShowDepositWithdrawModal(true)
+    } else {
+      setShowCreateAccountModal(true)
+    }
   }
 
   return (
