@@ -161,9 +161,9 @@ const TradeHistory = () => {
                   </Td>
                   <Td className="text-right">
                     <span className="font-mono">{trade.feeCost}</span>
-                    <span className="text-xs text-th-fgd-4">{`${
-                      trade.liquidity ? ` (${trade.liquidity})` : ''
-                    }`}</span>
+                    <p className="font-body text-xs text-th-fgd-4">{`${
+                      trade.liquidity ? trade.liquidity : ''
+                    }`}</p>
                   </Td>
                   {selectedMarket instanceof PerpMarket ? (
                     <Td className="whitespace-nowrap text-right font-mono">
@@ -187,11 +187,13 @@ const TradeHistory = () => {
       </div>
     ) : (
       <div className="flex flex-col items-center justify-center px-6 pb-8 pt-4">
-        <InlineNotification
-          type="info"
-          desc="Only your recent trades are displayed. Full trade history will be available shortly."
-        />
-        <NoSymbolIcon className="mb-2 mt-8 h-6 w-6 text-th-fgd-4" />
+        <div className="mb-8 w-full">
+          <InlineNotification
+            type="info"
+            desc="Only your recent trades are displayed. Full trade history will be available shortly."
+          />
+        </div>
+        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
         <p>No trade history for {selectedMarket?.name}</p>
       </div>
     )
