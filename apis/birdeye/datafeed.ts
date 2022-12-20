@@ -1,5 +1,6 @@
 import { makeApiRequest, parseResolution } from './helpers'
 import { subscribeOnStream, unsubscribeFromStream } from './streaming'
+import mangoStore from '@store/mangoStore'
 
 const lastBarsCache = new Map()
 
@@ -20,13 +21,13 @@ const configurationData = {
   exchanges: [],
 }
 
-async function getAllSymbols() {
-  const data = await makeApiRequest(
-    'public/tokenlist?sort_by=v24hUSD&sort_type=desc&offset=0&limit=-1'
-  )
+// async function getAllSymbols() {
+//   const data = await makeApiRequest(
+//     'public/tokenlist?sort_by=v24hUSD&sort_type=desc&offset=0&limit=-1'
+//   )
 
-  return data.data.tokens
-}
+//   return data.data.tokens
+// }
 
 export default {
   onReady: (callback: any) => {
@@ -50,8 +51,10 @@ export default {
     _extension: any
   ) => {
     console.log('[resolveSymbol]: Method call', symbolAddress)
-    const symbols = await getAllSymbols()
-    let symbolItem = symbols.find((item: any) => item.address === symbolAddress)
+    // const symbols = await getAllSymbols()
+    // let symbolItem = symbols.find((item: any) => item.address === symbolAddress)
+    // console.log('========symbols:', symbolItem, symbols)
+    let symbolItem: any
 
     if (!symbolItem) {
       symbolItem = {
@@ -59,14 +62,13 @@ export default {
         type: 'pair',
       }
     }
+    const ticker = mangoStore.getState().selectedMarket.name
 
     const symbolInfo = {
       address: symbolItem.address,
       ticker: symbolItem.address,
       name: symbolItem.symbol || symbolItem.address,
-      description: symbolItem.symbol
-        ? symbolItem.symbol + '/USD'
-        : symbolItem.address,
+      description: ticker || symbolItem.address,
       type: symbolItem.type,
       session: '24x7',
       timezone: 'Etc/UTC',
