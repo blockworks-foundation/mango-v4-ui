@@ -6,7 +6,6 @@ import {
   ExclamationCircleIcon,
   FireIcon,
   PencilIcon,
-  PlusCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { Wallet } from '@project-serum/anchor'
@@ -63,8 +62,14 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
 
+  const bank = useMemo(() => {
+    const group = mangoStore.getState().group
+    return group?.banksMapByName.get(depositToken)?.[0]
+  }, [depositToken])
+
   const exceedsAlphaMax = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const group = mangoStore.getState().group
     if (!group || !mangoAccount) return
     if (
       mangoAccount.owner.toString() ===
@@ -72,13 +77,13 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
     )
       return false
     const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group)!.toNumber()
+      mangoAccount.getEquity(group).toNumber()
     )
     return (
-      parseFloat(depositAmount) > ALPHA_DEPOSIT_LIMIT ||
+      parseFloat(depositAmount) * (bank?.uiPrice || 1) > ALPHA_DEPOSIT_LIMIT ||
       accountValue > ALPHA_DEPOSIT_LIMIT
     )
-  }, [depositAmount])
+  }, [depositAmount, bank])
 
   useEffect(() => {
     if (connected) {
@@ -159,7 +164,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
       setSubmitDeposit(false)
       console.error(e)
     }
-  }, [depositAmount, depositToken, onClose])
+  }, [depositAmount, depositToken])
 
   useEffect(() => {
     if (mangoAccount && showSetupStep === 2) {
@@ -367,7 +372,6 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                       <Loading />
                     ) : (
                       <div className="flex items-center justify-center">
-                        <PlusCircleIcon className="mr-2 h-5 w-5" />
                         {t('create-account')}
                       </div>
                     )}
@@ -426,7 +430,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                     className="col-span-1 flex items-center rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-transparent px-4 hover:bg-transparent"
                     onClick={() => setDepositToken('')}
                   >
-                    <div className="ml-1.5 flex w-full items-center justify-between">
+                    <div className="flex w-full items-center justify-between">
                       <div className="flex items-center">
                         <Image
                           alt=""
@@ -434,7 +438,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
                           height="20"
                           src={`/icons/${depositToken.toLowerCase()}.svg`}
                         />
-                        <p className="ml-1.5 text-xl font-bold text-th-fgd-1">
+                        <p className="ml-2 text-xl font-bold text-th-fgd-1">
                           {depositToken}
                         </p>
                       </div>
