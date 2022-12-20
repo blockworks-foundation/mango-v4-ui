@@ -54,7 +54,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return group?.banksMapByName.get(selectedToken)![0]
+    return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
@@ -62,7 +62,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     if (mangoTokens?.length) {
       logoURI = mangoTokens.find(
         (t) => t.address === bank?.mint.toString()
-      )!.logoURI
+      )?.logoURI
     }
     return logoURI
   }, [mangoTokens, bank])
@@ -159,7 +159,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     return group && mangoAccount
       ? mangoAccount.getHealthRatioUi(group, HealthType.init)
       : 100
-  }, [mangoAccount])
+  }, [mangoAccount, group])
 
   const showInsufficientBalance = Number(inputAmount)
     ? tokenMax.lt(inputAmount)
@@ -331,12 +331,12 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
               </div>
             )}
           </Button>
-          {bank ? (
-            <div className="pt-4">
-              <TokenVaultWarnings bank={bank} />
-            </div>
-          ) : null}
         </div>
+        {bank ? (
+          <div className="pt-4">
+            <TokenVaultWarnings bank={bank} />
+          </div>
+        ) : null}
       </FadeInFadeOut>
     </>
   )
