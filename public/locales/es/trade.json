@@ -17,7 +17,7 @@
     "margin": "Margin",
     "no-balances": "No balances",
     "no-orders": "No open orders",
-    "no-positions": "No positions",
+    "no-positions": "No perp positions",
     "no-unsettled": "No unsettled funds",
     "open-interest": "Open Interest",
     "oracle-price": "Oracle Price",
