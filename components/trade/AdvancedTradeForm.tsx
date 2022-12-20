@@ -58,6 +58,11 @@ const AdvancedTradeForm = () => {
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
   const { ipAllowed, ipCountry } = useIpAddress()
 
+  // trigger resize to remove horizontal scrollbar
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'))
+  }, [])
+
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[0]
   }, [selectedMarket])
