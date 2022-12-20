@@ -65,6 +65,39 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <>
+      <Head>
+        <title>Mango Markets</title>
+        <link rel="icon" href="/favicon.ico" />
+        <meta property="og:title" content="Mango Markets" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="keywords"
+          content="Mango Markets, Serum, SRM, Serum DEX, DEFI, Decentralized Finance, Decentralised Finance, Crypto, ERC20, Ethereum, Decentralize, Solana, SOL, SPL, Cross-Chain, Trading, Fastest, Fast, SerumBTC, SerumUSD, SRM Tokens, SPL Tokens"
+        />
+        <meta
+          name="description"
+          content="Mango Markets - Decentralised, cross-margin trading up to 10x leverage with lightning speed and near-zero fees."
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="192x192"
+          href="/apple-touch-icon.png"
+        />
+        <meta name="msapplication-TileColor" content="#da532c" />
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Mango Markets" />
+        <meta
+          name="twitter:description"
+          content="Mango Markets - Decentralised, cross-margin trading up to 10x leverage with lightning speed and near-zero fees."
+        />
+        <meta
+          name="twitter:image"
+          content="https://www.mango.markets/socials/twitter-image-1200x600.png?34567878"
+        />
+        <meta name="google" content="notranslate" />
+        <link rel="manifest" href="/manifest.json"></link>
+      </Head>
       <MangoProvider />
       <QueryClientProvider client={queryClient}>
         <ConnectionProvider endpoint={endpoint}>
