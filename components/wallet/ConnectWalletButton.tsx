@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletSelect from './WalletSelect'
@@ -8,9 +8,17 @@ import { useEnhancedWallet } from './EnhancedWalletProvider'
 
 export const ConnectWalletButton: React.FC = () => {
   const { connecting, wallet } = useWallet()
-  const { handleConnect, preselectedWalletName } = useEnhancedWallet()
+  const { displayedWallets, handleConnect, preselectedWalletName } =
+    useEnhancedWallet()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
   const { t } = useTranslation('common')
+
+  const selectedWallet = useMemo(() => {
+    if (!displayedWallets.length || !preselectedWalletName) return undefined
+    return displayedWallets.find(
+      (w) => w.adapter.name === preselectedWalletName
+    )
+  }, [displayedWallets, preselectedWalletName])
 
   return (
     <div className="relative">
@@ -27,7 +35,7 @@ export const ConnectWalletButton: React.FC = () => {
               }`}
             >
               <img
-                src={wallet?.adapter.icon}
+                src={wallet?.adapter.icon || selectedWallet?.adapter.icon}
                 className={
                   wallet?.adapter.name === 'Solflare'
                     ? 'h-auto w-[20px]'

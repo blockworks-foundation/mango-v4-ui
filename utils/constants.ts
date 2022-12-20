@@ -36,6 +36,8 @@ export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.1'
 export const TRADE_CHART_UI_KEY = 'tradeChart'
 export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
+export const THEME_KEY = 'theme-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',

@@ -64,37 +64,35 @@ const Layout = ({ children }: { children: ReactNode }) => {
         </div>
       ) : null}
       <div className="flex-grow bg-th-bkg-1 text-th-fgd-2 transition-all">
-        <div className="flex">
-          <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
-            <BottomBar />
-          </div>
+        <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
+          <BottomBar />
+        </div>
 
-          <div className="fixed z-20 hidden h-screen md:block">
-            <button
-              className="default-transition absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-4 hover:bg-th-bkg-4 focus:outline-none lg:block"
-              onClick={handleToggleSidebar}
-            >
-              <ChevronRightIcon
-                className={`absolute bottom-2 -right-[2px] h-4 w-4 flex-shrink-0 ${
-                  !isCollapsed ? 'rotate-180' : 'rotate-360'
-                }`}
-              />
-            </button>
-            <div className={`h-full ${!isCollapsed ? 'overflow-y-auto' : ''}`}>
-              <SideNav collapsed={isCollapsed} />
-            </div>
-          </div>
-
-          <div
-            className={`w-full transition-all duration-${sideBarAnimationDuration} ease-in-out ${
-              isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-48 xl:pl-52'
-            }`}
+        <div className="fixed z-20 hidden h-screen md:block">
+          <button
+            className="default-transition absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-4 hover:bg-th-bkg-4 focus:outline-none lg:block"
+            onClick={handleToggleSidebar}
           >
-            <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 pl-4 md:pl-6">
-              <TopBar />
-            </div>
-            {children}
+            <ChevronRightIcon
+              className={`absolute bottom-2 -right-[2px] h-4 w-4 flex-shrink-0 ${
+                !isCollapsed ? 'rotate-180' : 'rotate-360'
+              }`}
+            />
+          </button>
+          <div className={`h-full ${!isCollapsed ? 'overflow-y-auto' : ''}`}>
+            <SideNav collapsed={isCollapsed} />
           </div>
+        </div>
+
+        <div
+          className={`w-full overflow-x-hidden transition-all duration-${sideBarAnimationDuration} ease-in-out ${
+            isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-48 xl:pl-52'
+          }`}
+        >
+          <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 pl-4 md:pl-6">
+            <TopBar />
+          </div>
+          {children}
         </div>
       </div>
     </>

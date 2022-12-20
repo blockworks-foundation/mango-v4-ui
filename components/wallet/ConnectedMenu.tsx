@@ -91,7 +91,7 @@ const ConnectedMenu = () => {
                   isOwnerProfile
                 />
                 {!loadProfileDetails && !isMobile ? (
-                  <div className="ml-2.5 w-32 text-left">
+                  <div className="ml-2.5 overflow-hidden text-left">
                     <p className="font-mono text-xs text-th-fgd-3">
                       {wallet_pk
                         ? abbreviateAddress(new PublicKey(wallet_pk))

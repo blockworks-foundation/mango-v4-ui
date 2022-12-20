@@ -43,7 +43,7 @@ const TopBar = () => {
   const handleCloseSetup = useCallback(() => {
     setShowUserSetup(false)
     setIsOnboarded(true)
-  }, [])
+  }, [setShowUserSetup, setIsOnboarded])
 
   const handleShowSetup = useCallback(() => {
     setShowUserSetup(true)

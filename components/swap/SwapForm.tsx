@@ -269,7 +269,7 @@ const SwapForm = () => {
     >
       <div className="px-6 pb-8 pt-3">
         <Transition
-          className="thin-scroll absolute top-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 pb-0"
+          className="absolute top-0 left-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
           show={showConfirm}
           enter="transition ease-in duration-300"
           enterFrom="translate-x-full"
