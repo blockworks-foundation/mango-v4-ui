@@ -184,7 +184,7 @@ const UserSetup = ({ onClose }: { onClose: () => void }) => {
       mangoAccount.getEquity(group)!.toNumber()
     )
     return (
-      parseFloat(depositAmount) * (depositBank?.uiPrice || 1) + accountValue >
+      parseFloat(depositAmount) * (depositBank?.uiPrice || 1) >
         ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
     )
   }, [depositAmount, depositBank, group])
