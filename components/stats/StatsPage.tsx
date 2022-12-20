@@ -4,7 +4,11 @@ import PerpMarketsTable from './PerpMarketsTable'
 import SpotMarketsTable from './SpotMarketsTable'
 import TokenStats from './TokenStats'
 
-const TABS = ['tokens', 'perp', 'spot']
+const TABS = [
+  'tokens',
+  // 'perp',
+  'spot',
+]
 
 const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')
