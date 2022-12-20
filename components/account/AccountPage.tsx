@@ -28,10 +28,13 @@ import AccountChart from './AccountChart'
 import useMangoAccount from '../../hooks/useMangoAccount'
 import Change from '../shared/Change'
 import Tooltip from '@components/shared/Tooltip'
-import { ANIMATION_SETTINGS_KEY, IS_ONBOARDED_KEY } from 'utils/constants'
-import { useWallet } from '@solana/wallet-adapter-react'
+import {
+  ANIMATION_SETTINGS_KEY,
+  // IS_ONBOARDED_KEY
+} from 'utils/constants'
+// import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
+// import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 
@@ -49,7 +52,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const AccountPage = () => {
   const { t } = useTranslation('common')
-  const { connected } = useWallet()
+  // const { connected } = useWallet()
   const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
@@ -70,8 +73,8 @@ const AccountPage = () => {
   >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
-  const tourSettings = mangoStore((s) => s.settings.tours)
-  const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  // const tourSettings = mangoStore((s) => s.settings.tours)
+  // const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
@@ -488,9 +491,9 @@ const AccountPage = () => {
         </button>
       </div>
       <AccountTabs />
-      {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
+      {/* {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
         <AccountOnboardingTour />
-      ) : null}
+      ) : null} */}
     </>
   ) : (
     <div className="p-6">

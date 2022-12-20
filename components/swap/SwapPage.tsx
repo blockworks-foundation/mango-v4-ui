@@ -1,17 +1,17 @@
 import SwapForm from './SwapForm'
-import mangoStore from '@store/mangoStore'
-import SwapOnboardingTour from '@components/tours/SwapOnboardingTour'
-import { useWallet } from '@solana/wallet-adapter-react'
+// import mangoStore from '@store/mangoStore'
+// import SwapOnboardingTour from '@components/tours/SwapOnboardingTour'
+// import { useWallet } from '@solana/wallet-adapter-react'
 import SwapInfoTabs from './SwapInfoTabs'
 import dynamic from 'next/dynamic'
-import useLocalStorageState from 'hooks/useLocalStorageState'
-import { IS_ONBOARDED_KEY } from 'utils/constants'
+// import useLocalStorageState from 'hooks/useLocalStorageState'
+// import { IS_ONBOARDED_KEY } from 'utils/constants'
 const SwapTokenChart = dynamic(() => import('./SwapTokenChart'), { ssr: false })
 
 const SwapPage = () => {
-  const { connected } = useWallet()
-  const tourSettings = mangoStore((s) => s.settings.tours)
-  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  // const { connected } = useWallet()
+  // const tourSettings = mangoStore((s) => s.settings.tours)
+  // const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   return (
     <>
@@ -26,9 +26,9 @@ const SwapPage = () => {
           <SwapInfoTabs />
         </div>
       </div>
-      {!tourSettings?.swap_tour_seen && isOnboarded && connected ? (
+      {/* {!tourSettings?.swap_tour_seen && isOnboarded && connected ? (
         <SwapOnboardingTour />
-      ) : null}
+      ) : null} */}
     </>
   )
 }
