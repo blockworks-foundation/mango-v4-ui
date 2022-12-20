@@ -107,7 +107,6 @@ const TopBar = () => {
             <ThemeSwitcher />
           </div> */}
           <Button
-            disabled={!connected}
             onClick={() => handleDepositWithdrawModal('deposit')}
             secondary
             className="mx-4 hidden sm:block"

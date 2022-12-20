@@ -71,9 +71,8 @@ const AccountActions = () => {
         ) : null}
         <Button
           className="flex items-center"
-          disabled={!mangoAccount}
           onClick={() => setShowBorrowModal(true)}
-          secondary={hasBorrows}
+          secondary
         >
           <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
           {t('borrow')}
