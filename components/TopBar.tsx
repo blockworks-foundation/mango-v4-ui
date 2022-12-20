@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react'
 import {
+  ArrowDownTrayIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  ArrowUpTrayIcon,
   ExclamationTriangleIcon,
   UsersIcon,
 } from '@heroicons/react/20/solid'
@@ -32,6 +34,7 @@ const TopBar = () => {
   const { connected } = useWallet()
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [showUserSetup, setShowUserSetup] = useState(false)
+  const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
@@ -56,6 +59,11 @@ const TopBar = () => {
       setShowCreateAccountModal(true)
     }
   }, [mangoAccount])
+
+  const handleDepositWithdrawModal = (action: 'deposit' | 'withdraw') => {
+    setAction(action)
+    setShowDepositWithdrawModal(true)
+  }
 
   return (
     <>
@@ -100,10 +108,24 @@ const TopBar = () => {
           </div> */}
           <Button
             disabled={!connected}
-            onClick={() => setShowDepositWithdrawModal(true)}
+            onClick={() => handleDepositWithdrawModal('deposit')}
             secondary
-            className="mx-4"
+            className="mx-4 hidden sm:block"
           >{`${t('deposit')} / ${t('withdraw')}`}</Button>
+          <div className="flex items-center space-x-2 px-4 sm:hidden">
+            <IconButton
+              disabled={!connected}
+              onClick={() => handleDepositWithdrawModal('deposit')}
+            >
+              <ArrowDownTrayIcon className="h-5 w-5" />
+            </IconButton>
+            <IconButton
+              disabled={!connected}
+              onClick={() => handleDepositWithdrawModal('withdraw')}
+            >
+              <ArrowUpTrayIcon className="h-5 w-5" />
+            </IconButton>
+          </div>
           {connected ? (
             <div className="flex items-center pr-4 md:pr-0">
               <button
@@ -153,7 +175,7 @@ const TopBar = () => {
       </div>
       {showDepositWithdrawModal ? (
         <DepositWithdrawModal
-          action="deposit"
+          action={action}
           isOpen={showDepositWithdrawModal}
           onClose={() => setShowDepositWithdrawModal(false)}
         />
