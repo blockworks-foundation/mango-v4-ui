@@ -181,7 +181,7 @@ const TradeHistory = () => {
         <div className="px-6 py-4">
           <InlineNotification
             type="info"
-            desc="Only your recent trades are displayed. Full trade history will be available shortly."
+            desc="During the Mango V4 alpha, only your recent Openbook trades will be displayed here. Full trade history will be available shortly."
           />
         </div>
       </div>
@@ -190,7 +190,7 @@ const TradeHistory = () => {
         <div className="mb-8 w-full">
           <InlineNotification
             type="info"
-            desc="Only your recent trades are displayed. Full trade history will be available shortly."
+            desc="During the Mango V4 alpha, only your recent Openbook trades will be displayed here. Full trade history will be available shortly."
           />
         </div>
         <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
