@@ -22,7 +22,7 @@ import NumberFormat, {
 } from 'react-number-format'
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
-import { calculateMarketPrice } from 'utils/tradeForm'
+import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
@@ -39,21 +39,24 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import Slippage from './Slippage'
 import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
+import useIpAddress from 'hooks/useIpAddress'
 
 const TABS: [string, number][] = [
   ['Limit', 0],
   ['Market', 0],
 ]
 
+const set = mangoStore.getState().set
+
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const set = mangoStore.getState().set
   const tradeForm = mangoStore((s) => s.tradeForm)
   const { mangoTokens } = useJupiterMints()
-  const { selectedMarket, price: marketPrice } = useSelectedMarket()
+  const { selectedMarket, price: oraclePrice } = useSelectedMarket()
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
+  const { ipAllowed, ipCountry } = useIpAddress()
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[0]
@@ -63,7 +66,7 @@ const AdvancedTradeForm = () => {
     if (!baseSymbol || !mangoTokens.length) return ''
     const token =
       mangoTokens.find((t) => t.symbol === baseSymbol) ||
-      mangoTokens.find((t) => t.symbol.includes(baseSymbol))
+      mangoTokens.find((t) => t.symbol?.includes(baseSymbol))
     if (token) {
       return token.logoURI
     }
@@ -93,14 +96,11 @@ const AdvancedTradeForm = () => {
     return ''
   }, [quoteSymbol, mangoTokens])
 
-  const setTradeType = useCallback(
-    (tradeType: 'Limit' | 'Market') => {
-      set((s) => {
-        s.tradeForm.tradeType = tradeType
-      })
-    },
-    [set]
-  )
+  const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
+    set((s) => {
+      s.tradeForm.tradeType = tradeType
+    })
+  }, [])
 
   const handlePriceChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
@@ -114,7 +114,7 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [set]
+    []
   )
 
   const handleBaseSizeChange = useCallback(
@@ -123,8 +123,8 @@ const AdvancedTradeForm = () => {
       set((s) => {
         const price =
           s.tradeForm.tradeType === 'Market'
-            ? marketPrice
-            : parseFloat(s.tradeForm.price)
+            ? oraclePrice
+            : Number(s.tradeForm.price)
 
         s.tradeForm.baseSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
@@ -134,7 +134,7 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [set, marketPrice]
+    [oraclePrice]
   )
 
   const handleQuoteSizeChange = useCallback(
@@ -143,8 +143,8 @@ const AdvancedTradeForm = () => {
       set((s) => {
         const price =
           s.tradeForm.tradeType === 'Market'
-            ? marketPrice
-            : parseFloat(s.tradeForm.price)
+            ? oraclePrice
+            : Number(s.tradeForm.price)
 
         s.tradeForm.quoteSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
@@ -154,75 +154,87 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [set, marketPrice]
+    [oraclePrice]
   )
 
-  const handlePostOnlyChange = useCallback(
-    (postOnly: boolean) => {
+  const handlePostOnlyChange = useCallback((postOnly: boolean) => {
+    set((s) => {
+      s.tradeForm.postOnly = postOnly
+      if (s.tradeForm.ioc === true) {
+        s.tradeForm.ioc = !postOnly
+      }
+    })
+  }, [])
+
+  const handleIocChange = useCallback((ioc: boolean) => {
+    set((s) => {
+      s.tradeForm.ioc = ioc
+      if (s.tradeForm.postOnly === true) {
+        s.tradeForm.postOnly = !ioc
+      }
+    })
+  }, [])
+
+  const handleSetSide = useCallback((side: 'buy' | 'sell') => {
+    set((s) => {
+      s.tradeForm.side = side
+    })
+  }, [])
+
+  const tickDecimals = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return 1
+    let tickSize: number
+    if (selectedMarket instanceof Serum3Market) {
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      tickSize = market.tickSize
+    } else {
+      tickSize = selectedMarket.tickSize
+    }
+    return getDecimalCount(tickSize)
+  }, [selectedMarket])
+
+  /*
+   * Updates the limit price on page load
+   */
+  useEffect(() => {
+    if (tradeForm.price === undefined) {
+      const group = mangoStore.getState().group
+      if (!group || !oraclePrice) return
+
       set((s) => {
-        s.tradeForm.postOnly = postOnly
-        if (s.tradeForm.ioc === true) {
-          s.tradeForm.ioc = !postOnly
-        }
+        s.tradeForm.price = oraclePrice.toFixed(tickDecimals)
       })
-    },
-    [set]
-  )
+    }
+  }, [oraclePrice, tickDecimals, tradeForm.price])
 
-  const handleIocChange = useCallback(
-    (ioc: boolean) => {
-      set((s) => {
-        s.tradeForm.ioc = ioc
-        if (s.tradeForm.postOnly === true) {
-          s.tradeForm.postOnly = !ioc
-        }
-      })
-    },
-    [set]
-  )
-
-  const handleSetSide = useCallback(
-    (side: 'buy' | 'sell') => {
-      set((s) => {
-        s.tradeForm.side = side
-      })
-    },
-    [set]
-  )
-
+  /*
+   * Updates the price and the quote size when a Market order is selected
+   */
   useEffect(() => {
     const group = mangoStore.getState().group
     if (
       tradeForm.tradeType === 'Market' &&
-      marketPrice &&
+      oraclePrice &&
       selectedMarket &&
       group
     ) {
-      let tickSize: number
-      if (selectedMarket instanceof Serum3Market) {
-        const market = group.getSerum3ExternalMarket(
-          selectedMarket.serumMarketExternal
-        )
-        tickSize = market.tickSize
-      } else {
-        tickSize = selectedMarket.tickSize
-      }
-      if (tradeForm.baseSize) {
-        const baseSize = new Decimal(tradeForm.baseSize).toNumber()
-        const orderbook = mangoStore.getState().selectedMarket.orderbook
-        const price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
-        const quoteSize = baseSize * price
+      if (!isNaN(parseFloat(tradeForm.baseSize))) {
+        const baseSize = new Decimal(tradeForm.baseSize)?.toNumber()
+        const quoteSize = baseSize * oraclePrice
         set((s) => {
-          s.tradeForm.price = price.toFixed(getDecimalCount(tickSize))
-          s.tradeForm.quoteSize = quoteSize.toFixed(getDecimalCount(tickSize))
+          s.tradeForm.price = oraclePrice.toFixed(tickDecimals)
+          s.tradeForm.quoteSize = quoteSize.toFixed(tickDecimals)
         })
       } else {
         set((s) => {
-          s.tradeForm.price = marketPrice.toFixed(getDecimalCount(tickSize))
+          s.tradeForm.price = oraclePrice.toFixed(tickDecimals)
         })
       }
     }
-  }, [marketPrice, selectedMarket, tradeForm])
+  }, [oraclePrice, selectedMarket, tickDecimals, tradeForm])
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -235,11 +247,15 @@ const AdvancedTradeForm = () => {
     if (!group || !mangoAccount) return
     setPlacingOrder(true)
     try {
-      const baseSize = new Decimal(tradeForm.baseSize).toNumber()
-      let price = new Decimal(tradeForm.price).toNumber()
+      const baseSize = Number(tradeForm.baseSize)
+      let price = Number(tradeForm.price)
       if (tradeForm.tradeType === 'Market') {
         const orderbook = mangoStore.getState().selectedMarket.orderbook
-        price = calculateMarketPrice(orderbook, baseSize, tradeForm.side)
+        price = calculateLimitPriceForMarketOrder(
+          orderbook,
+          baseSize,
+          tradeForm.side
+        )
       }
 
       if (selectedMarket instanceof Serum3Market) {
@@ -260,7 +276,6 @@ const AdvancedTradeForm = () => {
           Date.now(),
           10
         )
-        actions.reloadMangoAccount()
         actions.fetchOpenOrders()
         notify({
           type: 'success',
@@ -289,7 +304,6 @@ const AdvancedTradeForm = () => {
           undefined,
           undefined
         )
-        actions.reloadMangoAccount()
         actions.fetchOpenOrders()
         notify({
           type: 'success',
@@ -308,45 +322,48 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [t])
+  }, [])
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !group || !Number(tradeForm.baseSize)) return 100
+
+    if (!mangoAccount || !group || !Number.isFinite(Number(tradeForm.baseSize)))
+      return 100
 
     let simulatedHealthRatio = 0
-
-    if (selectedMarket instanceof Serum3Market) {
-      simulatedHealthRatio =
-        tradeForm.side === 'sell'
-          ? mangoAccount.simHealthRatioWithSerum3AskUiChanges(
-              group,
-              parseFloat(tradeForm.baseSize),
-              selectedMarket.serumMarketExternal,
-              HealthType.maint
-            )
-          : mangoAccount.simHealthRatioWithSerum3BidUiChanges(
-              group,
-              parseFloat(tradeForm.baseSize),
-              selectedMarket.serumMarketExternal,
-              HealthType.maint
-            )
-    } else if (selectedMarket instanceof PerpMarket) {
-      simulatedHealthRatio =
-        tradeForm.side === 'sell'
-          ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
-              group,
-              selectedMarket.perpMarketIndex,
-              parseFloat(tradeForm.baseSize),
-              parseFloat(tradeForm.price)
-            )
-          : mangoAccount.simHealthRatioWithPerpBidUiChanges(
-              group,
-              selectedMarket.perpMarketIndex,
-              parseFloat(tradeForm.baseSize),
-              parseFloat(tradeForm.price)
-            )
+    try {
+      if (selectedMarket instanceof Serum3Market) {
+        simulatedHealthRatio =
+          tradeForm.side === 'sell'
+            ? mangoAccount.simHealthRatioWithSerum3AskUiChanges(
+                group,
+                Number(tradeForm.baseSize),
+                selectedMarket.serumMarketExternal,
+                HealthType.maint
+              )
+            : mangoAccount.simHealthRatioWithSerum3BidUiChanges(
+                group,
+                Number(tradeForm.quoteSize),
+                selectedMarket.serumMarketExternal,
+                HealthType.maint
+              )
+      } else if (selectedMarket instanceof PerpMarket) {
+        simulatedHealthRatio =
+          tradeForm.side === 'sell'
+            ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
+                group,
+                selectedMarket.perpMarketIndex,
+                parseFloat(tradeForm.baseSize)
+              )
+            : mangoAccount.simHealthRatioWithPerpBidUiChanges(
+                group,
+                selectedMarket.perpMarketIndex,
+                parseFloat(tradeForm.baseSize)
+              )
+      }
+    } catch (e) {
+      console.warn('Error calculating projected health: ', e)
     }
 
     return simulatedHealthRatio > 100
@@ -354,7 +371,7 @@ const AdvancedTradeForm = () => {
       : simulatedHealthRatio < 0
       ? 0
       : Math.trunc(simulatedHealthRatio)
-  }, [selectedMarket, tradeForm])
+  }, [selectedMarket, tradeForm.baseSize, tradeForm.side])
 
   return (
     <div>
@@ -384,15 +401,13 @@ const AdvancedTradeForm = () => {
             </div>
             <div className="default-transition flex items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
               {quoteLogoURI ? (
-                <Image
-                  className="rounded-full"
-                  alt=""
-                  width="24"
-                  height="24"
-                  src={quoteLogoURI}
-                />
+                <div className="h-5 w-5 flex-shrink-0">
+                  <Image alt="" width="20" height="20" src={quoteLogoURI} />
+                </div>
               ) : (
-                <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+                <div className="h-5 w-5 flex-shrink-0">
+                  <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
+                </div>
               )}
               <NumberFormat
                 inputMode="decimal"
@@ -418,16 +433,18 @@ const AdvancedTradeForm = () => {
         </div>
         <div className="flex flex-col">
           <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
-            <LogoWithFallback
-              alt=""
-              className="z-10 drop-shadow-md"
-              width={'24'}
-              height={'24'}
-              src={baseLogoURI || `/icons/${baseSymbol?.toLowerCase()}.svg`}
-              fallback={
-                <QuestionMarkCircleIcon className={`h-5 w-5 text-th-fgd-3`} />
-              }
-            />
+            <div className="h-5 w-5 flex-shrink-0">
+              <LogoWithFallback
+                alt=""
+                className="z-10 drop-shadow-md"
+                width={'24'}
+                height={'24'}
+                src={baseLogoURI || `/icons/${baseSymbol?.toLowerCase()}.svg`}
+                fallback={
+                  <QuestionMarkCircleIcon className={`h-5 w-5 text-th-fgd-3`} />
+                }
+              />
+            </div>
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
@@ -447,9 +464,13 @@ const AdvancedTradeForm = () => {
           </div>
           <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
             {quoteLogoURI ? (
-              <Image alt="" width="24" height="24" src={quoteLogoURI} />
+              <div className="h-5 w-5 flex-shrink-0">
+                <Image alt="" width="20" height="20" src={quoteLogoURI} />
+              </div>
             ) : (
-              <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+              <div className="h-5 w-5 flex-shrink-0">
+                <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
+              </div>
             )}
             <NumberFormat
               inputMode="decimal"
@@ -538,27 +559,41 @@ const AdvancedTradeForm = () => {
         ) : null}
       </div>
       <div className="mt-6 flex px-3 md:px-4">
-        <Button
-          onClick={handlePlaceOrder}
-          className={`flex w-full items-center justify-center text-white ${
-            tradeForm.side === 'buy'
-              ? 'bg-th-up-dark md:hover:bg-th-up'
-              : 'bg-th-down-dark md:hover:bg-th-down'
-          }`}
-          disabled={false}
-          size="large"
-        >
-          {!placingOrder ? (
-            <span className="capitalize">
-              {t('trade:place-order', { side: tradeForm.side })}
-            </span>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Loading />
-              <span>{t('trade:placing-order')}</span>
+        {ipAllowed ? (
+          <Button
+            onClick={handlePlaceOrder}
+            className={`flex w-full items-center justify-center text-white ${
+              tradeForm.side === 'buy'
+                ? 'bg-th-up-dark md:hover:bg-th-up'
+                : 'bg-th-down-dark md:hover:bg-th-down'
+            }`}
+            disabled={false}
+            size="large"
+          >
+            {!placingOrder ? (
+              <span className="capitalize">
+                {t('trade:place-order', { side: tradeForm.side })}
+              </span>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Loading />
+                <span>{t('trade:placing-order')}</span>
+              </div>
+            )}
+          </Button>
+        ) : (
+          <div className="flex-grow">
+            <div className="flex">
+              <Button disabled className="flex-grow">
+                <span>
+                  {t('country-not-allowed', {
+                    country: ipCountry ? `(${ipCountry})` : '(Unknown)',
+                  })}
+                </span>
+              </Button>
             </div>
-          )}
-        </Button>
+          </div>
+        )}
       </div>
       <div className="mt-4 space-y-2 px-3 md:px-4 lg:mt-6">
         {tradeForm.price && tradeForm.baseSize ? (

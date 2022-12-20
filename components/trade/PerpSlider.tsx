@@ -28,14 +28,12 @@ const PerpSlider = () => {
       if (side === 'buy') {
         return mangoAccount.getMaxQuoteForPerpBidUi(
           group,
-          selectedMarket.perpMarketIndex,
-          parseFloat(tradeForm.price)
+          selectedMarket.perpMarketIndex
         )
       } else {
         return mangoAccount.getMaxBaseForPerpAskUi(
           group,
-          selectedMarket.perpMarketIndex,
-          parseFloat(tradeForm.price)
+          selectedMarket.perpMarketIndex
         )
       }
     } catch (e) {
@@ -56,7 +54,7 @@ const PerpSlider = () => {
         const price =
           s.tradeForm.tradeType === 'Market'
             ? marketPrice
-            : parseFloat(s.tradeForm.price)
+            : Number(s.tradeForm.price)
 
         if (s.tradeForm.side === 'buy') {
           s.tradeForm.quoteSize = val

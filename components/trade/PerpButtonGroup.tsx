@@ -22,14 +22,12 @@ const PerpButtonGroup = () => {
       if (side === 'buy') {
         return mangoAccount.getMaxQuoteForPerpBidUi(
           group,
-          selectedMarket.perpMarketIndex,
-          parseFloat(tradeFormPrice)
+          selectedMarket.perpMarketIndex
         )
       } else {
         return mangoAccount.getMaxBaseForPerpAskUi(
           group,
-          selectedMarket.perpMarketIndex,
-          parseFloat(tradeFormPrice)
+          selectedMarket.perpMarketIndex
         )
       }
     } catch (e) {
@@ -53,9 +51,7 @@ const PerpButtonGroup = () => {
           s.tradeForm.quoteSize = size.toString()
 
           if (Number(s.tradeForm.price)) {
-            s.tradeForm.baseSize = (
-              size / parseFloat(s.tradeForm.price)
-            ).toString()
+            s.tradeForm.baseSize = (size / Number(s.tradeForm.price)).toString()
           } else {
             s.tradeForm.baseSize = ''
           }
@@ -64,7 +60,7 @@ const PerpButtonGroup = () => {
 
           if (Number(s.tradeForm.price)) {
             s.tradeForm.quoteSize = (
-              size * parseFloat(s.tradeForm.price)
+              size * Number(s.tradeForm.price)
             ).toString()
           }
         }

@@ -16,7 +16,6 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState(mangoAccount?.name || '')
 
-  // This doesn't work yet...
   const handleUpdateccountName = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group

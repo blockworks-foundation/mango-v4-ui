@@ -50,9 +50,7 @@ const SpotButtonGroup = () => {
           s.tradeForm.quoteSize = size.toString()
 
           if (Number(s.tradeForm.price)) {
-            s.tradeForm.baseSize = (
-              size / parseFloat(s.tradeForm.price)
-            ).toString()
+            s.tradeForm.baseSize = (size / Number(s.tradeForm.price)).toString()
           } else {
             s.tradeForm.baseSize = ''
           }
@@ -61,7 +59,7 @@ const SpotButtonGroup = () => {
 
           if (Number(s.tradeForm.price)) {
             s.tradeForm.quoteSize = (
-              size * parseFloat(s.tradeForm.price)
+              size * Number(s.tradeForm.price)
             ).toString()
           }
         }

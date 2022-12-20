@@ -1,3 +1,5 @@
+import { BN } from '@project-serum/anchor'
+
 export interface ChartTradeType {
   market: string
   size: number
@@ -9,9 +11,10 @@ export interface ChartTradeType {
   takerSide: any
   feeCost: number
   marketAddress: string
+  timestamp: BN
 }
 
-export interface Orderbook {
+export interface OrderbookL2 {
   bids: number[][]
   asks: number[][]
 }

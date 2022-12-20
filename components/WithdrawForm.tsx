@@ -1,45 +1,46 @@
 import { Bank, HealthType } from '@blockworks-foundation/mango-v4'
 import {
+  ArrowLeftIcon,
+  ArrowUpTrayIcon,
   ChevronDownIcon,
-  CurrencyDollarIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import React, { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
+
 import mangoStore from '@store/mangoStore'
-import { ModalProps } from '../../types/modal'
-import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
-import { notify } from '../../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
-import ActionTokenList from '../account/ActionTokenList'
-import ButtonGroup from '../forms/ButtonGroup'
-import Label from '../forms/Label'
-import Button from '../shared/Button'
-import InlineNotification from '../shared/InlineNotification'
-import Loading from '../shared/Loading'
-import Modal from '../shared/Modal'
-import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
-import { withValueLimit } from '../swap/SwapForm'
-import { getMaxWithdrawForBank } from '../swap/useTokenMax'
+import {
+  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  INPUT_TOKEN_DEFAULT,
+} from './../utils/constants'
+import { notify } from './../utils/notifications'
+import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import ActionTokenList from './account/ActionTokenList'
+import ButtonGroup from './forms/ButtonGroup'
+import Label from './forms/Label'
+import Button from './shared/Button'
+import InlineNotification from './shared/InlineNotification'
+import Loading from './shared/Loading'
+import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
+import { withValueLimit } from './swap/SwapForm'
+import { getMaxWithdrawForBank } from './swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
-import Tooltip from '@components/shared/Tooltip'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 
-interface BorrowModalProps {
+interface WithdrawFormProps {
+  onSuccess: () => void
   token?: string
 }
 
-type ModalCombinedProps = BorrowModalProps & ModalProps
-
-function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
-  const { t } = useTranslation('common')
+function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
+  const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -53,7 +54,7 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return group?.banksMapByName.get(selectedToken)![0]
+    return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
@@ -61,60 +62,52 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     if (mangoTokens?.length) {
       logoURI = mangoTokens.find(
         (t) => t.address === bank?.mint.toString()
-      )!.logoURI
+      )?.logoURI
     }
     return logoURI
-  }, [mangoTokens, bank])
+  }, [bank?.mint, mangoTokens])
 
   const tokenMax = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !bank || !mangoAccount) return new Decimal(0)
-    const amount = getMaxWithdrawForBank(group, bank, mangoAccount, true)
+    if (!bank || !mangoAccount || !group) return new Decimal(0)
+    const amount = getMaxWithdrawForBank(group, bank, mangoAccount)
+
     return amount && amount.gt(0)
       ? floorToDecimal(amount, bank.mintDecimals)
       : new Decimal(0)
-  }, [mangoAccount, bank])
-
-  const setMax = useCallback(() => {
-    setInputAmount(tokenMax.toFixed())
-  }, [tokenMax])
+  }, [mangoAccount, bank, group])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
-      if (!bank) return
       setSizePercentage(percentage)
-      const amount = (Number(percentage) / 100) * (tokenMax.toNumber() || 0)
-      setInputAmount(floorToDecimal(amount, bank.mintDecimals).toFixed())
+      const amount = tokenMax.mul(Number(percentage) / 100)
+      setInputAmount(amount.toFixed())
     },
-    [tokenMax, bank]
+    [tokenMax]
   )
 
-  const handleSelectToken = (token: string) => {
-    setSelectedToken(token)
-    setShowTokenList(false)
-  }
-
-  const handleWithdraw = async () => {
+  const handleWithdraw = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
-    if (!mangoAccount || !group) return
+    if (!mangoAccount || !group || !bank) return
     setSubmitting(true)
     try {
       const tx = await client.tokenWithdraw(
         group,
         mangoAccount,
-        bank!.mint,
-        Number(inputAmount),
-        true
+        bank.mint,
+        parseFloat(inputAmount),
+        false
       )
       notify({
         title: 'Transaction confirmed',
         type: 'success',
         txid: tx,
       })
-      actions.reloadMangoAccount()
+      await actions.reloadMangoAccount()
+      setSubmitting(false)
+      onSuccess()
     } catch (e: any) {
       console.error(e)
       notify({
@@ -123,33 +116,39 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
         txid: e?.txid,
         type: 'error',
       })
-    } finally {
       setSubmitting(false)
-      onClose()
     }
-  }
+  }, [bank, inputAmount])
 
-  const banks = useMemo(() => {
+  const handleSelectToken = useCallback((token: string) => {
+    setSelectedToken(token)
+    setShowTokenList(false)
+  }, [])
+
+  const withdrawBanks = useMemo(() => {
     if (mangoAccount) {
-      return group?.banksMapByName
+      const banks = group?.banksMapByName
         ? Array.from(group?.banksMapByName, ([key, value]) => {
             const bank: Bank = value[0]
-            const maxAmount = getMaxWithdrawForBank(
+            const accountBalance = getMaxWithdrawForBank(
               group,
               bank,
-              mangoAccount,
-              true
+              mangoAccount
             )
             return {
               key,
               value,
-              maxAmount: floorToDecimal(
-                maxAmount,
-                bank.mintDecimals
-              ).toNumber(),
+              accountBalance: accountBalance
+                ? floorToDecimal(accountBalance, bank.mintDecimals).toNumber()
+                : 0,
+              accountBalanceValue:
+                accountBalance && bank.uiPrice
+                  ? accountBalance.toNumber() * bank.uiPrice
+                  : 0,
             }
           })
         : []
+      return banks
     }
     return []
   }, [mangoAccount, group])
@@ -165,50 +164,56 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
     : false
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <>
       <EnterBottomExitBottom
         className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
         show={showTokenList}
       >
-        <h2 className="mb-4 text-center">{t('select-token')}</h2>
+        <button
+          onClick={() => setShowTokenList(false)}
+          className={`absolute left-4 top-4 z-40 w-6 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
+        >
+          <ArrowLeftIcon className={`h-6 w-6`} />
+        </button>
+        <h2 className="mb-4 text-center text-lg">
+          {t('select-withdraw-token')}
+        </h2>
         <div className="grid auto-cols-fr grid-flow-col  px-4 pb-2">
-          <div className="">
+          <div className="text-left">
             <p className="text-xs">{t('token')}</p>
           </div>
-          <div className="text-right">
-            <p className="text-xs">{t('borrow-rate')}</p>
-          </div>
-          <div className="text-right">
-            <p className="whitespace-nowrap text-xs">{t('max-borrow')}</p>
+          <div className="flex justify-end">
+            <p className="text-xs">{t('available-balance')}</p>
           </div>
         </div>
         <ActionTokenList
-          banks={banks}
+          banks={withdrawBanks}
           onSelect={handleSelectToken}
-          showBorrowRates
-          sortByKey="maxAmount"
-          valueKey="maxAmount"
+          sortByKey="accountBalanceValue"
+          valueKey="accountBalance"
         />
       </EnterBottomExitBottom>
-      <FadeInFadeOut className="flex flex-col justify-between" show={isOpen}>
+      <FadeInFadeOut
+        className={`flex h-[${ACCOUNT_ACTION_MODAL_INNER_HEIGHT}] flex-col justify-between`}
+        show={!showTokenList}
+      >
         <div>
-          <h2 className="mb-4 text-center">{t('borrow')}</h2>
-          {initHealth && initHealth <= 0 ? (
+          {initHealth <= 0 ? (
             <div className="mb-4">
               <InlineNotification
                 type="error"
-                desc="You have no available collateral to borrow against."
+                desc="You have no available collateral to withdraw."
               />
             </div>
           ) : null}
           <div className="grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
-              <Label text={t('token')} />
+              <Label text={`${t('withdraw')} ${t('token')}`} />
               <MaxAmountButton
                 className="mb-2"
                 label={t('max')}
-                onClick={setMax}
-                value={tokenMax.toFixed()}
+                onClick={() => handleSizePercentage('100')}
+                value={tokenMax.toString()}
               />
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
@@ -257,78 +262,59 @@ function BorrowModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 unit="%"
               />
             </div>
-            {/* <div className="col-span-2 mt-4">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-th-fgd-3">{t('leverage')}</p>
-                <p className="text-th-fgd-3">0.00x</p>
-              </div>
-              <BorrowLeverageSlider
-                amount={Number(inputAmount) || 0}
-                tokenMax={tokenMax}
-                onChange={(x) => setInputAmount(x)}
-              />
-            </div> */}
           </div>
+          <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
+            <HealthImpactTokenChange
+              mintPk={bank!.mint}
+              uiAmount={Number(inputAmount)}
+            />
+            <div className="flex justify-between">
+              <p>{t('withdraw-value')}</p>
+              <p className="font-mono text-th-fgd-1">
+                {bank?.uiPrice
+                  ? formatFixedDecimals(
+                      bank.uiPrice * Number(inputAmount),
+                      true
+                    )
+                  : '-'}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <Button
+            onClick={handleWithdraw}
+            className="flex w-full items-center justify-center"
+            size="large"
+            disabled={
+              !inputAmount || showInsufficientBalance || initHealth <= 0
+            }
+          >
+            {submitting ? (
+              <Loading className="mr-2 h-5 w-5" />
+            ) : showInsufficientBalance ? (
+              <div className="flex items-center">
+                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                {t('swap:insufficient-balance', {
+                  symbol: selectedToken,
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
+                {t('withdraw')}
+              </div>
+            )}
+          </Button>
           {bank ? (
-            <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
-              <HealthImpactTokenChange
-                mintPk={bank.mint}
-                uiAmount={Number(inputAmount)}
-              />
-              <div className="flex justify-between">
-                <p>{t('borrow-value')}</p>
-                <p className="font-mono text-th-fgd-1">
-                  {formatFixedDecimals(
-                    bank.uiPrice * Number(inputAmount),
-                    true
-                  )}
-                </p>
-              </div>
-              <div className="flex justify-between">
-                <Tooltip content={t('loan-origination-fee-tooltip')}>
-                  <p className="tooltip-underline">
-                    {t('loan-origination-fee')}
-                  </p>
-                </Tooltip>
-                <p className="font-mono text-th-fgd-1">
-                  {formatFixedDecimals(
-                    bank.loanOriginationFeeRate.toNumber() *
-                      Number(inputAmount),
-                    true
-                  )}
-                </p>
-              </div>
+            <div className="pt-4">
+              <TokenVaultWarnings bank={bank} />
             </div>
           ) : null}
         </div>
-        <Button
-          onClick={handleWithdraw}
-          className="flex w-full items-center justify-center"
-          disabled={!inputAmount || showInsufficientBalance}
-          size="large"
-        >
-          {submitting ? (
-            <Loading className="mr-2 h-5 w-5" />
-          ) : showInsufficientBalance ? (
-            <div className="flex items-center">
-              <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-              {t('swap:insufficient-collateral')}
-            </div>
-          ) : (
-            <div className="flex items-center">
-              <CurrencyDollarIcon className="mr-2 h-5 w-5" />
-              {t('borrow')}
-            </div>
-          )}
-        </Button>
-        {bank ? (
-          <div className="pt-4">
-            <TokenVaultWarnings bank={bank} />
-          </div>
-        ) : null}
       </FadeInFadeOut>
-    </Modal>
+    </>
   )
 }
 
-export default BorrowModal
+export default WithdrawForm

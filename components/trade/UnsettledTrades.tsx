@@ -45,7 +45,6 @@ const UnsettledTrades = ({
         new PublicKey(mktAddress)
       )
       actions.fetchOpenOrders()
-      actions.reloadMangoAccount()
       notify({
         type: 'success',
         title: 'Successfully settled funds',
@@ -162,19 +161,23 @@ const UnsettledTrades = ({
                     <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right font-mono">
-                    <div className="flex">
-                      <div>
-                        {unsettledSpotBalances[mktAddress].base || 0.0}{' '}
-                        <span className="font-body tracking-wide text-th-fgd-4">
-                          {base}
-                        </span>
-                      </div>
-                      <div>
-                        {unsettledSpotBalances[mktAddress].quote || 0.0}{' '}
-                        <span className="font-body tracking-wide text-th-fgd-4">
-                          {quote}
-                        </span>
-                      </div>
+                    <div className="flex justify-end">
+                      {unsettledSpotBalances[mktAddress].base ? (
+                        <div>
+                          {unsettledSpotBalances[mktAddress].base}{' '}
+                          <span className="font-body tracking-wide text-th-fgd-4">
+                            {base}
+                          </span>
+                        </div>
+                      ) : null}
+                      {unsettledSpotBalances[mktAddress].quote ? (
+                        <div className="ml-4">
+                          {unsettledSpotBalances[mktAddress].quote}{' '}
+                          <span className="font-body tracking-wide text-th-fgd-4">
+                            {quote}
+                          </span>
+                        </div>
+                      ) : null}
                     </div>
                   </Td>
                   <Td>

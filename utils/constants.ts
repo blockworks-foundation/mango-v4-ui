@@ -7,6 +7,9 @@ export const MANGO_MINT = 'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac'
 export const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 export const OUTPUT_TOKEN_DEFAULT = 'SOL'
 
+export const JUPITER_V4_PROGRAM_ID =
+  'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
+
 export const IS_ONBOARDED_KEY = 'isOnboarded-0.1'
 
 export const SHOW_ZERO_BALANCES_KEY = 'show-zero-balances-0.1'
@@ -45,6 +48,9 @@ export const GRID_LAYOUT_KEY = 'savedLayouts-0.1'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition'
 
+export const FAVORITE_MARKETS_KEY = 'favoriteMarkets'
+
 export const MIN_SOL_BALANCE = 0.04
 
-export const FAVORITE_MARKETS_KEY = 'favoriteMarkets'
+export const ACCOUNT_ACTION_MODAL_HEIGHT = '448px'
+export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '386px'

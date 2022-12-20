@@ -1,6 +1,7 @@
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import {
   ArrowDownTrayIcon,
+  ArrowLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
@@ -12,20 +13,22 @@ import Image from 'next/legacy/image'
 import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
-import { ModalProps } from '../../types/modal'
-import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from '../../utils/constants'
-import { notify } from '../../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
-import { TokenAccount } from '../../utils/tokens'
-import ActionTokenList from '../account/ActionTokenList'
-import ButtonGroup from '../forms/ButtonGroup'
-import Label from '../forms/Label'
-import Button from '../shared/Button'
-import InlineNotification from '../shared/InlineNotification'
-import Loading from '../shared/Loading'
-import Modal from '../shared/Modal'
-import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
-import { withValueLimit } from '../swap/SwapForm'
+import {
+  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  ALPHA_DEPOSIT_LIMIT,
+  INPUT_TOKEN_DEFAULT,
+} from './../utils/constants'
+import { notify } from './../utils/notifications'
+import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import { TokenAccount } from './../utils/tokens'
+import ActionTokenList from './account/ActionTokenList'
+import ButtonGroup from './forms/ButtonGroup'
+import Label from './forms/Label'
+import Button from './shared/Button'
+import InlineNotification from './shared/InlineNotification'
+import Loading from './shared/Loading'
+import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
+import { withValueLimit } from './swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
@@ -33,11 +36,10 @@ import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 
-interface DepositModalProps {
+interface DepositFormProps {
+  onSuccess: () => void
   token?: string
 }
-
-type ModalCombinedProps = DepositModalProps & ModalProps
 
 export const walletBalanceForToken = (
   walletTokens: TokenAccount[],
@@ -60,7 +62,7 @@ export const walletBalanceForToken = (
   }
 }
 
-function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
+function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
@@ -124,8 +126,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
     if (!mangoAccount || !group || !bank) return
 
+    setSubmitting(true)
     try {
-      setSubmitting(true)
       const tx = await client.tokenDeposit(
         group,
         mangoAccount,
@@ -141,6 +143,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       await actions.reloadMangoAccount()
       actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
       setSubmitting(false)
+      onSuccess()
     } catch (e: any) {
       notify({
         title: 'Transaction failed',
@@ -149,10 +152,9 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         type: 'error',
       })
       console.error('Error depositing:', e)
+      setSubmitting(false)
     }
-
-    onClose()
-  }, [bank, wallet, inputAmount, onClose])
+  }, [bank, wallet, inputAmount])
 
   // TODO extract into a shared hook for UserSetup.tsx
   const banks = useMemo(() => {
@@ -186,20 +188,28 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       mangoAccount.getEquity(group).toNumber()
     )
     return (
-      parseFloat(inputAmount) > ALPHA_DEPOSIT_LIMIT ||
+      parseFloat(inputAmount) * (bank?.uiPrice || 1) > ALPHA_DEPOSIT_LIMIT ||
       accountValue > ALPHA_DEPOSIT_LIMIT
     )
-  }, [inputAmount])
+  }, [inputAmount, bank])
 
   const showInsufficientBalance = tokenMax.maxAmount < Number(inputAmount)
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <>
       <EnterBottomExitBottom
         className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
         show={showTokenList}
       >
-        <h2 className="mb-4 text-center">{t('select-token')}</h2>
+        <button
+          onClick={() => setShowTokenList(false)}
+          className={`absolute left-4 top-4 z-40 w-6 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
+        >
+          <ArrowLeftIcon className={`h-6 w-6`} />
+        </button>
+        <h2 className="mb-4 text-center text-lg">
+          {t('select-deposit-token')}
+        </h2>
         <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
           <div className="text-left">
             <p className="text-xs">{t('token')}</p>
@@ -220,14 +230,13 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut
-        className="flex h-full flex-col justify-between"
-        show={isOpen}
+        className={`flex h-[${ACCOUNT_ACTION_MODAL_INNER_HEIGHT}] flex-col justify-between`}
+        show={!showTokenList}
       >
         <div>
-          <h2 className="mb-2 text-center">{t('deposit')}</h2>
           <InlineNotification
             type="info"
-            desc={`There is a $${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha
+            desc={`There is a $${ALPHA_DEPOSIT_LIMIT} account value limit during alpha
             testing.`}
           />
           <SolBalanceWarnings
@@ -237,7 +246,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           />
           <div className="mt-4 grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
-              <Label text={t('token')} />
+              <Label text={`${t('deposit')} ${t('token')}`} />
               <MaxAmountButton
                 className="mb-2"
                 label={t('wallet-balance')}
@@ -312,14 +321,14 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
                   : '-'}
               </p>
             </div>
-            <div className="flex justify-between">
+            {/* <div className="flex justify-between">
               <div className="flex items-center">
                 <Tooltip content={t('asset-weight-desc')}>
                   <p className="tooltip-underline">{t('asset-weight')}</p>
                 </Tooltip>
               </div>
               <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
-            </div>
+            </div> */}
             <div className="flex justify-between">
               <Tooltip content={t('tooltip-collateral-value')}>
                 <p className="tooltip-underline">{t('collateral-value')}</p>
@@ -360,8 +369,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           </Button>
         </div>
       </FadeInFadeOut>
-    </Modal>
+    </>
   )
 }
 
-export default DepositModal
+export default DepositForm
