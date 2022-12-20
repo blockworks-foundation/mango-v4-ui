@@ -28,12 +28,12 @@ function Modal({
         }`}
         aria-hidden="true"
       />
-      <div className="fixed inset-0 flex items-center justify-center px-4 text-center">
-        <Dialog.Panel className="relative w-full max-w-md rounded-lg border border-th-bkg-3 bg-th-bkg-1 p-6">
+      <div className="fixed inset-0 flex items-center text-center sm:justify-center sm:px-4">
+        <Dialog.Panel className="relative h-full w-full bg-th-bkg-1 p-4 pt-6 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6">
           {!hideClose ? (
             <button
               onClick={onClose}
-              className={`absolute right-4 top-4 z-40 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
+              className={`absolute right-4 top-4 z-40 text-th-fgd-4 focus:outline-none sm:right-2 sm:top-2 md:hover:text-th-active`}
             >
               <XMarkIcon className={`h-6 w-6`} />
             </button>

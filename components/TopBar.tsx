@@ -113,16 +113,10 @@ const TopBar = () => {
             className="mx-4 hidden sm:block"
           >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           <div className="flex items-center space-x-2 px-4 sm:hidden">
-            <IconButton
-              disabled={!connected}
-              onClick={() => handleDepositWithdrawModal('deposit')}
-            >
+            <IconButton onClick={() => handleDepositWithdrawModal('deposit')}>
               <ArrowDownTrayIcon className="h-5 w-5" />
             </IconButton>
-            <IconButton
-              disabled={!connected}
-              onClick={() => handleDepositWithdrawModal('withdraw')}
-            >
+            <IconButton onClick={() => handleDepositWithdrawModal('withdraw')}>
               <ArrowUpTrayIcon className="h-5 w-5" />
             </IconButton>
           </div>
