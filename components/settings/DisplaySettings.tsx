@@ -19,6 +19,9 @@ const NOTIFICATION_POSITIONS = [
   'top-right',
 ]
 
+const TRADING_CHARTS = ['original', 'trading']
+const TRADE_FORM_UI = ['slider', 'buttons']
+
 // const LANGS = [
 // { locale: 'en', name: 'english', description: 'english' },
 // { locale: 'ru', name: 'russian', description: 'russian' },
@@ -56,11 +59,11 @@ const DisplaySettings = () => {
   )
   const [tradeFormUi, setTradeFormUi] = useLocalStorageState(
     SIZE_INPUT_UI_KEY,
-    'Slider'
+    'slider'
   )
   const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
     TRADE_CHART_UI_KEY,
-    'Trading'
+    'trading'
   )
 
   // const handleLangChange = useCallback(
@@ -121,7 +124,8 @@ const DisplaySettings = () => {
           <ButtonGroup
             activeValue={tradeFormUi}
             onChange={(v) => setTradeFormUi(v)}
-            values={[t('settings:slider'), t('settings:buttons')]}
+            values={TRADE_FORM_UI}
+            names={TRADE_FORM_UI.map((val) => t(`settings:${val}`))}
           />
         </div>
       </div>
@@ -131,7 +135,8 @@ const DisplaySettings = () => {
           <ButtonGroup
             activeValue={tradeChartUi}
             onChange={(v) => setTradeChartUi(v)}
-            values={[t('settings:original'), t('settings:trading')]}
+            values={TRADING_CHARTS}
+            names={TRADING_CHARTS.map((val) => t(`settings:${val}`))}
           />
         </div>
       </div>

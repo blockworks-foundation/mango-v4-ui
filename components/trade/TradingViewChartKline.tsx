@@ -274,7 +274,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         isOpen={isTechnicalModalOpen}
         onClose={() => setIsTechnicalModalOpen(false)}
       >
-        <div className="flex max-h-96 flex-col overflow-auto text-left">
+        <div className="hide-scroll flex max-h-96 flex-col overflow-auto text-left">
           <h2 className="py-4">Main Indicator</h2>
           {mainTechnicalIndicatorTypes.map((type) => {
             return (

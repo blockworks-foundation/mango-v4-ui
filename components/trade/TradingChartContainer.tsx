@@ -15,7 +15,7 @@ const TradingViewChartKlineContainer = dynamic(
 
 const TradingChartContainer = () => {
   const [tradingChart] = useLocalStorageState(TRADE_CHART_UI_KEY)
-  const isTradingChart = tradingChart === 'Original'
+  const isTradingChart = tradingChart === 'original'
   return !isTradingChart ? (
     <TradingViewChart></TradingViewChart>
   ) : (

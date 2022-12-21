@@ -406,7 +406,7 @@ const SwapForm = () => {
             )}
           </div>
         </div>
-        {swapFormSizeUi === 'Slider' ? (
+        {swapFormSizeUi === 'slider' ? (
           <SwapSlider
             useMargin={useMargin}
             amount={amountInAsDecimal.toNumber()}
