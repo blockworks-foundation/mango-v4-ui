@@ -124,7 +124,7 @@ const TokenList = () => {
               </Th>
               <Th id="account-step-ten">
                 <div className="flex justify-end">
-                  <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right).">
+                  <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right).">
                     <span className="tooltip-underline">{t('rates')}</span>
                   </Tooltip>
                 </div>

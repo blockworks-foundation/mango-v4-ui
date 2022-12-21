@@ -4,6 +4,7 @@ import {
   ArrowUpLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
+  LinkIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -33,6 +34,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -51,10 +53,11 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return group?.banksMapByName.get(selectedToken)![0]
+    return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
@@ -62,7 +65,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     if (mangoTokens?.length) {
       logoURI = mangoTokens.find(
         (t) => t.address === bank?.mint.toString()
-      )!.logoURI
+      )?.logoURI
     }
     return logoURI
   }, [mangoTokens, bank])
@@ -159,7 +162,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     return group && mangoAccount
       ? mangoAccount.getHealthRatioUi(group, HealthType.init)
       : 100
-  }, [mangoAccount])
+  }, [mangoAccount, group])
 
   const showInsufficientBalance = Number(inputAmount)
     ? tokenMax.lt(inputAmount)
@@ -314,10 +317,15 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
           <Button
             onClick={handleWithdraw}
             className="flex w-full items-center justify-center"
-            disabled={!inputAmount || showInsufficientBalance}
+            disabled={!inputAmount || showInsufficientBalance || !connected}
             size="large"
           >
-            {submitting ? (
+            {!connected ? (
+              <div className="flex items-center">
+                <LinkIcon className="mr-2 h-5 w-5" />
+                {t('connect')}
+              </div>
+            ) : submitting ? (
               <Loading className="mr-2 h-5 w-5" />
             ) : showInsufficientBalance ? (
               <div className="flex items-center">
@@ -331,12 +339,12 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
               </div>
             )}
           </Button>
-          {bank ? (
-            <div className="pt-4">
-              <TokenVaultWarnings bank={bank} />
-            </div>
-          ) : null}
         </div>
+        {bank ? (
+          <div className="pt-4">
+            <TokenVaultWarnings bank={bank} />
+          </div>
+        ) : null}
       </FadeInFadeOut>
     </>
   )

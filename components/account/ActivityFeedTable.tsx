@@ -128,16 +128,8 @@ const ActivityFeedTable = ({
         activity_type === 'withdraw' ? usd_equivalent * -1 : usd_equivalent
     }
     if (activity_type === 'swap') {
-      const {
-        loan_origination_fee,
-        swap_in_amount,
-        swap_in_price_usd,
-        swap_out_amount,
-        swap_out_price_usd,
-      } = activity.activity_details
-      value =
-        (swap_in_amount + loan_origination_fee) * swap_in_price_usd -
-        swap_out_amount * swap_out_price_usd
+      const { swap_out_amount, swap_out_price_usd } = activity.activity_details
+      value = swap_out_amount * swap_out_price_usd
     }
     if (activity_type === 'perp_trade') {
       const { maker_fee, price, quantity, taker_fee } =
@@ -218,10 +210,18 @@ const ActivityFeedTable = ({
                     </Td>
                     <Td
                       className={`text-right font-mono ${
-                        value >= 0 ? 'text-th-up' : 'text-th-down'
+                        activityName === 'swap' || activityName === 'perp'
+                          ? 'text-th-fgd-2'
+                          : value >= 0
+                          ? 'text-th-up'
+                          : 'text-th-down'
                       }`}
                     >
-                      {value > 0 ? '+' : ''}
+                      {value > 0 &&
+                      activityName !== 'swap' &&
+                      activityName !== 'perp'
+                        ? '+'
+                        : ''}
                       {formatFixedDecimals(value, true)}
                     </Td>
                     <Td>

@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react'
+import { FunctionComponent, ReactElement } from 'react'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/20/solid'
 
 interface InlineNotificationProps {
-  desc?: string
+  desc?: string | ReactElement
   title?: string
   type: 'error' | 'info' | 'success' | 'warning'
   hideBorder?: boolean

@@ -289,7 +289,10 @@ export type MangoStore = {
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrders: (ma?: MangoAccount) => Promise<void>
     fetchProfileDetails: (walletPk: string) => void
-    fetchSwapHistory: (mangoAccountPk: string) => Promise<void>
+    fetchSwapHistory: (
+      mangoAccountPk: string,
+      timeout?: number
+    ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
@@ -471,6 +474,7 @@ const mangoStore = create<MangoStore>()(
           const connectedMangoAccountPk = mangoStore
             .getState()
             .mangoAccount.current?.publicKey.toString()
+
           try {
             const response = await fetch(
               `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
@@ -496,9 +500,9 @@ const mangoStore = create<MangoStore>()(
                   dayjs(a.block_datetime).unix()
               )
 
-            // only add to current feed if current feed has length and the mango account hasn't changed
+            // only add to current feed if data request is offset and the mango account hasn't changed
             const feed =
-              currentFeed.length &&
+              offset !== 0 &&
               connectedMangoAccountPk ===
                 currentFeed[0].activity_details.mango_account
                 ? currentFeed.concat(latestFeed)
@@ -733,38 +737,40 @@ const mangoStore = create<MangoStore>()(
             console.error('Failed loading open orders ', e)
           }
         },
-        fetchSwapHistory: async (mangoAccountPk: string) => {
+        fetchSwapHistory: async (mangoAccountPk: string, timeout = 0) => {
           const set = get().set
-          set((state) => {
-            state.mangoAccount.stats.swapHistory.loading = true
-          })
-          try {
-            const history = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}`
-            )
-            const parsedHistory = await history.json()
-            const sortedHistory =
-              parsedHistory && parsedHistory.length
-                ? parsedHistory.sort(
-                    (a: SwapHistoryItem, b: SwapHistoryItem) =>
-                      dayjs(b.block_datetime).unix() -
-                      dayjs(a.block_datetime).unix()
-                  )
-                : []
+          setTimeout(async () => {
+            try {
+              set((state) => {
+                state.mangoAccount.stats.swapHistory.loading = true
+              })
+              const history = await fetch(
+                `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}`
+              )
+              const parsedHistory = await history.json()
+              const sortedHistory =
+                parsedHistory && parsedHistory.length
+                  ? parsedHistory.sort(
+                      (a: SwapHistoryItem, b: SwapHistoryItem) =>
+                        dayjs(b.block_datetime).unix() -
+                        dayjs(a.block_datetime).unix()
+                    )
+                  : []
 
-            set((state) => {
-              state.mangoAccount.stats.swapHistory.data = sortedHistory
-              state.mangoAccount.stats.swapHistory.loading = false
-            })
-          } catch {
-            set((state) => {
-              state.mangoAccount.stats.swapHistory.loading = false
-            })
-            notify({
-              title: 'Failed to load account swap history data',
-              type: 'error',
-            })
-          }
+              set((state) => {
+                state.mangoAccount.stats.swapHistory.data = sortedHistory
+                state.mangoAccount.stats.swapHistory.loading = false
+              })
+            } catch {
+              set((state) => {
+                state.mangoAccount.stats.swapHistory.loading = false
+              })
+              notify({
+                title: 'Failed to load account swap history data',
+                type: 'error',
+              })
+            }
+          }, timeout)
         },
         fetchTokenStats: async () => {
           const set = get().set

@@ -9,6 +9,7 @@ export function useUnsettledSpotBalances() {
   const { mangoAccount } = useMangoAccount()
   const openOrdersAccounts =
     mangoStore.getState().mangoAccount.openOrderAccounts
+  console.log('openOrdersAccount', openOrdersAccounts)
 
   const unsettledSpotBalances = useMemo(() => {
     if (!group || !mangoAccount || !openOrdersAccounts) return {}

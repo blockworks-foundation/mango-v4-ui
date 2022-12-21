@@ -403,8 +403,8 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       mangoAccount.getEquity(group).toNumber()
     )
     return (
-      parseFloat(inputAmount) * (bank?.uiPrice || 1) > ALPHA_DEPOSIT_LIMIT ||
-      accountValue > ALPHA_DEPOSIT_LIMIT
+      parseFloat(inputAmount) * (bank?.uiPrice || 1) + accountValue >
+        ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
     )
   }, [inputAmount, bank])
 

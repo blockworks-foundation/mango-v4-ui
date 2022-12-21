@@ -25,6 +25,8 @@ import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
+import { useWallet } from '@solana/wallet-adapter-react'
+import CreateAccountModal from '@components/modals/CreateAccountModal'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -46,6 +48,8 @@ const AccountActions = () => {
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [showRepayModal, setShowRepayModal] = useState(false)
   const [showDelegateModal, setShowDelegateModal] = useState(false)
+  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
+  const { connected } = useWallet()
 
   const hasBorrows = useMemo(() => {
     if (!mangoAccount || !group) return false
@@ -56,12 +60,20 @@ const AccountActions = () => {
     )
   }, [mangoAccount, group])
 
+  const handleBorrowModal = () => {
+    if (!connected || mangoAccount) {
+      setShowBorrowModal(true)
+    } else {
+      setShowCreateAccountModal(true)
+    }
+  }
+
   return (
     <>
       <div className="flex items-center space-x-2 md:space-x-3">
         {hasBorrows ? (
           <Button
-            className="flex items-center"
+            className="flex w-full items-center justify-center sm:w-auto"
             disabled={!mangoAccount}
             onClick={() => setShowRepayModal(true)}
           >
@@ -70,10 +82,9 @@ const AccountActions = () => {
           </Button>
         ) : null}
         <Button
-          className="flex items-center"
-          disabled={!mangoAccount}
-          onClick={() => setShowBorrowModal(true)}
-          secondary={hasBorrows}
+          className="flex w-full items-center justify-center sm:w-auto"
+          onClick={handleBorrowModal}
+          secondary
         >
           <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
           {t('borrow')}
@@ -149,6 +160,12 @@ const AccountActions = () => {
         <DelegateModal
           isOpen={showDelegateModal}
           onClose={() => setShowDelegateModal(false)}
+        />
+      ) : null}
+      {showCreateAccountModal ? (
+        <CreateAccountModal
+          isOpen={showCreateAccountModal}
+          onClose={() => setShowCreateAccountModal(false)}
         />
       ) : null}
     </>

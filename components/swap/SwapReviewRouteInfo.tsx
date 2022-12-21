@@ -1,6 +1,7 @@
 import React, {
   Dispatch,
   SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -198,7 +199,7 @@ const SwapReviewRouteInfo = ({
     }
   }, [inputTokenInfo, outputTokenInfo])
 
-  const onSwap = async () => {
+  const onSwap = useCallback(async () => {
     if (!selectedRoute) return
     try {
       const client = mangoStore.getState().client
@@ -246,6 +247,7 @@ const SwapReviewRouteInfo = ({
           noSound: true,
         })
         actions.fetchGroup()
+        actions.fetchSwapHistory(mangoAccount.publicKey.toString(), 30000)
         await actions.reloadMangoAccount()
       } catch (e: any) {
         console.error('onSwap error: ', e)
@@ -263,7 +265,7 @@ const SwapReviewRouteInfo = ({
     } finally {
       onClose()
     }
-  }
+  }, [amountIn, onClose, selectedRoute, soundSettings])
 
   const [balance, borrowAmount] = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -328,7 +330,7 @@ const SwapReviewRouteInfo = ({
             </p>
           </div>
         </div>
-        <div className="space-y-2 px-6">
+        <div className="thin-scroll max-h-[218px] space-y-2 overflow-auto px-6 lg:max-h-[222px]">
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">{t('swap:rate')}</p>
             <div>
@@ -629,7 +631,7 @@ const SwapReviewRouteInfo = ({
           />
         ) : null}
       </div>
-      <div className="flex items-center justify-center p-6">
+      <div className="flex items-center justify-center p-6 pt-0">
         <Button
           onClick={onSwap}
           className="flex w-full items-center justify-center text-base"
