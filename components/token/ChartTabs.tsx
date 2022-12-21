@@ -79,7 +79,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 small
                 suffix="%"
                 tickFormat={(x) => `${x.toFixed(2)}%`}
-                title={`${token} ${t('token:deposit-rates')} (APR)`}
+                title={`${token} ${t('token:deposit-rates')} APR`}
                 xKey="date_hour"
                 yKey={'deposit_apr'}
               />
@@ -123,7 +123,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 hideChange
                 suffix="%"
                 tickFormat={(x) => `${x.toFixed(2)}%`}
-                title={`${token} ${t('token:borrow-rates')} (APR)`}
+                title={`${token} ${t('token:borrow-rates')} APR`}
                 xKey="date_hour"
                 yKey={'borrow_apr'}
               />
