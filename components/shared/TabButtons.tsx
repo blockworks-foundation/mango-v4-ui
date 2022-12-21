@@ -33,9 +33,9 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
               rounded ? 'rounded-md' : 'rounded-none'
             } ${
               showBorders
-                ? `border-r border-th-bkg-3 ${
-                    fillWidth && i === values.length - 1 ? 'border-r-0' : ''
-                  }`
+                ? fillWidth && i === values.length - 1
+                  ? 'border-r-0'
+                  : 'border-r border-th-bkg-3'
                 : ''
             } ${
               label === activeValue
@@ -45,7 +45,9 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
             key={`${label}${i}`}
             onClick={() => onChange(label)}
           >
-            <span className="font-medium">{t(label)} </span>
+            <p className="font-medium leading-tight sm:leading-normal">
+              {t(label)}
+            </p>
             {count ? (
               <div
                 className={`ml-1.5 rounded ${
