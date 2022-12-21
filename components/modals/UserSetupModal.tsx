@@ -248,7 +248,7 @@ const UserSetupModal = ({
             <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
               {t('onboarding:intro-heading')}
             </h2>
-            <p className="mb-4 text-base">{t('onboarding:intro-desc')}</p>
+            <p className="text-base sm:mb-4">{t('onboarding:intro-desc')}</p>
             <div className="mb-6 space-y-2 py-3">
               <div className="flex items-center space-x-2">
                 <CheckCircleIcon className="h-5 w-5 text-th-success" />

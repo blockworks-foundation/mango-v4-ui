@@ -41,6 +41,7 @@ const OpenOrders = () => {
   const [modifyOrderId, setModifyOrderId] = useState<string | undefined>(
     undefined
   )
+  const [loadingModifyOrder, setLoadingModifyOrder] = useState(false)
   const [modifiedOrderSize, setModifiedOrderSize] = useState('')
   const [modifiedOrderPrice, setModifiedOrderPrice] = useState('')
   const { width } = useViewport()
@@ -116,6 +117,7 @@ const OpenOrders = () => {
       const baseSize = modifiedOrderSize ? Number(modifiedOrderSize) : o.size
       const price = modifiedOrderPrice ? Number(modifiedOrderPrice) : o.price
       if (!group || !mangoAccount) return
+      setLoadingModifyOrder(true)
       try {
         let tx = ''
         if (o instanceof PerpOrder) {
@@ -217,6 +219,7 @@ const OpenOrders = () => {
   }
   const cancelEditOrderForm = () => {
     setModifyOrderId(undefined)
+    setLoadingModifyOrder(false)
     setModifiedOrderSize('')
     setModifiedOrderPrice('')
   }
@@ -359,7 +362,11 @@ const OpenOrders = () => {
                                 onClick={() => modifyOrder(o)}
                                 size="small"
                               >
-                                <CheckIcon className="h-4 w-4" />
+                                {loadingModifyOrder ? (
+                                  <Loading className="h-4 w-4" />
+                                ) : (
+                                  <CheckIcon className="h-4 w-4" />
+                                )}
                               </IconButton>
                               <IconButton
                                 onClick={cancelEditOrderForm}
@@ -417,26 +424,54 @@ const OpenOrders = () => {
                 >
                   <div>
                     <TableMarketName market={market} />
-                    <div className="mt-1 flex items-center space-x-1">
-                      <SideBadge side={o.side} />
-                      <p className="text-th-fgd-4">
-                        <span className="font-mono text-th-fgd-3">
-                          {o.size.toLocaleString(undefined, {
-                            maximumFractionDigits:
-                              getDecimalCount(minOrderSize),
-                          })}
-                        </span>{' '}
-                        {baseSymbol}
-                        {' for '}
-                        <span className="font-mono text-th-fgd-3">
-                          {o.price.toLocaleString(undefined, {
-                            minimumFractionDigits: getDecimalCount(tickSize),
-                            maximumFractionDigits: getDecimalCount(tickSize),
-                          })}
-                        </span>{' '}
-                        {quoteSymbol}
-                      </p>
-                    </div>
+                    {modifyOrderId !== o.orderId.toString() ? (
+                      <div className="mt-1 flex items-center space-x-1">
+                        <SideBadge side={o.side} />
+                        <p className="text-th-fgd-4">
+                          <span className="font-mono text-th-fgd-3">
+                            {o.size.toLocaleString(undefined, {
+                              maximumFractionDigits:
+                                getDecimalCount(minOrderSize),
+                            })}
+                          </span>{' '}
+                          {baseSymbol}
+                          {' for '}
+                          <span className="font-mono text-th-fgd-3">
+                            {o.price.toLocaleString(undefined, {
+                              minimumFractionDigits: getDecimalCount(tickSize),
+                              maximumFractionDigits: getDecimalCount(tickSize),
+                            })}
+                          </span>{' '}
+                          {quoteSymbol}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="mt-2 flex space-x-4">
+                        <div>
+                          <p className="text-xs">{t('trade:size')}</p>
+                          <Input
+                            className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            type="text"
+                            value={modifiedOrderSize}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setModifiedOrderSize(e.target.value)
+                            }
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs">{t('price')}</p>
+                          <Input
+                            autoFocus
+                            className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            type="text"
+                            value={modifiedOrderPrice}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setModifiedOrderPrice(e.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center space-x-3 pl-8">
                     <div className="flex items-center space-x-2">
@@ -465,7 +500,11 @@ const OpenOrders = () => {
                       ) : (
                         <>
                           <IconButton onClick={() => modifyOrder(o)}>
-                            <CheckIcon className="h-4 w-4" />
+                            {loadingModifyOrder ? (
+                              <Loading className="h-4 w-4" />
+                            ) : (
+                              <CheckIcon className="h-4 w-4" />
+                            )}
                           </IconButton>
                           <IconButton onClick={cancelEditOrderForm}>
                             <XMarkIcon className="h-4 w-4" />
