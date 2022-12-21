@@ -54,7 +54,7 @@ const ChartTabs = ({ token }: { token: string }) => {
               ['token:deposit-rates', 0],
             ]}
           />
-          <div className="px-6 py-4">
+          <div className="border-t border-th-bkg-3 px-6 py-4">
             {activeDepositsTab === 'token:deposits' ? (
               <DetailedAreaChart
                 data={statsHistory}
@@ -98,7 +98,7 @@ const ChartTabs = ({ token }: { token: string }) => {
               ['token:borrow-rates', 0],
             ]}
           />
-          <div className="px-6 py-4">
+          <div className="border-t border-th-bkg-3 px-6 py-4">
             {activeBorrowsTab === 'token:borrows' ? (
               <DetailedAreaChart
                 data={statsHistory}
