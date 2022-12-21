@@ -16,7 +16,7 @@ import useLocalStorageState from '../hooks/useLocalStorageState'
 import CreateAccountModal from './modals/CreateAccountModal'
 import MangoAccountsListModal from './modals/MangoAccountsListModal'
 import { useRouter } from 'next/router'
-import UserSetup from './UserSetup'
+import UserSetupModal from './modals/UserSetupModal'
 import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useOnlineStatus from 'hooks/useOnlineStatus'
@@ -24,6 +24,8 @@ import { DEFAULT_DELEGATE } from './modals/DelegateModal'
 import Tooltip from './shared/Tooltip'
 import { abbreviateAddress } from 'utils/formatting'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 // import ThemeSwitcher from './ThemeSwitcher'
 
 const TopBar = () => {
@@ -31,14 +33,17 @@ const TopBar = () => {
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
-  const [showUserSetup, setShowUserSetup] = useState(false)
+  const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
+  const [showUserSetup, setShowUserSetup] = useState(false)
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const isOnline = useOnlineStatus()
   const router = useRouter()
   const { query } = router
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.sm : false
 
   const handleCloseSetup = useCallback(() => {
     setShowUserSetup(false)
@@ -56,6 +61,15 @@ const TopBar = () => {
       setShowCreateAccountModal(true)
     }
   }, [mangoAccount])
+
+  const handleDepositWithdrawModal = (action: 'deposit' | 'withdraw') => {
+    if (!connected || mangoAccount) {
+      setAction(action)
+      setShowDepositWithdrawModal(true)
+    } else {
+      setShowCreateAccountModal(true)
+    }
+  }
 
   return (
     <>
@@ -98,12 +112,13 @@ const TopBar = () => {
           {/* <div className="px-3 md:px-4">
             <ThemeSwitcher />
           </div> */}
-          <Button
-            disabled={!connected}
-            onClick={() => setShowDepositWithdrawModal(true)}
-            secondary
-            className="mx-4"
-          >{`${t('deposit')} / ${t('withdraw')}`}</Button>
+          {!connected && isMobile ? null : (
+            <Button
+              onClick={() => handleDepositWithdrawModal('deposit')}
+              secondary
+              className="mx-4"
+            >{`${t('deposit')} / ${t('withdraw')}`}</Button>
+          )}
           {connected ? (
             <div className="flex items-center pr-4 md:pr-0">
               <button
@@ -153,7 +168,7 @@ const TopBar = () => {
       </div>
       {showDepositWithdrawModal ? (
         <DepositWithdrawModal
-          action="deposit"
+          action={action}
           isOpen={showDepositWithdrawModal}
           onClose={() => setShowDepositWithdrawModal(false)}
         />
@@ -164,7 +179,9 @@ const TopBar = () => {
           onClose={() => setShowMangoAccountsModal(false)}
         />
       ) : null}
-      {showUserSetup ? <UserSetup onClose={handleCloseSetup} /> : null}
+      {showUserSetup ? (
+        <UserSetupModal isOpen={showUserSetup} onClose={handleCloseSetup} />
+      ) : null}
       {showCreateAccountModal ? (
         <CreateAccountModal
           isOpen={showCreateAccountModal}

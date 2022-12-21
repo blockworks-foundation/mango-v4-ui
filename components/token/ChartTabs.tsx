@@ -54,7 +54,7 @@ const ChartTabs = ({ token }: { token: string }) => {
               ['token:deposit-rates', 0],
             ]}
           />
-          <div className="px-6 py-4">
+          <div className="border-t border-th-bkg-3 px-6 py-4">
             {activeDepositsTab === 'token:deposits' ? (
               <DetailedAreaChart
                 data={statsHistory}
@@ -79,7 +79,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 small
                 suffix="%"
                 tickFormat={(x) => `${x.toFixed(2)}%`}
-                title={`${token} ${t('token:deposit-rates')} (APR)`}
+                title={`${token} ${t('token:deposit-rates')} APR`}
                 xKey="date_hour"
                 yKey={'deposit_apr'}
               />
@@ -98,7 +98,7 @@ const ChartTabs = ({ token }: { token: string }) => {
               ['token:borrow-rates', 0],
             ]}
           />
-          <div className="px-6 py-4">
+          <div className="border-t border-th-bkg-3 px-6 py-4">
             {activeBorrowsTab === 'token:borrows' ? (
               <DetailedAreaChart
                 data={statsHistory}
@@ -123,7 +123,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 hideChange
                 suffix="%"
                 tickFormat={(x) => `${x.toFixed(2)}%`}
-                title={`${token} ${t('token:borrow-rates')} (APR)`}
+                title={`${token} ${t('token:borrow-rates')} APR`}
                 xKey="date_hour"
                 yKey={'borrow_apr'}
               />
