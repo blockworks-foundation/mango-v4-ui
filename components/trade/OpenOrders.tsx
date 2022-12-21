@@ -415,13 +415,11 @@ const OpenOrders = () => {
                   className="flex items-center justify-between border-b border-th-bkg-3 p-4"
                   key={`${o.side}${o.size}${o.price}`}
                 >
-                  <div className="flex items-center space-x-2">
+                  <div>
                     <TableMarketName market={market} />
-                    <SideBadge side={o.side} />
-                  </div>
-                  <div className="flex items-center space-x-3 pl-8">
-                    <div className="text-right">
-                      <p className="mb-0.5 text-th-fgd-4">
+                    <div className="mt-1 flex items-center space-x-1">
+                      <SideBadge side={o.side} />
+                      <p className="text-th-fgd-4">
                         <span className="font-mono text-th-fgd-3">
                           {o.size.toLocaleString(undefined, {
                             maximumFractionDigits:
@@ -429,8 +427,7 @@ const OpenOrders = () => {
                           })}
                         </span>{' '}
                         {baseSymbol}
-                      </p>
-                      <p className="text-xs text-th-fgd-4">
+                        {' for '}
                         <span className="font-mono text-th-fgd-3">
                           {o.price.toLocaleString(undefined, {
                             minimumFractionDigits: getDecimalCount(tickSize),
@@ -440,6 +437,8 @@ const OpenOrders = () => {
                         {quoteSymbol}
                       </p>
                     </div>
+                  </div>
+                  <div className="flex items-center space-x-3 pl-8">
                     <div className="flex items-center space-x-2">
                       {modifyOrderId !== o.orderId.toString() ? (
                         <>
