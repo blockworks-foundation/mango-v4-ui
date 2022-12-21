@@ -1,10 +1,12 @@
-const BE_API_KEY =
+export const BE_API_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2Njc1NTI4MzV9.FpbBT3M6GN_TKSJ8CarGeOMU5U7ZUvgZOIy8789m1bk'
+
+export const API_URL = 'https://public-api.birdeye.so/'
 
 // Make requests to CryptoCompare API
 export async function makeApiRequest(path: string) {
   try {
-    const response = await fetch(`https://public-api.birdeye.so/${path}`, {
+    const response = await fetch(`${API_URL}${path}`, {
       headers: {
         'X-API-KEY': BE_API_KEY,
       },

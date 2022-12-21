@@ -6,7 +6,11 @@ import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 // import { useRouter } from 'next/router'
 // import { useCallback } from 'react'
-import { NOTIFICATION_POSITION_KEY, SIZE_INPUT_UI_KEY } from 'utils/constants'
+import {
+  NOTIFICATION_POSITION_KEY,
+  SIZE_INPUT_UI_KEY,
+  TRADE_CHART_UI_KEY,
+} from 'utils/constants'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -14,6 +18,9 @@ const NOTIFICATION_POSITIONS = [
   'top-left',
   'top-right',
 ]
+
+const TRADING_CHARTS = ['original', 'trading']
+const TRADE_FORM_UI = ['slider', 'buttons']
 
 // const LANGS = [
 // { locale: 'en', name: 'english', description: 'english' },
@@ -52,7 +59,11 @@ const DisplaySettings = () => {
   )
   const [tradeFormUi, setTradeFormUi] = useLocalStorageState(
     SIZE_INPUT_UI_KEY,
-    'Slider'
+    'slider'
+  )
+  const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
+    TRADE_CHART_UI_KEY,
+    'trading'
   )
 
   // const handleLangChange = useCallback(
@@ -113,7 +124,19 @@ const DisplaySettings = () => {
           <ButtonGroup
             activeValue={tradeFormUi}
             onChange={(v) => setTradeFormUi(v)}
-            values={[t('settings:slider'), t('settings:buttons')]}
+            values={TRADE_FORM_UI}
+            names={TRADE_FORM_UI.map((val) => t(`settings:${val}`))}
+          />
+        </div>
+      </div>
+      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
+        <p className="mb-2 lg:mb-0">{t('settings:trading-chart')}</p>
+        <div className="w-full min-w-[160px] md:w-auto">
+          <ButtonGroup
+            activeValue={tradeChartUi}
+            onChange={(v) => setTradeChartUi(v)}
+            values={TRADING_CHARTS}
+            names={TRADING_CHARTS.map((val) => t(`settings:${val}`))}
           />
         </div>
       </div>

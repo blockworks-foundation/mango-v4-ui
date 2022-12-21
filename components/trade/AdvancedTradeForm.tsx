@@ -493,12 +493,12 @@ const AdvancedTradeForm = () => {
       </div>
       <div className="mt-2 flex">
         {selectedMarket instanceof Serum3Market ? (
-          tradeFormSizeUi === 'Slider' ? (
+          tradeFormSizeUi === 'slider' ? (
             <SpotSlider />
           ) : (
             <SpotButtonGroup />
           )
-        ) : tradeFormSizeUi === 'Slider' ? (
+        ) : tradeFormSizeUi === 'slider' ? (
           <PerpSlider />
         ) : (
           <PerpButtonGroup />
