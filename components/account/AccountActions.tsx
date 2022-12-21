@@ -73,7 +73,7 @@ const AccountActions = () => {
       <div className="flex items-center space-x-2 md:space-x-3">
         {hasBorrows ? (
           <Button
-            className="flex items-center"
+            className="flex w-full items-center justify-center sm:w-auto"
             disabled={!mangoAccount}
             onClick={() => setShowRepayModal(true)}
           >
@@ -82,7 +82,7 @@ const AccountActions = () => {
           </Button>
         ) : null}
         <Button
-          className="flex items-center"
+          className="flex w-full items-center justify-center sm:w-auto"
           onClick={handleBorrowModal}
           secondary
         >

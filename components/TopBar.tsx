@@ -1,9 +1,7 @@
 import { useCallback, useState } from 'react'
 import {
-  ArrowDownTrayIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
-  ArrowUpTrayIcon,
   ExclamationTriangleIcon,
   UsersIcon,
 } from '@heroicons/react/20/solid'
@@ -26,6 +24,8 @@ import { DEFAULT_DELEGATE } from './modals/DelegateModal'
 import Tooltip from './shared/Tooltip'
 import { abbreviateAddress } from 'utils/formatting'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 // import ThemeSwitcher from './ThemeSwitcher'
 
 const TopBar = () => {
@@ -42,6 +42,8 @@ const TopBar = () => {
   const isOnline = useOnlineStatus()
   const router = useRouter()
   const { query } = router
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.sm : false
 
   const handleCloseSetup = useCallback(() => {
     setShowUserSetup(false)
@@ -110,19 +112,13 @@ const TopBar = () => {
           {/* <div className="px-3 md:px-4">
             <ThemeSwitcher />
           </div> */}
-          <Button
-            onClick={() => handleDepositWithdrawModal('deposit')}
-            secondary
-            className="mx-4 hidden sm:block"
-          >{`${t('deposit')} / ${t('withdraw')}`}</Button>
-          <div className="flex items-center space-x-2 px-4 sm:hidden">
-            <IconButton onClick={() => handleDepositWithdrawModal('deposit')}>
-              <ArrowDownTrayIcon className="h-5 w-5" />
-            </IconButton>
-            <IconButton onClick={() => handleDepositWithdrawModal('withdraw')}>
-              <ArrowUpTrayIcon className="h-5 w-5" />
-            </IconButton>
-          </div>
+          {!connected && isMobile ? null : (
+            <Button
+              onClick={() => handleDepositWithdrawModal('deposit')}
+              secondary
+              className="mx-4"
+            >{`${t('deposit')} / ${t('withdraw')}`}</Button>
+          )}
           {connected ? (
             <div className="flex items-center pr-4 md:pr-0">
               <button
