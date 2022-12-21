@@ -25,15 +25,15 @@ export const RES_NAME_TO_RES_VAL: {
     seconds: number
   }
 } = {
-  '1m': { val: '1', seconds: ONE_MINUTE_SECONDS },
-  '5m': { val: '5', seconds: 5 * ONE_MINUTE_SECONDS },
+  '1m': { val: '1M', seconds: ONE_MINUTE_SECONDS },
+  '5m': { val: '5M', seconds: 5 * ONE_MINUTE_SECONDS },
   '30m': {
-    val: `${ONE_HOUR_MINS / 2}`,
+    val: `30M`,
     seconds: (ONE_HOUR_MINS / 2) * ONE_MINUTE_SECONDS,
   },
   '1H': { val: `1H`, seconds: ONE_HOUR_SECONDS },
-  '2H': { val: `${2 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_SECONDS * 2 },
-  '4H': { val: `${4 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_SECONDS * 4 },
+  '2H': { val: `2H`, seconds: ONE_HOUR_SECONDS * 2 },
+  '4H': { val: `4H`, seconds: ONE_HOUR_SECONDS * 4 },
   '1D': { val: '1D', seconds: 24 * ONE_HOUR_SECONDS },
 }
 export const mainTechnicalIndicatorTypes = [

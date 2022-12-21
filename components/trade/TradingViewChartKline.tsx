@@ -33,7 +33,8 @@ type Props = {
 const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   const { width } = useViewport()
   const prevWidth = usePrevious(width)
-  const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
+  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const selectedMarketName = selectedMarket?.name
   const [isTechnicalModalOpen, setIsTechnicalModalOpen] = useState(false)
   const [mainTechnicalIndicators, setMainTechnicalIndicators] = useState<
     string[]
@@ -133,7 +134,12 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       fetchFreshData(14)
       //add callback to fetch more data when zoom out
       chart.loadMore(() => {
-        fetchFreshData(365)
+        try {
+          fetchFreshData(365)
+        } catch (e) {
+          console.log('Error fetching new data')
+        }
+        chart.loadMore(() => null)
       })
     }
   }, [baseChartQuery])
