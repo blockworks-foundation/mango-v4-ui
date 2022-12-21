@@ -18,7 +18,7 @@ import useLocalStorageState from '../hooks/useLocalStorageState'
 import CreateAccountModal from './modals/CreateAccountModal'
 import MangoAccountsListModal from './modals/MangoAccountsListModal'
 import { useRouter } from 'next/router'
-import UserSetup from './UserSetup'
+import UserSetupModal from './modals/UserSetupModal'
 import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useOnlineStatus from 'hooks/useOnlineStatus'
@@ -33,10 +33,10 @@ const TopBar = () => {
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
-  const [showUserSetup, setShowUserSetup] = useState(false)
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
+  const [showUserSetup, setShowUserSetup] = useState(false)
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const isOnline = useOnlineStatus()
@@ -183,7 +183,9 @@ const TopBar = () => {
           onClose={() => setShowMangoAccountsModal(false)}
         />
       ) : null}
-      {showUserSetup ? <UserSetup onClose={handleCloseSetup} /> : null}
+      {showUserSetup ? (
+        <UserSetupModal isOpen={showUserSetup} onClose={handleCloseSetup} />
+      ) : null}
       {showCreateAccountModal ? (
         <CreateAccountModal
           isOpen={showCreateAccountModal}
