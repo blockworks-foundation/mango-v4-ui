@@ -3,20 +3,20 @@ export const ONE_MINUTE_SECONDS = 60
 export const ONE_HOUR_SECONDS = ONE_HOUR_MINS * ONE_MINUTE_SECONDS
 export const ONE_DAY_SECONDS = ONE_HOUR_SECONDS * 24
 export type BASE_CHART_QUERY = {
-  resolution: string
-  symbol: string
-  to: number
+  address: string
+  type: string
+  time_to: number
 }
 export type CHART_QUERY = BASE_CHART_QUERY & {
-  from: number
+  time_from: number
 }
 export type HISTORY = {
-  c: string[]
-  h: string[]
-  l: string[]
-  o: string[]
-  t: number[]
-  v: string[]
+  c: number
+  h: number
+  l: number
+  o: number
+  unixTime: number
+  v: number
 }
 //Translate values that api accepts to chart seconds
 export const RES_NAME_TO_RES_VAL: {
@@ -31,7 +31,7 @@ export const RES_NAME_TO_RES_VAL: {
     val: `${ONE_HOUR_MINS / 2}`,
     seconds: (ONE_HOUR_MINS / 2) * ONE_MINUTE_SECONDS,
   },
-  '1H': { val: `${ONE_HOUR_MINS}`, seconds: ONE_HOUR_SECONDS },
+  '1H': { val: `1H`, seconds: ONE_HOUR_SECONDS },
   '2H': { val: `${2 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_SECONDS * 2 },
   '4H': { val: `${4 * ONE_HOUR_MINS}`, seconds: ONE_HOUR_SECONDS * 4 },
   '1D': { val: '1D', seconds: 24 * ONE_HOUR_SECONDS },

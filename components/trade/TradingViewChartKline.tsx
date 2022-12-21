@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import mangoStore from '@store/mangoStore'
-import { CHART_DATA_FEED } from 'utils/constants'
 import klinecharts, { init, dispose } from 'klinecharts'
 import axios from 'axios'
 import { useViewport } from 'hooks/useViewport'
@@ -22,6 +21,7 @@ import {
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
 import Loading from '@components/shared/Loading'
 import clsx from 'clsx'
+import { API_URL, BE_API_KEY } from 'apis/birdeye/helpers'
 
 const UPDATE_INTERVAL = 10000
 
@@ -53,22 +53,26 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       setIsLoading(true)
       const query: CHART_QUERY = {
         ...baseQuery,
-        from,
+        time_from: from,
       }
-      const response = await axios.get(`${CHART_DATA_FEED}/history`, {
+      const response = await axios.get(`${API_URL}defi/ohlcv/pair`, {
         params: query,
+        headers: {
+          'X-API-KEY': BE_API_KEY,
+        },
       })
-      const newData = response.data as HISTORY
-      const dataSize = newData.t.length
+      const newData = response.data.data.items as HISTORY[]
+      const dataSize = newData.length
       const dataList = []
       for (let i = 0; i < dataSize; i++) {
+        const row = newData[i]
         const kLineModel = {
-          open: parseFloat(newData.o[i]),
-          low: parseFloat(newData.l[i]),
-          high: parseFloat(newData.h[i]),
-          close: parseFloat(newData.c[i]),
-          volume: parseFloat(newData.v[i]),
-          timestamp: newData.t[i] * 1000,
+          open: row.o,
+          low: row.l,
+          high: row.h,
+          close: row.c,
+          volume: row.v,
+          timestamp: row.unixTime * 1000,
         }
         dataList.push(kLineModel)
       }
@@ -91,7 +95,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     }
     clearTimerRef.current = setTimeout(async () => {
       if (kLineChart) {
-        const from = baseQuery.to - resolution.seconds
+        const from = baseQuery.time_to - resolution.seconds
         const newData = (await fetchData(baseQuery!, from))[0]
         if (newData) {
           newData.timestamp += UPDATE_INTERVAL
@@ -138,9 +142,9 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   useEffect(() => {
     if (selectedMarketName && resolution) {
       setQuery({
-        resolution: resolution.val,
-        symbol: selectedMarketName,
-        to: Math.floor(Date.now() / 1000),
+        type: resolution.val,
+        address: '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6',
+        time_to: Math.floor(Date.now() / 1000),
       })
     }
   }, [selectedMarketName, resolution])
