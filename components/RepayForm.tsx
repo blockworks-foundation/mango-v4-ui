@@ -3,6 +3,7 @@ import {
   ArrowLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
+  LinkIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import { Wallet } from '@project-serum/anchor'
@@ -63,7 +64,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     return logoURI
   }, [bank, mangoTokens])
 
-  const { wallet } = useWallet()
+  const { connected, wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const walletBalance = useMemo(() => {
@@ -329,6 +330,11 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         </Button>
       </FadeInFadeOut>
     </>
+  ) : !connected ? (
+    <div className="flex h-[356px] flex-col items-center justify-center">
+      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+      <p>Connect to repay your borrows</p>
+    </div>
   ) : (
     <div className="flex h-[356px] flex-col items-center justify-center">
       <span className="text-2xl">😎</span>

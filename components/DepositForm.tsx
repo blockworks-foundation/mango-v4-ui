@@ -4,6 +4,7 @@ import {
   ArrowLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
+  LinkIcon,
 } from '@heroicons/react/20/solid'
 import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -89,7 +90,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     return logoURI
   }, [bank?.mint, mangoTokens])
 
-  const { wallet } = useWallet()
+  const { connected, wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const tokenMax = useMemo(() => {
@@ -347,11 +348,19 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             onClick={handleDeposit}
             className="flex w-full items-center justify-center"
             disabled={
-              !inputAmount || exceedsAlphaMax || showInsufficientBalance
+              !inputAmount ||
+              exceedsAlphaMax ||
+              showInsufficientBalance ||
+              !connected
             }
             size="large"
           >
-            {submitting ? (
+            {!connected ? (
+              <div className="flex items-center">
+                <LinkIcon className="mr-2 h-5 w-5" />
+                {t('connect')}
+              </div>
+            ) : submitting ? (
               <Loading className="mr-2 h-5 w-5" />
             ) : showInsufficientBalance ? (
               <div className="flex items-center">
