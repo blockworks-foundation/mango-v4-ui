@@ -126,7 +126,7 @@ const DisplaySettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:swap-trade-size-selector')}</p>
+        <p className="mb-2 lg:mb-0">{t('settings:trading-chart')}</p>
         <div className="w-full min-w-[160px] md:w-auto">
           <ButtonGroup
             activeValue={tradeChartUi}
