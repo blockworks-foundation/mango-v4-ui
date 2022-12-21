@@ -60,7 +60,7 @@ const DisplaySettings = () => {
   )
   const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
     TRADE_CHART_UI_KEY,
-    'Original'
+    'Trading'
   )
 
   // const handleLangChange = useCallback(
