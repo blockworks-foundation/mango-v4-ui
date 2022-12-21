@@ -49,10 +49,11 @@ import { mainnet } from 'wagmi/chains'
 // Create a client
 const queryClient = new QueryClient()
 const chains = [mainnet]
+const walletConnectProjectId = process.env.ETH_WALLET_CONNECT_PROJECT_ID || ''
 
 // Wagmi client
 const { provider } = configureChains(chains, [
-  walletConnectProvider({ projectId: '<YOUR_PROJECT_ID>' }),
+  walletConnectProvider({ projectId: walletConnectProjectId }),
 ])
 const wagmiClient = createClient({
   autoConnect: true,
@@ -126,7 +127,10 @@ function MyApp({ Component, pageProps }: AppProps) {
           <WalletProvider wallets={wallets} onError={onError}>
             <WagmiConfig client={wagmiClient}>
               <EnhancedWalletProvider>
-                <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
+                <ThemeProvider
+                  defaultTheme="Mango Classic"
+                  storageKey={THEME_KEY}
+                >
                   <ViewportProvider>
                     <PageTitle />
                     <Layout>
@@ -140,7 +144,10 @@ function MyApp({ Component, pageProps }: AppProps) {
           </WalletProvider>
         </ConnectionProvider>
       </QueryClientProvider>
-      <Web3Modal ethereumClient={ethereumClient} />
+      <Web3Modal
+        projectId={walletConnectProjectId}
+        ethereumClient={ethereumClient}
+      />
     </>
   )
 }

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import TabUnderline from '@components/shared/TabUnderline'
 import DepositForm from '@components/DepositForm'
 import WithdrawForm from '@components/WithdrawForm'
+import { Chain } from 'utils/constants'
 
 interface DepositWithdrawModalProps {
   action: 'deposit' | 'withdraw'
@@ -19,11 +20,11 @@ const DepositWithdrawModal = ({
   token,
 }: ModalCombinedProps) => {
   const [activeTab, setActiveTab] = useState(action)
-
+  const [chain, setChain] = useState(Chain.SOL)
   return (
     //disable outside click for eth wallet connection
     <Modal isOpen={isOpen} onClose={onClose} disableOutsideClose={true}>
-      <div className="h-[530px]">
+      <div className={`h-${chain === Chain.SOL ? '530px' : '650px'}`}>
         <div className="pb-2">
           <TabUnderline
             activeValue={activeTab}
@@ -32,7 +33,11 @@ const DepositWithdrawModal = ({
           />
         </div>
         {activeTab === 'deposit' ? (
-          <DepositForm onSuccess={onClose} token={token} />
+          <DepositForm
+            onChainSwitch={(chain) => setChain(chain)}
+            onSuccess={onClose}
+            token={token}
+          />
         ) : null}
         {activeTab === 'withdraw' ? (
           <WithdrawForm onSuccess={onClose} token={token} />

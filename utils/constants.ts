@@ -83,3 +83,8 @@ export const MAX_VAA_UPLAOD_RETRIES_SOLANA = 5
 
 export const ETH_DECIMALS = 18
 export const WETH_DECIMALS_SOLANA = 8
+
+export enum Chain {
+  SOL,
+  ETH,
+}

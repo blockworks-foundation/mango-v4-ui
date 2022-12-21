@@ -137,6 +137,7 @@
   "withdraw": "Withdraw",
   "withdraw-value": "Withdraw Value",
   "deposit-from": "Deposit from",
-  "wormhole-deposit-info": "This is an Ethereum → Solana cross-chain deposit. Powered by Wormhole."
+  "wormhole-deposit-info": "This is an Ethereum → Solana cross-chain deposit. Powered by Wormhole.",
+  "wormhole-deposit-description": "Process can take up to 15mins do not close the window during processing time. In case something goes wrong or you close the window you can redeem your tokens on https://www.portalbridge.com/#/redeem using swap transaction id from ethereum chain"
  }
  

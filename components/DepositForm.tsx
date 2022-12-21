@@ -8,6 +8,7 @@ import {
   ArrowLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
+  LinkIcon,
 } from '@heroicons/react/20/solid'
 import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -20,6 +21,7 @@ import mangoStore from '@store/mangoStore'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
   ALPHA_DEPOSIT_LIMIT,
+  Chain,
   ETH_BRIDGE_ADDRESS,
   ETH_TOKEN_BRIDGE_ADDRESS,
   INPUT_TOKEN_DEFAULT,
@@ -69,11 +71,7 @@ import { PublicKey, Transaction } from '@solana/web3.js'
 interface DepositFormProps {
   onSuccess: () => void
   token?: string
-}
-
-enum Chain {
-  SOL,
-  ETH,
+  onChainSwitch: (chain: Chain) => void
 }
 
 export const walletBalanceForToken = (
@@ -97,7 +95,7 @@ export const walletBalanceForToken = (
   }
 }
 
-function DepositForm({ onSuccess, token }: DepositFormProps) {
+function DepositForm({ onSuccess, token, onChainSwitch }: DepositFormProps) {
   //-------ETH chain-----------
 
   //for now we only use ETH
@@ -144,6 +142,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [address, isEthChain, ethBalance, previousAddress])
 
   useEffect(() => {
+    onChainSwitch(chain)
     if (chain === Chain.ETH) {
       setSelectedToken('ETH')
     }
@@ -184,7 +183,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     return logoURI
   }, [bank?.mint, mangoTokens])
 
-  const { wallet } = useWallet()
+  const { wallet, connected } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const tokenMax = useMemo(() => {
@@ -482,10 +481,14 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             </div>
           </div>
           {isEthChain && (
-            <div className="pt-3">
+            <div className="space-y-4 pt-3">
               <InlineNotification
                 type="info"
                 desc={t('wormhole-deposit-info')}
+              />
+              <InlineNotification
+                type="info"
+                desc={t('wormhole-deposit-description')}
               />
             </div>
           )}
@@ -590,17 +593,27 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             </div>
           </div>
           {!isEthWalletConnected && isEthChain ? (
-            <Button onClick={() => open()}>Connect Ethereum wallet</Button>
+            <Button disabled={!connected} onClick={() => open()}>
+              Connect Ethereum wallet
+            </Button>
           ) : (
             <Button
               onClick={handleDeposit}
               className="flex w-full items-center justify-center"
               disabled={
-                !inputAmount || exceedsAlphaMax || showInsufficientBalance
+                !inputAmount ||
+                exceedsAlphaMax ||
+                showInsufficientBalance ||
+                !connected
               }
               size="large"
             >
-              {submitting ? (
+              {!connected ? (
+                <div className="flex items-center">
+                  <LinkIcon className="mr-2 h-5 w-5" />
+                  {t('connect')}
+                </div>
+              ) : submitting ? (
                 <Loading className="mr-2 h-5 w-5" />
               ) : showInsufficientBalance ? (
                 <div className="flex items-center">
