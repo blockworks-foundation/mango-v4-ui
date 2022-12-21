@@ -103,8 +103,10 @@ export default {
       time_to: to,
     }
     const query = Object.keys(urlParameters)
-      //@ts-ignore
-      .map((name: any) => `${name}=${encodeURIComponent(urlParameters[name])}`)
+      .map(
+        (name: any) =>
+          `${name}=${encodeURIComponent((urlParameters as any)[name])}`
+      )
       .join('&')
     try {
       const data = await makeApiRequest(`defi/ohlcv/pair?${query}`)
