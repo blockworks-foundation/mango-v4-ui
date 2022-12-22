@@ -263,6 +263,7 @@ function DepositForm({ onSuccess, token, onChainSwitch }: DepositFormProps) {
     const connection = mangoStore.getState().connection
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const actions = mangoStore.getState().actions
 
     if (!mangoAccount || !group || !bank || !address || !wallet) return
 
@@ -347,7 +348,14 @@ function DepositForm({ onSuccess, token, onChainSwitch }: DepositFormProps) {
       )
       const signed = await anchorProvider.wallet.signTransaction(transaction)
       const txid = await connection.sendRawTransaction(signed.serialize())
-      await connection.confirmTransaction(txid)
+      const blockhash = await connection.getLatestBlockhash()
+      await connection.confirmTransaction({
+        blockhash: blockhash.blockhash,
+        lastValidBlockHeight: blockhash.lastValidBlockHeight,
+        signature: txid,
+      })
+      await actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
+      await handleSolanaChainDeposit()
     } catch (e: any) {
       notify({
         title: 'Transaction failed',
