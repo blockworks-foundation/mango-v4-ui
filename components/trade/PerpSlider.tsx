@@ -1,15 +1,20 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
-import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
-// import { notify } from 'utils/notifications'
+import { trimDecimals } from 'utils/numbers'
 
-const PerpSlider = () => {
-  const side = mangoStore((s) => s.tradeForm.side)
+const PerpSlider = ({
+  max,
+  minOrderDecimals,
+  tickDecimals,
+}: {
+  max: number
+  minOrderDecimals: number
+  tickDecimals: number
+}) => {
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
-  const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
 
   const step = useMemo(() => {
@@ -18,33 +23,6 @@ const PerpSlider = () => {
     }
     return 0.01
   }, [selectedMarket])
-
-  const leverageMax = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!mangoAccount || !group || !selectedMarket) return 100
-    if (!(selectedMarket instanceof PerpMarket)) return 100
-
-    try {
-      if (side === 'buy') {
-        return mangoAccount.getMaxQuoteForPerpBidUi(
-          group,
-          selectedMarket.perpMarketIndex
-        )
-      } else {
-        return mangoAccount.getMaxBaseForPerpAskUi(
-          group,
-          selectedMarket.perpMarketIndex
-        )
-      }
-    } catch (e) {
-      console.error('Error calculating max leverage for PerpSlider: ', e)
-      // notify({
-      //   type: 'error',
-      //   title: 'Error calculating max leverage.',
-      // })
-      return 0
-    }
-  }, [side, selectedMarket, mangoAccount])
 
   const handleSlide = useCallback(
     (val: string) => {
@@ -59,19 +37,25 @@ const PerpSlider = () => {
         if (s.tradeForm.side === 'buy') {
           s.tradeForm.quoteSize = val
           if (Number(price)) {
-            s.tradeForm.baseSize = (parseFloat(val) / price).toString()
+            s.tradeForm.baseSize = trimDecimals(
+              parseFloat(val) / price,
+              minOrderDecimals
+            ).toFixed(minOrderDecimals)
           } else {
             s.tradeForm.baseSize = ''
           }
         } else if (s.tradeForm.side === 'sell') {
           s.tradeForm.baseSize = val
           if (Number(price)) {
-            s.tradeForm.quoteSize = (parseFloat(val) * price).toString()
+            s.tradeForm.quoteSize = trimDecimals(
+              parseFloat(val) * price,
+              tickDecimals
+            ).toFixed(tickDecimals)
           }
         }
       })
     },
-    [marketPrice]
+    [marketPrice, minOrderDecimals, tickDecimals]
   )
 
   return (
@@ -82,7 +66,7 @@ const PerpSlider = () => {
             ? parseFloat(tradeForm.quoteSize)
             : parseFloat(tradeForm.baseSize)
         }
-        leverageMax={leverageMax}
+        leverageMax={max}
         onChange={handleSlide}
         step={step}
       />
