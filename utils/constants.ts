@@ -33,7 +33,7 @@ export const GRID_LAYOUT_KEY = 'savedLayouts-0.2'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.2'
 
-export const TRADE_CHART_UI_KEY = 'tradeChart-0.1'
+export const TRADE_CHART_UI_KEY = 'tradeChart-0.2'
 export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
 export const THEME_KEY = 'theme-0.1'
