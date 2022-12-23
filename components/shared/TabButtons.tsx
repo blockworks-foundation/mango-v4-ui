@@ -21,11 +21,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
   const { t } = useTranslation(['common', 'swap', 'token', 'trade'])
 
   return (
-    <div
-      className={`flex bg-th-bkg-1 text-th-fgd-4 ${
-        showBorders ? 'border-b border-th-bkg-3' : ''
-      }`}
-    >
+    <div className="flex w-full bg-th-bkg-1 text-th-fgd-4">
       {values.map(([label, count], i) => (
         <div className={fillWidth ? 'flex-1' : ''} key={label + i}>
           <button
@@ -33,9 +29,9 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
               rounded ? 'rounded-md' : 'rounded-none'
             } ${
               showBorders
-                ? `border-r border-th-bkg-3 ${
-                    fillWidth && i === values.length - 1 ? 'border-r-0' : ''
-                  }`
+                ? fillWidth && i === values.length - 1
+                  ? 'border-r-0'
+                  : 'border-r border-th-bkg-3'
                 : ''
             } ${
               label === activeValue
@@ -45,7 +41,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
             key={`${label}${i}`}
             onClick={() => onChange(label)}
           >
-            <span className="font-medium">{t(label)} </span>
+            <span className="font-medium leading-tight">{t(label)}</span>
             {count ? (
               <div
                 className={`ml-1.5 rounded ${

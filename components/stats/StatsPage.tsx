@@ -16,12 +16,14 @@ const StatsPage = () => {
   }, [])
   return (
     <div className="pb-20 md:pb-16">
-      <TabButtons
-        activeValue={activeTab}
-        onChange={(v) => setActiveTab(v)}
-        values={tabsWithCount}
-        showBorders
-      />
+      <div className="border-b border-th-bkg-3">
+        <TabButtons
+          activeValue={activeTab}
+          onChange={(v) => setActiveTab(v)}
+          values={tabsWithCount}
+          showBorders
+        />
+      </div>
       <TabContent activeTab={activeTab} />
     </div>
   )

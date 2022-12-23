@@ -4,6 +4,7 @@ import {
   ArrowUpLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
+  LinkIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -33,6 +34,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -51,6 +53,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -314,10 +317,15 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
           <Button
             onClick={handleWithdraw}
             className="flex w-full items-center justify-center"
-            disabled={!inputAmount || showInsufficientBalance}
+            disabled={!inputAmount || showInsufficientBalance || !connected}
             size="large"
           >
-            {submitting ? (
+            {!connected ? (
+              <div className="flex items-center">
+                <LinkIcon className="mr-2 h-5 w-5" />
+                {t('connect')}
+              </div>
+            ) : submitting ? (
               <Loading className="mr-2 h-5 w-5" />
             ) : showInsufficientBalance ? (
               <div className="flex items-center">
