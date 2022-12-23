@@ -226,7 +226,7 @@ export type MangoStore = {
   notifications: Array<Notification>
   perpMarkets: PerpMarket[]
   profile: {
-    details: ProfileDetails
+    details: ProfileDetails | null
     loadDetails: boolean
   }
   selectedMarket: {

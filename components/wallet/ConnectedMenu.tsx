@@ -72,8 +72,6 @@ const ConnectedMenu = () => {
     }
   }, [publicKey, actions, wallet])
 
-  const { profile_name, wallet_pk } = profileDetails
-
   return (
     <>
       <Menu>
@@ -93,12 +91,14 @@ const ConnectedMenu = () => {
                 {!loadProfileDetails && !isMobile ? (
                   <div className="ml-2.5 overflow-hidden text-left">
                     <p className="font-mono text-xs text-th-fgd-3">
-                      {wallet_pk
-                        ? abbreviateAddress(new PublicKey(wallet_pk))
+                      {profileDetails?.wallet_pk
+                        ? abbreviateAddress(
+                            new PublicKey(profileDetails?.wallet_pk)
+                          )
                         : ''}
                     </p>
                     <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
-                      {profile_name}
+                      {profileDetails?.profile_name}
                     </p>
                   </div>
                 ) : null}
