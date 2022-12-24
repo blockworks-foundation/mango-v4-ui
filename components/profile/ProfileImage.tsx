@@ -17,7 +17,7 @@ const ProfileImage = ({
   return imageUrl || (isOwnerProfile && profile?.profile_image_url) ? (
     <img
       alt=""
-      src={imageUrl ? imageUrl : profile.profile_image_url}
+      src={imageUrl ? imageUrl : profile?.profile_image_url}
       className={`default-transition rounded-full`}
       style={{ width: `${imageSize}px`, height: `${imageSize}px` }}
     />
