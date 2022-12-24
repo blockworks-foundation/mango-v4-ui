@@ -416,7 +416,7 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.mangoAccount.stats.interestTotals.loading = false
             })
-            notify({
+            console.error({
               title: 'Failed to load account interest totals',
               type: 'error',
             })
@@ -456,10 +456,10 @@ const mangoStore = create<MangoStore>()(
               state.mangoAccount.stats.performance.loading = false
             })
             console.error('Failed to load account performance data', e)
-            notify({
-              title: 'Failed to load account performance data',
-              type: 'error',
-            })
+            // notify({
+            //   title: 'Failed to load account performance data',
+            //   type: 'error',
+            // })
           }
         },
         fetchActivityFeed: async (
