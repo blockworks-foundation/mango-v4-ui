@@ -26,7 +26,7 @@ const ChartTabs = ({ token }: { token: string }) => {
   }, [group])
 
   const statsHistory = useMemo(() => {
-    if (!tokenStats.length) return []
+    if (!tokenStats?.length) return []
     return tokenStats.reduce((a: TokenStatsItem[], c: TokenStatsItem) => {
       if (c.symbol === token) {
         const copy = { ...c }

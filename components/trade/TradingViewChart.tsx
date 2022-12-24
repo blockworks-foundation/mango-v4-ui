@@ -93,15 +93,17 @@ const TradingViewChart = () => {
   })
 
   useEffect(() => {
-    // if (tvWidgetRef.current && chartReady && selectedMarketName) {
-    //   tvWidgetRef.current.setSymbol(
-    //     selectedMarketName!,
-    //     tvWidgetRef.current.activeChart().resolution(),
-    //     () => {
-    //       return
-    //     }
-    //   )
-    // }
+    const group = mangoStore.getState().group
+    if (tvWidgetRef.current && chartReady && selectedMarketName && group) {
+      const market = group.getSerum3MarketByName(selectedMarketName)
+      tvWidgetRef.current.setSymbol(
+        market?.serumMarketExternal.toString(),
+        tvWidgetRef.current.activeChart().resolution(),
+        () => {
+          return
+        }
+      )
+    }
   }, [selectedMarketName, chartReady])
 
   useEffect(() => {

@@ -261,7 +261,7 @@ export type MangoStore = {
   tokenStats: {
     initialLoad: boolean
     loading: boolean
-    data: TokenStatsItem[]
+    data: TokenStatsItem[] | null
   }
   tradeForm: TradeForm
   wallet: {

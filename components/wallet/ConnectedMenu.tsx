@@ -98,7 +98,9 @@ const ConnectedMenu = () => {
                         : ''}
                     </p>
                     <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
-                      {profileDetails?.profile_name}
+                      {profileDetails?.profile_name
+                        ? profileDetails.profile_name
+                        : 'Profile Unavailabe'}
                     </p>
                   </div>
                 ) : null}
