@@ -11,7 +11,6 @@ import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
 import ProfileImage from '../profile/ProfileImage'
 import { abbreviateAddress } from '../../utils/formatting'
-import { PublicKey } from '@solana/web3.js'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import EditProfileModal from '@components/modals/EditProfileModal'
@@ -91,11 +90,7 @@ const ConnectedMenu = () => {
                 {!loadProfileDetails && !isMobile ? (
                   <div className="ml-2.5 overflow-hidden text-left">
                     <p className="font-mono text-xs text-th-fgd-3">
-                      {profileDetails?.wallet_pk
-                        ? abbreviateAddress(
-                            new PublicKey(profileDetails?.wallet_pk)
-                          )
-                        : ''}
+                      {publicKey ? abbreviateAddress(publicKey) : ''}
                     </p>
                     <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
                       {profileDetails?.profile_name

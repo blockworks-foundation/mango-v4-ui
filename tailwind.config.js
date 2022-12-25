@@ -412,7 +412,6 @@ module.exports = {
         'th-link-hover': 'var(--link-hover)',
         'th-button': 'var(--button)',
         'th-button-hover': 'var(--button-hover)',
-        'th-warning': 'var(--warning)',
         'th-input-bkg': 'var(--input-bkg)',
         'th-input-border': 'var(--input-border)',
         'th-input-border-hover': 'var(--input-border-hover)',
