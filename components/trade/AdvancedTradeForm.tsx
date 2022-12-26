@@ -33,14 +33,13 @@ import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { getDecimalCount, trimDecimals } from 'utils/numbers'
+import { getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
 import useIpAddress from 'hooks/useIpAddress'
 import ButtonGroup from '@components/forms/ButtonGroup'
 import TradeSummary from './TradeSummary'
 import useMangoAccount from 'hooks/useMangoAccount'
-import MaxAmountButton from '@components/shared/MaxAmountButton'
-import { FadeInFadeOut } from '@components/shared/Transitions'
+import MaxSizeButton from './MaxSizeButton'
 
 const set = mangoStore.getState().set
 
@@ -233,42 +232,6 @@ const AdvancedTradeForm = () => {
     }
   }, [oraclePrice, selectedMarket, tickDecimals, tradeForm])
 
-  const leverageMax = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!mangoAccount || !group || !selectedMarket) return 100
-
-    try {
-      if (selectedMarket instanceof Serum3Market) {
-        if (tradeForm.side === 'buy') {
-          return mangoAccount.getMaxQuoteForSerum3BidUi(
-            group,
-            selectedMarket.serumMarketExternal
-          )
-        } else {
-          return mangoAccount.getMaxBaseForSerum3AskUi(
-            group,
-            selectedMarket.serumMarketExternal
-          )
-        }
-      } else {
-        if (tradeForm.side === 'buy') {
-          return mangoAccount.getMaxQuoteForPerpBidUi(
-            group,
-            selectedMarket.perpMarketIndex
-          )
-        } else {
-          return mangoAccount.getMaxBaseForPerpAskUi(
-            group,
-            selectedMarket.perpMarketIndex
-          )
-        }
-      }
-    } catch (e) {
-      console.error('Error calculating max leverage: spot btn group: ', e)
-      return 0
-    }
-  }, [mangoAccount, tradeForm.side, selectedMarket])
-
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
@@ -372,59 +335,6 @@ const AdvancedTradeForm = () => {
     return minOrderDecimals
   }, [selectedMarket])
 
-  const handleMax = useCallback(() => {
-    const set = mangoStore.getState().set
-    set((state) => {
-      if (tradeForm.side === 'buy') {
-        state.tradeForm.quoteSize = trimDecimals(
-          leverageMax,
-          tickDecimals
-        ).toFixed(tickDecimals)
-        if (tradeForm.tradeType === 'Market' || !tradeForm.price) {
-          state.tradeForm.baseSize = trimDecimals(
-            leverageMax / oraclePrice,
-            minOrderDecimals
-          ).toFixed(minOrderDecimals)
-        } else {
-          state.tradeForm.baseSize = trimDecimals(
-            leverageMax / parseFloat(tradeForm.price),
-            minOrderDecimals
-          ).toFixed(minOrderDecimals)
-        }
-      } else {
-        state.tradeForm.baseSize = trimDecimals(
-          leverageMax,
-          tickDecimals
-        ).toFixed(tickDecimals)
-        if (tradeForm.tradeType === 'Market' || !tradeForm.price) {
-          state.tradeForm.quoteSize = trimDecimals(
-            leverageMax * oraclePrice,
-            minOrderDecimals
-          ).toFixed(minOrderDecimals)
-        } else {
-          state.tradeForm.quoteSize = trimDecimals(
-            leverageMax * parseFloat(tradeForm.price),
-            minOrderDecimals
-          ).toFixed(minOrderDecimals)
-        }
-      }
-    })
-  }, [leverageMax, tradeForm])
-
-  const maxAmount = useMemo(() => {
-    if (!tradeForm.price) return '0'
-    if (tradeForm.side === 'buy') {
-      return trimDecimals(
-        leverageMax / parseFloat(tradeForm.price),
-        tickDecimals
-      ).toFixed(tickDecimals)
-    } else {
-      return trimDecimals(leverageMax, minOrderDecimals).toFixed(
-        minOrderDecimals
-      )
-    }
-  }, [leverageMax, minOrderDecimals, tickDecimals, tradeForm])
-
   return (
     <div>
       <div className="mt-1.5 px-2 md:mt-0 md:border-t md:border-th-bkg-3 md:px-4 md:pt-5 lg:mt-5 lg:border-t-0 lg:pt-0">
@@ -481,17 +391,10 @@ const AdvancedTradeForm = () => {
             </div>
           </>
         ) : null}
-        <div className="mb-2 mt-3 flex items-center justify-between">
-          <p className="text-xs text-th-fgd-3">{t('trade:size')}</p>
-          <FadeInFadeOut show={!!tradeForm.price}>
-            <MaxAmountButton
-              className="text-xs"
-              label={t('max')}
-              onClick={handleMax}
-              value={maxAmount}
-            />
-          </FadeInFadeOut>
-        </div>
+        <MaxSizeButton
+          minOrderDecimals={minOrderDecimals}
+          tickDecimals={tickDecimals}
+        />
         <div className="flex flex-col">
           <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
             <div className="h-5 w-5 flex-shrink-0">
@@ -556,26 +459,22 @@ const AdvancedTradeForm = () => {
         {selectedMarket instanceof Serum3Market ? (
           tradeFormSizeUi === 'slider' ? (
             <SpotSlider
-              max={leverageMax}
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
             />
           ) : (
             <SpotButtonGroup
-              max={leverageMax}
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
             />
           )
         ) : tradeFormSizeUi === 'slider' ? (
           <PerpSlider
-            max={leverageMax}
             minOrderDecimals={minOrderDecimals}
             tickDecimals={tickDecimals}
           />
         ) : (
           <PerpButtonGroup
-            max={leverageMax}
             minOrderDecimals={minOrderDecimals}
             tickDecimals={tickDecimals}
           />

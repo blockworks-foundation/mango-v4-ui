@@ -1,16 +1,15 @@
+import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import ButtonGroup from '@components/forms/ButtonGroup'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { trimDecimals } from 'utils/numbers'
 
 const SpotButtonGroup = ({
-  max,
   minOrderDecimals,
   tickDecimals,
 }: {
-  max: number
   minOrderDecimals: number
   tickDecimals: number
 }) => {
@@ -19,11 +18,34 @@ const SpotButtonGroup = ({
   const { mangoAccount } = useMangoAccount()
   const [sizePercentage, setSizePercentage] = useState('')
 
+  const leverageMax = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!mangoAccount || !group || !selectedMarket) return 100
+    if (!(selectedMarket instanceof Serum3Market)) return 100
+
+    try {
+      if (side === 'buy') {
+        return mangoAccount.getMaxQuoteForSerum3BidUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+      } else {
+        return mangoAccount.getMaxBaseForSerum3AskUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+      }
+    } catch (e) {
+      console.error('Error calculating max leverage: spot btn group: ', e)
+      return 0
+    }
+  }, [side, selectedMarket, mangoAccount])
+
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       const set = mangoStore.getState().set
       setSizePercentage(percentage)
-      const size = max * (Number(percentage) / 100)
+      const size = leverageMax * (Number(percentage) / 100)
 
       set((s) => {
         if (s.tradeForm.side === 'buy') {

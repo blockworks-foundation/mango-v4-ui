@@ -1,20 +1,45 @@
+import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
+import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { trimDecimals } from 'utils/numbers'
 
 const SpotSlider = ({
-  max,
   minOrderDecimals,
   tickDecimals,
 }: {
-  max: number
   minOrderDecimals: number
   tickDecimals: number
 }) => {
-  const { price: marketPrice } = useSelectedMarket()
+  const side = mangoStore((s) => s.tradeForm.side)
+  const { selectedMarket, price: marketPrice } = useSelectedMarket()
+  const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
+
+  const leverageMax = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!mangoAccount || !group || !selectedMarket) return 100
+    if (!(selectedMarket instanceof Serum3Market)) return 100
+
+    try {
+      if (side === 'buy') {
+        return mangoAccount.getMaxQuoteForSerum3BidUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+      } else {
+        return mangoAccount.getMaxBaseForSerum3AskUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+      }
+    } catch (e) {
+      console.error('Error calculating max leverage for spot slider: ', e)
+      return 0
+    }
+  }, [side, selectedMarket, mangoAccount])
 
   const handleSlide = useCallback(
     (val: string) => {
@@ -58,7 +83,7 @@ const SpotSlider = ({
             ? parseFloat(tradeForm.quoteSize)
             : parseFloat(tradeForm.baseSize)
         }
-        leverageMax={max}
+        leverageMax={leverageMax}
         onChange={handleSlide}
         step={0.01}
       />
