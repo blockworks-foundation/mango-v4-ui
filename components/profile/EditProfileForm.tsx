@@ -129,12 +129,21 @@ const EditProfileForm = ({
           <InlineNotification type="error" desc={updateError} />
         </div>
       ) : null}
+      {!profile ? (
+        <div className="py-3">
+          <InlineNotification
+            type="error"
+            desc={t('profile:profile-api-error')}
+          />
+        </div>
+      ) : null}
       <div className="my-6 flex justify-center">
         <div className="relative ">
           <IconButton
             className="absolute -top-2 -right-2 bg-th-button md:hover:bg-th-button-hover"
             size="small"
             onClick={onEditProfileImage}
+            disabled={!profile}
           >
             {profile?.profile_image_url ? (
               <PencilIcon className="h-4 w-4" />
@@ -186,7 +195,8 @@ const EditProfileForm = ({
         disabled={
           !!Object.keys(inputError).length ||
           loadUniquenessCheck ||
-          !profileName
+          !profileName ||
+          !profile
         }
         onClick={saveProfile}
         size="large"
