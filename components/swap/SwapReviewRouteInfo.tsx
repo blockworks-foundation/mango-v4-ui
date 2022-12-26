@@ -82,7 +82,8 @@ const fetchJupiterTransaction = async (
   selectedRoute: RouteInfo,
   userPublicKey: PublicKey,
   slippage: number,
-  inputMint: PublicKey
+  inputMint: PublicKey,
+  outputMint: PublicKey
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const transactions = await (
     await fetch('https://quote-api.jup.ag/v4/swap', {
@@ -118,13 +119,14 @@ const fetchJupiterTransaction = async (
     return (
       ix.programId.toString() ===
         'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' &&
-      ix.keys[3].pubkey.toString() === inputMint.toString()
+      (ix.keys[3].pubkey.toString() === inputMint.toString() ||
+        ix.keys[3].pubkey.toString() === outputMint.toString())
     )
   }
 
-  const filtered_jup_ixs = ixs.filter(
-    (ix) => !isSetupIx(ix.programId) && !isDuplicateAta(ix)
-  )
+  const filtered_jup_ixs = ixs
+    .filter((ix) => !isSetupIx(ix.programId))
+    .filter((ix) => !isDuplicateAta(ix))
   console.log('ixs: ', ixs)
   console.log('filtered ixs: ', filtered_jup_ixs)
 
@@ -219,7 +221,8 @@ const SwapReviewRouteInfo = ({
         selectedRoute,
         mangoAccount.owner,
         slippage,
-        inputBank.mint
+        inputBank.mint,
+        outputBank.mint
       )
 
       try {
