@@ -32,6 +32,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
+  RPC_PROVIDER_KEY,
 } from '../utils/constants'
 import { OrderbookL2, SpotBalances } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
@@ -40,24 +41,45 @@ import perpPositionsUpdater from './perpPositionsUpdater'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
-export const connection = new web3.Connection(
-  process.env.NEXT_PUBLIC_ENDPOINT ||
-    'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
-  'processed'
-)
+const ENDPOINTS = [
+  {
+    name: 'mainnet-beta',
+    url:
+      process.env.NEXT_PUBLIC_ENDPOINT ||
+      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+    websocket:
+      process.env.NEXT_PUBLIC_ENDPOINT ||
+      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+    custom: false,
+  },
+  {
+    name: 'devnet',
+    url: 'https://mango.devnet.rpcpool.com',
+    websocket: 'https://mango.devnet.rpcpool.com',
+    custom: false,
+  },
+]
+
 const options = AnchorProvider.defaultOptions()
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
-const wallet = new EmptyWallet(Keypair.generate())
-const DEFAULT_PROVIDER = new AnchorProvider(connection, wallet, options)
-DEFAULT_PROVIDER.opts.skipPreflight = true
-const DEFAULT_CLIENT = MangoClient.connect(
-  DEFAULT_PROVIDER,
-  CLUSTER,
-  MANGO_V4_ID[CLUSTER],
-  {
+const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
+const emptyWallet = new EmptyWallet(Keypair.generate())
+
+const initMangoClient = (provider: AnchorProvider): MangoClient => {
+  return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
+    // blockhashCommitment: 'confirmed',
     idsSource: 'get-program-accounts',
-  }
-)
+    prioritizationFee: 2,
+    postSendTxCallback: ({ txid }: { txid: string }) => {
+      notify({
+        title: 'Transaction sent',
+        description: 'Waiting for confirmation',
+        type: 'confirm',
+        txid: txid,
+      })
+    },
+  })
+}
 
 export interface TotalInterestDataItem {
   borrow_interest: number
@@ -296,13 +318,27 @@ export type MangoStore = {
     fetchTourSettings: (walletPk: string) => void
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
-    reloadGroup: () => Promise<void>
     loadMarketFills: () => Promise<void>
+    updateConnection: (url: string) => void
   }
 }
 
 const mangoStore = create<MangoStore>()(
   subscribeWithSelector((_set, get) => {
+    let rpcUrl = ENDPOINT?.url
+
+    if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
+      const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
+      rpcUrl = urlFromLocalStorage
+        ? JSON.parse(urlFromLocalStorage).value
+        : ENDPOINT?.url
+    }
+
+    const connection = new web3.Connection(rpcUrl, 'processed')
+    const provider = new AnchorProvider(connection, emptyWallet, options)
+    provider.opts.skipPreflight = true
+    const client = initMangoClient(provider)
+
     return {
       activityFeed: {
         feed: [],
@@ -313,7 +349,7 @@ const mangoStore = create<MangoStore>()(
       connection,
       group: undefined,
       groupLoaded: false,
-      client: DEFAULT_CLIENT,
+      client,
       mangoAccount: {
         current: undefined,
         initialLoad: true,
@@ -530,6 +566,11 @@ const mangoStore = create<MangoStore>()(
           try {
             const set = get().set
             const client = get().client
+            console.log(
+              'fetching group',
+              client.program.provider.connection.rpcEndpoint
+            )
+
             const group = await client.getGroup(GROUP)
             const selectedMarketName = get().selectedMarket.name
 
@@ -826,23 +867,8 @@ const mangoStore = create<MangoStore>()(
               options
             )
             provider.opts.skipPreflight = true
-            const client = await MangoClient.connect(
-              provider,
-              CLUSTER,
-              MANGO_V4_ID[CLUSTER],
-              {
-                idsSource: 'get-program-accounts',
-                prioritizationFee: 2,
-                postSendTxCallback: ({ txid }: { txid: string }) => {
-                  notify({
-                    title: 'Transaction sent',
-                    description: 'Waiting for confirmation',
-                    type: 'confirm',
-                    txid: txid,
-                  })
-                },
-              }
-            )
+            const client = initMangoClient(provider)
+
             set((s) => {
               s.client = client
             })
@@ -854,19 +880,6 @@ const mangoStore = create<MangoStore>()(
                 description: `Please install ${wallet.adapter.name} and then reload this page.`,
               })
             }
-          }
-        },
-        reloadGroup: async () => {
-          try {
-            const set = get().set
-            const client = get().client
-            const group = await client.getGroup(GROUP)
-
-            set((state) => {
-              state.group = group
-            })
-          } catch (e) {
-            console.error('Error fetching group', e)
           }
         },
         async fetchProfileDetails(walletPk: string) {
@@ -945,6 +958,24 @@ const mangoStore = create<MangoStore>()(
           } catch (err) {
             console.log('Error fetching fills:', err)
           }
+        },
+        updateConnection(endpointUrl) {
+          const set = get().set
+          const client = mangoStore.getState().client
+          const newConnection = new web3.Connection(endpointUrl, 'processed')
+          const oldProvider = client.program.provider as AnchorProvider
+          const newProvider = new AnchorProvider(
+            newConnection,
+            oldProvider.wallet,
+            options
+          )
+          newProvider.opts.skipPreflight = true
+          const newClient = initMangoClient(newProvider)
+
+          set((state) => {
+            state.connection = newConnection
+            state.client = newClient
+          })
         },
       },
     }

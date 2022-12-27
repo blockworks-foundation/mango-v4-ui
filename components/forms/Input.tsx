@@ -41,6 +41,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           </div>
         ) : null}
         <input
+          {...props}
           className={`${className} default-transition h-12 w-full flex-1 rounded-md border bg-th-input-bkg px-3 text-base
           text-th-fgd-1 ${
             error ? 'border-th-down' : 'border-th-input-border'
@@ -55,7 +56,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           ${suffix ? 'pr-11' : ''}`}
           disabled={disabled}
           ref={ref}
-          {...props}
           type={type}
           value={value}
           onChange={onChange}
