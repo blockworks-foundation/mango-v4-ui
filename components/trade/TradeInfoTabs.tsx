@@ -14,6 +14,7 @@ import TradeHistory from './TradeHistory'
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
+  const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const { width } = useViewport()
@@ -23,11 +24,14 @@ const TradeInfoTabs = () => {
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
       unsettledPerpPositions?.length
+    const openPerpPositions = Object.values(perpPositions).filter((p) =>
+      p.basePositionLots.toNumber()
+    )
     return [
       ['balances', 0],
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', unsettledTradeCount],
-      ['Positions', unsettledPerpPositions.length],
+      ['Positions', openPerpPositions.length],
       ['Trade History', 0],
     ]
   }, [openOrders, unsettledPerpPositions, unsettledSpotBalances])
