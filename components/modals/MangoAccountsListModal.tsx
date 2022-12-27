@@ -132,8 +132,13 @@ const MangoAccountsListModal = ({
                         <div className="flex w-full items-center justify-between">
                           <div className="text-left">
                             <div className="mb-0.5 flex items-center">
-                              <p className="text-sm font-bold text-th-fgd-1">
-                                {acc.name}
+                              {acc.name ? (
+                                <p className="mr-2 text-sm font-bold text-th-fgd-1">
+                                  {acc.name}
+                                </p>
+                              ) : null}
+                              <p className="text-xs text-th-fgd-3">
+                                ({abbreviateAddress(acc.publicKey)})
                               </p>
                               {acc.delegate.toString() !== DEFAULT_DELEGATE ? (
                                 <Tooltip

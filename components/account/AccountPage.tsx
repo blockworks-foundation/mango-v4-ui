@@ -136,7 +136,7 @@ const AccountPage = () => {
 
   const accountValue = useMemo(() => {
     if (!group || !mangoAccount) return 0.0
-    return toUiDecimalsForQuote(mangoAccount.getEquity(group)!.toNumber())
+    return toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber())
   }, [group, mangoAccount])
 
   const { accountPnl, accountValueChange } = useMemo(() => {
