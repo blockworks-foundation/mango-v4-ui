@@ -43,19 +43,21 @@ const TokenVaultWarnings = ({ bank }: { bank: Bank }) => {
 
   return mangoAccount &&
     balance / bank.minVaultToDepositsRatio > vaultBalance ? (
-    <InlineNotification
-      type="warning"
-      desc={
-        <div>
-          The Mango {bank.name} vault balance is low which is impacting the
-          maximum amount you may borrow. View the{' '}
-          <Link href="/stats" className="underline hover:no-underline">
-            Stats page
-          </Link>{' '}
-          to see vault balances.
-        </div>
-      }
-    />
+    <div className="mb-4">
+      <InlineNotification
+        type="warning"
+        desc={
+          <div>
+            The available {bank.name} vault balance is low and impacting the
+            maximum amount you can withdraw/borrow. View the{' '}
+            <Link href="/stats" className="underline hover:no-underline">
+              Stats page
+            </Link>{' '}
+            to see vault balances.
+          </div>
+        }
+      />
+    </div>
   ) : null
 }
 

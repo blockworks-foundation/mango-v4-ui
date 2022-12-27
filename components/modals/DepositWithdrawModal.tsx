@@ -4,6 +4,7 @@ import { useState } from 'react'
 import TabUnderline from '@components/shared/TabUnderline'
 import DepositForm from '@components/DepositForm'
 import WithdrawForm from '@components/WithdrawForm'
+import { ACCOUNT_ACTION_MODAL_HEIGHT } from 'utils/constants'
 
 interface DepositWithdrawModalProps {
   action: 'deposit' | 'withdraw'
@@ -22,7 +23,7 @@ const DepositWithdrawModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="h-[448px]">
+      <div style={{ height: ACCOUNT_ACTION_MODAL_HEIGHT }}>
         <div className="pb-2">
           <TabUnderline
             activeValue={activeTab}
