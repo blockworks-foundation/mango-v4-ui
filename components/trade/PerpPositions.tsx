@@ -112,7 +112,7 @@ const PerpPositions = () => {
                       )}
                     </p>
                   </Td>
-                  <Td className="text-right">
+                  <Td className="text-right font-mono">
                     <div>
                       $
                       {Math.abs(trimmedBasePosition * market._uiPrice).toFixed(
@@ -120,7 +120,7 @@ const PerpPositions = () => {
                       )}
                     </div>
                   </Td>
-                  <Td className="text-right">
+                  <Td className="text-right font-mono">
                     <div>
                       $
                       {numberFormat.format(
@@ -129,7 +129,7 @@ const PerpPositions = () => {
                     </div>
                   </Td>
                   <Td
-                    className={`text-right ${
+                    className={`text-right font-mono ${
                       unsettledPnl > 0 ? 'text-th-up' : 'text-th-down'
                     }`}
                   >

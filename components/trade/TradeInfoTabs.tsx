@@ -34,7 +34,7 @@ const TradeInfoTabs = () => {
       ['Positions', openPerpPositions.length],
       ['Trade History', 0],
     ]
-  }, [openOrders, unsettledPerpPositions, unsettledSpotBalances])
+  }, [openOrders, unsettledPerpPositions, unsettledSpotBalances, perpPositions])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll pb-5">
