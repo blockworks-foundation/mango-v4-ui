@@ -23,7 +23,7 @@ const BorrowRepayModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className={`h-[${ACCOUNT_ACTION_MODAL_HEIGHT}]`}>
+      <div style={{ height: ACCOUNT_ACTION_MODAL_HEIGHT }}>
         <div className="pb-2">
           <TabUnderline
             activeValue={activeTab}

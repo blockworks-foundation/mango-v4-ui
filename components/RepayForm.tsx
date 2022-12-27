@@ -202,132 +202,138 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
           valueKey="borrowAmount"
         />
       </EnterBottomExitBottom>
-      <FadeInFadeOut
-        className={`flex h-[${ACCOUNT_ACTION_MODAL_INNER_HEIGHT}] flex-col justify-between`}
-        show={!showTokenList}
-      >
-        <div>
-          <div className="-mt-2 mb-2">
-            <SolBalanceWarnings
-              amount={inputAmount}
-              setAmount={setInputAmount}
-              selectedToken={selectedToken}
-            />
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="col-span-2 flex justify-between">
-              <Label text={`${t('repay')} ${t('token')}`} />
-              <MaxAmountButton
-                className="mb-2"
-                label={t('amount-owed')}
-                onClick={setMax}
-                value={floorToDecimal(
-                  borrowAmount,
-                  walletBalance.maxDecimals
-                ).toFixed()}
-              />
-            </div>
-            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
-              <button
-                onClick={() => setShowTokenList(true)}
-                className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
-              >
-                <div className="mr-2.5 flex min-w-[24px] items-center">
-                  {logoUri ? (
-                    <Image alt="" width="24" height="24" src={logoUri} />
-                  ) : (
-                    <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-                  )}
-                </div>
-                <div className="flex w-full items-center justify-between">
-                  <div className="text-xl font-bold">{selectedToken}</div>
-                  <ChevronDownIcon className="h-6 w-6" />
-                </div>
-              </button>
-            </div>
-            <div className="col-span-1">
-              <NumberFormat
-                name="amountIn"
-                id="amountIn"
-                inputMode="decimal"
-                thousandSeparator=","
-                allowNegative={false}
-                isNumericString={true}
-                decimalScale={bank?.mintDecimals || 6}
-                className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
-                placeholder="0.00"
-                value={inputAmount}
-                onValueChange={(e: NumberFormatValues) => {
-                  setInputAmount(!Number.isNaN(Number(e.value)) ? e.value : '')
-                }}
-                isAllowed={withValueLimit}
-              />
-            </div>
-            <div className="col-span-2 mt-2">
-              <ButtonGroup
-                activeValue={sizePercentage}
-                className="font-mono"
-                onChange={(p) => handleSizePercentage(p)}
-                values={['10', '25', '50', '75', '100']}
-                unit="%"
-              />
-            </div>
-          </div>
-          <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
-            {bank ? (
-              <HealthImpactTokenChange
-                mintPk={bank.mint}
-                uiAmount={Number(inputAmount)}
-                isDeposit
-              />
-            ) : null}
-            <div className="flex justify-between">
-              <p>{t('repayment-value')}</p>
-              <p className="font-mono">
-                {bank?.uiPrice
-                  ? formatFixedDecimals(
-                      bank.uiPrice * Number(inputAmount),
-                      true
-                    )
-                  : '-'}
-              </p>
-            </div>
-            <div className="flex justify-between">
-              <div className="flex items-center">
-                <p>{t('outstanding-balance')}</p>
-              </div>
-              <p className="font-mono">
-                {floorToDecimal(
-                  borrowAmount - Number(inputAmount),
-                  walletBalance.maxDecimals
-                ).toNumber()}{' '}
-                <span className="font-body text-th-fgd-4">{selectedToken}</span>
-              </p>
-            </div>
-          </div>
-        </div>
-        <Button
-          onClick={() => handleDeposit(inputAmount)}
-          className="flex w-full items-center justify-center"
-          disabled={!inputAmount || showInsufficientBalance}
-          size="large"
+      <FadeInFadeOut show={!showTokenList}>
+        <div
+          className="flex flex-col justify-between"
+          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
         >
-          {submitting ? (
-            <Loading className="mr-2 h-5 w-5" />
-          ) : showInsufficientBalance ? (
-            <div className="flex items-center">
-              <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-              {t('swap:insufficient-balance', {
-                symbol: selectedToken,
-              })}
+          <div>
+            <div className="-mt-2 mb-2">
+              <SolBalanceWarnings
+                amount={inputAmount}
+                setAmount={setInputAmount}
+                selectedToken={selectedToken}
+              />
             </div>
-          ) : (
-            <div className="flex items-center">
-              <ArrowDownRightIcon className="mr-2 h-5 w-5" />
-              {t('repay')}
+            <div className="grid grid-cols-2">
+              <div className="col-span-2 flex justify-between">
+                <Label text={`${t('repay')} ${t('token')}`} />
+                <MaxAmountButton
+                  className="mb-2"
+                  label={t('amount-owed')}
+                  onClick={setMax}
+                  value={floorToDecimal(
+                    borrowAmount,
+                    walletBalance.maxDecimals
+                  ).toFixed()}
+                />
+              </div>
+              <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
+                <button
+                  onClick={() => setShowTokenList(true)}
+                  className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
+                >
+                  <div className="mr-2.5 flex min-w-[24px] items-center">
+                    {logoUri ? (
+                      <Image alt="" width="24" height="24" src={logoUri} />
+                    ) : (
+                      <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+                    )}
+                  </div>
+                  <div className="flex w-full items-center justify-between">
+                    <div className="text-xl font-bold">{selectedToken}</div>
+                    <ChevronDownIcon className="h-6 w-6" />
+                  </div>
+                </button>
+              </div>
+              <div className="col-span-1">
+                <NumberFormat
+                  name="amountIn"
+                  id="amountIn"
+                  inputMode="decimal"
+                  thousandSeparator=","
+                  allowNegative={false}
+                  isNumericString={true}
+                  decimalScale={bank?.mintDecimals || 6}
+                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                  placeholder="0.00"
+                  value={inputAmount}
+                  onValueChange={(e: NumberFormatValues) => {
+                    setInputAmount(
+                      !Number.isNaN(Number(e.value)) ? e.value : ''
+                    )
+                  }}
+                  isAllowed={withValueLimit}
+                />
+              </div>
+              <div className="col-span-2 mt-2">
+                <ButtonGroup
+                  activeValue={sizePercentage}
+                  className="font-mono"
+                  onChange={(p) => handleSizePercentage(p)}
+                  values={['10', '25', '50', '75', '100']}
+                  unit="%"
+                />
+              </div>
             </div>
-          )}
-        </Button>
+            <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
+              {bank ? (
+                <HealthImpactTokenChange
+                  mintPk={bank.mint}
+                  uiAmount={Number(inputAmount)}
+                  isDeposit
+                />
+              ) : null}
+              <div className="flex justify-between">
+                <p>{t('repayment-value')}</p>
+                <p className="font-mono">
+                  {bank?.uiPrice
+                    ? formatFixedDecimals(
+                        bank.uiPrice * Number(inputAmount),
+                        true
+                      )
+                    : '-'}
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <div className="flex items-center">
+                  <p>{t('outstanding-balance')}</p>
+                </div>
+                <p className="font-mono">
+                  {floorToDecimal(
+                    borrowAmount - Number(inputAmount),
+                    walletBalance.maxDecimals
+                  ).toNumber()}{' '}
+                  <span className="font-body text-th-fgd-4">
+                    {selectedToken}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <Button
+            onClick={() => handleDeposit(inputAmount)}
+            className="flex w-full items-center justify-center"
+            disabled={!inputAmount || showInsufficientBalance}
+            size="large"
+          >
+            {submitting ? (
+              <Loading className="mr-2 h-5 w-5" />
+            ) : showInsufficientBalance ? (
+              <div className="flex items-center">
+                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                {t('swap:insufficient-balance', {
+                  symbol: selectedToken,
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <ArrowDownRightIcon className="mr-2 h-5 w-5" />
+                {t('repay')}
+              </div>
+            )}
+          </Button>
+        </div>
       </FadeInFadeOut>
     </>
   ) : !connected ? (

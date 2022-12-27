@@ -230,99 +230,104 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           valueKey="walletBalance"
         />
       </EnterBottomExitBottom>
-      <FadeInFadeOut
-        className={`flex h-[${ACCOUNT_ACTION_MODAL_INNER_HEIGHT}] flex-col justify-between`}
-        show={!showTokenList}
-      >
-        <div>
-          <InlineNotification
-            type="info"
-            desc={`There is a $${ALPHA_DEPOSIT_LIMIT} account value limit during alpha
+      <FadeInFadeOut show={!showTokenList}>
+        <div
+          className="flex flex-col justify-between"
+          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+        >
+          <div>
+            <InlineNotification
+              type="info"
+              desc={`There is a $${ALPHA_DEPOSIT_LIMIT} account value limit during alpha
             testing.`}
-          />
-          <SolBalanceWarnings
-            amount={inputAmount}
-            setAmount={setInputAmount}
-            selectedToken={selectedToken}
-          />
-          <div className="mt-4 grid grid-cols-2">
-            <div className="col-span-2 flex justify-between">
-              <Label text={`${t('deposit')} ${t('token')}`} />
-              <MaxAmountButton
-                className="mb-2"
-                label={t('wallet-balance')}
-                onClick={setMax}
-                value={floorToDecimal(
-                  tokenMax.maxAmount,
-                  tokenMax.maxDecimals
-                ).toFixed()}
-              />
-            </div>
-            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
-              <button
-                onClick={() => setShowTokenList(true)}
-                className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
-              >
-                <div className="mr-2.5 flex min-w-[24px] items-center">
-                  <Image
-                    alt=""
-                    width="24"
-                    height="24"
-                    src={logoUri || `/icons/${selectedToken.toLowerCase()}.svg`}
-                  />
-                </div>
-                <div className="flex w-full items-center justify-between">
-                  <div className="text-xl font-bold">{selectedToken}</div>
-                  <ChevronDownIcon className="h-6 w-6" />
-                </div>
-              </button>
-            </div>
-            <div className="col-span-1">
-              <NumberFormat
-                name="amountIn"
-                id="amountIn"
-                inputMode="decimal"
-                thousandSeparator=","
-                allowNegative={false}
-                isNumericString={true}
-                decimalScale={bank?.mintDecimals || 6}
-                className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
-                placeholder="0.00"
-                value={inputAmount}
-                onValueChange={(e: NumberFormatValues) => {
-                  setInputAmount(!Number.isNaN(Number(e.value)) ? e.value : '')
-                }}
-                isAllowed={withValueLimit}
-              />
-            </div>
-            <div className="col-span-2 mt-2">
-              <ButtonGroup
-                activeValue={sizePercentage}
-                className="font-mono"
-                onChange={(p) => handleSizePercentage(p)}
-                values={['10', '25', '50', '75', '100']}
-                unit="%"
-              />
-            </div>
-          </div>
-          <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
-            <HealthImpactTokenChange
-              mintPk={bank!.mint}
-              uiAmount={Number(inputAmount)}
-              isDeposit
             />
-            <div className="flex justify-between">
-              <p>{t('deposit-value')}</p>
-              <p className="font-mono">
-                {bank?.uiPrice
-                  ? formatFixedDecimals(
-                      bank.uiPrice * Number(inputAmount),
-                      true
+            <SolBalanceWarnings
+              amount={inputAmount}
+              setAmount={setInputAmount}
+              selectedToken={selectedToken}
+            />
+            <div className="mt-4 grid grid-cols-2">
+              <div className="col-span-2 flex justify-between">
+                <Label text={`${t('deposit')} ${t('token')}`} />
+                <MaxAmountButton
+                  className="mb-2"
+                  label={t('wallet-balance')}
+                  onClick={setMax}
+                  value={floorToDecimal(
+                    tokenMax.maxAmount,
+                    tokenMax.maxDecimals
+                  ).toFixed()}
+                />
+              </div>
+              <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
+                <button
+                  onClick={() => setShowTokenList(true)}
+                  className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
+                >
+                  <div className="mr-2.5 flex min-w-[24px] items-center">
+                    <Image
+                      alt=""
+                      width="24"
+                      height="24"
+                      src={
+                        logoUri || `/icons/${selectedToken.toLowerCase()}.svg`
+                      }
+                    />
+                  </div>
+                  <div className="flex w-full items-center justify-between">
+                    <div className="text-xl font-bold">{selectedToken}</div>
+                    <ChevronDownIcon className="h-6 w-6" />
+                  </div>
+                </button>
+              </div>
+              <div className="col-span-1">
+                <NumberFormat
+                  name="amountIn"
+                  id="amountIn"
+                  inputMode="decimal"
+                  thousandSeparator=","
+                  allowNegative={false}
+                  isNumericString={true}
+                  decimalScale={bank?.mintDecimals || 6}
+                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                  placeholder="0.00"
+                  value={inputAmount}
+                  onValueChange={(e: NumberFormatValues) => {
+                    setInputAmount(
+                      !Number.isNaN(Number(e.value)) ? e.value : ''
                     )
-                  : '-'}
-              </p>
+                  }}
+                  isAllowed={withValueLimit}
+                />
+              </div>
+              <div className="col-span-2 mt-2">
+                <ButtonGroup
+                  activeValue={sizePercentage}
+                  className="font-mono"
+                  onChange={(p) => handleSizePercentage(p)}
+                  values={['10', '25', '50', '75', '100']}
+                  unit="%"
+                />
+              </div>
             </div>
-            {/* <div className="flex justify-between">
+            <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
+              <HealthImpactTokenChange
+                mintPk={bank!.mint}
+                uiAmount={Number(inputAmount)}
+                isDeposit
+              />
+              <div className="flex justify-between">
+                <p>{t('deposit-value')}</p>
+                <p className="font-mono">
+                  {bank?.uiPrice
+                    ? formatFixedDecimals(
+                        bank.uiPrice * Number(inputAmount),
+                        true
+                      )
+                    : '-'}
+                </p>
+              </div>
+              {/* <div className="flex justify-between">
               <div className="flex items-center">
                 <Tooltip content={t('asset-weight-desc')}>
                   <p className="tooltip-underline">{t('asset-weight')}</p>
@@ -330,18 +335,19 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
               </div>
               <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
             </div> */}
-            <div className="flex justify-between">
-              <Tooltip content={t('tooltip-collateral-value')}>
-                <p className="tooltip-underline">{t('collateral-value')}</p>
-              </Tooltip>
-              <p className="font-mono">
-                {formatFixedDecimals(
-                  bank!.uiPrice! *
-                    Number(inputAmount) *
-                    Number(bank!.initAssetWeight),
-                  true
-                )}
-              </p>
+              <div className="flex justify-between">
+                <Tooltip content={t('tooltip-collateral-value')}>
+                  <p className="tooltip-underline">{t('collateral-value')}</p>
+                </Tooltip>
+                <p className="font-mono">
+                  {formatFixedDecimals(
+                    bank!.uiPrice! *
+                      Number(inputAmount) *
+                      Number(bank!.initAssetWeight),
+                    true
+                  )}
+                </p>
+              </div>
             </div>
           </div>
           <Button

@@ -432,7 +432,7 @@ const SwapForm = () => {
             }
           />
         ) : (
-          <div className="mt-6 flex-grow">
+          <div className="mt-6 mb-4 flex-grow">
             <div className="flex">
               <Button disabled className="flex-grow">
                 <span>
@@ -444,12 +444,8 @@ const SwapForm = () => {
             </div>
           </div>
         )}
-        {group && inputBank ? (
-          <div className="mt-4">
-            <TokenVaultWarnings bank={inputBank} />
-          </div>
-        ) : null}
-        <div className="mt-4 space-y-2">
+        {group && inputBank ? <TokenVaultWarnings bank={inputBank} /> : null}
+        <div className="space-y-2">
           <div id="swap-step-four">
             <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           </div>
@@ -504,7 +500,7 @@ const SwapFormSubmitButton = ({
   return (
     <Button
       onClick={() => setShowConfirm(true)}
-      className="mt-6 flex w-full items-center justify-center text-base"
+      className="mt-6 mb-4 flex w-full items-center justify-center text-base"
       disabled={disabled}
       size="large"
     >
