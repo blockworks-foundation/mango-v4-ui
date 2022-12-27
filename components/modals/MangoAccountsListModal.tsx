@@ -1,12 +1,18 @@
 import { useState } from 'react'
-import { CheckIcon, HeartIcon, PlusCircleIcon } from '@heroicons/react/20/solid'
+import {
+  CheckIcon,
+  DocumentDuplicateIcon,
+  HeartIcon,
+  PlusCircleIcon,
+  UsersIcon,
+} from '@heroicons/react/20/solid'
 import {
   HealthType,
   MangoAccount,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
-import { LinkButton } from '../shared/Button'
+import { IconButton, LinkButton } from '../shared/Button'
 import { useLocalStorageStringState } from '../../hooks/useLocalStorageState'
 import { LAST_ACCOUNT_KEY } from '../../utils/constants'
 import { useTranslation } from 'next-i18next'
@@ -20,6 +26,10 @@ import { useRouter } from 'next/router'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { notify } from 'utils/notifications'
+import { DEFAULT_DELEGATE } from './DelegateModal'
+import Tooltip from '@components/shared/Tooltip'
+import { abbreviateAddress } from 'utils/formatting'
+import { handleCopyAddress } from '@components/account/AccountActions'
 
 const MangoAccountsListModal = ({
   isOpen,
@@ -93,16 +103,48 @@ const MangoAccountsListModal = ({
                     HealthType.maint
                   )
                   return (
-                    <div key={acc.publicKey.toString()}>
+                    <div
+                      className="flex h-16 w-full items-center text-th-fgd-1"
+                      key={acc.publicKey.toString()}
+                    >
+                      <div className="flex h-full items-center justify-center rounded-md rounded-r-none bg-th-bkg-3">
+                        <Tooltip content={t('copy-address')} delay={250}>
+                          <IconButton
+                            className="text-th-fgd-3"
+                            onClick={() =>
+                              handleCopyAddress(
+                                acc,
+                                t('copy-address-success', {
+                                  pk: abbreviateAddress(acc.publicKey),
+                                })
+                              )
+                            }
+                            hideBg
+                          >
+                            <DocumentDuplicateIcon className="h-5 w-5" />
+                          </IconButton>
+                        </Tooltip>
+                      </div>
                       <button
                         onClick={() => handleSelectMangoAccount(acc)}
-                        className="default-transition flex w-full items-center justify-between rounded-md bg-th-bkg-2 p-4 text-th-fgd-1 hover:bg-th-bkg-3"
+                        className="default-transition flex h-full w-full items-center justify-between rounded-md rounded-l-none bg-th-bkg-2 px-4 text-th-fgd-1 hover:bg-th-bkg-3"
                       >
                         <div className="flex w-full items-center justify-between">
                           <div className="text-left">
-                            <p className="mb-0.5 text-sm font-bold text-th-fgd-1">
-                              {acc.name}
-                            </p>
+                            <div className="mb-0.5 flex items-center">
+                              <p className="text-sm font-bold text-th-fgd-1">
+                                {acc.name}
+                              </p>
+                              {acc.delegate.toString() !== DEFAULT_DELEGATE ? (
+                                <Tooltip
+                                  content={t('delegate-account-info', {
+                                    address: abbreviateAddress(acc.delegate),
+                                  })}
+                                >
+                                  <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                                </Tooltip>
+                              ) : null}
+                            </div>
                             <div className="flex">
                               <span className="text-sm text-th-fgd-3">
                                 {accountValue}
@@ -151,7 +193,7 @@ const MangoAccountsListModal = ({
               onClick={() => setShowNewAccountForm(true)}
             >
               <PlusCircleIcon className="h-5 w-5" />
-              <span className="ml-2">New Subaccount</span>
+              <span className="ml-2">{t('add-new-account')}</span>
             </LinkButton>
           </div>
           <EnterRightExitLeft

@@ -1,12 +1,16 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
 import Select from '@components/forms/Select'
-import dayjs from 'dayjs'
+// import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
-import { useRouter } from 'next/router'
-import { useCallback, useMemo } from 'react'
-import { NOTIFICATION_POSITION_KEY, SIZE_INPUT_UI_KEY } from 'utils/constants'
+// import { useRouter } from 'next/router'
+// import { useCallback } from 'react'
+import {
+  NOTIFICATION_POSITION_KEY,
+  SIZE_INPUT_UI_KEY,
+  TRADE_CHART_UI_KEY,
+} from 'utils/constants'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -15,55 +19,61 @@ const NOTIFICATION_POSITIONS = [
   'top-right',
 ]
 
-const LANGS = [
-  { locale: 'en', name: 'english', description: 'english' },
-  { locale: 'ru', name: 'russian', description: 'russian' },
-  { locale: 'es', name: 'spanish', description: 'spanish' },
-  {
-    locale: 'zh_tw',
-    name: 'chinese-traditional',
-    description: 'traditional chinese',
-  },
-  { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
+const TRADING_CHARTS = ['custom', 'trading-view']
+const TRADE_FORM_UI = ['slider', 'buttons']
+
+// const LANGS = [
+// { locale: 'en', name: 'english', description: 'english' },
+// { locale: 'ru', name: 'russian', description: 'russian' },
+// { locale: 'es', name: 'spanish', description: 'spanish' },
+// {
+//   locale: 'zh_tw',
+//   name: 'chinese-traditional',
+//   description: 'traditional chinese',
+// },
+// { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
+// ]
+
+export const THEMES = [
+  'light',
+  'medium',
+  'dark',
+  'high-contrast',
+  'mango-classic',
+  'avocado',
+  'banana',
+  'blueberry',
+  'lychee',
+  'olive',
 ]
 
 const DisplaySettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, setTheme } = useTheme()
-  const [savedLanguage, setSavedLanguage] = useLocalStorageState('language', '')
-  const router = useRouter()
-  const { pathname, asPath, query } = router
+  // const [savedLanguage, setSavedLanguage] = useLocalStorageState('language', '')
+  // const router = useRouter()
+  // const { pathname, asPath, query } = router
   const [notificationPosition, setNotificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
     'bottom-left'
   )
   const [tradeFormUi, setTradeFormUi] = useLocalStorageState(
     SIZE_INPUT_UI_KEY,
-    'Slider'
+    'slider'
   )
-  const themes = useMemo(() => {
-    return [
-      t('settings:light'),
-      t('settings:medium'),
-      t('settings:dark'),
-      t('settings:high-contrast'),
-      t('settings:mango-classic'),
-      t('settings:avocado'),
-      t('settings:banana'),
-      t('settings:blueberry'),
-      t('settings:lychee'),
-      t('settings:olive'),
-    ]
-  }, [t])
+  const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
+    TRADE_CHART_UI_KEY,
+    'trading-view'
+  )
 
-  const handleLangChange = useCallback(
-    (l: string) => {
-      setSavedLanguage(l)
-      router.push({ pathname, query }, asPath, { locale: l })
-      dayjs.locale(l == 'zh_tw' ? 'zh-tw' : l)
-    },
-    [router]
-  )
+  // const handleLangChange = useCallback(
+  //   (l: string) => {
+  //     setSavedLanguage(l)
+  //     router.push({ pathname, query }, asPath, { locale: l })
+  //     dayjs.locale(l == 'zh_tw' ? 'zh-tw' : l)
+  //   },
+  //   [router]
+  // )
 
   return (
     <>
@@ -76,17 +86,17 @@ const DisplaySettings = () => {
             onChange={(t) => setTheme(t)}
             className="w-full"
           >
-            {themes.map((t) => (
-              <Select.Option key={t} value={t}>
+            {THEMES.map((theme) => (
+              <Select.Option key={theme} value={t(`settings:${theme}`)}>
                 <div className="flex w-full items-center justify-between">
-                  {t}
+                  {t(`settings:${theme}`)}
                 </div>
               </Select.Option>
             ))}
           </Select>
         </div>
       </div>
-      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
+      {/* <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('settings:language')}</p>
         <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
           <ButtonGroup
@@ -96,7 +106,7 @@ const DisplaySettings = () => {
             names={LANGS.map((val) => t(`settings:${val.name}`))}
           />
         </div>
-      </div>
+      </div> */}
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('settings:notification-position')}</p>
         <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
@@ -114,7 +124,19 @@ const DisplaySettings = () => {
           <ButtonGroup
             activeValue={tradeFormUi}
             onChange={(v) => setTradeFormUi(v)}
-            values={[t('settings:slider'), t('settings:buttons')]}
+            values={TRADE_FORM_UI}
+            names={TRADE_FORM_UI.map((val) => t(`settings:${val}`))}
+          />
+        </div>
+      </div>
+      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
+        <p className="mb-2 lg:mb-0">{t('settings:trade-chart')}</p>
+        <div className="w-full min-w-[220px] md:w-auto">
+          <ButtonGroup
+            activeValue={tradeChartUi}
+            onChange={(v) => setTradeChartUi(v)}
+            values={TRADING_CHARTS}
+            names={TRADING_CHARTS.map((val) => t(`settings:${val}`))}
           />
         </div>
       </div>

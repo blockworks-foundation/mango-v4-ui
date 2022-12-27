@@ -8,6 +8,7 @@
     "buttons": "Buttons",
     "chinese": "简体中文",
     "chinese-traditional": "繁體中文",
+    "custom": "Custom",
     "dark": "Dark",
     "display": "Display",
     "english": "English",
@@ -42,5 +43,7 @@
     "top-left": "Top-Left",
     "top-right": "Top-Right",
     "transaction-fail": "Transaction Fail",
-    "transaction-success": "Transaction Success"
+    "transaction-success": "Transaction Success",
+    "trade-chart": "Trade Chart",
+    "trading-view": "Trading View"
 }

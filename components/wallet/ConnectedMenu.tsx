@@ -11,7 +11,6 @@ import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
 import ProfileImage from '../profile/ProfileImage'
 import { abbreviateAddress } from '../../utils/formatting'
-import { PublicKey } from '@solana/web3.js'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import EditProfileModal from '@components/modals/EditProfileModal'
@@ -72,8 +71,6 @@ const ConnectedMenu = () => {
     }
   }, [publicKey, actions, wallet])
 
-  const { profile_name, wallet_pk } = profileDetails
-
   return (
     <>
       <Menu>
@@ -81,7 +78,7 @@ const ConnectedMenu = () => {
           <div className="relative">
             <Menu.Button
               className={`default-transition h-16 ${
-                !isMobile ? 'w-48 border-l border-th-bkg-3 px-3' : ''
+                !isMobile ? 'w-48 border-l border-th-bkg-3 px-4' : ''
               } hover:bg-th-bkg-2 focus:outline-none`}
             >
               <div className="flex items-center" id="account-step-one">
@@ -91,14 +88,14 @@ const ConnectedMenu = () => {
                   isOwnerProfile
                 />
                 {!loadProfileDetails && !isMobile ? (
-                  <div className="ml-2.5 w-32 text-left">
+                  <div className="ml-2.5 overflow-hidden text-left">
                     <p className="font-mono text-xs text-th-fgd-3">
-                      {wallet_pk
-                        ? abbreviateAddress(new PublicKey(wallet_pk))
-                        : ''}
+                      {publicKey ? abbreviateAddress(publicKey) : ''}
                     </p>
                     <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
-                      {profile_name}
+                      {profileDetails?.profile_name
+                        ? profileDetails.profile_name
+                        : 'Profile Unavailabe'}
                     </p>
                   </div>
                 ) : null}
@@ -118,7 +115,7 @@ const ConnectedMenu = () => {
               <Menu.Items className="absolute right-0 top-[61px] z-20 mt-1 w-48 space-y-1.5 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 md:rounded-r-none">
                 <Menu.Item>
                   <button
-                    className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer hover:text-th-active focus:outline-none"
+                    className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none md:hover:cursor-pointer md:hover:text-th-fgd-1"
                     onClick={() => setShowEditProfileModal(true)}
                   >
                     <UserCircleIcon className="h-4 w-4" />
@@ -130,7 +127,7 @@ const ConnectedMenu = () => {
                 {isMobile ? (
                   <Menu.Item>
                     <button
-                      className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer hover:text-th-active focus:outline-none"
+                      className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none"
                       onClick={() => setShowMangoAccountsModal(true)}
                     >
                       <CurrencyDollarIcon className="h-4 w-4" />
@@ -151,7 +148,7 @@ const ConnectedMenu = () => {
                 </Menu.Item> */}
                 <Menu.Item>
                   <button
-                    className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer focus:outline-none md:hover:text-th-active"
+                    className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none md:hover:cursor-pointer md:hover:text-th-fgd-1"
                     onClick={handleDisconnect}
                   >
                     <ArrowRightOnRectangleIcon className="h-4 w-4" />

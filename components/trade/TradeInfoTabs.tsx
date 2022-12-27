@@ -9,6 +9,7 @@ import PerpPositions from './PerpPositions'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
+import TradeHistory from './TradeHistory'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
@@ -27,12 +28,13 @@ const TradeInfoTabs = () => {
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', unsettledTradeCount],
       ['Positions', unsettledPerpPositions.length],
+      ['Trade History', 0],
     ]
   }, [openOrders, unsettledPerpPositions, unsettledSpotBalances])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll pb-5">
-      <div className="sticky top-0 z-10">
+      <div className="hide-scroll sticky top-0 z-10 overflow-x-auto border-b border-th-bkg-3">
         <TabButtons
           activeValue={selectedTab}
           onChange={(tab: string) => setSelectedTab(tab)}
@@ -50,6 +52,7 @@ const TradeInfoTabs = () => {
         />
       ) : null}
       {selectedTab === 'Positions' ? <PerpPositions /> : null}
+      {selectedTab === 'Trade History' ? <TradeHistory /> : null}
     </div>
   )
 }

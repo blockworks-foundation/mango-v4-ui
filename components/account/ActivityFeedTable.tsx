@@ -128,21 +128,13 @@ const ActivityFeedTable = ({
         activity_type === 'withdraw' ? usd_equivalent * -1 : usd_equivalent
     }
     if (activity_type === 'swap') {
-      const {
-        loan_origination_fee,
-        swap_in_amount,
-        swap_in_price_usd,
-        swap_out_amount,
-        swap_out_price_usd,
-      } = activity.activity_details
-      value =
-        (swap_in_amount + loan_origination_fee) * swap_in_price_usd -
-        swap_out_amount * swap_out_price_usd
+      const { swap_out_amount, swap_out_price_usd } = activity.activity_details
+      value = swap_out_amount * swap_out_price_usd
     }
     if (activity_type === 'perp_trade') {
       const { maker_fee, price, quantity, taker_fee } =
         activity.activity_details
-      value = (quantity * price + maker_fee + taker_fee) * -1
+      value = quantity * price + maker_fee + taker_fee
     }
     return value
   }
@@ -152,8 +144,8 @@ const ActivityFeedTable = ({
       <>
         {showTableView ? (
           <Table className="min-w-full">
-            <thead>
-              <TrHead className="sticky top-0 z-10">
+            <thead className="sticky top-0 z-10">
+              <TrHead>
                 <Th className="bg-th-bkg-1 text-left">{t('date')}</Th>
                 <Th className="bg-th-bkg-1 text-right">
                   {t('activity:activity')}
@@ -218,10 +210,18 @@ const ActivityFeedTable = ({
                     </Td>
                     <Td
                       className={`text-right font-mono ${
-                        value >= 0 ? 'text-th-up' : 'text-th-down'
+                        activityName === 'swap' || activityName === 'perp_trade'
+                          ? 'text-th-fgd-2'
+                          : value >= 0
+                          ? 'text-th-up'
+                          : 'text-th-down'
                       }`}
                     >
-                      {value > 0 ? '+' : ''}
+                      {value > 0 &&
+                      activityName !== 'swap' &&
+                      activityName !== 'perp_trade'
+                        ? '+'
+                        : ''}
                       {formatFixedDecimals(value, true)}
                     </Td>
                     <Td>
@@ -272,9 +272,9 @@ const ActivityFeedTable = ({
           </div>
         )}
         {loadActivityFeed ? (
-          <div className="mt-2 space-y-0.5">
+          <div className="mt-4 space-y-1.5">
             {[...Array(4)].map((x, i) => (
-              <SheenLoader className="flex flex-1" key={i}>
+              <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
                 <div className="h-16 w-full bg-th-bkg-2" />
               </SheenLoader>
             ))}

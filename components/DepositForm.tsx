@@ -1,8 +1,10 @@
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import {
   ArrowDownTrayIcon,
+  ArrowLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
+  LinkIcon,
 } from '@heroicons/react/20/solid'
 import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -12,20 +14,22 @@ import Image from 'next/legacy/image'
 import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
-import { ModalProps } from '../../types/modal'
-import { ALPHA_DEPOSIT_LIMIT, INPUT_TOKEN_DEFAULT } from '../../utils/constants'
-import { notify } from '../../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
-import { TokenAccount } from '../../utils/tokens'
-import ActionTokenList from '../account/ActionTokenList'
-import ButtonGroup from '../forms/ButtonGroup'
-import Label from '../forms/Label'
-import Button from '../shared/Button'
-import InlineNotification from '../shared/InlineNotification'
-import Loading from '../shared/Loading'
-import Modal from '../shared/Modal'
-import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
-import { withValueLimit } from '../swap/SwapForm'
+import {
+  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  ALPHA_DEPOSIT_LIMIT,
+  INPUT_TOKEN_DEFAULT,
+} from './../utils/constants'
+import { notify } from './../utils/notifications'
+import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import { TokenAccount } from './../utils/tokens'
+import ActionTokenList from './account/ActionTokenList'
+import ButtonGroup from './forms/ButtonGroup'
+import Label from './forms/Label'
+import Button from './shared/Button'
+import InlineNotification from './shared/InlineNotification'
+import Loading from './shared/Loading'
+import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
+import { withValueLimit } from './swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
@@ -33,11 +37,10 @@ import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 
-interface DepositModalProps {
+interface DepositFormProps {
+  onSuccess: () => void
   token?: string
 }
-
-type ModalCombinedProps = DepositModalProps & ModalProps
 
 export const walletBalanceForToken = (
   walletTokens: TokenAccount[],
@@ -60,7 +63,7 @@ export const walletBalanceForToken = (
   }
 }
 
-function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
+function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
@@ -87,7 +90,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
     return logoURI
   }, [bank?.mint, mangoTokens])
 
-  const { wallet } = useWallet()
+  const { connected, wallet } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const tokenMax = useMemo(() => {
@@ -124,8 +127,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
 
     if (!mangoAccount || !group || !bank) return
 
+    setSubmitting(true)
     try {
-      setSubmitting(true)
       const tx = await client.tokenDeposit(
         group,
         mangoAccount,
@@ -141,6 +144,7 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       await actions.reloadMangoAccount()
       actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
       setSubmitting(false)
+      onSuccess()
     } catch (e: any) {
       notify({
         title: 'Transaction failed',
@@ -149,10 +153,9 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
         type: 'error',
       })
       console.error('Error depositing:', e)
+      setSubmitting(false)
     }
-
-    onClose()
-  }, [bank, wallet, inputAmount, onClose])
+  }, [bank, wallet, inputAmount])
 
   // TODO extract into a shared hook for UserSetup.tsx
   const banks = useMemo(() => {
@@ -186,20 +189,28 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
       mangoAccount.getEquity(group).toNumber()
     )
     return (
-      parseFloat(inputAmount) > ALPHA_DEPOSIT_LIMIT ||
-      accountValue > ALPHA_DEPOSIT_LIMIT
+      parseFloat(inputAmount) * (bank?.uiPrice || 1) + accountValue >
+        ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
     )
-  }, [inputAmount])
+  }, [inputAmount, bank])
 
   const showInsufficientBalance = tokenMax.maxAmount < Number(inputAmount)
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <>
       <EnterBottomExitBottom
         className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
         show={showTokenList}
       >
-        <h2 className="mb-4 text-center">{t('select-token')}</h2>
+        <button
+          onClick={() => setShowTokenList(false)}
+          className={`absolute left-4 top-4 z-40 w-6 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
+        >
+          <ArrowLeftIcon className={`h-6 w-6`} />
+        </button>
+        <h2 className="mb-4 text-center text-lg">
+          {t('select-deposit-token')}
+        </h2>
         <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
           <div className="text-left">
             <p className="text-xs">{t('token')}</p>
@@ -219,130 +230,143 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           valueKey="walletBalance"
         />
       </EnterBottomExitBottom>
-      <FadeInFadeOut
-        className="flex h-full flex-col justify-between"
-        show={isOpen}
-      >
-        <div>
-          <h2 className="mb-2 text-center">{t('deposit')}</h2>
-          <InlineNotification
-            type="info"
-            desc={`There is a $${ALPHA_DEPOSIT_LIMIT} deposit limit during alpha
+      <FadeInFadeOut show={!showTokenList}>
+        <div
+          className="flex flex-col justify-between"
+          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+        >
+          <div>
+            <InlineNotification
+              type="info"
+              desc={`There is a $${ALPHA_DEPOSIT_LIMIT} account value limit during alpha
             testing.`}
-          />
-          <SolBalanceWarnings
-            amount={inputAmount}
-            setAmount={setInputAmount}
-            selectedToken={selectedToken}
-          />
-          <div className="mt-4 grid grid-cols-2">
-            <div className="col-span-2 flex justify-between">
-              <Label text={t('token')} />
-              <MaxAmountButton
-                className="mb-2"
-                label={t('wallet-balance')}
-                onClick={setMax}
-                value={floorToDecimal(
-                  tokenMax.maxAmount,
-                  tokenMax.maxDecimals
-                ).toFixed()}
-              />
-            </div>
-            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
-              <button
-                onClick={() => setShowTokenList(true)}
-                className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
-              >
-                <div className="mr-2.5 flex min-w-[24px] items-center">
-                  <Image
-                    alt=""
-                    width="24"
-                    height="24"
-                    src={logoUri || `/icons/${selectedToken.toLowerCase()}.svg`}
-                  />
-                </div>
-                <div className="flex w-full items-center justify-between">
-                  <div className="text-xl font-bold">{selectedToken}</div>
-                  <ChevronDownIcon className="h-6 w-6" />
-                </div>
-              </button>
-            </div>
-            <div className="col-span-1">
-              <NumberFormat
-                name="amountIn"
-                id="amountIn"
-                inputMode="decimal"
-                thousandSeparator=","
-                allowNegative={false}
-                isNumericString={true}
-                decimalScale={bank?.mintDecimals || 6}
-                className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
-                placeholder="0.00"
-                value={inputAmount}
-                onValueChange={(e: NumberFormatValues) => {
-                  setInputAmount(!Number.isNaN(Number(e.value)) ? e.value : '')
-                }}
-                isAllowed={withValueLimit}
-              />
-            </div>
-            <div className="col-span-2 mt-2">
-              <ButtonGroup
-                activeValue={sizePercentage}
-                className="font-mono"
-                onChange={(p) => handleSizePercentage(p)}
-                values={['10', '25', '50', '75', '100']}
-                unit="%"
-              />
-            </div>
-          </div>
-          <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
-            <HealthImpactTokenChange
-              mintPk={bank!.mint}
-              uiAmount={Number(inputAmount)}
-              isDeposit
             />
-            <div className="flex justify-between">
-              <p>{t('deposit-value')}</p>
-              <p className="font-mono">
-                {bank?.uiPrice
-                  ? formatFixedDecimals(
-                      bank.uiPrice * Number(inputAmount),
-                      true
+            <SolBalanceWarnings
+              amount={inputAmount}
+              setAmount={setInputAmount}
+              selectedToken={selectedToken}
+            />
+            <div className="mt-4 grid grid-cols-2">
+              <div className="col-span-2 flex justify-between">
+                <Label text={`${t('deposit')} ${t('token')}`} />
+                <MaxAmountButton
+                  className="mb-2"
+                  label={t('wallet-balance')}
+                  onClick={setMax}
+                  value={floorToDecimal(
+                    tokenMax.maxAmount,
+                    tokenMax.maxDecimals
+                  ).toFixed()}
+                />
+              </div>
+              <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
+                <button
+                  onClick={() => setShowTokenList(true)}
+                  className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
+                >
+                  <div className="mr-2.5 flex min-w-[24px] items-center">
+                    <Image
+                      alt=""
+                      width="24"
+                      height="24"
+                      src={
+                        logoUri || `/icons/${selectedToken.toLowerCase()}.svg`
+                      }
+                    />
+                  </div>
+                  <div className="flex w-full items-center justify-between">
+                    <div className="text-xl font-bold">{selectedToken}</div>
+                    <ChevronDownIcon className="h-6 w-6" />
+                  </div>
+                </button>
+              </div>
+              <div className="col-span-1">
+                <NumberFormat
+                  name="amountIn"
+                  id="amountIn"
+                  inputMode="decimal"
+                  thousandSeparator=","
+                  allowNegative={false}
+                  isNumericString={true}
+                  decimalScale={bank?.mintDecimals || 6}
+                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                  placeholder="0.00"
+                  value={inputAmount}
+                  onValueChange={(e: NumberFormatValues) => {
+                    setInputAmount(
+                      !Number.isNaN(Number(e.value)) ? e.value : ''
                     )
-                  : '-'}
-              </p>
+                  }}
+                  isAllowed={withValueLimit}
+                />
+              </div>
+              <div className="col-span-2 mt-2">
+                <ButtonGroup
+                  activeValue={sizePercentage}
+                  className="font-mono"
+                  onChange={(p) => handleSizePercentage(p)}
+                  values={['10', '25', '50', '75', '100']}
+                  unit="%"
+                />
+              </div>
             </div>
-            <div className="flex justify-between">
+            <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
+              <HealthImpactTokenChange
+                mintPk={bank!.mint}
+                uiAmount={Number(inputAmount)}
+                isDeposit
+              />
+              <div className="flex justify-between">
+                <p>{t('deposit-value')}</p>
+                <p className="font-mono">
+                  {bank?.uiPrice
+                    ? formatFixedDecimals(
+                        bank.uiPrice * Number(inputAmount),
+                        true
+                      )
+                    : '-'}
+                </p>
+              </div>
+              {/* <div className="flex justify-between">
               <div className="flex items-center">
                 <Tooltip content={t('asset-weight-desc')}>
                   <p className="tooltip-underline">{t('asset-weight')}</p>
                 </Tooltip>
               </div>
               <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
-            </div>
-            <div className="flex justify-between">
-              <Tooltip content={t('tooltip-collateral-value')}>
-                <p className="tooltip-underline">{t('collateral-value')}</p>
-              </Tooltip>
-              <p className="font-mono">
-                {formatFixedDecimals(
-                  bank!.uiPrice! *
-                    Number(inputAmount) *
-                    Number(bank!.initAssetWeight),
-                  true
-                )}
-              </p>
+            </div> */}
+              <div className="flex justify-between">
+                <Tooltip content={t('tooltip-collateral-value')}>
+                  <p className="tooltip-underline">{t('collateral-value')}</p>
+                </Tooltip>
+                <p className="font-mono">
+                  {formatFixedDecimals(
+                    bank!.uiPrice! *
+                      Number(inputAmount) *
+                      Number(bank!.initAssetWeight),
+                    true
+                  )}
+                </p>
+              </div>
             </div>
           </div>
           <Button
             onClick={handleDeposit}
             className="flex w-full items-center justify-center"
             disabled={
-              !inputAmount || exceedsAlphaMax || showInsufficientBalance
+              !inputAmount ||
+              exceedsAlphaMax ||
+              showInsufficientBalance ||
+              !connected
             }
             size="large"
           >
-            {submitting ? (
+            {!connected ? (
+              <div className="flex items-center">
+                <LinkIcon className="mr-2 h-5 w-5" />
+                {t('connect')}
+              </div>
+            ) : submitting ? (
               <Loading className="mr-2 h-5 w-5" />
             ) : showInsufficientBalance ? (
               <div className="flex items-center">
@@ -360,8 +384,8 @@ function DepositModal({ isOpen, onClose, token }: ModalCombinedProps) {
           </Button>
         </div>
       </FadeInFadeOut>
-    </Modal>
+    </>
   )
 }
 
-export default DepositModal
+export default DepositForm

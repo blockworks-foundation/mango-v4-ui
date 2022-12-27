@@ -20,19 +20,17 @@ import {
 } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
-import BorrowModal from './modals/BorrowModal'
-import DepositModal from './modals/DepositModal'
-import WithdrawModal from './modals/WithdrawModal'
 import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
-import RepayModal from './modals/RepayModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from '../hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
+import DepositWithdrawModal from './modals/DepositWithdrawModal'
+import BorrowRepayModal from './modals/BorrowRepayModal'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -126,7 +124,7 @@ const TokenList = () => {
               </Th>
               <Th id="account-step-ten">
                 <div className="flex justify-end">
-                  <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right).">
+                  <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right).">
                     <span className="tooltip-underline">{t('rates')}</span>
                   </Tooltip>
                 </div>
@@ -509,7 +507,7 @@ const ActionsMenu = ({
           </p>
         </div>
         <LinkButton
-          className="w-full text-left"
+          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
           disabled={!mangoAccount}
           onClick={() => handleShowActionModals(bank.name, 'deposit')}
         >
@@ -517,7 +515,7 @@ const ActionsMenu = ({
         </LinkButton>
         {hasBorrow ? (
           <LinkButton
-            className="w-full text-left"
+            className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
             onClick={() => handleShowActionModals(bank.name, 'repay')}
           >
@@ -525,14 +523,14 @@ const ActionsMenu = ({
           </LinkButton>
         ) : null}
         <LinkButton
-          className="w-full text-left"
+          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
           disabled={!mangoAccount}
           onClick={() => handleShowActionModals(bank.name, 'withdraw')}
         >
           {t('withdraw')}
         </LinkButton>
         <LinkButton
-          className="w-full text-left"
+          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
           disabled={!mangoAccount}
           onClick={() => handleShowActionModals(bank.name, 'borrow')}
         >
@@ -554,28 +552,32 @@ const ActionsMenu = ({
         </LinkButton> */}
       </IconDropMenu>
       {showDepositModal ? (
-        <DepositModal
+        <DepositWithdrawModal
+          action="deposit"
           isOpen={showDepositModal}
           onClose={() => setShowDepositModal(false)}
           token={selectedToken}
         />
       ) : null}
       {showWithdrawModal ? (
-        <WithdrawModal
+        <DepositWithdrawModal
+          action="withdraw"
           isOpen={showWithdrawModal}
           onClose={() => setShowWithdrawModal(false)}
           token={selectedToken}
         />
       ) : null}
       {showBorrowModal ? (
-        <BorrowModal
+        <BorrowRepayModal
+          action="borrow"
           isOpen={showBorrowModal}
           onClose={() => setShowBorrowModal(false)}
           token={selectedToken}
         />
       ) : null}
       {showRepayModal ? (
-        <RepayModal
+        <BorrowRepayModal
+          action="repay"
           isOpen={showRepayModal}
           onClose={() => setShowRepayModal(false)}
           token={selectedToken}

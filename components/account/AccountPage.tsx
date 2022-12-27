@@ -6,8 +6,6 @@ import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
-import DepositModal from '../modals/DepositModal'
-import WithdrawModal from '../modals/WithdrawModal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
@@ -30,12 +28,17 @@ import AccountChart from './AccountChart'
 import useMangoAccount from '../../hooks/useMangoAccount'
 import Change from '../shared/Change'
 import Tooltip from '@components/shared/Tooltip'
-import { ANIMATION_SETTINGS_KEY, IS_ONBOARDED_KEY } from 'utils/constants'
-import { useWallet } from '@solana/wallet-adapter-react'
+import {
+  ANIMATION_SETTINGS_KEY,
+  // IS_ONBOARDED_KEY
+} from 'utils/constants'
+// import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
+// import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -51,7 +54,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const AccountPage = () => {
   const { t } = useTranslation('common')
-  const { connected } = useWallet()
+  // const { connected } = useWallet()
   const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
@@ -64,8 +67,6 @@ const AccountPage = () => {
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.stats.interestTotals.data
   )
-  const [showDepositModal, setShowDepositModal] = useState<boolean>(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false)
   const [chartToShow, setChartToShow] = useState<
     'account-value' | 'cumulative-interest-value' | 'pnl' | ''
   >('')
@@ -74,8 +75,10 @@ const AccountPage = () => {
   >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
-  const tourSettings = mangoStore((s) => s.settings.tours)
-  const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.sm : false
+  // const tourSettings = mangoStore((s) => s.settings.tours)
+  // const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
@@ -221,8 +224,8 @@ const AccountPage = () => {
 
   return !chartToShow ? (
     <>
-      <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 py-3 md:border-b">
-        <div className="flex items-center space-x-6">
+      <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 md:flex-row md:items-center md:justify-between md:border-b">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
           <div id="account-step-three">
             <Tooltip
               maxWidth="20rem"
@@ -267,7 +270,7 @@ const AccountPage = () => {
           {!loadPerformanceData ? (
             mangoAccount && performanceData.length ? (
               <div
-                className="relative flex items-end"
+                className="relative flex h-44 items-end sm:h-24 sm:w-48"
                 onMouseEnter={() =>
                   onHoverMenu(showExpandChart, 'onMouseEnter')
                 }
@@ -282,16 +285,14 @@ const AccountPage = () => {
                       : COLORS.DOWN[theme]
                   }
                   data={performanceData.concat(latestAccountData)}
-                  height={88}
                   name="accountValue"
-                  width={180}
                   xKey="time"
                   yKey="account_equity"
                 />
                 <Transition
                   appear={true}
                   className="absolute right-2 bottom-2"
-                  show={showExpandChart}
+                  show={showExpandChart || isMobile}
                   enter="transition ease-in duration-300"
                   enterFrom="opacity-0 scale-75"
                   enterTo="opacity-100 scale-100"
@@ -310,12 +311,12 @@ const AccountPage = () => {
               </div>
             ) : null
           ) : (
-            <SheenLoader>
-              <div className="h-[88px] w-[180px] rounded-md bg-th-bkg-2" />
+            <SheenLoader className="mt-4 flex flex-1 sm:mt-0">
+              <div className="h-40 w-full rounded-md bg-th-bkg-2 sm:h-24 sm:w-48" />
             </SheenLoader>
           )}
         </div>
-        <div className="mt-3 mb-1 lg:mt-0 lg:mb-0">
+        <div className="mt-6 mb-1 md:mt-0 md:mb-0">
           <AccountActions />
         </div>
       </div>
@@ -386,7 +387,7 @@ const AccountPage = () => {
                     ),
                     true
                   )
-                : (0).toFixed(2)}
+                : `$${(0).toFixed(2)}`}
             </p>
             <span className="text-xs font-normal text-th-fgd-4">
               <Tooltip
@@ -492,21 +493,9 @@ const AccountPage = () => {
         </button>
       </div>
       <AccountTabs />
-      {showDepositModal ? (
-        <DepositModal
-          isOpen={showDepositModal}
-          onClose={() => setShowDepositModal(false)}
-        />
-      ) : null}
-      {showWithdrawModal ? (
-        <WithdrawModal
-          isOpen={showWithdrawModal}
-          onClose={() => setShowWithdrawModal(false)}
-        />
-      ) : null}
-      {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
+      {/* {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
         <AccountOnboardingTour />
-      ) : null}
+      ) : null} */}
     </>
   ) : (
     <div className="p-6">

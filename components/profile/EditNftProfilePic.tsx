@@ -36,14 +36,14 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   }, [publicKey])
 
   useEffect(() => {
-    if (profile.profile_image_url) {
+    if (profile?.profile_image_url) {
       setSelectedProfile(profile.profile_image_url)
     }
   }, [profile])
 
   const saveProfileImage = async () => {
-    const name = profile.profile_name.toLowerCase()
-    const traderCategory = profile.trader_category
+    const name = profile?.profile_name.toLowerCase()
+    const traderCategory = profile?.trader_category
     try {
       if (!publicKey) throw new Error('Wallet not connected!')
       if (!signMessage)
@@ -88,8 +88,8 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   }
 
   const removeProfileImage = async () => {
-    const name = profile.profile_name.toLowerCase()
-    const traderCategory = profile.trader_category
+    const name = profile?.profile_name.toLowerCase()
+    const traderCategory = profile?.trader_category
     try {
       if (!publicKey) throw new Error('Wallet not connected!')
       if (!signMessage)
@@ -138,7 +138,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       <div className="mb-3 flex w-full flex-col items-center sm:mt-3 sm:flex-row sm:justify-between">
         <button
           onClick={onClose}
-          className={`absolute left-2 top-3 z-50 text-th-fgd-4 focus:outline-none md:hover:text-th-active`}
+          className={`absolute left-2 top-3 z-40 text-th-fgd-4 focus:outline-none md:hover:text-th-active`}
         >
           <ArrowLeftIcon className={`h-5 w-5`} />
         </button>
@@ -147,7 +147,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
           <Button disabled={!selectedProfile} onClick={saveProfileImage}>
             {t('save')}
           </Button>
-          {profile.profile_image_url ? (
+          {profile?.profile_image_url ? (
             <LinkButton className="text-sm" onClick={removeProfileImage}>
               {t('profile:remove')}
             </LinkButton>

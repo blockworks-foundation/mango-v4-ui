@@ -78,17 +78,19 @@ const SpotMarketsTable = () => {
                   <Td>
                     {!loadingPrices ? (
                       chartData !== undefined ? (
-                        <SimpleAreaChart
-                          color={
-                            change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
-                          }
-                          data={chartData}
-                          height={40}
-                          name={bank!.name}
-                          width={104}
-                          xKey="0"
-                          yKey="1"
-                        />
+                        <div className="h-10 w-24">
+                          <SimpleAreaChart
+                            color={
+                              change >= 0
+                                ? COLORS.UP[theme]
+                                : COLORS.DOWN[theme]
+                            }
+                            data={chartData}
+                            name={bank!.name}
+                            xKey="0"
+                            yKey="1"
+                          />
+                        </div>
                       ) : bank?.name === 'USDC' ||
                         bank?.name === 'USDT' ? null : (
                         <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
@@ -175,15 +177,15 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
         </div>
         {!loadingPrices ? (
           chartData !== undefined ? (
-            <SimpleAreaChart
-              color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-              data={chartData}
-              height={40}
-              name={bank!.name}
-              width={104}
-              xKey="0"
-              yKey="1"
-            />
+            <div className="h-10 w-24">
+              <SimpleAreaChart
+                color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                data={chartData}
+                name={bank!.name}
+                xKey="0"
+                yKey="1"
+              />
+            </div>
           ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
             <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
           )

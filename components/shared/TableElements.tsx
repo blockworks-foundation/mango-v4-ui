@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { ReactNode } from 'react'
 
 export const Table = ({
@@ -55,3 +56,18 @@ export const Td = ({
   children: ReactNode
   className?: string
 }) => <td className={`px-6 py-3 ${className}`}>{children}</td>
+
+export const TableDateDisplay = ({
+  date,
+  showSeconds,
+}: {
+  date: string | number
+  showSeconds?: boolean
+}) => (
+  <>
+    <p className="text-th-fgd-2">{dayjs(date).format('DD MMM YYYY')}</p>
+    <p className="text-xs text-th-fgd-4">
+      {dayjs(date).format(showSeconds ? 'h:mm:ssa' : 'h:mma')}
+    </p>
+  </>
+)

@@ -1,8 +1,10 @@
 import { Bank, HealthType } from '@blockworks-foundation/mango-v4'
 import {
+  ArrowLeftIcon,
   ArrowUpTrayIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
+  LinkIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -11,34 +13,35 @@ import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 
 import mangoStore from '@store/mangoStore'
-import { ModalProps } from '../../types/modal'
-import { INPUT_TOKEN_DEFAULT } from '../../utils/constants'
-import { notify } from '../../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from '../../utils/numbers'
-import ActionTokenList from '../account/ActionTokenList'
-import ButtonGroup from '../forms/ButtonGroup'
-import Label from '../forms/Label'
-import Button from '../shared/Button'
-import InlineNotification from '../shared/InlineNotification'
-import Loading from '../shared/Loading'
-import Modal from '../shared/Modal'
-import { EnterBottomExitBottom, FadeInFadeOut } from '../shared/Transitions'
-import { withValueLimit } from '../swap/SwapForm'
-import { getMaxWithdrawForBank } from '../swap/useTokenMax'
+import {
+  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  INPUT_TOKEN_DEFAULT,
+} from './../utils/constants'
+import { notify } from './../utils/notifications'
+import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import ActionTokenList from './account/ActionTokenList'
+import ButtonGroup from './forms/ButtonGroup'
+import Label from './forms/Label'
+import Button from './shared/Button'
+import InlineNotification from './shared/InlineNotification'
+import Loading from './shared/Loading'
+import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
+import { withValueLimit } from './swap/SwapForm'
+import { getMaxWithdrawForBank } from './swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
+import { useWallet } from '@solana/wallet-adapter-react'
 
-interface WithdrawModalProps {
+interface WithdrawFormProps {
+  onSuccess: () => void
   token?: string
 }
 
-type ModalCombinedProps = WithdrawModalProps & ModalProps
-
-function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
+function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
@@ -50,6 +53,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -104,7 +108,9 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         type: 'success',
         txid: tx,
       })
-      actions.reloadMangoAccount()
+      await actions.reloadMangoAccount()
+      setSubmitting(false)
+      onSuccess()
     } catch (e: any) {
       console.error(e)
       notify({
@@ -113,9 +119,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
         txid: e?.txid,
         type: 'error',
       })
-    } finally {
       setSubmitting(false)
-      onClose()
     }
   }, [bank, inputAmount])
 
@@ -163,34 +167,41 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
     : false
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="">
-        <EnterBottomExitBottom
-          className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
-          show={showTokenList}
+    <>
+      <EnterBottomExitBottom
+        className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
+        show={showTokenList}
+      >
+        <button
+          onClick={() => setShowTokenList(false)}
+          className={`absolute left-4 top-4 z-40 w-6 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
         >
-          <h2 className="mb-4 text-center">{t('select-token')}</h2>
-          <div className="grid auto-cols-fr grid-flow-col  px-4 pb-2">
-            <div className="text-left">
-              <p className="text-xs">{t('token')}</p>
-            </div>
-            <div className="flex justify-end">
-              <p className="text-xs">{t('available-balance')}</p>
-            </div>
+          <ArrowLeftIcon className={`h-6 w-6`} />
+        </button>
+        <h2 className="mb-4 text-center text-lg">
+          {t('select-withdraw-token')}
+        </h2>
+        <div className="grid auto-cols-fr grid-flow-col  px-4 pb-2">
+          <div className="text-left">
+            <p className="text-xs">{t('token')}</p>
           </div>
-          <ActionTokenList
-            banks={withdrawBanks}
-            onSelect={handleSelectToken}
-            sortByKey="accountBalanceValue"
-            valueKey="accountBalance"
-          />
-        </EnterBottomExitBottom>
-        <FadeInFadeOut
-          className="flex h-full flex-col justify-between"
-          show={isOpen}
+          <div className="flex justify-end">
+            <p className="text-xs">{t('available-balance')}</p>
+          </div>
+        </div>
+        <ActionTokenList
+          banks={withdrawBanks}
+          onSelect={handleSelectToken}
+          sortByKey="accountBalanceValue"
+          valueKey="accountBalance"
+        />
+      </EnterBottomExitBottom>
+      <FadeInFadeOut show={!showTokenList}>
+        <div
+          className="flex flex-col justify-between"
+          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
         >
           <div>
-            <h2 className="mb-4 text-center">{t('withdraw')}</h2>
             {initHealth <= 0 ? (
               <div className="mb-4">
                 <InlineNotification
@@ -199,9 +210,10 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 />
               </div>
             ) : null}
+            {bank ? <TokenVaultWarnings bank={bank} /> : null}
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
-                <Label text={t('token')} />
+                <Label text={`${t('withdraw')} ${t('token')}`} />
                 <MaxAmountButton
                   className="mb-2"
                   label={t('max')}
@@ -266,7 +278,7 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
                 uiAmount={Number(inputAmount)}
               />
               <div className="flex justify-between">
-                <p>{t('withdrawal-value')}</p>
+                <p>{t('withdraw-value')}</p>
                 <p className="font-mono text-th-fgd-1">
                   {bank?.uiPrice
                     ? formatFixedDecimals(
@@ -278,41 +290,42 @@ function WithdrawModal({ isOpen, onClose, token }: ModalCombinedProps) {
               </div>
             </div>
           </div>
-          <div className="flex justify-center">
-            <Button
-              onClick={handleWithdraw}
-              className="flex w-full items-center justify-center"
-              size="large"
-              disabled={
-                !inputAmount || showInsufficientBalance || initHealth <= 0
-              }
-            >
-              {submitting ? (
-                <Loading className="mr-2 h-5 w-5" />
-              ) : showInsufficientBalance ? (
-                <div className="flex items-center">
-                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                  {t('swap:insufficient-balance', {
-                    symbol: selectedToken,
-                  })}
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
-                  {t('withdraw')}
-                </div>
-              )}
-            </Button>
-          </div>
-          {bank ? (
-            <div className="pt-4">
-              <TokenVaultWarnings bank={bank} />
-            </div>
-          ) : null}
-        </FadeInFadeOut>
-      </div>
-    </Modal>
+          <Button
+            onClick={handleWithdraw}
+            className="flex w-full items-center justify-center"
+            size="large"
+            disabled={
+              !inputAmount ||
+              showInsufficientBalance ||
+              initHealth <= 0 ||
+              !connected
+            }
+          >
+            {!connected ? (
+              <div className="flex items-center">
+                <LinkIcon className="mr-2 h-5 w-5" />
+                {t('connect')}
+              </div>
+            ) : submitting ? (
+              <Loading className="mr-2 h-5 w-5" />
+            ) : showInsufficientBalance ? (
+              <div className="flex items-center">
+                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                {t('swap:insufficient-balance', {
+                  symbol: selectedToken,
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
+                {t('withdraw')}
+              </div>
+            )}
+          </Button>
+        </div>
+      </FadeInFadeOut>
+    </>
   )
 }
 
-export default WithdrawModal
+export default WithdrawForm

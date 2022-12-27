@@ -61,7 +61,7 @@ const CustomTooltip = ({
         <>
           <button
             onClick={onClose}
-            className={`absolute right-4 top-4 z-50 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
+            className={`absolute right-4 top-4 z-40 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
           >
             <XMarkIcon className={`h-5 w-5`} />
           </button>

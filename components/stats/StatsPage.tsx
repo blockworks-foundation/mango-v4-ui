@@ -4,7 +4,10 @@ import PerpMarketsTable from './PerpMarketsTable'
 import SpotMarketsTable from './SpotMarketsTable'
 import TokenStats from './TokenStats'
 
-const TABS = ['tokens', 'perp', 'spot']
+const TABS =
+  process.env.NEXT_PUBLIC_SHOW_PERPS === 'true'
+    ? ['tokens', 'perp', 'spot']
+    : ['tokens', 'spot']
 
 const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')
@@ -13,12 +16,14 @@ const StatsPage = () => {
   }, [])
   return (
     <div className="pb-20 md:pb-16">
-      <TabButtons
-        activeValue={activeTab}
-        onChange={(v) => setActiveTab(v)}
-        values={tabsWithCount}
-        showBorders
-      />
+      <div className="border-b border-th-bkg-3">
+        <TabButtons
+          activeValue={activeTab}
+          onChange={(v) => setActiveTab(v)}
+          values={tabsWithCount}
+          showBorders
+        />
+      </div>
       <TabContent activeTab={activeTab} />
     </div>
   )

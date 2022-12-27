@@ -6,7 +6,12 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common', 'profile', 'token'])),
+      ...(await serverSideTranslations(locale, [
+        'common',
+        'profile',
+        'settings',
+        'token',
+      ])),
     },
   }
 }
@@ -19,7 +24,7 @@ export const getStaticPaths = async () => {
   const response = await fetch(url)
   const data = await response.json()
   const paths = data.map((t: any) => ({
-    params: { token: t.symbol },
+    params: { token: t.symbol.toUpperCase() },
   }))
 
   return { paths, fallback: false }

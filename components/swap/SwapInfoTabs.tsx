@@ -21,7 +21,7 @@ const SwapInfoTabs = () => {
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
-      <div className="sticky top-0 z-10">
+      <div className="sticky top-0 z-10 border-b border-th-bkg-3">
         <TabButtons
           activeValue={selectedTab}
           onChange={(tab: string) => setSelectedTab(tab)}

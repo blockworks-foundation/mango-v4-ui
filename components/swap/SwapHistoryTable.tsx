@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import {
   ArrowRightIcon,
   ChevronDownIcon,
@@ -13,7 +13,7 @@ import { useViewport } from '../../hooks/useViewport'
 import { IconButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
-import { SwapHistoryItem } from '@store/mangoStore'
+import mangoStore, { SwapHistoryItem } from '@store/mangoStore'
 import {
   countLeadingZeros,
   formatFixedDecimals,
@@ -27,6 +27,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const SwapHistoryTable = ({
   swapHistory,
@@ -39,12 +40,20 @@ const SwapHistoryTable = ({
   const { connected } = useWallet()
   const { mangoTokens } = useJupiterMints()
   const [showSwapDetails, setSwapDetails] = useState('')
+  const actions = mangoStore((s) => s.actions)
+  const { mangoAccount } = useMangoAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
   )
+
+  useEffect(() => {
+    if (mangoAccount) {
+      actions.fetchSwapHistory(mangoAccount.publicKey.toString())
+    }
+  }, [actions, mangoAccount])
 
   const handleShowSwapDetails = (signature: string) => {
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
@@ -106,7 +115,7 @@ const SwapHistoryTable = ({
                   )?.logoURI
                 }
 
-                const inDecimals = countLeadingZeros(swap_in_amount) + 2
+                const inDecimals = countLeadingZeros(swap_in_amount)
                 const outDecimals = countLeadingZeros(swap_out_amount) + 2
                 return (
                   <TrBody key={signature}>
@@ -131,7 +140,7 @@ const SwapHistoryTable = ({
                           </div>
                           <div>
                             <p className="whitespace-nowrap">
-                              {`${trimDecimals(swap_in_amount, inDecimals)}`}
+                              {`${swap_in_amount.toFixed(inDecimals)}`}
                               <span className="ml-1 font-body tracking-wide text-th-fgd-3">
                                 {inSymbol}
                               </span>
@@ -404,9 +413,9 @@ const SwapHistoryTable = ({
         </div>
       )
     ) : (
-      <div className="mt-2 space-y-0.5">
+      <div className="mt-4 space-y-1.5">
         {[...Array(4)].map((x, i) => (
-          <SheenLoader className="flex flex-1" key={i}>
+          <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
             <div className="h-16 w-full bg-th-bkg-2" />
           </SheenLoader>
         ))}

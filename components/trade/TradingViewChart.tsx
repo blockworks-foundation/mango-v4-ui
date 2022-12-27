@@ -11,6 +11,7 @@ import { useViewport } from 'hooks/useViewport'
 import { CHART_DATA_FEED, DEFAULT_MARKET_NAME } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
+import Datafeed from 'apis/birdeye/datafeed'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -92,9 +93,11 @@ const TradingViewChart = () => {
   })
 
   useEffect(() => {
-    if (tvWidgetRef.current && chartReady && selectedMarketName) {
+    const group = mangoStore.getState().group
+    if (tvWidgetRef.current && chartReady && selectedMarketName && group) {
+      const market = group.getSerum3MarketByName(selectedMarketName)
       tvWidgetRef.current.setSymbol(
-        selectedMarketName!,
+        market?.serumMarketExternal.toString(),
         tvWidgetRef.current.activeChart().resolution(),
         () => {
           return
@@ -107,12 +110,10 @@ const TradingViewChart = () => {
     if (window) {
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
-        symbol: defaultProps.symbol,
+        symbol: '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6',
         // BEWARE: no trailing slash is expected in feed URL
         // tslint:disable-next-line:no-any
-        datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(
-          defaultProps.datafeedUrl
-        ),
+        datafeed: Datafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
