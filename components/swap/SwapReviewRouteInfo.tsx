@@ -333,7 +333,7 @@ const SwapReviewRouteInfo = ({
             </p>
           </div>
         </div>
-        <div className="thin-scroll max-h-[218px] space-y-2 overflow-auto px-6 lg:max-h-[222px]">
+        <div className="space-y-2 overflow-auto px-6">
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">{t('swap:rate')}</p>
             <div>

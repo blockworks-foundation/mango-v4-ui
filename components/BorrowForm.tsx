@@ -10,7 +10,10 @@ import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import React, { useCallback, useMemo, useState } from 'react'
-import NumberFormat, { NumberFormatValues } from 'react-number-format'
+import NumberFormat, {
+  NumberFormatValues,
+  SourceInfo,
+} from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
@@ -79,10 +82,6 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       : new Decimal(0)
   }, [mangoAccount, bank])
 
-  const setMax = useCallback(() => {
-    setInputAmount(tokenMax.toFixed())
-  }, [tokenMax])
-
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       if (!bank) return
@@ -92,6 +91,11 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     },
     [tokenMax, bank]
   )
+
+  const setMax = useCallback(() => {
+    setInputAmount(tokenMax.toFixed())
+    handleSizePercentage('100')
+  }, [tokenMax, handleSizePercentage])
 
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
@@ -157,6 +161,13 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     }
     return []
   }, [mangoAccount, group])
+
+  const handleInputChange = (e: NumberFormatValues, info: SourceInfo) => {
+    if (info.source === 'event') {
+      setSizePercentage('')
+    }
+    setInputAmount(!Number.isNaN(Number(e.value)) ? e.value : '')
+  }
 
   const initHealth = useMemo(() => {
     return group && mangoAccount
@@ -258,11 +269,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                   placeholder="0.00"
                   value={inputAmount}
-                  onValueChange={(e: NumberFormatValues) =>
-                    setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : ''
-                    )
-                  }
+                  onValueChange={handleInputChange}
                   isAllowed={withValueLimit}
                 />
               </div>
