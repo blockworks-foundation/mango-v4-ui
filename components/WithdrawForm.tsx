@@ -317,12 +317,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               </div>
             )}
           </Button>
-          {bank ? (
-            <div className="pt-4">
-              <TokenVaultWarnings bank={bank} />
-            </div>
-          ) : null}
         </div>
+        {bank ? (
+          <div className="pt-4">
+            <TokenVaultWarnings bank={bank} />
+          </div>
+        ) : null}
       </FadeInFadeOut>
     </>
   )
