@@ -12,11 +12,10 @@ const RPC_URLS = [
     label: 'Triton',
     value: 'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
   },
-  {
-    label: 'Syndica',
-    value:
-      'https://solana-api.syndica.io/access-token/4ywEBJNxuwPLXXU9UlMK67fAMZBt1GLdwuXyXSYnoYPn5aXajT8my0R5klXhYRkk/rpc',
-  },
+  // {
+  //   label: 'Genesys Go',
+  //   value: 'https://mango.genesysgo.net',
+  // },
   { label: 'Custom', value: '' },
 ]
 
@@ -27,18 +26,19 @@ const RpcSettings = () => {
   const [showCustomForm, setShowCustomForm] = useState(false)
   const [rpcEndpointProvider, setRpcEndpointProvider] = useLocalStorageState(
     RPC_PROVIDER_KEY,
+    RPC_URLS[0].value
+  )
+  const rpcEndpoint =
+    RPC_URLS.find((node) => node.label === rpcEndpointProvider.label) ||
     RPC_URLS[0]
-  )
-  const rpcEndpoint = RPC_URLS.find(
-    (node) => node.label === rpcEndpointProvider.label
-  )
 
   const handleSetEndpointProvider = (provider: string) => {
-    const endpointProvider = RPC_URLS.find((node) => node.label === provider)
-    setRpcEndpointProvider(endpointProvider)
+    const endpointProvider =
+      RPC_URLS.find((node) => node.label === provider) || RPC_URLS[0]
+    setRpcEndpointProvider(endpointProvider.value)
     if (provider !== 'Custom') {
       setShowCustomForm(false)
-      actions.updateConnection(endpointProvider!.value)
+      actions.updateConnection(endpointProvider.value)
     }
   }
 
@@ -63,7 +63,7 @@ const RpcSettings = () => {
         <p className="mb-2 md:mb-0">{t('rpc-provider')}</p>
         <div className="w-full min-w-[240px] md:w-[340px] md:pl-4">
           <ButtonGroup
-            activeValue={rpcEndpoint!.label}
+            activeValue={rpcEndpoint.label}
             onChange={(v) => handleSetEndpointProvider(v)}
             values={RPC_URLS.map((val) => val.label)}
           />
@@ -74,6 +74,7 @@ const RpcSettings = () => {
                   type="text"
                   name="url"
                   id="url"
+                  className="!h-10"
                   placeholder={t('rpc-url')}
                   value={customUrl}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>

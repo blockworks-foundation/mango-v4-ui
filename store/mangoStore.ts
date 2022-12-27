@@ -54,42 +54,22 @@ const ENDPOINTS = [
   },
   {
     name: 'devnet',
-    // url: 'https://mango.devnet.rpcpool.com',
-    // websocket: 'https://mango.devnet.rpcpool.com',
-    url: 'https://api.devnet.solana.com',
-    websocket: 'https://api.devnet.solana.com',
+    url: 'https://mango.devnet.rpcpool.com',
+    websocket: 'https://mango.devnet.rpcpool.com',
     custom: false,
   },
-  // {
-  //   name: 'testnet',
-  //   url: 'https://api.testnet.solana.com',
-  //   websocket: 'https://api.testnet.solana.com',
-  //   custom: false,
-  // },
 ]
 
-// export const connection = new web3.Connection(
-//   process.env.NEXT_PUBLIC_ENDPOINT ||
-//     'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
-//   'processed'
-// )
 const options = AnchorProvider.defaultOptions()
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
-const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER)
-const wallet = new EmptyWallet(Keypair.generate())
-// const DEFAULT_PROVIDER = new AnchorProvider(connection, wallet, options)
-// DEFAULT_PROVIDER.opts.skipPreflight = true
-// const DEFAULT_CLIENT = MangoClient.connect(
-//   DEFAULT_PROVIDER,
-//   CLUSTER,
-//   MANGO_V4_ID[CLUSTER],
-//   {
-//     idsSource: 'get-program-accounts',
-//   }
-// )
+const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
+const emptyWallet = new EmptyWallet(Keypair.generate())
 
 const initMangoClient = (provider: AnchorProvider): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
+    // blockhashCommitment: 'confirmed',
+    idsSource: 'get-program-accounts',
+    prioritizationFee: 2,
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
         title: 'Transaction sent',
@@ -98,8 +78,6 @@ const initMangoClient = (provider: AnchorProvider): MangoClient => {
         txid: txid,
       })
     },
-    // blockhashCommitment: 'confirmed',
-    idsSource: 'get-program-accounts',
   })
 }
 
@@ -340,7 +318,6 @@ export type MangoStore = {
     fetchTourSettings: (walletPk: string) => void
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
-    reloadGroup: () => Promise<void>
     loadMarketFills: () => Promise<void>
     updateConnection: (url: string) => void
   }
@@ -349,6 +326,7 @@ export type MangoStore = {
 const mangoStore = create<MangoStore>()(
   subscribeWithSelector((_set, get) => {
     let rpcUrl = ENDPOINT?.url
+
     if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
       rpcUrl = urlFromLocalStorage
@@ -356,10 +334,11 @@ const mangoStore = create<MangoStore>()(
         : ENDPOINT?.url
     }
 
-    const connection = new web3.Connection(rpcUrl!, 'processed')
-    const provider = new AnchorProvider(connection, wallet, options)
+    const connection = new web3.Connection(rpcUrl, 'processed')
+    const provider = new AnchorProvider(connection, emptyWallet, options)
     provider.opts.skipPreflight = true
     const client = initMangoClient(provider)
+
     return {
       activityFeed: {
         feed: [],
@@ -587,6 +566,11 @@ const mangoStore = create<MangoStore>()(
           try {
             const set = get().set
             const client = get().client
+            console.log(
+              'fetching group',
+              client.program.provider.connection.rpcEndpoint
+            )
+
             const group = await client.getGroup(GROUP)
             const selectedMarketName = get().selectedMarket.name
 
@@ -883,23 +867,8 @@ const mangoStore = create<MangoStore>()(
               options
             )
             provider.opts.skipPreflight = true
-            const client = await MangoClient.connect(
-              provider,
-              CLUSTER,
-              MANGO_V4_ID[CLUSTER],
-              {
-                idsSource: 'get-program-accounts',
-                prioritizationFee: 2,
-                postSendTxCallback: ({ txid }: { txid: string }) => {
-                  notify({
-                    title: 'Transaction sent',
-                    description: 'Waiting for confirmation',
-                    type: 'confirm',
-                    txid: txid,
-                  })
-                },
-              }
-            )
+            const client = initMangoClient(provider)
+
             set((s) => {
               s.client = client
             })
@@ -911,19 +880,6 @@ const mangoStore = create<MangoStore>()(
                 description: `Please install ${wallet.adapter.name} and then reload this page.`,
               })
             }
-          }
-        },
-        reloadGroup: async () => {
-          try {
-            const set = get().set
-            const client = get().client
-            const group = await client.getGroup(GROUP)
-
-            set((state) => {
-              state.group = group
-            })
-          } catch (e) {
-            console.error('Error fetching group', e)
           }
         },
         async fetchProfileDetails(walletPk: string) {
@@ -1005,9 +961,14 @@ const mangoStore = create<MangoStore>()(
         },
         updateConnection(endpointUrl) {
           const set = get().set
+          const client = mangoStore.getState().client
           const newConnection = new web3.Connection(endpointUrl, 'processed')
-
-          const newProvider = new AnchorProvider(connection, wallet, options)
+          const oldProvider = client.program.provider as AnchorProvider
+          const newProvider = new AnchorProvider(
+            newConnection,
+            oldProvider.wallet,
+            options
+          )
           newProvider.opts.skipPreflight = true
           const newClient = initMangoClient(newProvider)
 
