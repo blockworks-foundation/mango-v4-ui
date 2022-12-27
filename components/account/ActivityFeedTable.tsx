@@ -134,7 +134,7 @@ const ActivityFeedTable = ({
     if (activity_type === 'perp_trade') {
       const { maker_fee, price, quantity, taker_fee } =
         activity.activity_details
-      value = (quantity * price + maker_fee + taker_fee) * -1
+      value = quantity * price + maker_fee + taker_fee
     }
     return value
   }
@@ -144,8 +144,8 @@ const ActivityFeedTable = ({
       <>
         {showTableView ? (
           <Table className="min-w-full">
-            <thead>
-              <TrHead className="sticky top-0 z-10">
+            <thead className="sticky top-0 z-10">
+              <TrHead>
                 <Th className="bg-th-bkg-1 text-left">{t('date')}</Th>
                 <Th className="bg-th-bkg-1 text-right">
                   {t('activity:activity')}
@@ -210,7 +210,7 @@ const ActivityFeedTable = ({
                     </Td>
                     <Td
                       className={`text-right font-mono ${
-                        activityName === 'swap' || activityName === 'perp'
+                        activityName === 'swap' || activityName === 'perp_trade'
                           ? 'text-th-fgd-2'
                           : value >= 0
                           ? 'text-th-up'
@@ -219,7 +219,7 @@ const ActivityFeedTable = ({
                     >
                       {value > 0 &&
                       activityName !== 'swap' &&
-                      activityName !== 'perp'
+                      activityName !== 'perp_trade'
                         ? '+'
                         : ''}
                       {formatFixedDecimals(value, true)}
