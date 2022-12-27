@@ -4,7 +4,7 @@ import Button from '@components/shared/Button'
 import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useMemo, useState } from 'react'
 import { RPC_PROVIDER_KEY } from 'utils/constants'
 
 const RPC_URLS = [
@@ -12,10 +12,10 @@ const RPC_URLS = [
     label: 'Triton',
     value: 'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
   },
-  // {
-  //   label: 'Genesys Go',
-  //   value: 'https://mango.genesysgo.net',
-  // },
+  {
+    label: 'Genesys Go',
+    value: 'https://mango.genesysgo.net',
+  },
   { label: 'Custom', value: '' },
 ]
 
@@ -28,13 +28,20 @@ const RpcSettings = () => {
     RPC_PROVIDER_KEY,
     RPC_URLS[0].value
   )
-  const rpcEndpoint =
-    RPC_URLS.find((node) => node.label === rpcEndpointProvider.label) ||
-    RPC_URLS[0]
+
+  const rpcEndpoint = useMemo(() => {
+    return (
+      RPC_URLS.find((node) => node.value === rpcEndpointProvider) || {
+        label: 'Custom',
+        value: rpcEndpointProvider,
+      }
+    )
+  }, [rpcEndpointProvider])
 
   const handleSetEndpointProvider = (provider: string) => {
-    const endpointProvider =
-      RPC_URLS.find((node) => node.label === provider) || RPC_URLS[0]
+    const endpointProvider = RPC_URLS.find(
+      (node) => node.label === provider
+    ) || { label: 'Custom', value: rpcEndpointProvider }
     setRpcEndpointProvider(endpointProvider.value)
     if (provider !== 'Custom') {
       setShowCustomForm(false)
@@ -43,16 +50,15 @@ const RpcSettings = () => {
   }
 
   useEffect(() => {
-    if (rpcEndpointProvider.label === 'Custom') {
+    if (rpcEndpoint.label === 'Custom') {
       setShowCustomForm(true)
-      setCustomUrl(rpcEndpointProvider.value)
+      setCustomUrl(rpcEndpoint.value)
     }
-  }, [rpcEndpointProvider])
+  }, [rpcEndpoint])
 
   const handleSaveCustomEndpoint = () => {
     if (!customUrl) return
-    const provider = { label: 'Custom', value: customUrl }
-    setRpcEndpointProvider(provider)
+    setRpcEndpointProvider(customUrl)
     actions.updateConnection(customUrl)
   }
 
