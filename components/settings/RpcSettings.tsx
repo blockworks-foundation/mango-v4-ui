@@ -12,10 +12,10 @@ const RPC_URLS = [
     label: 'Triton',
     value: 'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
   },
-  {
-    label: 'Genesys Go',
-    value: 'https://mango.genesysgo.net',
-  },
+  // {
+  //   label: 'Genesys Go',
+  //   value: 'https://mango.genesysgo.net',
+  // },
   { label: 'Custom', value: '' },
 ]
 
