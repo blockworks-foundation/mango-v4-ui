@@ -39,6 +39,8 @@ export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
 export const THEME_KEY = 'theme-0.1'
 
+export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.3'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
@@ -57,8 +59,6 @@ export const CHART_DATA_FEED = `https://dry-ravine-67635.herokuapp.com/tv`
 export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
 export const MIN_SOL_BALANCE = 0.04
-
-export const RPC_PROVIDER_KEY = 'rpcProviderKey'
 
 export const ACCOUNT_ACTION_MODAL_HEIGHT = '478px'
 

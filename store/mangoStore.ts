@@ -325,16 +325,21 @@ export type MangoStore = {
 
 const mangoStore = create<MangoStore>()(
   subscribeWithSelector((_set, get) => {
-    let rpcUrl = ENDPOINT?.url
+    let rpcUrl = ENDPOINT.url
 
     if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
       rpcUrl = urlFromLocalStorage
         ? JSON.parse(urlFromLocalStorage).value
-        : ENDPOINT?.url
+        : ENDPOINT.url
     }
 
-    const connection = new web3.Connection(rpcUrl, 'processed')
+    let connection: Connection
+    try {
+      connection = new web3.Connection(rpcUrl, 'processed')
+    } catch {
+      connection = new web3.Connection(ENDPOINT.url, 'processed')
+    }
     const provider = new AnchorProvider(connection, emptyWallet, options)
     provider.opts.skipPreflight = true
     const client = initMangoClient(provider)
@@ -971,6 +976,7 @@ const mangoStore = create<MangoStore>()(
           )
           newProvider.opts.skipPreflight = true
           const newClient = initMangoClient(newProvider)
+          console.log('here')
 
           set((state) => {
             state.connection = newConnection
