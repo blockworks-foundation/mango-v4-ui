@@ -57,6 +57,10 @@ export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
 export const MIN_SOL_BALANCE = 0.04
 
+export const FAVORITE_MARKETS_KEY = 'favoriteMarkets'
+
+export const RPC_PROVIDER_KEY = 'rpcProviderKey'
+
 export const ACCOUNT_ACTION_MODAL_HEIGHT = '478px'
 
 export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '416px'
