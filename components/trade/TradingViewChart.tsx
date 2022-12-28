@@ -95,14 +95,18 @@ const TradingViewChart = () => {
   useEffect(() => {
     const group = mangoStore.getState().group
     if (tvWidgetRef.current && chartReady && selectedMarketName && group) {
-      const market = group.getSerum3MarketByName(selectedMarketName)
-      tvWidgetRef.current.setSymbol(
-        market?.serumMarketExternal.toString(),
-        tvWidgetRef.current.activeChart().resolution(),
-        () => {
-          return
-        }
-      )
+      try {
+        const market = group.getSerum3MarketByName(selectedMarketName)
+        tvWidgetRef.current.setSymbol(
+          market?.serumMarketExternal.toString(),
+          tvWidgetRef.current.activeChart().resolution(),
+          () => {
+            return
+          }
+        )
+      } catch (e) {
+        console.warn('Trading View change symbol error: ', e)
+      }
     }
   }, [selectedMarketName, chartReady])
 
