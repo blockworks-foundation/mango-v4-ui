@@ -465,7 +465,7 @@ const SwapReviewRouteInfo = ({
             </>
           ) : null}
           <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
+            <p className="text-sm text-th-fgd-3">Price Impact</p>
             <p className="text-right font-mono text-sm text-th-fgd-2">
               {selectedRoute?.priceImpactPct * 100 < 0.1
                 ? '<0.1%'
