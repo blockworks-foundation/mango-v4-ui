@@ -5,14 +5,9 @@ import {
   ArrowUpLeftIcon,
   DocumentDuplicateIcon,
   EllipsisHorizontalIcon,
-  PencilIcon,
-  TrashIcon,
-  UsersIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import IconDropMenu from '../shared/IconDropMenu'
-import CloseAccountModal from '../modals/CloseAccountModal'
-import AccountNameModal from '../modals/AccountNameModal'
 import { copyToClipboard } from 'utils'
 import { notify } from 'utils/notifications'
 import { abbreviateAddress } from 'utils/formatting'
@@ -21,7 +16,6 @@ import {
   MangoAccount,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
-import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
@@ -43,11 +37,8 @@ const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
-  const [showEditAccountModal, setShowEditAccountModal] = useState(false)
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [showRepayModal, setShowRepayModal] = useState(false)
-  const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const { connected } = useWallet()
 
@@ -107,41 +98,8 @@ const AccountActions = () => {
             <DocumentDuplicateIcon className="h-4 w-4" />
             <span className="ml-2">{t('copy-address')}</span>
           </ActionsButton>
-          <ActionsButton
-            mangoAccount={mangoAccount!}
-            onClick={() => setShowEditAccountModal(true)}
-          >
-            <PencilIcon className="h-4 w-4" />
-            <span className="ml-2">{t('edit-account')}</span>
-          </ActionsButton>
-          <ActionsButton
-            mangoAccount={mangoAccount!}
-            onClick={() => setShowDelegateModal(true)}
-          >
-            <UsersIcon className="h-4 w-4" />
-            <span className="ml-2">{t('delegate-account')}</span>
-          </ActionsButton>
-          <ActionsButton
-            mangoAccount={mangoAccount!}
-            onClick={() => setShowCloseAccountModal(true)}
-          >
-            <TrashIcon className="h-4 w-4" />
-            <span className="ml-2">{t('close-account')}</span>
-          </ActionsButton>
         </IconDropMenu>
       </div>
-      {showCloseAccountModal ? (
-        <CloseAccountModal
-          isOpen={showCloseAccountModal}
-          onClose={() => setShowCloseAccountModal(false)}
-        />
-      ) : null}
-      {showEditAccountModal ? (
-        <AccountNameModal
-          isOpen={showEditAccountModal}
-          onClose={() => setShowEditAccountModal(false)}
-        />
-      ) : null}
       {showBorrowModal ? (
         <BorrowRepayModal
           action="borrow"
@@ -154,12 +112,6 @@ const AccountActions = () => {
           action="repay"
           isOpen={showRepayModal}
           onClose={() => setShowRepayModal(false)}
-        />
-      ) : null}
-      {showDelegateModal ? (
-        <DelegateModal
-          isOpen={showDelegateModal}
-          onClose={() => setShowDelegateModal(false)}
         />
       ) : null}
       {showCreateAccountModal ? (

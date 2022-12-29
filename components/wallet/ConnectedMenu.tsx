@@ -2,7 +2,9 @@ import { Menu, Transition } from '@headlessui/react'
 import {
   ArrowRightOnRectangleIcon,
   CurrencyDollarIcon,
+  PaperAirplaneIcon,
   UserCircleIcon,
+  XCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet, Wallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
@@ -16,6 +18,9 @@ import { breakpoints } from '../../utils/theme'
 import EditProfileModal from '@components/modals/EditProfileModal'
 import MangoAccountsListModal from '@components/modals/MangoAccountsListModal'
 import { Wallet as AnchorWallet } from '@project-serum/anchor'
+import AccountNameModal from '@components/modals/AccountNameModal'
+import DelegateModal from '@components/modals/DelegateModal'
+import CloseAccountModal from '@components/modals/CloseAccountModal'
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
@@ -24,6 +29,9 @@ const ConnectedMenu = () => {
 
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
+  const [showEditAccountModal, setShowEditAccountModal] = useState(false)
+  const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
+  const [showDelegateModal, setShowDelegateModal] = useState(false)
 
   const set = mangoStore((s) => s.set)
   const actions = mangoStore((s) => s.actions)
@@ -124,6 +132,39 @@ const ConnectedMenu = () => {
                     </div>
                   </button>
                 </Menu.Item>
+                <Menu.Item>
+                  <button
+                    className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none md:hover:cursor-pointer md:hover:text-th-fgd-1"
+                    onClick={() => setShowEditAccountModal(true)}
+                  >
+                    <UserCircleIcon className="h-4 w-4" />
+                    <div className="pl-2 text-left">
+                      {t('common:edit-account')}
+                    </div>
+                  </button>
+                </Menu.Item>
+                <Menu.Item>
+                  <button
+                    className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none md:hover:cursor-pointer md:hover:text-th-fgd-1"
+                    onClick={() => setShowDelegateModal(true)}
+                  >
+                    <PaperAirplaneIcon className="h-4 w-4" />
+                    <div className="pl-2 text-left">
+                      {t('common:delegate-account')}
+                    </div>
+                  </button>
+                </Menu.Item>
+                <Menu.Item>
+                  <button
+                    className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none md:hover:cursor-pointer md:hover:text-th-fgd-1"
+                    onClick={() => setShowCloseAccountModal(true)}
+                  >
+                    <XCircleIcon className="h-4 w-4" />
+                    <div className="pl-2 text-left">
+                      {t('common:close-account')}
+                    </div>
+                  </button>
+                </Menu.Item>
                 {isMobile ? (
                   <Menu.Item>
                     <button
@@ -178,6 +219,24 @@ const ConnectedMenu = () => {
         <MangoAccountsListModal
           isOpen={showMangoAccountsModal}
           onClose={() => setShowMangoAccountsModal(false)}
+        />
+      ) : null}
+      {showEditAccountModal ? (
+        <AccountNameModal
+          isOpen={showEditAccountModal}
+          onClose={() => setShowEditAccountModal(false)}
+        />
+      ) : null}
+      {showCloseAccountModal ? (
+        <CloseAccountModal
+          isOpen={showCloseAccountModal}
+          onClose={() => setShowCloseAccountModal(false)}
+        />
+      ) : null}
+      {showDelegateModal ? (
+        <DelegateModal
+          isOpen={showDelegateModal}
+          onClose={() => setShowDelegateModal(false)}
         />
       ) : null}
     </>
