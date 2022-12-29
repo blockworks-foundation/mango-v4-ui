@@ -2,6 +2,7 @@ import { Bank, HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowLeftIcon,
   ArrowUpLeftIcon,
+  ArrowUpTrayIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
   LinkIcon,
@@ -81,6 +82,18 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       ? floorToDecimal(amount, bank.mintDecimals)
       : new Decimal(0)
   }, [mangoAccount, bank])
+
+  const tokenBalance = useMemo(() => {
+    if (!bank || !mangoAccount) return new Decimal(0)
+    return floorToDecimal(
+      mangoAccount.getTokenBalanceUi(bank),
+      bank.mintDecimals
+    )
+  }, [bank, mangoAccount])
+
+  const isBorrow = parseFloat(inputAmount) > tokenBalance.toNumber()
+
+  console.log(tokenBalance.toNumber(), tokenMax.toNumber())
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -300,13 +313,34 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   mintPk={bank.mint}
                   uiAmount={Number(inputAmount)}
                 />
+                {tokenBalance ? (
+                  <div className="flex justify-between">
+                    <p>{t('withdraw-value')}</p>
+                    <p className="font-mono text-th-fgd-1">
+                      {isBorrow
+                        ? formatFixedDecimals(
+                            bank.uiPrice * tokenBalance.toNumber(),
+                            true
+                          )
+                        : inputAmount
+                        ? formatFixedDecimals(
+                            bank.uiPrice * parseFloat(inputAmount),
+                            true
+                          )
+                        : '$0.00'}
+                    </p>
+                  </div>
+                ) : null}
                 <div className="flex justify-between">
                   <p>{t('borrow-value')}</p>
                   <p className="font-mono text-th-fgd-1">
-                    {formatFixedDecimals(
-                      bank.uiPrice * Number(inputAmount),
-                      true
-                    )}
+                    {isBorrow
+                      ? formatFixedDecimals(
+                          bank.uiPrice *
+                            (parseFloat(inputAmount) - tokenBalance.toNumber()),
+                          true
+                        )
+                      : '$0.00'}
                   </p>
                 </div>
                 <div className="flex justify-between">
@@ -316,11 +350,14 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                     </p>
                   </Tooltip>
                   <p className="font-mono text-th-fgd-1">
-                    {formatFixedDecimals(
-                      bank.loanOriginationFeeRate.toNumber() *
-                        Number(inputAmount),
-                      true
-                    )}
+                    {isBorrow
+                      ? formatFixedDecimals(
+                          bank.uiPrice *
+                            bank.loanOriginationFeeRate.toNumber() *
+                            (parseFloat(inputAmount) - tokenBalance.toNumber()),
+                          true
+                        )
+                      : '$0.00'}
                   </p>
                 </div>
               </div>
@@ -344,10 +381,17 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
                 {t('swap:insufficient-collateral')}
               </div>
-            ) : (
+            ) : isBorrow ? (
               <div className="flex items-center">
                 <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
-                {t('borrow')}
+                {tokenBalance.toNumber()
+                  ? `${t('withdraw')} & ${t('borrow')}`
+                  : t('borrow')}
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
+                {t('withdraw')}
               </div>
             )}
           </Button>
