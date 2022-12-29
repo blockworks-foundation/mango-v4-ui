@@ -33,12 +33,18 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
   return (
     <>
       <h3 className="mb-3">{t('settings')}</h3>
-      <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
+      <IconButton
+        className="absolute top-2 right-2 text-th-fgd-3"
+        onClick={onClose}
+        hideBg
+      >
         <XMarkIcon className="h-6 w-6" />
       </IconButton>
 
       <div className="mt-4">
-        <p className="mb-2 text-th-fgd-1">Max {t('swap:slippage')}</p>
+        <p className="mb-2 text-th-fgd-2">{`${t('max')} ${t(
+          'swap:slippage'
+        )}`}</p>
         {showCustomSlippageForm ? (
           <Input
             type="text"
@@ -58,7 +64,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
         )}
       </div>
       <div className="mt-6 flex items-center justify-between rounded-md bg-th-bkg-2 p-3">
-        <p className="text-th-fgd-1">{t('swap:use-margin')}</p>
+        <p className="text-th-fgd-2">{t('swap:use-margin')}</p>
         <Switch
           className="text-th-fgd-3"
           checked={margin}

@@ -17,7 +17,6 @@ import {
 import Decimal from 'decimal.js'
 
 import mangoStore from '@store/mangoStore'
-import RoutesModal from './RoutesModal'
 import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
 import {
@@ -25,6 +24,7 @@ import {
   PencilIcon,
   ArrowsRightLeftIcon,
   ArrowRightIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
@@ -40,6 +40,7 @@ import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpact from '@components/shared/HealthImpact'
+import { Disclosure } from '@headlessui/react'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -49,6 +50,7 @@ type JupiterRouteInfoProps = {
   selectedRoute: RouteInfo | undefined
   setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined>>
   slippage: number
+  setShowSettings: (x: boolean) => void
 }
 
 const deserializeJupiterIxAndAlt = async (
@@ -149,10 +151,10 @@ const SwapReviewRouteInfo = ({
   onClose,
   routes,
   selectedRoute,
-  setSelectedRoute,
+  setShowSettings,
 }: JupiterRouteInfoProps) => {
   const { t } = useTranslation(['common', 'trade'])
-  const [showRoutesModal, setShowRoutesModal] = useState(false)
+  const slippage = mangoStore((s) => s.swap.slippage)
   const [swapRate, setSwapRate] = useState<boolean>(false)
   const [feeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -210,7 +212,6 @@ const SwapReviewRouteInfo = ({
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const inputBank = mangoStore.getState().swap.inputBank
       const outputBank = mangoStore.getState().swap.outputBank
-      const slippage = mangoStore.getState().swap.slippage
       const set = mangoStore.getState().set
       const connection = mangoStore.getState().connection
 
@@ -297,7 +298,7 @@ const SwapReviewRouteInfo = ({
   }, [coingeckoPrices, amountIn, amountOut])
 
   return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (
-    <div className="flex h-full flex-col justify-between">
+    <div className="thin-scroll flex h-full flex-col justify-between overflow-y-auto">
       <div>
         <IconButton
           className="absolute top-4 left-4 mr-3 text-th-fgd-2"
@@ -389,24 +390,21 @@ const SwapReviewRouteInfo = ({
               </div>
             </div>
           </div>
-          <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">
-              {t('swap:minimum-received')}
-            </p>
-            {outputTokenInfo?.decimals ? (
-              <p className="text-right font-mono text-sm text-th-fgd-2">
-                {formatDecimal(
-                  selectedRoute?.otherAmountThreshold /
-                    10 ** outputTokenInfo.decimals || 1,
-                  outputTokenInfo.decimals
-                )}{' '}
-                <span className="font-body tracking-wide">
-                  {outputTokenInfo?.symbol}
-                </span>
-              </p>
-            ) : null}
-          </div>
           <HealthImpact maintProjectedHealth={maintProjectedHealth} />
+          <div className="flex justify-between">
+            <Tooltip content={t('swap:tooltip-max-slippage')} delay={250}>
+              <p className="tooltip-underline text-sm text-th-fgd-3">{`${t(
+                'max'
+              )} ${t('swap:slippage')}`}</p>
+            </Tooltip>
+            <div className="flex items-center">
+              {slippage}%
+              <PencilIcon
+                className="default-transition ml-2 h-4 w-4 md:hover:cursor-pointer md:hover:text-th-active"
+                onClick={() => setShowSettings(true)}
+              />
+            </div>
+          </div>
           {borrowAmount ? (
             <>
               <div className="flex justify-between">
@@ -436,20 +434,6 @@ const SwapReviewRouteInfo = ({
                 </p>
               </div>
               <div className="flex justify-between">
-                <p className="text-sm text-th-fgd-3">{t('borrow-fee')}</p>
-                <p className="text-right font-mono text-sm text-th-fgd-2">
-                  ~
-                  {formatFixedDecimals(
-                    amountIn
-                      .mul(inputBank!.loanOriginationFeeRate.toFixed())
-                      .toNumber()
-                  )}{' '}
-                  <span className="font-body tracking-wide">
-                    {inputBank!.name}
-                  </span>
-                </p>
-              </div>
-              <div className="flex justify-between">
                 <Tooltip content={t('tooltip-borrow-rate')}>
                   <p className="tooltip-underline text-sm text-th-fgd-3">
                     {t('borrow-rate')}
@@ -464,191 +448,107 @@ const SwapReviewRouteInfo = ({
               </div>
             </>
           ) : null}
-          <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
-            <p className="text-right font-mono text-sm text-th-fgd-2">
-              {selectedRoute?.priceImpactPct * 100 < 0.1
-                ? '<0.1%'
-                : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
-            </p>
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-th-fgd-3">Swap Route</p>
-            <div
-              className="flex items-center text-th-fgd-2 md:hover:cursor-pointer md:hover:text-th-fgd-3"
-              role="button"
-              onClick={() => setShowRoutesModal(true)}
-            >
-              <span className="overflow-ellipsis whitespace-nowrap">
-                {selectedRoute?.marketInfos.map((info, index) => {
-                  let includeSeparator = false
-                  if (
-                    selectedRoute?.marketInfos.length > 1 &&
-                    index !== selectedRoute?.marketInfos.length - 1
-                  ) {
-                    includeSeparator = true
-                  }
-                  return (
-                    <span key={index}>{`${info?.label} ${
-                      includeSeparator ? 'x ' : ''
-                    }`}</span>
-                  )
-                })}
-              </span>
-              <PencilIcon className="ml-2 h-4 w-4 hover:text-th-active" />
-            </div>
-          </div>
-          {typeof feeValue === 'number' ? (
-            <div className="flex justify-between">
-              <p className="text-sm text-th-fgd-3">{t('fee')}</p>
-              <div className="flex items-center">
-                <p className="text-right font-mono text-sm text-th-fgd-2">
-                  ≈ ${feeValue?.toFixed(2)}
-                </p>
-              </div>
-            </div>
-          ) : (
-            selectedRoute?.marketInfos.map((info, index) => {
-              const feeToken = jupiterTokens.find(
-                (item) => item?.address === info.lpFee?.mint
-              )
-              return (
-                <div className="flex justify-between" key={index}>
-                  <p className="text-sm text-th-fgd-3">
-                    {t('swap:fees-paid-to', {
-                      route: info?.label,
-                    })}
-                  </p>
-                  {feeToken?.decimals && (
-                    <p className="pl-4 text-right font-mono text-sm text-th-fgd-2">
-                      {(
-                        info.lpFee?.amount / Math.pow(10, feeToken.decimals)
-                      ).toFixed(6)}{' '}
-                      <span className="font-body tracking-wide">
-                        {feeToken?.symbol}
-                      </span>{' '}
-                      (
-                      {(info.lpFee?.pct * 100).toLocaleString(undefined, {
-                        maximumFractionDigits: 4,
-                      })}
-                      %)
-                    </p>
-                  )}
-                </div>
-              )
-            })
-          )}
-          {/* {connected ? (
-        <>
-          <div className="flex justify-between">
-            <span>{t('swap:transaction-fee')}</span>
-            <div className="text-right text-th-fgd-2">
-              {depositAndFee
-                ? depositAndFee?.signatureFee / Math.pow(10, 9)
-                : '-'}{' '}
-              SOL
-            </div>
-          </div>
-          {depositAndFee?.ataDepositLength ||
-          depositAndFee?.openOrdersDeposits?.length ? (
-            <div className="flex justify-between">
-              <div className="flex items-center">
-                <span>{t('deposit')}</span>
-                <Tooltip
-                  content={
-                    <>
-                      {depositAndFee?.ataDepositLength ? (
-                        <div>{t('need-ata-account')}</div>
-                      ) : null}
-                      {depositAndFee?.openOrdersDeposits?.length ? (
-                        <div className="mt-2">
-                          {t('swap:serum-requires-openorders')}{' '}
-                          <a
-                            href="https://docs.google.com/document/d/1qEWc_Bmc1aAxyCUcilKB4ZYpOu3B0BxIbe__dRYmVns/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {t('swap:heres-how')}
-                          </a>
-                        </div>
-                      ) : null}
-                    </>
-                  }
-                  placement={'left'}
-                >
-                  <InformationCircleIcon className="ml-1.5 h-3.5 w-3.5 cursor-help text-th-active" />
-                </Tooltip>
-              </div>
-              <div>
-                {depositAndFee?.ataDepositLength ? (
-                  <div className="text-right text-th-fgd-2">
-                    {depositAndFee?.ataDepositLength === 1
-                      ? t('swap:ata-deposit-details', {
-                          cost: (
-                            depositAndFee?.ataDeposit / Math.pow(10, 9)
-                          ).toFixed(5),
-                          count: depositAndFee?.ataDepositLength,
-                        })
-                      : t('swap:ata-deposit-details_plural', {
-                          cost: (
-                            depositAndFee?.ataDeposit / Math.pow(10, 9)
-                          ).toFixed(5),
-                          count: depositAndFee?.ataDepositLength,
-                        })}
-                  </div>
-                ) : null}
-                {depositAndFee?.openOrdersDeposits?.length ? (
-                  <div className="text-right text-th-fgd-2">
-                    {depositAndFee?.openOrdersDeposits.length > 1
-                      ? t('swap:serum-details_plural', {
-                          cost: (
-                            sum(depositAndFee?.openOrdersDeposits) /
-                            Math.pow(10, 9)
-                          ).toFixed(5),
-                          count: depositAndFee?.openOrdersDeposits.length,
-                        })
-                      : t('swap:serum-details', {
-                          cost: (
-                            sum(depositAndFee?.openOrdersDeposits) /
-                            Math.pow(10, 9)
-                          ).toFixed(5),
-                          count: depositAndFee?.openOrdersDeposits.length,
-                        })}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-        </>
-      ) : null} */}
         </div>
-        {showRoutesModal ? (
-          <RoutesModal
-            show={showRoutesModal}
-            onClose={() => setShowRoutesModal(false)}
-            setSelectedRoute={setSelectedRoute}
-            selectedRoute={selectedRoute}
-            routes={routes}
-            inputTokenSymbol={inputTokenInfo!.name}
-            outputTokenInfo={outputTokenInfo}
-          />
-        ) : null}
       </div>
-      <div className="flex items-center justify-center p-6 pt-0">
-        <Button
-          onClick={onSwap}
-          className="flex w-full items-center justify-center text-base"
-          size="large"
-        >
-          {submitting ? (
-            <Loading className="mr-2 h-5 w-5" />
-          ) : (
-            <div className="flex items-center">
-              <ArrowsRightLeftIcon className="mr-2 h-5 w-5" />
-              {t('swap')}
-            </div>
-          )}
-        </Button>
+      <div className="p-6">
+        <div className="rounded-md bg-th-bkg-2">
+          <Disclosure>
+            {({ open }) => (
+              <>
+                <Disclosure.Button className="default-transition flex w-full items-center justify-between rounded-md p-3">
+                  <p>{open ? t('swap:hide-fees') : t('swap:show-fees')}</p>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-5 w-5 text-th-fgd-3`}
+                  />
+                </Disclosure.Button>
+                <Disclosure.Panel className="space-y-2 p-3 pt-0">
+                  {borrowAmount ? (
+                    <div className="flex justify-between">
+                      <Tooltip content={t('loan-origination-fee-tooltip')}>
+                        <p className="tooltip-underline text-sm text-th-fgd-3">
+                          {t('loan-origination-fee')}
+                        </p>
+                      </Tooltip>
+                      <p className="text-right font-mono text-sm text-th-fgd-2">
+                        ~
+                        {formatFixedDecimals(
+                          amountIn
+                            .mul(inputBank!.loanOriginationFeeRate.toFixed())
+                            .toNumber()
+                        )}{' '}
+                        <span className="font-body tracking-wide">
+                          {inputBank!.name}
+                        </span>
+                      </p>
+                    </div>
+                  ) : null}
+                  {typeof feeValue === 'number' ? (
+                    <div className="flex justify-between">
+                      <p className="text-sm text-th-fgd-3">{t('fee')}</p>
+                      <div className="flex items-center">
+                        <p className="text-right font-mono text-sm text-th-fgd-2">
+                          ≈ ${feeValue?.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    selectedRoute?.marketInfos.map((info, index) => {
+                      const feeToken = jupiterTokens.find(
+                        (item) => item?.address === info.lpFee?.mint
+                      )
+                      return (
+                        <div className="flex justify-between" key={index}>
+                          <p className="text-sm text-th-fgd-3">
+                            {t('swap:fees-paid-to', {
+                              route: info?.label,
+                            })}
+                          </p>
+                          {feeToken?.decimals && (
+                            <p className="pl-4 text-right font-mono text-sm text-th-fgd-2">
+                              {(
+                                info.lpFee?.amount /
+                                Math.pow(10, feeToken.decimals)
+                              ).toFixed(6)}{' '}
+                              <span className="font-body tracking-wide">
+                                {feeToken?.symbol}
+                              </span>{' '}
+                              (
+                              {(info.lpFee?.pct * 100).toLocaleString(
+                                undefined,
+                                {
+                                  maximumFractionDigits: 4,
+                                }
+                              )}
+                              %)
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+                </Disclosure.Panel>
+              </>
+            )}
+          </Disclosure>
+        </div>
+        <div className="mt-4 flex items-center justify-center">
+          <Button
+            onClick={onSwap}
+            className="flex w-full items-center justify-center text-base"
+            size="large"
+          >
+            {submitting ? (
+              <Loading className="mr-2 h-5 w-5" />
+            ) : (
+              <div className="flex items-center">
+                <ArrowsRightLeftIcon className="mr-2 h-5 w-5" />
+                {t('swap')}
+              </div>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   ) : null

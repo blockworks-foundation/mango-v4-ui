@@ -5,6 +5,7 @@ import {
   Cog8ToothIcon,
   ExclamationCircleIcon,
   LinkIcon,
+  PencilIcon,
 } from '@heroicons/react/20/solid'
 import NumberFormat, {
   NumberFormatValues,
@@ -286,6 +287,7 @@ const SwapForm = () => {
             selectedRoute={selectedRoute}
             setSelectedRoute={setSelectedRoute}
             maintProjectedHealth={maintProjectedHealth}
+            setShowSettings={setShowSettings}
           />
         </Transition>
         <EnterBottomExitBottom
@@ -450,18 +452,20 @@ const SwapForm = () => {
             <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           </div>
           <div className="flex justify-between">
-            <Tooltip content={t('trade:tooltip-slippage')} delay={250}>
+            <Tooltip content={t('swap:tooltip-max-slippage')} delay={250}>
               <p className="tooltip-underline text-sm text-th-fgd-3">
-                Est. {t('swap:slippage')}
+                {`${t('max')} ${t('swap:slippage')}`}
               </p>
             </Tooltip>
-            <p className="text-right font-mono text-sm text-th-fgd-2">
-              {selectedRoute?.priceImpactPct
-                ? selectedRoute?.priceImpactPct * 100 < 0.1
-                  ? '<0.1%'
-                  : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                : '–'}
-            </p>
+            <div className="flex items-center">
+              <p className="text-right font-mono text-sm text-th-fgd-2">
+                {slippage}%
+              </p>
+              <PencilIcon
+                className="default-transition ml-2 h-4 w-4 md:hover:cursor-pointer md:hover:text-th-active"
+                onClick={() => setShowSettings(true)}
+              />
+            </div>
           </div>
         </div>
       </div>
