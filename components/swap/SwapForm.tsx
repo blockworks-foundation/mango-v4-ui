@@ -285,7 +285,6 @@ const SwapForm = () => {
             routes={routes}
             selectedRoute={selectedRoute}
             setSelectedRoute={setSelectedRoute}
-            maintProjectedHealth={maintProjectedHealth}
           />
         </Transition>
         <EnterBottomExitBottom
@@ -452,7 +451,7 @@ const SwapForm = () => {
           <div className="flex justify-between">
             <Tooltip content={t('trade:tooltip-slippage')} delay={250}>
               <p className="tooltip-underline text-sm text-th-fgd-3">
-                Est. {t('swap:slippage')}
+                Price Impact
               </p>
             </Tooltip>
             <p className="text-right font-mono text-sm text-th-fgd-2">

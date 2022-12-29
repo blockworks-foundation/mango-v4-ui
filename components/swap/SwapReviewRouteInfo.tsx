@@ -39,11 +39,9 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import Tooltip from '@components/shared/Tooltip'
-import HealthImpact from '@components/shared/HealthImpact'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
-  maintProjectedHealth: number
   onClose: () => void
   routes: RouteInfo[] | undefined
   selectedRoute: RouteInfo | undefined
@@ -145,7 +143,6 @@ const successSound = new Howl({
 
 const SwapReviewRouteInfo = ({
   amountIn,
-  maintProjectedHealth,
   onClose,
   routes,
   selectedRoute,
@@ -406,7 +403,6 @@ const SwapReviewRouteInfo = ({
               </p>
             ) : null}
           </div>
-          <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           {borrowAmount ? (
             <>
               <div className="flex justify-between">
