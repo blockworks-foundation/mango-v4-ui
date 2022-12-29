@@ -285,21 +285,32 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                 />
               ) : null}
               <div className="flex justify-between">
-                <p>{t('repayment-value')}</p>
-                <p className="font-mono">
-                  {bank?.uiPrice
-                    ? formatFixedDecimals(
-                        bank.uiPrice * Number(inputAmount),
-                        true
-                      )
-                    : '-'}
+                <p>{t('repayment-amount')}</p>
+                <p className="font-mono text-th-fgd-2">
+                  {bank?.uiPrice && inputAmount ? (
+                    <>
+                      {inputAmount}{' '}
+                      <span className="text-xs text-th-fgd-3">
+                        (
+                        {formatFixedDecimals(
+                          bank.uiPrice * Number(inputAmount),
+                          true
+                        )}
+                        )
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      0 <span className="text-xs text-th-fgd-3">($0.00)</span>
+                    </>
+                  )}
                 </p>
               </div>
               <div className="flex justify-between">
                 <div className="flex items-center">
                   <p>{t('outstanding-balance')}</p>
                 </div>
-                <p className="font-mono">
+                <p className="font-mono text-th-fgd-2">
                   {floorToDecimal(
                     borrowAmount - Number(inputAmount),
                     walletBalance.maxDecimals

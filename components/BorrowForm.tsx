@@ -315,32 +315,62 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 />
                 {tokenBalance ? (
                   <div className="flex justify-between">
-                    <p>{t('withdraw-value')}</p>
-                    <p className="font-mono text-th-fgd-1">
-                      {isBorrow
-                        ? formatFixedDecimals(
-                            bank.uiPrice * tokenBalance.toNumber(),
-                            true
-                          )
-                        : inputAmount
-                        ? formatFixedDecimals(
-                            bank.uiPrice * parseFloat(inputAmount),
-                            true
-                          )
-                        : '$0.00'}
+                    <p>{t('withdraw-amount')}</p>
+                    <p className="font-mono text-th-fgd-2">
+                      {isBorrow ? (
+                        <>
+                          {tokenBalance.toNumber()}{' '}
+                          <span className="text-xs text-th-fgd-3">
+                            (
+                            {formatFixedDecimals(
+                              bank.uiPrice * tokenBalance.toNumber(),
+                              true
+                            )}
+                          </span>
+                        </>
+                      ) : inputAmount ? (
+                        <>
+                          {inputAmount}{' '}
+                          <span className="text-xs text-th-fgd-3">
+                            (
+                            {formatFixedDecimals(
+                              bank.uiPrice * parseFloat(inputAmount),
+                              true
+                            )}
+                            )
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          0{' '}
+                          <span className="text-xs text-th-fgd-3">($0.00)</span>
+                        </>
+                      )}
                     </p>
                   </div>
                 ) : null}
                 <div className="flex justify-between">
-                  <p>{t('borrow-value')}</p>
-                  <p className="font-mono text-th-fgd-1">
-                    {isBorrow
-                      ? formatFixedDecimals(
-                          bank.uiPrice *
-                            (parseFloat(inputAmount) - tokenBalance.toNumber()),
-                          true
-                        )
-                      : '$0.00'}
+                  <p>{t('borrow-amount')}</p>
+                  <p className="font-mono text-th-fgd-2">
+                    {isBorrow ? (
+                      <>
+                        {parseFloat(inputAmount) - tokenBalance.toNumber()}{' '}
+                        <span className="text-xs text-th-fgd-3">
+                          (
+                          {formatFixedDecimals(
+                            bank.uiPrice *
+                              (parseFloat(inputAmount) -
+                                tokenBalance.toNumber()),
+                            true
+                          )}
+                          )
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        0 <span className="text-xs text-th-fgd-3">($0.00)</span>
+                      </>
+                    )}
                   </p>
                 </div>
                 <div className="flex justify-between">
@@ -349,7 +379,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                       {t('loan-origination-fee')}
                     </p>
                   </Tooltip>
-                  <p className="font-mono text-th-fgd-1">
+                  <p className="font-mono text-th-fgd-2">
                     {isBorrow
                       ? formatFixedDecimals(
                           bank.uiPrice *
@@ -381,7 +411,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
                 {t('swap:insufficient-collateral')}
               </div>
-            ) : isBorrow ? (
+            ) : isBorrow || !inputAmount ? (
               <div className="flex items-center">
                 <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
                 {tokenBalance.toNumber()
