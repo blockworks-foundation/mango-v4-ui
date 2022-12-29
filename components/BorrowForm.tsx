@@ -93,8 +93,6 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
 
   const isBorrow = parseFloat(inputAmount) > tokenBalance.toNumber()
 
-  console.log(tokenBalance.toNumber(), tokenMax.toNumber())
-
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       if (!bank) return
