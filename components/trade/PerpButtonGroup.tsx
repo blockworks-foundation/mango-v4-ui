@@ -4,9 +4,15 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo, useState } from 'react'
-// import { notify } from 'utils/notifications'
+import { trimDecimals } from 'utils/numbers'
 
-const PerpButtonGroup = () => {
+const PerpButtonGroup = ({
+  minOrderDecimals,
+  tickDecimals,
+}: {
+  minOrderDecimals: number
+  tickDecimals: number
+}) => {
   const side = mangoStore((s) => s.tradeForm.side)
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
@@ -32,10 +38,6 @@ const PerpButtonGroup = () => {
       }
     } catch (e) {
       console.error('Error calculating max leverage perp btn grp: ', e)
-      // notify({
-      //   type: 'error',
-      //   title: 'Error calculating max leverage.',
-      // })
       return 0
     }
   }, [side, selectedMarket, mangoAccount, tradeFormPrice])
@@ -48,25 +50,33 @@ const PerpButtonGroup = () => {
 
       set((s) => {
         if (s.tradeForm.side === 'buy') {
-          s.tradeForm.quoteSize = size.toString()
+          s.tradeForm.quoteSize = trimDecimals(size, tickDecimals).toFixed(
+            tickDecimals
+          )
 
           if (Number(s.tradeForm.price)) {
-            s.tradeForm.baseSize = (size / Number(s.tradeForm.price)).toString()
+            s.tradeForm.baseSize = trimDecimals(
+              size / Number(s.tradeForm.price),
+              minOrderDecimals
+            ).toFixed(minOrderDecimals)
           } else {
             s.tradeForm.baseSize = ''
           }
         } else if (s.tradeForm.side === 'sell') {
-          s.tradeForm.baseSize = size.toString()
+          s.tradeForm.baseSize = trimDecimals(size, minOrderDecimals).toFixed(
+            minOrderDecimals
+          )
 
           if (Number(s.tradeForm.price)) {
-            s.tradeForm.quoteSize = (
-              size * Number(s.tradeForm.price)
-            ).toString()
+            s.tradeForm.quoteSize = trimDecimals(
+              size * Number(s.tradeForm.price),
+              tickDecimals
+            ).toFixed(tickDecimals)
           }
         }
       })
     },
-    [leverageMax]
+    [leverageMax, minOrderDecimals, tickDecimals]
   )
 
   return (

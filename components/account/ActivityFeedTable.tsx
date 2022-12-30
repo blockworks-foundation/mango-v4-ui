@@ -68,12 +68,12 @@ const ActivityFeedTable = ({
       if (side === 'liqee') {
         credit = { value: formatDecimal(liab_amount), symbol: liab_symbol }
         debit = {
-          value: formatDecimal(asset_amount * -1),
+          value: formatDecimal(asset_amount),
           symbol: asset_symbol,
         }
       } else {
         credit = { value: formatDecimal(asset_amount), symbol: asset_symbol }
-        debit = { value: formatDecimal(liab_amount * -1), symbol: liab_symbol }
+        debit = { value: formatDecimal(liab_amount), symbol: liab_symbol }
       }
     }
     if (activity_type === 'deposit') {
@@ -117,9 +117,9 @@ const ActivityFeedTable = ({
       const { side, liab_amount, liab_price, asset_amount, asset_price } =
         activity.activity_details
       if (side === 'liqee') {
-        value = asset_amount * asset_price - liab_amount * liab_price
+        value = asset_amount * asset_price
       } else {
-        value = liab_amount * liab_price - asset_amount * asset_price
+        value = liab_amount * liab_price
       }
     }
     if (activity_type === 'deposit' || activity_type === 'withdraw') {
@@ -128,21 +128,13 @@ const ActivityFeedTable = ({
         activity_type === 'withdraw' ? usd_equivalent * -1 : usd_equivalent
     }
     if (activity_type === 'swap') {
-      const {
-        loan_origination_fee,
-        swap_in_amount,
-        swap_in_price_usd,
-        swap_out_amount,
-        swap_out_price_usd,
-      } = activity.activity_details
-      value =
-        (swap_in_amount + loan_origination_fee) * swap_in_price_usd -
-        swap_out_amount * swap_out_price_usd
+      const { swap_out_amount, swap_out_price_usd } = activity.activity_details
+      value = swap_out_amount * swap_out_price_usd
     }
     if (activity_type === 'perp_trade') {
       const { maker_fee, price, quantity, taker_fee } =
         activity.activity_details
-      value = (quantity * price + maker_fee + taker_fee) * -1
+      value = quantity * price + maker_fee + taker_fee
     }
     return value
   }
@@ -152,8 +144,8 @@ const ActivityFeedTable = ({
       <>
         {showTableView ? (
           <Table className="min-w-full">
-            <thead>
-              <TrHead className="sticky top-0 z-10">
+            <thead className="sticky top-0 z-10">
+              <TrHead>
                 <Th className="bg-th-bkg-1 text-left">{t('date')}</Th>
                 <Th className="bg-th-bkg-1 text-right">
                   {t('activity:activity')}
@@ -177,7 +169,7 @@ const ActivityFeedTable = ({
                 const isLiquidation =
                   activity_type === 'liquidate_token_with_token'
                 const activityName = isLiquidation
-                  ? 'liquidation'
+                  ? 'spot-liquidation'
                   : activity_type
                 const amounts = getCreditAndDebit(activity)
                 const value = getValue(activity)
@@ -218,10 +210,18 @@ const ActivityFeedTable = ({
                     </Td>
                     <Td
                       className={`text-right font-mono ${
-                        value >= 0 ? 'text-th-up' : 'text-th-down'
+                        activityName === 'swap' || activityName === 'perp_trade'
+                          ? 'text-th-fgd-2'
+                          : value >= 0
+                          ? 'text-th-up'
+                          : 'text-th-down'
                       }`}
                     >
-                      {value > 0 ? '+' : ''}
+                      {value > 0 &&
+                      activityName !== 'swap' &&
+                      activityName !== 'perp_trade'
+                        ? '+'
+                        : ''}
                       {formatFixedDecimals(value, true)}
                     </Td>
                     <Td>
@@ -272,9 +272,9 @@ const ActivityFeedTable = ({
           </div>
         )}
         {loadActivityFeed ? (
-          <div className="mt-2 space-y-0.5">
+          <div className="mt-4 space-y-1.5">
             {[...Array(4)].map((x, i) => (
-              <SheenLoader className="flex flex-1" key={i}>
+              <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
                 <div className="h-16 w-full bg-th-bkg-2" />
               </SheenLoader>
             ))}
@@ -320,7 +320,7 @@ const MobileActivityFeedItem = ({
   const isLiquidation = activity_type === 'liquidate_token_with_token'
   const isSwap = activity_type === 'swap'
   const isPerp = activity_type === 'perp_trade'
-  const activityName = isLiquidation ? 'liquidation' : activity_type
+  const activityName = isLiquidation ? 'spot-liquidation' : activity_type
   const value = getValue(activity)
   return (
     <div key={signature} className="border-b border-th-bkg-3 p-4">
@@ -488,9 +488,7 @@ const MobileActivityFeedItem = ({
                 height="20"
                 src={`/explorer-logos/${preferredExplorer.name}.png`}
               />
-              <span className="ml-2 text-base">{`View on ${t(
-                `settings:${preferredExplorer.name}`
-              )}`}</span>
+              <span className="ml-2 text-base">{t('view-transaction')}</span>
             </a>
           </div>
         </div>

@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
-
 import mangoStore from '@store/mangoStore'
-import { IS_ONBOARDED_KEY } from 'utils/constants'
-import useLocalStorageState from 'hooks/useLocalStorageState'
+// import { IS_ONBOARDED_KEY } from 'utils/constants'
+// import useLocalStorageState from 'hooks/useLocalStorageState'
 import { breakpoints } from 'utils/theme'
 import { useViewport } from 'hooks/useViewport'
 import AdvancedMarketHeader from './AdvancedMarketHeader'
@@ -12,11 +11,11 @@ import AdvancedTradeForm from './AdvancedTradeForm'
 import TradeInfoTabs from './TradeInfoTabs'
 import MobileTradeAdvancedPage from './MobileTradeAdvancedPage'
 import OrderbookAndTrades from './OrderbookAndTrades'
-import { useWallet } from '@solana/wallet-adapter-react'
-import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
+// import { useWallet } from '@solana/wallet-adapter-react'
+// import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
 import FavoriteMarketsBar from './FavoriteMarketsBar'
 
-const TradingViewChart = dynamic(() => import('./TradingViewChart'), {
+const TradingChartContainer = dynamic(() => import('./TradingChartContainer'), {
   ssr: false,
 })
 
@@ -44,9 +43,9 @@ const TradeAdvancedPage = () => {
   const { height, width } = useViewport()
   const { uiLocked } = mangoStore((s) => s.settings)
   const showMobileView = width <= breakpoints.md
-  const tourSettings = mangoStore((s) => s.settings.tours)
-  const { connected } = useWallet()
-  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  // const tourSettings = mangoStore((s) => s.settings.tours)
+  // const { connected } = useWallet()
+  // const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
     const topnavbarHeight = 67
@@ -141,7 +140,7 @@ const TradeAdvancedPage = () => {
         { i: 'tv-chart', x: 0, y: 1, w: 17, h: 464 },
         { i: 'balances', x: 0, y: 2, w: 17, h: 428 + marketHeaderHeight },
         { i: 'orderbook', x: 18, y: 2, w: 7, h: 428 + marketHeaderHeight },
-        { i: 'trade-form', x: 18, y: 1, w: 7, h: 464 + marketHeaderHeight },
+        { i: 'trade-form', x: 18, y: 1, w: 7, h: 492 + marketHeaderHeight },
       ],
     }
   }, [height])
@@ -166,7 +165,6 @@ const TradeAdvancedPage = () => {
         rowHeight={1}
         isDraggable={!uiLocked}
         isResizable={!uiLocked}
-        measureBeforeMount
         containerPadding={[0, 0]}
         margin={[0, 0]}
         useCSSTransforms
@@ -179,7 +177,7 @@ const TradeAdvancedPage = () => {
           className="h-full border border-x-0 border-th-bkg-3"
         >
           <div className={`relative h-full overflow-auto`}>
-            <TradingViewChart />
+            <TradingChartContainer />
           </div>
         </div>
         <div key="balances">
@@ -198,9 +196,9 @@ const TradeAdvancedPage = () => {
           <OrderbookAndTrades />
         </div>
       </ResponsiveGridLayout>
-      {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
+      {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
         <TradeOnboardingTour />
-      ) : null}
+      ) : null} */}
     </>
   )
 }

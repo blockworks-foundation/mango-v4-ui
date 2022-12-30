@@ -39,11 +39,9 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import Tooltip from '@components/shared/Tooltip'
-import HealthImpact from '@components/shared/HealthImpact'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
-  maintProjectedHealth: number
   onClose: () => void
   routes: RouteInfo[] | undefined
   selectedRoute: RouteInfo | undefined
@@ -82,7 +80,8 @@ const fetchJupiterTransaction = async (
   selectedRoute: RouteInfo,
   userPublicKey: PublicKey,
   slippage: number,
-  inputMint: PublicKey
+  inputMint: PublicKey,
+  outputMint: PublicKey
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const transactions = await (
     await fetch('https://quote-api.jup.ag/v4/swap', {
@@ -118,13 +117,14 @@ const fetchJupiterTransaction = async (
     return (
       ix.programId.toString() ===
         'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' &&
-      ix.keys[3].pubkey.toString() === inputMint.toString()
+      (ix.keys[3].pubkey.toString() === inputMint.toString() ||
+        ix.keys[3].pubkey.toString() === outputMint.toString())
     )
   }
 
-  const filtered_jup_ixs = ixs.filter(
-    (ix) => !isSetupIx(ix.programId) && !isDuplicateAta(ix)
-  )
+  const filtered_jup_ixs = ixs
+    .filter((ix) => !isSetupIx(ix.programId))
+    .filter((ix) => !isDuplicateAta(ix))
   console.log('ixs: ', ixs)
   console.log('filtered ixs: ', filtered_jup_ixs)
 
@@ -143,7 +143,6 @@ const successSound = new Howl({
 
 const SwapReviewRouteInfo = ({
   amountIn,
-  maintProjectedHealth,
   onClose,
   routes,
   selectedRoute,
@@ -219,7 +218,8 @@ const SwapReviewRouteInfo = ({
         selectedRoute,
         mangoAccount.owner,
         slippage,
-        inputBank.mint
+        inputBank.mint,
+        outputBank.mint
       )
 
       try {
@@ -330,7 +330,7 @@ const SwapReviewRouteInfo = ({
             </p>
           </div>
         </div>
-        <div className="space-y-2 px-6">
+        <div className="space-y-2 overflow-auto px-6">
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">{t('swap:rate')}</p>
             <div>
@@ -403,7 +403,6 @@ const SwapReviewRouteInfo = ({
               </p>
             ) : null}
           </div>
-          <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           {borrowAmount ? (
             <>
               <div className="flex justify-between">
@@ -462,7 +461,7 @@ const SwapReviewRouteInfo = ({
             </>
           ) : null}
           <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">Est. {t('swap:slippage')}</p>
+            <p className="text-sm text-th-fgd-3">Price Impact</p>
             <p className="text-right font-mono text-sm text-th-fgd-2">
               {selectedRoute?.priceImpactPct * 100 < 0.1
                 ? '<0.1%'
@@ -631,7 +630,7 @@ const SwapReviewRouteInfo = ({
           />
         ) : null}
       </div>
-      <div className="flex items-center justify-center p-6">
+      <div className="flex items-center justify-center p-6 pt-0">
         <Button
           onClick={onSwap}
           className="flex w-full items-center justify-center text-base"

@@ -28,12 +28,17 @@ import AccountChart from './AccountChart'
 import useMangoAccount from '../../hooks/useMangoAccount'
 import Change from '../shared/Change'
 import Tooltip from '@components/shared/Tooltip'
-import { ANIMATION_SETTINGS_KEY, IS_ONBOARDED_KEY } from 'utils/constants'
-import { useWallet } from '@solana/wallet-adapter-react'
+import {
+  ANIMATION_SETTINGS_KEY,
+  // IS_ONBOARDED_KEY
+} from 'utils/constants'
+// import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
+// import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -49,7 +54,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const AccountPage = () => {
   const { t } = useTranslation('common')
-  const { connected } = useWallet()
+  // const { connected } = useWallet()
   const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
@@ -70,8 +75,10 @@ const AccountPage = () => {
   >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
-  const tourSettings = mangoStore((s) => s.settings.tours)
-  const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.sm : false
+  // const tourSettings = mangoStore((s) => s.settings.tours)
+  // const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
@@ -129,7 +136,7 @@ const AccountPage = () => {
 
   const accountValue = useMemo(() => {
     if (!group || !mangoAccount) return 0.0
-    return toUiDecimalsForQuote(mangoAccount.getEquity(group)!.toNumber())
+    return toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber())
   }, [group, mangoAccount])
 
   const { accountPnl, accountValueChange } = useMemo(() => {
@@ -217,8 +224,8 @@ const AccountPage = () => {
 
   return !chartToShow ? (
     <>
-      <div className="flex flex-wrap items-center justify-between border-b-0 border-th-bkg-3 px-6 py-3 md:border-b">
-        <div className="flex items-center space-x-6">
+      <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 lg:flex-row lg:items-center lg:justify-between lg:border-b">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
           <div id="account-step-three">
             <Tooltip
               maxWidth="20rem"
@@ -263,7 +270,7 @@ const AccountPage = () => {
           {!loadPerformanceData ? (
             mangoAccount && performanceData.length ? (
               <div
-                className="relative flex items-end"
+                className="relative mt-4 flex h-44 items-end sm:mt-0 sm:h-24 sm:w-48"
                 onMouseEnter={() =>
                   onHoverMenu(showExpandChart, 'onMouseEnter')
                 }
@@ -278,16 +285,14 @@ const AccountPage = () => {
                       : COLORS.DOWN[theme]
                   }
                   data={performanceData.concat(latestAccountData)}
-                  height={88}
                   name="accountValue"
-                  width={180}
                   xKey="time"
                   yKey="account_equity"
                 />
                 <Transition
                   appear={true}
                   className="absolute right-2 bottom-2"
-                  show={showExpandChart}
+                  show={showExpandChart || isMobile}
                   enter="transition ease-in duration-300"
                   enterFrom="opacity-0 scale-75"
                   enterTo="opacity-100 scale-100"
@@ -306,17 +311,17 @@ const AccountPage = () => {
               </div>
             ) : null
           ) : (
-            <SheenLoader>
-              <div className="h-[88px] w-[180px] rounded-md bg-th-bkg-2" />
+            <SheenLoader className="mt-4 flex flex-1 sm:mt-0">
+              <div className="h-40 w-full rounded-md bg-th-bkg-2 sm:h-24 sm:w-48" />
             </SheenLoader>
           )}
         </div>
-        <div className="mt-3 mb-1 lg:mt-0 lg:mb-0">
+        <div className="mt-6 mb-1 lg:mt-0 lg:mb-0">
           <AccountActions />
         </div>
       </div>
       <div className="grid grid-cols-4 border-b border-th-bkg-3">
-        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-t-0">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
@@ -365,7 +370,7 @@ const AccountPage = () => {
         <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-five">
             <Tooltip
-              content="The value of collateral you have to open new trades or borrows. When your free collateral reaches $0 you won't be able to make withdrawals."
+              content="The amount of capital you have to use for trades and loans. When your free collateral reaches $0 you won't be able to trade, borrow or withdraw."
               maxWidth="20rem"
               placement="bottom"
               delay={250}
@@ -382,7 +387,7 @@ const AccountPage = () => {
                     ),
                     true
                   )
-                : (0).toFixed(2)}
+                : `$${(0).toFixed(2)}`}
             </p>
             <span className="text-xs font-normal text-th-fgd-4">
               <Tooltip
@@ -488,9 +493,9 @@ const AccountPage = () => {
         </button>
       </div>
       <AccountTabs />
-      {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
+      {/* {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
         <AccountOnboardingTour />
-      ) : null}
+      ) : null} */}
     </>
   ) : (
     <div className="p-6">

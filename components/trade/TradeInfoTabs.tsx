@@ -14,6 +14,7 @@ import TradeHistory from './TradeHistory'
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
+  const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const { width } = useViewport()
@@ -23,18 +24,21 @@ const TradeInfoTabs = () => {
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
       unsettledPerpPositions?.length
+    const openPerpPositions = Object.values(perpPositions).filter((p) =>
+      p.basePositionLots.toNumber()
+    )
     return [
       ['balances', 0],
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', unsettledTradeCount],
-      ['Positions', unsettledPerpPositions.length],
+      ['Positions', openPerpPositions.length],
       ['Trade History', 0],
     ]
-  }, [openOrders, unsettledPerpPositions, unsettledSpotBalances])
+  }, [openOrders, unsettledPerpPositions, unsettledSpotBalances, perpPositions])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll pb-5">
-      <div className="sticky top-0 z-10">
+      <div className="hide-scroll sticky top-0 z-10 overflow-x-auto border-b border-th-bkg-3">
         <TabButtons
           activeValue={selectedTab}
           onChange={(tab: string) => setSelectedTab(tab)}

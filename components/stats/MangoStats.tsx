@@ -70,8 +70,8 @@ const MangoStats = () => {
   }, [perpMarkets])
 
   const totalDepositBorrowValues = useMemo(() => {
-    if (!tokenStats.length) return []
-    const values: TotalValueItem[] = tokenStats.reduce(
+    if (tokenStats && !tokenStats.length) return []
+    const values: TotalValueItem[] = tokenStats!.reduce(
       (a: TotalValueItem[], c: TokenStatsItem) => {
         const hasDate = a.find((d: TotalValueItem) => d.date === c.date_hour)
         if (!hasDate) {

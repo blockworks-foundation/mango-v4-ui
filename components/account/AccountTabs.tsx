@@ -28,13 +28,15 @@ const AccountTabs = () => {
 
   return (
     <>
-      <TabButtons
-        activeValue={activeTab}
-        onChange={(v) => setActiveTab(v)}
-        values={tabsWithCount}
-        showBorders
-        fillWidth={isMobile}
-      />
+      <div className="border-b border-th-bkg-3">
+        <TabButtons
+          activeValue={activeTab}
+          onChange={(v) => setActiveTab(v)}
+          values={tabsWithCount}
+          showBorders
+          fillWidth={isMobile}
+        />
+      </div>
       <TabContent activeTab={activeTab} />
     </>
   )

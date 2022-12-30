@@ -269,7 +269,7 @@ const SwapForm = () => {
     >
       <div className="px-6 pb-8 pt-3">
         <Transition
-          className="thin-scroll absolute top-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 pb-0"
+          className="absolute top-0 left-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
           show={showConfirm}
           enter="transition ease-in duration-300"
           enterFrom="translate-x-full"
@@ -285,7 +285,6 @@ const SwapForm = () => {
             routes={routes}
             selectedRoute={selectedRoute}
             setSelectedRoute={setSelectedRoute}
-            maintProjectedHealth={maintProjectedHealth}
           />
         </Transition>
         <EnterBottomExitBottom
@@ -406,7 +405,7 @@ const SwapForm = () => {
             )}
           </div>
         </div>
-        {swapFormSizeUi === 'Slider' ? (
+        {swapFormSizeUi === 'slider' ? (
           <SwapSlider
             useMargin={useMargin}
             amount={amountInAsDecimal.toNumber()}
@@ -432,7 +431,7 @@ const SwapForm = () => {
             }
           />
         ) : (
-          <div className="mt-6 flex-grow">
+          <div className="mt-6 mb-4 flex-grow">
             <div className="flex">
               <Button disabled className="flex-grow">
                 <span>
@@ -444,19 +443,15 @@ const SwapForm = () => {
             </div>
           </div>
         )}
-        {group && inputBank ? (
-          <div className="mt-4">
-            <TokenVaultWarnings bank={inputBank} />
-          </div>
-        ) : null}
-        <div className="mt-4 space-y-2">
+        {group && inputBank ? <TokenVaultWarnings bank={inputBank} /> : null}
+        <div className="space-y-2">
           <div id="swap-step-four">
             <HealthImpact maintProjectedHealth={maintProjectedHealth} />
           </div>
           <div className="flex justify-between">
             <Tooltip content={t('trade:tooltip-slippage')} delay={250}>
               <p className="tooltip-underline text-sm text-th-fgd-3">
-                Est. {t('swap:slippage')}
+                Price Impact
               </p>
             </Tooltip>
             <p className="text-right font-mono text-sm text-th-fgd-2">
@@ -504,7 +499,7 @@ const SwapFormSubmitButton = ({
   return (
     <Button
       onClick={() => setShowConfirm(true)}
-      className="mt-6 flex w-full items-center justify-center text-base"
+      className="mt-6 mb-4 flex w-full items-center justify-center text-base"
       disabled={disabled}
       size="large"
     >

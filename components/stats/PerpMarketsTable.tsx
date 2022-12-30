@@ -91,17 +91,19 @@ const PerpMarketsTable = () => {
                   <Td>
                     {!loadingPrices ? (
                       chartData !== undefined ? (
-                        <SimpleAreaChart
-                          color={
-                            change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
-                          }
-                          data={chartData}
-                          height={40}
-                          name={symbol}
-                          width={104}
-                          xKey="0"
-                          yKey="1"
-                        />
+                        <div className="h-10 w-24">
+                          <SimpleAreaChart
+                            color={
+                              change >= 0
+                                ? COLORS.UP[theme]
+                                : COLORS.DOWN[theme]
+                            }
+                            data={chartData}
+                            name={symbol}
+                            xKey="0"
+                            yKey="1"
+                          />
+                        </div>
                       ) : symbol === 'USDC' || symbol === 'USDT' ? null : (
                         <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
                       )
@@ -210,15 +212,15 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
         </div>
         {!loadingPrices ? (
           chartData !== undefined ? (
-            <SimpleAreaChart
-              color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-              data={chartData}
-              height={40}
-              name={market.name}
-              width={104}
-              xKey="0"
-              yKey="1"
-            />
+            <div className="h-10 w-24">
+              <SimpleAreaChart
+                color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                data={chartData}
+                name={market.name}
+                xKey="0"
+                yKey="1"
+              />
+            </div>
           ) : symbol === 'USDC' || symbol === 'USDT' ? null : (
             <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
           )

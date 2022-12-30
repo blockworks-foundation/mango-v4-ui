@@ -24,7 +24,7 @@ export const getStaticPaths = async () => {
   const response = await fetch(url)
   const data = await response.json()
   const paths = data.map((t: any) => ({
-    params: { token: t.symbol },
+    params: { token: t.symbol.toUpperCase() },
   }))
 
   return { paths, fallback: false }
