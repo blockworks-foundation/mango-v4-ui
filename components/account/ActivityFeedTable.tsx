@@ -68,12 +68,12 @@ const ActivityFeedTable = ({
       if (side === 'liqee') {
         credit = { value: formatDecimal(liab_amount), symbol: liab_symbol }
         debit = {
-          value: formatDecimal(asset_amount * -1),
+          value: formatDecimal(asset_amount),
           symbol: asset_symbol,
         }
       } else {
         credit = { value: formatDecimal(asset_amount), symbol: asset_symbol }
-        debit = { value: formatDecimal(liab_amount * -1), symbol: liab_symbol }
+        debit = { value: formatDecimal(liab_amount), symbol: liab_symbol }
       }
     }
     if (activity_type === 'deposit') {
@@ -117,9 +117,9 @@ const ActivityFeedTable = ({
       const { side, liab_amount, liab_price, asset_amount, asset_price } =
         activity.activity_details
       if (side === 'liqee') {
-        value = asset_amount * asset_price - liab_amount * liab_price
+        value = asset_amount * asset_price
       } else {
-        value = liab_amount * liab_price - asset_amount * asset_price
+        value = liab_amount * liab_price
       }
     }
     if (activity_type === 'deposit' || activity_type === 'withdraw') {
@@ -169,7 +169,7 @@ const ActivityFeedTable = ({
                 const isLiquidation =
                   activity_type === 'liquidate_token_with_token'
                 const activityName = isLiquidation
-                  ? 'liquidation'
+                  ? 'spot-liquidation'
                   : activity_type
                 const amounts = getCreditAndDebit(activity)
                 const value = getValue(activity)
