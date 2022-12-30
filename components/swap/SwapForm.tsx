@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import {
+  AdjustmentsHorizontalIcon,
   ArrowDownIcon,
-  Cog8ToothIcon,
   ExclamationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
@@ -19,11 +19,11 @@ import useDebounce from '../shared/useDebounce'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
-import Button, { IconButton } from '../shared/Button'
+import Button from '../shared/Button'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useJupiterRoutes from './useJupiterRoutes'
-import SwapSettings from './SwapSettings'
+import SlippageSettings from './SlippageSettings'
 import SheenLoader from '../shared/SheenLoader'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
@@ -44,8 +44,8 @@ import SwapSlider from './SwapSlider'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
-import Tooltip from '@components/shared/Tooltip'
 import useIpAddress from 'hooks/useIpAddress'
+import Checkbox from '@components/forms/Checkbox'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -261,13 +261,19 @@ const SwapForm = () => {
     return !!amountInAsDecimal.toNumber() && connected && !selectedRoute
   }, [amountInAsDecimal, connected, selectedRoute])
 
+  const handleSetMargin = () => {
+    set((s) => {
+      s.swap.margin = !s.swap.margin
+    })
+  }
+
   return (
     <ContentBox
       hidePadding
       // showBackground
       className="relative overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
     >
-      <div className="px-6 pb-8 pt-3">
+      <div className="">
         <Transition
           className="absolute top-0 left-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
           show={showConfirm}
@@ -306,161 +312,165 @@ const SwapForm = () => {
           className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={showSettings}
         >
-          <SwapSettings onClose={() => setShowSettings(false)} />
+          <SlippageSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
-        <div className="flex items-center justify-end">
-          <div id="swap-step-one">
-            <IconButton
-              className="-mr-2 text-th-fgd-3"
-              hideBg
-              onClick={() => setShowSettings(true)}
-              size="small"
-            >
-              <Cog8ToothIcon className="h-4 w-4" />
-            </IconButton>
-          </div>
-        </div>
-        <div className="mb-2 flex items-end justify-between">
-          <p className="text-th-fgd-2 lg:text-base">{t('swap:pay')}</p>
-          <MaxSwapAmount
-            useMargin={useMargin}
-            setAmountIn={(v) => setAmountInFormValue(v, true)}
-          />
-        </div>
-        <div className="mb-3 grid grid-cols-2" id="swap-step-two">
-          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
-            <TokenSelect
-              bank={
-                inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
-              }
-              showTokenList={setShowTokenSelect}
-              type="input"
+        <div className="p-6">
+          <div className="mb-2 flex items-end justify-between">
+            <p className="text-th-fgd-2 lg:text-base">{t('swap:pay')}</p>
+            <MaxSwapAmount
+              useMargin={useMargin}
+              setAmountIn={(v) => setAmountInFormValue(v, true)}
             />
           </div>
-          <div className="col-span-1 flex h-[54px]">
-            <NumberFormat
-              inputMode="decimal"
-              thousandSeparator=","
-              allowNegative={false}
-              isNumericString={true}
-              decimalScale={inputBank?.mintDecimals || 6}
-              name="amountIn"
-              id="amountIn"
-              className="w-full rounded-l-none rounded-r-lg border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
-              placeholder="0.00"
-              value={amountInFormValue}
-              onValueChange={handleAmountInChange}
-              isAllowed={withValueLimit}
-            />
-          </div>
-        </div>
-        <div className="-mb-2 flex justify-center">
-          <button
-            className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 md:hover:text-th-active"
-            onClick={handleSwitchTokens}
-          >
-            <ArrowDownIcon
-              className="h-5 w-5"
-              style={
-                animateSwitchArrow % 2 == 0
-                  ? { transform: 'rotate(0deg)' }
-                  : { transform: 'rotate(360deg)' }
-              }
-            />
-          </button>
-        </div>
-        <p className="mb-2 text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
-        <div id="swap-step-three" className="mb-3 grid grid-cols-2">
-          <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
-            <TokenSelect
-              bank={
-                outputBank ||
-                group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
-              }
-              showTokenList={setShowTokenSelect}
-              type="output"
-            />
-          </div>
-          <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-input-border text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
-            {loadingSwapDetails ? (
-              <div className="w-full">
-                <SheenLoader className="flex flex-1 rounded-l-none">
-                  <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-4" />
-                </SheenLoader>
-              </div>
-            ) : (
+          <div className="mb-3 grid grid-cols-2" id="swap-step-two">
+            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
+              <TokenSelect
+                bank={
+                  inputBank ||
+                  group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
+                }
+                showTokenList={setShowTokenSelect}
+                type="input"
+              />
+            </div>
+            <div className="col-span-1 flex h-[54px]">
               <NumberFormat
                 inputMode="decimal"
                 thousandSeparator=","
                 allowNegative={false}
                 isNumericString={true}
-                decimalScale={outputBank?.mintDecimals || 6}
-                name="amountOut"
-                id="amountOut"
-                className="w-full rounded-l-none rounded-r-lg bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+                decimalScale={inputBank?.mintDecimals || 6}
+                name="amountIn"
+                id="amountIn"
+                className="w-full rounded-l-none rounded-r-lg border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
                 placeholder="0.00"
-                value={amountOutFormValue}
-                onValueChange={handleAmountOutChange}
+                value={amountInFormValue}
+                onValueChange={handleAmountInChange}
+                isAllowed={withValueLimit}
               />
-            )}
-          </div>
-        </div>
-        {swapFormSizeUi === 'slider' ? (
-          <SwapSlider
-            useMargin={useMargin}
-            amount={amountInAsDecimal.toNumber()}
-            onChange={(v) => setAmountInFormValue(v, true)}
-            step={1 / 10 ** (inputBank?.mintDecimals || 6)}
-          />
-        ) : (
-          <PercentageSelectButtons
-            amountIn={amountInAsDecimal.toString()}
-            setAmountIn={(v) => setAmountInFormValue(v, true)}
-            useMargin={useMargin}
-          />
-        )}
-        {ipAllowed ? (
-          <SwapFormSubmitButton
-            loadingSwapDetails={loadingSwapDetails}
-            useMargin={useMargin}
-            setShowConfirm={setShowConfirm}
-            amountIn={amountInAsDecimal}
-            inputSymbol={inputBank?.name}
-            amountOut={
-              selectedRoute ? amountOutAsDecimal.toNumber() : undefined
-            }
-          />
-        ) : (
-          <div className="mt-6 mb-4 flex-grow">
-            <div className="flex">
-              <Button disabled className="flex-grow">
-                <span>
-                  {t('country-not-allowed', {
-                    country: ipCountry ? `(${ipCountry})` : '(Unknown)',
-                  })}
-                </span>
-              </Button>
             </div>
           </div>
-        )}
-        {group && inputBank ? <TokenVaultWarnings bank={inputBank} /> : null}
-        <div className="space-y-2">
-          <div id="swap-step-four">
-            <HealthImpact maintProjectedHealth={maintProjectedHealth} />
+          <div className="-mb-2 flex justify-center">
+            <button
+              className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 md:hover:text-th-active"
+              onClick={handleSwitchTokens}
+            >
+              <ArrowDownIcon
+                className="h-5 w-5"
+                style={
+                  animateSwitchArrow % 2 == 0
+                    ? { transform: 'rotate(0deg)' }
+                    : { transform: 'rotate(360deg)' }
+                }
+              />
+            </button>
           </div>
-          <div className="flex justify-between">
-            <Tooltip content={t('trade:tooltip-slippage')} delay={250}>
-              <p className="tooltip-underline text-sm text-th-fgd-3">
-                Price Impact
+          <p className="mb-2 text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
+          <div id="swap-step-three" className="mb-3 grid grid-cols-2">
+            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
+              <TokenSelect
+                bank={
+                  outputBank ||
+                  group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
+                }
+                showTokenList={setShowTokenSelect}
+                type="output"
+              />
+            </div>
+            <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-input-border text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
+              {loadingSwapDetails ? (
+                <div className="w-full">
+                  <SheenLoader className="flex flex-1 rounded-l-none">
+                    <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-4" />
+                  </SheenLoader>
+                </div>
+              ) : (
+                <NumberFormat
+                  inputMode="decimal"
+                  thousandSeparator=","
+                  allowNegative={false}
+                  isNumericString={true}
+                  decimalScale={outputBank?.mintDecimals || 6}
+                  name="amountOut"
+                  id="amountOut"
+                  className="w-full rounded-l-none rounded-r-lg bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+                  placeholder="0.00"
+                  value={amountOutFormValue}
+                  onValueChange={handleAmountOutChange}
+                />
+              )}
+            </div>
+          </div>
+          {swapFormSizeUi === 'slider' ? (
+            <SwapSlider
+              useMargin={useMargin}
+              amount={amountInAsDecimal.toNumber()}
+              onChange={(v) => setAmountInFormValue(v, true)}
+              step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+            />
+          ) : (
+            <PercentageSelectButtons
+              amountIn={amountInAsDecimal.toString()}
+              setAmountIn={(v) => setAmountInFormValue(v, true)}
+              useMargin={useMargin}
+            />
+          )}
+          {ipAllowed ? (
+            <SwapFormSubmitButton
+              loadingSwapDetails={loadingSwapDetails}
+              useMargin={useMargin}
+              setShowConfirm={setShowConfirm}
+              amountIn={amountInAsDecimal}
+              inputSymbol={inputBank?.name}
+              amountOut={
+                selectedRoute ? amountOutAsDecimal.toNumber() : undefined
+              }
+            />
+          ) : (
+            <div className="mt-6 mb-4 flex-grow">
+              <div className="flex">
+                <Button disabled className="flex-grow">
+                  <span>
+                    {t('country-not-allowed', {
+                      country: ipCountry ? `(${ipCountry})` : '(Unknown)',
+                    })}
+                  </span>
+                </Button>
+              </div>
+            </div>
+          )}
+          {group && inputBank ? <TokenVaultWarnings bank={inputBank} /> : null}
+          <div className="space-y-2">
+            <div id="swap-step-four">
+              <HealthImpact maintProjectedHealth={maintProjectedHealth} />
+            </div>
+            <div className="flex justify-between">
+              <p className="text-sm text-th-fgd-3">{t('swap:price-impact')}</p>
+              <p className="text-right font-mono text-sm text-th-fgd-2">
+                {selectedRoute?.priceImpactPct
+                  ? selectedRoute?.priceImpactPct * 100 < 0.1
+                    ? '<0.1%'
+                    : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
+                  : '–'}
               </p>
-            </Tooltip>
-            <p className="text-right font-mono text-sm text-th-fgd-2">
-              {selectedRoute?.priceImpactPct
-                ? selectedRoute?.priceImpactPct * 100 < 0.1
-                  ? '<0.1%'
-                  : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                : '–'}
-            </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between border-t border-th-bkg-3 px-6 py-4">
+          <p>{`${t('swap')} ${t('settings')}`}</p>
+          <div className="flex items-center space-x-5">
+            <Checkbox checked={useMargin} onChange={handleSetMargin}>
+              <span className="text-xs text-th-fgd-3">{t('trade:margin')}</span>
+            </Checkbox>
+            <div id="swap-step-one">
+              <button
+                className="default-transition flex items-center text-th-fgd-3 focus:outline-none md:hover:text-th-active"
+                onClick={() => setShowSettings(true)}
+              >
+                <AdjustmentsHorizontalIcon className="mr-1.5 h-4 w-4" />
+                <span className="text-xs">{slippage}%</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
