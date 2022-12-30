@@ -543,7 +543,7 @@ const AdvancedTradeForm = () => {
                 ? 'bg-th-up-dark md:hover:bg-th-up'
                 : 'bg-th-down-dark md:hover:bg-th-down'
             }`}
-            disabled={false}
+            disabled={!tradeForm.baseSize}
             size="large"
           >
             {!placingOrder ? (
