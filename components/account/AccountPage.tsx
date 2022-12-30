@@ -383,7 +383,7 @@ const AccountPage = () => {
               {group && mangoAccount
                 ? formatFixedDecimals(
                     toUiDecimalsForQuote(
-                      mangoAccount.getCollateralValue(group)!.toNumber()
+                      mangoAccount.getCollateralValue(group).toNumber()
                     ),
                     true
                   )
@@ -402,7 +402,7 @@ const AccountPage = () => {
                     ? formatFixedDecimals(
                         toUiDecimalsForQuote(
                           mangoAccount
-                            .getAssetsValue(group, HealthType.init)!
+                            .getAssetsValue(group, HealthType.init)
                             .toNumber()
                         ),
                         true
