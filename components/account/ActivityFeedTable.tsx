@@ -320,7 +320,7 @@ const MobileActivityFeedItem = ({
   const isLiquidation = activity_type === 'liquidate_token_with_token'
   const isSwap = activity_type === 'swap'
   const isPerp = activity_type === 'perp_trade'
-  const activityName = isLiquidation ? 'liquidation' : activity_type
+  const activityName = isLiquidation ? 'spot-liquidation' : activity_type
   const value = getValue(activity)
   return (
     <div key={signature} className="border-b border-th-bkg-3 p-4">
@@ -488,9 +488,7 @@ const MobileActivityFeedItem = ({
                 height="20"
                 src={`/explorer-logos/${preferredExplorer.name}.png`}
               />
-              <span className="ml-2 text-base">{`View on ${t(
-                `settings:${preferredExplorer.name}`
-              )}`}</span>
+              <span className="ml-2 text-base">{t('view-transaction')}</span>
             </a>
           </div>
         </div>

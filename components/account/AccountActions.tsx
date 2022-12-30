@@ -1,9 +1,9 @@
 import { Fragment, ReactNode, useMemo, useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import {
+  AdjustmentsHorizontalIcon,
   ArrowDownRightIcon,
   ArrowUpLeftIcon,
-  ChevronDownIcon,
   DocumentDuplicateIcon,
   PencilIcon,
   TrashIcon,
@@ -70,19 +70,18 @@ const AccountActions = () => {
 
   return (
     <>
-      <div className="flex items-center space-x-2 md:space-x-3">
-        {hasBorrows ? (
-          <Button
-            className="flex w-full items-center justify-center sm:w-auto"
-            disabled={!mangoAccount}
-            onClick={() => setShowRepayModal(true)}
-          >
-            <ArrowDownRightIcon className="mr-2 h-5 w-5" />
-            {t('repay')}
-          </Button>
-        ) : null}
+      <div className="flex items-center space-x-2">
         <Button
-          className="flex w-full items-center justify-center sm:w-auto"
+          className="flex w-1/3 items-center justify-center sm:w-auto"
+          disabled={!mangoAccount}
+          onClick={() => setShowRepayModal(true)}
+          secondary={!hasBorrows}
+        >
+          <ArrowDownRightIcon className="mr-2 h-5 w-5" />
+          {t('repay')}
+        </Button>
+        <Button
+          className="flex w-1/3 items-center justify-center sm:w-auto"
           onClick={handleBorrowModal}
           secondary
         >
@@ -91,18 +90,16 @@ const AccountActions = () => {
         </Button>
         <Menu>
           {({ open }) => (
-            <div className="relative">
-              <Menu.Button className={`default-transition focus:outline-none`}>
+            <div className="relative w-1/3 sm:w-auto">
+              <Menu.Button
+                className={`default-transition w-full focus:outline-none`}
+              >
                 <Button
-                  className="flex w-full items-center justify-center sm:w-auto"
+                  className="flex w-full items-center justify-center"
                   secondary
                 >
-                  {t('more')}
-                  <ChevronDownIcon
-                    className={`${
-                      open ? 'rotate-180' : 'rotate-360'
-                    } ml-2 h-5 w-5 flex-shrink-0`}
-                  />
+                  <AdjustmentsHorizontalIcon className="mr-2 h-4 w-4" />
+                  {t('settings')}
                 </Button>
               </Menu.Button>
               <Transition
@@ -116,7 +113,7 @@ const AccountActions = () => {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <Menu.Items className="absolute right-0  mt-1 space-y-1.5 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 md:rounded-r-none">
+                <Menu.Items className="absolute right-0 top-10 mt-1 space-y-1.5 rounded-md bg-th-bkg-2 px-4 py-2.5">
                   <Menu.Item>
                     <ActionsButton
                       mangoAccount={mangoAccount!}
