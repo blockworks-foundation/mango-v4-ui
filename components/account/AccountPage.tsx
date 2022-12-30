@@ -84,20 +84,6 @@ const AccountPage = () => {
     INITIAL_ANIMATION_SETTINGS
   )
 
-  // const leverage = useMemo(() => {
-  //   if (!group || !mangoAccount) return 0
-  //   const liabsValue = mangoAccount
-  //     .getLiabsValue(group, HealthType.init)!
-  //     .toNumber()
-  //   const totalCollateral = mangoAccount
-  //     .getAssetsValue(group, HealthType.init)!
-  //     .toNumber()
-
-  //   if (isNaN(liabsValue / totalCollateral)) {
-  //     return 0
-  //   } else return liabsValue / totalCollateral
-  // }, [mangoAccount, group])
-
   useEffect(() => {
     if (mangoAccount) {
       const pubKey = mangoAccount.publicKey.toString()
@@ -138,6 +124,17 @@ const AccountPage = () => {
     if (!group || !mangoAccount) return 0.0
     return toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber())
   }, [group, mangoAccount])
+
+  const leverage = useMemo(() => {
+    if (!group || !mangoAccount) return 0
+    const assetsValue = toUiDecimalsForQuote(
+      mangoAccount.getAssetsValue(group).toNumber()
+    )
+
+    if (isNaN(assetsValue / accountValue)) {
+      return 0
+    } else return assetsValue / accountValue - 1
+  }, [mangoAccount, group, accountValue])
 
   const { accountPnl, accountValueChange } = useMemo(() => {
     if (accountValue && performanceData.length) {
@@ -320,7 +317,7 @@ const AccountPage = () => {
           <AccountActions />
         </div>
       </div>
-      <div className="grid grid-cols-4 border-b border-th-bkg-3">
+      <div className="grid grid-cols-5 border-b border-th-bkg-3">
         <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-t-0">
           <div id="account-step-four">
             <Tooltip
@@ -413,7 +410,7 @@ const AccountPage = () => {
             </span>
           </div>
         </div>
-        {/* <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-six">
             <Tooltip
               content="Total position size divided by total collateral."
@@ -429,7 +426,7 @@ const AccountPage = () => {
               {leverage.toFixed(2)}x
             </p>
           </div>
-        </div> */}
+        </div>
         <button
           className={`col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
             performanceData.length > 4
