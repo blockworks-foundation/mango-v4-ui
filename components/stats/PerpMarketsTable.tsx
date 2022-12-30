@@ -13,22 +13,27 @@ import dynamic from 'next/dynamic'
 import { useCoingecko } from 'hooks/useCoingecko'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
+import { IconButton } from '@components/shared/Button'
+import { ChevronRightIcon } from '@heroicons/react/20/solid'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
 )
 
-const PerpMarketsTable = () => {
+const PerpMarketsTable = ({
+  setShowPerpDetails,
+}: {
+  setShowPerpDetails: (x: string) => void
+}) => {
   const { t } = useTranslation(['common', 'trade'])
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
-  // const perpStats = mangoStore((s) => s.perpStats.data)
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
 
-  console.log(perpMarkets)
+  console.log(coingeckoPrices.find((asset) => asset.symbol === 'soBTC'))
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -135,6 +140,16 @@ const PerpMarketsTable = () => {
                   <Td>
                     <div className="flex flex-col items-end">
                       <Change change={change} suffix="%" />
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex justify-end">
+                      <IconButton
+                        onClick={() => setShowPerpDetails(market.name)}
+                        size="small"
+                      >
+                        <ChevronRightIcon className="h-5 w-5" />
+                      </IconButton>
                     </div>
                   </Td>
                 </TrBody>

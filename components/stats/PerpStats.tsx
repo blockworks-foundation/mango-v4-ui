@@ -1,17 +1,16 @@
-// import { useTranslation } from "next-i18next"
 import { useState } from 'react'
 import PerpMarketDetails from './PerpMarketDetails'
+import PerpMarketsTable from './PerpMarketsTable'
 
 const PerpStats = () => {
-  // const {t} = useTranslation('common')
-  const [
-    showPerpDetails,
-    // setShowPerpDetails
-  ] = useState('')
+  const [showPerpDetails, setShowPerpDetails] = useState('')
   return !showPerpDetails ? (
-    <div />
+    <PerpMarketsTable setShowPerpDetails={setShowPerpDetails} />
   ) : (
-    <PerpMarketDetails perpMarket={showPerpDetails} />
+    <PerpMarketDetails
+      perpMarket={showPerpDetails}
+      setShowPerpDetails={setShowPerpDetails}
+    />
   )
 }
 
