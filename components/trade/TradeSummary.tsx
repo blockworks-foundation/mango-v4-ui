@@ -73,17 +73,17 @@ const TradeSummary = ({
 
   return (
     <div className="space-y-2 px-3 md:px-4">
-      {tradeForm.price && tradeForm.baseSize ? (
-        <div className="flex justify-between text-xs">
-          <p>{t('trade:order-value')}</p>
-          <p className="text-th-fgd-2">
-            {formatFixedDecimals(
-              parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize),
-              true
-            )}
-          </p>
-        </div>
-      ) : null}
+      <div className="flex justify-between text-xs">
+        <p>{t('trade:order-value')}</p>
+        <p className="text-th-fgd-2">
+          {tradeForm.price && tradeForm.baseSize
+            ? formatFixedDecimals(
+                parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize),
+                true
+              )
+            : '0.00'}
+        </p>
+      </div>
       <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
       <div className="flex justify-between text-xs">
         <Tooltip content="The amount of capital you have to use for trades and loans. When your free collateral reaches $0 you won't be able to trade, borrow or withdraw.">
