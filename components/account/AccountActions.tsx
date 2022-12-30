@@ -1,16 +1,15 @@
-import { ReactNode, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useMemo, useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import {
   ArrowDownRightIcon,
   ArrowUpLeftIcon,
+  ChevronDownIcon,
   DocumentDuplicateIcon,
-  EllipsisHorizontalIcon,
   PencilIcon,
   TrashIcon,
   UsersIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import IconDropMenu from '../shared/IconDropMenu'
 import CloseAccountModal from '../modals/CloseAccountModal'
 import AccountNameModal from '../modals/AccountNameModal'
 import { copyToClipboard } from 'utils'
@@ -27,6 +26,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
+import { Menu, Transition } from '@headlessui/react'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -89,46 +89,82 @@ const AccountActions = () => {
           <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
           {t('borrow')}
         </Button>
-        <IconDropMenu
-          icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
-          size="medium"
-        >
-          <ActionsButton
-            mangoAccount={mangoAccount!}
-            onClick={() =>
-              handleCopyAddress(
-                mangoAccount!,
-                t('copy-address-success', {
-                  pk: abbreviateAddress(mangoAccount!.publicKey),
-                })
-              )
-            }
-          >
-            <DocumentDuplicateIcon className="h-4 w-4" />
-            <span className="ml-2">{t('copy-address')}</span>
-          </ActionsButton>
-          <ActionsButton
-            mangoAccount={mangoAccount!}
-            onClick={() => setShowEditAccountModal(true)}
-          >
-            <PencilIcon className="h-4 w-4" />
-            <span className="ml-2">{t('edit-account')}</span>
-          </ActionsButton>
-          <ActionsButton
-            mangoAccount={mangoAccount!}
-            onClick={() => setShowDelegateModal(true)}
-          >
-            <UsersIcon className="h-4 w-4" />
-            <span className="ml-2">{t('delegate-account')}</span>
-          </ActionsButton>
-          <ActionsButton
-            mangoAccount={mangoAccount!}
-            onClick={() => setShowCloseAccountModal(true)}
-          >
-            <TrashIcon className="h-4 w-4" />
-            <span className="ml-2">{t('close-account')}</span>
-          </ActionsButton>
-        </IconDropMenu>
+        <Menu>
+          {({ open }) => (
+            <div className="relative">
+              <Menu.Button className={`default-transition focus:outline-none`}>
+                <Button
+                  className="flex w-full items-center justify-center sm:w-auto"
+                  secondary
+                >
+                  {t('more')}
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } ml-2 h-5 w-5 flex-shrink-0`}
+                  />
+                </Button>
+              </Menu.Button>
+              <Transition
+                appear={true}
+                show={open}
+                as={Fragment}
+                enter="transition ease-in duration-200"
+                enterFrom="opacity-0 scale-75"
+                enterTo="opacity-100 scale-100"
+                leave="transition ease-out duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <Menu.Items className="absolute right-0  mt-1 space-y-1.5 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 md:rounded-r-none">
+                  <Menu.Item>
+                    <ActionsButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() =>
+                        handleCopyAddress(
+                          mangoAccount!,
+                          t('copy-address-success', {
+                            pk: abbreviateAddress(mangoAccount!.publicKey),
+                          })
+                        )
+                      }
+                    >
+                      <DocumentDuplicateIcon className="h-4 w-4" />
+                      <span className="ml-2">{t('copy-address')}</span>
+                    </ActionsButton>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <ActionsButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() => setShowEditAccountModal(true)}
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                      <span className="ml-2">{t('edit-account')}</span>
+                    </ActionsButton>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <ActionsButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() => setShowDelegateModal(true)}
+                    >
+                      <UsersIcon className="h-4 w-4" />
+                      <span className="ml-2">{t('delegate-account')}</span>
+                    </ActionsButton>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <ActionsButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() => setShowCloseAccountModal(true)}
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                      <span className="ml-2">{t('close-account')}</span>
+                    </ActionsButton>
+                  </Menu.Item>
+                </Menu.Items>
+              </Transition>
+            </div>
+          )}
+        </Menu>
       </div>
       {showCloseAccountModal ? (
         <CloseAccountModal
