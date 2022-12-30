@@ -247,6 +247,10 @@ export type MangoStore = {
   notificationIdCounter: number
   notifications: Array<Notification>
   perpMarkets: PerpMarket[]
+  perpStats: {
+    loading: boolean
+    data: any[]
+  }
   profile: {
     details: ProfileDetails | null
     loadDetails: boolean
@@ -309,6 +313,7 @@ export type MangoStore = {
     fetchMangoAccounts: (wallet: Wallet) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrders: (ma?: MangoAccount) => Promise<void>
+    fetchPerpStats: () => void
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
       mangoAccountPk: string,
@@ -374,6 +379,10 @@ const mangoStore = create<MangoStore>()(
       notificationIdCounter: 0,
       notifications: [],
       perpMarkets: [],
+      perpStats: {
+        loading: false,
+        data: [],
+      },
       profile: {
         loadDetails: false,
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
@@ -781,6 +790,34 @@ const mangoStore = create<MangoStore>()(
             console.error('Failed loading open orders ', e)
           }
         },
+        fetchPerpStats: async () => {
+          const set = get().set
+          const group = get().group
+          const stats = get().perpStats.data
+          if (stats.length || !group) return
+          set((state) => {
+            state.perpStats.loading = true
+          })
+          try {
+            const response = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/perp-historical-stats?mango-group=${group?.publicKey.toString()}`
+            )
+            const data = await response.json()
+
+            set((state) => {
+              state.perpStats.data = data
+              state.perpStats.loading = false
+            })
+          } catch {
+            set((state) => {
+              state.perpStats.loading = false
+            })
+            notify({
+              title: 'Failed to fetch token stats data',
+              type: 'error',
+            })
+          }
+        },
         fetchSwapHistory: async (mangoAccountPk: string, timeout = 0) => {
           const set = get().set
           setTimeout(async () => {
@@ -839,7 +876,7 @@ const mangoStore = create<MangoStore>()(
               state.tokenStats.loading = false
             })
             notify({
-              title: 'Failed to token stats data',
+              title: 'Failed to fetch token stats data',
               type: 'error',
             })
           }

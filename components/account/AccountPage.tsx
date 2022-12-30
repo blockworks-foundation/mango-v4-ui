@@ -224,7 +224,7 @@ const AccountPage = () => {
 
   return !chartToShow ? (
     <>
-      <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 md:flex-row md:items-center md:justify-between md:border-b">
+      <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 lg:flex-row lg:items-center lg:justify-between lg:border-b">
         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
           <div id="account-step-three">
             <Tooltip
@@ -270,7 +270,7 @@ const AccountPage = () => {
           {!loadPerformanceData ? (
             mangoAccount && performanceData.length ? (
               <div
-                className="relative flex h-44 items-end sm:h-24 sm:w-48"
+                className="relative mt-4 flex h-44 items-end sm:mt-0 sm:h-24 sm:w-48"
                 onMouseEnter={() =>
                   onHoverMenu(showExpandChart, 'onMouseEnter')
                 }
@@ -316,12 +316,12 @@ const AccountPage = () => {
             </SheenLoader>
           )}
         </div>
-        <div className="mt-6 mb-1 md:mt-0 md:mb-0">
+        <div className="mt-6 mb-1 lg:mt-0 lg:mb-0">
           <AccountActions />
         </div>
       </div>
       <div className="grid grid-cols-4 border-b border-th-bkg-3">
-        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-t-0">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
@@ -370,7 +370,7 @@ const AccountPage = () => {
         <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-five">
             <Tooltip
-              content="The value of collateral you have to open new trades or borrows. When your free collateral reaches $0 you won't be able to make withdrawals."
+              content="The amount of capital you have to use for trades and loans. When your free collateral reaches $0 you won't be able to trade, borrow or withdraw."
               maxWidth="20rem"
               placement="bottom"
               delay={250}

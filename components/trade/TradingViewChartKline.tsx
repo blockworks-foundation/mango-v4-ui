@@ -9,8 +9,8 @@ import Switch from '@components/forms/Switch'
 import {
   BASE_CHART_QUERY,
   CHART_QUERY,
-  // DEFAULT_MAIN_INDICATORS,
-  // DEFAULT_SUB_INDICATOR,
+  DEFAULT_MAIN_INDICATORS,
+  DEFAULT_SUB_INDICATOR,
   HISTORY,
   mainTechnicalIndicatorTypes,
   MAIN_INDICATOR_CLASS,
@@ -18,7 +18,7 @@ import {
   RES_NAME_TO_RES_VAL,
   subTechnicalIndicatorTypes,
 } from 'utils/kLineChart'
-// import Loading from '@components/shared/Loading'
+import Loading from '@components/shared/Loading'
 import clsx from 'clsx'
 import { API_URL, BE_API_KEY } from 'apis/birdeye/helpers'
 import { useTheme } from 'next-themes'
@@ -47,15 +47,15 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     //indicatorName: class
     [indicatorName: string]: string
   }>({})
-  // const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [resolution, setResolution] = useState(RES_NAME_TO_RES_VAL['1H'])
   const [chart, setChart] = useState<klinecharts.Chart | null>(null)
-  // const previousChart = usePrevious(chart)
+  const previousChart = usePrevious(chart)
   const [baseChartQuery, setQuery] = useState<BASE_CHART_QUERY | null>(null)
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
   const fetchData = async (baseQuery: BASE_CHART_QUERY, from: number) => {
     try {
-      // setIsLoading(true)
+      setIsLoading(true)
       const query: CHART_QUERY = {
         ...baseQuery,
         time_from: from,
@@ -81,10 +81,10 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         }
         dataList.push(kLineModel)
       }
-      // setIsLoading(false)
+      setIsLoading(false)
       return dataList
     } catch (e) {
-      // setIsLoading(false)
+      setIsLoading(false)
       console.log(e)
       return []
     }
@@ -160,25 +160,25 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   }, [selectedMarketName, resolution])
 
   // init default technical indicators after init of chart
-  // useEffect(() => {
-  //   if (chart !== null && previousChart === null) {
-  //     if (DEFAULT_SUB_INDICATOR) {
-  //       const subId = chart.createTechnicalIndicator(
-  //         DEFAULT_SUB_INDICATOR,
-  //         true
-  //       )
-  //       setSubTechnicalIndicators({ [DEFAULT_SUB_INDICATOR]: subId })
-  //     }
-  //     if (DEFAULT_MAIN_INDICATORS?.length) {
-  //       for (const type of DEFAULT_MAIN_INDICATORS) {
-  //         chart?.createTechnicalIndicator(type, true, {
-  //           id: MAIN_INDICATOR_CLASS,
-  //         })
-  //       }
-  //       setMainTechnicalIndicators(DEFAULT_MAIN_INDICATORS)
-  //     }
-  //   }
-  // }, [chart !== null])
+  useEffect(() => {
+    if (chart !== null && previousChart === null) {
+      if (DEFAULT_SUB_INDICATOR) {
+        const subId = chart.createTechnicalIndicator(
+          DEFAULT_SUB_INDICATOR,
+          true
+        )
+        setSubTechnicalIndicators({ [DEFAULT_SUB_INDICATOR]: subId })
+      }
+      if (DEFAULT_MAIN_INDICATORS?.length) {
+        for (const type of DEFAULT_MAIN_INDICATORS) {
+          chart?.createTechnicalIndicator(type, true, {
+            id: MAIN_INDICATOR_CLASS,
+          })
+        }
+        setMainTechnicalIndicators(DEFAULT_MAIN_INDICATORS)
+      }
+    }
+  }, [chart !== null])
 
   //init chart without data
   useEffect(() => {
@@ -440,6 +440,9 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
           >
             Indicator
           </button>
+          <div className="px-2">
+            {isLoading && <Loading className="w-4"></Loading>}
+          </div>
         </div>
         {setIsFullView ? (
           <IconButton
@@ -455,9 +458,6 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
             )}
           </IconButton>
         ) : null}
-        {/* <div className="px-2">
-          {isLoading && <Loading className="w-4"></Loading>}
-        </div> */}
       </div>
       <div
         style={{ height: 'calc(100% - 48px)', width: '100%' }}
