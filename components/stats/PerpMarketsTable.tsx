@@ -13,12 +13,18 @@ import dynamic from 'next/dynamic'
 import { useCoingecko } from 'hooks/useCoingecko'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
+import { IconButton } from '@components/shared/Button'
+import { ChevronRightIcon } from '@heroicons/react/20/solid'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
 )
 
-const PerpMarketsTable = () => {
+const PerpMarketsTable = ({
+  setShowPerpDetails,
+}: {
+  setShowPerpDetails: (x: string) => void
+}) => {
   const { t } = useTranslation(['common', 'trade'])
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
   const perpMarkets = mangoStore((s) => s.perpMarkets)
@@ -26,6 +32,8 @@ const PerpMarketsTable = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
+
+  console.log(coingeckoPrices.find((asset) => asset.symbol === 'soBTC'))
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -115,12 +123,33 @@ const PerpMarketsTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>${market.openInterest.toString()}</p>
+                      <p>
+                        {market.openInterest.toString()}{' '}
+                        <span className="font-body text-th-fgd-3">
+                          {market.name.slice(0, -5)}
+                        </span>
+                      </p>
+                      <p className="text-xs text-th-fgd-4">
+                        {formatFixedDecimals(
+                          market.openInterest.toNumber() * market.uiPrice,
+                          true
+                        )}
+                      </p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col items-end">
                       <Change change={change} suffix="%" />
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex justify-end">
+                      <IconButton
+                        onClick={() => setShowPerpDetails(market.name)}
+                        size="small"
+                      >
+                        <ChevronRightIcon className="h-5 w-5" />
+                      </IconButton>
                     </div>
                   </Td>
                 </TrBody>

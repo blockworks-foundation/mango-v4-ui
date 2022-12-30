@@ -48,12 +48,11 @@ const TokenVaultWarnings = ({ bank }: { bank: Bank }) => {
         type="warning"
         desc={
           <div>
-            The available {bank.name} vault balance is low and impacting the
-            maximum amount you can withdraw/borrow. View the{' '}
+            The available {bank.name}{' '}
             <Link href="/stats" className="underline hover:no-underline">
-              Stats page
+              vault balance
             </Link>{' '}
-            to see vault balances.
+            is low and impacting the maximum amount you can withdraw/borrow.
           </div>
         }
       />

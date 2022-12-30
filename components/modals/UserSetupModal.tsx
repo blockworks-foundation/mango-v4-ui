@@ -473,14 +473,28 @@ const UserSetupModal = ({
                   </div>
                   <div className="mb-10 border-y border-th-bkg-3">
                     <div className="flex justify-between px-2 py-4">
-                      <p>{t('deposit-value')}</p>
-                      <p className="font-mono">
-                        {depositBank
-                          ? formatFixedDecimals(
-                              depositBank.uiPrice * Number(depositAmount),
-                              true
-                            )
-                          : ''}
+                      <p>{t('deposit-amount')}</p>
+                      <p className="font-mono text-th-fgd-2">
+                        {depositBank?.uiPrice && depositAmount ? (
+                          <>
+                            {depositAmount}{' '}
+                            <span className="text-xs text-th-fgd-3">
+                              (
+                              {formatFixedDecimals(
+                                depositBank.uiPrice * Number(depositAmount),
+                                true
+                              )}
+                              )
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            0{' '}
+                            <span className="text-xs text-th-fgd-3">
+                              ($0.00)
+                            </span>
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>

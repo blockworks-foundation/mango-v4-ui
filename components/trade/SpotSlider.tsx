@@ -4,9 +4,15 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
-// import { notify } from 'utils/notifications'
+import { trimDecimals } from 'utils/numbers'
 
-const SpotSlider = () => {
+const SpotSlider = ({
+  minOrderDecimals,
+  tickDecimals,
+}: {
+  minOrderDecimals: number
+  tickDecimals: number
+}) => {
   const side = mangoStore((s) => s.tradeForm.side)
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
@@ -31,10 +37,6 @@ const SpotSlider = () => {
       }
     } catch (e) {
       console.error('Error calculating max leverage for spot slider: ', e)
-      // notify({
-      //   type: 'error',
-      //   title: 'Error calculating max leverage.',
-      // })
       return 0
     }
   }, [side, selectedMarket, mangoAccount])
@@ -52,19 +54,25 @@ const SpotSlider = () => {
         if (s.tradeForm.side === 'buy') {
           s.tradeForm.quoteSize = val
           if (Number(price)) {
-            s.tradeForm.baseSize = (parseFloat(val) / price).toString()
+            s.tradeForm.baseSize = trimDecimals(
+              parseFloat(val) / price,
+              minOrderDecimals
+            ).toFixed(minOrderDecimals)
           } else {
             s.tradeForm.baseSize = ''
           }
         } else if (s.tradeForm.side === 'sell') {
           s.tradeForm.baseSize = val
           if (Number(price)) {
-            s.tradeForm.quoteSize = (parseFloat(val) * price).toString()
+            s.tradeForm.quoteSize = trimDecimals(
+              parseFloat(val) * price,
+              tickDecimals
+            ).toFixed(tickDecimals)
           }
         }
       })
     },
-    [marketPrice]
+    [marketPrice, minOrderDecimals, tickDecimals]
   )
 
   return (

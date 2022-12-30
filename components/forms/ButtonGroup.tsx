@@ -4,7 +4,7 @@ interface ButtonGroupProps {
   activeValue: string
   className?: string
   disabled?: boolean
-  onChange: (x: string) => void
+  onChange: (x: any) => void
   unit?: string
   values: Array<any>
   names?: Array<string>

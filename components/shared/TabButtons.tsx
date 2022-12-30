@@ -35,13 +35,25 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
                 : ''
             } ${
               label === activeValue
-                ? 'bg-th-bkg-2 text-th-active'
+                ? label === 'buy'
+                  ? 'bg-th-up-dark font-display text-th-fgd-1'
+                  : label === 'sell'
+                  ? 'bg-th-down-dark font-display text-th-fgd-1'
+                  : 'bg-th-bkg-2 text-th-active'
                 : 'hover:cursor-pointer hover:text-th-fgd-2'
             }`}
             key={`${label}${i}`}
             onClick={() => onChange(label)}
           >
-            <span className="font-medium leading-tight">{t(label)}</span>
+            <span
+              className={`${
+                label === 'buy' || label === 'sell'
+                  ? 'font-display'
+                  : 'font-medium'
+              } leading-tight`}
+            >
+              {t(label)}
+            </span>
             {count ? (
               <div
                 className={`ml-1.5 rounded ${

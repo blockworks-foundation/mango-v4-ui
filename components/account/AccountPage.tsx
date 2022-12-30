@@ -84,20 +84,6 @@ const AccountPage = () => {
     INITIAL_ANIMATION_SETTINGS
   )
 
-  // const leverage = useMemo(() => {
-  //   if (!group || !mangoAccount) return 0
-  //   const liabsValue = mangoAccount
-  //     .getLiabsValue(group, HealthType.init)!
-  //     .toNumber()
-  //   const totalCollateral = mangoAccount
-  //     .getAssetsValue(group, HealthType.init)!
-  //     .toNumber()
-
-  //   if (isNaN(liabsValue / totalCollateral)) {
-  //     return 0
-  //   } else return liabsValue / totalCollateral
-  // }, [mangoAccount, group])
-
   useEffect(() => {
     if (mangoAccount) {
       const pubKey = mangoAccount.publicKey.toString()
@@ -138,6 +124,17 @@ const AccountPage = () => {
     if (!group || !mangoAccount) return 0.0
     return toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber())
   }, [group, mangoAccount])
+
+  const leverage = useMemo(() => {
+    if (!group || !mangoAccount) return 0
+    const assetsValue = toUiDecimalsForQuote(
+      mangoAccount.getAssetsValue(group).toNumber()
+    )
+
+    if (isNaN(assetsValue / accountValue)) {
+      return 0
+    } else return assetsValue / accountValue - 1
+  }, [mangoAccount, group, accountValue])
 
   const { accountPnl, accountValueChange } = useMemo(() => {
     if (accountValue && performanceData.length) {
@@ -224,7 +221,7 @@ const AccountPage = () => {
 
   return !chartToShow ? (
     <>
-      <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 md:flex-row md:items-center md:justify-between md:border-b">
+      <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 lg:flex-row lg:items-center lg:justify-between lg:border-b">
         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
           <div id="account-step-three">
             <Tooltip
@@ -270,7 +267,7 @@ const AccountPage = () => {
           {!loadPerformanceData ? (
             mangoAccount && performanceData.length ? (
               <div
-                className="relative flex h-44 items-end sm:h-24 sm:w-48"
+                className="relative mt-4 flex h-44 items-end sm:mt-0 sm:h-24 sm:w-48"
                 onMouseEnter={() =>
                   onHoverMenu(showExpandChart, 'onMouseEnter')
                 }
@@ -316,12 +313,12 @@ const AccountPage = () => {
             </SheenLoader>
           )}
         </div>
-        <div className="mt-6 mb-1 md:mt-0 md:mb-0">
+        <div className="mt-6 mb-1 lg:mt-0 lg:mb-0">
           <AccountActions />
         </div>
       </div>
-      <div className="grid grid-cols-4 border-b border-th-bkg-3">
-        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 md:border-t-0 lg:col-span-1">
+      <div className="grid grid-cols-5 border-b border-th-bkg-3">
+        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-t-0">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
@@ -370,7 +367,7 @@ const AccountPage = () => {
         <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-five">
             <Tooltip
-              content="The value of collateral you have to open new trades or borrows. When your free collateral reaches $0 you won't be able to make withdrawals."
+              content="The amount of capital you have to use for trades and loans. When your free collateral reaches $0 you won't be able to trade, borrow or withdraw."
               maxWidth="20rem"
               placement="bottom"
               delay={250}
@@ -383,7 +380,7 @@ const AccountPage = () => {
               {group && mangoAccount
                 ? formatFixedDecimals(
                     toUiDecimalsForQuote(
-                      mangoAccount.getCollateralValue(group)!.toNumber()
+                      mangoAccount.getCollateralValue(group).toNumber()
                     ),
                     true
                   )
@@ -402,7 +399,7 @@ const AccountPage = () => {
                     ? formatFixedDecimals(
                         toUiDecimalsForQuote(
                           mangoAccount
-                            .getAssetsValue(group, HealthType.init)!
+                            .getAssetsValue(group, HealthType.init)
                             .toNumber()
                         ),
                         true
@@ -413,7 +410,7 @@ const AccountPage = () => {
             </span>
           </div>
         </div>
-        {/* <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-six">
             <Tooltip
               content="Total position size divided by total collateral."
@@ -429,7 +426,7 @@ const AccountPage = () => {
               {leverage.toFixed(2)}x
             </p>
           </div>
-        </div> */}
+        </div>
         <button
           className={`col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
             performanceData.length > 4

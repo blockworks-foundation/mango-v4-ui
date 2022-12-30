@@ -52,7 +52,7 @@
 
 "@blockworks-foundation/mango-v4@https://github.com/blockworks-foundation/mango-v4.git#main":
   version "0.0.1-beta.6"
-  resolved "https://github.com/blockworks-foundation/mango-v4.git#d2ed61328a04c2a94f1998285e5c72fd123cd50b"
+  resolved "https://github.com/blockworks-foundation/mango-v4.git#0c1884ce56315417010efd6f2b0df1596f3aa604"
   dependencies:
     "@project-serum/anchor" "^0.25.0"
     "@project-serum/serum" "^0.13.65"

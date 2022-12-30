@@ -317,14 +317,25 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 isDeposit
               />
               <div className="flex justify-between">
-                <p>{t('deposit-value')}</p>
-                <p className="font-mono">
-                  {bank?.uiPrice
-                    ? formatFixedDecimals(
-                        bank.uiPrice * Number(inputAmount),
-                        true
-                      )
-                    : '-'}
+                <p>{t('deposit-amount')}</p>
+                <p className="font-mono text-th-fgd-2">
+                  {bank?.uiPrice && inputAmount ? (
+                    <>
+                      {inputAmount}{' '}
+                      <span className="text-xs text-th-fgd-3">
+                        (
+                        {formatFixedDecimals(
+                          bank.uiPrice * Number(inputAmount),
+                          true
+                        )}
+                        )
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      0 <span className="text-xs text-th-fgd-3">($0.00)</span>
+                    </>
+                  )}
                 </p>
               </div>
               {/* <div className="flex justify-between">
@@ -339,7 +350,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 <Tooltip content={t('tooltip-collateral-value')}>
                   <p className="tooltip-underline">{t('collateral-value')}</p>
                 </Tooltip>
-                <p className="font-mono">
+                <p className="font-mono text-th-fgd-2">
                   {formatFixedDecimals(
                     bank!.uiPrice! *
                       Number(inputAmount) *
