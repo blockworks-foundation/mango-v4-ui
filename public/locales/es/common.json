@@ -74,6 +74,7 @@
   "liquidity": "Liquidity",
   "loan-origination-fee": "Loan Origination Fee",
   "loan-origination-fee-tooltip": "The fee for opening a borrow. This is paid to the Mango DAO Treasury",
+  "mango": "Mango",
   "market": "Market",
   "max": "Max",
   "max-borrow": "Max Borrow",
