@@ -413,9 +413,9 @@ const SwapHistoryTable = ({
         </div>
       )
     ) : (
-      <div className="mt-2 space-y-0.5">
+      <div className="mt-4 space-y-1.5">
         {[...Array(4)].map((x, i) => (
-          <SheenLoader className="mx-4 mt-2 flex flex-1" key={i}>
+          <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
             <div className="h-16 w-full bg-th-bkg-2" />
           </SheenLoader>
         ))}

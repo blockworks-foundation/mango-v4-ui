@@ -140,7 +140,7 @@ const TradeAdvancedPage = () => {
         { i: 'tv-chart', x: 0, y: 1, w: 17, h: 464 },
         { i: 'balances', x: 0, y: 2, w: 17, h: 428 + marketHeaderHeight },
         { i: 'orderbook', x: 18, y: 2, w: 7, h: 428 + marketHeaderHeight },
-        { i: 'trade-form', x: 18, y: 1, w: 7, h: 464 + marketHeaderHeight },
+        { i: 'trade-form', x: 18, y: 1, w: 7, h: 492 + marketHeaderHeight },
       ],
     }
   }, [height])

@@ -19,7 +19,7 @@ const NOTIFICATION_POSITIONS = [
   'top-right',
 ]
 
-const TRADING_CHARTS = ['original', 'trading']
+const TRADING_CHARTS = ['custom', 'trading-view']
 const TRADE_FORM_UI = ['slider', 'buttons']
 
 // const LANGS = [
@@ -63,7 +63,7 @@ const DisplaySettings = () => {
   )
   const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
     TRADE_CHART_UI_KEY,
-    'trading'
+    'trading-view'
   )
 
   // const handleLangChange = useCallback(
@@ -130,8 +130,8 @@ const DisplaySettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:trading-chart')}</p>
-        <div className="w-full min-w-[160px] md:w-auto">
+        <p className="mb-2 lg:mb-0">{t('settings:trade-chart')}</p>
+        <div className="w-full min-w-[220px] md:w-auto">
           <ButtonGroup
             activeValue={tradeChartUi}
             onChange={(v) => setTradeChartUi(v)}

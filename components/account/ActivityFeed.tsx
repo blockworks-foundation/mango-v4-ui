@@ -463,7 +463,7 @@ const ActivityDetails = ({
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
   )
-  const { block_datetime } = activity
+  const { block_datetime, activity_type } = activity
   const {
     asset_amount,
     asset_price,
@@ -484,7 +484,7 @@ const ActivityDetails = ({
         </IconButton>
         <h2 className="text-lg">{t('activity:liquidation-details')}</h2>
       </div>
-      <div className="grid grid-cols-1 gap-4 px-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 px-6 md:grid-cols-2">
         <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('date')}</p>
           <p className="text-th-fgd-1">
@@ -492,6 +492,14 @@ const ActivityDetails = ({
           </p>
           <p className="text-xs text-th-fgd-3">
             {dayjs(block_datetime).format('h:mma')}
+          </p>
+        </div>
+        <div className="col-span-1">
+          <p className="mb-0.5 text-sm">{t('activity:liquidation-type')}</p>
+          <p className="text-th-fgd-1">
+            {activity_type === 'liquidate_token_with_token'
+              ? t('spot')
+              : t('perp')}
           </p>
         </div>
         <div className="col-span-1">
@@ -525,7 +533,7 @@ const ActivityDetails = ({
       </div>
       <div className="col-span-3 mt-8 flex justify-center border-y border-th-bkg-3 py-3">
         <a
-          className="default-transition flex items-center text-th-fgd-1 hover:text-th-fgd-3"
+          className="default-transition flex items-center text-th-fgd-2 hover:text-th-fgd-3"
           href={`${preferredExplorer.url}${signature}`}
           target="_blank"
           rel="noopener noreferrer"
@@ -536,9 +544,7 @@ const ActivityDetails = ({
             height="20"
             src={`/explorer-logos/${preferredExplorer.name}.png`}
           />
-          <span className="ml-2 text-base">{`View on ${t(
-            `settings:${preferredExplorer.name}`
-          )}`}</span>
+          <span className="ml-2 text-base">{t('view-transaction')}</span>
         </a>
       </div>
     </div>

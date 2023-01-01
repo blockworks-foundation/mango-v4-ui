@@ -39,7 +39,7 @@ const Checkbox = ({
     />
     <div
       className={`${
-        checked && !disabled && !halfState ? 'bg-th-active' : 'bg-th-bkg-4'
+        checked && !disabled && !halfState ? 'bg-th-fgd-4' : 'bg-th-bkg-3'
       } default-transition flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded`}
     >
       {halfState ? (

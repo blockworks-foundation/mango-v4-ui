@@ -5,6 +5,7 @@ import TabUnderline from '@components/shared/TabUnderline'
 import DepositForm from '@components/DepositForm'
 import WithdrawForm from '@components/WithdrawForm'
 import { Chain } from 'utils/constants'
+import { ACCOUNT_ACTION_MODAL_HEIGHT } from 'utils/constants'
 
 interface DepositWithdrawModalProps {
   action: 'deposit' | 'withdraw'

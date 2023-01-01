@@ -16,6 +16,7 @@ import {
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
+  GlowWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
 import Notifications from '../components/shared/Notification'
@@ -65,10 +66,14 @@ const wagmiClient = createClient({
 const ethereumClient = new EthereumClient(wagmiClient, chains)
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const network = WalletAdapterNetwork.Devnet
+  const network = WalletAdapterNetwork.Mainnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
   const wallets = useMemo(
-    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network })],
+    () => [
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter(),
+      new GlowWalletAdapter(),
+    ],
     []
   )
 

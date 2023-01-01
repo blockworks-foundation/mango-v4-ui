@@ -19,6 +19,7 @@
     "no-nfts": "😞 未找到NFT...",
     "no-profile-exists": "此帳戶不存在...",
     "profile": "帳戶",
+    "profile-api-error": "Profile update is unavailable. Please try again later",
     "profile-fetch-fail": "查帳戶細節出錯",
     "profile-name": "帳戶標籤",
     "profile-pic-failure": "設置頭像失敗",

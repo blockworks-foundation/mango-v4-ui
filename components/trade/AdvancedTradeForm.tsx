@@ -1,5 +1,4 @@
 import {
-  HealthType,
   PerpMarket,
   PerpOrderSide,
   PerpOrderType,
@@ -10,7 +9,6 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import Checkbox from '@components/forms/Checkbox'
 import Button from '@components/shared/Button'
-import TabButtons from '@components/shared/TabButtons'
 import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -28,7 +26,6 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
 import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider from './PerpSlider'
-import HealthImpact from '@components/shared/HealthImpact'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SIZE_INPUT_UI_KEY } from 'utils/constants'
 import SpotButtonGroup from './SpotButtonGroup'
@@ -36,20 +33,19 @@ import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import Slippage from './Slippage'
-import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
+import { getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
 import useIpAddress from 'hooks/useIpAddress'
-
-const TABS: [string, number][] = [
-  ['Limit', 0],
-  ['Market', 0],
-]
+import ButtonGroup from '@components/forms/ButtonGroup'
+import TradeSummary from './TradeSummary'
+import useMangoAccount from 'hooks/useMangoAccount'
+import MaxSizeButton from './MaxSizeButton'
 
 const set = mangoStore.getState().set
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
+  const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
   const { mangoTokens } = useJupiterMints()
   const { selectedMarket, price: oraclePrice } = useSelectedMarket()
@@ -324,79 +320,46 @@ const AdvancedTradeForm = () => {
     }
   }, [])
 
-  const maintProjectedHealth = useMemo(() => {
+  const minOrderDecimals = useMemo(() => {
     const group = mangoStore.getState().group
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-
-    if (!mangoAccount || !group || !Number.isFinite(Number(tradeForm.baseSize)))
-      return 100
-
-    let simulatedHealthRatio = 0
-    try {
-      if (selectedMarket instanceof Serum3Market) {
-        simulatedHealthRatio =
-          tradeForm.side === 'sell'
-            ? mangoAccount.simHealthRatioWithSerum3AskUiChanges(
-                group,
-                Number(tradeForm.baseSize),
-                selectedMarket.serumMarketExternal,
-                HealthType.maint
-              )
-            : mangoAccount.simHealthRatioWithSerum3BidUiChanges(
-                group,
-                Number(tradeForm.quoteSize),
-                selectedMarket.serumMarketExternal,
-                HealthType.maint
-              )
-      } else if (selectedMarket instanceof PerpMarket) {
-        simulatedHealthRatio =
-          tradeForm.side === 'sell'
-            ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
-                group,
-                selectedMarket.perpMarketIndex,
-                parseFloat(tradeForm.baseSize)
-              )
-            : mangoAccount.simHealthRatioWithPerpBidUiChanges(
-                group,
-                selectedMarket.perpMarketIndex,
-                parseFloat(tradeForm.baseSize)
-              )
-      }
-    } catch (e) {
-      console.warn('Error calculating projected health: ', e)
+    if (!group || !selectedMarket) return 1
+    let minOrderDecimals = 1
+    if (selectedMarket instanceof Serum3Market) {
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      minOrderDecimals = getDecimalCount(market.minOrderSize)
+    } else {
+      minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
     }
-
-    return simulatedHealthRatio > 100
-      ? 100
-      : simulatedHealthRatio < 0
-      ? 0
-      : Math.trunc(simulatedHealthRatio)
-  }, [selectedMarket, tradeForm.baseSize, tradeForm.side])
+    return minOrderDecimals
+  }, [selectedMarket])
 
   return (
     <div>
-      <div className="border-b border-th-bkg-3 md:border-t lg:border-t-0">
-        <TabButtons
-          activeValue={tradeForm.tradeType}
-          onChange={(tab: 'Limit' | 'Market') => setTradeType(tab)}
-          values={TABS}
-          fillWidth
+      <div className="mt-1.5 px-2 md:mt-0 md:border-t md:border-th-bkg-3 md:px-4 md:pt-5 lg:mt-5 lg:border-t-0 lg:pt-0">
+        <TabUnderline
+          activeValue={tradeForm.side}
+          values={['buy', 'sell']}
+          onChange={(v) => handleSetSide(v)}
+          small
         />
       </div>
       <div className="px-3 md:px-4">
         <SolBalanceWarnings />
       </div>
-      <div className="mt-1 px-2 md:mt-6 md:px-4">
-        <TabUnderline
-          activeValue={tradeForm.side}
-          values={['buy', 'sell']}
-          onChange={(v) => handleSetSide(v)}
+      <div className="mt-1 px-2 md:mt-3 md:px-4">
+        <p className="mb-2 text-xs">{t('trade:order-type')}</p>
+        <ButtonGroup
+          activeValue={tradeForm.tradeType}
+          onChange={(tab: 'Limit' | 'Market') => setTradeType(tab)}
+          values={['Limit', 'Market']}
         />
       </div>
-      <div className="mt-4 px-3 md:px-4">
+      <div className="mt-3 px-3 md:px-4">
         {tradeForm.tradeType === 'Limit' ? (
           <>
-            <div className="mb-2 mt-4 flex items-center justify-between">
+            <div className="mb-2 mt-3 flex items-center justify-between">
               <p className="text-xs text-th-fgd-3">{t('trade:limit-price')}</p>
             </div>
             <div className="default-transition flex items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
@@ -428,9 +391,10 @@ const AdvancedTradeForm = () => {
             </div>
           </>
         ) : null}
-        <div className="mb-2 mt-3 flex items-center justify-between">
-          <p className="text-xs text-th-fgd-3">{t('trade:amount')}</p>
-        </div>
+        <MaxSizeButton
+          minOrderDecimals={minOrderDecimals}
+          tickDecimals={tickDecimals}
+        />
         <div className="flex flex-col">
           <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
             <div className="h-5 w-5 flex-shrink-0">
@@ -494,20 +458,32 @@ const AdvancedTradeForm = () => {
       <div className="mt-2 flex">
         {selectedMarket instanceof Serum3Market ? (
           tradeFormSizeUi === 'slider' ? (
-            <SpotSlider />
+            <SpotSlider
+              minOrderDecimals={minOrderDecimals}
+              tickDecimals={tickDecimals}
+            />
           ) : (
-            <SpotButtonGroup />
+            <SpotButtonGroup
+              minOrderDecimals={minOrderDecimals}
+              tickDecimals={tickDecimals}
+            />
           )
         ) : tradeFormSizeUi === 'slider' ? (
-          <PerpSlider />
+          <PerpSlider
+            minOrderDecimals={minOrderDecimals}
+            tickDecimals={tickDecimals}
+          />
         ) : (
-          <PerpButtonGroup />
+          <PerpButtonGroup
+            minOrderDecimals={minOrderDecimals}
+            tickDecimals={tickDecimals}
+          />
         )}
       </div>
-      <div className="flex flex-wrap px-5">
+      <div className="flex flex-wrap px-5 md:flex-nowrap">
         {tradeForm.tradeType === 'Limit' ? (
           <div className="flex">
-            <div className="mr-4 mt-4" id="trade-step-six">
+            <div className="mr-3 mt-4" id="trade-step-six">
               <Tooltip
                 className="hidden md:block"
                 delay={250}
@@ -522,7 +498,7 @@ const AdvancedTradeForm = () => {
                 </Checkbox>
               </Tooltip>
             </div>
-            <div className="mr-4 mt-4" id="trade-step-seven">
+            <div className="mr-3 mt-4" id="trade-step-seven">
               <Tooltip
                 className="hidden md:block"
                 delay={250}
@@ -558,7 +534,7 @@ const AdvancedTradeForm = () => {
           </div>
         ) : null}
       </div>
-      <div className="mt-6 flex px-3 md:px-4">
+      <div className="mt-6 mb-4 flex px-3 md:px-4">
         {ipAllowed ? (
           <Button
             onClick={handlePlaceOrder}
@@ -567,7 +543,7 @@ const AdvancedTradeForm = () => {
                 ? 'bg-th-up-dark md:hover:bg-th-up'
                 : 'bg-th-down-dark md:hover:bg-th-down'
             }`}
-            disabled={false}
+            disabled={!tradeForm.baseSize}
             size="large"
           >
             {!placingOrder ? (
@@ -595,21 +571,7 @@ const AdvancedTradeForm = () => {
           </div>
         )}
       </div>
-      <div className="mt-4 space-y-2 px-3 md:px-4 lg:mt-6">
-        {tradeForm.price && tradeForm.baseSize ? (
-          <div className="flex justify-between text-xs">
-            <p>{t('trade:order-value')}</p>
-            <p className="text-th-fgd-2">
-              {formatFixedDecimals(
-                parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize),
-                true
-              )}
-            </p>
-          </div>
-        ) : null}
-        <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
-        <Slippage />
-      </div>
+      <TradeSummary mangoAccount={mangoAccount} />
     </div>
   )
 }

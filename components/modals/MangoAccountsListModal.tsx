@@ -107,7 +107,70 @@ const MangoAccountsListModal = ({
                       className="flex h-16 w-full items-center text-th-fgd-1"
                       key={acc.publicKey.toString()}
                     >
-                      <div className="flex h-full items-center justify-center rounded-md rounded-r-none bg-th-bkg-3">
+                      <button
+                        onClick={() => handleSelectMangoAccount(acc)}
+                        className="default-transition flex h-full w-full items-center justify-between rounded-md rounded-r-none bg-th-bkg-2 px-4 text-th-fgd-1 hover:bg-th-bkg-3"
+                      >
+                        <div className="flex w-full items-center justify-between">
+                          <div className="flex items-center space-x-2.5">
+                            {acc.publicKey.toString() ===
+                            mangoAccount?.publicKey.toString() ? (
+                              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-th-success">
+                                <CheckIcon className="h-4 w-4 text-th-bkg-1" />
+                              </div>
+                            ) : (
+                              <div className="h-5 w-5 rounded-full bg-th-bkg-4" />
+                            )}
+                            <div className="text-left">
+                              <div className="mb-0.5">
+                                <div className="flex items-center">
+                                  {acc.name ? (
+                                    <p className="mr-2 text-sm font-bold text-th-fgd-1">
+                                      {acc.name}
+                                    </p>
+                                  ) : null}
+                                  {acc.delegate.toString() !==
+                                  DEFAULT_DELEGATE ? (
+                                    <Tooltip
+                                      content={t('delegate-account-info', {
+                                        address: abbreviateAddress(
+                                          acc.delegate
+                                        ),
+                                      })}
+                                    >
+                                      <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                                    </Tooltip>
+                                  ) : null}
+                                </div>
+                                <p className="text-xs text-th-fgd-3">
+                                  {abbreviateAddress(acc.publicKey)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex">
+                            <span className="text-sm text-th-fgd-2">
+                              {accountValue}
+                            </span>
+                            <span className="mx-2 text-th-fgd-4">|</span>
+                            <div
+                              className={`flex items-center ${
+                                maintHealth
+                                  ? maintHealth > 15 && maintHealth < 50
+                                    ? 'text-th-warning'
+                                    : maintHealth >= 50
+                                    ? 'text-th-success'
+                                    : 'text-th-error'
+                                  : 'text-th-fgd-4'
+                              }`}
+                            >
+                              <HeartIcon className="mr-1 h-4 w-4 flex-shrink-0" />
+                              <span className="text-sm">{maintHealth}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                      <div className="flex h-full items-center justify-center rounded-md rounded-l-none bg-th-bkg-3">
                         <Tooltip content={t('copy-address')} delay={250}>
                           <IconButton
                             className="text-th-fgd-3"
@@ -125,57 +188,6 @@ const MangoAccountsListModal = ({
                           </IconButton>
                         </Tooltip>
                       </div>
-                      <button
-                        onClick={() => handleSelectMangoAccount(acc)}
-                        className="default-transition flex h-full w-full items-center justify-between rounded-md rounded-l-none bg-th-bkg-2 px-4 text-th-fgd-1 hover:bg-th-bkg-3"
-                      >
-                        <div className="flex w-full items-center justify-between">
-                          <div className="text-left">
-                            <div className="mb-0.5 flex items-center">
-                              <p className="text-sm font-bold text-th-fgd-1">
-                                {acc.name}
-                              </p>
-                              {acc.delegate.toString() !== DEFAULT_DELEGATE ? (
-                                <Tooltip
-                                  content={t('delegate-account-info', {
-                                    address: abbreviateAddress(acc.delegate),
-                                  })}
-                                >
-                                  <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
-                                </Tooltip>
-                              ) : null}
-                            </div>
-                            <div className="flex">
-                              <span className="text-sm text-th-fgd-3">
-                                {accountValue}
-                              </span>
-                              <span className="mx-2 text-th-fgd-4">|</span>
-                              <div
-                                className={`flex items-center ${
-                                  maintHealth
-                                    ? maintHealth > 15 && maintHealth < 50
-                                      ? 'text-th-warning'
-                                      : maintHealth >= 50
-                                      ? 'text-th-success'
-                                      : 'text-th-error'
-                                    : 'text-th-fgd-4'
-                                }`}
-                              >
-                                <HeartIcon className="mr-1 h-4 w-4" />
-                                <span className="text-sm">{maintHealth}%</span>
-                              </div>
-                            </div>
-                          </div>
-                          {acc.publicKey.toString() ===
-                          mangoAccount?.publicKey.toString() ? (
-                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-th-success">
-                              <CheckIcon className="h-4 w-4 text-th-bkg-1" />
-                            </div>
-                          ) : (
-                            <div className="h-5 w-5 rounded-full bg-th-bkg-4" />
-                          )}
-                        </div>
-                      </button>
                     </div>
                   )
                 })}

@@ -327,7 +327,7 @@ function DepositForm({ onSuccess, token, onChainSwitch }: DepositFormProps) {
       await postVaaSolanaWithRetry(
         connection,
         //do not change this to wallet.signTransaction because of this binding inside signTransaction
-        async function (transaction) {
+        async function (transaction: any) {
           const signed = await anchorProvider.wallet.signTransaction(
             transaction
           )
@@ -452,55 +452,107 @@ function DepositForm({ onSuccess, token, onChainSwitch }: DepositFormProps) {
           valueKey="walletBalance"
         />
       </EnterBottomExitBottom>
-      <FadeInFadeOut
-        className={`flex h-[${ACCOUNT_ACTION_MODAL_INNER_HEIGHT}] flex-col justify-between`}
-        show={!showTokenList}
-      >
-        <div>
-          <InlineNotification
-            type="info"
-            desc={`There is a $${ALPHA_DEPOSIT_LIMIT} account value limit during alpha
+      <FadeInFadeOut show={!showTokenList}>
+        <div
+          className="flex flex-col justify-between"
+          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+        >
+          <div>
+            <InlineNotification
+              type="info"
+              desc={`There is a $${ALPHA_DEPOSIT_LIMIT} account value limit during alpha
             testing.`}
-          />
-          <SolBalanceWarnings
-            amount={inputAmount}
-            setAmount={setInputAmount}
-            selectedToken={selectedToken}
-          />
-          <div className="flex justify-between pt-3">
-            <Label text={t('deposit-from')} />
-            <div className="flex space-x-4">
-              <div
-                className={`cursor-pointer ${
-                  chain !== Chain.SOL ? 'grayscale' : ''
-                }`}
-                onClick={() => setChain(Chain.SOL)}
-              >
-                <Image src="/icons/sol.svg" width={24} height={24} />
-              </div>
-              <div
-                className={`cursor-pointer ${
-                  chain !== Chain.ETH ? 'grayscale' : ''
-                }`}
-                onClick={() => setChain(Chain.ETH)}
-              >
-                <Image src="/icons/eth.svg" width={24} height={24} />
+            />
+            <SolBalanceWarnings
+              amount={inputAmount}
+              setAmount={setInputAmount}
+              selectedToken={selectedToken}
+            />
+            <div className="flex justify-between pt-3">
+              <Label text={t('deposit-from')} />
+              <div className="flex space-x-4">
+                <div
+                  className={`cursor-pointer ${
+                    chain !== Chain.SOL ? 'grayscale' : ''
+                  }`}
+                  onClick={() => setChain(Chain.SOL)}
+                >
+                  <Image src="/icons/sol.svg" width={24} height={24} />
+                </div>
+                <div
+                  className={`cursor-pointer ${
+                    chain !== Chain.ETH ? 'grayscale' : ''
+                  }`}
+                  onClick={() => setChain(Chain.ETH)}
+                >
+                  <Image src="/icons/eth.svg" width={24} height={24} />
+                </div>
               </div>
             </div>
+            {isEthChain && (
+              <div className="space-y-4 pt-3">
+                <InlineNotification
+                  type="info"
+                  desc={t('wormhole-deposit-info')}
+                />
+                <InlineNotification
+                  type="info"
+                  desc={t('wormhole-deposit-description')}
+                />
+              </div>
+            )}
+            <button
+              onClick={() => handleSetShowTokenList(true)}
+              className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
+            >
+              <div className="mr-2.5 flex min-w-[24px] items-center">
+                <Image
+                  alt=""
+                  width="24"
+                  height="24"
+                  src={logoUri || `/icons/${selectedToken.toLowerCase()}.svg`}
+                />
+              </div>
+              <div className="flex w-full items-center justify-between">
+                <div className="text-xl font-bold">{selectedToken}</div>
+                <ChevronDownIcon className="h-6 w-6" />
+              </div>
+            </button>
           </div>
-          {isEthChain && (
-            <div className="space-y-4 pt-3">
-              <InlineNotification
-                type="info"
-                desc={t('wormhole-deposit-info')}
-              />
-              <InlineNotification
-                type="info"
-                desc={t('wormhole-deposit-description')}
-              />
-            </div>
-          )}
-
+          <div className="col-span-1">
+            <NumberFormat
+              name="amountIn"
+              id="amountIn"
+              inputMode="decimal"
+              thousandSeparator=","
+              allowNegative={false}
+              isNumericString={true}
+              decimalScale={bank?.mintDecimals || 6}
+              className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+              placeholder="0.00"
+              value={inputAmount}
+              onValueChange={(e: NumberFormatValues) => {
+                setInputAmount(!Number.isNaN(Number(e.value)) ? e.value : '')
+              }}
+              isAllowed={withValueLimit}
+            />
+          </div>
+          <div className="col-span-2 mt-2">
+            <ButtonGroup
+              activeValue={sizePercentage}
+              className="font-mono"
+              onChange={(p) => handleSizePercentage(p)}
+              values={['10', '25', '50', '75', '100']}
+              unit="%"
+            />
+          </div>
+        </div>
+        <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
+          <HealthImpactTokenChange
+            mintPk={bank!.mint}
+            uiAmount={Number(inputAmount)}
+            isDeposit
+          />
           <div className="mt-4 grid grid-cols-2">
             <div className="col-span-2 flex justify-between">
               <Label text={`${t('deposit')} ${t('token')}`} />
@@ -516,7 +568,7 @@ function DepositForm({ onSuccess, token, onChainSwitch }: DepositFormProps) {
             </div>
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
               <button
-                onClick={() => handleSetShowTokenList(true)}
+                onClick={() => setShowTokenList(true)}
                 className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
               >
                 <div className="mr-2.5 flex min-w-[24px] items-center">
@@ -568,14 +620,25 @@ function DepositForm({ onSuccess, token, onChainSwitch }: DepositFormProps) {
               isDeposit
             />
             <div className="flex justify-between">
-              <p>{t('deposit-value')}</p>
-              <p className="font-mono">
-                {bank?.uiPrice
-                  ? formatFixedDecimals(
-                      bank.uiPrice * Number(inputAmount),
-                      true
-                    )
-                  : '-'}
+              <p>{t('deposit-amount')}</p>
+              <p className="font-mono text-th-fgd-2">
+                {bank?.uiPrice && inputAmount ? (
+                  <>
+                    {inputAmount}{' '}
+                    <span className="text-xs text-th-fgd-3">
+                      (
+                      {formatFixedDecimals(
+                        bank.uiPrice * Number(inputAmount),
+                        true
+                      )}
+                      )
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    0 <span className="text-xs text-th-fgd-3">($0.00)</span>
+                  </>
+                )}
               </p>
             </div>
             {/* <div className="flex justify-between">
@@ -590,7 +653,7 @@ function DepositForm({ onSuccess, token, onChainSwitch }: DepositFormProps) {
               <Tooltip content={t('tooltip-collateral-value')}>
                 <p className="tooltip-underline">{t('collateral-value')}</p>
               </Tooltip>
-              <p className="font-mono">
+              <p className="font-mono text-th-fgd-2">
                 {formatFixedDecimals(
                   bank!.uiPrice! *
                     Number(inputAmount) *
@@ -600,6 +663,8 @@ function DepositForm({ onSuccess, token, onChainSwitch }: DepositFormProps) {
               </p>
             </div>
           </div>
+        </div>
+        <div>
           {!isEthWalletConnected && isEthChain ? (
             <Button disabled={!connected} onClick={() => open()}>
               Connect Ethereum wallet

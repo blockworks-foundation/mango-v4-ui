@@ -8,7 +8,6 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
-
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import { IconButton, LinkButton } from '../shared/Button'
@@ -19,27 +18,12 @@ import { useRouter } from 'next/router'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
-import dayjs from 'dayjs'
-import mangoStore, { TokenStatsItem } from '@store/mangoStore'
-import SheenLoader from '@components/shared/SheenLoader'
-import dynamic from 'next/dynamic'
-const DetailedAreaChart = dynamic(
-  () => import('@components/shared/DetailedAreaChart'),
-  { ssr: false }
-)
-
-interface TotalValueItem {
-  date: string
-  borrowValue: number
-  depositValue: number
-}
+import mangoStore from '@store/mangoStore'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
   const actions = mangoStore((s) => s.actions)
-  const tokenStats = mangoStore((s) => s.tokenStats.data)
   const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
-  const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
@@ -52,30 +36,6 @@ const TokenStats = () => {
       actions.fetchTokenStats()
     }
   }, [group])
-
-  const totalValues = useMemo(() => {
-    if (!tokenStats.length) return []
-    const values: TotalValueItem[] = tokenStats.reduce(
-      (a: TotalValueItem[], c: TokenStatsItem) => {
-        const hasDate = a.find((d: TotalValueItem) => d.date === c.date_hour)
-        if (!hasDate) {
-          a.push({
-            date: c.date_hour,
-            depositValue: Math.floor(c.total_deposits * c.price),
-            borrowValue: Math.floor(c.total_borrows * c.price),
-          })
-        } else {
-          hasDate.depositValue =
-            hasDate.depositValue + Math.floor(c.total_deposits * c.price)
-          hasDate.borrowValue =
-            hasDate.borrowValue + Math.floor(c.total_borrows * c.price)
-        }
-        return a
-      },
-      []
-    )
-    return values.reverse()
-  }, [tokenStats])
 
   const banks = useMemo(() => {
     if (group) {
@@ -92,82 +52,12 @@ const TokenStats = () => {
     showTokenDetails ? setShowTokenDetails('') : setShowTokenDetails(name)
   }
 
-  const [totalDepositValue, totalBorrowValue] = useMemo(() => {
-    if (banks.length) {
-      return [
-        banks.reduce(
-          (a, c) => a + c.value[0].uiPrice * c.value[0].uiDeposits(),
-          0
-        ),
-        banks.reduce(
-          (a, c) => a + c.value[0].uiPrice * c.value[0].uiBorrows(),
-          0
-        ),
-      ]
-    }
-    return [0, 0]
-  }, [banks])
-
   const goToTokenPage = (bank: Bank) => {
     router.push(`/token/${bank.name}`, undefined, { shallow: true })
   }
 
   return (
     <ContentBox hideBorder hidePadding>
-      <div className="grid grid-cols-2">
-        {loadingStats ? (
-          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
-            <SheenLoader className="flex flex-1">
-              <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
-            </SheenLoader>
-          </div>
-        ) : totalValues.length ? (
-          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
-            <DetailedAreaChart
-              data={totalValues.concat([
-                {
-                  date: dayjs().toISOString(),
-                  depositValue: Math.floor(totalDepositValue),
-                  borrowValue: Math.floor(totalBorrowValue),
-                },
-              ])}
-              daysToShow={'999'}
-              heightClass="h-64"
-              prefix="$"
-              tickFormat={(x) => `$${x.toFixed(2)}`}
-              title={t('total-deposit-value')}
-              xKey="date"
-              yKey={'depositValue'}
-            />
-          </div>
-        ) : null}
-        {loadingStats ? (
-          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
-            <SheenLoader className="flex flex-1">
-              <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
-            </SheenLoader>
-          </div>
-        ) : totalValues.length ? (
-          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
-            <DetailedAreaChart
-              data={totalValues.concat([
-                {
-                  date: dayjs().toISOString(),
-                  borrowValue: Math.floor(totalBorrowValue),
-                  depositValue: Math.floor(totalDepositValue),
-                },
-              ])}
-              daysToShow={'999'}
-              heightClass="h-64"
-              prefix="$"
-              tickFormat={(x) => `$${x.toFixed(2)}`}
-              title={t('total-borrow-value')}
-              xKey="date"
-              yKey={'borrowValue'}
-            />
-          </div>
-        ) : null}
-      </div>
       {showTableView ? (
         <Table>
           <thead>

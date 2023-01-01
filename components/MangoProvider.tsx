@@ -6,18 +6,19 @@ import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
 
+const set = mangoStore.getState().set
+const actions = mangoStore.getState().actions
+
 const HydrateStore = () => {
   const router = useRouter()
   const { name: marketName } = router.query
   const { mangoAccount } = useMangoAccount()
 
   const fetchData = useCallback(async () => {
-    const actions = mangoStore.getState().actions
     await actions.fetchGroup()
   }, [])
 
   useEffect(() => {
-    const set = mangoStore.getState().set
     if (marketName && typeof marketName === 'string') {
       set((s) => {
         s.selectedMarket.name = marketName
@@ -34,7 +35,6 @@ const HydrateStore = () => {
   useEffect(() => {
     const connection = mangoStore.getState().connection
     const client = mangoStore.getState().client
-    const set = mangoStore.getState().set
 
     if (!mangoAccount) return
 
@@ -65,7 +65,7 @@ const HydrateStore = () => {
             decodedMangoAccount
           )
           await newMangoAccount.reloadAccountData(client)
-
+          actions.fetchOpenOrders()
           // newMangoAccount.spotOpenOrdersAccounts =
           //   mangoAccount.spotOpenOrdersAccounts
           // newMangoAccount.advancedOrders = mangoAccount.advancedOrders
