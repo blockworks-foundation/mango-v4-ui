@@ -1,4 +1,4 @@
-import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
+import { Bank, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -63,6 +63,27 @@ export const walletBalanceForToken = (
   }
 }
 
+export const useAlphaMax = (inputAmount: string, bank: Bank | undefined) => {
+  const exceedsAlphaMax = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const group = mangoStore.getState().group
+    if (!group || !mangoAccount) return
+    if (
+      mangoAccount.owner.toString() ===
+      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
+    )
+      return false
+    const accountValue = toUiDecimalsForQuote(
+      mangoAccount.getEquity(group).toNumber()
+    )
+    return (
+      parseFloat(inputAmount) * (bank?.uiPrice || 1) + accountValue >
+        ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
+    )
+  }, [inputAmount, bank])
+  return exceedsAlphaMax
+}
+
 function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
@@ -79,6 +100,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
+  const exceedsAlphaMax = useAlphaMax(inputAmount, bank)
 
   const logoUri = useMemo(() => {
     let logoURI
@@ -175,24 +197,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       : []
     return banks
   }, [group?.banksMapByName, walletTokens])
-
-  const exceedsAlphaMax = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    const group = mangoStore.getState().group
-    if (!group || !mangoAccount) return
-    if (
-      mangoAccount.owner.toString() ===
-      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
-    )
-      return false
-    const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group).toNumber()
-    )
-    return (
-      parseFloat(inputAmount) * (bank?.uiPrice || 1) + accountValue >
-        ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
-    )
-  }, [inputAmount, bank])
 
   const showInsufficientBalance = tokenMax.maxAmount < Number(inputAmount)
 
