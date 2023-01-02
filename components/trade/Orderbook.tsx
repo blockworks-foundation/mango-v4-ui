@@ -429,7 +429,7 @@ const Orderbook = () => {
         <div id="trade-step-three" className="flex items-center space-x-2">
           <Tooltip
             content={showBuys ? t('trade:hide-bids') : t('trade:show-bids')}
-            placement="top"
+            placement="bottom"
           >
             <button
               className={`rounded ${
@@ -443,7 +443,7 @@ const Orderbook = () => {
           </Tooltip>
           <Tooltip
             content={showSells ? t('trade:hide-asks') : t('trade:show-asks')}
-            placement="top"
+            placement="bottom"
           >
             <button
               className={`rounded ${
@@ -455,7 +455,7 @@ const Orderbook = () => {
               <OrderbookIcon className="h-4 w-4" side="sell" />
             </button>
           </Tooltip>
-          <Tooltip content={'Reset and center orderbook'} placement="top">
+          <Tooltip content={'Reset and center orderbook'} placement="bottom">
             <button
               className={`rounded ${
                 showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
@@ -468,7 +468,11 @@ const Orderbook = () => {
         </div>
         {market ? (
           <div id="trade-step-four">
-            <Tooltip content={t('trade:grouping')} placement="top" delay={250}>
+            <Tooltip
+              content={t('trade:grouping')}
+              placement="bottom"
+              delay={250}
+            >
               <GroupSize
                 tickSize={market.tickSize}
                 onChange={onGroupSizeChange}
