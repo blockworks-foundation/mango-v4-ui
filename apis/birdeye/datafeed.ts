@@ -1,6 +1,14 @@
 import { makeApiRequest, parseResolution } from './helpers'
 import { subscribeOnStream, unsubscribeFromStream } from './streaming'
 import mangoStore from '@store/mangoStore'
+import {
+  LibrarySymbolInfo,
+  ResolutionString,
+} from '@public/charting_library/charting_library'
+
+type SymbolInfo = LibrarySymbolInfo & {
+  address: string
+}
 
 const lastBarsCache = new Map()
 
@@ -16,7 +24,7 @@ const configurationData = {
     '240',
     '1D',
     '1W',
-  ],
+  ] as ResolutionString[],
   intraday_multipliers: ['1', '3', '5', '15', '30', '60', '120', '240'],
   exchanges: [],
 }
@@ -45,26 +53,37 @@ export default {
   },
 
   resolveSymbol: async (
-    symbolAddress: any,
-    onSymbolResolvedCallback: any,
-    _onResolveErrorCallback: any,
-    _extension: any
+    symbolAddress: string,
+    onSymbolResolvedCallback: (symbolInfo: SymbolInfo) => void
+    // _onResolveErrorCallback: any,
+    // _extension: any
   ) => {
-    console.log('[resolveSymbol]: Method call', symbolAddress)
+    console.log(
+      '[resolveSymbol]: Method call',
+      symbolAddress,
+      onSymbolResolvedCallback
+    )
     // const symbols = await getAllSymbols()
     // let symbolItem = symbols.find((item: any) => item.address === symbolAddress)
     // console.log('========symbols:', symbolItem, symbols)
-    let symbolItem: any
+    let symbolItem:
+      | {
+          address: string
+          type: string
+          symbol: string
+        }
+      | undefined
 
     if (!symbolItem) {
       symbolItem = {
         address: symbolAddress,
         type: 'pair',
+        symbol: '',
       }
     }
     const ticker = mangoStore.getState().selectedMarket.name
 
-    const symbolInfo = {
+    const symbolInfo: SymbolInfo = {
       address: symbolItem.address,
       ticker: symbolItem.address,
       name: symbolItem.symbol || symbolItem.address,
@@ -81,6 +100,10 @@ export default {
       intraday_multipliers: configurationData.intraday_multipliers,
       volume_precision: 2,
       data_status: 'streaming',
+      full_name: 'Mango Markets',
+      exchange: 'Mango',
+      listed_exchange: '',
+      format: 'price',
     }
 
     console.log('[resolveSymbol]: Symbol resolved', symbolAddress)
@@ -88,11 +111,21 @@ export default {
   },
 
   getBars: async (
-    symbolInfo: any,
-    resolution: any,
-    periodParams: any,
-    onHistoryCallback: any,
-    onErrorCallback: any
+    symbolInfo: SymbolInfo,
+    resolution: string,
+    periodParams: {
+      countBack: number
+      firstDataRequest: boolean
+      from: number
+      to: number
+    },
+    onHistoryCallback: (
+      bars: any,
+      t: {
+        noData: boolean
+      }
+    ) => void,
+    onErrorCallback: (e: any) => void
   ) => {
     const { from, to, firstDataRequest } = periodParams
     console.log('[getBars]: Method call', symbolInfo, resolution, from, to)
