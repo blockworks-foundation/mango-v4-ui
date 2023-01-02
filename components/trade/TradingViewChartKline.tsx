@@ -1,7 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import klinecharts, { init, dispose } from 'klinecharts'
-import axios from 'axios'
 import { useViewport } from 'hooks/useViewport'
 import usePrevious from '@components/shared/usePrevious'
 import Modal from '@components/shared/Modal'
@@ -11,7 +10,6 @@ import {
   CHART_QUERY,
   DEFAULT_MAIN_INDICATORS,
   DEFAULT_SUB_INDICATOR,
-  HISTORY,
   mainTechnicalIndicatorTypes,
   MAIN_INDICATOR_CLASS,
   ONE_DAY_SECONDS,
@@ -20,11 +18,11 @@ import {
 } from 'utils/kLineChart'
 import Loading from '@components/shared/Loading'
 import clsx from 'clsx'
-import { API_URL, BE_API_KEY } from 'apis/birdeye/helpers'
 import { useTheme } from 'next-themes'
 import { COLORS } from 'styles/colors'
 import { IconButton } from '@components/shared/Button'
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { queryBars } from 'apis/birdeye/datafeed'
 
 const UPDATE_INTERVAL = 10000
 
@@ -60,24 +58,17 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         ...baseQuery,
         time_from: from,
       }
-      const response = await axios.get(`${API_URL}defi/ohlcv/pair`, {
-        params: query,
-        headers: {
-          'X-API-KEY': BE_API_KEY,
-        },
+      const response = await queryBars(query.address, query.type, {
+        firstDataRequest: false,
+        from: query.time_from,
+        to: query.time_to,
       })
-      const newData = response.data.data.items as HISTORY[]
-      const dataSize = newData.length
+      const dataSize = response.length
       const dataList = []
       for (let i = 0; i < dataSize; i++) {
-        const row = newData[i]
+        const row = response[i]
         const kLineModel = {
-          open: row.o,
-          low: row.l,
-          high: row.h,
-          close: row.c,
-          volume: row.v,
-          timestamp: row.unixTime * 1000,
+          ...row,
         }
         dataList.push(kLineModel)
       }

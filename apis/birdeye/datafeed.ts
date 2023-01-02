@@ -8,13 +8,36 @@ import {
   SearchSymbolResultItem,
 } from '@public/charting_library/charting_library'
 
-type Bar = {
-  time: number
+export const SUPPORTED_RESOLUTIONS = [
+  '1',
+  '3',
+  '5',
+  '15',
+  '30',
+  '60',
+  '120',
+  '240',
+  '1D',
+  '1W',
+] as const
+
+type BaseBar = {
   low: number
   high: number
   open: number
   close: number
 }
+
+type KlineBar = BaseBar & {
+  volume: number
+  timestamp: number
+}
+
+type TradingViewBar = BaseBar & {
+  time: number
+}
+
+type Bar = KlineBar & TradingViewBar
 
 type SymbolInfo = LibrarySymbolInfo & {
   address: string
@@ -23,18 +46,7 @@ type SymbolInfo = LibrarySymbolInfo & {
 const lastBarsCache = new Map()
 
 const configurationData = {
-  supported_resolutions: [
-    '1',
-    '3',
-    '5',
-    '15',
-    '30',
-    '60',
-    '120',
-    '240',
-    '1D',
-    '1W',
-  ] as ResolutionString[],
+  supported_resolutions: SUPPORTED_RESOLUTIONS,
   intraday_multipliers: ['1', '3', '5', '15', '30', '60', '120', '240'],
   exchanges: [],
 }
@@ -49,9 +61,8 @@ const configurationData = {
 
 export const queryBars = async (
   tokenAddress: string,
-  resolution: string,
+  resolution: typeof SUPPORTED_RESOLUTIONS[number],
   periodParams: {
-    countBack: number
     firstDataRequest: boolean
     from: number
     to: number
@@ -78,14 +89,17 @@ export const queryBars = async (
   let bars: Bar[] = []
   for (const bar of data.data.items) {
     if (bar.unixTime >= from && bar.unixTime < to) {
+      const timestamp = bar.unixTime * 1000
       bars = [
         ...bars,
         {
-          time: bar.unixTime * 1000,
+          time: timestamp,
           low: bar.l,
           high: bar.h,
           open: bar.o,
           close: bar.c,
+          volume: bar.v,
+          timestamp,
         },
       ]
     }
@@ -96,7 +110,7 @@ export const queryBars = async (
 export default {
   onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
     console.log('[onReady]: Method call')
-    setTimeout(() => callback(configurationData))
+    setTimeout(() => callback(configurationData as any))
   },
 
   searchSymbols: async (
@@ -152,7 +166,7 @@ export default {
       has_intraday: true,
       has_no_volume: true,
       has_weekly_and_monthly: false,
-      supported_resolutions: configurationData.supported_resolutions,
+      supported_resolutions: configurationData.supported_resolutions as any,
       intraday_multipliers: configurationData.intraday_multipliers,
       volume_precision: 2,
       data_status: 'streaming',
@@ -167,7 +181,7 @@ export default {
   },
   getBars: async (
     symbolInfo: SymbolInfo,
-    resolution: string,
+    resolution: ResolutionString,
     periodParams: {
       countBack: number
       firstDataRequest: boolean
@@ -184,7 +198,11 @@ export default {
   ) => {
     try {
       const { firstDataRequest } = periodParams
-      const bars = await queryBars(symbolInfo.address, resolution, periodParams)
+      const bars = await queryBars(
+        symbolInfo.address,
+        resolution as any,
+        periodParams
+      )
       if (!bars || bars.length === 0) {
         // "noData" should be set if there is no data in the requested period.
         onHistoryCallback([], {
