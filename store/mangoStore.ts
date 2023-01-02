@@ -28,6 +28,7 @@ import {
 } from '../utils/tokens'
 import { Token } from '../types/jupiter'
 import {
+  CONNECTION_COMMITMENT,
   DEFAULT_MARKET_NAME,
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
@@ -341,9 +342,9 @@ const mangoStore = create<MangoStore>()(
 
     let connection: Connection
     try {
-      connection = new web3.Connection(rpcUrl, 'processed')
+      connection = new web3.Connection(rpcUrl, CONNECTION_COMMITMENT)
     } catch {
-      connection = new web3.Connection(ENDPOINT.url, 'processed')
+      connection = new web3.Connection(ENDPOINT.url, CONNECTION_COMMITMENT)
     }
     const provider = new AnchorProvider(connection, emptyWallet, options)
     provider.opts.skipPreflight = true
@@ -1004,7 +1005,10 @@ const mangoStore = create<MangoStore>()(
         updateConnection(endpointUrl) {
           const set = get().set
           const client = mangoStore.getState().client
-          const newConnection = new web3.Connection(endpointUrl, 'processed')
+          const newConnection = new web3.Connection(
+            endpointUrl,
+            CONNECTION_COMMITMENT
+          )
           const oldProvider = client.program.provider as AnchorProvider
           const newProvider = new AnchorProvider(
             newConnection,
