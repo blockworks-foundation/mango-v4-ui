@@ -1,13 +1,13 @@
-import { Fragment, ReactNode, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useState } from 'react'
 import Button, { LinkButton } from '../shared/Button'
 import {
-  AdjustmentsHorizontalIcon,
   ArrowDownRightIcon,
   ArrowUpLeftIcon,
   DocumentDuplicateIcon,
   PencilIcon,
   TrashIcon,
   UsersIcon,
+  WrenchIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import CloseAccountModal from '../modals/CloseAccountModal'
@@ -15,14 +15,9 @@ import AccountNameModal from '../modals/AccountNameModal'
 import { copyToClipboard } from 'utils'
 import { notify } from 'utils/notifications'
 import { abbreviateAddress } from 'utils/formatting'
-import {
-  HealthType,
-  MangoAccount,
-  toUiDecimalsForQuote,
-} from '@blockworks-foundation/mango-v4'
+import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useMangoGroup from 'hooks/useMangoGroup'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
@@ -41,7 +36,6 @@ export const handleCopyAddress = (
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
-  const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
@@ -51,14 +45,16 @@ const AccountActions = () => {
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const { connected } = useWallet()
 
-  const hasBorrows = useMemo(() => {
-    if (!mangoAccount || !group) return false
-    return (
-      toUiDecimalsForQuote(
-        mangoAccount.getLiabsValue(group, HealthType.init).toNumber()
-      ) >= 1
-    )
-  }, [mangoAccount, group])
+  // this doesn't work for detecting spot borrows as it includes perp liabs. was only using it to make the repay button have primary styles so could delete
+
+  // const hasBorrows = useMemo(() => {
+  //   if (!mangoAccount || !group) return false
+  //   return (
+  //     toUiDecimalsForQuote(
+  //       mangoAccount.getLiabsValue(group, HealthType.init).toNumber()
+  //     ) >= 1
+  //   )
+  // }, [mangoAccount, group])
 
   const handleBorrowModal = () => {
     if (!connected || mangoAccount) {
@@ -75,7 +71,8 @@ const AccountActions = () => {
           className="flex w-1/3 items-center justify-center sm:w-auto"
           disabled={!mangoAccount}
           onClick={() => setShowRepayModal(true)}
-          secondary={!hasBorrows}
+          // secondary={!hasBorrows}
+          secondary
         >
           <ArrowDownRightIcon className="mr-2 h-5 w-5" />
           {t('repay')}
@@ -98,8 +95,8 @@ const AccountActions = () => {
                   className="flex w-full items-center justify-center"
                   secondary
                 >
-                  <AdjustmentsHorizontalIcon className="mr-2 h-4 w-4" />
-                  {t('settings')}
+                  <WrenchIcon className="mr-2 h-4 w-4" />
+                  {t('actions')}
                 </Button>
               </Menu.Button>
               <Transition

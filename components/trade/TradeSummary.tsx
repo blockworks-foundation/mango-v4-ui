@@ -69,7 +69,7 @@ const TradeSummary = ({
       : simulatedHealthRatio < 0
       ? 0
       : Math.trunc(simulatedHealthRatio)
-  }, [group, mangoAccount, selectedMarket, tradeForm.baseSize, tradeForm.side])
+  }, [group, mangoAccount, selectedMarket, tradeForm])
 
   return (
     <div className="space-y-2 px-3 md:px-4">

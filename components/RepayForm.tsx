@@ -25,12 +25,15 @@ import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
 import { withValueLimit } from './swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
-import { walletBalanceForToken } from './DepositForm'
+import { useAlphaMax, walletBalanceForToken } from './DepositForm'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
-import { ACCOUNT_ACTION_MODAL_INNER_HEIGHT } from 'utils/constants'
+import {
+  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  INPUT_TOKEN_DEFAULT,
+} from 'utils/constants'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -43,7 +46,9 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   const { mangoAccount } = useMangoAccount()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [selectedToken, setSelectedToken] = useState(token)
+  const [selectedToken, setSelectedToken] = useState(
+    token || INPUT_TOKEN_DEFAULT
+  )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
@@ -51,7 +56,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
-    return selectedToken ? group?.banksMapByName.get(selectedToken)?.[0] : null
+    return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
 
   const logoUri = useMemo(() => {
@@ -171,6 +176,8 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       setSelectedToken(banks[0].key)
     }
   }, [token, banks])
+
+  const exceedsAlphaMax = useAlphaMax(inputAmount, bank)
 
   const showInsufficientBalance = walletBalance.maxAmount < Number(inputAmount)
 
@@ -325,7 +332,9 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
           <Button
             onClick={() => handleDeposit(inputAmount)}
             className="flex w-full items-center justify-center"
-            disabled={!inputAmount || showInsufficientBalance}
+            disabled={
+              !inputAmount || showInsufficientBalance || exceedsAlphaMax
+            }
             size="large"
           >
             {submitting ? (

@@ -4,7 +4,7 @@ import useMarkPrice from 'hooks/useMarkPrice'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
-import { notify } from 'utils/notifications'
+// import { notify } from 'utils/notifications'
 import { calculateSlippage } from 'utils/tradeForm'
 
 const Slippage = () => {
@@ -25,7 +25,8 @@ const Slippage = () => {
         )
       }
     } catch (e) {
-      notify({ type: 'info', title: 'Unable to calculate slippage' })
+      console.error({ type: 'info', title: 'Unable to calculate slippage' })
+      return 100_000
     }
     return 0
   }, [tradeForm, markPrice, selectedMarket])
@@ -44,7 +45,7 @@ const Slippage = () => {
             : 'text-th-error'
         }`}
       >
-        {slippage.toFixed(2)}%
+        {slippage === 100_000 ? 'Unavailable' : `${slippage.toFixed(2)}&`}
       </p>
     </div>
   ) : null
