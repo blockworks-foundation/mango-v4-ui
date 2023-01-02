@@ -31,7 +31,5 @@ export default function useMarkPrice() {
     }
   }, [orderbook, trades, markPrice])
 
-  console.log('markPrice', markPrice)
-
   return markPrice
 }
