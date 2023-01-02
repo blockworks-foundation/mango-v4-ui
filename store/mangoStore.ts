@@ -271,6 +271,10 @@ export type MangoStore = {
     tours: TourSettings
     uiLocked: boolean
   }
+  successAnimation: {
+    swap: boolean
+    trade: boolean
+  }
   swap: {
     inputBank: Bank | undefined
     outputBank: Bank | undefined
@@ -278,7 +282,6 @@ export type MangoStore = {
     outputTokenInfo: Token | undefined
     margin: boolean
     slippage: number
-    success: boolean
     swapMode: 'ExactIn' | 'ExactOut'
     amountIn: string
     amountOut: string
@@ -412,6 +415,10 @@ const mangoStore = create<MangoStore>()(
         },
         uiLocked: true,
       },
+      successAnimation: {
+        swap: false,
+        trade: false,
+      },
       swap: {
         inputBank: undefined,
         outputBank: undefined,
@@ -419,7 +426,6 @@ const mangoStore = create<MangoStore>()(
         outputTokenInfo: undefined,
         margin: true,
         slippage: 0.5,
-        success: false,
         swapMode: 'ExactIn',
         amountIn: '',
         amountOut: '',

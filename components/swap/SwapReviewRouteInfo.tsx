@@ -237,7 +237,7 @@ const SwapReviewRouteInfo = ({
           flashLoanType: { swap: {} },
         })
         set((s) => {
-          s.swap.success = true
+          s.successAnimation.swap = true
         })
         if (soundSettings['swap-success']) {
           successSound.play()
