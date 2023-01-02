@@ -59,7 +59,7 @@ const CreateAccountForm = ({
         8 // perpOoCount
       )
       if (tx) {
-        const pk = wallet!.adapter.publicKey
+        const pk = wallet.adapter.publicKey
         const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
         const reloadedMangoAccounts = await Promise.all(
           mangoAccounts.map((ma) => ma.reloadAccountData(client))
