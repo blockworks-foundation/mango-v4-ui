@@ -2,9 +2,19 @@ import { makeApiRequest, parseResolution } from './helpers'
 import { subscribeOnStream, unsubscribeFromStream } from './streaming'
 import mangoStore from '@store/mangoStore'
 import {
+  DatafeedConfiguration,
   LibrarySymbolInfo,
   ResolutionString,
+  SearchSymbolResultItem,
 } from '@public/charting_library/charting_library'
+
+type Bar = {
+  time: number
+  low: number
+  high: number
+  open: number
+  close: number
+}
 
 type SymbolInfo = LibrarySymbolInfo & {
   address: string
@@ -38,16 +48,16 @@ const configurationData = {
 // }
 
 export default {
-  onReady: (callback: any) => {
+  onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
     console.log('[onReady]: Method call')
     setTimeout(() => callback(configurationData))
   },
 
   searchSymbols: async (
-    _userInput: any,
-    _exchange: any,
-    _symbolType: any,
-    _onResultReadyCallback: any
+    _userInput: string,
+    _exchange: string,
+    _symbolType: string,
+    _onResultReadyCallback: (items: SearchSymbolResultItem[]) => void
   ) => {
     return
   },
@@ -100,8 +110,8 @@ export default {
       intraday_multipliers: configurationData.intraday_multipliers,
       volume_precision: 2,
       data_status: 'streaming',
-      full_name: 'Mango Markets',
-      exchange: 'Mango',
+      full_name: '',
+      exchange: '',
       listed_exchange: '',
       format: 'price',
     }
@@ -120,7 +130,7 @@ export default {
       to: number
     },
     onHistoryCallback: (
-      bars: any,
+      bars: Bar[],
       t: {
         noData: boolean
       }
@@ -137,7 +147,7 @@ export default {
     }
     const query = Object.keys(urlParameters)
       .map(
-        (name: any) =>
+        (name: string) =>
           `${name}=${encodeURIComponent((urlParameters as any)[name])}`
       )
       .join('&')
@@ -150,7 +160,7 @@ export default {
         })
         return
       }
-      let bars: any = []
+      let bars: Bar[] = []
       data.data.items.forEach((bar: any) => {
         if (bar.unixTime >= from && bar.unixTime < to) {
           bars = [
@@ -165,6 +175,7 @@ export default {
           ]
         }
       })
+
       if (firstDataRequest) {
         lastBarsCache.set(symbolInfo.address, {
           ...bars[bars.length - 1],
@@ -181,11 +192,11 @@ export default {
   },
 
   subscribeBars: (
-    symbolInfo: any,
-    resolution: any,
-    onRealtimeCallback: any,
-    subscriberUID: any,
-    onResetCacheNeededCallback: any
+    symbolInfo: SymbolInfo,
+    resolution: string,
+    onRealtimeCallback: (data: any) => void,
+    subscriberUID: string,
+    onResetCacheNeededCallback: () => void
   ) => {
     console.log(
       '[subscribeBars]: Method call with subscriberUID:',
