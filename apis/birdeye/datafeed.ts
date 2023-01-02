@@ -47,6 +47,52 @@ const configurationData = {
 //   return data.data.tokens
 // }
 
+export const queryBars = async (
+  tokenAddress: string,
+  resolution: string,
+  periodParams: {
+    countBack: number
+    firstDataRequest: boolean
+    from: number
+    to: number
+  }
+): Promise<Bar[]> => {
+  const { from, to } = periodParams
+  const urlParameters = {
+    address: tokenAddress,
+    type: parseResolution(resolution),
+    time_from: from,
+    time_to: to,
+  }
+  const query = Object.keys(urlParameters)
+    .map(
+      (name: string) =>
+        `${name}=${encodeURIComponent((urlParameters as any)[name])}`
+    )
+    .join('&')
+
+  const data = await makeApiRequest(`defi/ohlcv/pair?${query}`)
+  if (!data.success || data.data.items.length === 0) {
+    return []
+  }
+  let bars: Bar[] = []
+  for (const bar of data.data.items) {
+    if (bar.unixTime >= from && bar.unixTime < to) {
+      bars = [
+        ...bars,
+        {
+          time: bar.unixTime * 1000,
+          low: bar.l,
+          high: bar.h,
+          open: bar.o,
+          close: bar.c,
+        },
+      ]
+    }
+  }
+  return bars
+}
+
 export default {
   onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
     console.log('[onReady]: Method call')
@@ -119,7 +165,6 @@ export default {
     console.log('[resolveSymbol]: Symbol resolved', symbolAddress)
     onSymbolResolvedCallback(symbolInfo)
   },
-
   getBars: async (
     symbolInfo: SymbolInfo,
     resolution: string,
@@ -137,44 +182,16 @@ export default {
     ) => void,
     onErrorCallback: (e: any) => void
   ) => {
-    const { from, to, firstDataRequest } = periodParams
-    console.log('[getBars]: Method call', symbolInfo, resolution, from, to)
-    const urlParameters = {
-      address: symbolInfo.address,
-      type: parseResolution(resolution),
-      time_from: from,
-      time_to: to,
-    }
-    const query = Object.keys(urlParameters)
-      .map(
-        (name: string) =>
-          `${name}=${encodeURIComponent((urlParameters as any)[name])}`
-      )
-      .join('&')
     try {
-      const data = await makeApiRequest(`defi/ohlcv/pair?${query}`)
-      if (!data.success || data.data.items.length === 0) {
+      const { firstDataRequest } = periodParams
+      const bars = await queryBars(symbolInfo.address, resolution, periodParams)
+      if (!bars || bars.length === 0) {
         // "noData" should be set if there is no data in the requested period.
         onHistoryCallback([], {
           noData: true,
         })
         return
       }
-      let bars: Bar[] = []
-      data.data.items.forEach((bar: any) => {
-        if (bar.unixTime >= from && bar.unixTime < to) {
-          bars = [
-            ...bars,
-            {
-              time: bar.unixTime * 1000,
-              low: bar.l,
-              high: bar.h,
-              open: bar.o,
-              close: bar.c,
-            },
-          ]
-        }
-      })
 
       if (firstDataRequest) {
         lastBarsCache.set(symbolInfo.address, {
