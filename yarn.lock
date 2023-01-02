@@ -52,7 +52,7 @@
 
 "@blockworks-foundation/mango-v4@https://github.com/blockworks-foundation/mango-v4.git#main":
   version "0.0.1-beta.6"
-  resolved "https://github.com/blockworks-foundation/mango-v4.git#0c1884ce56315417010efd6f2b0df1596f3aa604"
+  resolved "https://github.com/blockworks-foundation/mango-v4.git#80f94166bd1bb2dc6707e31cb192cd12ffa6f02f"
   dependencies:
     "@project-serum/anchor" "^0.25.0"
     "@project-serum/serum" "^0.13.65"
@@ -1098,9 +1098,9 @@
     "@wallet-standard/base" "^1.0.0"
 
 "@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.63.1":
-  version "1.72.0"
-  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.72.0.tgz#8d54de6887bc885c78a4a2bebe891c349fbb029e"
-  integrity sha512-xMoCk0y/GpiQhHbRjMcrd5NpmkwhAA0c01id7lrr6nhNdz6Uc/CywPdBeZw3Qz6BVZ/qlUoerpKPWeiXqMUjwA==
+  version "1.73.0"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.73.0.tgz#c65f9f954ac80fca6952765c931dd72e57e1b572"
+  integrity sha512-YrgX3Py7ylh8NYkbanoINUPCj//bWUjYZ5/WPy9nQ9SK3Cl7QWCR+NmbDjmC/fTspZGR+VO9LTQslM++jr5PRw==
   dependencies:
     "@babel/runtime" "^7.12.5"
     "@noble/ed25519" "^1.7.0"

@@ -46,12 +46,15 @@ const BalancesTable = () => {
               Math.abs(b.balance! * b.value[0].uiPrice) -
               Math.abs(a.balance! * a.value[0].uiPrice)
           )
-          .filter(
-            (c) =>
+          .filter((c) => {
+            return (
               Math.abs(
                 floorToDecimal(c.balance!, c.value[0].mintDecimals).toNumber()
-              ) > 0
-          )
+              ) > 0 ||
+              spotBalances[c.value[0].mint.toString()]?.unsettled > 0 ||
+              spotBalances[c.value[0].mint.toString()]?.inOrders > 0
+            )
+          })
       : rawBanks
 
     return sortedBanks

@@ -47,6 +47,7 @@ const MangoAccountsListModal = ({
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
   const router = useRouter()
   const { asPath } = useRouter()
+  const [submitting, setSubmitting] = useState('')
 
   const handleSelectMangoAccount = async (acc: MangoAccount) => {
     const set = mangoStore.getState().set
@@ -56,6 +57,7 @@ const MangoAccountsListModal = ({
       s.activityFeed.feed = []
       s.activityFeed.loading = true
     })
+    setSubmitting(acc.publicKey.toString())
     try {
       const reloadedMangoAccount = await retryFn(() => acc.reload(client))
       actions.fetchOpenOrders(reloadedMangoAccount)
@@ -73,6 +75,7 @@ const MangoAccountsListModal = ({
       })
     } finally {
       onClose()
+      setSubmitting('')
     }
   }
 
@@ -113,8 +116,10 @@ const MangoAccountsListModal = ({
                       >
                         <div className="flex w-full items-center justify-between">
                           <div className="flex items-center space-x-2.5">
-                            {acc.publicKey.toString() ===
-                            mangoAccount?.publicKey.toString() ? (
+                            {submitting === acc.publicKey.toString() ? (
+                              <Loading className="h-4 w-4" />
+                            ) : acc.publicKey.toString() ===
+                              mangoAccount?.publicKey.toString() ? (
                               <div className="flex h-5 w-5 items-center justify-center rounded-full bg-th-success">
                                 <CheckIcon className="h-4 w-4 text-th-bkg-1" />
                               </div>
