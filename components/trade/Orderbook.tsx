@@ -24,6 +24,8 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import { Bars3CenterLeftIcon } from '@heroicons/react/20/solid'
+import { sleep } from 'utils'
 
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
   const depth = 40
@@ -406,6 +408,13 @@ const Orderbook = () => {
     // return () => clearTimeout(id)
   }, [verticallyCenterOrderbook])
 
+  const resetOrderbook = useCallback(async () => {
+    setShowBuys(true)
+    setShowSells(true)
+    await sleep(300)
+    verticallyCenterOrderbook()
+  }, [])
+
   const onGroupSizeChange = useCallback((groupSize: number) => {
     setGrouping(groupSize)
   }, [])
@@ -444,6 +453,16 @@ const Orderbook = () => {
               disabled={!showBuys}
             >
               <OrderbookIcon className="h-4 w-4" side="sell" />
+            </button>
+          </Tooltip>
+          <Tooltip content={'Reset and center orderbook'} placement="top">
+            <button
+              className={`rounded ${
+                showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              onClick={resetOrderbook}
+            >
+              <Bars3CenterLeftIcon className="h-4 w-4" />
             </button>
           </Tooltip>
         </div>
