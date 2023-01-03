@@ -39,6 +39,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -58,6 +59,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
+  const { handleConnect } = useEnhancedWallet()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -113,7 +115,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     setShowTokenList(false)
   }
 
-  const handleWithdraw = async () => {
+  const handleBorrow = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -392,9 +394,9 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
             ) : null}
           </div>
           <Button
-            onClick={handleWithdraw}
+            onClick={connected ? handleBorrow : handleConnect}
             className="flex w-full items-center justify-center"
-            disabled={!inputAmount || showInsufficientBalance || !connected}
+            disabled={connected && (!inputAmount || showInsufficientBalance)}
             size="large"
           >
             {!connected ? (

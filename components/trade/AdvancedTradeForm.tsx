@@ -22,7 +22,7 @@ import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
-import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import { LinkIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
 import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider from './PerpSlider'
@@ -40,6 +40,8 @@ import ButtonGroup from '@components/forms/ButtonGroup'
 import TradeSummary from './TradeSummary'
 import useMangoAccount from 'hooks/useMangoAccount'
 import MaxSizeButton from './MaxSizeButton'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 
 const set = mangoStore.getState().set
 
@@ -53,6 +55,8 @@ const AdvancedTradeForm = () => {
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
   const { ipAllowed, ipCountry } = useIpAddress()
+  const { connected } = useWallet()
+  const { handleConnect } = useEnhancedWallet()
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[0]
@@ -537,16 +541,23 @@ const AdvancedTradeForm = () => {
       <div className="mt-6 mb-4 flex px-3 md:px-4">
         {ipAllowed ? (
           <Button
-            onClick={handlePlaceOrder}
-            className={`flex w-full items-center justify-center text-white ${
-              tradeForm.side === 'buy'
-                ? 'bg-th-up-dark md:hover:bg-th-up'
-                : 'bg-th-down-dark md:hover:bg-th-down'
+            onClick={connected ? handlePlaceOrder : handleConnect}
+            className={`flex w-full items-center justify-center ${
+              !connected
+                ? ''
+                : tradeForm.side === 'buy'
+                ? 'bg-th-up-dark text-white md:hover:bg-th-up'
+                : 'bg-th-down-dark text-white md:hover:bg-th-down'
             }`}
-            disabled={!tradeForm.baseSize}
+            disabled={connected && !tradeForm.baseSize}
             size="large"
           >
-            {!placingOrder ? (
+            {!connected ? (
+              <div className="flex items-center">
+                <LinkIcon className="mr-2 h-5 w-5" />
+                {t('connect')}
+              </div>
+            ) : !placingOrder ? (
               <span className="capitalize">
                 {t('trade:place-order', { side: tradeForm.side })}
               </span>

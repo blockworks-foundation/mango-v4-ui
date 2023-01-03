@@ -2,7 +2,6 @@ import { Fragment, useEffect, useState } from 'react'
 import {
   ArrowRightIcon,
   ChevronDownIcon,
-  LinkIcon,
   NoSymbolIcon,
 } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
@@ -28,6 +27,7 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import useMangoAccount from 'hooks/useMangoAccount'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 
 const SwapHistoryTable = ({
   swapHistory,
@@ -422,9 +422,8 @@ const SwapHistoryTable = ({
       </div>
     )
   ) : (
-    <div className="flex flex-col items-center p-8">
-      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('swap:connect-swap')}</p>
+    <div className="p-8">
+      <ConnectEmptyState text={t('swap:connect-swap')} />
     </div>
   )
 }

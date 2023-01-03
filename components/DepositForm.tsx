@@ -36,6 +36,7 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -95,6 +96,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
+  const { handleConnect } = useEnhancedWallet()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -366,13 +368,11 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             </div>
           </div>
           <Button
-            onClick={handleDeposit}
+            onClick={connected ? handleDeposit : handleConnect}
             className="flex w-full items-center justify-center"
             disabled={
-              !inputAmount ||
-              exceedsAlphaMax ||
-              showInsufficientBalance ||
-              !connected
+              connected &&
+              (!inputAmount || exceedsAlphaMax || showInsufficientBalance)
             }
             size="large"
           >
