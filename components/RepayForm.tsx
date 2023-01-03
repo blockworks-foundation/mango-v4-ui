@@ -3,7 +3,6 @@ import {
   ArrowLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
-  LinkIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import { Wallet } from '@project-serum/anchor'
@@ -34,6 +33,7 @@ import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
 } from 'utils/constants'
+import ConnectEmptyState from './shared/ConnectEmptyState'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -358,8 +358,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     </>
   ) : !connected ? (
     <div className="flex h-[356px] flex-col items-center justify-center">
-      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>Connect to repay your borrows</p>
+      <ConnectEmptyState text="Connect to repay your borrows" />
     </div>
   ) : (
     <div className="flex h-[356px] flex-col items-center justify-center">

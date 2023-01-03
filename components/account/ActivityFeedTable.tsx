@@ -1,5 +1,6 @@
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import { IconButton, LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import SheenLoader from '@components/shared/SheenLoader'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
@@ -7,7 +8,6 @@ import { Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  LinkIcon,
   NoSymbolIcon,
 } from '@heroicons/react/20/solid'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
@@ -293,9 +293,8 @@ const ActivityFeedTable = ({
       </div>
     )
   ) : (
-    <div className="flex flex-col items-center p-8">
-      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('activity:connect-activity')}</p>
+    <div className="p-8">
+      <ConnectEmptyState text={t('activity:connect-activity')} />
     </div>
   )
 }

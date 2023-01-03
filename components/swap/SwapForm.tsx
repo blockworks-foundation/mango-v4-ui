@@ -46,6 +46,7 @@ import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
 import useIpAddress from 'hooks/useIpAddress'
 import Checkbox from '@components/forms/Checkbox'
+import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -498,17 +499,20 @@ const SwapFormSubmitButton = ({
   const { t } = useTranslation('common')
   const { connected } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
+  const { handleConnect } = useEnhancedWallet()
 
   const showInsufficientBalance = useMargin
     ? amountWithBorrow.lt(amountIn)
     : tokenMax.lt(amountIn)
 
   const disabled =
-    !amountIn.toNumber() || !connected || showInsufficientBalance || !amountOut
+    connected && (!amountIn.toNumber() || showInsufficientBalance || !amountOut)
+
+  const onClick = connected ? () => setShowConfirm(true) : handleConnect
 
   return (
     <Button
-      onClick={() => setShowConfirm(true)}
+      onClick={onClick}
       className="mt-6 mb-4 flex w-full items-center justify-center text-base"
       disabled={disabled}
       size="large"

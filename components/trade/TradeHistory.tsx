@@ -1,4 +1,5 @@
 import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import InlineNotification from '@components/shared/InlineNotification'
 import SideBadge from '@components/shared/SideBadge'
 import {
@@ -9,7 +10,7 @@ import {
   TrBody,
   TrHead,
 } from '@components/shared/TableElements'
-import { LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
@@ -232,9 +233,8 @@ const TradeHistory = () => {
       </div>
     )
   ) : (
-    <div className="flex flex-col items-center p-8">
-      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>Connect to view your trade history</p>
+    <div className="p-8">
+      <ConnectEmptyState text="Connect to view your trade history" />
     </div>
   )
 }

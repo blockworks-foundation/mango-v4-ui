@@ -35,6 +35,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -54,6 +55,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
+  const { handleConnect } = useEnhancedWallet()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -302,14 +304,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
             </div>
           </div>
           <Button
-            onClick={handleWithdraw}
+            onClick={connected ? handleWithdraw : handleConnect}
             className="flex w-full items-center justify-center"
             size="large"
             disabled={
-              !inputAmount ||
-              showInsufficientBalance ||
-              initHealth <= 0 ||
-              !connected
+              connected &&
+              (!inputAmount || showInsufficientBalance || initHealth <= 0)
             }
           >
             {!connected ? (
