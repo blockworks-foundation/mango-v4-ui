@@ -413,7 +413,7 @@ const AccountPage = () => {
         <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-six">
             <Tooltip
-              content="Total position size divided by total collateral."
+              content="Total assets value divided by account equity value."
               maxWidth="20rem"
               placement="bottom"
               delay={250}

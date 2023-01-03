@@ -27,7 +27,7 @@ const ConnectedMenu = () => {
 
   const set = mangoStore((s) => s.set)
   const actions = mangoStore((s) => s.actions)
-  const profileDetails = mangoStore((s) => s.profile.details)
+  // const profileDetails = mangoStore((s) => s.profile.details)
   const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
 
   const isMobile = width ? width < breakpoints.md : false
@@ -92,11 +92,11 @@ const ConnectedMenu = () => {
                     <p className="font-mono text-xs text-th-fgd-3">
                       {publicKey ? abbreviateAddress(publicKey) : ''}
                     </p>
-                    <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
+                    {/* <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
                       {profileDetails?.profile_name
                         ? profileDetails.profile_name
                         : 'Profile Unavailabe'}
-                    </p>
+                    </p> */}
                   </div>
                 ) : null}
               </div>
@@ -120,7 +120,7 @@ const ConnectedMenu = () => {
                   >
                     <UserCircleIcon className="h-4 w-4" />
                     <div className="pl-2 text-left">
-                      {t('profile:edit-profile')}
+                      {t('profile:edit-profile-pic')}
                     </div>
                   </button>
                 </Menu.Item>

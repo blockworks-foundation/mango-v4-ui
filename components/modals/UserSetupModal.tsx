@@ -34,8 +34,8 @@ import Label from '../forms/Label'
 import WalletIcon from '../icons/WalletIcon'
 import { walletBalanceForToken } from '../DepositForm'
 import ParticlesBackground from '../ParticlesBackground'
-import EditNftProfilePic from '../profile/EditNftProfilePic'
-import EditProfileForm from '../profile/EditProfileForm'
+// import EditNftProfilePic from '../profile/EditNftProfilePic'
+// import EditProfileForm from '../profile/EditProfileForm'
 import Button, { LinkButton } from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
@@ -63,7 +63,7 @@ const UserSetupModal = ({
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const [showEditProfilePic, setShowEditProfilePic] = useState(false)
+  // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
@@ -135,8 +135,9 @@ const UserSetupModal = ({
       })
 
       await actions.reloadMangoAccount()
-      setShowSetupStep(4)
       setSubmitDeposit(false)
+      onClose()
+      // setShowSetupStep(4)
     } catch (e: any) {
       notify({
         title: 'Transaction failed',
@@ -241,7 +242,7 @@ const UserSetupModal = ({
         <div className="absolute top-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
             style={{
-              width: `${(showSetupStep / 4) * 100}%`,
+              width: `${(showSetupStep / 3) * 100}%`,
             }}
             className="flex bg-th-active transition-all duration-700 ease-out"
           />
@@ -257,10 +258,6 @@ const UserSetupModal = ({
                 <CheckCircleIcon className="h-5 w-5 text-th-success" />
                 <p className="text-base">{t('onboarding:bullet-1')}</p>
               </div>
-              {/* <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-success" />
-              <p className="text-base">Deeply liquid markets</p>
-            </div> */}
               <div className="flex items-center space-x-2">
                 <CheckCircleIcon className="h-5 w-5 text-th-success" />
                 <p className="text-base">{t('onboarding:bullet-2')}</p>
@@ -528,7 +525,7 @@ const UserSetupModal = ({
                       </div>
                     )}
                   </Button>
-                  <LinkButton onClick={() => setShowSetupStep(4)}>
+                  <LinkButton onClick={onClose}>
                     <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                       {t('onboarding:skip')}
                     </span>
@@ -564,7 +561,7 @@ const UserSetupModal = ({
               </div>
             ) : null}
           </UserSetupTransition>
-          <UserSetupTransition delay show={showSetupStep === 4}>
+          {/* <UserSetupTransition delay show={showSetupStep === 4}>
             {showSetupStep === 4 ? (
               <div className="relative">
                 <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
@@ -597,7 +594,7 @@ const UserSetupModal = ({
                 </UserSetupTransition>
               </div>
             ) : null}
-          </UserSetupTransition>
+          </UserSetupTransition> */}
         </div>
         <div className="col-span-1 hidden h-screen lg:block">
           <ParticlesBackground />
