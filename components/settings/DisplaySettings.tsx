@@ -109,13 +109,20 @@ const DisplaySettings = () => {
       </div> */}
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('settings:notification-position')}</p>
-        <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
-          <ButtonGroup
-            activeValue={notificationPosition}
+        <div className="w-full min-w-[140px] md:w-auto">
+          <Select
+            value={t(`settings:${notificationPosition}`)}
             onChange={(p) => setNotificationPosition(p)}
-            values={NOTIFICATION_POSITIONS}
-            names={NOTIFICATION_POSITIONS.map((val) => t(`settings:${val}`))}
-          />
+            className="w-full"
+          >
+            {NOTIFICATION_POSITIONS.map((val) => (
+              <Select.Option key={val} value={t(`settings:${val}`)}>
+                <div className="flex w-full items-center justify-between">
+                  {t(`settings:${val}`)}
+                </div>
+              </Select.Option>
+            ))}
+          </Select>
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
