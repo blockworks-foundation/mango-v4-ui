@@ -227,7 +227,10 @@ const UserSetupModal = ({
       <div className="radial-gradient-bg grid h-screen overflow-auto text-left lg:grid-cols-2">
         <img
           className="absolute -bottom-6 right-0 hidden h-auto w-[53%] lg:block xl:w-[57%]"
-          src="/images/trade.png"
+          src="/images/trade@1x.png"
+          srcSet="/images/trade@1x.png 1542w,
+          /images/trade@2x.png 3084w"
+          sizes="(max-width: 1920px) 1542px, 3084px"
           alt="next"
         />
         <img
