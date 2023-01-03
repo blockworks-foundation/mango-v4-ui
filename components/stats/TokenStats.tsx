@@ -98,94 +98,101 @@ const TokenStats = () => {
             </TrHead>
           </thead>
           <tbody>
-            {banks.map(({ key, value }) => {
-              const bank = value[0]
+            {banks
+              .sort((a, b) => a.key.localeCompare(b.key))
+              .map(({ key, value }) => {
+                const bank = value[0]
 
-              let logoURI
-              if (mangoTokens?.length) {
-                logoURI = mangoTokens.find(
-                  (t) => t.address === bank.mint.toString()
-                )?.logoURI
-              }
+                let logoURI
+                if (mangoTokens?.length) {
+                  logoURI = mangoTokens.find(
+                    (t) => t.address === bank.mint.toString()
+                  )?.logoURI
+                }
 
-              return (
-                <TrBody key={key}>
-                  <Td>
-                    <div className="flex items-center">
-                      <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        {logoURI ? (
-                          <Image alt="" width="24" height="24" src={logoURI} />
-                        ) : (
-                          <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-                        )}
+                return (
+                  <TrBody key={key}>
+                    <Td>
+                      <div className="flex items-center">
+                        <div className="mr-2.5 flex flex-shrink-0 items-center">
+                          {logoURI ? (
+                            <Image
+                              alt=""
+                              width="24"
+                              height="24"
+                              src={logoURI}
+                            />
+                          ) : (
+                            <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+                          )}
+                        </div>
+                        <p className="font-body tracking-wide">{bank.name}</p>
                       </div>
-                      <p className="font-body tracking-wide">{bank.name}</p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiDeposits())}</p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiBorrows())}</p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex justify-end space-x-2">
-                      <p className="text-th-up">
-                        {formatDecimal(bank.getDepositRateUi(), 2, {
-                          fixed: true,
-                        })}
-                        %
-                      </p>
-                      <span className="text-th-fgd-4">|</span>
-                      <p className="text-th-down">
-                        {formatDecimal(bank.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        })}
-                        %
-                      </p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
-                      <p>
-                        {bank.uiDeposits() > 0
-                          ? formatDecimal(
-                              (bank.uiBorrows() / bank.uiDeposits()) * 100,
-                              1,
-                              { fixed: true }
-                            )
-                          : '0.0'}
-                        %
-                      </p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="text-right">
-                      <p>{bank.initAssetWeight.toFixed(2)}</p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="text-right">
-                      <p>{bank.initLiabWeight.toFixed(2)}</p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex justify-end">
-                      <IconButton
-                        onClick={() => goToTokenPage(bank)}
-                        size="small"
-                      >
-                        <ChevronRightIcon className="h-5 w-5" />
-                      </IconButton>
-                    </div>
-                  </Td>
-                </TrBody>
-              )
-            })}
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <p>{formatFixedDecimals(bank.uiDeposits())}</p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <p>{formatFixedDecimals(bank.uiBorrows())}</p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex justify-end space-x-2">
+                        <p className="text-th-up">
+                          {formatDecimal(bank.getDepositRateUi(), 2, {
+                            fixed: true,
+                          })}
+                          %
+                        </p>
+                        <span className="text-th-fgd-4">|</span>
+                        <p className="text-th-down">
+                          {formatDecimal(bank.getBorrowRateUi(), 2, {
+                            fixed: true,
+                          })}
+                          %
+                        </p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <p>
+                          {bank.uiDeposits() > 0
+                            ? formatDecimal(
+                                (bank.uiBorrows() / bank.uiDeposits()) * 100,
+                                1,
+                                { fixed: true }
+                              )
+                            : '0.0'}
+                          %
+                        </p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="text-right">
+                        <p>{bank.initAssetWeight.toFixed(2)}</p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="text-right">
+                        <p>{bank.initLiabWeight.toFixed(2)}</p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex justify-end">
+                        <IconButton
+                          onClick={() => goToTokenPage(bank)}
+                          size="small"
+                        >
+                          <ChevronRightIcon className="h-5 w-5" />
+                        </IconButton>
+                      </div>
+                    </Td>
+                  </TrBody>
+                )
+              })}
           </tbody>
         </Table>
       ) : (
