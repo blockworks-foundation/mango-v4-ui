@@ -27,6 +27,7 @@
     "order-type": "Order Type",
     "order-value": "Order Value",
     "orders": "Orders",
+    "notional": "Notional",
     "post": "Post",
     "place-order": "Place {{side}} Order",
     "placing-order": "Placing Order",
