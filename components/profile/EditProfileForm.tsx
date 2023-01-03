@@ -36,7 +36,7 @@ const EditProfileForm = ({
   const [loadUniquenessCheck, setLoadUniquenessCheck] = useState(false)
   const [loadUpdateProfile, setLoadUpdateProfile] = useState(false)
   const [updateError, setUpdateError] = useState('')
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
 
   const validateProfileNameUniqueness = async (name: string) => {
     try {

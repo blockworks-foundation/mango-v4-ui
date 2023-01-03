@@ -26,7 +26,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   const nftsLoading = mangoStore((s) => s.wallet.nfts.loading)
   const connection = mangoStore((s) => s.connection)
   const [selectedProfile, setSelectedProfile] = useState<string>('')
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const profile = mangoStore((s) => s.profile.details)
 
   useEffect(() => {

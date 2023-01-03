@@ -17,7 +17,7 @@ const CustomTooltip = ({
   const { title, description } = tourLogic!.stepContent
   const { next, prev, close, allSteps, stepIndex } = tourLogic!
   const { publicKey } = useWallet()
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const tourSettings = mangoStore((s) => s.settings.tours)
   const [loading, setLoading] = useState(false)
 

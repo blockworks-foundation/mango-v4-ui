@@ -40,7 +40,7 @@ const SwapHistoryTable = ({
   const { connected } = useWallet()
   const { mangoTokens } = useJupiterMints()
   const [showSwapDetails, setSwapDetails] = useState('')
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const { mangoAccount } = useMangoAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false

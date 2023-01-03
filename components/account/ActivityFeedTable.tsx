@@ -33,7 +33,7 @@ const ActivityFeedTable = ({
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const { mangoAccount } = useMangoAccount()
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
   const [offset, setOffset] = useState(0)
   const [preferredExplorer] = useLocalStorageState(

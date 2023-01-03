@@ -68,7 +68,7 @@ const DEFAULT_PARAMS = [
 
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const { mangoAccount } = useMangoAccount()
   const [showActivityDetail, setShowActivityDetail] = useState(null)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
@@ -162,7 +162,7 @@ const ActivityFilters = ({
   setAdvancedFilters: (x: AdvancedFilters) => void
 }) => {
   const { t } = useTranslation(['common', 'activity'])
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
   const { mangoAccount } = useMangoAccount()
   const [showMobileFilters, setShowMobileFilters] = useState(false)

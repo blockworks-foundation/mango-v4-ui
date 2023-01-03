@@ -26,7 +26,7 @@ const ConnectedMenu = () => {
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
 
   const set = mangoStore((s) => s.set)
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   // const profileDetails = mangoStore((s) => s.profile.details)
   const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
 

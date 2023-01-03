@@ -57,7 +57,7 @@ const AccountPage = () => {
   // const { connected } = useWallet()
   const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const loadPerformanceData = mangoStore(
     (s) => s.mangoAccount.stats.performance.loading
   )

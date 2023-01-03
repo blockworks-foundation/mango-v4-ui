@@ -21,7 +21,7 @@ const RPC_URLS = [
 
 const RpcSettings = () => {
   const { t } = useTranslation('settings')
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const [customUrl, setCustomUrl] = useState('')
   const [showCustomForm, setShowCustomForm] = useState(false)
   const [rpcEndpointProvider, setRpcEndpointProvider] = useLocalStorageState(
