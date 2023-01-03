@@ -43,6 +43,8 @@ import MaxAmountButton from '../shared/MaxAmountButton'
 import SolBalanceWarnings from '../shared/SolBalanceWarnings'
 import { useEnhancedWallet } from '../wallet/EnhancedWalletProvider'
 import Modal from '../shared/Modal'
+import NumberFormat, { NumberFormatValues } from 'react-number-format'
+import { withValueLimit } from '@components/swap/SwapForm'
 
 const UserSetupModal = ({
   isOpen,
@@ -204,7 +206,9 @@ const UserSetupModal = ({
     return { amount: 0, decimals: 0 }
   }, [banks, depositToken])
 
-  const showInsufficientBalance = tokenMax.amount < Number(depositAmount)
+  const showInsufficientBalance =
+    tokenMax.amount < Number(depositAmount) ||
+    (depositToken === 'SOL' && maxSolDeposit <= 0)
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -316,7 +320,7 @@ const UserSetupModal = ({
                   ))}
                 </div>
                 <Button
-                  className="mt-10 flex w-44 items-center justify-center"
+                  className="mt-10 flex items-center justify-center"
                   onClick={handleConnect}
                   size="large"
                 >
@@ -347,7 +351,7 @@ const UserSetupModal = ({
                     {t('onboarding:create-account-desc')}
                   </p>
                 </div>
-                <div className="pb-4">
+                <div className="mb-4">
                   <Label text={t('account-name')} optional />
                   <Input
                     type="text"
@@ -361,14 +365,15 @@ const UserSetupModal = ({
                     charLimit={30}
                   />
                 </div>
-                <div>
+                <SolBalanceWarnings />
+                <div className="mt-2">
                   <InlineNotification
                     type="info"
                     desc={t('insufficient-sol')}
                   />
                   <div className="mt-10">
                     <Button
-                      className="mb-6 flex w-44 items-center justify-center"
+                      className="mb-6 flex items-center justify-center"
                       disabled={maxSolDeposit <= 0}
                       onClick={handleCreateAccount}
                       size="large"
@@ -381,7 +386,6 @@ const UserSetupModal = ({
                         </div>
                       )}
                     </Button>
-                    <SolBalanceWarnings />
                     <LinkButton onClick={onClose}>
                       <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                         {t('onboarding:skip')}
@@ -414,16 +418,16 @@ const UserSetupModal = ({
                     <Label text={t('amount')} />
                     <MaxAmountButton
                       className="mb-2"
-                      disabled={depositToken === 'SOL' && maxSolDeposit <= 0}
-                      label="Wallet Max"
-                      onClick={() =>
+                      label="Max"
+                      onClick={() => {
                         setDepositAmount(
                           floorToDecimal(
                             tokenMax.amount,
                             tokenMax.decimals
                           ).toFixed()
                         )
-                      }
+                        setSizePercentage('100')
+                      }}
                       value={floorToDecimal(
                         tokenMax.amount,
                         tokenMax.decimals
@@ -432,7 +436,7 @@ const UserSetupModal = ({
                   </div>
                   <div className="mb-6 grid grid-cols-2">
                     <button
-                      className="col-span-1 flex items-center rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-transparent px-4 hover:bg-transparent"
+                      className="col-span-1 flex items-center rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg px-4"
                       onClick={() => setDepositToken('')}
                     >
                       <div className="flex w-full items-center justify-between">
@@ -450,21 +454,27 @@ const UserSetupModal = ({
                         <PencilIcon className="ml-2 h-5 w-5 text-th-fgd-3" />
                       </div>
                     </button>
-                    <Input
-                      className="col-span-1 w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-transparent p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
-                      type="text"
-                      name="deposit"
-                      id="deposit"
+                    <NumberFormat
+                      name="amountIn"
+                      id="amountIn"
+                      inputMode="decimal"
+                      thousandSeparator=","
+                      allowNegative={false}
+                      isNumericString={true}
+                      decimalScale={tokenMax.decimals || 6}
+                      className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                       placeholder="0.00"
                       value={depositAmount}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        setDepositAmount(e.target.value)
-                      }
+                      onValueChange={(e: NumberFormatValues) => {
+                        setDepositAmount(
+                          !Number.isNaN(Number(e.value)) ? e.value : ''
+                        )
+                      }}
+                      isAllowed={withValueLimit}
                     />
                     <div className="col-span-2 mt-2">
                       <ButtonGroup
                         activeValue={sizePercentage}
-                        disabled={depositToken === 'SOL' && maxSolDeposit <= 0}
                         onChange={(p) => handleSizePercentage(p)}
                         values={['10', '25', '50', '75', '100']}
                         unit="%"
@@ -499,7 +509,7 @@ const UserSetupModal = ({
                     </div>
                   </div>
                   <Button
-                    className="mb-6 flex w-44 items-center justify-center"
+                    className="mb-6 flex items-center justify-center"
                     disabled={
                       !depositAmount ||
                       !depositToken ||
