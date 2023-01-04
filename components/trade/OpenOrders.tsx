@@ -21,6 +21,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -45,6 +46,7 @@ const OpenOrders = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
 
   const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
     const openOrders = mangoStore.getState().mangoAccount.openOrders
@@ -233,7 +235,7 @@ const OpenOrders = () => {
             <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
             <Th className="w-[16.67%] text-right">{t('price')}</Th>
             <Th className="w-[16.67%] text-right">{t('value')}</Th>
-            <Th className="w-[16.67%] text-right"></Th>
+            {connected ? <Th className="w-[16.67%] text-right"></Th> : null}
           </TrHead>
         </thead>
         <tbody>
@@ -324,56 +326,58 @@ const OpenOrders = () => {
                     <Td className="w-[16.67%] text-right">
                       {formatFixedDecimals(o.size * o.price, true)}
                     </Td>
-                    <Td className="w-[16.67%]">
-                      <div className="flex justify-end space-x-2">
-                        {modifyOrderId !== o.orderId.toString() ? (
-                          <>
-                            <IconButton
-                              onClick={() => showEditOrderForm(o, tickSize)}
-                              size="small"
-                            >
-                              <PencilIcon className="h-4 w-4" />
-                            </IconButton>
-                            <Tooltip content={t('cancel')}>
+                    {connected ? (
+                      <Td className="w-[16.67%]">
+                        <div className="flex justify-end space-x-2">
+                          {modifyOrderId !== o.orderId.toString() ? (
+                            <>
                               <IconButton
-                                disabled={cancelId === o.orderId.toString()}
-                                onClick={() =>
-                                  o instanceof PerpOrder
-                                    ? handleCancelPerpOrder(o)
-                                    : handleCancelSerumOrder(o)
-                                }
+                                onClick={() => showEditOrderForm(o, tickSize)}
                                 size="small"
                               >
-                                {cancelId === o.orderId.toString() ? (
+                                <PencilIcon className="h-4 w-4" />
+                              </IconButton>
+                              <Tooltip content={t('cancel')}>
+                                <IconButton
+                                  disabled={cancelId === o.orderId.toString()}
+                                  onClick={() =>
+                                    o instanceof PerpOrder
+                                      ? handleCancelPerpOrder(o)
+                                      : handleCancelSerumOrder(o)
+                                  }
+                                  size="small"
+                                >
+                                  {cancelId === o.orderId.toString() ? (
+                                    <Loading className="h-4 w-4" />
+                                  ) : (
+                                    <TrashIcon className="h-4 w-4" />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <>
+                              <IconButton
+                                onClick={() => modifyOrder(o)}
+                                size="small"
+                              >
+                                {loadingModifyOrder ? (
                                   <Loading className="h-4 w-4" />
                                 ) : (
-                                  <TrashIcon className="h-4 w-4" />
+                                  <CheckIcon className="h-4 w-4" />
                                 )}
                               </IconButton>
-                            </Tooltip>
-                          </>
-                        ) : (
-                          <>
-                            <IconButton
-                              onClick={() => modifyOrder(o)}
-                              size="small"
-                            >
-                              {loadingModifyOrder ? (
-                                <Loading className="h-4 w-4" />
-                              ) : (
-                                <CheckIcon className="h-4 w-4" />
-                              )}
-                            </IconButton>
-                            <IconButton
-                              onClick={cancelEditOrderForm}
-                              size="small"
-                            >
-                              <XMarkIcon className="h-4 w-4" />
-                            </IconButton>
-                          </>
-                        )}
-                      </div>
-                    </Td>
+                              <IconButton
+                                onClick={cancelEditOrderForm}
+                                size="small"
+                              >
+                                <XMarkIcon className="h-4 w-4" />
+                              </IconButton>
+                            </>
+                          )}
+                        </div>
+                      </Td>
+                    ) : null}
                   </TrBody>
                 )
               })
