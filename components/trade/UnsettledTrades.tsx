@@ -14,6 +14,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
 import TableMarketName from './TableMarketName'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -28,6 +29,7 @@ const UnsettledTrades = ({
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
 
   const handleSettleSerumFunds = useCallback(async (mktAddress: string) => {
     const client = mangoStore.getState().client
@@ -144,7 +146,7 @@ const UnsettledTrades = ({
           <TrHead>
             <Th className="bg-th-bkg-1 text-left">{t('market')}</Th>
             <Th className="bg-th-bkg-1 text-right">{t('trade:amount')}</Th>
-            <Th className="bg-th-bkg-1 text-right" />
+            {connected ? <Th className="bg-th-bkg-1 text-right" /> : null}
           </TrHead>
         </thead>
         <tbody>
@@ -180,22 +182,24 @@ const UnsettledTrades = ({
                     ) : null}
                   </div>
                 </Td>
-                <Td>
-                  <div className="flex justify-end">
-                    <Tooltip content={t('trade:settle-funds')}>
-                      <IconButton
-                        onClick={() => handleSettleSerumFunds(mktAddress)}
-                        size="small"
-                      >
-                        {settleMktAddress === mktAddress ? (
-                          <Loading className="h-4 w-4" />
-                        ) : (
-                          <CheckIcon className="h-4 w-4" />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  </div>
-                </Td>
+                {connected ? (
+                  <Td>
+                    <div className="flex justify-end">
+                      <Tooltip content={t('trade:settle-funds')}>
+                        <IconButton
+                          onClick={() => handleSettleSerumFunds(mktAddress)}
+                          size="small"
+                        >
+                          {settleMktAddress === mktAddress ? (
+                            <Loading className="h-4 w-4" />
+                          ) : (
+                            <CheckIcon className="h-4 w-4" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </Td>
+                ) : null}
               </TrBody>
             )
           })}
@@ -264,13 +268,17 @@ const UnsettledTrades = ({
                     </span>
                   </span>
                 ) : null}
-                <IconButton onClick={() => handleSettleSerumFunds(mktAddress)}>
-                  {settleMktAddress === mktAddress ? (
-                    <Loading className="h-4 w-4" />
-                  ) : (
-                    <CheckIcon className="h-4 w-4" />
-                  )}
-                </IconButton>
+                {connected ? (
+                  <IconButton
+                    onClick={() => handleSettleSerumFunds(mktAddress)}
+                  >
+                    {settleMktAddress === mktAddress ? (
+                      <Loading className="h-4 w-4" />
+                    ) : (
+                      <CheckIcon className="h-4 w-4" />
+                    )}
+                  </IconButton>
+                ) : null}
               </div>
             </div>
           )

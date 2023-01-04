@@ -473,46 +473,48 @@ const OpenOrders = () => {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center space-x-3 pl-8">
-                  <div className="flex items-center space-x-2">
-                    {modifyOrderId !== o.orderId.toString() ? (
-                      <>
-                        <IconButton
-                          onClick={() => showEditOrderForm(o, tickSize)}
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </IconButton>
-                        <IconButton
-                          disabled={cancelId === o.orderId.toString()}
-                          onClick={() =>
-                            o instanceof PerpOrder
-                              ? handleCancelPerpOrder(o)
-                              : handleCancelSerumOrder(o)
-                          }
-                        >
-                          {cancelId === o.orderId.toString() ? (
-                            <Loading className="h-4 w-4" />
-                          ) : (
-                            <TrashIcon className="h-4 w-4" />
-                          )}
-                        </IconButton>
-                      </>
-                    ) : (
-                      <>
-                        <IconButton onClick={() => modifyOrder(o)}>
-                          {loadingModifyOrder ? (
-                            <Loading className="h-4 w-4" />
-                          ) : (
-                            <CheckIcon className="h-4 w-4" />
-                          )}
-                        </IconButton>
-                        <IconButton onClick={cancelEditOrderForm}>
-                          <XMarkIcon className="h-4 w-4" />
-                        </IconButton>
-                      </>
-                    )}
+                {connected ? (
+                  <div className="flex items-center space-x-3 pl-8">
+                    <div className="flex items-center space-x-2">
+                      {modifyOrderId !== o.orderId.toString() ? (
+                        <>
+                          <IconButton
+                            onClick={() => showEditOrderForm(o, tickSize)}
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </IconButton>
+                          <IconButton
+                            disabled={cancelId === o.orderId.toString()}
+                            onClick={() =>
+                              o instanceof PerpOrder
+                                ? handleCancelPerpOrder(o)
+                                : handleCancelSerumOrder(o)
+                            }
+                          >
+                            {cancelId === o.orderId.toString() ? (
+                              <Loading className="h-4 w-4" />
+                            ) : (
+                              <TrashIcon className="h-4 w-4" />
+                            )}
+                          </IconButton>
+                        </>
+                      ) : (
+                        <>
+                          <IconButton onClick={() => modifyOrder(o)}>
+                            {loadingModifyOrder ? (
+                              <Loading className="h-4 w-4" />
+                            ) : (
+                              <CheckIcon className="h-4 w-4" />
+                            )}
+                          </IconButton>
+                          <IconButton onClick={cancelEditOrderForm}>
+                            <XMarkIcon className="h-4 w-4" />
+                          </IconButton>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ) : null}
               </div>
             )
           })
