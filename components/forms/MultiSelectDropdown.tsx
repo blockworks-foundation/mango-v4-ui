@@ -8,12 +8,14 @@ const MultiSelectDropdown = ({
   options,
   selected,
   toggleOption,
+  placeholder,
 }: {
   options: string[]
   selected: string[]
   toggleOption: (x: string) => void
+  placeholder?: string
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['activity', 'common'])
   return (
     <Popover className="relative w-full min-w-[120px]">
       {({ open }) => (
@@ -25,10 +27,15 @@ const MultiSelectDropdown = ({
           >
             <div className={`flex items-center justify-between`}>
               {selected.length ? (
-                <span>{selected.toString().replace(/,/g, ', ')}</span>
+                <span>
+                  {selected
+                    .map((v) => t(v))
+                    .toString()
+                    .replace(/,/g, ', ')}
+                </span>
               ) : (
                 <span className="text-th-fgd-4">
-                  {t('activity:select-tokens')}
+                  {placeholder || t('common:select')}
                 </span>
               )}
               <ChevronDownIcon
@@ -61,7 +68,7 @@ const MultiSelectDropdown = ({
                       key={option}
                       onChange={() => toggleOption(option)}
                     >
-                      {option}
+                      {t(option)}
                     </Checkbox>
                   )
                 })}

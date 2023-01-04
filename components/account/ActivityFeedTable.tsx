@@ -179,11 +179,6 @@ const ActivityFeedTable = ({
               const isLiquidation =
                 activity_type === 'liquidate_token_with_token'
               const isOpenbook = activity_type === 'openbook_trade'
-              const activityName = isLiquidation
-                ? 'spot-liquidation'
-                : isOpenbook
-                ? 'spot-trade'
-                : activity_type
               const amounts = getCreditAndDebit(activity)
               const value = getValue(activity)
               return (
@@ -207,7 +202,7 @@ const ActivityFeedTable = ({
                     </p>
                   </Td>
                   <Td className="text-right">
-                    {t(`activity:${activityName}`)}
+                    {t(`activity:${activity_type}`)}
                   </Td>
                   <Td className="text-right font-mono">
                     {amounts.credit.value}{' '}
@@ -223,8 +218,8 @@ const ActivityFeedTable = ({
                   </Td>
                   <Td
                     className={`text-right font-mono ${
-                      activityName === 'swap' ||
-                      activityName === 'perp_trade' ||
+                      activity_type === 'swap' ||
+                      activity_type === 'perp_trade' ||
                       isOpenbook
                         ? 'text-th-fgd-2'
                         : value >= 0
@@ -233,8 +228,8 @@ const ActivityFeedTable = ({
                     }`}
                   >
                     {value > 0 &&
-                    activityName !== 'swap' &&
-                    activityName !== 'perp_trade' &&
+                    activity_type !== 'swap' &&
+                    activity_type !== 'perp_trade' &&
                     !isOpenbook
                       ? '+'
                       : ''}
@@ -330,7 +325,6 @@ const MobileActivityFeedItem = ({
   const isLiquidation = activity_type === 'liquidate_token_with_token'
   const isSwap = activity_type === 'swap'
   const isPerp = activity_type === 'perp_trade'
-  const activityName = isLiquidation ? 'spot-liquidation' : activity_type
   const value = getValue(activity)
   return (
     <div key={signature} className="border-b border-th-bkg-3 p-4">
@@ -346,7 +340,7 @@ const MobileActivityFeedItem = ({
         <div className="flex items-center space-x-4">
           <div>
             <p className="text-right text-xs">
-              {t(`activity:${activityName}`)}
+              {t(`activity:${activity_type}`)}
             </p>
             <p className="text-right font-mono text-sm text-th-fgd-1">
               {isLiquidation ? (
