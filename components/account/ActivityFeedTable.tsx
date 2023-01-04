@@ -106,6 +106,18 @@ const ActivityFeedTable = ({
       credit = { value: quantity, symbol: perp_market }
       debit = { value: formatDecimal(quantity * price * -1), symbol: 'USDC' }
     }
+    if (activity_type === 'openbook_trade') {
+      const { side, price, size, base_symbol, quote_symbol } =
+        activity.activity_details
+      credit =
+        side === 'buy'
+          ? { value: formatDecimal(size), symbol: base_symbol }
+          : { value: formatDecimal(size * price), symbol: quote_symbol }
+      debit =
+        side === 'buy'
+          ? { value: formatDecimal(size * price * -1), symbol: quote_symbol }
+          : { value: formatDecimal(size * -1), symbol: base_symbol }
+    }
     return { credit, debit }
   }
 
@@ -135,6 +147,10 @@ const ActivityFeedTable = ({
         activity.activity_details
       value = quantity * price + maker_fee + taker_fee
     }
+    if (activity_type === 'openbook_trade') {
+      const { price, size } = activity.activity_details
+      value = price * size
+    }
     return value
   }
 
@@ -162,8 +178,11 @@ const ActivityFeedTable = ({
               const { signature } = activity.activity_details
               const isLiquidation =
                 activity_type === 'liquidate_token_with_token'
+              const isOpenbook = activity_type === 'openbook_trade'
               const activityName = isLiquidation
                 ? 'spot-liquidation'
+                : isOpenbook
+                ? 'spot-trade'
                 : activity_type
               const amounts = getCreditAndDebit(activity)
               const value = getValue(activity)
@@ -204,7 +223,9 @@ const ActivityFeedTable = ({
                   </Td>
                   <Td
                     className={`text-right font-mono ${
-                      activityName === 'swap' || activityName === 'perp_trade'
+                      activityName === 'swap' ||
+                      activityName === 'perp_trade' ||
+                      isOpenbook
                         ? 'text-th-fgd-2'
                         : value >= 0
                         ? 'text-th-up'
@@ -213,7 +234,8 @@ const ActivityFeedTable = ({
                   >
                     {value > 0 &&
                     activityName !== 'swap' &&
-                    activityName !== 'perp_trade'
+                    activityName !== 'perp_trade' &&
+                    !isOpenbook
                       ? '+'
                       : ''}
                     {formatFixedDecimals(value, true)}
