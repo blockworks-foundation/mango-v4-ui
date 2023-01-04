@@ -225,7 +225,7 @@ const ActivityFilters = ({
         <div
           onClick={() => setShowMobileFilters(!showMobileFilters)}
           role="button"
-          className={`default-transition w-full bg-th-bkg-2 p-4 hover:bg-th-bkg-3 md:px-6`}
+          className={`default-transition h-12 w-full bg-th-bkg-2 px-4 hover:bg-th-bkg-3 md:px-6`}
         >
           <Disclosure.Button
             className={`flex h-full w-full items-center justify-between rounded-none`}
