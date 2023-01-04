@@ -37,6 +37,7 @@ import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
+import useSolBalance from 'hooks/useSolBalance'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -97,6 +98,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
   const { handleConnect } = useEnhancedWallet()
+  const { maxSolDeposit } = useSolBalance()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -200,7 +202,9 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     return banks
   }, [group?.banksMapByName, walletTokens])
 
-  const showInsufficientBalance = tokenMax.maxAmount < Number(inputAmount)
+  const showInsufficientBalance =
+    tokenMax.maxAmount < Number(inputAmount) ||
+    (selectedToken === 'SOL' && maxSolDeposit <= 0)
 
   return (
     <>
