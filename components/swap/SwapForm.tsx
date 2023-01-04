@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import {
-  AdjustmentsHorizontalIcon,
   ArrowDownIcon,
+  Cog8ToothIcon,
   ExclamationCircleIcon,
   LinkIcon,
+  PencilIcon,
 } from '@heroicons/react/20/solid'
 import NumberFormat, {
   NumberFormatValues,
@@ -19,11 +20,10 @@ import useDebounce from '../shared/useDebounce'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
-import Button from '../shared/Button'
+import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useJupiterRoutes from './useJupiterRoutes'
-import SlippageSettings from './SlippageSettings'
 import SheenLoader from '../shared/SheenLoader'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
@@ -45,8 +45,8 @@ import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
 import useIpAddress from 'hooks/useIpAddress'
-import Checkbox from '@components/forms/Checkbox'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
+import SwapSettings from './SwapSettings'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -262,19 +262,12 @@ const SwapForm = () => {
     return !!amountInAsDecimal.toNumber() && connected && !selectedRoute
   }, [amountInAsDecimal, connected, selectedRoute])
 
-  const handleSetMargin = () => {
-    set((s) => {
-      s.swap.margin = !s.swap.margin
-    })
-  }
-
   return (
     <ContentBox
       hidePadding
-      // showBackground
       className="relative overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
     >
-      <div className="">
+      <div>
         <Transition
           className="absolute top-0 left-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
           show={showConfirm}
@@ -313,9 +306,19 @@ const SwapForm = () => {
           className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={showSettings}
         >
-          <SlippageSettings onClose={() => setShowSettings(false)} />
+          <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
-        <div className="p-6">
+        <div className="relative p-6 pt-10">
+          <div className="absolute right-2 top-2">
+            <IconButton
+              className="text-th-fgd-3"
+              hideBg
+              onClick={() => setShowSettings(true)}
+              size="small"
+            >
+              <Cog8ToothIcon className="h-5 w-5" />
+            </IconButton>
+          </div>
           <div className="mb-2 flex items-end justify-between">
             <p className="text-th-fgd-2 lg:text-base">{t('swap:pay')}</p>
             <MaxSwapAmount
@@ -455,22 +458,21 @@ const SwapForm = () => {
                   : '–'}
               </p>
             </div>
-          </div>
-        </div>
-        <div className="flex items-center justify-between border-t border-th-bkg-3 px-6 py-4">
-          <p>{`${t('swap')} ${t('settings')}`}</p>
-          <div className="flex items-center space-x-5">
-            <Checkbox checked={useMargin} onChange={handleSetMargin}>
-              <span className="text-xs text-th-fgd-3">{t('trade:margin')}</span>
-            </Checkbox>
-            <div id="swap-step-one">
-              <button
-                className="default-transition flex items-center text-th-fgd-3 focus:outline-none md:hover:text-th-active"
-                onClick={() => setShowSettings(true)}
-              >
-                <AdjustmentsHorizontalIcon className="mr-1.5 h-4 w-4" />
-                <span className="text-xs">{slippage}%</span>
-              </button>
+            <div className="flex justify-between">
+              <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>
+              <div className="flex items-center space-x-1">
+                <p className="text-right font-mono text-sm text-th-fgd-2">
+                  {slippage}%
+                </p>
+                <IconButton
+                  className="text-th-fgd-3"
+                  hideBg
+                  onClick={() => setShowSettings(true)}
+                  size="small"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </IconButton>
+              </div>
             </div>
           </div>
         </div>
