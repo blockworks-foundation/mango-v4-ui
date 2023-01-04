@@ -25,7 +25,7 @@ const AccountChart = ({
   yKey: string
 }) => {
   const { t } = useTranslation('common')
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const [daysToShow, setDaysToShow] = useState<string>('1')
   const loading = mangoStore((s) => s.mangoAccount.stats.performance.loading)
 

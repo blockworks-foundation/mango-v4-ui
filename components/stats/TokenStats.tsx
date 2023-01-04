@@ -22,7 +22,7 @@ import mangoStore from '@store/mangoStore'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const { group } = useMangoGroup()
@@ -43,7 +43,7 @@ const TokenStats = () => {
         key,
         value,
       }))
-      return rawBanks
+      return rawBanks.sort((a, b) => a.key.localeCompare(b.key))
     }
     return []
   }, [group])

@@ -9,13 +9,13 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import Input from '@components/forms/Input'
 import { IconButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
 import {
   CheckIcon,
-  LinkIcon,
   NoSymbolIcon,
   PencilIcon,
   TrashIcon,
@@ -526,9 +526,8 @@ const OpenOrders = () => {
       </div>
     )
   ) : (
-    <div className="flex flex-col items-center p-8">
-      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('trade:connect-orders')}</p>
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-orders')} />
     </div>
   )
 }

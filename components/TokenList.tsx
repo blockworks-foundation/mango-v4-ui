@@ -54,18 +54,23 @@ const TokenList = () => {
         value,
       }))
       const sortedBanks = mangoAccount
-        ? rawBanks.sort(
-            (a, b) =>
-              Math.abs(
-                mangoAccount?.getTokenBalanceUi(b.value[0]) *
-                  b.value[0].uiPrice!
-              ) -
-              Math.abs(
-                mangoAccount?.getTokenBalanceUi(a.value[0]) *
-                  a.value[0].uiPrice!
-              )
-          )
-        : rawBanks
+        ? rawBanks.sort((a, b) => {
+            const aBalance = Math.abs(
+              mangoAccount.getTokenBalanceUi(a.value[0]) * a.value[0].uiPrice
+            )
+            const bBalance = Math.abs(
+              mangoAccount.getTokenBalanceUi(b.value[0]) * b.value[0].uiPrice
+            )
+            if (aBalance > bBalance) return -1
+            if (aBalance < bBalance) return 1
+
+            const aName = a.value[0].name
+            const bName = b.value[0].name
+            if (aName > bName) return 1
+            if (aName < bName) return -1
+            return 1
+          })
+        : rawBanks.sort((a, b) => a.key.localeCompare(b.key))
 
       return mangoAccount && !showZeroBalances
         ? sortedBanks.filter(

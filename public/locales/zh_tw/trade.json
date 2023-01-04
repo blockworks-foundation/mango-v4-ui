@@ -21,6 +21,7 @@
     "no-orders": "No open orders",
     "no-positions": "No perp positions",
     "no-unsettled": "No unsettled funds",
+    "notional": "Notional",
     "open-interest": "Open Interest",
     "oracle-price": "Oracle Price",
     "order-error": "Failed to place order",

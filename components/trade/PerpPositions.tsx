@@ -1,7 +1,8 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
-import { LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -65,7 +66,7 @@ const PerpPositions = () => {
               <Th className="text-left">{t('market')}</Th>
               <Th className="text-right">{t('trade:side')}</Th>
               <Th className="text-right">{t('trade:size')}</Th>
-              <Th className="text-right">{t('notional')}</Th>
+              <Th className="text-right">{t('trade:notional')}</Th>
               <Th className="text-right">{t('trade:entry-price')}</Th>
               <Th className="text-right">Redeemable PnL</Th>
               <Th className="text-right">Realized PnL</Th>
@@ -156,9 +157,8 @@ const PerpPositions = () => {
       </div>
     )
   ) : (
-    <div className="flex flex-col items-center p-8">
-      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('trade:connect-positions')}</p>
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-positions')} />
     </div>
   )
 }

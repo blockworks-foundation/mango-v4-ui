@@ -24,7 +24,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
-import { Bars3CenterLeftIcon } from '@heroicons/react/20/solid'
+import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
@@ -426,7 +426,7 @@ const Orderbook = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-        <div id="trade-step-three" className="flex items-center space-x-2">
+        <div id="trade-step-three" className="flex items-center space-x-1.5">
           <Tooltip
             content={showBuys ? t('trade:hide-bids') : t('trade:show-bids')}
             placement="bottom"
@@ -462,7 +462,7 @@ const Orderbook = () => {
               } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
               onClick={resetOrderbook}
             >
-              <Bars3CenterLeftIcon className="h-4 w-4" />
+              <ArrowPathIcon className="h-4 w-4" />
             </button>
           </Tooltip>
         </div>

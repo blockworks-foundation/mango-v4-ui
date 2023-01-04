@@ -18,7 +18,7 @@ const TradeInfoTabs = () => {
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.lg : false
+  const isMobile = width ? width < breakpoints['2xl'] : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const unsettledTradeCount =

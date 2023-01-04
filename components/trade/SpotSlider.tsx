@@ -76,7 +76,7 @@ const SpotSlider = ({
   )
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full px-3 md:px-4">
       <LeverageSlider
         amount={
           tradeForm.side === 'buy'

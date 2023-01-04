@@ -22,7 +22,7 @@ const MangoAccountsList = ({
 }) => {
   const { t } = useTranslation('common')
   const mangoAccounts = mangoStore((s) => s.mangoAccounts)
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const loading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [showNewAccountModal, setShowNewAccountModal] = useState(false)
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)

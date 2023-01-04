@@ -53,7 +53,7 @@
   "delegate-placeholder": "Enter a wallet address to delegate to",
   "deposit": "Deposit",
   "deposit-amount": "Deposit Amount",
-  "deposit-more-sol": "Your SOL wallet balance is low. Add more to pay for transactions",
+  "deposit-more-sol": "Your SOL wallet balance is too low. Add more to pay for transactions",
   "deposit-rate": "Deposit Rate (APR)",
   "disconnect": "Disconnect",
   "edit-account": "Edit Account",

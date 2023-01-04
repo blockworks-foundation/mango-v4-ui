@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { IconButton } from '@components/shared/Button'
 import { notify } from 'utils/notifications'
-import { CheckIcon, LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import Loading from '@components/shared/Loading'
 import { useViewport } from 'hooks/useViewport'
@@ -14,6 +14,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
 import TableMarketName from './TableMarketName'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -286,9 +287,8 @@ const UnsettledTrades = ({
       </div>
     )
   ) : (
-    <div className="flex flex-col items-center p-8">
-      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('trade:connect-unsettled')}</p>
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-unsettled')} />
     </div>
   )
 }

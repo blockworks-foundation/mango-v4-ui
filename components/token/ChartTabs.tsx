@@ -16,7 +16,7 @@ const ChartTabs = ({ token }: { token: string }) => {
   const tokenStats = mangoStore((s) => s.tokenStats.data)
   const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingTokenStats = mangoStore((s) => s.tokenStats.loading)
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const { group } = useMangoGroup()
 
   useEffect(() => {
