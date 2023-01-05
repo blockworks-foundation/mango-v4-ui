@@ -97,9 +97,19 @@ const RecentTrades = () => {
     actions.loadMarketFills()
   }, 5000)
 
+  const [buyRatio, sellRatio] = useMemo(() => {
+    if (!fills.length) return [0, 0]
+    const total = fills.length
+    const buys = fills.filter(
+      (f: any) => (f.side && f.side === 'buy') || f.takerSide === 1
+    ).length
+    const sells = total - buys
+    return [buys / total, sells / total]
+  }, [fills])
+
   return (
     <div className="thin-scroll h-full overflow-y-scroll">
-      <div className="flex justify-end border-b border-th-bkg-3 px-2 py-1">
+      <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 px-2">
         <Tooltip content={t('trade:trade-sounds-tooltip')} delay={250}>
           <IconButton
             onClick={() =>
@@ -118,6 +128,17 @@ const RecentTrades = () => {
             )}
           </IconButton>
         </Tooltip>
+        <span className="text-xs text-th-fgd-4">
+          {t('trade:buys')}:{' '}
+          <span className="font-mono text-th-up">
+            {(buyRatio * 100).toFixed(1)}%
+          </span>
+          <span className="px-2">|</span>
+          {t('trade:sells')}:{' '}
+          <span className="font-mono text-th-down">
+            {(sellRatio * 100).toFixed(1)}%
+          </span>
+        </span>
       </div>
       <div className="px-2">
         <table className="min-w-full">
