@@ -7,7 +7,7 @@ const nextConfig = {
     BROWSER: true,
   },
   images: {
-    domains: ['raw.githubusercontent.com'],
+    domains: ['raw.githubusercontent.com', 'arweave.net'],
   },
   reactStrictMode: true,
   webpack: (config, opts) => {

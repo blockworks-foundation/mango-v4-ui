@@ -85,8 +85,8 @@ export const formatFixedDecimals = (
   } else {
     formattedValue = isCurrency
       ? usdFormatter4.format(value)
-      : Number(floorToDecimal(value, 4)).toLocaleString(undefined, {
-          maximumFractionDigits: 4,
+      : Number(floorToDecimal(value, 8)).toLocaleString(undefined, {
+          maximumFractionDigits: 8,
         })
   }
 
