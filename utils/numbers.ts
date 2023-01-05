@@ -1,6 +1,7 @@
 import Decimal from 'decimal.js'
 
 const digits2 = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
+const digits5 = new Intl.NumberFormat('en', { maximumFractionDigits: 5 })
 const digits6 = new Intl.NumberFormat('en', { maximumFractionDigits: 6 })
 const digits8 = new Intl.NumberFormat('en', { maximumFractionDigits: 8 })
 const digits9 = new Intl.NumberFormat('en', { maximumFractionDigits: 9 })
@@ -15,10 +16,11 @@ export const formatDecimal = (
   if (value > -0.0000001 && value < 0.0000001) return '0.00'
 
   if (decimals === 2) return digits2.format(value)
+  if (decimals === 5) return digits5.format(value)
   if (decimals === 6) return digits6.format(value)
   if (decimals === 8) return digits8.format(value)
   if (decimals === 9) return digits9.format(value)
-  return value.toString()
+  return value.toLocaleString(undefined, { maximumFractionDigits: decimals })
 }
 
 export const numberFormat = new Intl.NumberFormat('en', {
