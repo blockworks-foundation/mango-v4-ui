@@ -16,7 +16,6 @@ const TokenVaultWarnings = ({ bank }: { bank: Bank }) => {
       group,
       bank.mint
     )
-    console.log('xyx', maxBorrow / bank.minVaultToDepositsRatio)
 
     return maxBorrow
   }, [bank, mangoAccount, group])
