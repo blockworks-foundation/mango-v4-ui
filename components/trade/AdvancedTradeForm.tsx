@@ -181,9 +181,9 @@ const AdvancedTradeForm = () => {
     })
   }, [])
 
-  const tickDecimals = useMemo(() => {
+  const [tickDecimals, tickSize] = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return 1
+    if (!group || !selectedMarket) return [1, 0.1]
     let tickSize: number
     if (selectedMarket instanceof Serum3Market) {
       const market = group.getSerum3ExternalMarket(
@@ -193,7 +193,8 @@ const AdvancedTradeForm = () => {
     } else {
       tickSize = selectedMarket.tickSize
     }
-    return getDecimalCount(tickSize)
+    const tickDecimals = getDecimalCount(tickSize)
+    return [tickDecimals, tickSize]
   }, [selectedMarket])
 
   /*
@@ -324,19 +325,20 @@ const AdvancedTradeForm = () => {
     }
   }, [])
 
-  const minOrderDecimals = useMemo(() => {
+  const [minOrderDecimals, minOrderSize] = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return 1
-    let minOrderDecimals = 1
+    if (!group || !selectedMarket) return [1, 0.1]
+    let minOrderSize: number
     if (selectedMarket instanceof Serum3Market) {
       const market = group.getSerum3ExternalMarket(
         selectedMarket.serumMarketExternal
       )
-      minOrderDecimals = getDecimalCount(market.minOrderSize)
+      minOrderSize = market.minOrderSize
     } else {
-      minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
+      minOrderSize = selectedMarket.minOrderSize
     }
-    return minOrderDecimals
+    const minOrderDecimals = getDecimalCount(minOrderSize)
+    return [minOrderDecimals, minOrderSize]
   }, [selectedMarket])
 
   return (
@@ -465,6 +467,7 @@ const AdvancedTradeForm = () => {
             <SpotSlider
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
+              step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
             />
           ) : (
             <SpotButtonGroup

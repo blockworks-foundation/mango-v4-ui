@@ -6,6 +6,7 @@
   "account-balance": "Account Balance",
   "account-name": "Account Name",
   "account-name-desc": "Organize your accounts by giving them useful names",
+  "account-settings": "Account Settings",
   "account-update-failed": "Failed to update account",
   "account-update-success": "Account updated successfully",
   "account-value": "Account Value",
@@ -56,7 +57,7 @@
   "deposit-more-sol": "Your SOL wallet balance is too low. Add more to pay for transactions",
   "deposit-rate": "Deposit Rate (APR)",
   "disconnect": "Disconnect",
-  "edit-account": "Edit Account",
+  "edit-account": "Edit Account Name",
   "edit-profile-image": "Edit Profile Image",
   "explorer": "Explorer",
   "fee": "Fee",
@@ -98,6 +99,7 @@
   "repayment-amount": "Repayment Amount",
   "rolling-change": "24h Change",
   "save": "Save",
+  "select": "Select",
   "select-borrow-token": "Select Borrow Token",
   "select-deposit-token": "Select Deposit Token",
   "select-repay-token": "Select Repay Token",
@@ -127,6 +129,7 @@
   "trade-history": "Trade History",
   "transaction": "Transaction",
   "unavailable": "Unavailable",
+  "unowned-helper": "Currently viewing account {{accountPk}}",
   "update": "Update",
   "update-delegate": "Update Delegate",
   "updating-account-name": "Updating Account Name...",
@@ -137,7 +140,6 @@
   "wallet-balance": "Wallet Balance",
   "wallet-disconnected": "Disconnected from wallet",
   "withdraw": "Withdraw",
-  "withdraw-amount": "Withdraw Amount",
-  "account-settings": "Account Settings"
+  "withdraw-amount": "Withdraw Amount"
  }
  

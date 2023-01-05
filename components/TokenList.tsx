@@ -31,6 +31,10 @@ import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import BorrowRepayModal from './modals/BorrowRepayModal'
+import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
+import { USDC_MINT } from 'utils/constants'
+import { PublicKey } from '@solana/web3.js'
+import ActionsLinkButton from './account/ActionsLinkButton'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -437,10 +441,18 @@ const ActionsMenu = ({
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [showRepayModal, setShowRepayModal] = useState(false)
   const [selectedToken, setSelectedToken] = useState('')
-  // const set = mangoStore.getState().set
-  // const router = useRouter()
-  // const { asPath } = router
+  const set = mangoStore.getState().set
+  const router = useRouter()
   const { mangoTokens } = useJupiterMints()
+  const spotMarkets = mangoStore((s) => s.serumMarkets)
+  const { connected } = useWallet()
+
+  const spotMarket = useMemo(() => {
+    return spotMarkets.find((m) => {
+      const base = m.name.split('/')[0]
+      return base.toUpperCase() === bank.name.toUpperCase()
+    })
+  }, [spotMarkets])
 
   const handleShowActionModals = useCallback(
     (token: string, action: 'borrow' | 'deposit' | 'withdraw' | 'repay') => {
@@ -456,31 +468,53 @@ const ActionsMenu = ({
     []
   )
 
-  // const handleBuy = useCallback(() => {
-  //   const outputTokenInfo = mangoTokens.find(
-  //     (t: any) => t.address === bank.mint.toString()
-  //   )
-  //   set((s) => {
-  //     s.swap.outputBank = bank
-  //     s.swap.outputTokenInfo = outputTokenInfo
-  //   })
-  //   if (asPath === '/') {
-  //     router.push('/swap', undefined, { shallow: true })
-  //   }
-  // }, [bank, router, asPath, set, mangoTokens])
+  const balance = useMemo(() => {
+    if (!mangoAccount || !bank) return 0
+    return mangoAccount.getTokenBalanceUi(bank)
+  }, [bank, mangoAccount])
 
-  // const handleSell = useCallback(() => {
-  //   const inputTokenInfo = mangoTokens.find(
-  //     (t: any) => t.address === bank.mint.toString()
-  //   )
-  //   set((s) => {
-  //     s.swap.inputBank = bank
-  //     s.swap.inputTokenInfo = inputTokenInfo
-  //   })
-  //   if (asPath === '/') {
-  //     router.push('/swap', undefined, { shallow: true })
-  //   }
-  // }, [router, asPath, set, bank, mangoTokens])
+  const handleSwap = useCallback(() => {
+    const tokenInfo = mangoTokens.find(
+      (t: any) => t.address === bank.mint.toString()
+    )
+    const group = mangoStore.getState().group
+    if (balance && balance > 0) {
+      if (tokenInfo?.symbol === 'SOL') {
+        const usdcTokenInfo = mangoTokens.find(
+          (t: any) => t.address === USDC_MINT
+        )
+        const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+        set((s) => {
+          s.swap.inputBank = usdcBank
+          s.swap.inputTokenInfo = usdcTokenInfo
+        })
+      }
+      set((s) => {
+        s.swap.inputBank = bank
+        s.swap.inputTokenInfo = tokenInfo
+      })
+    } else {
+      if (tokenInfo?.symbol === 'USDC') {
+        const solTokenInfo = mangoTokens.find(
+          (t: any) => t.address === WRAPPED_SOL_MINT.toString()
+        )
+        const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+        set((s) => {
+          s.swap.inputBank = solBank
+          s.swap.inputTokenInfo = solTokenInfo
+        })
+      }
+      set((s) => {
+        s.swap.outputBank = bank
+        s.swap.outputTokenInfo = tokenInfo
+      })
+    }
+    router.push('/swap', undefined, { shallow: true })
+  }, [bank, router, set, mangoTokens, mangoAccount])
+
+  const handleTrade = useCallback(() => {
+    router.push(`/trade?name=${spotMarket?.name}`, undefined, { shallow: true })
+  }, [spotMarket, router])
 
   const logoURI = useMemo(() => {
     if (!bank || !mangoTokens?.length) return ''
@@ -499,63 +533,60 @@ const ActionsMenu = ({
 
   return (
     <>
-      <IconDropMenu
-        icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
-        postion="leftBottom"
-      >
-        <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
-          <div className="mr-2 flex flex-shrink-0 items-center">
-            <Image alt="" width="20" height="20" src={logoURI || ''} />
+      {mangoAccount && !connected ? null : (
+        <IconDropMenu
+          icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
+          postion="leftBottom"
+        >
+          <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
+            <div className="mr-2 flex flex-shrink-0 items-center">
+              <Image alt="" width="20" height="20" src={logoURI || ''} />
+            </div>
+            <p className="font-body tracking-wide">
+              {formatTokenSymbol(bank.name)}
+            </p>
           </div>
-          <p className="font-body tracking-wide">
-            {formatTokenSymbol(bank.name)}
-          </p>
-        </div>
-        <LinkButton
-          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-          disabled={!mangoAccount}
-          onClick={() => handleShowActionModals(bank.name, 'deposit')}
-        >
-          {t('deposit')}
-        </LinkButton>
-        {hasBorrow ? (
-          <LinkButton
-            className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
-            onClick={() => handleShowActionModals(bank.name, 'repay')}
+          <ActionsLinkButton
+            mangoAccount={mangoAccount!}
+            onClick={() => handleShowActionModals(bank.name, 'deposit')}
           >
-            {t('repay')}
-          </LinkButton>
-        ) : null}
-        <LinkButton
-          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-          disabled={!mangoAccount}
-          onClick={() => handleShowActionModals(bank.name, 'withdraw')}
-        >
-          {t('withdraw')}
-        </LinkButton>
-        <LinkButton
-          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-          disabled={!mangoAccount}
-          onClick={() => handleShowActionModals(bank.name, 'borrow')}
-        >
-          {t('borrow')}
-        </LinkButton>
-        {/* <LinkButton
-          className="w-full text-left"
-          disabled={!mangoAccount}
-          onClick={handleBuy}
-        >
-          {t('buy')}
-        </LinkButton>
-        <LinkButton
-          className="w-full text-left"
-          disabled={!mangoAccount}
-          onClick={handleSell}
-        >
-          {t('sell')}
-        </LinkButton> */}
-      </IconDropMenu>
+            {t('deposit')}
+          </ActionsLinkButton>
+          {hasBorrow ? (
+            <ActionsLinkButton
+              mangoAccount={mangoAccount!}
+              onClick={() => handleShowActionModals(bank.name, 'repay')}
+            >
+              {t('repay')}
+            </ActionsLinkButton>
+          ) : null}
+          {balance && balance > 0 ? (
+            <ActionsLinkButton
+              mangoAccount={mangoAccount!}
+              onClick={() => handleShowActionModals(bank.name, 'withdraw')}
+            >
+              {t('withdraw')}
+            </ActionsLinkButton>
+          ) : null}
+          <ActionsLinkButton
+            mangoAccount={mangoAccount!}
+            onClick={() => handleShowActionModals(bank.name, 'borrow')}
+          >
+            {t('borrow')}
+          </ActionsLinkButton>
+          <ActionsLinkButton mangoAccount={mangoAccount!} onClick={handleSwap}>
+            {t('swap')}
+          </ActionsLinkButton>
+          {spotMarket ? (
+            <ActionsLinkButton
+              mangoAccount={mangoAccount!}
+              onClick={handleTrade}
+            >
+              {t('trade')}
+            </ActionsLinkButton>
+          ) : null}
+        </IconDropMenu>
+      )}
       {showDepositModal ? (
         <DepositWithdrawModal
           action="deposit"

@@ -1,6 +1,5 @@
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import { IconButton, LinkButton } from '@components/shared/Button'
-import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import SheenLoader from '@components/shared/SheenLoader'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
@@ -107,6 +106,18 @@ const ActivityFeedTable = ({
       credit = { value: quantity, symbol: perp_market }
       debit = { value: formatDecimal(quantity * price * -1), symbol: 'USDC' }
     }
+    if (activity_type === 'openbook_trade') {
+      const { side, price, size, base_symbol, quote_symbol } =
+        activity.activity_details
+      credit =
+        side === 'buy'
+          ? { value: formatDecimal(size), symbol: base_symbol }
+          : { value: formatDecimal(size * price), symbol: quote_symbol }
+      debit =
+        side === 'buy'
+          ? { value: formatDecimal(size * price * -1), symbol: quote_symbol }
+          : { value: formatDecimal(size * -1), symbol: base_symbol }
+    }
     return { credit, debit }
   }
 
@@ -136,165 +147,160 @@ const ActivityFeedTable = ({
         activity.activity_details
       value = quantity * price + maker_fee + taker_fee
     }
+    if (activity_type === 'openbook_trade') {
+      const { price, size } = activity.activity_details
+      value = price * size
+    }
     return value
   }
 
-  return mangoAccount ? (
-    activityFeed.length || loadActivityFeed ? (
-      <>
-        {showTableView ? (
-          <Table className="min-w-full">
-            <thead className="sticky top-0 z-10">
-              <TrHead>
-                <Th className="bg-th-bkg-1 text-left">{t('date')}</Th>
-                <Th className="bg-th-bkg-1 text-right">
-                  {t('activity:activity')}
-                </Th>
-                <Th className="bg-th-bkg-1 text-right">
-                  {t('activity:credit')}
-                </Th>
-                <Th className="bg-th-bkg-1 text-right">
-                  {t('activity:debit')}
-                </Th>
-                <Th className="bg-th-bkg-1 text-right">
-                  {t('activity:activity-value')}
-                </Th>
-                <Th className="bg-th-bkg-1 text-right">{t('explorer')}</Th>
-              </TrHead>
-            </thead>
-            <tbody>
-              {activityFeed.map((activity: any) => {
-                const { activity_type, block_datetime } = activity
-                const { signature } = activity.activity_details
-                const isLiquidation =
-                  activity_type === 'liquidate_token_with_token'
-                const activityName = isLiquidation
-                  ? 'spot-liquidation'
-                  : activity_type
-                const amounts = getCreditAndDebit(activity)
-                const value = getValue(activity)
-                return (
-                  <TrBody
-                    key={signature}
-                    className={`default-transition text-sm hover:bg-th-bkg-2 ${
-                      isLiquidation ? 'cursor-pointer' : ''
+  return mangoAccount && (activityFeed.length || loadActivityFeed) ? (
+    <>
+      {showTableView ? (
+        <Table className="min-w-full">
+          <thead className="sticky top-0 z-10">
+            <TrHead>
+              <Th className="bg-th-bkg-1 text-left">{t('date')}</Th>
+              <Th className="bg-th-bkg-1 text-right">
+                {t('activity:activity')}
+              </Th>
+              <Th className="bg-th-bkg-1 text-right">{t('activity:credit')}</Th>
+              <Th className="bg-th-bkg-1 text-right">{t('activity:debit')}</Th>
+              <Th className="bg-th-bkg-1 text-right">
+                {t('activity:activity-value')}
+              </Th>
+              <Th className="bg-th-bkg-1 text-right">{t('explorer')}</Th>
+            </TrHead>
+          </thead>
+          <tbody>
+            {activityFeed.map((activity: any) => {
+              const { activity_type, block_datetime } = activity
+              const { signature } = activity.activity_details
+              const isLiquidation =
+                activity_type === 'liquidate_token_with_token'
+              const isOpenbook = activity_type === 'openbook_trade'
+              const amounts = getCreditAndDebit(activity)
+              const value = getValue(activity)
+              return (
+                <TrBody
+                  key={signature}
+                  className={`default-transition text-sm hover:bg-th-bkg-2 ${
+                    isLiquidation ? 'cursor-pointer' : ''
+                  }`}
+                  onClick={
+                    isLiquidation
+                      ? () => handleShowActivityDetails(activity)
+                      : undefined
+                  }
+                >
+                  <Td>
+                    <p className="font-body tracking-wide">
+                      {dayjs(block_datetime).format('ddd D MMM')}
+                    </p>
+                    <p className="text-xs text-th-fgd-3">
+                      {dayjs(block_datetime).format('h:mma')}
+                    </p>
+                  </Td>
+                  <Td className="text-right">
+                    {t(`activity:${activity_type}`)}
+                  </Td>
+                  <Td className="text-right font-mono">
+                    {amounts.credit.value}{' '}
+                    <span className="font-body tracking-wide text-th-fgd-3">
+                      {amounts.credit.symbol}
+                    </span>
+                  </Td>
+                  <Td className="text-right font-mono">
+                    {amounts.debit.value}{' '}
+                    <span className="font-body tracking-wide text-th-fgd-3">
+                      {amounts.debit.symbol}
+                    </span>
+                  </Td>
+                  <Td
+                    className={`text-right font-mono ${
+                      activity_type === 'swap' ||
+                      activity_type === 'perp_trade' ||
+                      isOpenbook
+                        ? 'text-th-fgd-2'
+                        : value >= 0
+                        ? 'text-th-up'
+                        : 'text-th-down'
                     }`}
-                    onClick={
-                      isLiquidation
-                        ? () => handleShowActivityDetails(activity)
-                        : undefined
-                    }
                   >
-                    <Td>
-                      <p className="font-body tracking-wide">
-                        {dayjs(block_datetime).format('ddd D MMM')}
-                      </p>
-                      <p className="text-xs text-th-fgd-3">
-                        {dayjs(block_datetime).format('h:mma')}
-                      </p>
-                    </Td>
-                    <Td className="text-right">
-                      {t(`activity:${activityName}`)}
-                    </Td>
-                    <Td className="text-right font-mono">
-                      {amounts.credit.value}{' '}
-                      <span className="font-body tracking-wide text-th-fgd-3">
-                        {amounts.credit.symbol}
-                      </span>
-                    </Td>
-                    <Td className="text-right font-mono">
-                      {amounts.debit.value}{' '}
-                      <span className="font-body tracking-wide text-th-fgd-3">
-                        {amounts.debit.symbol}
-                      </span>
-                    </Td>
-                    <Td
-                      className={`text-right font-mono ${
-                        activityName === 'swap' || activityName === 'perp_trade'
-                          ? 'text-th-fgd-2'
-                          : value >= 0
-                          ? 'text-th-up'
-                          : 'text-th-down'
-                      }`}
-                    >
-                      {value > 0 &&
-                      activityName !== 'swap' &&
-                      activityName !== 'perp_trade'
-                        ? '+'
-                        : ''}
-                      {formatFixedDecimals(value, true)}
-                    </Td>
-                    <Td>
-                      {activity_type !== 'liquidate_token_with_token' ? (
-                        <div className="flex items-center justify-end">
-                          <Tooltip
-                            content={`View on ${t(
-                              `settings:${preferredExplorer.name}`
-                            )}`}
-                            placement="top-end"
+                    {value > 0 &&
+                    activity_type !== 'swap' &&
+                    activity_type !== 'perp_trade' &&
+                    !isOpenbook
+                      ? '+'
+                      : ''}
+                    {formatFixedDecimals(value, true)}
+                  </Td>
+                  <Td>
+                    {activity_type !== 'liquidate_token_with_token' ? (
+                      <div className="flex items-center justify-end">
+                        <Tooltip
+                          content={`View on ${t(
+                            `settings:${preferredExplorer.name}`
+                          )}`}
+                          placement="top-end"
+                        >
+                          <a
+                            href={`${preferredExplorer.url}${signature}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                           >
-                            <a
-                              href={`${preferredExplorer.url}${signature}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <div className="h-6 w-6">
-                                <Image
-                                  alt=""
-                                  width="24"
-                                  height="24"
-                                  src={`/explorer-logos/${preferredExplorer.name}.png`}
-                                />
-                              </div>
-                            </a>
-                          </Tooltip>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-end">
-                          <ChevronRightIcon className="h-6 w-6 text-th-fgd-3" />
-                        </div>
-                      )}
-                    </Td>
-                  </TrBody>
-                )
-              })}
-            </tbody>
-          </Table>
-        ) : (
-          <div>
-            {activityFeed.map((activity: any) => (
-              <MobileActivityFeedItem
-                activity={activity}
-                getValue={getValue}
-                key={activity.activity_details.signature}
-              />
-            ))}
-          </div>
-        )}
-        {loadActivityFeed ? (
-          <div className="mt-4 space-y-1.5">
-            {[...Array(4)].map((x, i) => (
-              <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
-                <div className="h-16 w-full bg-th-bkg-2" />
-              </SheenLoader>
-            ))}
-          </div>
-        ) : null}
-        {activityFeed.length && activityFeed.length % 25 === 0 ? (
-          <div className="flex justify-center pt-6">
-            <LinkButton onClick={handleShowMore}>Show More</LinkButton>
-          </div>
-        ) : null}
-      </>
-    ) : (
-      <div className="flex flex-col items-center p-8">
-        <NoSymbolIcon className="mb-1 h-6 w-6 text-th-fgd-4" />
-        <p>{t('activity:no-activity')}</p>
-      </div>
-    )
+                            <div className="h-6 w-6">
+                              <Image
+                                alt=""
+                                width="24"
+                                height="24"
+                                src={`/explorer-logos/${preferredExplorer.name}.png`}
+                              />
+                            </div>
+                          </a>
+                        </Tooltip>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-end">
+                        <ChevronRightIcon className="h-6 w-6 text-th-fgd-3" />
+                      </div>
+                    )}
+                  </Td>
+                </TrBody>
+              )
+            })}
+          </tbody>
+        </Table>
+      ) : (
+        <div>
+          {activityFeed.map((activity: any) => (
+            <MobileActivityFeedItem
+              activity={activity}
+              getValue={getValue}
+              key={activity.activity_details.signature}
+            />
+          ))}
+        </div>
+      )}
+      {loadActivityFeed ? (
+        <div className="mt-4 space-y-1.5">
+          {[...Array(4)].map((x, i) => (
+            <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
+              <div className="h-16 w-full bg-th-bkg-2" />
+            </SheenLoader>
+          ))}
+        </div>
+      ) : null}
+      {activityFeed.length && activityFeed.length % 25 === 0 ? (
+        <div className="flex justify-center pt-6">
+          <LinkButton onClick={handleShowMore}>Show More</LinkButton>
+        </div>
+      ) : null}
+    </>
   ) : (
-    <div className="p-8">
-      <ConnectEmptyState text={t('activity:connect-activity')} />
+    <div className="flex flex-col items-center p-8">
+      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+      <p>{t('activity:no-activity')}</p>
     </div>
   )
 }
@@ -319,7 +325,6 @@ const MobileActivityFeedItem = ({
   const isLiquidation = activity_type === 'liquidate_token_with_token'
   const isSwap = activity_type === 'swap'
   const isPerp = activity_type === 'perp_trade'
-  const activityName = isLiquidation ? 'spot-liquidation' : activity_type
   const value = getValue(activity)
   return (
     <div key={signature} className="border-b border-th-bkg-3 p-4">
@@ -335,7 +340,7 @@ const MobileActivityFeedItem = ({
         <div className="flex items-center space-x-4">
           <div>
             <p className="text-right text-xs">
-              {t(`activity:${activityName}`)}
+              {t(`activity:${activity_type}`)}
             </p>
             <p className="text-right font-mono text-sm text-th-fgd-1">
               {isLiquidation ? (

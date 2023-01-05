@@ -9,9 +9,11 @@ import { trimDecimals } from 'utils/numbers'
 const SpotSlider = ({
   minOrderDecimals,
   tickDecimals,
+  step,
 }: {
   minOrderDecimals: number
   tickDecimals: number
+  step: number
 }) => {
   const side = mangoStore((s) => s.tradeForm.side)
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
@@ -85,7 +87,7 @@ const SpotSlider = ({
         }
         leverageMax={leverageMax}
         onChange={handleSlide}
-        step={0.01}
+        step={step}
       />
     </div>
   )
