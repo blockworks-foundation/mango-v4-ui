@@ -466,9 +466,8 @@ const AdvancedTradeForm = () => {
           tradeFormSizeUi === 'slider' ? (
             <SpotSlider
               minOrderDecimals={minOrderDecimals}
-              minOrderSize={minOrderSize}
               tickDecimals={tickDecimals}
-              tickSize={tickSize}
+              step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
             />
           ) : (
             <SpotButtonGroup
