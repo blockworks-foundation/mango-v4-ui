@@ -22,6 +22,7 @@ import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import { Menu, Transition } from '@headlessui/react'
+import { useRouter } from 'next/router'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -44,17 +45,7 @@ const AccountActions = () => {
   const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const { connected } = useWallet()
-
-  // this doesn't work for detecting spot borrows as it includes perp liabs. was only using it to make the repay button have primary styles so could delete
-
-  // const hasBorrows = useMemo(() => {
-  //   if (!mangoAccount || !group) return false
-  //   return (
-  //     toUiDecimalsForQuote(
-  //       mangoAccount.getLiabsValue(group, HealthType.init).toNumber()
-  //     ) >= 1
-  //   )
-  // }, [mangoAccount, group])
+  const { query } = useRouter()
 
   const handleBorrowModal = () => {
     if (!connected || mangoAccount) {
@@ -69,9 +60,8 @@ const AccountActions = () => {
       <div className="flex items-center space-x-2">
         <Button
           className="flex w-1/3 items-center justify-center sm:w-auto"
-          disabled={!mangoAccount}
+          disabled={!mangoAccount || (!!query?.address && !connected)}
           onClick={() => setShowRepayModal(true)}
-          // secondary={!hasBorrows}
           secondary
         >
           <ArrowDownRightIcon className="mr-2 h-5 w-5" />
@@ -81,6 +71,7 @@ const AccountActions = () => {
           className="flex w-1/3 items-center justify-center sm:w-auto"
           onClick={handleBorrowModal}
           secondary
+          disabled={!!query?.address && !connected}
         >
           <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
           {t('borrow')}
@@ -94,6 +85,7 @@ const AccountActions = () => {
                 <Button
                   className="flex w-full items-center justify-center"
                   secondary
+                  disabled={!!query?.address && !connected}
                 >
                   <WrenchIcon className="mr-2 h-4 w-4" />
                   {t('actions')}

@@ -442,8 +442,10 @@ const ActionsMenu = ({
   const [selectedToken, setSelectedToken] = useState('')
   const set = mangoStore.getState().set
   const router = useRouter()
+  const { query } = router
   const { mangoTokens } = useJupiterMints()
   const spotMarkets = mangoStore((s) => s.serumMarkets)
+  const { connected } = useWallet()
 
   const spotMarket = useMemo(() => {
     return spotMarkets.find((m) => {
@@ -534,6 +536,7 @@ const ActionsMenu = ({
       <IconDropMenu
         icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
         postion="leftBottom"
+        disabled={!!query?.address && !connected}
       >
         <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
           <div className="mr-2 flex flex-shrink-0 items-center">

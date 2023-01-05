@@ -117,6 +117,7 @@ const TopBar = () => {
               onClick={() => handleDepositWithdrawModal('deposit')}
               secondary
               className="mx-4"
+              disabled={!!query?.address && !connected}
             >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           )}
           {connected ? (
