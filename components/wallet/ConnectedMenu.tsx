@@ -92,7 +92,7 @@ const ConnectedMenu = () => {
                     <p className="text-xs text-th-fgd-3">
                       {wallet?.adapter.name}
                     </p>
-                    <p className="pr-2 text-sm font-bold text-th-fgd-1">
+                    <p className="truncate pr-2 text-sm font-bold text-th-fgd-1">
                       {publicKey ? abbreviateAddress(publicKey) : ''}
                     </p>
                     {/* <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
