@@ -89,7 +89,10 @@ const ConnectedMenu = () => {
                 />
                 {!loadProfileDetails && !isMobile ? (
                   <div className="ml-2.5 overflow-hidden text-left">
-                    <p className="font-mono text-xs text-th-fgd-3">
+                    <p className="text-xs text-th-fgd-3">
+                      {wallet?.adapter.name}
+                    </p>
+                    <p className="pr-2 text-sm font-bold text-th-fgd-1">
                       {publicKey ? abbreviateAddress(publicKey) : ''}
                     </p>
                     {/* <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
