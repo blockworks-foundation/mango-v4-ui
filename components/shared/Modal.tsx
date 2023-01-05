@@ -18,14 +18,19 @@ function Modal({
   onClose,
   hideClose,
 }: ModalProps) {
+  const handleClose = () => {
+    if (disableOutsideClose) return
+    onClose()
+  }
+
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       className="relative z-40 overflow-y-auto"
     >
       <div
-        className={`fixed inset-0 backdrop-brightness-50 ${
+        className={`fixed inset-0 backdrop-brightness-[0.3] ${
           disableOutsideClose ? 'pointer-events-none' : ''
         }`}
         aria-hidden="true"

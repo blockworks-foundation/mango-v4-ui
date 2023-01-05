@@ -228,7 +228,7 @@ const UserSetupModal = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} fullScreen>
+    <Modal isOpen={isOpen} onClose={onClose} fullScreen disableOutsideClose>
       <div className="radial-gradient-bg grid h-screen overflow-auto text-left lg:grid-cols-2">
         <img
           className="absolute -bottom-6 right-0 hidden h-auto w-[53%] lg:block xl:w-[57%]"
