@@ -34,6 +34,7 @@ import BorrowRepayModal from './modals/BorrowRepayModal'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 import { USDC_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
+import ActionsLinkButton from './account/ActionsLinkButton'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -545,53 +546,44 @@ const ActionsMenu = ({
               {formatTokenSymbol(bank.name)}
             </p>
           </div>
-          <LinkButton
-            className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          <ActionsLinkButton
+            mangoAccount={mangoAccount!}
             onClick={() => handleShowActionModals(bank.name, 'deposit')}
           >
             {t('deposit')}
-          </LinkButton>
+          </ActionsLinkButton>
           {hasBorrow ? (
-            <LinkButton
-              className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-              disabled={!mangoAccount}
+            <ActionsLinkButton
+              mangoAccount={mangoAccount!}
               onClick={() => handleShowActionModals(bank.name, 'repay')}
             >
               {t('repay')}
-            </LinkButton>
+            </ActionsLinkButton>
           ) : null}
           {balance && balance > 0 ? (
-            <LinkButton
-              className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-              disabled={!mangoAccount}
+            <ActionsLinkButton
+              mangoAccount={mangoAccount!}
               onClick={() => handleShowActionModals(bank.name, 'withdraw')}
             >
               {t('withdraw')}
-            </LinkButton>
+            </ActionsLinkButton>
           ) : null}
-          <LinkButton
-            className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
+          <ActionsLinkButton
+            mangoAccount={mangoAccount!}
             onClick={() => handleShowActionModals(bank.name, 'borrow')}
           >
             {t('borrow')}
-          </LinkButton>
-          <LinkButton
-            className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-            disabled={!mangoAccount}
-            onClick={handleSwap}
-          >
+          </ActionsLinkButton>
+          <ActionsLinkButton mangoAccount={mangoAccount!} onClick={handleSwap}>
             {t('swap')}
-          </LinkButton>
+          </ActionsLinkButton>
           {spotMarket ? (
-            <LinkButton
-              className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-              disabled={!mangoAccount}
+            <ActionsLinkButton
+              mangoAccount={mangoAccount!}
               onClick={handleTrade}
             >
               {t('trade')}
-            </LinkButton>
+            </ActionsLinkButton>
           ) : null}
         </IconDropMenu>
       )}

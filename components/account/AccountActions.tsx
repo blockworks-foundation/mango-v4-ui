@@ -1,5 +1,5 @@
-import { Fragment, ReactNode, useState } from 'react'
-import Button, { LinkButton } from '../shared/Button'
+import { Fragment, useState } from 'react'
+import Button from '../shared/Button'
 import {
   ArrowDownRightIcon,
   ArrowUpLeftIcon,
@@ -22,6 +22,7 @@ import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import { Menu, Transition } from '@headlessui/react'
+import ActionsLinkButton from './ActionsLinkButton'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -101,7 +102,7 @@ const AccountActions = () => {
                 >
                   <Menu.Items className="absolute right-0 top-10 mt-1 space-y-1.5 rounded-md bg-th-bkg-2 px-4 py-2.5">
                     <Menu.Item>
-                      <ActionsButton
+                      <ActionsLinkButton
                         mangoAccount={mangoAccount!}
                         onClick={() =>
                           handleCopyAddress(
@@ -114,34 +115,34 @@ const AccountActions = () => {
                       >
                         <DocumentDuplicateIcon className="h-4 w-4" />
                         <span className="ml-2">{t('copy-address')}</span>
-                      </ActionsButton>
+                      </ActionsLinkButton>
                     </Menu.Item>
                     <Menu.Item>
-                      <ActionsButton
+                      <ActionsLinkButton
                         mangoAccount={mangoAccount!}
                         onClick={() => setShowEditAccountModal(true)}
                       >
                         <PencilIcon className="h-4 w-4" />
                         <span className="ml-2">{t('edit-account')}</span>
-                      </ActionsButton>
+                      </ActionsLinkButton>
                     </Menu.Item>
                     <Menu.Item>
-                      <ActionsButton
+                      <ActionsLinkButton
                         mangoAccount={mangoAccount!}
                         onClick={() => setShowDelegateModal(true)}
                       >
                         <UsersIcon className="h-4 w-4" />
                         <span className="ml-2">{t('delegate-account')}</span>
-                      </ActionsButton>
+                      </ActionsLinkButton>
                     </Menu.Item>
                     <Menu.Item>
-                      <ActionsButton
+                      <ActionsLinkButton
                         mangoAccount={mangoAccount!}
                         onClick={() => setShowCloseAccountModal(true)}
                       >
                         <TrashIcon className="h-4 w-4" />
                         <span className="ml-2">{t('close-account')}</span>
-                      </ActionsButton>
+                      </ActionsLinkButton>
                     </Menu.Item>
                   </Menu.Items>
                 </Transition>
@@ -193,23 +194,3 @@ const AccountActions = () => {
 }
 
 export default AccountActions
-
-const ActionsButton = ({
-  children,
-  mangoAccount,
-  onClick,
-}: {
-  children: ReactNode
-  mangoAccount: MangoAccount
-  onClick: () => void
-}) => {
-  return (
-    <LinkButton
-      className="whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1"
-      disabled={!mangoAccount}
-      onClick={onClick}
-    >
-      {children}
-    </LinkButton>
-  )
-}
