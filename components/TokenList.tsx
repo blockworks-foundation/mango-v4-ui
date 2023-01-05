@@ -442,7 +442,6 @@ const ActionsMenu = ({
   const [selectedToken, setSelectedToken] = useState('')
   const set = mangoStore.getState().set
   const router = useRouter()
-  const { query } = router
   const { mangoTokens } = useJupiterMints()
   const spotMarkets = mangoStore((s) => s.serumMarkets)
   const { connected } = useWallet()
@@ -533,68 +532,69 @@ const ActionsMenu = ({
 
   return (
     <>
-      <IconDropMenu
-        icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
-        postion="leftBottom"
-        disabled={!!query?.address && !connected}
-      >
-        <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
-          <div className="mr-2 flex flex-shrink-0 items-center">
-            <Image alt="" width="20" height="20" src={logoURI || ''} />
+      {mangoAccount && !connected ? null : (
+        <IconDropMenu
+          icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
+          postion="leftBottom"
+        >
+          <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
+            <div className="mr-2 flex flex-shrink-0 items-center">
+              <Image alt="" width="20" height="20" src={logoURI || ''} />
+            </div>
+            <p className="font-body tracking-wide">
+              {formatTokenSymbol(bank.name)}
+            </p>
           </div>
-          <p className="font-body tracking-wide">
-            {formatTokenSymbol(bank.name)}
-          </p>
-        </div>
-        <LinkButton
-          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-          disabled={!mangoAccount}
-          onClick={() => handleShowActionModals(bank.name, 'deposit')}
-        >
-          {t('deposit')}
-        </LinkButton>
-        {hasBorrow ? (
           <LinkButton
             className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
-            onClick={() => handleShowActionModals(bank.name, 'repay')}
+            onClick={() => handleShowActionModals(bank.name, 'deposit')}
           >
-            {t('repay')}
+            {t('deposit')}
           </LinkButton>
-        ) : null}
-        {balance && balance > 0 ? (
+          {hasBorrow ? (
+            <LinkButton
+              className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
+              disabled={!mangoAccount}
+              onClick={() => handleShowActionModals(bank.name, 'repay')}
+            >
+              {t('repay')}
+            </LinkButton>
+          ) : null}
+          {balance && balance > 0 ? (
+            <LinkButton
+              className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
+              disabled={!mangoAccount}
+              onClick={() => handleShowActionModals(bank.name, 'withdraw')}
+            >
+              {t('withdraw')}
+            </LinkButton>
+          ) : null}
           <LinkButton
             className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
-            onClick={() => handleShowActionModals(bank.name, 'withdraw')}
+            onClick={() => handleShowActionModals(bank.name, 'borrow')}
           >
-            {t('withdraw')}
+            {t('borrow')}
           </LinkButton>
-        ) : null}
-        <LinkButton
-          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-          disabled={!mangoAccount}
-          onClick={() => handleShowActionModals(bank.name, 'borrow')}
-        >
-          {t('borrow')}
-        </LinkButton>
-        <LinkButton
-          className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
-          disabled={!mangoAccount}
-          onClick={handleSwap}
-        >
-          {t('swap')}
-        </LinkButton>
-        {spotMarket ? (
           <LinkButton
             className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
             disabled={!mangoAccount}
-            onClick={handleTrade}
+            onClick={handleSwap}
           >
-            {t('trade')}
+            {t('swap')}
           </LinkButton>
-        ) : null}
-      </IconDropMenu>
+          {spotMarket ? (
+            <LinkButton
+              className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
+              disabled={!mangoAccount}
+              onClick={handleTrade}
+            >
+              {t('trade')}
+            </LinkButton>
+          ) : null}
+        </IconDropMenu>
+      )}
       {showDepositModal ? (
         <DepositWithdrawModal
           action="deposit"
