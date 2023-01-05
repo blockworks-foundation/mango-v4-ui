@@ -443,6 +443,14 @@ const ActionsMenu = ({
   const set = mangoStore.getState().set
   const router = useRouter()
   const { mangoTokens } = useJupiterMints()
+  const spotMarkets = mangoStore((s) => s.serumMarkets)
+
+  const spotMarket = useMemo(() => {
+    return spotMarkets.find((m) => {
+      const base = m.name.split('/')[0]
+      return base.toUpperCase() === bank.name.toUpperCase()
+    })
+  }, [spotMarkets])
 
   const handleShowActionModals = useCallback(
     (token: string, action: 'borrow' | 'deposit' | 'withdraw' | 'repay') => {
@@ -501,6 +509,10 @@ const ActionsMenu = ({
     }
     router.push('/swap', undefined, { shallow: true })
   }, [bank, router, set, mangoTokens, mangoAccount])
+
+  const handleTrade = useCallback(() => {
+    router.push(`/trade?name=${spotMarket?.name}`, undefined, { shallow: true })
+  }, [spotMarket, router])
 
   const logoURI = useMemo(() => {
     if (!bank || !mangoTokens?.length) return ''
@@ -570,6 +582,15 @@ const ActionsMenu = ({
         >
           {t('swap')}
         </LinkButton>
+        {spotMarket ? (
+          <LinkButton
+            className="w-full text-left font-normal no-underline md:hover:text-th-fgd-1"
+            disabled={!mangoAccount}
+            onClick={handleTrade}
+          >
+            {t('trade')}
+          </LinkButton>
+        ) : null}
       </IconDropMenu>
       {showDepositModal ? (
         <DepositWithdrawModal
