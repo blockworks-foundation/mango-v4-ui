@@ -31,6 +31,12 @@ const HydrateStore = () => {
     fetchData()
   }, 15000)
 
+  useInterval(() => {
+    if (mangoAccount) {
+      actions.fetchOpenOrders()
+    }
+  }, 30000)
+
   // watch selected Mango Account for changes
   useEffect(() => {
     const connection = mangoStore.getState().connection
