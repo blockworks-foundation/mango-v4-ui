@@ -21,6 +21,8 @@ export const getMaxWithdrawForBank = (
   )
   const maxWithdraw = allowBorrow
     ? Decimal.min(vaultBalance, maxBorrow)
+    : bank.initAssetWeight.toNumber() === 0
+    ? Decimal.min(accountBalance, vaultBalance)
     : Decimal.min(accountBalance, vaultBalance, maxBorrow)
   return Decimal.max(0, maxWithdraw)
 }
