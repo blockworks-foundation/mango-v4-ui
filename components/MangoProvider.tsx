@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
-import { PublicKey } from '@solana/web3.js'
+import { Keypair, PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -13,6 +13,7 @@ const HydrateStore = () => {
   const router = useRouter()
   const { name: marketName } = router.query
   const { mangoAccount } = useMangoAccount()
+  const connection = mangoStore((s) => s.connection)
 
   const fetchData = useCallback(async () => {
     await actions.fetchGroup()
@@ -37,9 +38,20 @@ const HydrateStore = () => {
     }
   }, 30000)
 
+  // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
+  // is empty after opening its first time, preventing subsequent subscriptions from receiving responses.
+  // This is a hack to prevent the list from every getting empty
+  useEffect(() => {
+    const id = connection.onAccountChange(new Keypair().publicKey, () => {
+      return
+    })
+    return () => {
+      connection.removeAccountChangeListener(id)
+    }
+  }, [connection])
+
   // watch selected Mango Account for changes
   useEffect(() => {
-    const connection = mangoStore.getState().connection
     const client = mangoStore.getState().client
 
     if (!mangoAccount) return
@@ -86,7 +98,7 @@ const HydrateStore = () => {
     return () => {
       connection.removeAccountChangeListener(subscriptionId)
     }
-  }, [mangoAccount])
+  }, [connection, mangoAccount])
 
   return null
 }
