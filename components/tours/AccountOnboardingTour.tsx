@@ -90,8 +90,8 @@ const AccountOnboardingTour = () => {
     },
     {
       selector: '#account-step-eleven',
-      title: t('health-check'),
-      description: t('health-check-desc'),
+      title: t('account-summary'),
+      description: t('account-summary-desc'),
       orientationPreferences: [CardinalOrientation.EASTSOUTH],
       movingTarget: true,
     },
