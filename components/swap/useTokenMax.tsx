@@ -45,10 +45,10 @@ export const getTokenInMax = (
     }
   }
 
-  const inputTokenBalance = floorToDecimal(
-    mangoAccount.getTokenBalanceUi(inputBank),
-    inputBank.mintDecimals
+  const inputTokenBalance = new Decimal(
+    mangoAccount.getTokenBalanceUi(inputBank)
   )
+
   const maxAmountWithoutMargin = inputTokenBalance.gt(0)
     ? inputTokenBalance
     : new Decimal(0)

@@ -301,23 +301,14 @@ const Balance = ({ bank }: { bank: Bank }) => {
       {asPath.includes('/trade') && isBaseOrQuote ? (
         <LinkButton
           className="font-normal underline-offset-4"
-          onClick={() =>
-            handleTradeFormBalanceClick(
-              parseFloat(formatDecimal(balance, bank.mintDecimals)),
-              isBaseOrQuote
-            )
-          }
+          onClick={() => handleTradeFormBalanceClick(balance, isBaseOrQuote)}
         >
           {formatDecimal(balance, bank.mintDecimals)}
         </LinkButton>
       ) : asPath.includes('/swap') ? (
         <LinkButton
           className="font-normal underline-offset-4"
-          onClick={() =>
-            handleSwapFormBalanceClick(
-              parseFloat(formatDecimal(balance, bank.mintDecimals))
-            )
-          }
+          onClick={() => handleSwapFormBalanceClick(balance)}
         >
           {formatDecimal(balance, bank.mintDecimals)}
         </LinkButton>
