@@ -193,7 +193,11 @@ const TokenList = () => {
                     </div>
                   </Td>
                   <Td className="text-right">
-                    <p>{tokenBalance}</p>
+                    <p>
+                      {tokenBalance
+                        ? formatDecimal(tokenBalance, bank.mintDecimals)
+                        : '0'}
+                    </p>
                     <p className="text-sm text-th-fgd-4">
                       {tokenBalance
                         ? `${formatFixedDecimals(
