@@ -164,12 +164,12 @@ const TokenList = () => {
               )
 
               const interestAmount = hasInterestEarned
-                ? hasInterestEarned.borrow_interest +
+                ? hasInterestEarned.borrow_interest * -1 +
                   hasInterestEarned.deposit_interest
                 : 0
 
               const interestValue = hasInterestEarned
-                ? hasInterestEarned.borrow_interest_usd +
+                ? hasInterestEarned.borrow_interest_usd * -1 +
                   hasInterestEarned.deposit_interest_usd
                 : 0.0
 
@@ -310,11 +310,12 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   )
 
   const interestAmount = hasInterestEarned
-    ? hasInterestEarned.borrow_interest + hasInterestEarned.deposit_interest
+    ? hasInterestEarned.borrow_interest * -1 +
+      hasInterestEarned.deposit_interest
     : 0
 
   const interestValue = hasInterestEarned
-    ? hasInterestEarned.borrow_interest_usd +
+    ? hasInterestEarned.borrow_interest_usd * -1 +
       hasInterestEarned.deposit_interest_usd
     : 0.0
 
