@@ -1,7 +1,7 @@
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { formatDecimal } from 'utils/numbers'
+import { floorToDecimal } from 'utils/numbers'
 import { useTokenMax } from './useTokenMax'
 
 const MaxSwapAmount = ({
@@ -21,23 +21,26 @@ const MaxSwapAmount = ({
 
   if (mangoAccountLoading) return null
 
-  const maxBalanceValue = formatDecimal(tokenMax.toNumber(), decimals)
-  const maxBorrowValue = formatDecimal(amountWithBorrow.toNumber(), decimals)
-
   return (
     <div className="flex flex-wrap justify-end pl-6 text-xs">
       <MaxAmountButton
         className="mb-0.5"
         label="Bal"
-        onClick={() => setAmountIn(maxBalanceValue)}
-        value={maxBalanceValue}
+        onClick={() =>
+          setAmountIn(floorToDecimal(Number(tokenMax), decimals).toFixed())
+        }
+        value={floorToDecimal(Number(tokenMax), decimals).toFixed()}
       />
       {useMargin ? (
         <MaxAmountButton
           className="mb-0.5 ml-2"
           label={t('max')}
-          onClick={() => setAmountIn(maxBorrowValue)}
-          value={maxBorrowValue}
+          onClick={() =>
+            setAmountIn(
+              floorToDecimal(Number(amountWithBorrow), decimals).toFixed()
+            )
+          }
+          value={floorToDecimal(Number(amountWithBorrow), decimals).toFixed()}
         />
       ) : null}
     </div>
