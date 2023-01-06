@@ -156,6 +156,7 @@ const SwapFormTokenList = ({
           amountWithBorrow: new Decimal(0),
         }))
         .filter((token) => (token.symbol === inputBank?.name ? false : true))
+        .sort((a, b) => a.symbol.localeCompare(b.symbol))
       return filteredTokens
     } else {
       return []
