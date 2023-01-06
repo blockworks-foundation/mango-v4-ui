@@ -69,8 +69,8 @@ const emptyWallet = new EmptyWallet(Keypair.generate())
 const initMangoClient = (provider: AnchorProvider): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     // blockhashCommitment: 'confirmed',
+    prioritizationFee: 2000,
     idsSource: 'get-program-accounts',
-    prioritizationFee: 2,
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
         title: 'Transaction sent',

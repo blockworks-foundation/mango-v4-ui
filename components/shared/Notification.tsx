@@ -123,11 +123,18 @@ const Notification = ({ notification }: { notification: Notification }) => {
   let parsedTitle: string | undefined
   if (description) {
     if (
-      description?.includes('Timed out awaiting') ||
-      description?.includes('was not confirmed')
+      description.includes('Timed out awaiting') ||
+      description.includes('was not confirmed')
     ) {
       parsedTitle = 'Transaction status unknown'
     }
+  }
+
+  let parsedDescription = description
+  if (
+    description?.includes('{"err":{"InstructionError":[2,{"Custom":6001}]}}')
+  ) {
+    parsedDescription = 'Your max slippage tolerance was exceeded'
   }
 
   // if the notification is a success, then hide the confirming tx notification with the same txid
@@ -247,11 +254,11 @@ const Notification = ({ notification }: { notification: Notification }) => {
           </div>
           <div className={`ml-2 flex-1`}>
             <p className={`text-th-fgd-1`}>{parsedTitle || title}</p>
-            {description ? (
+            {parsedDescription ? (
               <p
                 className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-4`}
               >
-                {description}
+                {parsedDescription}
               </p>
             ) : null}
             {txid ? (
