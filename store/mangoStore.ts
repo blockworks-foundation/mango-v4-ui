@@ -584,11 +584,6 @@ const mangoStore = create<MangoStore>()(
           try {
             const set = get().set
             const client = get().client
-            console.log(
-              'fetching group',
-              client.program.provider.connection.rpcEndpoint
-            )
-
             const group = await client.getGroup(GROUP)
             const selectedMarketName = get().selectedMarket.name
 
