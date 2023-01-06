@@ -221,14 +221,14 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         <h2 className="mb-4 text-center text-lg">
           {t('select-deposit-token')}
         </h2>
-        <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
-          <div className="text-left">
+        <div className="flex items-center px-4 pb-2">
+          <div className="w-1/4 text-left">
             <p className="text-xs">{t('token')}</p>
           </div>
-          <div className="text-right">
+          <div className="w-1/4 text-right">
             <p className="text-xs">{t('deposit-rate')}</p>
           </div>
-          <div className="text-right">
+          <div className="w-1/2 text-right">
             <p className="whitespace-nowrap text-xs">{t('wallet-balance')}</p>
           </div>
         </div>
