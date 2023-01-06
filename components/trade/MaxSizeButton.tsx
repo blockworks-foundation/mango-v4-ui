@@ -6,7 +6,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo } from 'react'
-import { floorToDecimal } from 'utils/numbers'
+import { floorToDecimal, trimDecimals } from 'utils/numbers'
 
 const MaxSizeButton = ({
   minOrderDecimals,
@@ -98,9 +98,15 @@ const MaxSizeButton = ({
   const maxAmount = useMemo(() => {
     const tradePrice = tradeType === 'Market' ? oraclePrice : Number(price)
     if (side === 'buy') {
-      return floorToDecimal(leverageMax / tradePrice, tickDecimals).toFixed()
+      return trimDecimals(
+        leverageMax / tradePrice,
+        tickDecimals
+      ).toLocaleString(undefined, { maximumFractionDigits: tickDecimals })
     } else {
-      return floorToDecimal(leverageMax, minOrderDecimals).toFixed()
+      return trimDecimals(leverageMax, minOrderDecimals).toLocaleString(
+        undefined,
+        { maximumFractionDigits: minOrderDecimals }
+      )
     }
   }, [leverageMax, minOrderDecimals, tickDecimals, price, side, tradeType])
 

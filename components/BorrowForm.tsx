@@ -25,6 +25,7 @@ import {
   floorToDecimal,
   formatDecimal,
   formatFixedDecimals,
+  trimDecimals,
 } from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
@@ -254,10 +255,12 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                     className="mb-2"
                     label={t('max')}
                     onClick={setMax}
-                    value={floorToDecimal(
+                    value={trimDecimals(
                       Number(tokenMax),
                       bank.mintDecimals
-                    ).toFixed()}
+                    ).toLocaleString(undefined, {
+                      maximumFractionDigits: bank.mintDecimals,
+                    })}
                   />
                 ) : null}
               </div>

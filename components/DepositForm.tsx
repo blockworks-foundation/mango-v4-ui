@@ -24,6 +24,7 @@ import {
   floorToDecimal,
   formatDecimal,
   formatFixedDecimals,
+  trimDecimals,
 } from './../utils/numbers'
 import { TokenAccount } from './../utils/tokens'
 import ActionTokenList from './account/ActionTokenList'
@@ -270,10 +271,12 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                   className="mb-2"
                   label={t('wallet-balance')}
                   onClick={setMax}
-                  value={floorToDecimal(
-                    tokenMax.maxAmount,
+                  value={trimDecimals(
+                    Number(tokenMax.maxAmount),
                     tokenMax.maxDecimals
-                  ).toFixed()}
+                  ).toLocaleString(undefined, {
+                    maximumFractionDigits: tokenMax.maxDecimals,
+                  })}
                 />
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">

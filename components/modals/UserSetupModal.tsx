@@ -30,6 +30,7 @@ import {
   floorToDecimal,
   formatDecimal,
   formatFixedDecimals,
+  trimDecimals,
 } from 'utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
@@ -426,10 +427,12 @@ const UserSetupModal = ({
                       label="Max"
                       onClick={() => {
                         setDepositAmount(
-                          floorToDecimal(
-                            tokenMax.amount,
+                          trimDecimals(
+                            Number(tokenMax.amount),
                             tokenMax.decimals
-                          ).toFixed()
+                          ).toLocaleString(undefined, {
+                            maximumFractionDigits: tokenMax.decimals,
+                          })
                         )
                         setSizePercentage('100')
                       }}

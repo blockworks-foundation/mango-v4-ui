@@ -18,6 +18,7 @@ import {
   floorToDecimal,
   formatDecimal,
   formatFixedDecimals,
+  trimDecimals,
 } from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
@@ -234,10 +235,12 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   className="mb-2"
                   label={t('amount-owed')}
                   onClick={setMax}
-                  value={floorToDecimal(
+                  value={trimDecimals(
                     borrowAmount,
                     walletBalance.maxDecimals
-                  ).toFixed()}
+                  ).toLocaleString(undefined, {
+                    maximumFractionDigits: walletBalance.maxDecimals,
+                  })}
                 />
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
