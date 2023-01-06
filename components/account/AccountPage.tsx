@@ -56,7 +56,7 @@ const AccountPage = () => {
   const { t } = useTranslation('common')
   // const { connected } = useWallet()
   const group = mangoStore.getState().group
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
   const loadPerformanceData = mangoStore(
     (s) => s.mangoAccount.stats.performance.loading
@@ -85,12 +85,11 @@ const AccountPage = () => {
   )
 
   useEffect(() => {
-    if (mangoAccount) {
-      const pubKey = mangoAccount.publicKey.toString()
-      actions.fetchAccountPerformance(pubKey, 1)
-      actions.fetchAccountInterestTotals(pubKey)
+    if (mangoAccountAddress) {
+      actions.fetchAccountPerformance(mangoAccountAddress, 1)
+      actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
-  }, [actions, mangoAccount])
+  }, [actions, mangoAccountAddress])
 
   useEffect(() => {
     if (mangoAccount && performanceData.length && !chartToShow) {
@@ -501,7 +500,6 @@ const AccountPage = () => {
           chartToShow="account-value"
           data={performanceData}
           hideChart={handleHideChart}
-          mangoAccount={mangoAccount!}
           yKey="account_equity"
         />
       ) : chartToShow === 'pnl' ? (
@@ -509,7 +507,6 @@ const AccountPage = () => {
           chartToShow="pnl"
           data={performanceData}
           hideChart={handleHideChart}
-          mangoAccount={mangoAccount!}
           yKey="pnl"
         />
       ) : (
@@ -522,7 +519,6 @@ const AccountPage = () => {
             time: d.time,
           }))}
           hideChart={handleHideChart}
-          mangoAccount={mangoAccount!}
           yKey="interest_value"
         />
       )}

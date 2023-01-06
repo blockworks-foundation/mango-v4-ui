@@ -31,7 +31,7 @@ const ActivityFeedTable = ({
   params: string
 }) => {
   const { t } = useTranslation(['common', 'activity'])
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
   const [offset, setOffset] = useState(0)
@@ -43,19 +43,14 @@ const ActivityFeedTable = ({
   const showTableView = width ? width > breakpoints.md : false
 
   const handleShowMore = useCallback(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
     const set = mangoStore.getState().set
     set((s) => {
       s.activityFeed.loading = true
     })
-    if (!mangoAccount) return
+    if (!mangoAccountAddress) return
     setOffset(offset + 25)
-    actions.fetchActivityFeed(
-      mangoAccount.publicKey.toString(),
-      offset + 25,
-      params
-    )
-  }, [actions, offset, params])
+    actions.fetchActivityFeed(mangoAccountAddress, offset + 25, params)
+  }, [actions, offset, params, mangoAccountAddress])
 
   const getCreditAndDebit = (activity: any) => {
     const { activity_type } = activity
@@ -154,7 +149,7 @@ const ActivityFeedTable = ({
     return value
   }
 
-  return mangoAccount && (activityFeed.length || loadActivityFeed) ? (
+  return mangoAccountAddress && (activityFeed.length || loadActivityFeed) ? (
     <>
       {showTableView ? (
         <Table className="min-w-full">

@@ -53,7 +53,7 @@ const DEFAULT_PARAMS = [
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
   const actions = mangoStore.getState().actions
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const [showActivityDetail, setShowActivityDetail] = useState(null)
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(
     DEFAULT_ADVANCED_FILTERS
@@ -61,11 +61,10 @@ const ActivityFeed = () => {
   const [params, setParams] = useState<string[]>(DEFAULT_PARAMS)
 
   useEffect(() => {
-    if (mangoAccount) {
-      const pubKey = mangoAccount.publicKey.toString()
-      actions.fetchActivityFeed(pubKey)
+    if (mangoAccountAddress) {
+      actions.fetchActivityFeed(mangoAccountAddress)
     }
-  }, [actions, mangoAccount])
+  }, [actions, mangoAccountAddress])
 
   const handleShowActivityDetails = (activity: any) => {
     setShowActivityDetail(activity)
@@ -128,12 +127,11 @@ const ActivityFilters = ({
   const { t } = useTranslation(['common', 'activity'])
   const actions = mangoStore.getState().actions
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [hasFilters, setHasFilters] = useState(false)
 
   const handleUpdateResults = useCallback(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
     const set = mangoStore.getState().set
     if (params) {
       setHasFilters(true)
@@ -144,32 +142,31 @@ const ActivityFilters = ({
       s.activityFeed.feed = []
       s.activityFeed.loading = true
     })
-    if (mangoAccount) {
-      actions.fetchActivityFeed(mangoAccount.publicKey.toString(), 0, params)
+    if (mangoAccountAddress) {
+      actions.fetchActivityFeed(mangoAccountAddress, 0, params)
     }
-  }, [actions, params])
+  }, [actions, params, mangoAccountAddress])
 
   const handleResetFilters = useCallback(async () => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
     const set = mangoStore.getState().set
     setHasFilters(false)
     set((s) => {
       s.activityFeed.feed = []
       s.activityFeed.loading = true
     })
-    if (mangoAccount) {
-      await actions.fetchActivityFeed(mangoAccount.publicKey.toString())
+    if (mangoAccountAddress) {
+      await actions.fetchActivityFeed(mangoAccountAddress)
       setAdvancedFilters(DEFAULT_ADVANCED_FILTERS)
       setFilters(DEFAULT_PARAMS)
     }
-  }, [actions])
+  }, [actions, mangoAccountAddress])
 
   const handleUpdateMobileResults = () => {
     handleUpdateResults()
     setShowMobileFilters(false)
   }
 
-  return mangoAccount ? (
+  return mangoAccountAddress ? (
     <Disclosure>
       <div className="relative">
         {hasFilters ? (

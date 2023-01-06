@@ -36,7 +36,7 @@ const SwapHistoryTable = () => {
   const { mangoTokens } = useJupiterMints()
   const [showSwapDetails, setSwapDetails] = useState('')
   const actions = mangoStore.getState().actions
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const [preferredExplorer] = useLocalStorageState(
@@ -45,17 +45,17 @@ const SwapHistoryTable = () => {
   )
 
   useEffect(() => {
-    if (mangoAccount) {
-      actions.fetchSwapHistory(mangoAccount.publicKey.toString())
+    if (mangoAccountAddress) {
+      actions.fetchSwapHistory(mangoAccountAddress)
     }
-  }, [actions, mangoAccount])
+  }, [actions, mangoAccountAddress])
 
   const handleShowSwapDetails = (signature: string) => {
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
   }
 
   return initialLoad ? (
-    mangoAccount && swapHistory.length ? (
+    mangoAccountAddress && swapHistory.length ? (
       showTableView ? (
         <Table>
           <thead>

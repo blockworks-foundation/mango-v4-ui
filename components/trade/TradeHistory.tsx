@@ -10,7 +10,6 @@ import {
   TrHead,
 } from '@components/shared/TableElements'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
-import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -29,8 +28,8 @@ const byTimestamp = (a: any, b: any) => {
 
 const reverseSide = (side: string) => (side === 'buy' ? 'sell' : 'buy')
 
-const parsedPerpEvent = (mangoAccountPk: PublicKey, event: any) => {
-  const maker = event.maker.toString() === mangoAccountPk.toString()
+const parsedPerpEvent = (mangoAccountAddress: string, event: any) => {
+  const maker = event.maker.toString() === mangoAccountAddress
   const orderId = maker ? event.makerOrderId : event.takerOrderId
   const value = event.quantity * event.price
   const feeRate = maker
@@ -68,14 +67,17 @@ const parsedSerumEvent = (event: any) => {
   }
 }
 
-const formatTradeHistory = (mangoAccountPk: PublicKey, tradeHistory: any[]) => {
+const formatTradeHistory = (
+  mangoAccountAddress: string,
+  tradeHistory: any[]
+) => {
   return tradeHistory
     .flat()
     .map((event) => {
       if (event.eventFlags || event.nativeQuantityPaid) {
         return parsedSerumEvent(event)
       } else if (event.maker) {
-        return parsedPerpEvent(mangoAccountPk, event)
+        return parsedPerpEvent(mangoAccountAddress, event)
       } else {
         return event
       }
@@ -85,7 +87,7 @@ const formatTradeHistory = (mangoAccountPk: PublicKey, tradeHistory: any[]) => {
 
 const TradeHistory = () => {
   const { selectedMarket } = useSelectedMarket()
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const fills = mangoStore((s) => s.selectedMarket.fills)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -105,7 +107,7 @@ const TradeHistory = () => {
   }, [mangoAccount, selectedMarket])
 
   const tradeHistoryFromEventQueue = useMemo(() => {
-    if (!mangoAccount || !selectedMarket) return []
+    if (!mangoAccountAddress || !selectedMarket) return []
 
     const mangoAccountFills = fills
       .filter((fill: any) => {
@@ -122,8 +124,8 @@ const TradeHistory = () => {
       })
       .map((fill: any) => ({ ...fill, marketName: selectedMarket.name }))
 
-    return formatTradeHistory(mangoAccount.publicKey, mangoAccountFills)
-  }, [selectedMarket, mangoAccount, openOrderOwner])
+    return formatTradeHistory(mangoAccountAddress, mangoAccountFills)
+  }, [selectedMarket, mangoAccountAddress, openOrderOwner, fills])
 
   if (!selectedMarket) return null
 

@@ -92,13 +92,6 @@ const UnsettledTrades = ({
               ?.getEquityUi(group, market) || 0,
         }))
         .sort((a, b) => sign * (a.pnl - b.pnl))
-      console.log(
-        'pnl',
-        filteredAccounts.map((m) => [
-          m.mangoAccount.publicKey.toString(),
-          m.pnl,
-        ])
-      )
 
       const profitableAccount =
         mangoAccountPnl >= 0 ? mangoAccount : filteredAccounts[0].mangoAccount
