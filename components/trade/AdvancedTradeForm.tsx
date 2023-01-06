@@ -572,17 +572,11 @@ const AdvancedTradeForm = () => {
             )}
           </Button>
         ) : (
-          <div className="flex-grow">
-            <div className="flex">
-              <Button disabled className="flex-grow">
-                <span>
-                  {t('country-not-allowed', {
-                    country: ipCountry ? `(${ipCountry})` : '(Unknown)',
-                  })}
-                </span>
-              </Button>
-            </div>
-          </div>
+          <Button disabled className="w-full leading-tight" size="large">
+            {t('country-not-allowed', {
+              country: ipCountry ? `(${ipCountry})` : '',
+            })}
+          </Button>
         )}
       </div>
       <TradeSummary mangoAccount={mangoAccount} />

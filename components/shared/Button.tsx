@@ -29,7 +29,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`whitespace-nowrap rounded-md ${
+      className={`rounded-md ${
         secondary
           ? 'border border-th-button md:hover:border-th-button-hover'
           : 'bg-th-button md:hover:bg-th-button-hover'

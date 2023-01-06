@@ -431,17 +431,15 @@ const SwapForm = () => {
               }
             />
           ) : (
-            <div className="mt-6 mb-4 flex-grow">
-              <div className="flex">
-                <Button disabled className="flex-grow">
-                  <span>
-                    {t('country-not-allowed', {
-                      country: ipCountry ? `(${ipCountry})` : '(Unknown)',
-                    })}
-                  </span>
-                </Button>
-              </div>
-            </div>
+            <Button
+              disabled
+              className="mt-6 mb-4 w-full leading-tight"
+              size="large"
+            >
+              {t('country-not-allowed', {
+                country: ipCountry ? `(${ipCountry})` : '',
+              })}
+            </Button>
           )}
           {group && inputBank ? <TokenVaultWarnings bank={inputBank} /> : null}
           <div className="space-y-2">
