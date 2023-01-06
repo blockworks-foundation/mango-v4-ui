@@ -128,7 +128,7 @@ const PerpPositions = () => {
                     unsettledPnl > 0 ? 'text-th-up' : 'text-th-down'
                   }`}
                 >
-                  <div>${formatFixedDecimals(unsettledPnl)}</div>
+                  <div>{formatFixedDecimals(unsettledPnl, true)}</div>
                 </Td>
                 <Td className="text-right">
                   <div>

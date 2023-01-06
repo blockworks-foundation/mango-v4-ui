@@ -107,21 +107,30 @@ const BalancesTable = () => {
                     {mangoAccount
                       ? `${formatFixedDecimals(
                           mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
+                          false,
                           true
                         )}`
                       : '$0.00'}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
-                  <p>{inOrders}</p>
+                  <p>
+                    {inOrders
+                      ? formatDecimal(Number(inOrders), bank.mintDecimals)
+                      : '0'}
+                  </p>
                   <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(inOrders * bank.uiPrice, true)}
+                    {formatFixedDecimals(inOrders * bank.uiPrice, false, true)}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
-                  <p>{unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}</p>
+                  <p>
+                    {unsettled
+                      ? formatDecimal(Number(unsettled), bank.mintDecimals)
+                      : '0'}
+                  </p>
                   <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(unsettled * bank.uiPrice, true)}
+                    {formatFixedDecimals(unsettled * bank.uiPrice, false, true)}
                   </p>
                 </Td>
               </TrBody>
@@ -167,6 +176,7 @@ const BalancesTable = () => {
                     {mangoAccount
                       ? `${formatFixedDecimals(
                           mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
+                          false,
                           true
                         )}`
                       : '$0.00'}

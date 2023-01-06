@@ -72,7 +72,11 @@ const SpotMarketsTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(oraclePrice!, true)}</p>
+                      <p>
+                        {oraclePrice
+                          ? formatFixedDecimals(oraclePrice, true)
+                          : '–'}
+                      </p>
                     </div>
                   </Td>
                   <Td>

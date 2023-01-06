@@ -178,6 +178,7 @@ const SwapHistoryTable = () => {
                     <p className="text-right">
                       {formatFixedDecimals(
                         swap_out_price_usd * swap_out_amount,
+                        false,
                         true
                       )}
                     </p>

@@ -201,7 +201,8 @@ const TokenList = () => {
                     <p className="text-sm text-th-fgd-4">
                       {tokenBalance
                         ? `${formatFixedDecimals(
-                            tokenBalance * oraclePrice!,
+                            tokenBalance * oraclePrice,
+                            false,
                             true
                           )}`
                         : '$0.00'}
@@ -214,7 +215,7 @@ const TokenList = () => {
                         : '0'}
                     </p>
                     <p className="text-sm text-th-fgd-4">
-                      {formatFixedDecimals(inOrders * oraclePrice!, true)}
+                      {formatFixedDecimals(inOrders * oraclePrice, false, true)}
                     </p>
                   </Td>
                   <Td className="text-right">
@@ -224,7 +225,11 @@ const TokenList = () => {
                         : '0'}
                     </p>
                     <p className="text-sm text-th-fgd-4">
-                      {formatFixedDecimals(unsettled * oraclePrice!, true)}
+                      {formatFixedDecimals(
+                        unsettled * oraclePrice,
+                        false,
+                        true
+                      )}
                     </p>
                   </Td>
                   <Td>
@@ -235,7 +240,7 @@ const TokenList = () => {
                           : '0'}
                       </p>
                       <p className="text-sm text-th-fgd-4">
-                        {formatFixedDecimals(interestValue, true)}
+                        {formatFixedDecimals(interestValue, false, true)}
                       </p>
                     </div>
                   </Td>
@@ -390,7 +395,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
                 {inOrders ? formatDecimal(inOrders, bank.mintDecimals) : '0'}
               </p>
               <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(inOrders * oraclePrice!, true)})
+                ({formatFixedDecimals(inOrders * oraclePrice, false, true)})
               </p>
             </div>
           </div>
@@ -401,7 +406,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
                 {unsettled ? formatDecimal(unsettled, bank.mintDecimals) : '0'}
               </p>
               <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(unsettled * oraclePrice!, true)})
+                ({formatFixedDecimals(unsettled * oraclePrice, false, true)})
               </p>
             </div>
           </div>
@@ -414,7 +419,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
                   : '0'}
               </p>
               <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(interestValue, true)})
+                ({formatFixedDecimals(interestValue, false, true)})
               </p>
             </div>
           </div>
