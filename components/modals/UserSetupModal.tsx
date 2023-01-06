@@ -462,7 +462,7 @@ const UserSetupModal = ({
                       allowNegative={false}
                       isNumericString={true}
                       decimalScale={tokenMax.decimals || 6}
-                      className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                      className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                       placeholder="0.00"
                       value={depositAmount}
                       onValueChange={(e: NumberFormatValues) => {
@@ -546,14 +546,14 @@ const UserSetupModal = ({
                     className="thin-scroll absolute top-36 w-full overflow-auto"
                     style={{ height: 'calc(100vh - 380px)' }}
                   >
-                    <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
-                      <div className="">
+                    <div className="flex items-center px-4 pb-2">
+                      <div className="w-1/4">
                         <p className="text-xs">{t('token')}</p>
                       </div>
-                      <div className="text-right">
+                      <div className="w-1/4 text-right">
                         <p className="text-xs">{t('deposit-rate')}</p>
                       </div>
-                      <div className="text-right">
+                      <div className="w-1/2 text-right">
                         <p className="whitespace-nowrap text-xs">
                           {t('wallet-balance')}
                         </p>

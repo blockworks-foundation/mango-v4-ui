@@ -10,10 +10,11 @@ import {
   Cog8ToothIcon,
   ArrowsRightLeftIcon,
   ArrowTrendingUpIcon,
+  XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
-import { Fragment, ReactNode, useEffect, useState } from 'react'
+import { Fragment, ReactNode, useState } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
 import Tooltip from './shared/Tooltip'
@@ -23,6 +24,7 @@ import mangoStore from '@store/mangoStore'
 import HealthHeart from './account/HealthHeart'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useTheme } from 'next-themes'
+import { IconButton } from './shared/Button'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
@@ -152,9 +154,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 size={32}
               />
             }
+            isOpen
+            panelTitle={`${mangoAccount?.name || ''} ${t('account')}`}
             title={
               <div className="w-24 text-left">
-                <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
+                <p className="mb-0.5 whitespace-nowrap text-xs">
+                  {t('account')}
+                </p>
                 <p className="truncate whitespace-nowrap text-sm font-bold text-th-fgd-1">
                   {mangoAccount
                     ? mangoAccount.name
@@ -166,6 +172,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             }
             alignBottom
             hideIconBg
+            showClose
           >
             <div className="px-4 py-2">
               <MangoAccountSummary />
@@ -253,6 +260,9 @@ export const ExpandableMenuItem = ({
   collapsed,
   hideIconBg,
   icon,
+  panelTitle,
+  isOpen,
+  showClose,
   title,
 }: {
   alignBottom?: boolean
@@ -260,25 +270,13 @@ export const ExpandableMenuItem = ({
   collapsed: boolean
   hideIconBg?: boolean
   icon: ReactNode
+  panelTitle?: string
+  isOpen?: boolean
+  showClose?: boolean
   title: string | ReactNode
 }) => {
-  const [showMenu, setShowMenu] = useState(false)
+  const [showMenu, setShowMenu] = useState(isOpen || false)
   const { theme } = useTheme()
-
-  const onHoverMenu = (open: boolean, action: string) => {
-    if (
-      (!open && action === 'onMouseEnter') ||
-      (open && action === 'onMouseLeave')
-    ) {
-      setShowMenu(!open)
-    }
-  }
-
-  useEffect(() => {
-    if (collapsed) {
-      setShowMenu(false)
-    }
-  }, [collapsed])
 
   const toggleMenu = () => {
     setShowMenu(!showMenu)
@@ -287,12 +285,6 @@ export const ExpandableMenuItem = ({
   return collapsed ? (
     <Popover>
       <div
-        onMouseEnter={
-          !alignBottom ? () => onHoverMenu(showMenu, 'onMouseEnter') : undefined
-        }
-        onMouseLeave={
-          !alignBottom ? () => onHoverMenu(showMenu, 'onMouseLeave') : undefined
-        }
         className={`relative z-30 ${alignBottom ? '' : 'px-4 py-2'}`}
         role="button"
       >
@@ -329,6 +321,20 @@ export const ExpandableMenuItem = ({
             }`}
           >
             <div className="rounded-md rounded-l-none bg-th-bkg-2 py-2">
+              <div className="flex items-center justify-between pl-4 pr-2">
+                {panelTitle ? (
+                  <h3 className="text-sm font-bold">{panelTitle}</h3>
+                ) : null}
+                {showClose ? (
+                  <IconButton
+                    onClick={() => setShowMenu(false)}
+                    hideBg
+                    size="small"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </IconButton>
+                ) : null}
+              </div>
               {children}
             </div>
           </Popover.Panel>

@@ -12,7 +12,7 @@ const actions = mangoStore.getState().actions
 const HydrateStore = () => {
   const router = useRouter()
   const { name: marketName } = router.query
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountPk, mangoAccountAddress } = useMangoAccount()
   const connection = mangoStore((s) => s.connection)
 
   const fetchData = useCallback(async () => {
@@ -33,7 +33,7 @@ const HydrateStore = () => {
   }, 15000)
 
   useInterval(() => {
-    if (mangoAccount) {
+    if (mangoAccountAddress) {
       actions.fetchOpenOrders()
     }
   }, 30000)
@@ -54,10 +54,10 @@ const HydrateStore = () => {
   useEffect(() => {
     const client = mangoStore.getState().client
 
-    if (!mangoAccount) return
+    if (!mangoAccountPk) return
 
     const subscriptionId = connection.onAccountChange(
-      mangoAccount.publicKey,
+      mangoAccountPk,
       async (info, context) => {
         if (info?.lamports === 0) return
 
@@ -98,7 +98,7 @@ const HydrateStore = () => {
     return () => {
       connection.removeAccountChangeListener(subscriptionId)
     }
-  }, [connection, mangoAccount])
+  }, [connection, mangoAccountPk])
 
   return null
 }

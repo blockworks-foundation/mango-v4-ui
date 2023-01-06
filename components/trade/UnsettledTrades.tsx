@@ -92,13 +92,6 @@ const UnsettledTrades = ({
               ?.getEquityUi(group, market) || 0,
         }))
         .sort((a, b) => sign * (a.pnl - b.pnl))
-      console.log(
-        'pnl',
-        filteredAccounts.map((m) => [
-          m.mangoAccount.publicKey.toString(),
-          m.pnl,
-        ])
-      )
 
       const profitableAccount =
         mangoAccountPnl >= 0 ? mangoAccount : filteredAccounts[0].mangoAccount
@@ -167,17 +160,13 @@ const UnsettledTrades = ({
                     {unsettledSpotBalances[mktAddress].base ? (
                       <div>
                         {unsettledSpotBalances[mktAddress].base}{' '}
-                        <span className="font-body tracking-wide text-th-fgd-4">
-                          {base}
-                        </span>
+                        <span className="font-body text-th-fgd-4">{base}</span>
                       </div>
                     ) : null}
                     {unsettledSpotBalances[mktAddress].quote ? (
                       <div className="ml-4">
                         {unsettledSpotBalances[mktAddress].quote}{' '}
-                        <span className="font-body tracking-wide text-th-fgd-4">
-                          {quote}
-                        </span>
+                        <span className="font-body text-th-fgd-4">{quote}</span>
                       </div>
                     ) : null}
                   </div>
@@ -255,17 +244,13 @@ const UnsettledTrades = ({
                 {unsettledSpotBalances[mktAddress].base ? (
                   <span className="font-mono text-sm">
                     {unsettledSpotBalances[mktAddress].base}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {base}
-                    </span>
+                    <span className="font-body text-th-fgd-4">{base}</span>
                   </span>
                 ) : null}
                 {unsettledSpotBalances[mktAddress].quote ? (
                   <span className="font-mono text-sm">
                     {unsettledSpotBalances[mktAddress].quote}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {quote}
-                    </span>
+                    <span className="font-body text-th-fgd-4">{quote}</span>
                   </span>
                 ) : null}
                 {connected ? (

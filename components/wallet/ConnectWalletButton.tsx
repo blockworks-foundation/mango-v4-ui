@@ -49,7 +49,7 @@ export const ConnectWalletButton: React.FC = () => {
                 {connecting ? <Loading className="h-4 w-4" /> : t('connect')}
               </div>
 
-              <div className="text-xxs font-normal leading-3 tracking-wider text-th-fgd-3">
+              <div className="text-xxs font-normal leading-3 text-th-fgd-3">
                 {preselectedWalletName}
               </div>
             </div>

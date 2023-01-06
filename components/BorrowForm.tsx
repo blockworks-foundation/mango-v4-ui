@@ -205,14 +205,14 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
           <ArrowLeftIcon className={`h-6 w-6`} />
         </button>
         <h2 className="mb-4 text-center text-lg">{t('select-borrow-token')}</h2>
-        <div className="grid auto-cols-fr grid-flow-col  px-4 pb-2">
-          <div className="">
+        <div className="flex items-center px-4 pb-2">
+          <div className="w-1/4">
             <p className="text-xs">{t('token')}</p>
           </div>
-          <div className="text-right">
+          <div className="w-1/4 text-right">
             <p className="text-xs">{t('borrow-rate')}</p>
           </div>
-          <div className="text-right">
+          <div className="w-1/2 text-right">
             <p className="whitespace-nowrap text-xs">{t('max-borrow')}</p>
           </div>
         </div>
@@ -279,7 +279,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   allowNegative={false}
                   isNumericString={true}
                   decimalScale={bank?.mintDecimals || 6}
-                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={handleInputChange}

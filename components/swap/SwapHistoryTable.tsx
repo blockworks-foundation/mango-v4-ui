@@ -12,7 +12,7 @@ import { useViewport } from '../../hooks/useViewport'
 import { IconButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
-import mangoStore, { SwapHistoryItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import {
   countLeadingZeros,
   formatFixedDecimals,
@@ -27,18 +27,16 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import useMangoAccount from 'hooks/useMangoAccount'
 
-const SwapHistoryTable = ({
-  swapHistory,
-  loading,
-}: {
-  swapHistory: SwapHistoryItem[]
-  loading: boolean
-}) => {
+const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
+  const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
+  const initialLoad = mangoStore(
+    (s) => s.mangoAccount.stats.swapHistory.initialLoad
+  )
   const { mangoTokens } = useJupiterMints()
   const [showSwapDetails, setSwapDetails] = useState('')
   const actions = mangoStore.getState().actions
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const [preferredExplorer] = useLocalStorageState(
@@ -47,17 +45,17 @@ const SwapHistoryTable = ({
   )
 
   useEffect(() => {
-    if (mangoAccount) {
-      actions.fetchSwapHistory(mangoAccount.publicKey.toString())
+    if (mangoAccountAddress) {
+      actions.fetchSwapHistory(mangoAccountAddress)
     }
-  }, [actions, mangoAccount])
+  }, [actions, mangoAccountAddress])
 
   const handleShowSwapDetails = (signature: string) => {
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
   }
 
-  return !loading ? (
-    mangoAccount && swapHistory.length ? (
+  return initialLoad ? (
+    mangoAccountAddress && swapHistory.length ? (
       showTableView ? (
         <Table>
           <thead>
@@ -116,10 +114,10 @@ const SwapHistoryTable = ({
               return (
                 <TrBody key={signature}>
                   <Td>
-                    <p className="font-body tracking-wide">
+                    <p className="font-body tracking-wider">
                       {dayjs(block_datetime).format('ddd D MMM')}
                     </p>
-                    <p className="font-body text-xs tracking-wide text-th-fgd-3">
+                    <p className="font-body text-xs text-th-fgd-3">
                       {dayjs(block_datetime).format('h:mma')}
                     </p>
                   </Td>
@@ -137,7 +135,7 @@ const SwapHistoryTable = ({
                         <div>
                           <p className="whitespace-nowrap">
                             {`${swap_in_amount.toFixed(inDecimals)}`}
-                            <span className="ml-1 font-body tracking-wide text-th-fgd-3">
+                            <span className="ml-1 font-body text-th-fgd-3">
                               {inSymbol}
                             </span>
                           </p>
@@ -162,7 +160,7 @@ const SwapHistoryTable = ({
                         <div>
                           <p className="whitespace-nowrap">
                             {`${trimDecimals(swap_out_amount, outDecimals)}`}
-                            <span className="ml-1 font-body tracking-wide text-th-fgd-3">
+                            <span className="ml-1 font-body text-th-fgd-3">
                               {outSymbol}
                             </span>
                           </p>
@@ -188,7 +186,7 @@ const SwapHistoryTable = ({
                     <div className="flex flex-col text-right">
                       <p>
                         {borrowAmount}
-                        <span className="ml-1 font-body tracking-wide text-th-fgd-3">
+                        <span className="ml-1 font-body text-th-fgd-3">
                           {inSymbol}
                         </span>
                       </p>
@@ -196,7 +194,12 @@ const SwapHistoryTable = ({
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>${borrowFee}</p>
+                      <p>
+                        {borrowFee}
+                        <span className="ml-1 font-body text-th-fgd-3">
+                          {inSymbol}
+                        </span>
+                      </p>
                     </div>
                   </Td>
                   <Td>

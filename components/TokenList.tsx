@@ -189,11 +189,15 @@ const TokenList = () => {
                           <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                         )}
                       </div>
-                      <p className="font-body tracking-wide">{bank.name}</p>
+                      <p className="font-body tracking-wider">{bank.name}</p>
                     </div>
                   </Td>
                   <Td className="text-right">
-                    <p>{tokenBalance}</p>
+                    <p>
+                      {tokenBalance
+                        ? formatDecimal(tokenBalance, bank.mintDecimals)
+                        : '0'}
+                    </p>
                     <p className="text-sm text-th-fgd-4">
                       {tokenBalance
                         ? `${formatFixedDecimals(
@@ -204,14 +208,20 @@ const TokenList = () => {
                     </p>
                   </Td>
                   <Td className="text-right">
-                    <p>{inOrders}</p>
+                    <p>
+                      {inOrders
+                        ? formatDecimal(inOrders, bank.mintDecimals)
+                        : '0'}
+                    </p>
                     <p className="text-sm text-th-fgd-4">
                       {formatFixedDecimals(inOrders * oraclePrice!, true)}
                     </p>
                   </Td>
                   <Td className="text-right">
                     <p>
-                      {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
+                      {unsettled
+                        ? formatDecimal(unsettled, bank.mintDecimals)
+                        : '0'}
                     </p>
                     <p className="text-sm text-th-fgd-4">
                       {formatFixedDecimals(unsettled * oraclePrice!, true)}
@@ -221,8 +231,8 @@ const TokenList = () => {
                     <div className="flex flex-col text-right">
                       <p>
                         {interestAmount
-                          ? interestAmount.toFixed(bank.mintDecimals)
-                          : 0}
+                          ? formatDecimal(interestAmount, bank.mintDecimals)
+                          : '0'}
                       </p>
                       <p className="text-sm text-th-fgd-4">
                         {formatFixedDecimals(interestValue, true)}
@@ -340,7 +350,9 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
               <span className="mr-1 font-body text-th-fgd-4">
                 {t('balance')}:
               </span>
-              {tokenBalance}
+              {tokenBalance
+                ? formatDecimal(tokenBalance, bank.mintDecimals)
+                : '0'}
             </p>
           </div>
         </div>
@@ -373,7 +385,9 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:in-orders')}</p>
             <div className="flex font-mono">
-              <p className="text-th-fgd-2">{inOrders}</p>
+              <p className="text-th-fgd-2">
+                {inOrders ? formatDecimal(inOrders, bank.mintDecimals) : '0'}
+              </p>
               <p className="ml-1 text-th-fgd-4">
                 ({formatFixedDecimals(inOrders * oraclePrice!, true)})
               </p>
@@ -383,7 +397,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
             <p className="text-xs text-th-fgd-3">{t('trade:unsettled')}</p>
             <div className="flex font-mono">
               <p className="text-th-fgd-2">
-                {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
+                {unsettled ? formatDecimal(unsettled, bank.mintDecimals) : '0'}
               </p>
               <p className="ml-1 text-th-fgd-4">
                 ({formatFixedDecimals(unsettled * oraclePrice!, true)})
@@ -394,7 +408,9 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
             <p className="text-xs text-th-fgd-3">{t('interest-earned-paid')}</p>
             <div className="flex font-mono">
               <p className="text-th-fgd-2">
-                {floorToDecimal(interestAmount, bank.mintDecimals).toNumber()}
+                {interestAmount
+                  ? formatDecimal(interestAmount, bank.mintDecimals)
+                  : '0'}
               </p>
               <p className="ml-1 text-th-fgd-4">
                 ({formatFixedDecimals(interestValue, true)})
@@ -542,7 +558,7 @@ const ActionsMenu = ({
             <div className="mr-2 flex flex-shrink-0 items-center">
               <Image alt="" width="20" height="20" src={logoURI || ''} />
             </div>
-            <p className="font-body tracking-wide">
+            <p className="font-body tracking-wider">
               {formatTokenSymbol(bank.name)}
             </p>
           </div>

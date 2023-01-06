@@ -340,22 +340,22 @@ const SwapReviewRouteInfo = ({
                   {swapRate ? (
                     <>
                       1{' '}
-                      <span className="font-body tracking-wide">
+                      <span className="font-body tracking-wider">
                         {inputTokenInfo!.name} ≈{' '}
                       </span>
                       {formatFixedDecimals(amountOut.div(amountIn).toNumber())}{' '}
-                      <span className="font-body tracking-wide">
+                      <span className="font-body tracking-wider">
                         {outputTokenInfo?.symbol}
                       </span>
                     </>
                   ) : (
                     <>
                       1{' '}
-                      <span className="font-body tracking-wide">
+                      <span className="font-body tracking-wider">
                         {outputTokenInfo?.symbol} ≈{' '}
                       </span>
                       {formatFixedDecimals(amountIn.div(amountOut).toNumber())}{' '}
-                      <span className="font-body tracking-wide">
+                      <span className="font-body tracking-wider">
                         {inputTokenInfo!.symbol}
                       </span>
                     </>
@@ -377,7 +377,7 @@ const SwapReviewRouteInfo = ({
                     }`}
                   >
                     {Decimal.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
-                    <span className="font-body tracking-wide text-th-fgd-3">{`${
+                    <span className="font-body text-th-fgd-3">{`${
                       coinGeckoPriceDifference.lte(0)
                         ? 'cheaper'
                         : 'more expensive'
@@ -398,7 +398,7 @@ const SwapReviewRouteInfo = ({
                     10 ** outputTokenInfo.decimals || 1,
                   outputTokenInfo.decimals
                 )}{' '}
-                <span className="font-body tracking-wide">
+                <span className="font-body tracking-wider">
                   {outputTokenInfo?.symbol}
                 </span>
               </p>
@@ -441,7 +441,7 @@ const SwapReviewRouteInfo = ({
               </Tooltip>
               <p className="text-right font-mono text-sm text-th-fgd-2">
                 ~{formatFixedDecimals(borrowAmount)}{' '}
-                <span className="font-body tracking-wide">
+                <span className="font-body tracking-wider">
                   {inputTokenInfo?.symbol}
                 </span>
               </p>
@@ -522,7 +522,7 @@ const SwapReviewRouteInfo = ({
                             .mul(inputBank!.loanOriginationFeeRate.toFixed())
                             .toNumber()
                         )}{' '}
-                        <span className="font-body tracking-wide">
+                        <span className="font-body tracking-wider">
                           {inputBank!.name}
                         </span>{' '}
                         (
@@ -560,7 +560,7 @@ const SwapReviewRouteInfo = ({
                                 info.lpFee?.amount /
                                 Math.pow(10, feeToken.decimals)
                               ).toFixed(6)}{' '}
-                              <span className="font-body tracking-wide">
+                              <span className="font-body tracking-wider">
                                 {feeToken?.symbol}
                               </span>{' '}
                               (
