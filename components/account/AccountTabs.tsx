@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import mangoStore from '@store/mangoStore'
 import TabButtons from '../shared/TabButtons'
 import TokenList from '../TokenList'
 import SwapHistoryTable from '../swap/SwapHistoryTable'
@@ -43,8 +42,6 @@ const AccountTabs = () => {
 }
 
 const TabContent = ({ activeTab }: { activeTab: string }) => {
-  const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
-  const loading = mangoStore((s) => s.mangoAccount.stats.swapHistory.loading)
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   switch (activeTab) {
@@ -53,7 +50,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
     case 'activity:activity':
       return <ActivityFeed />
     case 'swap:swap-history':
-      return <SwapHistoryTable swapHistory={swapHistory} loading={loading} />
+      return <SwapHistoryTable />
     case 'trade:unsettled':
       return (
         <UnsettledTrades

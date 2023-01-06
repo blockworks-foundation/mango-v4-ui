@@ -240,7 +240,10 @@ export type MangoStore = {
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
       performance: { data: PerformanceDataItem[]; loading: boolean }
-      swapHistory: { data: SwapHistoryItem[]; loading: boolean }
+      swapHistory: {
+        data: SwapHistoryItem[]
+        initialLoad: boolean
+      }
     }
   }
   mangoAccounts: MangoAccount[]
@@ -372,7 +375,7 @@ const mangoStore = create<MangoStore>()(
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
-          swapHistory: { data: [], loading: false },
+          swapHistory: { data: [], initialLoad: false },
         },
       },
       mangoAccounts: [],
@@ -823,9 +826,6 @@ const mangoStore = create<MangoStore>()(
           const set = get().set
           setTimeout(async () => {
             try {
-              set((state) => {
-                state.mangoAccount.stats.swapHistory.loading = true
-              })
               const history = await fetch(
                 `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}`
               )
@@ -841,11 +841,11 @@ const mangoStore = create<MangoStore>()(
 
               set((state) => {
                 state.mangoAccount.stats.swapHistory.data = sortedHistory
-                state.mangoAccount.stats.swapHistory.loading = false
+                state.mangoAccount.stats.swapHistory.initialLoad = true
               })
             } catch {
               set((state) => {
-                state.mangoAccount.stats.swapHistory.loading = false
+                state.mangoAccount.stats.swapHistory.initialLoad = true
               })
               notify({
                 title: 'Failed to load account swap history data',

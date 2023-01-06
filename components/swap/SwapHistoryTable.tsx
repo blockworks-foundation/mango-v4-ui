@@ -12,7 +12,7 @@ import { useViewport } from '../../hooks/useViewport'
 import { IconButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
-import mangoStore, { SwapHistoryItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import {
   countLeadingZeros,
   formatFixedDecimals,
@@ -27,14 +27,12 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import useMangoAccount from 'hooks/useMangoAccount'
 
-const SwapHistoryTable = ({
-  swapHistory,
-  loading,
-}: {
-  swapHistory: SwapHistoryItem[]
-  loading: boolean
-}) => {
+const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
+  const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
+  const initialLoad = mangoStore(
+    (s) => s.mangoAccount.stats.swapHistory.initialLoad
+  )
   const { mangoTokens } = useJupiterMints()
   const [showSwapDetails, setSwapDetails] = useState('')
   const actions = mangoStore.getState().actions
@@ -56,7 +54,7 @@ const SwapHistoryTable = ({
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
   }
 
-  return !loading ? (
+  return initialLoad ? (
     mangoAccount && swapHistory.length ? (
       showTableView ? (
         <Table>

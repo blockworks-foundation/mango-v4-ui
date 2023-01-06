@@ -9,8 +9,6 @@ const SwapInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const { mangoAccount } = useMangoAccount()
-  const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
-  const loading = mangoStore((s) => s.mangoAccount.stats.swapHistory.loading)
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     return [
@@ -30,9 +28,7 @@ const SwapInfoTabs = () => {
         />
       </div>
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
-      {selectedTab === 'swap:swap-history' ? (
-        <SwapHistoryTable swapHistory={swapHistory} loading={loading} />
-      ) : null}
+      {selectedTab === 'swap:swap-history' ? <SwapHistoryTable /> : null}
     </div>
   )
 }
