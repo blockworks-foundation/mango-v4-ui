@@ -59,7 +59,7 @@ const AccountActions = () => {
       {mangoAccount && !connected ? null : (
         <div className="flex items-center space-x-2">
           <Button
-            className="flex w-1/3 items-center justify-center sm:w-auto"
+            className="flex w-1/3 items-center justify-center md:w-auto"
             disabled={!mangoAccount}
             onClick={() => setShowRepayModal(true)}
             secondary
@@ -68,7 +68,7 @@ const AccountActions = () => {
             {t('repay')}
           </Button>
           <Button
-            className="flex w-1/3 items-center justify-center sm:w-auto"
+            className="flex w-1/3 items-center justify-center md:w-auto"
             onClick={handleBorrowModal}
             secondary
           >
@@ -77,7 +77,7 @@ const AccountActions = () => {
           </Button>
           <Menu>
             {({ open }) => (
-              <div className="relative w-1/3 sm:w-auto">
+              <div className="relative w-1/3 md:w-auto">
                 <Menu.Button
                   className={`default-transition w-full focus:outline-none`}
                 >

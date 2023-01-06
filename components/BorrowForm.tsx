@@ -21,7 +21,11 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -327,18 +331,25 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                     <p className="font-mono text-th-fgd-2">
                       {isBorrow ? (
                         <>
-                          {tokenBalance.toNumber()}{' '}
+                          {formatDecimal(
+                            Number(tokenBalance),
+                            bank.mintDecimals
+                          )}{' '}
                           <span className="text-xs text-th-fgd-3">
                             (
                             {formatFixedDecimals(
                               bank.uiPrice * tokenBalance.toNumber(),
                               true
                             )}
+                            )
                           </span>
                         </>
                       ) : inputAmount ? (
                         <>
-                          {inputAmount}{' '}
+                          {formatDecimal(
+                            Number(inputAmount),
+                            bank.mintDecimals
+                          )}{' '}
                           <span className="text-xs text-th-fgd-3">
                             (
                             {formatFixedDecimals(
@@ -362,7 +373,10 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   <p className="font-mono text-th-fgd-2">
                     {isBorrow ? (
                       <>
-                        {parseFloat(inputAmount) - tokenBalance.toNumber()}{' '}
+                        {formatDecimal(
+                          Number(inputAmount) - Number(tokenBalance),
+                          bank.mintDecimals
+                        )}{' '}
                         <span className="text-xs text-th-fgd-3">
                           (
                           {formatFixedDecimals(
@@ -388,14 +402,20 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                     </p>
                   </Tooltip>
                   <p className="font-mono text-th-fgd-2">
-                    {isBorrow
-                      ? formatFixedDecimals(
-                          bank.uiPrice *
-                            bank.loanOriginationFeeRate.toNumber() *
+                    {isBorrow ? (
+                      <>
+                        {formatDecimal(
+                          bank.loanOriginationFeeRate.toNumber() *
                             (parseFloat(inputAmount) - tokenBalance.toNumber()),
-                          true
-                        )
-                      : '$0.00'}
+                          bank.mintDecimals
+                        )}{' '}
+                        <span className="font-body text-th-fgd-4">
+                          {bank.name}
+                        </span>
+                      </>
+                    ) : (
+                      'N/A'
+                    )}
                   </p>
                 </div>
               </div>

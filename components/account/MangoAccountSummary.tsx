@@ -3,7 +3,7 @@ import {
   HealthType,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
-import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
+import { formatFixedDecimals } from '../../utils/numbers'
 import { useTranslation } from 'next-i18next'
 import useMangoAccount from 'hooks/useMangoAccount'
 
@@ -40,15 +40,15 @@ const MangoAccountSummary = () => {
         <div>
           <p className="text-sm text-th-fgd-3">{t('account-value')}</p>
           <p className="font-mono text-sm text-th-fgd-1">
-            $
             {group && mangoAccount
-              ? formatDecimal(
+              ? formatFixedDecimals(
                   toUiDecimalsForQuote(
                     mangoAccount.getEquity(group).toNumber()
                   ),
-                  2
+                  false,
+                  true
                 )
-              : (0).toFixed(2)}
+              : '$0.00'}
           </p>
         </div>
         <div>
@@ -59,9 +59,10 @@ const MangoAccountSummary = () => {
                   toUiDecimalsForQuote(
                     mangoAccount.getCollateralValue(group).toNumber()
                   ),
+                  false,
                   true
                 )
-              : `$${(0).toFixed(2)}`}
+              : '$0.00'}
           </p>
         </div>
         <div>
@@ -74,9 +75,10 @@ const MangoAccountSummary = () => {
                       .getAssetsValue(group, HealthType.init)
                       .toNumber()
                   ),
+                  false,
                   true
                 )
-              : `$${(0).toFixed(2)}`}
+              : '$0.00'}
           </p>
         </div>
         {/* <div>

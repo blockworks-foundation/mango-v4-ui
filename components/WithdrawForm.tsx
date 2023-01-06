@@ -18,7 +18,11 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -280,34 +284,36 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                 />
               </div>
             </div>
-            <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
-              <HealthImpactTokenChange
-                mintPk={bank!.mint}
-                uiAmount={Number(inputAmount)}
-              />
-              <div className="flex justify-between">
-                <p>{t('withdraw-amount')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {bank?.uiPrice && inputAmount ? (
-                    <>
-                      {inputAmount}{' '}
-                      <span className="text-xs text-th-fgd-3">
-                        (
-                        {formatFixedDecimals(
-                          bank.uiPrice * Number(inputAmount),
-                          true
-                        )}
-                        )
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      0 <span className="text-xs text-th-fgd-3">($0.00)</span>
-                    </>
-                  )}
-                </p>
+            {bank ? (
+              <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
+                <HealthImpactTokenChange
+                  mintPk={bank.mint}
+                  uiAmount={Number(inputAmount)}
+                />
+                <div className="flex justify-between">
+                  <p>{t('withdraw-amount')}</p>
+                  <p className="font-mono text-th-fgd-2">
+                    {inputAmount ? (
+                      <>
+                        {formatDecimal(Number(inputAmount), bank.mintDecimals)}{' '}
+                        <span className="text-xs text-th-fgd-3">
+                          (
+                          {formatFixedDecimals(
+                            bank.uiPrice * Number(inputAmount),
+                            true
+                          )}
+                          )
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        0 <span className="text-xs text-th-fgd-3">($0.00)</span>
+                      </>
+                    )}
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
           <Button
             onClick={connected ? handleWithdraw : handleConnect}

@@ -76,7 +76,7 @@ const AccountPage = () => {
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const { theme } = useTheme()
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.sm : false
+  const isMobile = width ? width < breakpoints.md : false
   // const tourSettings = mangoStore((s) => s.settings.tours)
   // const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [animationSettings] = useLocalStorageState(
@@ -221,7 +221,7 @@ const AccountPage = () => {
   return !chartToShow ? (
     <>
       <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 lg:flex-row lg:items-center lg:justify-between lg:border-b">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
+        <div className="flex flex-col md:flex-row md:items-center md:space-x-6">
           <div id="account-step-three">
             <Tooltip
               maxWidth="20rem"
@@ -242,7 +242,7 @@ const AccountPage = () => {
                     play
                     delay={0.05}
                     duration={1}
-                    numbers={formatFixedDecimals(accountValue, true)}
+                    numbers={formatFixedDecimals(accountValue, false, true)}
                   />
                 ) : (
                   <FlipNumbers
@@ -255,7 +255,7 @@ const AccountPage = () => {
                   />
                 )
               ) : (
-                <span>{formatFixedDecimals(accountValue, true)}</span>
+                <span>{formatFixedDecimals(accountValue, false, true)}</span>
               )}
             </div>
             <div className="flex items-center space-x-1.5">
@@ -266,7 +266,7 @@ const AccountPage = () => {
           {!loadPerformanceData ? (
             mangoAccount && performanceData.length ? (
               <div
-                className="relative mt-4 flex h-44 items-end sm:mt-0 sm:h-24 sm:w-48"
+                className="relative mt-4 flex h-44 items-end md:mt-0 md:h-24 md:w-48"
                 onMouseEnter={() =>
                   onHoverMenu(showExpandChart, 'onMouseEnter')
                 }
@@ -307,8 +307,8 @@ const AccountPage = () => {
               </div>
             ) : null
           ) : (
-            <SheenLoader className="mt-4 flex flex-1 sm:mt-0">
-              <div className="h-40 w-full rounded-md bg-th-bkg-2 sm:h-24 sm:w-48" />
+            <SheenLoader className="mt-4 flex flex-1 md:mt-0">
+              <div className="h-40 w-full rounded-md bg-th-bkg-2 md:h-24 md:w-48" />
             </SheenLoader>
           )}
         </div>
@@ -317,7 +317,7 @@ const AccountPage = () => {
         </div>
       </div>
       <div className="grid grid-cols-5 border-b border-th-bkg-3">
-        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-t-0">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-t-0">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
@@ -363,7 +363,7 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-4 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-five">
             <Tooltip
               content="The amount of capital you have to use for trades and loans. When your free collateral reaches $0 you won't be able to trade, borrow or withdraw."
@@ -381,6 +381,7 @@ const AccountPage = () => {
                     toUiDecimalsForQuote(
                       mangoAccount.getCollateralValue(group).toNumber()
                     ),
+                    false,
                     true
                   )
                 : `$${(0).toFixed(2)}`}
@@ -401,6 +402,7 @@ const AccountPage = () => {
                             .getAssetsValue(group, HealthType.init)
                             .toNumber()
                         ),
+                        false,
                         true
                       )
                     : `$${(0).toFixed(2)}`}
@@ -427,7 +429,7 @@ const AccountPage = () => {
           </div>
         </div>
         <button
-          className={`col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
             performanceData.length > 4
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'cursor-default'
@@ -445,7 +447,7 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {formatFixedDecimals(accountPnl, true)}
+              {formatFixedDecimals(accountPnl, false, true)}
             </p>
             <div className="flex space-x-1">
               <Change change={oneDayPnlChange} prefix="$" size="small" />
@@ -457,7 +459,7 @@ const AccountPage = () => {
           ) : null}
         </button>
         <button
-          className={`col-span-4 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
+          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
             interestTotalValue > 1 || interestTotalValue < -1
               ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
               : 'cursor-default'
@@ -476,7 +478,7 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {formatFixedDecimals(interestTotalValue, true)}
+              {formatFixedDecimals(interestTotalValue, false, true)}
             </p>
             <div className="flex space-x-1">
               <Change change={oneDayInterestChange} prefix="$" size="small" />

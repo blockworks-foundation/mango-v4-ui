@@ -26,7 +26,11 @@ import {
 } from 'react'
 import { ALPHA_DEPOSIT_LIMIT } from 'utils/constants'
 import { notify } from 'utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from 'utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -365,7 +369,7 @@ const UserSetupModal = ({
                     charLimit={30}
                   />
                 </div>
-                <SolBalanceWarnings />
+                <SolBalanceWarnings className="mt-4" />
                 <div className="mt-2">
                   <InlineNotification
                     type="info"
@@ -410,6 +414,7 @@ const UserSetupModal = ({
                     />
                     <SolBalanceWarnings
                       amount={depositAmount}
+                      className="mt-4"
                       setAmount={setDepositAmount}
                       selectedToken={depositToken}
                     />
@@ -481,35 +486,40 @@ const UserSetupModal = ({
                       />
                     </div>
                   </div>
-                  <div className="mb-10 border-y border-th-bkg-3">
-                    <div className="flex justify-between px-2 py-4">
-                      <p>{t('deposit-amount')}</p>
-                      <p className="font-mono text-th-fgd-2">
-                        {depositBank?.uiPrice && depositAmount ? (
-                          <>
-                            {depositAmount}{' '}
-                            <span className="text-xs text-th-fgd-3">
-                              (
-                              {formatFixedDecimals(
-                                depositBank.uiPrice * Number(depositAmount),
-                                true
-                              )}
-                              )
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            0{' '}
-                            <span className="text-xs text-th-fgd-3">
-                              ($0.00)
-                            </span>
-                          </>
-                        )}
-                      </p>
+                  {depositBank ? (
+                    <div className="border-y border-th-bkg-3">
+                      <div className="flex justify-between px-2 py-4">
+                        <p>{t('deposit-amount')}</p>
+                        <p className="font-mono text-th-fgd-2">
+                          {depositAmount ? (
+                            <>
+                              {formatDecimal(
+                                Number(depositAmount),
+                                depositBank.mintDecimals
+                              )}{' '}
+                              <span className="text-xs text-th-fgd-3">
+                                (
+                                {formatFixedDecimals(
+                                  depositBank.uiPrice * Number(depositAmount),
+                                  true
+                                )}
+                                )
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              0{' '}
+                              <span className="text-xs text-th-fgd-3">
+                                ($0.00)
+                              </span>
+                            </>
+                          )}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
                   <Button
-                    className="mb-6 flex items-center justify-center"
+                    className="mb-6 mt-10 flex items-center justify-center"
                     disabled={
                       !depositAmount ||
                       !depositToken ||

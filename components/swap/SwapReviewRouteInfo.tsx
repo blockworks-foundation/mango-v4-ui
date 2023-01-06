@@ -294,7 +294,11 @@ const SwapReviewRouteInfo = ({
       : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
 
-  return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (
+  return routes?.length &&
+    selectedRoute &&
+    inputTokenInfo &&
+    outputTokenInfo &&
+    amountOut ? (
     <div className="thin-scroll flex h-full flex-col justify-between overflow-y-auto">
       <div>
         <IconButton
@@ -314,7 +318,7 @@ const SwapReviewRouteInfo = ({
                   alt=""
                   width="40"
                   height="40"
-                  src={outputTokenInfo.logoURI}
+                  src={outputTokenInfo?.logoURI}
                 />
               </div>
             </div>
@@ -322,12 +326,12 @@ const SwapReviewRouteInfo = ({
               <span className="mr-1 font-mono text-th-fgd-1">{`${formatFixedDecimals(
                 amountIn.toNumber()
               )}`}</span>{' '}
-              {inputTokenInfo!.symbol}
+              {inputTokenInfo?.symbol}
               <ArrowRightIcon className="mx-2 h-5 w-5 text-th-fgd-4" />
               <span className="mr-1 font-mono text-th-fgd-1">{`${formatFixedDecimals(
                 amountOut.toNumber()
               )}`}</span>{' '}
-              {`${outputTokenInfo.symbol}`}
+              {`${outputTokenInfo?.symbol}`}
             </p>
           </div>
         </div>
@@ -341,7 +345,7 @@ const SwapReviewRouteInfo = ({
                     <>
                       1{' '}
                       <span className="font-body tracking-wider">
-                        {inputTokenInfo!.name} ≈{' '}
+                        {inputTokenInfo?.name} ≈{' '}
                       </span>
                       {formatFixedDecimals(amountOut.div(amountIn).toNumber())}{' '}
                       <span className="font-body tracking-wider">
@@ -356,7 +360,7 @@ const SwapReviewRouteInfo = ({
                       </span>
                       {formatFixedDecimals(amountIn.div(amountOut).toNumber())}{' '}
                       <span className="font-body tracking-wider">
-                        {inputTokenInfo!.symbol}
+                        {inputTokenInfo?.symbol}
                       </span>
                     </>
                   )}
@@ -391,10 +395,11 @@ const SwapReviewRouteInfo = ({
             <p className="text-sm text-th-fgd-3">
               {t('swap:minimum-received')}
             </p>
-            {outputTokenInfo?.decimals ? (
+            {outputTokenInfo?.decimals &&
+            selectedRoute?.otherAmountThreshold ? (
               <p className="text-right font-mono text-sm text-th-fgd-2">
                 {formatDecimal(
-                  selectedRoute?.otherAmountThreshold /
+                  selectedRoute.otherAmountThreshold /
                     10 ** outputTokenInfo.decimals || 1,
                   outputTokenInfo.decimals
                 )}{' '}
@@ -590,7 +595,7 @@ const SwapReviewRouteInfo = ({
           setSelectedRoute={setSelectedRoute}
           selectedRoute={selectedRoute}
           routes={routes}
-          inputTokenSymbol={inputTokenInfo!.name}
+          inputTokenSymbol={inputTokenInfo?.name}
           outputTokenInfo={outputTokenInfo}
         />
       ) : null}

@@ -20,7 +20,11 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from './../utils/numbers'
 import { TokenAccount } from './../utils/tokens'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
@@ -255,6 +259,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             />
             <SolBalanceWarnings
               amount={inputAmount}
+              className="mt-4"
               setAmount={setInputAmount}
               selectedToken={selectedToken}
             />
@@ -322,35 +327,36 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 />
               </div>
             </div>
-            <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
-              <HealthImpactTokenChange
-                mintPk={bank!.mint}
-                uiAmount={Number(inputAmount)}
-                isDeposit
-              />
-              <div className="flex justify-between">
-                <p>{t('deposit-amount')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {bank?.uiPrice && inputAmount ? (
-                    <>
-                      {inputAmount}{' '}
-                      <span className="text-xs text-th-fgd-3">
-                        (
-                        {formatFixedDecimals(
-                          bank.uiPrice * Number(inputAmount),
-                          true
-                        )}
-                        )
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      0 <span className="text-xs text-th-fgd-3">($0.00)</span>
-                    </>
-                  )}
-                </p>
-              </div>
-              {/* <div className="flex justify-between">
+            {bank ? (
+              <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
+                <HealthImpactTokenChange
+                  mintPk={bank.mint}
+                  uiAmount={Number(inputAmount)}
+                  isDeposit
+                />
+                <div className="flex justify-between">
+                  <p>{t('deposit-amount')}</p>
+                  <p className="font-mono text-th-fgd-2">
+                    {inputAmount ? (
+                      <>
+                        {formatDecimal(Number(inputAmount), bank.mintDecimals)}{' '}
+                        <span className="text-xs text-th-fgd-3">
+                          (
+                          {formatFixedDecimals(
+                            bank.uiPrice * Number(inputAmount),
+                            true
+                          )}
+                          )
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        0 <span className="text-xs text-th-fgd-3">($0.00)</span>
+                      </>
+                    )}
+                  </p>
+                </div>
+                {/* <div className="flex justify-between">
               <div className="flex items-center">
                 <Tooltip content={t('asset-weight-desc')}>
                   <p className="tooltip-underline">{t('asset-weight')}</p>
@@ -358,20 +364,21 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
               </div>
               <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
             </div> */}
-              <div className="flex justify-between">
-                <Tooltip content={t('tooltip-collateral-value')}>
-                  <p className="tooltip-underline">{t('collateral-value')}</p>
-                </Tooltip>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(
-                    bank!.uiPrice! *
-                      Number(inputAmount) *
-                      Number(bank!.initAssetWeight),
-                    true
-                  )}
-                </p>
+                <div className="flex justify-between">
+                  <Tooltip content={t('tooltip-collateral-value')}>
+                    <p className="tooltip-underline">{t('collateral-value')}</p>
+                  </Tooltip>
+                  <p className="font-mono text-th-fgd-2">
+                    {formatFixedDecimals(
+                      bank.uiPrice *
+                        Number(inputAmount) *
+                        Number(bank.initAssetWeight),
+                      true
+                    )}
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
           <Button
             onClick={connected ? handleDeposit : handleConnect}
