@@ -37,11 +37,13 @@ const CustomizedLabel = ({
   x,
   y,
   value,
+  index,
 }: {
   chartData: any[]
   x?: number
   y?: string | number
   value?: number
+  index?: number
 }) => {
   const { width } = useViewport()
   const [min, max] = useMemo(() => {
@@ -52,7 +54,13 @@ const CustomizedLabel = ({
     return ['', '']
   }, [chartData])
 
-  if (value === min || value === max) {
+  const [minIndex, maxIndex] = useMemo(() => {
+    const minIndex = chartData.findIndex((d) => d.price === min)
+    const maxIndex = chartData.findIndex((d) => d.price === max)
+    return [minIndex, maxIndex]
+  }, [min, max, chartData])
+
+  if (value && (minIndex === index || maxIndex === index)) {
     return (
       <Text
         x={x}
