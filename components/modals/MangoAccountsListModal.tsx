@@ -19,7 +19,6 @@ import { useTranslation } from 'next-i18next'
 import { retryFn } from '../../utils'
 import Loading from '../shared/Loading'
 import Modal from '@components/shared/Modal'
-import { formatFixedDecimals } from 'utils/numbers'
 import CreateAccountForm from '@components/account/CreateAccountForm'
 import { EnterRightExitLeft } from '@components/shared/Transitions'
 import { useRouter } from 'next/router'
@@ -97,10 +96,9 @@ const MangoAccountsListModal = ({
             ) : mangoAccounts.length ? (
               <div className="thin-scroll mt-4 max-h-[280px] space-y-2 overflow-y-auto">
                 {mangoAccounts.map((acc) => {
-                  const accountValue = formatFixedDecimals(
-                    toUiDecimalsForQuote(Number(acc.getEquity(group!))),
-                    true
-                  )
+                  const accountValue = toUiDecimalsForQuote(
+                    Number(acc.getEquity(group!))
+                  ).toFixed(2)
                   const maintHealth = acc.getHealthRatioUi(
                     group!,
                     HealthType.maint
@@ -155,7 +153,7 @@ const MangoAccountsListModal = ({
                           </div>
                           <div className="flex">
                             <span className="text-sm text-th-fgd-2">
-                              {accountValue}
+                              ${accountValue}
                             </span>
                             <span className="mx-2 text-th-fgd-4">|</span>
                             <div

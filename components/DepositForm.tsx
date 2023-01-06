@@ -124,7 +124,9 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [walletTokens, selectedToken])
 
   const setMax = useCallback(() => {
-    setInputAmount(tokenMax.maxAmount.toString())
+    setInputAmount(
+      floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals).toFixed()
+    )
     setSizePercentage('100')
   }, [tokenMax])
 

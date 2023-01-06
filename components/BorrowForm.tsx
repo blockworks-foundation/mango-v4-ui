@@ -106,9 +106,12 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   )
 
   const setMax = useCallback(() => {
-    setInputAmount(tokenMax.toFixed())
+    if (!bank) return
+    setInputAmount(
+      floorToDecimal(Number(tokenMax), bank.mintDecimals).toFixed()
+    )
     handleSizePercentage('100')
-  }, [tokenMax, handleSizePercentage])
+  }, [bank, tokenMax, handleSizePercentage])
 
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
@@ -242,12 +245,17 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('borrow')} ${t('token')}`} />
-                <MaxAmountButton
-                  className="mb-2"
-                  label={t('max')}
-                  onClick={setMax}
-                  value={tokenMax.toFixed()}
-                />
+                {bank ? (
+                  <MaxAmountButton
+                    className="mb-2"
+                    label={t('max')}
+                    onClick={setMax}
+                    value={floorToDecimal(
+                      Number(tokenMax),
+                      bank.mintDecimals
+                    ).toFixed()}
+                  />
+                ) : null}
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
                 <button

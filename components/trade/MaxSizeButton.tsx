@@ -6,7 +6,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo } from 'react'
-import { trimDecimals } from 'utils/numbers'
+import { floorToDecimal } from 'utils/numbers'
 
 const MaxSizeButton = ({
   minOrderDecimals,
@@ -60,36 +60,36 @@ const MaxSizeButton = ({
     const set = mangoStore.getState().set
     set((state) => {
       if (side === 'buy') {
-        state.tradeForm.quoteSize = trimDecimals(
+        state.tradeForm.quoteSize = floorToDecimal(
           leverageMax,
           tickDecimals
-        ).toFixed(tickDecimals)
+        ).toFixed()
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.baseSize = trimDecimals(
+          state.tradeForm.baseSize = floorToDecimal(
             leverageMax / oraclePrice,
             minOrderDecimals
-          ).toFixed(minOrderDecimals)
+          ).toFixed()
         } else {
-          state.tradeForm.baseSize = trimDecimals(
+          state.tradeForm.baseSize = floorToDecimal(
             leverageMax / parseFloat(price),
             minOrderDecimals
-          ).toFixed(minOrderDecimals)
+          ).toFixed()
         }
       } else {
-        state.tradeForm.baseSize = trimDecimals(
+        state.tradeForm.baseSize = floorToDecimal(
           leverageMax,
           tickDecimals
-        ).toFixed(tickDecimals)
+        ).toFixed()
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.quoteSize = trimDecimals(
+          state.tradeForm.quoteSize = floorToDecimal(
             leverageMax * oraclePrice,
             minOrderDecimals
-          ).toFixed(minOrderDecimals)
+          ).toFixed()
         } else {
-          state.tradeForm.quoteSize = trimDecimals(
+          state.tradeForm.quoteSize = floorToDecimal(
             leverageMax * parseFloat(price),
             minOrderDecimals
-          ).toFixed(minOrderDecimals)
+          ).toFixed()
         }
       }
     })
@@ -98,13 +98,9 @@ const MaxSizeButton = ({
   const maxAmount = useMemo(() => {
     const tradePrice = tradeType === 'Market' ? oraclePrice : Number(price)
     if (side === 'buy') {
-      return trimDecimals(leverageMax / tradePrice, tickDecimals).toFixed(
-        tickDecimals
-      )
+      return floorToDecimal(leverageMax / tradePrice, tickDecimals).toFixed()
     } else {
-      return trimDecimals(leverageMax, minOrderDecimals).toFixed(
-        minOrderDecimals
-      )
+      return floorToDecimal(leverageMax, minOrderDecimals).toFixed()
     }
   }, [leverageMax, minOrderDecimals, tickDecimals, price, side, tradeType])
 

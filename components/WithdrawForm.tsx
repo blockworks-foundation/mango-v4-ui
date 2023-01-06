@@ -83,11 +83,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
+      if (!bank) return
       setSizePercentage(percentage)
       const amount = tokenMax.mul(Number(percentage) / 100)
-      setInputAmount(amount.toFixed())
+      setInputAmount(floorToDecimal(amount, bank.mintDecimals).toFixed())
     },
-    [tokenMax]
+    [bank, tokenMax]
   )
 
   const handleWithdraw = useCallback(async () => {
@@ -216,12 +217,17 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('withdraw')} ${t('token')}`} />
-                <MaxAmountButton
-                  className="mb-2"
-                  label={t('max')}
-                  onClick={() => handleSizePercentage('100')}
-                  value={tokenMax.toString()}
-                />
+                {bank ? (
+                  <MaxAmountButton
+                    className="mb-2"
+                    label={t('max')}
+                    onClick={() => handleSizePercentage('100')}
+                    value={floorToDecimal(
+                      Number(tokenMax),
+                      bank.mintDecimals
+                    ).toFixed()}
+                  />
+                ) : null}
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
                 <button

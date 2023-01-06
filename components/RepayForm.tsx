@@ -87,20 +87,22 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   }, [bank, mangoAccount])
 
   const setMax = useCallback(() => {
-    setInputAmount(borrowAmount.toFixed(bank?.mintDecimals))
+    if (!bank) return
+    setInputAmount(floorToDecimal(borrowAmount, bank.mintDecimals).toFixed())
     setSizePercentage('100')
   }, [bank, borrowAmount])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
+      if (!bank) return
       setSizePercentage(percentage)
 
       let amount: Decimal | number = new Decimal(borrowAmount)
         .mul(percentage)
         .div(100)
-      amount = floorToDecimal(amount, bank!.mintDecimals).toNumber()
+      amount = floorToDecimal(amount, bank.mintDecimals).toNumber()
 
-      setInputAmount(amount.toFixed(bank?.mintDecimals))
+      setInputAmount(amount.toFixed(bank.mintDecimals))
     },
     [bank, borrowAmount]
   )

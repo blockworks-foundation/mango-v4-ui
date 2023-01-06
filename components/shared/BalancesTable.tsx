@@ -308,7 +308,11 @@ const Balance = ({ bank }: { bank: Bank }) => {
       ) : asPath.includes('/swap') ? (
         <LinkButton
           className="font-normal underline-offset-4"
-          onClick={() => handleSwapFormBalanceClick(balance)}
+          onClick={() =>
+            handleSwapFormBalanceClick(
+              floorToDecimal(balance, bank.mintDecimals).toNumber()
+            )
+          }
         >
           {formatDecimal(balance, bank.mintDecimals)}
         </LinkButton>
