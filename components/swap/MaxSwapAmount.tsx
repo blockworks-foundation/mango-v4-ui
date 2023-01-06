@@ -21,26 +21,29 @@ const MaxSwapAmount = ({
 
   if (mangoAccountLoading) return null
 
+  const maxBalanceValue = floorToDecimal(
+    tokenMax.toNumber(),
+    decimals
+  ).toFixed()
+  const maxBorrowValue = floorToDecimal(
+    amountWithBorrow.toNumber(),
+    decimals
+  ).toFixed()
+
   return (
     <div className="flex flex-wrap justify-end pl-6 text-xs">
       <MaxAmountButton
         className="mb-0.5"
         label="Bal"
-        onClick={() =>
-          setAmountIn(floorToDecimal(Number(tokenMax), decimals).toFixed())
-        }
-        value={floorToDecimal(Number(tokenMax), decimals).toFixed()}
+        onClick={() => setAmountIn(maxBalanceValue)}
+        value={maxBalanceValue}
       />
       {useMargin ? (
         <MaxAmountButton
           className="mb-0.5 ml-2"
           label={t('max')}
-          onClick={() =>
-            setAmountIn(
-              floorToDecimal(Number(amountWithBorrow), decimals).toFixed()
-            )
-          }
-          value={floorToDecimal(Number(amountWithBorrow), decimals).toFixed()}
+          onClick={() => setAmountIn(maxBorrowValue)}
+          value={maxBorrowValue}
         />
       ) : null}
     </div>
