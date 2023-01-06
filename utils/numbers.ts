@@ -50,9 +50,9 @@ const usdFormatter2 = Intl.NumberFormat('en', {
   currency: 'USD',
 })
 
-const usdFormatter4 = Intl.NumberFormat('en', {
-  minimumFractionDigits: 4,
-  maximumFractionDigits: 4,
+const usdFormatter3 = Intl.NumberFormat('en', {
+  minimumSignificantDigits: 3,
+  maximumSignificantDigits: 3,
   style: 'currency',
   currency: 'USD',
 })
@@ -86,7 +86,7 @@ export const formatFixedDecimals = (
         })
   } else {
     formattedValue = isCurrency
-      ? usdFormatter4.format(value)
+      ? usdFormatter3.format(value)
       : Number(floorToDecimal(value, 8)).toLocaleString(undefined, {
           maximumFractionDigits: 8,
         })
