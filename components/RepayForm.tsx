@@ -14,7 +14,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -217,13 +221,12 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
           style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
         >
           <div>
-            <div className="-mt-2 mb-2">
-              <SolBalanceWarnings
-                amount={inputAmount}
-                setAmount={setInputAmount}
-                selectedToken={selectedToken}
-              />
-            </div>
+            <SolBalanceWarnings
+              amount={inputAmount}
+              className="mb-4"
+              setAmount={setInputAmount}
+              selectedToken={selectedToken}
+            />
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('repay')} ${t('token')}`} />
@@ -285,51 +288,51 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                 />
               </div>
             </div>
-            <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
-              {bank ? (
+            {bank ? (
+              <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
                 <HealthImpactTokenChange
                   mintPk={bank.mint}
                   uiAmount={Number(inputAmount)}
                   isDeposit
                 />
-              ) : null}
-              <div className="flex justify-between">
-                <p>{t('repayment-amount')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {bank?.uiPrice && inputAmount ? (
-                    <>
-                      {inputAmount}{' '}
-                      <span className="text-xs text-th-fgd-3">
-                        (
-                        {formatFixedDecimals(
-                          bank.uiPrice * Number(inputAmount),
-                          true
-                        )}
-                        )
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      0 <span className="text-xs text-th-fgd-3">($0.00)</span>
-                    </>
-                  )}
-                </p>
-              </div>
-              <div className="flex justify-between">
-                <div className="flex items-center">
-                  <p>{t('outstanding-balance')}</p>
+                <div className="flex justify-between">
+                  <p>{t('repayment-amount')}</p>
+                  <p className="font-mono text-th-fgd-2">
+                    {inputAmount ? (
+                      <>
+                        {formatDecimal(Number(inputAmount), bank.mintDecimals)}{' '}
+                        <span className="text-xs text-th-fgd-3">
+                          (
+                          {formatFixedDecimals(
+                            bank.uiPrice * Number(inputAmount),
+                            true
+                          )}
+                          )
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        0 <span className="text-xs text-th-fgd-3">($0.00)</span>
+                      </>
+                    )}
+                  </p>
                 </div>
-                <p className="font-mono text-th-fgd-2">
-                  {floorToDecimal(
-                    borrowAmount - Number(inputAmount),
-                    walletBalance.maxDecimals
-                  ).toNumber()}{' '}
-                  <span className="font-body text-th-fgd-4">
-                    {selectedToken}
-                  </span>
-                </p>
+                <div className="flex justify-between">
+                  <div className="flex items-center">
+                    <p>{t('outstanding-balance')}</p>
+                  </div>
+                  <p className="font-mono text-th-fgd-2">
+                    {floorToDecimal(
+                      borrowAmount - Number(inputAmount),
+                      walletBalance.maxDecimals
+                    ).toFixed()}{' '}
+                    <span className="font-body text-th-fgd-4">
+                      {selectedToken}
+                    </span>
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
           <Button
             onClick={() => handleDeposit(inputAmount)}

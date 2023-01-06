@@ -352,7 +352,7 @@ const AdvancedTradeForm = () => {
         />
       </div>
       <div className="px-3 md:px-4">
-        <SolBalanceWarnings />
+        <SolBalanceWarnings className="mt-4" />
       </div>
       <div className="mt-1 px-2 md:mt-3 md:px-4">
         <p className="mb-2 text-xs">{t('trade:order-type')}</p>

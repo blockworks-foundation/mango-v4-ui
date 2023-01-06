@@ -365,7 +365,7 @@ const UserSetupModal = ({
                     charLimit={30}
                   />
                 </div>
-                <SolBalanceWarnings />
+                <SolBalanceWarnings className="mt-4" />
                 <div className="mt-2">
                   <InlineNotification
                     type="info"
@@ -410,6 +410,7 @@ const UserSetupModal = ({
                     />
                     <SolBalanceWarnings
                       amount={depositAmount}
+                      className="mt-4"
                       setAmount={setDepositAmount}
                       selectedToken={depositToken}
                     />

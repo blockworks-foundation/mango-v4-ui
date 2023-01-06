@@ -259,6 +259,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             />
             <SolBalanceWarnings
               amount={inputAmount}
+              className="mt-4"
               setAmount={setInputAmount}
               selectedToken={selectedToken}
             />

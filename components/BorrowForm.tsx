@@ -409,7 +409,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                             (parseFloat(inputAmount) - tokenBalance.toNumber()),
                           bank.mintDecimals
                         )}{' '}
-                        <span className="font-body text-th-fgd-3">
+                        <span className="font-body text-th-fgd-4">
                           {bank.name}
                         </span>
                       </>
