@@ -242,7 +242,7 @@ const AccountPage = () => {
                     play
                     delay={0.05}
                     duration={1}
-                    numbers={formatFixedDecimals(accountValue, true)}
+                    numbers={formatFixedDecimals(accountValue, false, true)}
                   />
                 ) : (
                   <FlipNumbers
@@ -255,7 +255,7 @@ const AccountPage = () => {
                   />
                 )
               ) : (
-                <span>{formatFixedDecimals(accountValue, true)}</span>
+                <span>{formatFixedDecimals(accountValue, false, true)}</span>
               )}
             </div>
             <div className="flex items-center space-x-1.5">
@@ -381,6 +381,7 @@ const AccountPage = () => {
                     toUiDecimalsForQuote(
                       mangoAccount.getCollateralValue(group).toNumber()
                     ),
+                    false,
                     true
                   )
                 : `$${(0).toFixed(2)}`}
@@ -401,6 +402,7 @@ const AccountPage = () => {
                             .getAssetsValue(group, HealthType.init)
                             .toNumber()
                         ),
+                        false,
                         true
                       )
                     : `$${(0).toFixed(2)}`}
@@ -445,7 +447,7 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {formatFixedDecimals(accountPnl, true)}
+              {formatFixedDecimals(accountPnl, false, true)}
             </p>
             <div className="flex space-x-1">
               <Change change={oneDayPnlChange} prefix="$" size="small" />
@@ -476,7 +478,7 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {formatFixedDecimals(interestTotalValue, true)}
+              {formatFixedDecimals(interestTotalValue, false, true)}
             </p>
             <div className="flex space-x-1">
               <Change change={oneDayInterestChange} prefix="$" size="small" />
