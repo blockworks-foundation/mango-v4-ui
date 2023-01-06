@@ -194,7 +194,7 @@ const ActivityFeedTable = ({
                   }
                 >
                   <Td>
-                    <p className="font-body tracking-wide">
+                    <p className="font-body tracking-wider">
                       {dayjs(block_datetime).format('ddd D MMM')}
                     </p>
                     <p className="text-xs text-th-fgd-3">
@@ -206,13 +206,13 @@ const ActivityFeedTable = ({
                   </Td>
                   <Td className="text-right font-mono">
                     {amounts.credit.value}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-3">
+                    <span className="font-body text-th-fgd-3">
                       {amounts.credit.symbol}
                     </span>
                   </Td>
                   <Td className="text-right font-mono">
                     {amounts.debit.value}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-3">
+                    <span className="font-body text-th-fgd-3">
                       {amounts.debit.symbol}
                     </span>
                   </Td>
@@ -353,7 +353,7 @@ const MobileActivityFeedItem = ({
                       { maximumFractionDigits: 6 }
                     )}
                   </span>
-                  <span className="font-body tracking-wide text-th-fgd-3">
+                  <span className="font-body text-th-fgd-3">
                     {activity.activity_details.swap_in_symbol}
                   </span>
                   <span className="mx-1 font-body text-th-fgd-3">for</span>
@@ -363,7 +363,7 @@ const MobileActivityFeedItem = ({
                       { maximumFractionDigits: 6 }
                     )}
                   </span>
-                  <span className="font-body tracking-wide text-th-fgd-3">
+                  <span className="font-body text-th-fgd-3">
                     {activity.activity_details.swap_out_symbol}
                   </span>
                 </>
@@ -392,7 +392,7 @@ const MobileActivityFeedItem = ({
                   <span className="mr-1">
                     {activity.activity_details.quantity}
                   </span>
-                  <span className="font-body tracking-wide text-th-fgd-3">
+                  <span className="font-body text-th-fgd-3">
                     {activity.activity_details.symbol}
                   </span>
                 </>
@@ -443,12 +443,10 @@ const MobileActivityFeedItem = ({
             <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
               {formatDecimal(activity.activity_details.asset_amount)}{' '}
-              <span className="font-body tracking-wide">
+              <span className="font-body tracking-wider">
                 {activity.activity_details.asset_symbol}
               </span>
-              <span className="ml-2 font-body tracking-wide text-th-fgd-3">
-                at
-              </span>{' '}
+              <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
               {formatFixedDecimals(activity.activity_details.asset_price, true)}
             </p>
             <p className="font-mono text-xs text-th-fgd-3">
@@ -463,12 +461,10 @@ const MobileActivityFeedItem = ({
             <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
               {formatDecimal(activity.activity_details.liab_amount)}{' '}
-              <span className="font-body tracking-wide">
+              <span className="font-body tracking-wider">
                 {activity.activity_details.liab_symbol}
               </span>
-              <span className="ml-2 font-body tracking-wide text-th-fgd-3">
-                at
-              </span>{' '}
+              <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
               {formatFixedDecimals(activity.activity_details.liab_price, true)}
             </p>
             <p className="font-mono text-xs text-th-fgd-3">

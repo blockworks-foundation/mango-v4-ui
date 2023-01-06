@@ -292,7 +292,7 @@ const OpenOrders = () => {
                               minimumFractionDigits: getDecimalCount(tickSize),
                               maximumFractionDigits: getDecimalCount(tickSize),
                             })}{' '}
-                            <span className="font-body tracking-wide text-th-fgd-4">
+                            <span className="font-body text-th-fgd-4">
                               {quoteSymbol}
                             </span>
                           </span>

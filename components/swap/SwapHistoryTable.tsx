@@ -114,10 +114,10 @@ const SwapHistoryTable = () => {
               return (
                 <TrBody key={signature}>
                   <Td>
-                    <p className="font-body tracking-wide">
+                    <p className="font-body tracking-wider">
                       {dayjs(block_datetime).format('ddd D MMM')}
                     </p>
-                    <p className="font-body text-xs tracking-wide text-th-fgd-3">
+                    <p className="font-body text-xs text-th-fgd-3">
                       {dayjs(block_datetime).format('h:mma')}
                     </p>
                   </Td>
@@ -135,7 +135,7 @@ const SwapHistoryTable = () => {
                         <div>
                           <p className="whitespace-nowrap">
                             {`${swap_in_amount.toFixed(inDecimals)}`}
-                            <span className="ml-1 font-body tracking-wide text-th-fgd-3">
+                            <span className="ml-1 font-body text-th-fgd-3">
                               {inSymbol}
                             </span>
                           </p>
@@ -160,7 +160,7 @@ const SwapHistoryTable = () => {
                         <div>
                           <p className="whitespace-nowrap">
                             {`${trimDecimals(swap_out_amount, outDecimals)}`}
-                            <span className="ml-1 font-body tracking-wide text-th-fgd-3">
+                            <span className="ml-1 font-body text-th-fgd-3">
                               {outSymbol}
                             </span>
                           </p>
@@ -186,7 +186,7 @@ const SwapHistoryTable = () => {
                     <div className="flex flex-col text-right">
                       <p>
                         {borrowAmount}
-                        <span className="ml-1 font-body tracking-wide text-th-fgd-3">
+                        <span className="ml-1 font-body text-th-fgd-3">
                           {inSymbol}
                         </span>
                       </p>
@@ -194,7 +194,12 @@ const SwapHistoryTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>${borrowFee}</p>
+                      <p>
+                        {borrowFee}
+                        <span className="ml-1 font-body text-th-fgd-3">
+                          {inSymbol}
+                        </span>
+                      </p>
                     </div>
                   </Td>
                   <Td>

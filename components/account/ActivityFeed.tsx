@@ -432,10 +432,8 @@ const ActivityDetails = ({
           <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
           <p className="font-mono text-th-fgd-1">
             {formatDecimal(asset_amount)}{' '}
-            <span className="font-body tracking-wide">{asset_symbol}</span>
-            <span className="ml-2 font-body tracking-wide text-th-fgd-3">
-              at
-            </span>{' '}
+            <span className="font-body tracking-wider">{asset_symbol}</span>
+            <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
             {formatFixedDecimals(asset_price, true)}
           </p>
           <p className="font-mono text-xs text-th-fgd-3">
@@ -446,10 +444,8 @@ const ActivityDetails = ({
           <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
           <p className="font-mono text-th-fgd-1">
             {formatDecimal(liab_amount)}{' '}
-            <span className="font-body tracking-wide">{liab_symbol}</span>
-            <span className="ml-2 font-body tracking-wide text-th-fgd-3">
-              at
-            </span>{' '}
+            <span className="font-body tracking-wider">{liab_symbol}</span>
+            <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
             {formatFixedDecimals(liab_price, true)}
           </p>
           <p className="font-mono text-xs text-th-fgd-3">

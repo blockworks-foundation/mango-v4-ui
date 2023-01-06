@@ -167,17 +167,13 @@ const UnsettledTrades = ({
                     {unsettledSpotBalances[mktAddress].base ? (
                       <div>
                         {unsettledSpotBalances[mktAddress].base}{' '}
-                        <span className="font-body tracking-wide text-th-fgd-4">
-                          {base}
-                        </span>
+                        <span className="font-body text-th-fgd-4">{base}</span>
                       </div>
                     ) : null}
                     {unsettledSpotBalances[mktAddress].quote ? (
                       <div className="ml-4">
                         {unsettledSpotBalances[mktAddress].quote}{' '}
-                        <span className="font-body tracking-wide text-th-fgd-4">
-                          {quote}
-                        </span>
+                        <span className="font-body text-th-fgd-4">{quote}</span>
                       </div>
                     ) : null}
                   </div>
@@ -255,17 +251,13 @@ const UnsettledTrades = ({
                 {unsettledSpotBalances[mktAddress].base ? (
                   <span className="font-mono text-sm">
                     {unsettledSpotBalances[mktAddress].base}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {base}
-                    </span>
+                    <span className="font-body text-th-fgd-4">{base}</span>
                   </span>
                 ) : null}
                 {unsettledSpotBalances[mktAddress].quote ? (
                   <span className="font-mono text-sm">
                     {unsettledSpotBalances[mktAddress].quote}{' '}
-                    <span className="font-body tracking-wide text-th-fgd-4">
-                      {quote}
-                    </span>
+                    <span className="font-body text-th-fgd-4">{quote}</span>
                   </span>
                 ) : null}
                 {connected ? (

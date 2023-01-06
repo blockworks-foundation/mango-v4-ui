@@ -119,7 +119,7 @@ const TokenStats = () => {
                           <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                         )}
                       </div>
-                      <p className="font-body tracking-wide">{bank.name}</p>
+                      <p className="font-body tracking-wider">{bank.name}</p>
                     </div>
                   </Td>
                   <Td>

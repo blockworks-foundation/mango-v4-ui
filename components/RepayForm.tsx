@@ -262,7 +262,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   allowNegative={false}
                   isNumericString={true}
                   decimalScale={bank?.mintDecimals || 6}
-                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) => {
