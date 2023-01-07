@@ -80,6 +80,7 @@ const AccountActions = () => {
               <div className="relative w-1/3 md:w-auto">
                 <Menu.Button
                   className={`default-transition w-full focus:outline-none`}
+                  as="div"
                 >
                   <Button
                     className="flex w-full items-center justify-center"
