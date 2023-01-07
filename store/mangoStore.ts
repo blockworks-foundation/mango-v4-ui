@@ -1012,9 +1012,11 @@ const mangoStore = create<MangoStore>()(
               `https://mango-transaction-log.herokuapp.com/v4/stats/openbook-trades?address=${mangoAccount?.publicKey.toString()}&address-type=mango-account`
             )
             const parsedRes = await res.json()
-            set((s) => {
-              s.mangoAccount.tradeHistory = parsedRes.reverse()
-            })
+            if (parsedRes?.length) {
+              set((s) => {
+                s.mangoAccount.tradeHistory = parsedRes.reverse()
+              })
+            }
           } catch (e) {
             console.error('Unable to fetch trade history', e)
           }
