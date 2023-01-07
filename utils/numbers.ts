@@ -59,28 +59,28 @@ const usdFormatter3 = Intl.NumberFormat('en', {
 
 export const formatFixedDecimals = (
   value: number,
-  isPrice?: boolean,
+  isUSD?: boolean,
   isValue?: boolean
 ): string => {
   let formattedValue
   if (value === 0) {
-    formattedValue = isPrice ? '$0.00' : '0'
+    formattedValue = isUSD ? '$0.00' : '0'
   } else if (isValue) {
     formattedValue = usdFormatter2.format(value)
   } else if (Math.abs(value) >= 1000) {
-    formattedValue = isPrice
+    formattedValue = isUSD
       ? usdFormatter0.format(value)
       : Number(floorToDecimal(value, 0)).toLocaleString(undefined, {
           maximumFractionDigits: 0,
         })
   } else if (Math.abs(value) >= 0.1) {
-    formattedValue = isPrice
+    formattedValue = isUSD
       ? usdFormatter2.format(value)
       : Number(floorToDecimal(value, 3)).toLocaleString(undefined, {
           maximumFractionDigits: 3,
         })
   } else {
-    formattedValue = isPrice
+    formattedValue = isUSD
       ? usdFormatter3.format(value)
       : Number(floorToDecimal(value, 8)).toLocaleString(undefined, {
           maximumFractionDigits: 8,

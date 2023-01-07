@@ -15,6 +15,7 @@ import SheenLoader from '../shared/SheenLoader'
 import mangoStore from '@store/mangoStore'
 import {
   countLeadingZeros,
+  formatDecimal,
   formatFixedDecimals,
   trimDecimals,
 } from '../../utils/numbers'
@@ -99,6 +100,7 @@ const SwapHistoryTable = () => {
 
               const inSymbol = formatTokenSymbol(swap_in_symbol)
               const outSymbol = formatTokenSymbol(swap_out_symbol)
+              console.log('mangoTokens', mangoTokens)
 
               if (mangoTokens.length) {
                 baseLogoURI = mangoTokens.find(
@@ -134,7 +136,7 @@ const SwapHistoryTable = () => {
                         </div>
                         <div>
                           <p className="whitespace-nowrap">
-                            {`${swap_in_amount.toFixed(inDecimals)}`}
+                            {`${formatDecimal(swap_in_amount, inDecimals)}`}
                             <span className="ml-1 font-body text-th-fgd-3">
                               {inSymbol}
                             </span>
@@ -159,15 +161,13 @@ const SwapHistoryTable = () => {
                         </div>
                         <div>
                           <p className="whitespace-nowrap">
-                            {`${trimDecimals(swap_out_amount, outDecimals)}`}
+                            {`${formatDecimal(swap_out_amount, outDecimals)}`}
                             <span className="ml-1 font-body text-th-fgd-3">
                               {outSymbol}
                             </span>
                           </p>
-                          <p className="text-xs text-th-fgd-3">
-                            <span className="font-body text-th-fgd-4">
-                              {t('price')}:
-                            </span>{' '}
+                          <p className="text-xs text-th-fgd-4">
+                            <span className="font-body">{t('price')}:</span>{' '}
                             {formatFixedDecimals(swap_out_price_usd, true)}
                           </p>
                         </div>
