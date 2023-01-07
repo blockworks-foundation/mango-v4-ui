@@ -50,7 +50,7 @@ const SpotMarketsTable = () => {
               const coingeckoData = coingeckoPrices.find((asset) =>
                 bank?.name === 'soETH'
                   ? asset.symbol === 'ETH'
-                  : asset.symbol === bank?.name
+                  : asset.symbol.toUpperCase() === bank?.name.toUpperCase()
               )
 
               const change = coingeckoData
