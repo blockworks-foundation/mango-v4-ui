@@ -109,7 +109,7 @@ export const queryBars = async (
 
 export default {
   onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
-    console.log('[onReady]: Method call')
+    // console.log('[onReady]: Method call')
     setTimeout(() => callback(configurationData as any))
   },
 
@@ -128,11 +128,11 @@ export default {
     // _onResolveErrorCallback: any,
     // _extension: any
   ) => {
-    console.log(
-      '[resolveSymbol]: Method call',
-      symbolAddress,
-      onSymbolResolvedCallback
-    )
+    // console.log(
+    //   '[resolveSymbol]: Method call',
+    //   symbolAddress,
+    //   onSymbolResolvedCallback
+    // )
     // const symbols = await getAllSymbols()
     // let symbolItem = symbols.find((item: any) => item.address === symbolAddress)
     // console.log('========symbols:', symbolItem, symbols)
@@ -175,7 +175,7 @@ export default {
       format: 'price',
     }
 
-    console.log('[resolveSymbol]: Symbol resolved', symbolAddress)
+    // console.log('[resolveSymbol]: Symbol resolved', symbolAddress)
     onSymbolResolvedCallback(symbolInfo)
   },
   getBars: async (
@@ -215,12 +215,12 @@ export default {
           ...bars[bars.length - 1],
         })
       }
-      console.log(`[getBars]: returned ${bars.length} bar(s)`)
+      // console.log(`[getBars]: returned ${bars.length} bar(s)`)
       onHistoryCallback(bars, {
         noData: false,
       })
     } catch (error) {
-      console.log('[getBars]: Get error', error)
+      console.warn('[getBars]: Get error', error)
       onErrorCallback(error)
     }
   },
@@ -232,10 +232,10 @@ export default {
     subscriberUID: string,
     onResetCacheNeededCallback: () => void
   ) => {
-    console.log(
-      '[subscribeBars]: Method call with subscriberUID:',
-      subscriberUID
-    )
+    // console.log(
+    //   '[subscribeBars]: Method call with subscriberUID:',
+    //   subscriberUID
+    // )
     subscribeOnStream(
       symbolInfo,
       resolution,
@@ -247,7 +247,7 @@ export default {
   },
 
   unsubscribeBars: () => {
-    console.log('[unsubscribeBars]')
+    console.warn('[unsubscribeBars]')
     unsubscribeFromStream()
   },
 }

@@ -15,6 +15,7 @@ import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
 import TableMarketName from './TableMarketName'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { formatDecimal } from 'utils/numbers'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -202,7 +203,10 @@ const UnsettledTrades = ({
                   <TableMarketName market={market} />
                 </Td>
                 <Td className="text-right font-mono">
-                  {position.getEquityUi(group, market)}
+                  {formatDecimal(
+                    position.getEquityUi(group, market),
+                    market.baseDecimals
+                  )}
                 </Td>
                 <Td>
                   <div className="flex justify-end">

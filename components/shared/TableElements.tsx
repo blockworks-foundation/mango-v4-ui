@@ -65,7 +65,9 @@ export const TableDateDisplay = ({
   showSeconds?: boolean
 }) => (
   <>
-    <p className="text-th-fgd-2">{dayjs(date).format('DD MMM YYYY')}</p>
+    <p className="tracking-normal text-th-fgd-2">
+      {dayjs(date).format('DD MMM YYYY')}
+    </p>
     <p className="text-xs text-th-fgd-4">
       {dayjs(date).format(showSeconds ? 'h:mm:ssa' : 'h:mma')}
     </p>
