@@ -1,5 +1,4 @@
 import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
-import InlineNotification from '@components/shared/InlineNotification'
 import SideBadge from '@components/shared/SideBadge'
 import {
   Table,
@@ -10,6 +9,7 @@ import {
   TrHead,
 } from '@components/shared/TableElements'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -86,27 +86,32 @@ const formatTradeHistory = (
 }
 
 const TradeHistory = () => {
+  const group = mangoStore.getState().group
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const fills = mangoStore((s) => s.selectedMarket.fills)
+  const tradeHistory = mangoStore((s) => s.mangoAccount.tradeHistory)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
   const openOrderOwner = useMemo(() => {
     if (!mangoAccount || !selectedMarket) return
-    try {
-      if (selectedMarket instanceof PerpMarket) {
-        return mangoAccount.publicKey
-      } else {
+    if (selectedMarket instanceof PerpMarket) {
+      return mangoAccount.publicKey
+    } else {
+      try {
         return mangoAccount.getSerum3OoAccount(selectedMarket.marketIndex)
           .address
+      } catch {
+        console.warn(
+          'Unable to find OO account for mkt index',
+          selectedMarket.marketIndex
+        )
       }
-    } catch (e) {
-      console.error('Error loading open order account for trade history: ', e)
     }
   }, [mangoAccount, selectedMarket])
 
-  const tradeHistoryFromEventQueue = useMemo(() => {
+  const eventQueueFillsForAccount = useMemo(() => {
     if (!mangoAccountAddress || !selectedMarket) return []
 
     const mangoAccountFills = fills
@@ -127,9 +132,30 @@ const TradeHistory = () => {
     return formatTradeHistory(mangoAccountAddress, mangoAccountFills)
   }, [selectedMarket, mangoAccountAddress, openOrderOwner, fills])
 
-  if (!selectedMarket) return null
+  const combinedTradeHistory = useMemo(() => {
+    let newFills = []
+    if (eventQueueFillsForAccount?.length) {
+      console.log('eventQueueFillsForAccount', eventQueueFillsForAccount)
 
-  return mangoAccount && tradeHistoryFromEventQueue.length ? (
+      newFills = eventQueueFillsForAccount.filter((fill) => {
+        return !tradeHistory.find((t) => {
+          if (t.order_id) {
+            return t.order_id === fill.orderId?.toString()
+          }
+          // else {
+          //   return t.seq_num === fill.seqNum?.toString()
+          // }
+        })
+      })
+    }
+    return [...newFills, ...tradeHistory]
+  }, [eventQueueFillsForAccount, tradeHistory])
+
+  console.log('trade history', tradeHistory)
+
+  if (!selectedMarket || !group) return null
+
+  return mangoAccount && combinedTradeHistory.length ? (
     showTableView ? (
       <div>
         <Table>
@@ -141,17 +167,31 @@ const TradeHistory = () => {
               <Th className="text-right">Price</Th>
               <Th className="text-right">Value</Th>
               <Th className="text-right">Fee</Th>
-              {selectedMarket instanceof PerpMarket ? (
-                <Th className="text-right">Time</Th>
-              ) : null}
+              <Th className="text-right">Time</Th>
             </TrHead>
           </thead>
           <tbody>
-            {tradeHistoryFromEventQueue.map((trade: any) => {
+            {combinedTradeHistory.map((trade: any) => {
+              let market
+              if ('market' in trade) {
+                market = group.getSerum3MarketByExternalMarket(
+                  new PublicKey(trade.market)
+                )
+              } else {
+                market = selectedMarket
+              }
+              let makerTaker = trade.liquidity
+              if ('maker' in trade) {
+                makerTaker = trade.maker ? 'Maker' : 'Taker'
+              }
+
               return (
-                <TrBody key={`${trade.marketIndex}`} className="my-1 p-2">
+                <TrBody
+                  key={`${trade.signature || trade.marketIndex}${trade.size}`}
+                  className="my-1 p-2"
+                >
                   <Td className="">
-                    <TableMarketName market={selectedMarket} />
+                    <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right">
                     <SideBadge side={trade.side} />
@@ -161,37 +201,36 @@ const TradeHistory = () => {
                     {formatDecimal(trade.price)}
                   </Td>
                   <Td className="text-right font-mono">
-                    ${trade.value.toFixed(2)}
+                    {trade.price * trade.size}
                   </Td>
                   <Td className="text-right">
-                    <span className="font-mono">{trade.feeCost}</span>
-                    <p className="font-body text-xs text-th-fgd-4">{`${
-                      trade.liquidity ? trade.liquidity : ''
-                    }`}</p>
+                    <span className="font-mono">
+                      {trade.fee_cost || trade.feeCost}
+                    </span>
+                    <p className="font-body text-xs text-th-fgd-4">
+                      {makerTaker}
+                    </p>
                   </Td>
-                  {selectedMarket instanceof PerpMarket ? (
-                    <Td className="whitespace-nowrap text-right font-mono">
+
+                  <Td className="whitespace-nowrap text-right">
+                    {trade.block_datetime ? (
                       <TableDateDisplay
-                        date={trade.timestamp.toNumber() * 1000}
+                        date={trade.block_datetime}
                         showSeconds
                       />
-                    </Td>
-                  ) : null}
+                    ) : (
+                      'Recent'
+                    )}
+                  </Td>
                 </TrBody>
               )
             })}
           </tbody>
         </Table>
-        <div className="px-6 py-4">
-          <InlineNotification
-            type="info"
-            desc="During the Mango V4 alpha, only your recent Openbook trades will be displayed here. Full trade history will be available shortly."
-          />
-        </div>
       </div>
     ) : (
       <div>
-        {tradeHistoryFromEventQueue.map((trade: any) => {
+        {eventQueueFillsForAccount.map((trade: any) => {
           return (
             <div
               className="flex items-center justify-between border-b border-th-bkg-3 p-4"
@@ -220,14 +259,8 @@ const TradeHistory = () => {
     )
   ) : (
     <div className="flex flex-col items-center justify-center px-6 pb-8 pt-4">
-      <div className="mb-8 w-full">
-        <InlineNotification
-          type="info"
-          desc="During the Mango V4 alpha, only your recent Openbook trades will be displayed here. Full trade history will be available shortly."
-        />
-      </div>
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>No trade history for {selectedMarket?.name}</p>
+      <p>No trade history</p>
     </div>
   )
 }

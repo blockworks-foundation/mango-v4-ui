@@ -17,6 +17,7 @@ import {
   PerpOrder,
   PerpPosition,
   BookSide,
+  FillEvent,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -35,7 +36,7 @@ import {
   OUTPUT_TOKEN_DEFAULT,
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
-import { OrderbookL2, SpotBalances } from 'types'
+import { OrderbookL2, SpotBalances, SpotTradeHistory } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
@@ -69,7 +70,7 @@ const emptyWallet = new EmptyWallet(Keypair.generate())
 const initMangoClient = (provider: AnchorProvider): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     // blockhashCommitment: 'confirmed',
-    prioritizationFee: 2000,
+    prioritizationFee: 10000,
     idsSource: 'get-program-accounts',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
@@ -245,6 +246,7 @@ export type MangoStore = {
         initialLoad: boolean
       }
     }
+    tradeHistory: SpotTradeHistory[]
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
@@ -262,7 +264,7 @@ export type MangoStore = {
   selectedMarket: {
     name: string
     current: Serum3Market | PerpMarket | undefined
-    fills: any
+    fills: (FillEvent | any)[]
     bidsAccount: BookSide | Orderbook | undefined
     asksAccount: BookSide | Orderbook | undefined
     orderbook: OrderbookL2
@@ -325,6 +327,7 @@ export type MangoStore = {
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
+    fetchTradeHistory: () => Promise<void>
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     loadMarketFills: () => Promise<void>
@@ -377,6 +380,7 @@ const mangoStore = create<MangoStore>()(
           performance: { data: [], loading: false },
           swapHistory: { data: [], initialLoad: false },
         },
+        tradeHistory: [],
       },
       mangoAccounts: [],
       markets: undefined,
@@ -995,6 +999,24 @@ const mangoStore = create<MangoStore>()(
             })
           } catch (err) {
             console.log('Error fetching fills:', err)
+          }
+        },
+        async fetchTradeHistory() {
+          const set = get().set
+          // const selectedMarket = get().selectedMarket.current
+          // const group = get().group
+          const mangoAccount = get().mangoAccount.current
+
+          try {
+            const res = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/stats/openbook-trades?address=${mangoAccount?.publicKey.toString()}&address-type=mango-account`
+            )
+            const parsedRes = await res.json()
+            set((s) => {
+              s.mangoAccount.tradeHistory = parsedRes.reverse()
+            })
+          } catch (e) {
+            console.error('Unable to fetch trade history', e)
           }
         },
         updateConnection(endpointUrl) {

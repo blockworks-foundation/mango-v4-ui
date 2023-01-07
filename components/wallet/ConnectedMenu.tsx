@@ -38,6 +38,7 @@ const ConnectedMenu = () => {
     await actions.fetchMangoAccounts(wallet.adapter as unknown as AnchorWallet)
     actions.fetchTourSettings(wallet.adapter.publicKey?.toString() as string)
     actions.fetchWalletTokens(wallet.adapter as unknown as AnchorWallet)
+    actions.fetchTradeHistory()
   }
 
   const handleDisconnect = useCallback(() => {

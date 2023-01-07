@@ -126,6 +126,7 @@ const ReadOnlyMangoAccount = () => {
           state.mangoAccount.current = readOnlyMangoAccount
           state.mangoAccount.initialLoad = false
         })
+        actions.fetchTradeHistory()
       } catch (error) {
         console.error('error', error)
       }
