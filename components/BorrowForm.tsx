@@ -91,10 +91,11 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
 
   const tokenBalance = useMemo(() => {
     if (!bank || !mangoAccount) return new Decimal(0)
-    return floorToDecimal(
+    const balance = floorToDecimal(
       mangoAccount.getTokenBalanceUi(bank),
       bank.mintDecimals
     )
+    return balance.gt(0) ? balance : new Decimal(0)
   }, [bank, mangoAccount])
 
   const isBorrow = parseFloat(inputAmount) > tokenBalance.toNumber()
@@ -325,49 +326,40 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   mintPk={bank.mint}
                   uiAmount={Number(inputAmount)}
                 />
-                {tokenBalance ? (
-                  <div className="flex justify-between">
-                    <p>{t('withdraw-amount')}</p>
-                    <p className="font-mono text-th-fgd-2">
-                      {isBorrow ? (
-                        <>
-                          {formatDecimal(
-                            Number(tokenBalance),
-                            bank.mintDecimals
-                          )}{' '}
-                          <span className="text-xs text-th-fgd-3">
-                            (
-                            {formatFixedDecimals(
-                              bank.uiPrice * tokenBalance.toNumber(),
-                              true
-                            )}
-                            )
-                          </span>
-                        </>
-                      ) : inputAmount ? (
-                        <>
-                          {formatDecimal(
-                            Number(inputAmount),
-                            bank.mintDecimals
-                          )}{' '}
-                          <span className="text-xs text-th-fgd-3">
-                            (
-                            {formatFixedDecimals(
-                              bank.uiPrice * parseFloat(inputAmount),
-                              true
-                            )}
-                            )
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          0{' '}
-                          <span className="text-xs text-th-fgd-3">($0.00)</span>
-                        </>
-                      )}
-                    </p>
-                  </div>
-                ) : null}
+                <div className="flex justify-between">
+                  <p>{t('withdraw-amount')}</p>
+                  <p className="font-mono text-th-fgd-2">
+                    {isBorrow ? (
+                      <>
+                        {formatDecimal(Number(tokenBalance), bank.mintDecimals)}{' '}
+                        <span className="text-xs text-th-fgd-3">
+                          (
+                          {formatFixedDecimals(
+                            bank.uiPrice * tokenBalance.toNumber(),
+                            true
+                          )}
+                          )
+                        </span>
+                      </>
+                    ) : inputAmount ? (
+                      <>
+                        {formatDecimal(Number(inputAmount), bank.mintDecimals)}{' '}
+                        <span className="text-xs text-th-fgd-3">
+                          (
+                          {formatFixedDecimals(
+                            bank.uiPrice * parseFloat(inputAmount),
+                            true
+                          )}
+                          )
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        0 <span className="text-xs text-th-fgd-3">($0.00)</span>
+                      </>
+                    )}
+                  </p>
+                </div>
                 <div className="flex justify-between">
                   <p>{t('borrow-amount')}</p>
                   <p className="font-mono text-th-fgd-2">
