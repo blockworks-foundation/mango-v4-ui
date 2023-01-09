@@ -329,33 +329,31 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 />
                 <div className="flex justify-between">
                   <p>{t('withdraw-amount')}</p>
-                  <p className="font-mono text-th-fgd-2">
-                    {isBorrow ? (
-                      <AmountWithValue
-                        amount={formatDecimal(
-                          Number(tokenBalance),
-                          bank.mintDecimals
-                        )}
-                        value={formatFixedDecimals(
-                          bank.uiPrice * tokenBalance.toNumber(),
-                          true
-                        )}
-                      />
-                    ) : inputAmount ? (
-                      <AmountWithValue
-                        amount={formatDecimal(
-                          Number(inputAmount),
-                          bank.mintDecimals
-                        )}
-                        value={formatFixedDecimals(
-                          bank.uiPrice * parseFloat(inputAmount),
-                          true
-                        )}
-                      />
-                    ) : (
-                      <AmountWithValue amount="0" value="$0.00" />
-                    )}
-                  </p>
+                  {isBorrow ? (
+                    <AmountWithValue
+                      amount={formatDecimal(
+                        Number(tokenBalance),
+                        bank.mintDecimals
+                      )}
+                      value={formatFixedDecimals(
+                        bank.uiPrice * tokenBalance.toNumber(),
+                        true
+                      )}
+                    />
+                  ) : inputAmount ? (
+                    <AmountWithValue
+                      amount={formatDecimal(
+                        Number(inputAmount),
+                        bank.mintDecimals
+                      )}
+                      value={formatFixedDecimals(
+                        bank.uiPrice * parseFloat(inputAmount),
+                        true
+                      )}
+                    />
+                  ) : (
+                    <AmountWithValue amount="0" value="$0.00" />
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <p>{t('borrow-amount')}</p>
