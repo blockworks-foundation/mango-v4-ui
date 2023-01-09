@@ -42,6 +42,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import useSolBalance from 'hooks/useSolBalance'
+import AmountWithValue from './shared/AmountWithValue'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -259,7 +260,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             />
             <SolBalanceWarnings
               amount={inputAmount}
-              className="mt-4"
+              className="mt-2"
               setAmount={setInputAmount}
               selectedToken={selectedToken}
             />
@@ -336,25 +337,20 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 />
                 <div className="flex justify-between">
                   <p>{t('deposit-amount')}</p>
-                  <p className="font-mono text-th-fgd-2">
-                    {inputAmount ? (
-                      <>
-                        {formatDecimal(Number(inputAmount), bank.mintDecimals)}{' '}
-                        <span className="text-xs text-th-fgd-3">
-                          (
-                          {formatFixedDecimals(
-                            bank.uiPrice * Number(inputAmount),
-                            true
-                          )}
-                          )
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        0 <span className="text-xs text-th-fgd-3">($0.00)</span>
-                      </>
-                    )}
-                  </p>
+                  {inputAmount ? (
+                    <AmountWithValue
+                      amount={formatDecimal(
+                        Number(inputAmount),
+                        bank.mintDecimals
+                      )}
+                      value={formatFixedDecimals(
+                        bank.uiPrice * Number(inputAmount),
+                        true
+                      )}
+                    />
+                  ) : (
+                    <AmountWithValue amount="0" value="$0.00" />
+                  )}
                 </div>
                 {/* <div className="flex justify-between">
               <div className="flex items-center">

@@ -21,6 +21,7 @@ import { LinkButton } from './Button'
 import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useMangoGroup from 'hooks/useMangoGroup'
+import AmountWithValue from './AmountWithValue'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -113,25 +114,35 @@ const BalancesTable = () => {
                       : '$0.00'}
                   </p>
                 </Td>
-                <Td className="text-right font-mono">
-                  <p>
-                    {inOrders
-                      ? formatDecimal(Number(inOrders), bank.mintDecimals)
-                      : '0'}
-                  </p>
-                  <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(inOrders * bank.uiPrice, true, true)}
-                  </p>
+                <Td className="text-right">
+                  <AmountWithValue
+                    amount={
+                      inOrders
+                        ? formatDecimal(Number(inOrders), bank.mintDecimals)
+                        : '0'
+                    }
+                    value={formatFixedDecimals(
+                      inOrders * bank.uiPrice,
+                      true,
+                      true
+                    )}
+                    stacked
+                  />
                 </Td>
-                <Td className="text-right font-mono">
-                  <p>
-                    {unsettled
-                      ? formatDecimal(Number(unsettled), bank.mintDecimals)
-                      : '0'}
-                  </p>
-                  <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(unsettled * bank.uiPrice, true, true)}
-                  </p>
+                <Td className="text-right">
+                  <AmountWithValue
+                    amount={
+                      unsettled
+                        ? formatDecimal(Number(unsettled), bank.mintDecimals)
+                        : '0'
+                    }
+                    value={formatFixedDecimals(
+                      unsettled * bank.uiPrice,
+                      true,
+                      true
+                    )}
+                    stacked
+                  />
                 </Td>
               </TrBody>
             )
@@ -172,7 +183,6 @@ const BalancesTable = () => {
                 <div className="mb-0.5 flex justify-end space-x-1.5">
                   <Balance bank={bank} />
                   <span className="text-sm text-th-fgd-4">
-                    (
                     {mangoAccount
                       ? `${formatFixedDecimals(
                           mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
@@ -180,7 +190,6 @@ const BalancesTable = () => {
                           true
                         )}`
                       : '$0.00'}
-                    )
                   </span>
                 </div>
                 <div className="flex space-x-2">

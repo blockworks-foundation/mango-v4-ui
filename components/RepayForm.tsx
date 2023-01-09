@@ -38,6 +38,7 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from 'utils/constants'
 import ConnectEmptyState from './shared/ConnectEmptyState'
+import AmountWithValue from './shared/AmountWithValue'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -297,25 +298,20 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                 />
                 <div className="flex justify-between">
                   <p>{t('repayment-amount')}</p>
-                  <p className="font-mono text-th-fgd-2">
-                    {inputAmount ? (
-                      <>
-                        {formatDecimal(Number(inputAmount), bank.mintDecimals)}{' '}
-                        <span className="text-xs text-th-fgd-3">
-                          (
-                          {formatFixedDecimals(
-                            bank.uiPrice * Number(inputAmount),
-                            true
-                          )}
-                          )
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        0 <span className="text-xs text-th-fgd-3">($0.00)</span>
-                      </>
-                    )}
-                  </p>
+                  {inputAmount ? (
+                    <AmountWithValue
+                      amount={formatDecimal(
+                        Number(inputAmount),
+                        bank.mintDecimals
+                      )}
+                      value={formatFixedDecimals(
+                        bank.uiPrice * Number(inputAmount),
+                        true
+                      )}
+                    />
+                  ) : (
+                    <AmountWithValue amount="0" value="$0.00" />
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <div className="flex items-center">

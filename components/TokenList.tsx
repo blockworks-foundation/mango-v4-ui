@@ -35,6 +35,7 @@ import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 import { USDC_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import ActionsLinkButton from './account/ActionsLinkButton'
+import AmountWithValue from './shared/AmountWithValue'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -193,59 +194,65 @@ const TokenList = () => {
                     </div>
                   </Td>
                   <Td className="text-right">
-                    <p>
-                      {tokenBalance
-                        ? formatDecimal(tokenBalance, bank.mintDecimals)
-                        : '0'}
-                    </p>
-                    <p className="text-sm text-th-fgd-4">
-                      {tokenBalance
-                        ? `${formatFixedDecimals(
-                            tokenBalance * oraclePrice,
-                            false,
-                            true
-                          )}`
-                        : '$0.00'}
-                    </p>
+                    {tokenBalance ? (
+                      <AmountWithValue
+                        amount={formatDecimal(tokenBalance, bank.mintDecimals)}
+                        value={formatFixedDecimals(
+                          tokenBalance * oraclePrice,
+                          true,
+                          true
+                        )}
+                        stacked
+                      />
+                    ) : (
+                      <AmountWithValue amount="0" value="$0.00" stacked />
+                    )}
                   </Td>
                   <Td className="text-right">
-                    <p>
-                      {inOrders
-                        ? formatDecimal(inOrders, bank.mintDecimals)
-                        : '0'}
-                    </p>
-                    <p className="text-sm text-th-fgd-4">
-                      {formatFixedDecimals(inOrders * oraclePrice, true, true)}
-                    </p>
+                    {inOrders ? (
+                      <AmountWithValue
+                        amount={formatDecimal(inOrders, bank.mintDecimals)}
+                        value={formatFixedDecimals(
+                          inOrders * oraclePrice,
+                          true,
+                          true
+                        )}
+                        stacked
+                      />
+                    ) : (
+                      <AmountWithValue amount="0" value="$0.00" stacked />
+                    )}
                   </Td>
                   <Td className="text-right">
-                    <p>
-                      {unsettled
-                        ? formatDecimal(unsettled, bank.mintDecimals)
-                        : '0'}
-                    </p>
-                    <p className="text-sm text-th-fgd-4">
-                      {formatFixedDecimals(
-                        unsettled * oraclePrice,
-                        false,
-                        true
-                      )}
-                    </p>
+                    {unsettled ? (
+                      <AmountWithValue
+                        amount={formatDecimal(unsettled, bank.mintDecimals)}
+                        value={formatFixedDecimals(
+                          unsettled * oraclePrice,
+                          true,
+                          true
+                        )}
+                        stacked
+                      />
+                    ) : (
+                      <AmountWithValue amount="0" value="$0.00" stacked />
+                    )}
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>
-                        {interestAmount
-                          ? formatDecimal(interestAmount, bank.mintDecimals)
-                          : '0'}
-                      </p>
-                      <p className="text-sm text-th-fgd-4">
-                        {formatFixedDecimals(interestValue, true, true)}
-                      </p>
+                      <AmountWithValue
+                        amount={
+                          interestAmount
+                            ? formatDecimal(interestAmount, bank.mintDecimals)
+                            : '0'
+                        }
+                        value={formatFixedDecimals(interestValue, true, true)}
+                        stacked
+                      />
                     </div>
                   </Td>
                   <Td>
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex justify-end space-x-1.5">
                       <p className="text-th-up">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
                           fixed: true,
@@ -390,38 +397,32 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
         <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:in-orders')}</p>
-            <div className="flex font-mono">
-              <p className="text-th-fgd-2">
-                {inOrders ? formatDecimal(inOrders, bank.mintDecimals) : '0'}
-              </p>
-              <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(inOrders * oraclePrice, true, true)})
-              </p>
-            </div>
+            <AmountWithValue
+              amount={
+                inOrders ? formatDecimal(inOrders, bank.mintDecimals) : '0'
+              }
+              value={formatFixedDecimals(inOrders * oraclePrice, true, true)}
+            />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:unsettled')}</p>
-            <div className="flex font-mono">
-              <p className="text-th-fgd-2">
-                {unsettled ? formatDecimal(unsettled, bank.mintDecimals) : '0'}
-              </p>
-              <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(unsettled * oraclePrice, true, true)})
-              </p>
-            </div>
+            <AmountWithValue
+              amount={
+                unsettled ? formatDecimal(unsettled, bank.mintDecimals) : '0'
+              }
+              value={formatFixedDecimals(unsettled * oraclePrice, true, true)}
+            />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('interest-earned-paid')}</p>
-            <div className="flex font-mono">
-              <p className="text-th-fgd-2">
-                {interestAmount
+            <AmountWithValue
+              amount={
+                interestAmount
                   ? formatDecimal(interestAmount, bank.mintDecimals)
-                  : '0'}
-              </p>
-              <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(interestValue, true, true)})
-              </p>
-            </div>
+                  : '0'
+              }
+              value={formatFixedDecimals(interestValue, true, true)}
+            />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('rates')}</p>

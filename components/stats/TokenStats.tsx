@@ -19,6 +19,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import mangoStore from '@store/mangoStore'
+import AmountWithValue from '@components/shared/AmountWithValue'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -228,23 +229,25 @@ const TokenStats = () => {
                       <p className="mb-0.5 text-right text-xs">
                         {t('total-deposits')}
                       </p>
-                      <p className="text-right font-mono text-th-fgd-1">
-                        {formatFixedDecimals(deposits)}
-                      </p>
-                      <p className="text-right text-th-fgd-4">
-                        {formatFixedDecimals(deposits * price, true, true)}
-                      </p>
+                      <AmountWithValue
+                        amount={formatFixedDecimals(deposits)}
+                        value={formatFixedDecimals(
+                          deposits * price,
+                          true,
+                          true
+                        )}
+                        stacked
+                      />
                     </div>
                     <div>
                       <p className="mb-0.5 text-right text-xs">
                         {t('total-borrows')}
                       </p>
-                      <p className="text-right font-mono text-th-fgd-1">
-                        {formatFixedDecimals(borrows)}
-                      </p>
-                      <p className="text-right text-th-fgd-4">
-                        {formatFixedDecimals(borrows * price, true, true)}
-                      </p>
+                      <AmountWithValue
+                        amount={formatFixedDecimals(borrows)}
+                        value={formatFixedDecimals(borrows * price, true, true)}
+                        stacked
+                      />
                     </div>
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.name)}
