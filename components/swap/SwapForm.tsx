@@ -23,7 +23,7 @@ import { Transition } from '@headlessui/react'
 import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
-import useJupiterRoutes from './useJupiterRoutes'
+import useQuoteRoutes from './useQuoteRoutes'
 import SheenLoader from '../shared/SheenLoader'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
@@ -94,7 +94,7 @@ const SwapForm = () => {
       : new Decimal(0)
   }, [debouncedAmountOut])
 
-  const { bestRoute, routes } = useJupiterRoutes({
+  const { bestRoute, routes } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
     amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
