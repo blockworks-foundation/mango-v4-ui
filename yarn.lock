@@ -52,7 +52,7 @@
 
 "@blockworks-foundation/mango-v4@https://github.com/blockworks-foundation/mango-v4.git#ts-client":
   version "0.0.1-beta.6"
-  resolved "https://github.com/blockworks-foundation/mango-v4.git#36fb7ae1818df3b249a01d42f9913e928b26d84e"
+  resolved "https://github.com/blockworks-foundation/mango-v4.git#ad9d0b8bf7197e64c4b9167edd155fbd197b0c1e"
   dependencies:
     "@project-serum/anchor" "^0.25.0"
     "@project-serum/serum" "^0.13.65"
@@ -405,9 +405,9 @@
   integrity sha512-LTMZiiLc+V4v1Yi16TD6aX2gmtKszNye0pQgbaLqkvhIqP7nVsSaJsWloGQjJfJ8offaoP5GtX3yY5swbcJxxQ==
 
 "@noble/secp256k1@^1.6.3":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@noble/secp256k1/-/secp256k1-1.7.0.tgz#d15357f7c227e751d90aa06b05a0e5cf993ba8c1"
-  integrity sha512-kbacwGSsH/CTout0ZnZWxnW1B+jH/7r/WAAKLBtrRJ/+CUH7lgmQzl3GTrQua3SGKWNSDsS6lmjnDpIJ5Dxyaw==
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/@noble/secp256k1/-/secp256k1-1.7.1.tgz#b251c70f824ce3ca7f8dc3df08d58f005cc0507c"
+  integrity sha512-hOUk6AyBFmqVrv7k5WAw/LpszxVbj9gGN4JRkIX52fdFAj1UA61KXmZDvqVEm+pOyec3+fIeZB02LYa/pWOArw==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
