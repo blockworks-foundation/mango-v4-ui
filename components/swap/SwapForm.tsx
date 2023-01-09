@@ -259,8 +259,12 @@ const SwapForm = () => {
   ])
 
   const loadingSwapDetails: boolean = useMemo(() => {
-    return !!amountInAsDecimal.toNumber() && connected && !selectedRoute
-  }, [amountInAsDecimal, connected, selectedRoute])
+    return (
+      !!(amountInAsDecimal.toNumber() || amountOutAsDecimal.toNumber()) &&
+      connected &&
+      !selectedRoute
+    )
+  }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
 
   return (
     <ContentBox
@@ -527,11 +531,6 @@ const SwapFormSubmitButton = ({
           </div>
         ) : loadingSwapDetails ? (
           <Loading />
-        ) : disabled ? (
-          <div className="flex items-center">
-            <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-            No routes found
-          </div>
         ) : (
           <span>{t('swap:review-swap')}</span>
         )
