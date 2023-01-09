@@ -47,6 +47,7 @@ import PercentageSelectButtons from './PercentageSelectButtons'
 import useIpAddress from 'hooks/useIpAddress'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import SwapSettings from './SwapSettings'
+import { formatFixedDecimals } from 'utils/numbers'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -370,7 +371,7 @@ const SwapForm = () => {
             </button>
           </div>
           <p className="mb-2 text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
-          <div id="swap-step-three" className="mb-3 grid grid-cols-2">
+          <div id="swap-step-three" className="mb-1 grid grid-cols-2">
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
               <TokenSelect
                 bank={
@@ -404,6 +405,16 @@ const SwapForm = () => {
                 />
               )}
             </div>
+          </div>
+          <div className="mb-2 flex justify-end pr-3 text-xs text-th-fgd-3">
+            {amountOutAsDecimal.toNumber() && outputBank ? (
+              <span>{`~${formatFixedDecimals(
+                amountOutAsDecimal.toNumber() * outputBank.uiPrice,
+                true
+              )}`}</span>
+            ) : (
+              <span className="text-th-fgd-4">~$0.00</span>
+            )}
           </div>
           {swapFormSizeUi === 'slider' ? (
             <SwapSlider
@@ -442,7 +453,7 @@ const SwapForm = () => {
             </Button>
           )}
           {group && inputBank ? <TokenVaultWarnings bank={inputBank} /> : null}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <div id="swap-step-four">
               <HealthImpact maintProjectedHealth={maintProjectedHealth} />
             </div>
