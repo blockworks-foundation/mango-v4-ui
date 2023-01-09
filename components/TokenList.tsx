@@ -215,7 +215,7 @@ const TokenList = () => {
                         : '0'}
                     </p>
                     <p className="text-sm text-th-fgd-4">
-                      {formatFixedDecimals(inOrders * oraclePrice, false, true)}
+                      {formatFixedDecimals(inOrders * oraclePrice, true, true)}
                     </p>
                   </Td>
                   <Td className="text-right">
@@ -240,7 +240,7 @@ const TokenList = () => {
                           : '0'}
                       </p>
                       <p className="text-sm text-th-fgd-4">
-                        {formatFixedDecimals(interestValue, false, true)}
+                        {formatFixedDecimals(interestValue, true, true)}
                       </p>
                     </div>
                   </Td>
@@ -395,7 +395,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
                 {inOrders ? formatDecimal(inOrders, bank.mintDecimals) : '0'}
               </p>
               <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(inOrders * oraclePrice, false, true)})
+                ({formatFixedDecimals(inOrders * oraclePrice, true, true)})
               </p>
             </div>
           </div>
@@ -406,7 +406,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
                 {unsettled ? formatDecimal(unsettled, bank.mintDecimals) : '0'}
               </p>
               <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(unsettled * oraclePrice, false, true)})
+                ({formatFixedDecimals(unsettled * oraclePrice, true, true)})
               </p>
             </div>
           </div>
@@ -419,7 +419,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
                   : '0'}
               </p>
               <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(interestValue, false, true)})
+                ({formatFixedDecimals(interestValue, true, true)})
               </p>
             </div>
           </div>

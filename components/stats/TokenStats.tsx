@@ -129,7 +129,7 @@ const TokenStats = () => {
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(deposits)}</p>
                       <p className="text-th-fgd-4">
-                        {formatFixedDecimals(deposits * price, false, true)}
+                        {formatFixedDecimals(deposits * price, true, true)}
                       </p>
                     </div>
                   </Td>
@@ -137,7 +137,7 @@ const TokenStats = () => {
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(borrows)}</p>
                       <p className="text-th-fgd-4">
-                        {formatFixedDecimals(borrows * price, false, true)}
+                        {formatFixedDecimals(borrows * price, true, true)}
                       </p>
                     </div>
                   </Td>
@@ -232,7 +232,7 @@ const TokenStats = () => {
                         {formatFixedDecimals(deposits)}
                       </p>
                       <p className="text-right text-th-fgd-4">
-                        {formatFixedDecimals(deposits * price, false, true)}
+                        {formatFixedDecimals(deposits * price, true, true)}
                       </p>
                     </div>
                     <div>
@@ -243,7 +243,7 @@ const TokenStats = () => {
                         {formatFixedDecimals(borrows)}
                       </p>
                       <p className="text-right text-th-fgd-4">
-                        {formatFixedDecimals(borrows * price, false, true)}
+                        {formatFixedDecimals(borrows * price, true, true)}
                       </p>
                     </div>
                     <IconButton

@@ -324,7 +324,7 @@ const OpenOrders = () => {
                       </>
                     )}
                     <Td className="w-[16.67%] text-right">
-                      {formatFixedDecimals(o.size * o.price, false, true)}
+                      {formatFixedDecimals(o.size * o.price, true, true)}
                     </Td>
                     {connected ? (
                       <Td className="w-[16.67%]">

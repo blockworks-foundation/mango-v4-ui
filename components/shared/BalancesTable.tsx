@@ -120,7 +120,7 @@ const BalancesTable = () => {
                       : '0'}
                   </p>
                   <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(inOrders * bank.uiPrice, false, true)}
+                    {formatFixedDecimals(inOrders * bank.uiPrice, true, true)}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
@@ -130,7 +130,7 @@ const BalancesTable = () => {
                       : '0'}
                   </p>
                   <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(unsettled * bank.uiPrice, false, true)}
+                    {formatFixedDecimals(unsettled * bank.uiPrice, true, true)}
                   </p>
                 </Td>
               </TrBody>

@@ -60,12 +60,12 @@ const usdFormatter3 = Intl.NumberFormat('en', {
 export const formatFixedDecimals = (
   value: number,
   isUSD?: boolean,
-  isValue?: boolean
+  is2DP?: boolean
 ): string => {
   let formattedValue
   if (value === 0) {
     formattedValue = isUSD ? '$0.00' : '0'
-  } else if (isValue) {
+  } else if (is2DP) {
     formattedValue = usdFormatter2.format(value)
   } else if (Math.abs(value) >= 1000) {
     formattedValue = isUSD

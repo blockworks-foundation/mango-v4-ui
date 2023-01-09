@@ -242,7 +242,7 @@ const AccountPage = () => {
                     play
                     delay={0.05}
                     duration={1}
-                    numbers={formatFixedDecimals(accountValue, false, true)}
+                    numbers={formatFixedDecimals(accountValue, true, true)}
                   />
                 ) : (
                   <FlipNumbers
@@ -255,7 +255,7 @@ const AccountPage = () => {
                   />
                 )
               ) : (
-                <span>{formatFixedDecimals(accountValue, false, true)}</span>
+                <span>{formatFixedDecimals(accountValue, true, true)}</span>
               )}
             </div>
             <div className="flex items-center space-x-1.5">
@@ -447,7 +447,7 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {formatFixedDecimals(accountPnl, false, true)}
+              {formatFixedDecimals(accountPnl, true, true)}
             </p>
             <div className="flex space-x-1">
               <Change change={oneDayPnlChange} prefix="$" size="small" />
@@ -478,7 +478,7 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {formatFixedDecimals(interestTotalValue, false, true)}
+              {formatFixedDecimals(interestTotalValue, true, true)}
             </p>
             <div className="flex space-x-1">
               <Change change={oneDayInterestChange} prefix="$" size="small" />
