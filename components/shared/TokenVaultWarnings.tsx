@@ -1,47 +1,59 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
+import {
+  getMaxWithdrawForBank,
+  useTokenMax,
+} from '@components/swap/useTokenMax'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import Link from 'next/link'
 import { useMemo } from 'react'
-import { floorToDecimal } from 'utils/numbers'
 import InlineNotification from './InlineNotification'
 
-const TokenVaultWarnings = ({ bank }: { bank: Bank }) => {
+const TokenVaultWarnings = ({
+  bank,
+  type,
+}: {
+  bank: Bank
+  type: 'borrow' | 'swap' | 'withdraw'
+}) => {
   const { mangoAccount } = useMangoAccount()
   const { group } = useMangoGroup()
 
-  const balance = useMemo(() => {
-    if (!mangoAccount || !group) return 0
+  const { amountWithBorrow: swapBorrowMax } = useTokenMax()
+
+  const [maxWithdraw, maxBorrow] = useMemo(() => {
+    if (!mangoAccount || !group) return [0, 0]
+    const maxWithdraw = getMaxWithdrawForBank(group, bank, mangoAccount)
     const maxBorrow = mangoAccount.getMaxWithdrawWithBorrowForTokenUi(
       group,
       bank.mint
     )
 
-    return maxBorrow
+    return [maxWithdraw, maxBorrow]
   }, [bank, mangoAccount, group])
 
-  const vaultBalance = useMemo(() => {
-    if (!group) return 0
-    return floorToDecimal(
-      group.getTokenVaultBalanceByMintUi(bank.mint),
-      bank.mintDecimals
-    ).toNumber()
+  const availableVaultBalance = useMemo(() => {
+    if (!bank || !group) return 0
+    const vaultBalance = group.getTokenVaultBalanceByMintUi(bank.mint)
+    const vaultDeposits = bank.uiDeposits()
+    const available =
+      vaultBalance - vaultDeposits * bank.minVaultToDepositsRatio
+    return available
   }, [bank, group])
 
-  // return !vaultBalance ? (
-  //   <InlineNotification
-  //     type="warning"
-  //     desc={`${bank.name} vault is too low or fully utilized`}
-  //   />
-  // ) : mangoAccount && balance! > vaultBalance ? (
-  //   <InlineNotification
-  //     type="warning"
-  //     desc={`Available ${bank.name} vault balance is lower than your balance`}
-  //   />
-  // ) : null
+  const showWarning = useMemo(() => {
+    if (!bank || !group) return false
+    if (
+      (type === 'borrow' && maxBorrow > availableVaultBalance) ||
+      (type === 'swap' && swapBorrowMax.toNumber() > availableVaultBalance) ||
+      (type === 'withdraw' && maxWithdraw > availableVaultBalance)
+    ) {
+      return true
+    }
+    return false
+  }, [bank, group, type])
 
-  return mangoAccount &&
-    balance / bank.minVaultToDepositsRatio > vaultBalance ? (
+  return showWarning ? (
     <div className="mb-4">
       <InlineNotification
         type="warning"
@@ -51,7 +63,7 @@ const TokenVaultWarnings = ({ bank }: { bank: Bank }) => {
             <Link href="/stats" className="underline hover:no-underline">
               vault balance
             </Link>{' '}
-            is low and impacting the maximum amount you can withdraw/borrow.
+            is low and impacting the maximum amount you can <span>{type}</span>
           </div>
         }
       />
