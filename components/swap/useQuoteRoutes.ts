@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 import Decimal from 'decimal.js'
 import { RouteInfo } from 'types/jupiter'
@@ -10,6 +11,7 @@ type useQuoteRoutesPropTypes = {
   amount: string
   slippage: number
   swapMode: string
+  wallet: string | undefined | null
 }
 
 const fetchJupiterRoutes = async (
@@ -50,21 +52,21 @@ const fetchMangoRoutes = async (
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
-  feeBps = 0
+  feeBps = 0,
+  wallet = PublicKey.default.toBase58()
 ) => {
   {
     const paramsString = new URLSearchParams({
       inputMint: inputMint.toString(),
       outputMint: outputMint.toString(),
       amount: amount.toString(),
-      slippageBps: Math.ceil(slippage * 100).toString(),
+      slippage: ((slippage * 1) / 100).toString(),
       feeBps: feeBps.toString(),
       mode: swapMode,
+      wallet: wallet,
     }).toString()
 
-    const response = await fetch(
-      `${MANGO_ROUTER_API_URL}/swap?wallet=1111111111111111111111111111111111111111111&${paramsString}`
-    )
+    const response = await fetch(`${MANGO_ROUTER_API_URL}/swap?${paramsString}`)
 
     const res = await response.json()
     const data = res
@@ -81,10 +83,20 @@ const handleGetRoutes = async (
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
-  feeBps = 0
+  feeBps = 0,
+  wallet: string | undefined | null
 ) => {
+  wallet ||= PublicKey.default.toBase58()
   const results = await Promise.allSettled([
-    fetchMangoRoutes(inputMint, outputMint, amount, slippage, swapMode, feeBps),
+    fetchMangoRoutes(
+      inputMint,
+      outputMint,
+      amount,
+      slippage,
+      swapMode,
+      feeBps,
+      wallet
+    ),
     fetchJupiterRoutes(
       inputMint,
       outputMint,
@@ -119,6 +131,7 @@ const useQuoteRoutes = ({
   amount,
   slippage,
   swapMode,
+  wallet,
 }: useQuoteRoutesPropTypes) => {
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
 
@@ -133,14 +146,16 @@ const useQuoteRoutes = ({
       : new Decimal(0)
 
   const res = useQuery<{ routes: RouteInfo[]; bestRoute: RouteInfo }, Error>(
-    ['swap-routes', inputMint, outputMint, amount, slippage, swapMode],
+    ['swap-routes', inputMint, outputMint, amount, slippage, swapMode, wallet],
     async () =>
       handleGetRoutes(
         inputMint,
         outputMint,
         nativeAmount.toNumber(),
         slippage,
-        swapMode
+        swapMode,
+        0,
+        wallet
       ),
     {
       enabled: amount ? true : false,

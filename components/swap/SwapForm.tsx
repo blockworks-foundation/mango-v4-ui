@@ -80,7 +80,7 @@ const SwapForm = () => {
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { mangoAccount } = useMangoAccount()
-  const { connected } = useWallet()
+  const { connected, publicKey } = useWallet()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
@@ -100,6 +100,7 @@ const SwapForm = () => {
     amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
     slippage,
     swapMode,
+    wallet: publicKey?.toBase58(),
   })
 
   const setAmountInFormValue = useCallback(
