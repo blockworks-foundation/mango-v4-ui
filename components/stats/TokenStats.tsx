@@ -107,6 +107,9 @@ const TokenStats = () => {
                   (t) => t.address === bank.mint.toString()
                 )?.logoURI
               }
+              const deposits = bank.uiDeposits()
+              const borrows = bank.uiBorrows()
+              const price = bank.uiPrice
 
               return (
                 <TrBody key={key}>
@@ -124,12 +127,18 @@ const TokenStats = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiDeposits())}</p>
+                      <p>{formatFixedDecimals(deposits)}</p>
+                      <p className="text-sm text-th-fgd-4">
+                        {formatFixedDecimals(deposits * price, false, true)}
+                      </p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiBorrows())}</p>
+                      <p>{formatFixedDecimals(borrows)}</p>
+                      <p className="text-sm text-th-fgd-4">
+                        {formatFixedDecimals(borrows * price, false, true)}
+                      </p>
                     </div>
                   </Td>
                   <Td>
