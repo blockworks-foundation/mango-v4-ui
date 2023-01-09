@@ -63,7 +63,7 @@ const fetchMangoRoutes = async (
     }).toString()
 
     const response = await fetch(
-      `${MANGO_ROUTER_API_URL}/swap?wallet=Bz9thGbRRfwq3EFtFtSKZYnnXio5LXDaRgJDh3NrMAGT&${paramsString}`
+      `${MANGO_ROUTER_API_URL}/swap?wallet=1111111111111111111111111111111111111111111&${paramsString}`
     )
 
     const res = await response.json()
