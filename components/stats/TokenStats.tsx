@@ -128,7 +128,7 @@ const TokenStats = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(deposits)}</p>
-                      <p className="text-sm text-th-fgd-4">
+                      <p className="text-th-fgd-4">
                         {formatFixedDecimals(deposits * price, false, true)}
                       </p>
                     </div>
@@ -136,7 +136,7 @@ const TokenStats = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>{formatFixedDecimals(borrows)}</p>
-                      <p className="text-sm text-th-fgd-4">
+                      <p className="text-th-fgd-4">
                         {formatFixedDecimals(borrows * price, false, true)}
                       </p>
                     </div>
@@ -207,6 +207,9 @@ const TokenStats = () => {
                 (t) => t.address === bank.mint.toString()
               )?.logoURI
             }
+            const deposits = bank.uiDeposits()
+            const borrows = bank.uiBorrows()
+            const price = bank.uiPrice
             return (
               <div key={key} className="border-b border-th-bkg-3 px-6 py-4">
                 <div className="flex items-center justify-between">
@@ -222,17 +225,25 @@ const TokenStats = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <div>
-                      <p className="text-right text-xs">
+                      <p className="mb-0.5 text-right text-xs">
                         {t('total-deposits')}
                       </p>
                       <p className="text-right font-mono text-th-fgd-1">
-                        {formatFixedDecimals(bank.uiDeposits())}
+                        {formatFixedDecimals(deposits)}
+                      </p>
+                      <p className="text-right text-th-fgd-4">
+                        {formatFixedDecimals(deposits * price, false, true)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-right text-xs">{t('total-borrows')}</p>
+                      <p className="mb-0.5 text-right text-xs">
+                        {t('total-borrows')}
+                      </p>
                       <p className="text-right font-mono text-th-fgd-1">
-                        {formatFixedDecimals(bank.uiBorrows())}
+                        {formatFixedDecimals(borrows)}
+                      </p>
+                      <p className="text-right text-th-fgd-4">
+                        {formatFixedDecimals(borrows * price, false, true)}
                       </p>
                     </div>
                     <IconButton
