@@ -496,7 +496,7 @@ const AccountPage = () => {
       ) : null} */}
     </>
   ) : (
-    <div className="p-6">
+    <div className="p-6 pb-0">
       {chartToShow === 'account-value' ? (
         <AccountChart
           chartToShow="account-value"

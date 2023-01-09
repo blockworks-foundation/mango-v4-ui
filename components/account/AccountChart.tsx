@@ -52,6 +52,7 @@ const AccountChart = ({
     <DetailedAreaChart
       data={data.concat(currentValue)}
       daysToShow={daysToShow}
+      heightClass="h-[calc(100vh-200px)]"
       hideChart={hideChart}
       loading={loading}
       prefix="$"
