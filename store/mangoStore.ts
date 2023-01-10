@@ -1003,20 +1003,32 @@ const mangoStore = create<MangoStore>()(
         },
         async fetchTradeHistory() {
           const set = get().set
-          // const selectedMarket = get().selectedMarket.current
-          // const group = get().group
           const mangoAccount = get().mangoAccount.current
-
           try {
-            const res = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/openbook-trades?address=${mangoAccount?.publicKey.toString()}&address-type=mango-account`
-            )
-            const parsedRes = await res.json()
-            if (parsedRes?.length) {
-              set((s) => {
-                s.mangoAccount.tradeHistory = parsedRes.reverse()
-              })
+            const [spotRes, perpRes] = await Promise.all([
+              fetch(
+                `https://mango-transaction-log.herokuapp.com/v4/stats/openbook-trades?address=${mangoAccount?.publicKey.toString()}&address-type=mango-account`
+              ),
+              fetch(
+                `https://mango-transaction-log.herokuapp.com/v4/stats/perp-trade-history?mango-account=${mangoAccount?.publicKey.toString()}&limit=1000`
+              ),
+            ])
+            const spotHistory = await spotRes.json()
+            const perpHistory = await perpRes.json()
+            console.log('th', spotHistory, perpHistory)
+            let tradeHistory: any[] = []
+            if (spotHistory?.length) {
+              tradeHistory = tradeHistory.concat(spotHistory)
             }
+            if (perpHistory?.length) {
+              tradeHistory = tradeHistory.concat(perpHistory)
+            }
+
+            set((s) => {
+              s.mangoAccount.tradeHistory = tradeHistory.sort(
+                (x: any) => x.block_datetime
+              )
+            })
           } catch (e) {
             console.error('Unable to fetch trade history', e)
           }

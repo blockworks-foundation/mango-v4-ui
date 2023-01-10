@@ -15,7 +15,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useViewport } from 'hooks/useViewport'
 import { useMemo } from 'react'
-import { formatDecimal } from 'utils/numbers'
+import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import TableMarketName from './TableMarketName'
 
@@ -177,17 +177,32 @@ const TradeHistory = () => {
                 market = group.getSerum3MarketByExternalMarket(
                   new PublicKey(trade.market)
                 )
+              } else if ('perp_market' in trade) {
+                market = group.getPerpMarketByName(trade.perp_market)
               } else {
                 market = selectedMarket
               }
               let makerTaker = trade.liquidity
               if ('maker' in trade) {
                 makerTaker = trade.maker ? 'Maker' : 'Taker'
+                if (trade.taker === mangoAccount.publicKey.toString()) {
+                  makerTaker = 'Taker'
+                }
+              }
+              const size = trade.size || trade.quantity
+              let fee
+              if (trade.fee_cost || trade.feeCost) {
+                fee = trade.fee_cost || trade.feeCost
+              } else {
+                fee =
+                  trade.maker === mangoAccount.publicKey.toString()
+                    ? trade.maker_fee
+                    : trade.taker_fee
               }
 
               return (
                 <TrBody
-                  key={`${trade.signature || trade.marketIndex}${trade.size}`}
+                  key={`${trade.signature || trade.marketIndex}${size}`}
                   className="my-1 p-2"
                 >
                   <Td className="">
@@ -196,17 +211,15 @@ const TradeHistory = () => {
                   <Td className="text-right">
                     <SideBadge side={trade.side} />
                   </Td>
-                  <Td className="text-right font-mono">{trade.size}</Td>
+                  <Td className="text-right font-mono">{size}</Td>
                   <Td className="text-right font-mono">
                     {formatDecimal(trade.price)}
                   </Td>
                   <Td className="text-right font-mono">
-                    {trade.price * trade.size}
+                    {formatFixedDecimals(trade.price * size)}
                   </Td>
                   <Td className="text-right">
-                    <span className="font-mono">
-                      {trade.fee_cost || trade.feeCost}
-                    </span>
+                    <span className="font-mono">{formatDecimal(fee)}</span>
                     <p className="font-body text-xs text-th-fgd-4">
                       {makerTaker}
                     </p>
