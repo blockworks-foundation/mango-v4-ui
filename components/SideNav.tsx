@@ -11,6 +11,7 @@ import {
   ArrowsRightLeftIcon,
   ArrowTrendingUpIcon,
   XMarkIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -120,6 +121,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               pagePath="/fees"
               hideIconBg
             /> */}
+              <MenuItem
+                active={pathname === '/search'}
+                collapsed={false}
+                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                title={t('search-accounts')}
+                pagePath="/search"
+                hideIconBg
+                showTooltip={false}
+              />
               <MenuItem
                 collapsed={false}
                 icon={<LightBulbIcon className="h-5 w-5" />}
