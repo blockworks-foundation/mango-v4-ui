@@ -58,6 +58,7 @@ const fetchMangoRoutes = async (
   {
     const defaultOtherAmount =
       swapMode === 'ExactIn' ? 0 : Number.MAX_SAFE_INTEGER
+
     const paramsString = new URLSearchParams({
       inputMint: inputMint.toString(),
       outputMint: outputMint.toString(),
@@ -90,6 +91,7 @@ const handleGetRoutes = async (
   wallet: string | undefined | null
 ) => {
   wallet ||= PublicKey.default.toBase58()
+
   const results = await Promise.allSettled([
     fetchMangoRoutes(
       inputMint,
