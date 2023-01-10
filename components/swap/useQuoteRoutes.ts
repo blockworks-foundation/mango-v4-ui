@@ -56,6 +56,8 @@ const fetchMangoRoutes = async (
   wallet = PublicKey.default.toBase58()
 ) => {
   {
+    const defaultOtherAmount =
+      swapMode === 'ExactIn' ? 0 : Number.MAX_SAFE_INTEGER
     const paramsString = new URLSearchParams({
       inputMint: inputMint.toString(),
       outputMint: outputMint.toString(),
@@ -64,6 +66,7 @@ const fetchMangoRoutes = async (
       feeBps: feeBps.toString(),
       mode: swapMode,
       wallet: wallet,
+      otherAmountThreshold: defaultOtherAmount.toString(),
     }).toString()
 
     const response = await fetch(`${MANGO_ROUTER_API_URL}/swap?${paramsString}`)
