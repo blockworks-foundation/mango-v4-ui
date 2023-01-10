@@ -218,7 +218,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                 />
               </div>
             ) : null}
-            {bank ? <TokenVaultWarnings bank={bank} /> : null}
+            {bank ? <TokenVaultWarnings bank={bank} type="withdraw" /> : null}
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('withdraw')} ${t('token')}`} />

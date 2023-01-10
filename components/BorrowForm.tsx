@@ -247,7 +247,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 />
               </div>
             ) : null}
-            {bank ? <TokenVaultWarnings bank={bank} /> : null}
+            {bank ? <TokenVaultWarnings bank={bank} type="borrow" /> : null}
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('borrow')} ${t('token')}`} />

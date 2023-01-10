@@ -441,7 +441,9 @@ const SwapForm = () => {
               })}
             </Button>
           )}
-          {group && inputBank ? <TokenVaultWarnings bank={inputBank} /> : null}
+          {group && inputBank ? (
+            <TokenVaultWarnings bank={inputBank} type="swap" />
+          ) : null}
           <div className="space-y-2">
             <div id="swap-step-four">
               <HealthImpact maintProjectedHealth={maintProjectedHealth} />
