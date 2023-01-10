@@ -149,6 +149,35 @@ const ActivityFeedTable = ({
     return value
   }
 
+  const getFee = (activity: any) => {
+    const { activity_type } = activity
+    let fee = '0'
+    if (activity_type === 'swap') {
+      const { loan_origination_fee, swap_in_symbol } = activity.activity_details
+      fee = loan_origination_fee
+        ? `${loan_origination_fee.toLocaleString(undefined, {
+            minimumSignificantDigits: 1,
+            maximumSignificantDigits: 1,
+          })} ${swap_in_symbol}`
+        : '0'
+    }
+    if (activity_type === 'perp_trade') {
+      const { maker_fee, taker_fee } = activity.activity_details
+      fee = `${(maker_fee + taker_fee).toLocaleString(undefined, {
+        minimumSignificantDigits: 1,
+        maximumSignificantDigits: 1,
+      })} USDC`
+    }
+    if (activity_type === 'openbook_trade') {
+      const { fee_cost, quote_symbol } = activity.activity_details
+      fee = `${fee_cost.toLocaleString(undefined, {
+        minimumSignificantDigits: 1,
+        maximumSignificantDigits: 1,
+      })} ${quote_symbol}`
+    }
+    return fee
+  }
+
   return mangoAccountAddress && (activityFeed.length || loadActivityFeed) ? (
     <>
       {showTableView ? (
@@ -161,6 +190,7 @@ const ActivityFeedTable = ({
               </Th>
               <Th className="bg-th-bkg-1 text-right">{t('activity:credit')}</Th>
               <Th className="bg-th-bkg-1 text-right">{t('activity:debit')}</Th>
+              <Th className="bg-th-bkg-1 text-right">{t('fee')}</Th>
               <Th className="bg-th-bkg-1 text-right">
                 {t('activity:activity-value')}
               </Th>
@@ -176,6 +206,7 @@ const ActivityFeedTable = ({
               const isOpenbook = activity_type === 'openbook_trade'
               const amounts = getCreditAndDebit(activity)
               const value = getValue(activity)
+              const fee = getFee(activity)
               return (
                 <TrBody
                   key={signature}
@@ -211,6 +242,7 @@ const ActivityFeedTable = ({
                       {amounts.debit.symbol}
                     </span>
                   </Td>
+                  <Td className="text-right font-mono">{fee}</Td>
                   <Td
                     className={`text-right font-mono ${
                       activity_type === 'swap' ||
