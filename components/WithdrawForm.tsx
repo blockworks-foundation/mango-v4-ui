@@ -286,7 +286,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               </div>
             </div>
             {bank ? (
-              <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
+              <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4">
                 <HealthImpactTokenChange
                   mintPk={bank.mint}
                   uiAmount={Number(inputAmount)}
