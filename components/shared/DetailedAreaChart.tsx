@@ -147,17 +147,19 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             height={small ? 24 : 40}
                             width={small ? 17 : 30}
                             play
-                            numbers={
-                              prefix +
-                              formatFixedDecimals(mouseData[yKey] ?? 0) +
-                              suffix
-                            }
+                            numbers={`${
+                              mouseData[yKey] < 0 ? '-' : ''
+                            }${prefix}${formatFixedDecimals(
+                              Math.abs(mouseData[yKey])
+                            )}${suffix}`}
                           />
                         ) : (
                           <span>
-                            {prefix +
-                              formatFixedDecimals(mouseData[yKey] ?? 0) +
-                              suffix}
+                            {`${
+                              mouseData[yKey] < 0 ? '-' : ''
+                            }${prefix}${formatFixedDecimals(
+                              Math.abs(mouseData[yKey])
+                            )}${suffix}`}
                           </span>
                         )}
                         {!hideChange ? (
@@ -192,17 +194,19 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             height={small ? 24 : 40}
                             width={small ? 17 : 30}
                             play
-                            numbers={
-                              prefix +
-                              formatFixedDecimals(data[data.length - 1][yKey]) +
-                              suffix
-                            }
+                            numbers={`${
+                              data[data.length - 1][yKey] < 0 ? '-' : ''
+                            }${prefix}${formatFixedDecimals(
+                              Math.abs(data[data.length - 1][yKey])
+                            )}${suffix}`}
                           />
                         ) : (
                           <span>
-                            {prefix +
-                              formatFixedDecimals(data[data.length - 1][yKey]) +
-                              suffix}
+                            {`${
+                              data[data.length - 1][yKey] < 0 ? '-' : ''
+                            }${prefix}${formatFixedDecimals(
+                              Math.abs(data[data.length - 1][yKey])
+                            )}${suffix}`}
                           </span>
                         )}
                         {!hideChange ? (
