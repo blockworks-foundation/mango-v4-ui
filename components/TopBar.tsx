@@ -3,11 +3,13 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ExclamationTriangleIcon,
+  EyeIcon,
+  UsersIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from './icons/WalletIcon'
-import { IconButton } from './shared/Button'
+import Button, { IconButton } from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../utils/constants'
@@ -15,27 +17,39 @@ import useLocalStorageState from '../hooks/useLocalStorageState'
 import CreateAccountModal from './modals/CreateAccountModal'
 import MangoAccountsListModal from './modals/MangoAccountsListModal'
 import { useRouter } from 'next/router'
-import UserSetup from './UserSetup'
+import UserSetupModal from './modals/UserSetupModal'
 import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useOnlineStatus from 'hooks/useOnlineStatus'
+import { DEFAULT_DELEGATE } from './modals/DelegateModal'
+import Tooltip from './shared/Tooltip'
+import { abbreviateAddress } from 'utils/formatting'
+import DepositWithdrawModal from './modals/DepositWithdrawModal'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
+// import ThemeSwitcher from './ThemeSwitcher'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
-  const [showUserSetup, setShowUserSetup] = useState(false)
+  const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
+  const [showUserSetup, setShowUserSetup] = useState(false)
+  const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
+    useState(false)
   const isOnline = useOnlineStatus()
   const router = useRouter()
   const { query } = router
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.sm : false
 
   const handleCloseSetup = useCallback(() => {
     setShowUserSetup(false)
     setIsOnboarded(true)
-  }, [])
+  }, [setShowUserSetup, setIsOnboarded])
 
   const handleShowSetup = useCallback(() => {
     setShowUserSetup(true)
@@ -48,6 +62,15 @@ const TopBar = () => {
       setShowCreateAccountModal(true)
     }
   }, [mangoAccount])
+
+  const handleDepositWithdrawModal = (action: 'deposit' | 'withdraw') => {
+    if (!connected || mangoAccount) {
+      setAction(action)
+      setShowDepositWithdrawModal(true)
+    } else {
+      setShowCreateAccountModal(true)
+    }
+  }
 
   return (
     <>
@@ -71,61 +94,106 @@ const TopBar = () => {
             alt="next"
           />
           {!connected ? (
-            <span className="hidden items-center md:flex">
-              <WalletIcon className="h-5 w-5 text-th-fgd-3" />
-              <span className="ml-2">{t('connect-helper')}</span>
-              <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
-            </span>
+            mangoAccount ? (
+              <span className="hidden items-center md:flex">
+                <EyeIcon className="h-5 w-5 text-th-fgd-3" />
+                <span className="ml-2">
+                  {t('unowned-helper', {
+                    accountPk: abbreviateAddress(mangoAccount.publicKey),
+                  })}
+                </span>
+              </span>
+            ) : (
+              <span className="hidden items-center md:flex">
+                <WalletIcon className="h-5 w-5 text-th-fgd-3" />
+                <span className="ml-2">{t('connect-helper')}</span>
+                <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
+              </span>
+            )
           ) : null}
         </span>
         {!isOnline ? (
-          <div className="flex items-center rounded-full bg-th-red py-2 px-4">
-            <ExclamationTriangleIcon className="h-5 w-5" />
-            <div className="ml-2">
-              Your network connection appears to be offline!
-            </div>
+          <div className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full bg-th-down py-2 px-4">
+            <ExclamationTriangleIcon className="h-5 w-5 text-th-fgd-1" />
+            <p className="ml-2 text-th-fgd-1">
+              Your connection appears to be offline
+            </p>
           </div>
         ) : null}
-        {connected ? (
-          <div className="flex items-center space-x-4 pr-4 md:pr-0">
+        <div className="flex items-center">
+          {/* <div className="px-3 md:px-4">
+            <ThemeSwitcher />
+          </div> */}
+          {(mangoAccount && !connected) || (!connected && isMobile) ? null : (
+            <Button
+              onClick={() => handleDepositWithdrawModal('deposit')}
+              secondary
+              className="mx-4"
+            >{`${t('deposit')} / ${t('withdraw')}`}</Button>
+          )}
+          {connected ? (
+            <div className="flex items-center pr-4 md:pr-0">
+              <button
+                className="hidden h-16 border-l border-th-bkg-3 px-4 md:block"
+                id="account-step-two"
+                onClick={handleShowAccounts}
+              >
+                <p className="text-right text-xs">{t('accounts')}</p>
+                <div className="text-left text-sm font-bold text-th-fgd-1">
+                  {mangoAccount ? (
+                    <div className="flex items-center">
+                      {mangoAccount.name}
+                      {mangoAccount.delegate.toString() !== DEFAULT_DELEGATE ? (
+                        <Tooltip
+                          content={t('delegate-account-info', {
+                            address: abbreviateAddress(mangoAccount.delegate),
+                          })}
+                        >
+                          <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                        </Tooltip>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <span>
+                      <span className="mr-1.5">🥭</span>
+                      {t('create-account')}
+                    </span>
+                  )}
+                </div>
+              </button>
+              <ConnectedMenu />
+            </div>
+          ) : isOnboarded ? (
+            <ConnectWalletButton />
+          ) : (
             <button
-              className="mr-2 hidden md:block"
-              id="account-step-two"
-              onClick={handleShowAccounts}
+              className="relative h-16 rounded-none bg-th-bkg-2 bg-gradient-to-bl px-6 font-display text-base text-th-fgd-1 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100"
+              onClick={handleShowSetup}
             >
-              <p className="text-right text-xs">{t('accounts')}</p>
-              <p className="text-left text-sm font-bold text-th-fgd-1">
-                {mangoAccount ? (
-                  mangoAccount.name
-                ) : (
-                  <span>
-                    <span className="mr-1.5">🥭</span>
-                    {t('create-account')}
-                  </span>
-                )}
-              </p>
+              <div className="relative z-10 flex items-center justify-center">
+                <WalletIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                {t('connect')}
+              </div>
             </button>
-            <ConnectedMenu />
-          </div>
-        ) : isOnboarded ? (
-          <ConnectWalletButton />
-        ) : (
-          <button
-            className="relative flex h-16 items-center justify-center rounded-none bg-gradient-to-bl from-mango-theme-yellow to-mango-theme-red-dark px-6 text-base font-bold text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-[rgba(255,255,255,0.25)] before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100"
-            onClick={handleShowSetup}
-          >
-            <WalletIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-            {t('connect')}
-          </button>
-        )}
+          )}
+        </div>
       </div>
+      {showDepositWithdrawModal ? (
+        <DepositWithdrawModal
+          action={action}
+          isOpen={showDepositWithdrawModal}
+          onClose={() => setShowDepositWithdrawModal(false)}
+        />
+      ) : null}
       {showMangoAccountsModal ? (
         <MangoAccountsListModal
           isOpen={showMangoAccountsModal}
           onClose={() => setShowMangoAccountsModal(false)}
         />
       ) : null}
-      {showUserSetup ? <UserSetup onClose={handleCloseSetup} /> : null}
+      {showUserSetup ? (
+        <UserSetupModal isOpen={showUserSetup} onClose={handleCloseSetup} />
+      ) : null}
       {showCreateAccountModal ? (
         <CreateAccountModal
           isOpen={showCreateAccountModal}

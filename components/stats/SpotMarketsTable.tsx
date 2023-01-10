@@ -50,7 +50,7 @@ const SpotMarketsTable = () => {
               const coingeckoData = coingeckoPrices.find((asset) =>
                 bank?.name === 'soETH'
                   ? asset.symbol === 'ETH'
-                  : asset.symbol === bank?.name
+                  : asset.symbol.toUpperCase() === bank?.name.toUpperCase()
               )
 
               const change = coingeckoData
@@ -67,30 +67,34 @@ const SpotMarketsTable = () => {
                   <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market} />
-                      <p className="font-body tracking-wide">{market.name}</p>
+                      <p className="font-body tracking-wider">{market.name}</p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(oraclePrice!, true)}</p>
+                      <p>
+                        {oraclePrice
+                          ? formatFixedDecimals(oraclePrice, true)
+                          : '–'}
+                      </p>
                     </div>
                   </Td>
                   <Td>
                     {!loadingPrices ? (
                       chartData !== undefined ? (
-                        <SimpleAreaChart
-                          color={
-                            change >= 0
-                              ? COLORS.GREEN[theme]
-                              : COLORS.RED[theme]
-                          }
-                          data={chartData}
-                          height={40}
-                          name={bank!.name}
-                          width={104}
-                          xKey="0"
-                          yKey="1"
-                        />
+                        <div className="h-10 w-24">
+                          <SimpleAreaChart
+                            color={
+                              change >= 0
+                                ? COLORS.UP[theme]
+                                : COLORS.DOWN[theme]
+                            }
+                            data={chartData}
+                            name={bank!.name}
+                            xKey="0"
+                            yKey="1"
+                          />
+                        </div>
                       ) : bank?.name === 'USDC' ||
                         bank?.name === 'USDT' ? null : (
                         <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
@@ -101,7 +105,7 @@ const SpotMarketsTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col items-end">
-                      <Change change={change} />
+                      <Change change={change} suffix="%" />
                     </div>
                   </Td>
                 </TrBody>
@@ -171,21 +175,21 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
               <p className="font-mono">
                 {bank?.uiPrice ? formatFixedDecimals(bank.uiPrice, true) : '-'}
               </p>
-              <Change change={change} />
+              <Change change={change} suffix="%" />
             </div>
           </div>
         </div>
         {!loadingPrices ? (
           chartData !== undefined ? (
-            <SimpleAreaChart
-              color={change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]}
-              data={chartData}
-              height={40}
-              name={bank!.name}
-              width={104}
-              xKey="0"
-              yKey="1"
-            />
+            <div className="h-10 w-24">
+              <SimpleAreaChart
+                color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                data={chartData}
+                name={bank!.name}
+                xKey="0"
+                yKey="1"
+              />
+            </div>
           ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
             <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
           )

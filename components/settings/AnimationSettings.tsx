@@ -33,29 +33,29 @@ const AnimationSettings = () => {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between pr-4">
+      <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base">{t('settings:animations')}</h2>
         <Switch
           checked={!Object.values(animationSettings).includes(false)}
           onChange={() => handleToggleAnimationSetting('all')}
         />
       </div>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:number-scroll')}</p>
+      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+        <p>{t('settings:number-scroll')}</p>
         <Switch
           checked={animationSettings['number-scroll']}
           onChange={() => handleToggleAnimationSetting('number-scroll')}
         />
       </div>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:orderbook-flash')}</p>
+      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+        <p>{t('settings:orderbook-flash')}</p>
         <Switch
           checked={animationSettings['orderbook-flash']}
           onChange={() => handleToggleAnimationSetting('orderbook-flash')}
         />
       </div>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:swap-success')}</p>
+      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+        <p>{t('settings:swap-success')}</p>
         <Switch
           checked={animationSettings['swap-success']}
           onChange={() => handleToggleAnimationSetting('swap-success')}

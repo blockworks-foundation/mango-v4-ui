@@ -4,9 +4,15 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo, useState } from 'react'
-import { notify } from 'utils/notifications'
+import { trimDecimals } from 'utils/numbers'
 
-const SpotButtonGroup = () => {
+const SpotButtonGroup = ({
+  minOrderDecimals,
+  tickDecimals,
+}: {
+  minOrderDecimals: number
+  tickDecimals: number
+}) => {
   const side = mangoStore((s) => s.tradeForm.side)
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
@@ -30,11 +36,7 @@ const SpotButtonGroup = () => {
         )
       }
     } catch (e) {
-      console.error('SpotSlider: ', e)
-      notify({
-        type: 'error',
-        title: 'Error calculating max leverage.',
-      })
+      console.error('Error calculating max leverage: spot btn group: ', e)
       return 0
     }
   }, [side, selectedMarket, mangoAccount])
@@ -47,31 +49,37 @@ const SpotButtonGroup = () => {
 
       set((s) => {
         if (s.tradeForm.side === 'buy') {
-          s.tradeForm.quoteSize = size.toString()
+          s.tradeForm.quoteSize = trimDecimals(size, tickDecimals).toFixed(
+            tickDecimals
+          )
 
           if (Number(s.tradeForm.price)) {
-            s.tradeForm.baseSize = (
-              size / parseFloat(s.tradeForm.price)
-            ).toString()
+            s.tradeForm.baseSize = trimDecimals(
+              size / Number(s.tradeForm.price),
+              minOrderDecimals
+            ).toFixed(minOrderDecimals)
           } else {
             s.tradeForm.baseSize = ''
           }
         } else if (s.tradeForm.side === 'sell') {
-          s.tradeForm.baseSize = size.toString()
+          s.tradeForm.baseSize = trimDecimals(size, tickDecimals).toFixed(
+            minOrderDecimals
+          )
 
           if (Number(s.tradeForm.price)) {
-            s.tradeForm.quoteSize = (
-              size * parseFloat(s.tradeForm.price)
-            ).toString()
+            s.tradeForm.quoteSize = trimDecimals(
+              size * Number(s.tradeForm.price),
+              tickDecimals
+            ).toFixed(tickDecimals)
           }
         }
       })
     },
-    [side, selectedMarket, mangoAccount]
+    [side, selectedMarket, mangoAccount, minOrderDecimals, tickDecimals]
   )
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full px-3 md:px-4">
       <ButtonGroup
         activeValue={sizePercentage}
         onChange={(p) => handleSizePercentage(p)}

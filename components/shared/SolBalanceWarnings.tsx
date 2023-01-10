@@ -6,10 +6,12 @@ import InlineNotification from './InlineNotification'
 
 const SolBalanceWarnings = ({
   amount,
+  className,
   setAmount,
   selectedToken,
 }: {
   amount?: string
+  className?: string
   setAmount?: (a: string) => void
   selectedToken?: string
 }) => {
@@ -54,11 +56,11 @@ const SolBalanceWarnings = ({
   }, [maxSolDeposit])
 
   return showLowSolWarning ? (
-    <div className="mt-2">
+    <div className={className}>
       <InlineNotification type="warning" desc={t('deposit-more-sol')} />
     </div>
   ) : showMaxSolWarning ? (
-    <div className="mt-2">
+    <div className={className}>
       <InlineNotification
         type="info"
         desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}

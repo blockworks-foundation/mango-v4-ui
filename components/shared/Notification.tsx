@@ -123,11 +123,18 @@ const Notification = ({ notification }: { notification: Notification }) => {
   let parsedTitle: string | undefined
   if (description) {
     if (
-      description?.includes('Timed out awaiting') ||
-      description?.includes('was not confirmed')
+      description.includes('Timed out awaiting') ||
+      description.includes('was not confirmed')
     ) {
       parsedTitle = 'Transaction status unknown'
     }
+  }
+
+  let parsedDescription = description
+  if (
+    description?.includes('{"err":{"InstructionError":[2,{"Custom":6001}]}}')
+  ) {
+    parsedDescription = 'Your max slippage tolerance was exceeded'
   }
 
   // if the notification is a success, then hide the confirming tx notification with the same txid
@@ -164,7 +171,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
         ? CLIENT_TX_TIMEOUT
         : type === 'error'
         ? 30000
-        : 8000
+        : 10000
     )
 
     return () => {
@@ -224,40 +231,40 @@ const Notification = ({ notification }: { notification: Notification }) => {
       <div
         className={`pointer-events-auto w-full rounded-md border bg-th-bkg-2 shadow-lg md:w-auto ${
           type === 'success'
-            ? 'border-th-green'
+            ? 'border-th-success'
             : type === 'error'
-            ? 'border-th-red'
+            ? 'border-th-error'
             : 'border-th-bkg-4'
         }`}
       >
         <div className={`relative flex w-full items-center p-3.5 md:w-96`}>
           <div className={`mr-1 flex-shrink-0`}>
             {type === 'success' ? (
-              <CheckCircleIcon className={`h-6 w-6 text-th-green`} />
+              <CheckCircleIcon className={`h-6 w-6 text-th-success`} />
             ) : null}
             {type === 'info' && (
               <InformationCircleIcon className={`h-6 w-6 text-th-fgd-3`} />
             )}
             {type === 'error' && (
-              <XCircleIcon className={`h-6 w-6 text-th-red`} />
+              <XCircleIcon className={`h-6 w-6 text-th-error`} />
             )}
             {type === 'confirm' && (
-              <Loading className="mr-0.5 h-5 w-5 text-th-primary" />
+              <Loading className="mr-0.5 h-5 w-5 text-th-active" />
             )}
           </div>
           <div className={`ml-2 flex-1`}>
             <p className={`text-th-fgd-1`}>{parsedTitle || title}</p>
-            {description ? (
+            {parsedDescription ? (
               <p
                 className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-4`}
               >
-                {description}
+                {parsedDescription}
               </p>
             ) : null}
             {txid ? (
               <a
                 href={preferredExplorer.url + txid + '?cluster=' + CLUSTER}
-                className="default-transition mt-1 flex items-center text-xs text-th-primary underline hover:text-th-fgd-2"
+                className="default-transition mt-1 flex items-center text-xs text-th-active underline hover:text-th-fgd-2"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -266,7 +273,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}
                 </div>
-                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-5 w-5" />
+                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-5 w-5 flex-shrink-0" />
               </a>
             ) : null}
           </div>

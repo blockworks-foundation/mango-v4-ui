@@ -8,33 +8,37 @@ import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
 import PerpPositions from './PerpPositions'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
+import TradeHistory from './TradeHistory'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const unsettledSpotBalances = useUnsettledSpotBalances()
+  const unsettledPerpPositions = useUnsettledPerpPositions()
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.lg : false
+  const isMobile = width ? width < breakpoints['2xl'] : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
-      perpPositions.filter((p) => !p.basePositionLots.toNumber())?.length
+      unsettledPerpPositions?.length
+    const openPerpPositions = Object.values(perpPositions).filter((p) =>
+      p.basePositionLots.toNumber()
+    )
     return [
       ['balances', 0],
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', unsettledTradeCount],
-      [
-        'Positions',
-        perpPositions.filter((p) => p.basePositionLots.toNumber())?.length,
-      ],
+      ['Positions', openPerpPositions.length],
+      ['Trade History', 0],
     ]
-  }, [openOrders, perpPositions, unsettledSpotBalances])
+  }, [openOrders, unsettledPerpPositions, unsettledSpotBalances, perpPositions])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll pb-5">
-      <div className="sticky top-0 z-10">
+      <div className="hide-scroll sticky top-0 z-20 overflow-x-auto border-b border-th-bkg-3">
         <TabButtons
           activeValue={selectedTab}
           onChange={(tab: string) => setSelectedTab(tab)}
@@ -48,12 +52,11 @@ const TradeInfoTabs = () => {
       {selectedTab === 'trade:unsettled' ? (
         <UnsettledTrades
           unsettledSpotBalances={unsettledSpotBalances}
-          unsettledPerpPositions={perpPositions.filter(
-            (p) => !p.basePositionLots.toNumber()
-          )}
+          unsettledPerpPositions={unsettledPerpPositions}
         />
       ) : null}
       {selectedTab === 'Positions' ? <PerpPositions /> : null}
+      {selectedTab === 'Trade History' ? <TradeHistory /> : null}
     </div>
   )
 }

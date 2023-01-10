@@ -20,19 +20,22 @@ import {
 } from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
-import BorrowModal from './modals/BorrowModal'
-import DepositModal from './modals/DepositModal'
-import WithdrawModal from './modals/WithdrawModal'
 import { IconButton, LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
-import RepayModal from './modals/RepayModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from '../hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
+import DepositWithdrawModal from './modals/DepositWithdrawModal'
+import BorrowRepayModal from './modals/BorrowRepayModal'
+import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
+import { USDC_MINT } from 'utils/constants'
+import { PublicKey } from '@solana/web3.js'
+import ActionsLinkButton from './account/ActionsLinkButton'
+import AmountWithValue from './shared/AmountWithValue'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -56,18 +59,23 @@ const TokenList = () => {
         value,
       }))
       const sortedBanks = mangoAccount
-        ? rawBanks.sort(
-            (a, b) =>
-              Math.abs(
-                mangoAccount?.getTokenBalanceUi(b.value[0]) *
-                  b.value[0].uiPrice!
-              ) -
-              Math.abs(
-                mangoAccount?.getTokenBalanceUi(a.value[0]) *
-                  a.value[0].uiPrice!
-              )
-          )
-        : rawBanks
+        ? rawBanks.sort((a, b) => {
+            const aBalance = Math.abs(
+              mangoAccount.getTokenBalanceUi(a.value[0]) * a.value[0].uiPrice
+            )
+            const bBalance = Math.abs(
+              mangoAccount.getTokenBalanceUi(b.value[0]) * b.value[0].uiPrice
+            )
+            if (aBalance > bBalance) return -1
+            if (aBalance < bBalance) return 1
+
+            const aName = a.value[0].name
+            const bName = b.value[0].name
+            if (aName > bName) return 1
+            if (aName < bName) return -1
+            return 1
+          })
+        : rawBanks.sort((a, b) => a.key.localeCompare(b.key))
 
       return mangoAccount && !showZeroBalances
         ? sortedBanks.filter(
@@ -126,7 +134,7 @@ const TokenList = () => {
               </Th>
               <Th id="account-step-ten">
                 <div className="flex justify-end">
-                  <Tooltip content="The interest rates (per year) for depositing (green/left) and borrowing (red/right).">
+                  <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right).">
                     <span className="tooltip-underline">{t('rates')}</span>
                   </Tooltip>
                 </div>
@@ -157,12 +165,12 @@ const TokenList = () => {
               )
 
               const interestAmount = hasInterestEarned
-                ? hasInterestEarned.borrow_interest +
+                ? hasInterestEarned.borrow_interest * -1 +
                   hasInterestEarned.deposit_interest
                 : 0
 
               const interestValue = hasInterestEarned
-                ? hasInterestEarned.borrow_interest_usd +
+                ? hasInterestEarned.borrow_interest_usd * -1 +
                   hasInterestEarned.deposit_interest_usd
                 : 0.0
 
@@ -182,56 +190,77 @@ const TokenList = () => {
                           <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                         )}
                       </div>
-                      <p className="font-body tracking-wide">{bank.name}</p>
+                      <p className="font-body tracking-wider">{bank.name}</p>
                     </div>
                   </Td>
                   <Td className="text-right">
-                    <p>{tokenBalance}</p>
-                    <p className="text-sm text-th-fgd-4">
-                      {tokenBalance
-                        ? `${formatFixedDecimals(
-                            tokenBalance * oraclePrice!,
-                            true
-                          )}`
-                        : '$0.00'}
-                    </p>
+                    {tokenBalance ? (
+                      <AmountWithValue
+                        amount={formatDecimal(tokenBalance, bank.mintDecimals)}
+                        value={formatFixedDecimals(
+                          tokenBalance * oraclePrice,
+                          true,
+                          true
+                        )}
+                        stacked
+                      />
+                    ) : (
+                      <AmountWithValue amount="0" value="$0.00" stacked />
+                    )}
                   </Td>
                   <Td className="text-right">
-                    <p>{inOrders}</p>
-                    <p className="text-sm text-th-fgd-4">
-                      {formatFixedDecimals(inOrders * oraclePrice!, true)}
-                    </p>
+                    {inOrders ? (
+                      <AmountWithValue
+                        amount={formatDecimal(inOrders, bank.mintDecimals)}
+                        value={formatFixedDecimals(
+                          inOrders * oraclePrice,
+                          true,
+                          true
+                        )}
+                        stacked
+                      />
+                    ) : (
+                      <AmountWithValue amount="0" value="$0.00" stacked />
+                    )}
                   </Td>
                   <Td className="text-right">
-                    <p>
-                      {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
-                    </p>
-                    <p className="text-sm text-th-fgd-4">
-                      {formatFixedDecimals(unsettled * oraclePrice!, true)}
-                    </p>
+                    {unsettled ? (
+                      <AmountWithValue
+                        amount={formatDecimal(unsettled, bank.mintDecimals)}
+                        value={formatFixedDecimals(
+                          unsettled * oraclePrice,
+                          true,
+                          true
+                        )}
+                        stacked
+                      />
+                    ) : (
+                      <AmountWithValue amount="0" value="$0.00" stacked />
+                    )}
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>
-                        {interestAmount
-                          ? interestAmount.toFixed(bank.mintDecimals)
-                          : 0}
-                      </p>
-                      <p className="text-sm text-th-fgd-4">
-                        {formatFixedDecimals(interestValue, true)}
-                      </p>
+                      <AmountWithValue
+                        amount={
+                          interestAmount
+                            ? formatDecimal(interestAmount, bank.mintDecimals)
+                            : '0'
+                        }
+                        value={formatFixedDecimals(interestValue, true, true)}
+                        stacked
+                      />
                     </div>
                   </Td>
                   <Td>
-                    <div className="flex justify-end space-x-2">
-                      <p className="text-th-green">
+                    <div className="flex justify-end space-x-1.5">
+                      <p className="text-th-up">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
                           fixed: true,
                         })}
                         %
                       </p>
                       <span className="text-th-fgd-4">|</span>
-                      <p className="text-th-red">
+                      <p className="text-th-down">
                         {formatDecimal(bank.getBorrowRateUi(), 2, {
                           fixed: true,
                         })}
@@ -293,11 +322,12 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   )
 
   const interestAmount = hasInterestEarned
-    ? hasInterestEarned.borrow_interest + hasInterestEarned.deposit_interest
+    ? hasInterestEarned.borrow_interest * -1 +
+      hasInterestEarned.deposit_interest
     : 0
 
   const interestValue = hasInterestEarned
-    ? hasInterestEarned.borrow_interest_usd +
+    ? hasInterestEarned.borrow_interest_usd * -1 +
       hasInterestEarned.deposit_interest_usd
     : 0.0
 
@@ -333,7 +363,9 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
               <span className="mr-1 font-body text-th-fgd-4">
                 {t('balance')}:
               </span>
-              {tokenBalance}
+              {tokenBalance
+                ? formatDecimal(tokenBalance, bank.mintDecimals)
+                : '0'}
             </p>
           </div>
         </div>
@@ -365,43 +397,41 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
         <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:in-orders')}</p>
-            <div className="flex font-mono">
-              <p className="text-th-fgd-2">{inOrders}</p>
-              <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(inOrders * oraclePrice!, true)})
-              </p>
-            </div>
+            <AmountWithValue
+              amount={
+                inOrders ? formatDecimal(inOrders, bank.mintDecimals) : '0'
+              }
+              value={formatFixedDecimals(inOrders * oraclePrice, true, true)}
+            />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:unsettled')}</p>
-            <div className="flex font-mono">
-              <p className="text-th-fgd-2">
-                {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
-              </p>
-              <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(unsettled * oraclePrice!, true)})
-              </p>
-            </div>
+            <AmountWithValue
+              amount={
+                unsettled ? formatDecimal(unsettled, bank.mintDecimals) : '0'
+              }
+              value={formatFixedDecimals(unsettled * oraclePrice, true, true)}
+            />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('interest-earned-paid')}</p>
-            <div className="flex font-mono">
-              <p className="text-th-fgd-2">
-                {floorToDecimal(interestAmount, bank.mintDecimals).toNumber()}
-              </p>
-              <p className="ml-1 text-th-fgd-4">
-                ({formatFixedDecimals(interestValue, true)})
-              </p>
-            </div>
+            <AmountWithValue
+              amount={
+                interestAmount
+                  ? formatDecimal(interestAmount, bank.mintDecimals)
+                  : '0'
+              }
+              value={formatFixedDecimals(interestValue, true, true)}
+            />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('rates')}</p>
             <p className="space-x-2 font-mono">
-              <span className="text-th-green">
+              <span className="text-th-up">
                 {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
               </span>
               <span className="font-normal text-th-fgd-4">|</span>
-              <span className="text-th-red">
+              <span className="text-th-down">
                 {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
               </span>
             </p>
@@ -434,10 +464,18 @@ const ActionsMenu = ({
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [showRepayModal, setShowRepayModal] = useState(false)
   const [selectedToken, setSelectedToken] = useState('')
-  // const set = mangoStore.getState().set
-  // const router = useRouter()
-  // const { asPath } = router
+  const set = mangoStore.getState().set
+  const router = useRouter()
   const { mangoTokens } = useJupiterMints()
+  const spotMarkets = mangoStore((s) => s.serumMarkets)
+  const { connected } = useWallet()
+
+  const spotMarket = useMemo(() => {
+    return spotMarkets.find((m) => {
+      const base = m.name.split('/')[0]
+      return base.toUpperCase() === bank.name.toUpperCase()
+    })
+  }, [spotMarkets])
 
   const handleShowActionModals = useCallback(
     (token: string, action: 'borrow' | 'deposit' | 'withdraw' | 'repay') => {
@@ -453,31 +491,53 @@ const ActionsMenu = ({
     []
   )
 
-  // const handleBuy = useCallback(() => {
-  //   const outputTokenInfo = mangoTokens.find(
-  //     (t: any) => t.address === bank.mint.toString()
-  //   )
-  //   set((s) => {
-  //     s.swap.outputBank = bank
-  //     s.swap.outputTokenInfo = outputTokenInfo
-  //   })
-  //   if (asPath === '/') {
-  //     router.push('/swap', undefined, { shallow: true })
-  //   }
-  // }, [bank, router, asPath, set, mangoTokens])
+  const balance = useMemo(() => {
+    if (!mangoAccount || !bank) return 0
+    return mangoAccount.getTokenBalanceUi(bank)
+  }, [bank, mangoAccount])
 
-  // const handleSell = useCallback(() => {
-  //   const inputTokenInfo = mangoTokens.find(
-  //     (t: any) => t.address === bank.mint.toString()
-  //   )
-  //   set((s) => {
-  //     s.swap.inputBank = bank
-  //     s.swap.inputTokenInfo = inputTokenInfo
-  //   })
-  //   if (asPath === '/') {
-  //     router.push('/swap', undefined, { shallow: true })
-  //   }
-  // }, [router, asPath, set, bank, mangoTokens])
+  const handleSwap = useCallback(() => {
+    const tokenInfo = mangoTokens.find(
+      (t: any) => t.address === bank.mint.toString()
+    )
+    const group = mangoStore.getState().group
+    if (balance && balance > 0) {
+      if (tokenInfo?.symbol === 'SOL') {
+        const usdcTokenInfo = mangoTokens.find(
+          (t: any) => t.address === USDC_MINT
+        )
+        const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+        set((s) => {
+          s.swap.inputBank = usdcBank
+          s.swap.inputTokenInfo = usdcTokenInfo
+        })
+      }
+      set((s) => {
+        s.swap.inputBank = bank
+        s.swap.inputTokenInfo = tokenInfo
+      })
+    } else {
+      if (tokenInfo?.symbol === 'USDC') {
+        const solTokenInfo = mangoTokens.find(
+          (t: any) => t.address === WRAPPED_SOL_MINT.toString()
+        )
+        const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+        set((s) => {
+          s.swap.inputBank = solBank
+          s.swap.inputTokenInfo = solTokenInfo
+        })
+      }
+      set((s) => {
+        s.swap.outputBank = bank
+        s.swap.outputTokenInfo = tokenInfo
+      })
+    }
+    router.push('/swap', undefined, { shallow: true })
+  }, [bank, router, set, mangoTokens, mangoAccount])
+
+  const handleTrade = useCallback(() => {
+    router.push(`/trade?name=${spotMarket?.name}`, undefined, { shallow: true })
+  }, [spotMarket, router])
 
   const logoURI = useMemo(() => {
     if (!bank || !mangoTokens?.length) return ''
@@ -496,86 +556,87 @@ const ActionsMenu = ({
 
   return (
     <>
-      <IconDropMenu
-        icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
-        postion="leftBottom"
-      >
-        <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
-          <div className="mr-2 flex flex-shrink-0 items-center">
-            <Image alt="" width="20" height="20" src={logoURI || ''} />
+      {mangoAccount && !connected ? null : (
+        <IconDropMenu
+          icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
+          postion="leftBottom"
+        >
+          <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
+            <div className="mr-2 flex flex-shrink-0 items-center">
+              <Image alt="" width="20" height="20" src={logoURI || ''} />
+            </div>
+            <p className="font-body tracking-wider">
+              {formatTokenSymbol(bank.name)}
+            </p>
           </div>
-          <p className="font-body tracking-wide">
-            {formatTokenSymbol(bank.name)}
-          </p>
-        </div>
-        <LinkButton
-          className="w-full text-left"
-          disabled={!mangoAccount}
-          onClick={() => handleShowActionModals(bank.name, 'deposit')}
-        >
-          {t('deposit')}
-        </LinkButton>
-        {hasBorrow ? (
-          <LinkButton
-            className="w-full text-left"
-            disabled={!mangoAccount}
-            onClick={() => handleShowActionModals(bank.name, 'repay')}
+          <ActionsLinkButton
+            mangoAccount={mangoAccount!}
+            onClick={() => handleShowActionModals(bank.name, 'deposit')}
           >
-            {t('repay')}
-          </LinkButton>
-        ) : null}
-        <LinkButton
-          className="w-full text-left"
-          disabled={!mangoAccount}
-          onClick={() => handleShowActionModals(bank.name, 'withdraw')}
-        >
-          {t('withdraw')}
-        </LinkButton>
-        <LinkButton
-          className="w-full text-left"
-          disabled={!mangoAccount}
-          onClick={() => handleShowActionModals(bank.name, 'borrow')}
-        >
-          {t('borrow')}
-        </LinkButton>
-        {/* <LinkButton
-          className="w-full text-left"
-          disabled={!mangoAccount}
-          onClick={handleBuy}
-        >
-          {t('buy')}
-        </LinkButton>
-        <LinkButton
-          className="w-full text-left"
-          disabled={!mangoAccount}
-          onClick={handleSell}
-        >
-          {t('sell')}
-        </LinkButton> */}
-      </IconDropMenu>
+            {t('deposit')}
+          </ActionsLinkButton>
+          {hasBorrow ? (
+            <ActionsLinkButton
+              mangoAccount={mangoAccount!}
+              onClick={() => handleShowActionModals(bank.name, 'repay')}
+            >
+              {t('repay')}
+            </ActionsLinkButton>
+          ) : null}
+          {balance && balance > 0 ? (
+            <ActionsLinkButton
+              mangoAccount={mangoAccount!}
+              onClick={() => handleShowActionModals(bank.name, 'withdraw')}
+            >
+              {t('withdraw')}
+            </ActionsLinkButton>
+          ) : null}
+          <ActionsLinkButton
+            mangoAccount={mangoAccount!}
+            onClick={() => handleShowActionModals(bank.name, 'borrow')}
+          >
+            {t('borrow')}
+          </ActionsLinkButton>
+          <ActionsLinkButton mangoAccount={mangoAccount!} onClick={handleSwap}>
+            {t('swap')}
+          </ActionsLinkButton>
+          {spotMarket ? (
+            <ActionsLinkButton
+              mangoAccount={mangoAccount!}
+              onClick={handleTrade}
+            >
+              {t('trade')}
+            </ActionsLinkButton>
+          ) : null}
+        </IconDropMenu>
+      )}
       {showDepositModal ? (
-        <DepositModal
+        <DepositWithdrawModal
+          action="deposit"
           isOpen={showDepositModal}
           onClose={() => setShowDepositModal(false)}
           token={selectedToken}
         />
       ) : null}
       {showWithdrawModal ? (
-        <WithdrawModal
+        <DepositWithdrawModal
+          action="withdraw"
           isOpen={showWithdrawModal}
           onClose={() => setShowWithdrawModal(false)}
           token={selectedToken}
         />
       ) : null}
       {showBorrowModal ? (
-        <BorrowModal
+        <BorrowRepayModal
+          action="borrow"
           isOpen={showBorrowModal}
           onClose={() => setShowBorrowModal(false)}
           token={selectedToken}
         />
       ) : null}
       {showRepayModal ? (
-        <RepayModal
+        <BorrowRepayModal
+          action="repay"
           isOpen={showRepayModal}
           onClose={() => setShowRepayModal(false)}
           token={selectedToken}

@@ -11,7 +11,7 @@ import {
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
-import { startCase } from 'lodash'
+import startCase from 'lodash/startCase'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useState } from 'react'
 import { notify } from 'utils/notifications'
@@ -36,7 +36,7 @@ const EditProfileForm = ({
   const [loadUniquenessCheck, setLoadUniquenessCheck] = useState(false)
   const [loadUpdateProfile, setLoadUpdateProfile] = useState(false)
   const [updateError, setUpdateError] = useState('')
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
 
   const validateProfileNameUniqueness = async (name: string) => {
     try {
@@ -129,12 +129,21 @@ const EditProfileForm = ({
           <InlineNotification type="error" desc={updateError} />
         </div>
       ) : null}
+      {!profile ? (
+        <div className="py-3">
+          <InlineNotification
+            type="error"
+            desc={t('profile:profile-api-error')}
+          />
+        </div>
+      ) : null}
       <div className="my-6 flex justify-center">
         <div className="relative ">
           <IconButton
-            className="absolute -top-2 -right-2"
+            className="absolute -top-2 -right-2 bg-th-button md:hover:bg-th-button-hover"
             size="small"
             onClick={onEditProfileImage}
+            disabled={!profile}
           >
             {profile?.profile_image_url ? (
               <PencilIcon className="h-4 w-4" />
@@ -158,8 +167,8 @@ const EditProfileForm = ({
         />
         {inputError ? (
           <div className="mt-1.5 flex items-center space-x-1">
-            <ExclamationCircleIcon className="h-4 w-4 text-th-red" />
-            <p className="mb-0 text-xs text-th-red">{inputError}</p>
+            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+            <p className="mb-0 text-xs text-th-down">{inputError}</p>
           </div>
         ) : null}
       </div>
@@ -186,7 +195,8 @@ const EditProfileForm = ({
         disabled={
           !!Object.keys(inputError).length ||
           loadUniquenessCheck ||
-          !profileName
+          !profileName ||
+          !profile
         }
         onClick={saveProfile}
         size="large"

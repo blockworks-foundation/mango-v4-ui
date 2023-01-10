@@ -27,14 +27,14 @@ const PriceChart = ({
                 <stop
                   offset="0%"
                   stopColor={
-                    change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]
+                    change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
                   }
                   stopOpacity={0.15}
                 />
                 <stop
                   offset="99%"
                   stopColor={
-                    change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]
+                    change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
                   }
                   stopOpacity={0}
                 />
@@ -44,19 +44,17 @@ const PriceChart = ({
               isAnimationActive={false}
               type="monotone"
               dataKey="1"
-              stroke={change >= 0 ? COLORS.GREEN[theme] : COLORS.RED[theme]}
+              stroke={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
               strokeWidth={1.5}
               fill="url(#gradientArea)"
             />
             <XAxis
               axisLine={false}
               dataKey="0"
+              minTickGap={20}
               padding={{ left: 20, right: 20 }}
               tick={{
-                fill:
-                  theme === 'Light'
-                    ? 'rgba(0,0,0,0.4)'
-                    : 'rgba(255,255,255,0.6)',
+                fill: 'var(--fgd-4)',
                 fontSize: 10,
               }}
               tickLine={false}
@@ -69,10 +67,7 @@ const PriceChart = ({
               domain={['dataMin', 'dataMax']}
               padding={{ top: 20, bottom: 20 }}
               tick={{
-                fill:
-                  theme === 'Light'
-                    ? 'rgba(0,0,0,0.4)'
-                    : 'rgba(255,255,255,0.6)',
+                fill: 'var(--fgd-4)',
                 fontSize: 10,
               }}
               tickFormatter={(x) => `$${x.toFixed(2)}`}

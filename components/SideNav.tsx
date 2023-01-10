@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import TradeIcon from './icons/TradeIcon'
 import {
   EllipsisHorizontalIcon,
   BuildingLibraryIcon,
@@ -10,10 +9,12 @@ import {
   ChartBarIcon,
   Cog8ToothIcon,
   ArrowsRightLeftIcon,
+  ArrowTrendingUpIcon,
+  XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
-import { Fragment, ReactNode, useEffect, useState } from 'react'
+import { Fragment, ReactNode, useState } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
 import Tooltip from './shared/Tooltip'
@@ -22,6 +23,8 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import HealthHeart from './account/HealthHeart'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { useTheme } from 'next-themes'
+import { IconButton } from './shared/Button'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
@@ -61,7 +64,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <span className="ml-3 text-lg font-bold text-th-fgd-1">
+                  <span className="ml-3 font-display text-lg text-th-fgd-1">
                     Mango
                   </span>
                 </Transition>
@@ -86,7 +89,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             <MenuItem
               active={pathname === '/trade'}
               collapsed={collapsed}
-              icon={<TradeIcon className="h-5 w-5" />}
+              icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
               title={t('trade')}
               pagePath="/trade"
             />
@@ -151,9 +154,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 size={32}
               />
             }
+            isOpen
+            panelTitle={`${mangoAccount?.name || ''} ${t('account')}`}
             title={
               <div className="w-24 text-left">
-                <p className="mb-0.5 whitespace-nowrap text-xs">Health Check</p>
+                <p className="mb-0.5 whitespace-nowrap text-xs">
+                  {t('account')}
+                </p>
                 <p className="truncate whitespace-nowrap text-sm font-bold text-th-fgd-1">
                   {mangoAccount
                     ? mangoAccount.name
@@ -165,8 +172,9 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             }
             alignBottom
             hideIconBg
+            showClose
           >
-            <div className="px-4 pb-4 pt-2">
+            <div className="px-4 py-2">
               <MangoAccountSummary />
             </div>
           </ExpandableMenuItem>
@@ -197,13 +205,18 @@ const MenuItem = ({
   isExternal?: boolean
   showTooltip?: boolean
 }) => {
+  const { theme } = useTheme()
   return (
     <Tooltip content={title} placement="right" show={collapsed && showTooltip}>
       <Link
         href={pagePath}
         shallow={true}
-        className={`default-transition flex cursor-pointer px-4 focus:text-th-primary focus:outline-none md:hover:text-th-primary ${
-          active ? 'text-th-primary' : 'text-th-fgd-1'
+        className={`default-transition flex cursor-pointer px-4 focus:text-th-active focus:outline-none md:hover:text-th-active ${
+          active
+            ? 'text-th-active'
+            : theme === 'Light'
+            ? 'text-th-fgd-3'
+            : 'text-th-fgd-2'
         } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
       >
         <div className="flex w-full items-center justify-between">
@@ -212,7 +225,9 @@ const MenuItem = ({
               className={
                 hideIconBg
                   ? ''
-                  : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
+                  : `flex h-8 w-8 items-center justify-center rounded-full ${
+                      theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                    }`
               }
             >
               {icon}
@@ -245,6 +260,9 @@ export const ExpandableMenuItem = ({
   collapsed,
   hideIconBg,
   icon,
+  panelTitle,
+  isOpen,
+  showClose,
   title,
 }: {
   alignBottom?: boolean
@@ -252,24 +270,13 @@ export const ExpandableMenuItem = ({
   collapsed: boolean
   hideIconBg?: boolean
   icon: ReactNode
+  panelTitle?: string
+  isOpen?: boolean
+  showClose?: boolean
   title: string | ReactNode
 }) => {
-  const [showMenu, setShowMenu] = useState(false)
-
-  const onHoverMenu = (open: boolean, action: string) => {
-    if (
-      (!open && action === 'onMouseEnter') ||
-      (open && action === 'onMouseLeave')
-    ) {
-      setShowMenu(!open)
-    }
-  }
-
-  useEffect(() => {
-    if (collapsed) {
-      setShowMenu(false)
-    }
-  }, [collapsed])
+  const [showMenu, setShowMenu] = useState(isOpen || false)
+  const { theme } = useTheme()
 
   const toggleMenu = () => {
     setShowMenu(!showMenu)
@@ -278,24 +285,22 @@ export const ExpandableMenuItem = ({
   return collapsed ? (
     <Popover>
       <div
-        onMouseEnter={
-          !alignBottom ? () => onHoverMenu(showMenu, 'onMouseEnter') : undefined
-        }
-        onMouseLeave={
-          !alignBottom ? () => onHoverMenu(showMenu, 'onMouseLeave') : undefined
-        }
         className={`relative z-30 ${alignBottom ? '' : 'px-4 py-2'}`}
         role="button"
       >
         <Popover.Button
-          className="md:hover:text-th-primary"
+          className={`${
+            theme === 'Light' ? 'text-th-fgd-3' : 'text-th-fgd-2'
+          } md:hover:text-th-active`}
           onClick={() => toggleMenu()}
         >
           <div
             className={` ${
               hideIconBg
                 ? ''
-                : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
+                : `flex h-8 w-8 items-center justify-center rounded-full ${
+                    theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                  }`
             } ${
               alignBottom
                 ? 'default-transition flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
@@ -309,13 +314,29 @@ export const ExpandableMenuItem = ({
         {showMenu ? (
           <Popover.Panel
             static
-            className={`absolute z-20 w-56 rounded-md rounded-l-none bg-th-bkg-2 py-2 ${
+            className={`absolute z-20 w-56 rounded-md rounded-l-none bg-th-bkg-1  ${
               alignBottom
                 ? 'bottom-0 left-[63px] rounded-b-none border-b-0 p-0'
                 : 'top-1/2 left-[63px] -translate-y-1/2'
             }`}
           >
-            {children}
+            <div className="rounded-md rounded-l-none bg-th-bkg-2 py-2">
+              <div className="flex items-center justify-between pl-4 pr-2">
+                {panelTitle ? (
+                  <h3 className="text-sm font-bold">{panelTitle}</h3>
+                ) : null}
+                {showClose ? (
+                  <IconButton
+                    onClick={() => setShowMenu(false)}
+                    hideBg
+                    size="small"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </IconButton>
+                ) : null}
+              </div>
+              {children}
+            </div>
           </Popover.Panel>
         ) : null}
       </div>
@@ -330,7 +351,7 @@ export const ExpandableMenuItem = ({
         }`}
       >
         <Disclosure.Button
-          className={`flex h-full w-full items-center justify-between rounded-none md:hover:text-th-primary`}
+          className={`flex h-full w-full items-center justify-between rounded-none md:hover:text-th-active`}
         >
           <div className="flex items-center">
             <div

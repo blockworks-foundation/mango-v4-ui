@@ -9,6 +9,8 @@ import { getTokenInMax } from './useTokenMax'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { PublicKey } from '@solana/web3.js'
+import { formatDecimal } from 'utils/numbers'
 
 // const generateSearchTerm = (item: Token, searchValue: string) => {
 //   const normalizedSearchValue = searchValue.toLowerCase()
@@ -68,11 +70,14 @@ const TokenItem = ({
             </div>
           </div>
         </div>
-        {type === 'input' ? (
-          <p className="text-sm text-th-fgd-2">
+        {type === 'input' &&
+        token.amount &&
+        token.amountWithBorrow &&
+        token.decimals ? (
+          <p className="font-mono text-sm text-th-fgd-2">
             {useMargin
-              ? token.amountWithBorrow?.toString()
-              : token.amount?.toString()}
+              ? formatDecimal(token.amountWithBorrow.toNumber(), token.decimals)
+              : formatDecimal(token.amount.toNumber(), token.decimals)}
           </p>
         ) : null}
       </button>
@@ -125,13 +130,15 @@ const SwapFormTokenList = ({
       group &&
       mangoAccount &&
       outputBank &&
+      inputBank &&
       type === 'input'
     ) {
       const filteredSortedTokens = mangoTokens
         .map((token) => {
           const max = getTokenInMax(
             mangoAccount,
-            token.address,
+            new PublicKey(token.address),
+            outputBank.mint,
             group,
             useMargin
           )
@@ -153,6 +160,7 @@ const SwapFormTokenList = ({
           amountWithBorrow: new Decimal(0),
         }))
         .filter((token) => (token.symbol === inputBank?.name ? false : true))
+        .sort((a, b) => a.symbol.localeCompare(b.symbol))
       return filteredTokens
     } else {
       return []
@@ -233,7 +241,7 @@ const SwapFormTokenList = ({
           <p className="text-xs text-th-fgd-4">{t('max')}</p>
         ) : null}
       </div>
-      <div className="overflow-auto">
+      <div className="overflow-auto pb-2">
         {sortedTokens.map((token) => (
           <TokenItem
             key={token.address}

@@ -24,34 +24,41 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import { ArrowPathIcon } from '@heroicons/react/20/solid'
+import { sleep } from 'utils'
 
-function decodeBookL2(
+export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
+  const depth = 40
+  if (book instanceof SpotOrderBook) {
+    return book.getL2(depth).map(([price, size]) => [price, size])
+  } else if (book instanceof BookSide) {
+    return book.getL2Ui(depth)
+  }
+  return []
+}
+
+function decodeBook(
   client: MangoClient,
   market: Market | PerpMarket,
   accInfo: AccountInfo<Buffer>,
   side: 'bids' | 'asks'
-): number[][] {
-  if (market && accInfo?.data) {
-    const depth = 40
-    if (market instanceof Market) {
-      const book = SpotOrderBook.decode(market, accInfo.data)
-      return book.getL2(depth).map(([price, size]) => [price, size])
-    } else if (market instanceof PerpMarket) {
-      // FIXME: Review the null being passed here
-      const decodedAcc = client.program.coder.accounts.decode(
-        'bookSide',
-        accInfo.data
-      )
-      const book = BookSide.from(
-        client,
-        market,
-        side === 'bids' ? BookSideType.bids : BookSideType.asks,
-        decodedAcc
-      )
-      return book.getL2Ui(depth)
-    }
+): SpotOrderBook | BookSide {
+  if (market instanceof Market) {
+    const book = SpotOrderBook.decode(market, accInfo.data)
+    return book
+  } else {
+    const decodedAcc = client.program.coder.accounts.decode(
+      'bookSide',
+      accInfo.data
+    )
+    const book = BookSide.from(
+      client,
+      market,
+      side === 'bids' ? BookSideType.bids : BookSideType.asks,
+      decodedAcc
+    )
+    return book
   }
-  return []
 }
 
 // export function decodeBook(
@@ -317,27 +324,25 @@ const Orderbook = () => {
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
 
-    let previousBidInfo: AccountInfo<Buffer> | null = null
-    let previousAskInfo: AccountInfo<Buffer> | null = null
     if (!market || !group) return
-    console.log('in orderbook WS useEffect')
+
+    let previousBidInfo: AccountInfo<Buffer> | undefined = undefined
+    let previousAskInfo: AccountInfo<Buffer> | undefined = undefined
+    let bidSubscriptionId: number | undefined = undefined
+    let askSubscriptionId: number | undefined = undefined
+
     const bidsPk =
       market instanceof Market ? market['_decoded'].bids : market.bids
-    let bidSubscriptionId: number
+    console.log('bidsPk', bidsPk?.toString())
     if (bidsPk) {
       connection.getAccountInfo(bidsPk).then((info) => {
         if (!info) return
+        const decodedBook = decodeBook(client, market, info, 'bids')
         set((state) => {
-          // state.accountInfos[bidsPk.toString()] = info
-          state.selectedMarket.orderbook.bids = decodeBookL2(
-            client,
-            market,
-            info,
-            'bids'
-          )
+          state.selectedMarket.bidsAccount = decodedBook
+          state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
         })
       })
-      console.log('bidsPk', bidsPk)
       bidSubscriptionId = connection.onAccountChange(
         bidsPk,
         (info, _context) => {
@@ -347,34 +352,26 @@ const Orderbook = () => {
             previousBidInfo.lamports !== info.lamports
           ) {
             previousBidInfo = info
-            // info['parsed'] = decodeBook(serum3MarketExternal, info)
+            const decodedBook = decodeBook(client, market, info, 'bids')
             set((state) => {
-              // state.accountInfos[bidsPk.toString()] = info
-              state.selectedMarket.orderbook.bids = decodeBookL2(
-                client,
-                market,
-                info,
-                'bids'
-              )
+              state.selectedMarket.bidsAccount = decodedBook
+              state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
             })
           }
         }
       )
     }
+
     const asksPk =
       market instanceof Market ? market['_decoded'].asks : market.asks
-    let askSubscriptionId: number
+    console.log('asksPk', asksPk?.toString())
     if (asksPk) {
       connection.getAccountInfo(asksPk).then((info) => {
         if (!info) return
+        const decodedBook = decodeBook(client, market, info, 'asks')
         set((state) => {
-          // state.accountInfos[bidsPk.toString()] = info
-          state.selectedMarket.orderbook.asks = decodeBookL2(
-            client,
-            market,
-            info,
-            'bids'
-          )
+          state.selectedMarket.asksAccount = decodedBook
+          state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
         })
       })
       askSubscriptionId = connection.onAccountChange(
@@ -386,25 +383,20 @@ const Orderbook = () => {
             previousAskInfo.lamports !== info.lamports
           ) {
             previousAskInfo = info
-            // info['parsed'] = decodeBook(serum3MarketExternal, info)
+            const decodedBook = decodeBook(client, market, info, 'asks')
             set((state) => {
-              // state.accountInfos[asksPk.toString()] = info
-              state.selectedMarket.orderbook.asks = decodeBookL2(
-                client,
-                market,
-                info,
-                'asks'
-              )
+              state.selectedMarket.asksAccount = decodedBook
+              state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
             })
           }
         }
       )
     }
     return () => {
-      if (bidSubscriptionId) {
+      if (typeof bidSubscriptionId !== 'undefined') {
         connection.removeAccountChangeListener(bidSubscriptionId)
       }
-      if (askSubscriptionId) {
+      if (typeof askSubscriptionId !== 'undefined') {
         connection.removeAccountChangeListener(askSubscriptionId)
       }
     }
@@ -415,6 +407,13 @@ const Orderbook = () => {
     // const id = setTimeout(verticallyCenterOrderbook, 400)
     // return () => clearTimeout(id)
   }, [verticallyCenterOrderbook])
+
+  const resetOrderbook = useCallback(async () => {
+    setShowBuys(true)
+    setShowSells(true)
+    await sleep(300)
+    verticallyCenterOrderbook()
+  }, [])
 
   const onGroupSizeChange = useCallback((groupSize: number) => {
     setGrouping(groupSize)
@@ -427,10 +426,10 @@ const Orderbook = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-        <div id="trade-step-three" className="flex items-center space-x-2">
+        <div id="trade-step-three" className="flex items-center space-x-1.5">
           <Tooltip
             content={showBuys ? t('trade:hide-bids') : t('trade:show-bids')}
-            placement="top"
+            placement="bottom"
           >
             <button
               className={`rounded ${
@@ -444,7 +443,7 @@ const Orderbook = () => {
           </Tooltip>
           <Tooltip
             content={showSells ? t('trade:hide-asks') : t('trade:show-asks')}
-            placement="top"
+            placement="bottom"
           >
             <button
               className={`rounded ${
@@ -456,10 +455,24 @@ const Orderbook = () => {
               <OrderbookIcon className="h-4 w-4" side="sell" />
             </button>
           </Tooltip>
+          <Tooltip content={'Reset and center orderbook'} placement="bottom">
+            <button
+              className={`rounded ${
+                showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              onClick={resetOrderbook}
+            >
+              <ArrowPathIcon className="h-4 w-4" />
+            </button>
+          </Tooltip>
         </div>
         {market ? (
           <div id="trade-step-four">
-            <Tooltip content={t('trade:grouping')} placement="top" delay={250}>
+            <Tooltip
+              content={t('trade:grouping')}
+              placement="bottom"
+              delay={250}
+            >
               <GroupSize
                 tickSize={market.tickSize}
                 onChange={onGroupSizeChange}
@@ -582,6 +595,7 @@ const OrderbookRow = ({
   minOrderSize: number
   tickSize: number
 }) => {
+  const tradeForm = mangoStore((s) => s.tradeForm)
   const element = useRef<HTMLDivElement>(null)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -618,14 +632,29 @@ const OrderbookRow = ({
     const set = mangoStore.getState().set
     set((state) => {
       state.tradeForm.price = formattedPrice.toFixed()
+      if (tradeForm.baseSize && tradeForm.tradeType === 'Limit') {
+        const quoteSize = floorToDecimal(
+          formattedPrice.mul(new Decimal(tradeForm.baseSize)),
+          getDecimalCount(tickSize)
+        )
+        state.tradeForm.quoteSize = quoteSize.toFixed()
+      }
     })
-  }, [formattedPrice])
+  }, [formattedPrice, tradeForm])
 
-  // const handleSizeClick = () => {
-  //   set((state) => {
-  //     state.tradeForm.baseSize = Number(formattedSize)
-  //   })
-  // }
+  const handleSizeClick = useCallback(() => {
+    const set = mangoStore.getState().set
+    set((state) => {
+      state.tradeForm.baseSize = formattedSize.toString()
+      if (formattedSize && tradeForm.price) {
+        const quoteSize = floorToDecimal(
+          formattedSize.mul(new Decimal(tradeForm.price)),
+          getDecimalCount(tickSize)
+        )
+        state.tradeForm.quoteSize = quoteSize.toString()
+      }
+    })
+  }, [formattedSize, tradeForm])
 
   const groupingDecimalCount = useMemo(
     () => getDecimalCount(grouping),
@@ -642,35 +671,42 @@ const OrderbookRow = ({
     <div
       className={`relative flex h-[24px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
       ref={element}
-      onClick={handlePriceClick}
     >
       <>
-        <div className="flex w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">
-          <div className="flex w-full justify-start pl-2">
+        <div className="flex h-full w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">
+          <div
+            className="flex h-full w-full items-center justify-start pl-2 hover:underline"
+            onClick={handleSizeClick}
+          >
             <div
               style={{ fontFeatureSettings: 'zero 1' }}
               className={`z-10 w-full text-right font-mono text-xs ${
-                hasOpenOrder ? 'text-th-primary' : ''
+                hasOpenOrder ? 'text-th-active' : ''
               }`}
               // onClick={handleSizeClick}
             >
               {formattedSize.toFixed(minOrderSizeDecimals)}
             </div>
           </div>
-          <div className={`z-10 w-full pr-4 text-right font-mono text-xs`}>
-            {formattedPrice.toFixed(groupingDecimalCount)}
+          <div
+            className={`z-10 flex h-full w-full items-center pr-4 hover:underline`}
+            onClick={handlePriceClick}
+          >
+            <div className="w-full text-right font-mono text-xs">
+              {formattedPrice.toFixed(groupingDecimalCount)}
+            </div>
           </div>
         </div>
 
         <Line
           className={`absolute left-0 opacity-40 brightness-125 ${
-            side === 'buy' ? `bg-th-green-muted` : `bg-th-red-muted`
+            side === 'buy' ? `bg-th-up-muted` : `bg-th-down-muted`
           }`}
           data-width={Math.max(sizePercent, 0.5) + '%'}
         />
         <Line
           className={`absolute left-0 opacity-70 ${
-            side === 'buy' ? `bg-th-green` : `bg-th-red`
+            side === 'buy' ? `bg-th-up` : `bg-th-down`
           }`}
           data-width={
             Math.max((cumulativeSizePercent / 100) * sizePercent, 0.1) + '%'

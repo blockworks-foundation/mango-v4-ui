@@ -27,10 +27,10 @@ const Select = ({
         {({ open }) => (
           <>
             <Listbox.Button
-              className={`h-full w-full rounded-md bg-th-bkg-1 font-normal ring-1 ring-inset ring-th-fgd-4 hover:ring-th-fgd-3 focus:border-th-fgd-3 focus:outline-none`}
+              className={`default-transition h-full w-full rounded-md bg-th-input-bkg py-2.5 font-normal ring-1 ring-inset ring-th-input-border focus:border-th-input-border-hover focus:outline-none md:hover:ring-th-input-border-hover`}
             >
               <div
-                className={`flex h-12 items-center justify-between space-x-2 px-3 text-base text-th-fgd-1`}
+                className={`flex items-center justify-between space-x-2 px-3 text-th-fgd-1`}
               >
                 {value ? (
                   value
@@ -47,7 +47,7 @@ const Select = ({
             {open ? (
               <Listbox.Options
                 static
-                className={`thin-scroll absolute left-0 z-20 mt-1 max-h-60 w-full origin-top-left overflow-auto rounded-md bg-th-bkg-2 p-2 text-th-fgd-1 outline-none ${dropdownPanelClassName}`}
+                className={`thin-scroll absolute left-0 z-20 mt-1 max-h-60 w-full origin-top-left space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4 text-th-fgd-1 outline-none ${dropdownPanelClassName}`}
               >
                 {children}
               </Listbox.Options>
@@ -70,8 +70,8 @@ const Option = ({ value, children, className }: OptionProps) => {
     <Listbox.Option className="mb-0" value={value}>
       {({ selected }) => (
         <div
-          className={`default-transition rounded p-2 text-th-fgd-1 hover:cursor-pointer hover:bg-th-bkg-3 hover:text-th-primary ${
-            selected ? 'text-th-primary' : ''
+          className={`default-transition rounded text-th-fgd-2 hover:cursor-pointer md:hover:text-th-fgd-1 ${
+            selected ? 'text-th-active' : ''
           } ${className}`}
         >
           {children}

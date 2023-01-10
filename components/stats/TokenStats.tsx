@@ -6,36 +6,37 @@ import {
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
-
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import { IconButton, LinkButton } from '../shared/Button'
 import ContentBox from '../shared/ContentBox'
-import FlipNumbers from 'react-flip-numbers'
 import Tooltip from '@components/shared/Tooltip'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import { useRouter } from 'next/router'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
-import useLocalStorageState from 'hooks/useLocalStorageState'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import mangoStore from '@store/mangoStore'
+import AmountWithValue from '@components/shared/AmountWithValue'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
+  const actions = mangoStore.getState().actions
+  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
-  const [animationSettings] = useLocalStorageState(
-    ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
-  )
+
+  useEffect(() => {
+    if (group && !initialStatsLoad) {
+      actions.fetchTokenStats()
+    }
+  }, [group])
 
   const banks = useMemo(() => {
     if (group) {
@@ -43,7 +44,7 @@ const TokenStats = () => {
         key,
         value,
       }))
-      return rawBanks
+      return rawBanks.sort((a, b) => a.key.localeCompare(b.key))
     }
     return []
   }, [group])
@@ -52,68 +53,12 @@ const TokenStats = () => {
     showTokenDetails ? setShowTokenDetails('') : setShowTokenDetails(name)
   }
 
-  const [totalDepositValue, totalBorrowValue] = useMemo(() => {
-    if (banks.length) {
-      return [
-        banks.reduce(
-          (a, c) => a + c.value[0].uiPrice * c.value[0].uiDeposits(),
-          0
-        ),
-        banks.reduce(
-          (a, c) => a + c.value[0].uiPrice * c.value[0].uiBorrows(),
-          0
-        ),
-      ]
-    }
-    return []
-  }, [banks])
-
   const goToTokenPage = (bank: Bank) => {
     router.push(`/token/${bank.name}`, undefined, { shallow: true })
   }
 
   return (
     <ContentBox hideBorder hidePadding>
-      <div className="grid grid-cols-2 gap-x-6 border-b border-th-bkg-3 text-5xl">
-        <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-t-0 ">
-          <p className="mb-2 text-base leading-none">
-            {t('total-deposit-value')}
-          </p>
-          <div className="flex items-center font-bold">
-            {animationSettings['number-scroll'] ? (
-              <FlipNumbers
-                height={48}
-                width={32}
-                play
-                delay={0.05}
-                duration={1}
-                numbers={formatFixedDecimals(totalDepositValue || 0.0, true)}
-              />
-            ) : (
-              <p>{formatFixedDecimals(totalDepositValue || 0.0, true)}</p>
-            )}
-          </div>
-        </div>
-        <div className="col-span-2 border-t border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:border-t-0 md:pl-6">
-          <p className="mb-2 text-base leading-none">
-            {t('total-borrow-value')}
-          </p>
-          <div className="flex items-center font-bold">
-            {animationSettings['number-scroll'] ? (
-              <FlipNumbers
-                height={48}
-                width={32}
-                play
-                delay={0.05}
-                duration={1}
-                numbers={formatFixedDecimals(totalBorrowValue || 0.0, true)}
-              />
-            ) : (
-              <span>{formatFixedDecimals(totalBorrowValue || 0.0, true)}</span>
-            )}
-          </div>
-        </div>
-      </div>
       {showTableView ? (
         <Table>
           <thead>
@@ -163,6 +108,9 @@ const TokenStats = () => {
                   (t) => t.address === bank.mint.toString()
                 )?.logoURI
               }
+              const deposits = bank.uiDeposits()
+              const borrows = bank.uiBorrows()
+              const price = bank.uiPrice
 
               return (
                 <TrBody key={key}>
@@ -175,29 +123,35 @@ const TokenStats = () => {
                           <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                         )}
                       </div>
-                      <p className="font-body tracking-wide">{bank.name}</p>
+                      <p className="font-body tracking-wider">{bank.name}</p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiDeposits())}</p>
+                      <p>{formatFixedDecimals(deposits)}</p>
+                      <p className="text-th-fgd-4">
+                        {formatFixedDecimals(deposits * price, true, true)}
+                      </p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiBorrows())}</p>
+                      <p>{formatFixedDecimals(borrows)}</p>
+                      <p className="text-th-fgd-4">
+                        {formatFixedDecimals(borrows * price, true, true)}
+                      </p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex justify-end space-x-2">
-                      <p className="text-th-green">
+                      <p className="text-th-up">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
                           fixed: true,
                         })}
                         %
                       </p>
                       <span className="text-th-fgd-4">|</span>
-                      <p className="text-th-red">
+                      <p className="text-th-down">
                         {formatDecimal(bank.getBorrowRateUi(), 2, {
                           fixed: true,
                         })}
@@ -254,6 +208,9 @@ const TokenStats = () => {
                 (t) => t.address === bank.mint.toString()
               )?.logoURI
             }
+            const deposits = bank.uiDeposits()
+            const borrows = bank.uiBorrows()
+            const price = bank.uiPrice
             return (
               <div key={key} className="border-b border-th-bkg-3 px-6 py-4">
                 <div className="flex items-center justify-between">
@@ -269,18 +226,28 @@ const TokenStats = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <div>
-                      <p className="text-right text-xs">
+                      <p className="mb-0.5 text-right text-xs">
                         {t('total-deposits')}
                       </p>
-                      <p className="text-right font-mono text-th-fgd-1">
-                        {formatFixedDecimals(bank.uiDeposits())}
-                      </p>
+                      <AmountWithValue
+                        amount={formatFixedDecimals(deposits)}
+                        value={formatFixedDecimals(
+                          deposits * price,
+                          true,
+                          true
+                        )}
+                        stacked
+                      />
                     </div>
                     <div>
-                      <p className="text-right text-xs">{t('total-borrows')}</p>
-                      <p className="text-right font-mono text-th-fgd-1">
-                        {formatFixedDecimals(bank.uiBorrows())}
+                      <p className="mb-0.5 text-right text-xs">
+                        {t('total-borrows')}
                       </p>
+                      <AmountWithValue
+                        amount={formatFixedDecimals(borrows)}
+                        value={formatFixedDecimals(borrows * price, true, true)}
+                        stacked
+                      />
                     </div>
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.name)}
@@ -310,11 +277,11 @@ const TokenStats = () => {
                     <div className="col-span-1">
                       <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                       <p className="space-x-2">
-                        <span className="font-mono text-th-green">
+                        <span className="font-mono text-th-up">
                           {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
                         </span>
                         <span className="font-normal text-th-fgd-4">|</span>
-                        <span className="font-mono text-th-red">
+                        <span className="font-mono text-th-down">
                           {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
                         </span>
                       </p>

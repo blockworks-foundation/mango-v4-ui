@@ -1,16 +1,6 @@
-import {
-  PublicKey,
-  Connection,
-  RpcResponseAndContext,
-  AccountInfo,
-} from '@solana/web3.js'
+import { PublicKey, Connection } from '@solana/web3.js'
 import { TokenInstructions } from '@project-serum/serum'
-import {
-  Group,
-  Serum3Market,
-  toUiDecimals,
-} from '@blockworks-foundation/mango-v4'
-import { Token } from 'types/jupiter'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 
 export class TokenAccount {
   publicKey!: PublicKey
@@ -105,15 +95,3 @@ export const fetchNftsFromHolaplexIndexer = async (owner: PublicKey) => {
 
 export const formatTokenSymbol = (symbol: string) =>
   symbol === 'MSOL' ? 'mSOL' : symbol === 'SOETH' ? 'soETH' : symbol
-
-export const LISTED_TOKENS: string[] = [
-  'BTC',
-  'DUST',
-  'ETH',
-  'RAY',
-  'soETH',
-  'SOL',
-  'MSOL',
-  'USDC',
-  'USDT',
-]

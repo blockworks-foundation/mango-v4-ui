@@ -22,11 +22,21 @@ const useJupiterSwapData = () => {
     }
   }, [inputBank, outputBank, mangoTokens])
 
+  let inputCoingeckoId = inputTokenInfo?.extensions?.coingeckoId
+  let outputCoingeckoId = outputTokenInfo?.extensions?.coingeckoId
+
+  if (inputBank?.name.toLocaleLowerCase() === 'dai') {
+    inputCoingeckoId = 'dai'
+  }
+  if (outputBank?.name.toLocaleLowerCase() === 'dai') {
+    outputCoingeckoId = 'dai'
+  }
+
   return {
     inputTokenInfo,
-    inputCoingeckoId: inputTokenInfo?.extensions?.coingeckoId,
+    inputCoingeckoId,
     outputTokenInfo,
-    outputCoingeckoId: outputTokenInfo?.extensions?.coingeckoId,
+    outputCoingeckoId,
   }
 }
 

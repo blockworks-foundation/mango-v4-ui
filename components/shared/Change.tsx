@@ -1,15 +1,17 @@
 import { MinusSmallIcon } from '@heroicons/react/20/solid'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatDecimal } from 'utils/numbers'
 import { DownTriangle, UpTriangle } from './DirectionTriangles'
 
 const Change = ({
   change,
-  isCurrency,
+  prefix,
   size,
+  suffix,
 }: {
   change: number | typeof NaN
-  isCurrency?: boolean
+  prefix?: string
   size?: 'small'
+  suffix?: string
 }) => {
   return (
     <div className="flex items-center space-x-1.5">
@@ -33,17 +35,15 @@ const Change = ({
           size === 'small' ? 'text-xs' : 'text-sm'
         } ${
           change > 0
-            ? 'text-th-green'
+            ? 'text-th-up'
             : change < 0
-            ? 'text-th-red'
+            ? 'text-th-down'
             : 'text-th-fgd-4'
         }`}
       >
-        {isCurrency ? '$' : ''}
-        {isNaN(change)
-          ? '0.00'
-          : formatFixedDecimals(Math.abs(change), false, true)}
-        {!isCurrency ? '%' : ''}
+        {prefix ? prefix : ''}
+        {isNaN(change) ? '0.00' : formatDecimal(Math.abs(change), 2)}
+        {suffix ? suffix : ''}
       </p>
     </div>
   )

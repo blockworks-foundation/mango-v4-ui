@@ -3,8 +3,31 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Roboto Mono';
-  src: url('/fonts/roboto.woff');
+  font-family: 'TT Mono';
+  src: url('/fonts/TT_Commons_Pro_Mono_Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons Expanded';
+  src: url('/fonts/TT_Commons_Pro_Expanded_DemiBold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons';
+  font-weight: normal;
+  src: url('/fonts/TT_Commons_Pro_Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons';
+  font-weight: medium;
+  src: url('/fonts/TT_Commons_Pro_Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TT Commons';
+  font-weight: bold;
+  src: url('/fonts/TT_Commons_Pro_DemiBold.woff2') format('woff2');
 }
 
 /* Reset */
@@ -80,15 +103,16 @@ th {
 /* Theme */
 
 :root {
-  --primary: theme('colors.light-theme.orange.DEFAULT');
-  --primary-dark: theme('colors.light-theme.orange.dark');
-  --red: theme('colors.light-theme.red.DEFAULT');
-  --red-dark: theme('colors.light-theme.red.dark');
-  --red-muted: theme('colors.light-theme.red.muted');
-  --green: theme('colors.light-theme.green.DEFAULT');
-  --green-dark: theme('colors.light-theme.green.dark');
-  --green-muted: theme('colors.light-theme.green.muted');
-  --orange: theme('colors.light-theme.orange.DEFAULT');
+  --active: theme('colors.light-theme.active.DEFAULT');
+  --active-dark: theme('colors.light-theme.active.dark');
+  --down: theme('colors.light-theme.down.DEFAULT');
+  --down-dark: theme('colors.light-theme.down.dark');
+  --down-muted: theme('colors.light-theme.down.muted');
+  --up: theme('colors.light-theme.up.DEFAULT');
+  --up-dark: theme('colors.light-theme.up.dark');
+  --up-muted: theme('colors.light-theme.up.muted');
+  --link: theme('colors.light-theme.link.DEFAULT');
+  --link-hover: theme('colors.light-theme.link.hover');
   --bkg-1: theme('colors.light-theme.bkg-1');
   --bkg-2: theme('colors.light-theme.bkg-2');
   --bkg-3: theme('colors.light-theme.bkg-3');
@@ -97,20 +121,27 @@ th {
   --fgd-2: theme('colors.light-theme.fgd-2');
   --fgd-3: theme('colors.light-theme.fgd-3');
   --fgd-4: theme('colors.light-theme.fgd-4');
-  --button: theme('colors.light-theme.button');
-  --button-hover: theme('colors.light-theme.button-hover');
+  --button: theme('colors.light-theme.button.DEFAULT');
+  --input-bkg: theme('colors.light-theme.input.bkg');
+  --input-border: theme('colors.light-theme.input.border');
+  --input-border-hover: theme('colors.light-theme.input.borderDark');
+  --button-hover: theme('colors.light-theme.button.hover');
+  --error: theme('colors.light-theme.error');
+  --success: theme('colors.light-theme.success');
+  --warning: theme('colors.light-theme.warning');
 }
 
 [data-theme='Dark'] {
-  --primary: theme('colors.dark-theme.yellow.DEFAULT');
-  --primary-dark: theme('colors.dark-theme.yellow.dark');
-  --red: theme('colors.dark-theme.red.DEFAULT');
-  --red-dark: theme('colors.dark-theme.red.dark');
-  --red-muted: theme('colors.dark-theme.red.muted');
-  --green: theme('colors.dark-theme.green.DEFAULT');
-  --green-dark: theme('colors.dark-theme.green.dark');
-  --green-muted: theme('colors.dark-theme.green.muted');
-  --orange: theme('colors.dark-theme.orange.DEFAULT');
+  --active: theme('colors.dark-theme.active.DEFAULT');
+  --active-dark: theme('colors.dark-theme.active.dark');
+  --down: theme('colors.dark-theme.down.DEFAULT');
+  --down-dark: theme('colors.dark-theme.down.dark');
+  --down-muted: theme('colors.dark-theme.down.muted');
+  --up: theme('colors.dark-theme.up.DEFAULT');
+  --up-dark: theme('colors.dark-theme.up.dark');
+  --up-muted: theme('colors.dark-theme.up.muted');
+  --link: theme('colors.dark-theme.link.DEFAULT');
+  --link-hover: theme('colors.dark-theme.link.hover');
   --bkg-1: theme('colors.dark-theme.bkg-1');
   --bkg-2: theme('colors.dark-theme.bkg-2');
   --bkg-3: theme('colors.dark-theme.bkg-3');
@@ -119,40 +150,256 @@ th {
   --fgd-2: theme('colors.dark-theme.fgd-2');
   --fgd-3: theme('colors.dark-theme.fgd-3');
   --fgd-4: theme('colors.dark-theme.fgd-4');
-  --button: theme('colors.dark-theme.button');
-  --button-hover: theme('colors.dark-theme.button-hover');
+  --button: theme('colors.dark-theme.button.DEFAULT');
+  --button-hover: theme('colors.dark-theme.button.hover');
+  --input-bkg: theme('colors.dark-theme.input.bkg');
+  --input-border: theme('colors.dark-theme.input.border');
+  --input-border-hover: theme('colors.dark-theme.input.borderDark');
+  --error: theme('colors.dark-theme.error');
+  --success: theme('colors.dark-theme.success');
+  --warning: theme('colors.dark-theme.warning');
 }
 
-[data-theme='Mango'] {
-  --primary: theme('colors.mango-theme.yellow.DEFAULT');
-  --primary-dark: theme('colors.mango-theme.yellow.dark');
-  --red: theme('colors.mango-theme.red.DEFAULT');
-  --red-dark: theme('colors.mango-theme.red.dark');
-  --red-muted: theme('colors.mango-theme.red.muted');
-  --green: theme('colors.mango-theme.green.DEFAULT');
-  --green-dark: theme('colors.mango-theme.green.dark');
-  --green-muted: theme('colors.mango-theme.green.muted');
-  --orange: theme('colors.mango-theme.orange.DEFAULT');
-  --bkg-1: theme('colors.mango-theme.bkg-1');
-  --bkg-2: theme('colors.mango-theme.bkg-2');
-  --bkg-3: theme('colors.mango-theme.bkg-3');
-  --bkg-4: theme('colors.mango-theme.bkg-4');
-  --fgd-1: theme('colors.mango-theme.fgd-1');
-  --fgd-2: theme('colors.mango-theme.fgd-2');
-  --fgd-3: theme('colors.mango-theme.fgd-3');
-  --fgd-4: theme('colors.mango-theme.fgd-4');
-  --button: theme('colors.mango-theme.button');
-  --button-hover: theme('colors.mango-theme.button-hover');
+[data-theme='Mango Classic'] {
+  --active: theme('colors.mango-classic-theme.active.DEFAULT');
+  --active-dark: theme('colors.mango-classic-theme.active.dark');
+  --down: theme('colors.mango-classic-theme.down.DEFAULT');
+  --down-dark: theme('colors.mango-classic-theme.down.dark');
+  --down-muted: theme('colors.mango-classic-theme.down.muted');
+  --up: theme('colors.mango-classic-theme.up.DEFAULT');
+  --up-dark: theme('colors.mango-classic-theme.up.dark');
+  --up-muted: theme('colors.mango-classic-theme.up.muted');
+  --link: theme('colors.mango-classic-theme.link.DEFAULT');
+  --link-hover: theme('colors.mango-classic-theme.link.hover');
+  --bkg-1: theme('colors.mango-classic-theme.bkg-1');
+  --bkg-2: theme('colors.mango-classic-theme.bkg-2');
+  --bkg-3: theme('colors.mango-classic-theme.bkg-3');
+  --bkg-4: theme('colors.mango-classic-theme.bkg-4');
+  --fgd-1: theme('colors.mango-classic-theme.fgd-1');
+  --fgd-2: theme('colors.mango-classic-theme.fgd-2');
+  --fgd-3: theme('colors.mango-classic-theme.fgd-3');
+  --fgd-4: theme('colors.mango-classic-theme.fgd-4');
+  --button: theme('colors.mango-classic-theme.button.DEFAULT');
+  --button-hover: theme('colors.mango-classic-theme.button.hover');
+  --input-bkg: theme('colors.mango-classic-theme.input.bkg');
+  --input-border: theme('colors.mango-classic-theme.input.border');
+  --input-border-hover: theme('colors.mango-classic-theme.input.borderDark');
+  --error: theme('colors.mango-classic-theme.error');
+  --success: theme('colors.mango-classic-theme.success');
+  --warning: theme('colors.mango-classic-theme.warning');
+}
+
+[data-theme='Medium'] {
+  --active: theme('colors.medium-theme.active.DEFAULT');
+  --active-dark: theme('colors.medium-theme.active.dark');
+  --down: theme('colors.medium-theme.down.DEFAULT');
+  --down-dark: theme('colors.medium-theme.down.dark');
+  --down-muted: theme('colors.medium-theme.down.muted');
+  --up: theme('colors.medium-theme.up.DEFAULT');
+  --up-dark: theme('colors.medium-theme.up.dark');
+  --up-muted: theme('colors.medium-theme.up.muted');
+  --link: theme('colors.medium-theme.link.DEFAULT');
+  --link-hover: theme('colors.medium-theme.link.hover');
+  --bkg-1: theme('colors.medium-theme.bkg-1');
+  --bkg-2: theme('colors.medium-theme.bkg-2');
+  --bkg-3: theme('colors.medium-theme.bkg-3');
+  --bkg-4: theme('colors.medium-theme.bkg-4');
+  --fgd-1: theme('colors.medium-theme.fgd-1');
+  --fgd-2: theme('colors.medium-theme.fgd-2');
+  --fgd-3: theme('colors.medium-theme.fgd-3');
+  --fgd-4: theme('colors.medium-theme.fgd-4');
+  --button: theme('colors.medium-theme.button.DEFAULT');
+  --button-hover: theme('colors.medium-theme.button.hover');
+  --input-bkg: theme('colors.medium-theme.input.bkg');
+  --input-border: theme('colors.medium-theme.input.border');
+  --input-border-hover: theme('colors.medium-theme.input.borderDark');
+  --error: theme('colors.medium-theme.error');
+  --success: theme('colors.medium-theme.success');
+  --warning: theme('colors.medium-theme.warning');
+}
+
+[data-theme='High Contrast'] {
+  --active: theme('colors.high-contrast-theme.active.DEFAULT');
+  --active-dark: theme('colors.high-contrast-theme.active.dark');
+  --down: theme('colors.high-contrast-theme.down.DEFAULT');
+  --down-dark: theme('colors.high-contrast-theme.down.dark');
+  --down-muted: theme('colors.high-contrast-theme.down.muted');
+  --up: theme('colors.high-contrast-theme.up.DEFAULT');
+  --up-dark: theme('colors.high-contrast-theme.up.dark');
+  --up-muted: theme('colors.high-contrast-theme.up.muted');
+  --link: theme('colors.high-contrast-theme.link.DEFAULT');
+  --link-hover: theme('colors.high-contrast-theme.link.hover');
+  --bkg-1: theme('colors.high-contrast-theme.bkg-1');
+  --bkg-2: theme('colors.high-contrast-theme.bkg-2');
+  --bkg-3: theme('colors.high-contrast-theme.bkg-3');
+  --bkg-4: theme('colors.high-contrast-theme.bkg-4');
+  --fgd-1: theme('colors.high-contrast-theme.fgd-1');
+  --fgd-2: theme('colors.high-contrast-theme.fgd-2');
+  --fgd-3: theme('colors.high-contrast-theme.fgd-3');
+  --fgd-4: theme('colors.high-contrast-theme.fgd-4');
+  --button: theme('colors.high-contrast-theme.button.DEFAULT');
+  --button-hover: theme('colors.high-contrast-theme.button.hover');
+  --input-bkg: theme('colors.high-contrast-theme.input.bkg');
+  --input-border: theme('colors.high-contrast-theme.input.border');
+  --input-border-hover: theme('colors.high-contrast-theme.input.borderDark');
+  --error: theme('colors.high-contrast-theme.error');
+  --success: theme('colors.high-contrast-theme.success');
+  --warning: theme('colors.high-contrast-theme.warning');
+}
+
+[data-theme='Blueberry'] {
+  --active: theme('colors.blueberry-theme.active.DEFAULT');
+  --active-dark: theme('colors.blueberry-theme.active.dark');
+  --down: theme('colors.blueberry-theme.down.DEFAULT');
+  --down-dark: theme('colors.blueberry-theme.down.dark');
+  --down-muted: theme('colors.blueberry-theme.down.muted');
+  --up: theme('colors.blueberry-theme.up.DEFAULT');
+  --up-dark: theme('colors.blueberry-theme.up.dark');
+  --up-muted: theme('colors.blueberry-theme.up.muted');
+  --link: theme('colors.blueberry-theme.link.DEFAULT');
+  --link-hover: theme('colors.blueberry-theme.link.hover');
+  --bkg-1: theme('colors.blueberry-theme.bkg-1');
+  --bkg-2: theme('colors.blueberry-theme.bkg-2');
+  --bkg-3: theme('colors.blueberry-theme.bkg-3');
+  --bkg-4: theme('colors.blueberry-theme.bkg-4');
+  --fgd-1: theme('colors.blueberry-theme.fgd-1');
+  --fgd-2: theme('colors.blueberry-theme.fgd-2');
+  --fgd-3: theme('colors.blueberry-theme.fgd-3');
+  --fgd-4: theme('colors.blueberry-theme.fgd-4');
+  --button: theme('colors.blueberry-theme.button.DEFAULT');
+  --button-hover: theme('colors.blueberry-theme.button.hover');
+  --input-bkg: theme('colors.blueberry-theme.input.bkg');
+  --input-border: theme('colors.blueberry-theme.input.border');
+  --input-border-hover: theme('colors.blueberry-theme.input.borderDark');
+  --error: theme('colors.blueberry-theme.error');
+  --success: theme('colors.blueberry-theme.success');
+  --warning: theme('colors.blueberry-theme.warning');
+}
+
+[data-theme='Banana'] {
+  --active: theme('colors.banana-theme.active.DEFAULT');
+  --active-dark: theme('colors.banana-theme.active.dark');
+  --down: theme('colors.banana-theme.down.DEFAULT');
+  --down-dark: theme('colors.banana-theme.down.dark');
+  --down-muted: theme('colors.banana-theme.down.muted');
+  --up: theme('colors.banana-theme.up.DEFAULT');
+  --up-dark: theme('colors.banana-theme.up.dark');
+  --up-muted: theme('colors.banana-theme.up.muted');
+  --link: theme('colors.banana-theme.link.DEFAULT');
+  --link-hover: theme('colors.banana-theme.link.hover');
+  --bkg-1: theme('colors.banana-theme.bkg-1');
+  --bkg-2: theme('colors.banana-theme.bkg-2');
+  --bkg-3: theme('colors.banana-theme.bkg-3');
+  --bkg-4: theme('colors.banana-theme.bkg-4');
+  --fgd-1: theme('colors.banana-theme.fgd-1');
+  --fgd-2: theme('colors.banana-theme.fgd-2');
+  --fgd-3: theme('colors.banana-theme.fgd-3');
+  --fgd-4: theme('colors.banana-theme.fgd-4');
+  --button: theme('colors.banana-theme.button.DEFAULT');
+  --button-hover: theme('colors.banana-theme.button.hover');
+  --input-bkg: theme('colors.banana-theme.input.bkg');
+  --input-border: theme('colors.banana-theme.input.border');
+  --input-border-hover: theme('colors.banana-theme.input.borderDark');
+  --error: theme('colors.banana-theme.error');
+  --success: theme('colors.banana-theme.success');
+  --warning: theme('colors.banana-theme.warning');
+}
+
+[data-theme='Olive'] {
+  --active: theme('colors.olive-theme.active.DEFAULT');
+  --active-dark: theme('colors.olive-theme.active.dark');
+  --down: theme('colors.olive-theme.down.DEFAULT');
+  --down-dark: theme('colors.olive-theme.down.dark');
+  --down-muted: theme('colors.olive-theme.down.muted');
+  --up: theme('colors.olive-theme.up.DEFAULT');
+  --up-dark: theme('colors.olive-theme.up.dark');
+  --up-muted: theme('colors.olive-theme.up.muted');
+  --link: theme('colors.olive-theme.link.DEFAULT');
+  --link-hover: theme('colors.olive-theme.link.hover');
+  --bkg-1: theme('colors.olive-theme.bkg-1');
+  --bkg-2: theme('colors.olive-theme.bkg-2');
+  --bkg-3: theme('colors.olive-theme.bkg-3');
+  --bkg-4: theme('colors.olive-theme.bkg-4');
+  --fgd-1: theme('colors.olive-theme.fgd-1');
+  --fgd-2: theme('colors.olive-theme.fgd-2');
+  --fgd-3: theme('colors.olive-theme.fgd-3');
+  --fgd-4: theme('colors.olive-theme.fgd-4');
+  --button: theme('colors.olive-theme.button.DEFAULT');
+  --button-hover: theme('colors.olive-theme.button.hover');
+  --input-bkg: theme('colors.olive-theme.input.bkg');
+  --input-border: theme('colors.olive-theme.input.border');
+  --input-border-hover: theme('colors.olive-theme.input.borderDark');
+  --error: theme('colors.olive-theme.error');
+  --success: theme('colors.olive-theme.success');
+  --warning: theme('colors.olive-theme.warning');
+}
+
+[data-theme='Lychee'] {
+  --active: theme('colors.lychee-theme.active.DEFAULT');
+  --active-dark: theme('colors.lychee-theme.active.dark');
+  --down: theme('colors.lychee-theme.down.DEFAULT');
+  --down-dark: theme('colors.lychee-theme.down.dark');
+  --down-muted: theme('colors.lychee-theme.down.muted');
+  --up: theme('colors.lychee-theme.up.DEFAULT');
+  --up-dark: theme('colors.lychee-theme.up.dark');
+  --up-muted: theme('colors.lychee-theme.up.muted');
+  --link: theme('colors.lychee-theme.link.DEFAULT');
+  --link-hover: theme('colors.lychee-theme.link.hover');
+  --bkg-1: theme('colors.lychee-theme.bkg-1');
+  --bkg-2: theme('colors.lychee-theme.bkg-2');
+  --bkg-3: theme('colors.lychee-theme.bkg-3');
+  --bkg-4: theme('colors.lychee-theme.bkg-4');
+  --fgd-1: theme('colors.lychee-theme.fgd-1');
+  --fgd-2: theme('colors.lychee-theme.fgd-2');
+  --fgd-3: theme('colors.lychee-theme.fgd-3');
+  --fgd-4: theme('colors.lychee-theme.fgd-4');
+  --button: theme('colors.lychee-theme.button.DEFAULT');
+  --button-hover: theme('colors.lychee-theme.button.hover');
+  --input-bkg: theme('colors.lychee-theme.input.bkg');
+  --input-border: theme('colors.lychee-theme.input.border');
+  --input-border-hover: theme('colors.lychee-theme.input.borderDark');
+  --error: theme('colors.lychee-theme.error');
+  --success: theme('colors.lychee-theme.success');
+  --warning: theme('colors.lychee-theme.warning');
+}
+
+[data-theme='Avocado'] {
+  --active: theme('colors.avocado-theme.active.DEFAULT');
+  --active-dark: theme('colors.avocado-theme.active.dark');
+  --down: theme('colors.avocado-theme.down.DEFAULT');
+  --down-dark: theme('colors.avocado-theme.down.dark');
+  --down-muted: theme('colors.avocado-theme.down.muted');
+  --up: theme('colors.avocado-theme.up.DEFAULT');
+  --up-dark: theme('colors.avocado-theme.up.dark');
+  --up-muted: theme('colors.avocado-theme.up.muted');
+  --link: theme('colors.avocado-theme.link.DEFAULT');
+  --link-hover: theme('colors.avocado-theme.link.hover');
+  --bkg-1: theme('colors.avocado-theme.bkg-1');
+  --bkg-2: theme('colors.avocado-theme.bkg-2');
+  --bkg-3: theme('colors.avocado-theme.bkg-3');
+  --bkg-4: theme('colors.avocado-theme.bkg-4');
+  --fgd-1: theme('colors.avocado-theme.fgd-1');
+  --fgd-2: theme('colors.avocado-theme.fgd-2');
+  --fgd-3: theme('colors.avocado-theme.fgd-3');
+  --fgd-4: theme('colors.avocado-theme.fgd-4');
+  --button: theme('colors.avocado-theme.button.DEFAULT');
+  --button-hover: theme('colors.avocado-theme.button.hover');
+  --input-bkg: theme('colors.avocado-theme.input.bkg');
+  --input-border: theme('colors.avocado-theme.input.border');
+  --input-border-hover: theme('colors.avocado-theme.input.borderDark');
+  --error: theme('colors.avocado-theme.error');
+  --success: theme('colors.avocado-theme.success');
+  --warning: theme('colors.avocado-theme.warning');
 }
 
 /* Base */
 
 body {
-  @apply font-body text-sm tracking-wide;
+  @apply font-body text-sm tracking-wider;
 }
 
 button {
-  @apply tracking-wide focus:outline-none;
+  @apply tracking-wider focus:outline-none;
 }
 
 svg {
@@ -191,35 +438,47 @@ li {
   @apply text-sm text-th-fgd-3;
 }
 
+/* Forms */
+
+input::placeholder {
+  @apply text-th-fgd-4;
+}
+
+/* Remove inner shadow from inputs on mobile iOS */
+textarea,
+input[type='text'] {
+  -webkit-appearance: none;
+}
+
 /* Slider */
 
-input[type='range']::-webkit-slider-thumb {
+/* input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  height: 16px;
+  height: 18px;
   width: 16px;
   border-radius: 100%;
-  background: var(--primary);
+  background: var(--active);
   cursor: pointer;
   margin-top: -1px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
-}
+/* } */
 
 /* All the same stuff for Firefox */
-input[type='range']::-moz-range-thumb {
-  height: 16px;
+/* input[type='range']::-moz-range-thumb {
+  height: 18px;
   width: 16px;
   border-radius: 100%;
-  background: var(--primary);
+  background: var(--active);
   cursor: pointer;
-}
+} */
 
 /* All the same stuff for IE */
-input[type='range']::-ms-thumb {
-  height: 16px;
+/* input[type='range']::-ms-thumb {
+  height: 18px;
   width: 16px;
   border-radius: 100%;
-  background: var(--primary);
+  background: var(--active);
   cursor: pointer;
-}
+} */
 
 /* Animations */
 
@@ -255,6 +514,7 @@ table p {
 .hide-scroll::-webkit-scrollbar {
   width: 0px;
   height: 0px;
+  -webkit-appearance: none;
 }
 
 .hide-scroll::-webkit-scrollbar-thumb {
@@ -307,11 +567,11 @@ table p {
 /* slider */
 
 input[type='range'] {
-  @apply h-2 appearance-none rounded bg-th-bkg-4 bg-gradient-to-r from-gradient-start via-gradient-mid to-gradient-end bg-[length:50%_100%] bg-no-repeat;
+  @apply h-1.5 appearance-none rounded bg-th-bkg-2 bg-gradient-to-r from-th-active to-th-active bg-no-repeat;
 }
 
 input[type='range']::-webkit-slider-thumb {
-  @apply h-5 w-5 cursor-ew-resize appearance-none rounded-full bg-th-primary;
+  @apply h-5 w-5 cursor-ew-resize appearance-none rounded-full bg-th-active-dark shadow;
 }
 
 input[type='range']::-webkit-slider-runnable-track {
@@ -328,7 +588,7 @@ input[type='range']::-webkit-slider-runnable-track {
 
 @keyframes green-flash {
   from {
-    background-color: var(--green-muted);
+    background-color: var(--up-muted);
   }
   to {
     background-color: transparent;
@@ -337,7 +597,7 @@ input[type='range']::-webkit-slider-runnable-track {
 
 @-webkit-keyframes green-flash {
   from {
-    background-color: var(--green-muted);
+    background-color: var(--up-muted);
   }
   to {
     background-color: transparent;
@@ -345,7 +605,7 @@ input[type='range']::-webkit-slider-runnable-track {
 }
 @-moz-keyframes green-flash {
   from {
-    background-color: var(--green-muted);
+    background-color: var(--up-muted);
   }
   to {
     background-color: transparent;
@@ -354,7 +614,7 @@ input[type='range']::-webkit-slider-runnable-track {
 
 @keyframes red-flash {
   from {
-    background-color: var(--red-muted);
+    background-color: var(--down-muted);
   }
   to {
     background-color: transparent;
@@ -363,7 +623,7 @@ input[type='range']::-webkit-slider-runnable-track {
 
 @-webkit-keyframes red-flash {
   from {
-    background-color: var(--red-muted);
+    background-color: var(--down-muted);
   }
   to {
     background-color: transparent;
@@ -371,7 +631,7 @@ input[type='range']::-webkit-slider-runnable-track {
 }
 @-moz-keyframes red-flash {
   from {
-    background-color: var(--red-muted);
+    background-color: var(--down-muted);
   }
   to {
     background-color: transparent;

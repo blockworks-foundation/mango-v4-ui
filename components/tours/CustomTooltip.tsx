@@ -17,7 +17,7 @@ const CustomTooltip = ({
   const { title, description } = tourLogic!.stepContent
   const { next, prev, close, allSteps, stepIndex } = tourLogic!
   const { publicKey } = useWallet()
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const tourSettings = mangoStore((s) => s.settings.tours)
   const [loading, setLoading] = useState(false)
 
@@ -61,7 +61,7 @@ const CustomTooltip = ({
         <>
           <button
             onClick={onClose}
-            className={`absolute right-4 top-4 z-50 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-primary`}
+            className={`absolute right-4 top-4 z-40 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
           >
             <XMarkIcon className={`h-5 w-5`} />
           </button>
@@ -82,7 +82,7 @@ const CustomTooltip = ({
               {allSteps.map((s, i) => (
                 <div
                   className={`h-1 w-1 rounded-full ${
-                    i === stepIndex ? 'bg-th-primary' : 'bg-th-bkg-4'
+                    i === stepIndex ? 'bg-th-active' : 'bg-th-bkg-4'
                   }`}
                   key={s.title}
                 />

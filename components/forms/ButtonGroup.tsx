@@ -4,7 +4,7 @@ interface ButtonGroupProps {
   activeValue: string
   className?: string
   disabled?: boolean
-  onChange: (x: string) => void
+  onChange: (x: any) => void
   unit?: string
   values: Array<any>
   names?: Array<string>
@@ -22,11 +22,11 @@ const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
   large,
 }) => {
   return (
-    <div className={`rounded-md bg-th-bkg-3 ${disabled ? 'opacity-50' : ''}`}>
+    <div className={`rounded-md bg-th-bkg-2 ${disabled ? 'opacity-50' : ''}`}>
       <div className="relative flex">
         {activeValue && values.includes(activeValue) ? (
           <div
-            className={`default-transition absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-4`}
+            className={`default-transition absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-3`}
             style={{
               transform: `translateX(${
                 values.findIndex((v) => v === activeValue) * 100
@@ -42,8 +42,8 @@ const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
             } font-normal
               ${
                 v === activeValue
-                  ? `text-th-primary`
-                  : `text-th-fgd-2 md:hover:text-th-primary`
+                  ? `text-th-active`
+                  : `text-th-fgd-2 md:hover:text-th-active`
               }
             `}
             disabled={disabled}

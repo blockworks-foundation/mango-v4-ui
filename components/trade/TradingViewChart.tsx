@@ -11,6 +11,7 @@ import { useViewport } from 'hooks/useViewport'
 import { CHART_DATA_FEED, DEFAULT_MARKET_NAME } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
+import Datafeed from 'apis/birdeye/datafeed'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -47,8 +48,8 @@ const TradingViewChart = () => {
       fullscreen: false,
       autosize: true,
       studiesOverrides: {
-        'volume.volume.color.0': COLORS.RED[theme],
-        'volume.volume.color.1': COLORS.GREEN[theme],
+        'volume.volume.color.0': COLORS.DOWN[theme],
+        'volume.volume.color.1': COLORS.UP[theme],
         'volume.precision': 4,
       },
     }),
@@ -81,25 +82,31 @@ const TradingViewChart = () => {
       [`mainSeriesProperties.${prop}.barColorsOnPrevClose`]: true,
       [`mainSeriesProperties.${prop}.drawWick`]: true,
       [`mainSeriesProperties.${prop}.drawBorder`]: true,
-      [`mainSeriesProperties.${prop}.upColor`]: COLORS.GREEN[theme],
-      [`mainSeriesProperties.${prop}.downColor`]: COLORS.RED[theme],
-      [`mainSeriesProperties.${prop}.borderColor`]: COLORS.GREEN[theme],
-      [`mainSeriesProperties.${prop}.borderUpColor`]: COLORS.GREEN[theme],
-      [`mainSeriesProperties.${prop}.borderDownColor`]: COLORS.RED[theme],
-      [`mainSeriesProperties.${prop}.wickUpColor`]: COLORS.GREEN[theme],
-      [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.RED[theme],
+      [`mainSeriesProperties.${prop}.upColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.downColor`]: COLORS.DOWN[theme],
+      [`mainSeriesProperties.${prop}.borderColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.borderUpColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.borderDownColor`]: COLORS.DOWN[theme],
+      [`mainSeriesProperties.${prop}.wickUpColor`]: COLORS.UP[theme],
+      [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
     }
   })
 
   useEffect(() => {
-    if (tvWidgetRef.current && chartReady && selectedMarketName) {
-      tvWidgetRef.current.setSymbol(
-        selectedMarketName!,
-        tvWidgetRef.current.activeChart().resolution(),
-        () => {
-          return
-        }
-      )
+    const group = mangoStore.getState().group
+    if (tvWidgetRef.current && chartReady && selectedMarketName && group) {
+      try {
+        const market = group.getSerum3MarketByName(selectedMarketName)
+        tvWidgetRef.current.setSymbol(
+          market?.serumMarketExternal.toString(),
+          tvWidgetRef.current.activeChart().resolution(),
+          () => {
+            return
+          }
+        )
+      } catch (e) {
+        console.warn('Trading View change symbol error: ', e)
+      }
     }
   }, [selectedMarketName, chartReady])
 
@@ -107,12 +114,10 @@ const TradingViewChart = () => {
     if (window) {
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
-        symbol: defaultProps.symbol,
+        symbol: '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6',
         // BEWARE: no trailing slash is expected in feed URL
         // tslint:disable-next-line:no-any
-        datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(
-          defaultProps.datafeedUrl
-        ),
+        datafeed: Datafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
@@ -143,7 +148,10 @@ const TradingViewChart = () => {
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,
-        theme: theme === 'Light' ? 'Light' : 'Dark',
+        theme:
+          theme === 'Light' || theme === 'Banana' || theme === 'Lychee'
+            ? 'Light'
+            : 'Dark',
         custom_css_url: '/styles/tradingview.css',
         loading_screen: {
           backgroundColor:
@@ -151,7 +159,21 @@ const TradingViewChart = () => {
               ? COLORS.BKG1.Dark
               : theme === 'Light'
               ? COLORS.BKG1.Light
-              : COLORS.BKG1.Mango,
+              : theme === 'Mango Classic'
+              ? COLORS.BKG1['Mango Classic']
+              : theme === 'Medium'
+              ? COLORS.BKG1.Medium
+              : theme === 'Avocado'
+              ? COLORS.BKG1.Avocado
+              : theme === 'Blueberry'
+              ? COLORS.BKG1.Blueberry
+              : theme === 'Banana'
+              ? COLORS.BKG1.Banana
+              : theme === 'Lychee'
+              ? COLORS.BKG1.Lychee
+              : theme === 'Olive'
+              ? COLORS.BKG1.Olive
+              : COLORS.BKG1['High Contrast'],
         },
         overrides: {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

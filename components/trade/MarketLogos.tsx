@@ -4,8 +4,15 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Image from 'next/legacy/image'
 import { useMemo } from 'react'
 import useMangoGroup from 'hooks/useMangoGroup'
+import LogoWithFallback from '@components/shared/LogoWithFallback'
 
-const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
+const MarketLogos = ({
+  market,
+  small,
+}: {
+  market: Serum3Market | PerpMarket
+  small?: boolean
+}) => {
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
 
@@ -34,39 +41,51 @@ const MarketLogos = ({ market }: { market: Serum3Market | PerpMarket }) => {
     return {
       baseLogoURI,
       quoteLogoURI,
+      name: market.name.split(/-|\//)[0],
     }
   }, [group, mangoTokens, market])
 
   return (
     <div
-      className={`relative mr-1.5 h-5 ${
-        market instanceof Serum3Market ? 'w-[34px]' : 'w-[20px]'
+      className={`relative ${small ? 'mr-1.5 h-4' : 'mr-2 h-5'} ${
+        market instanceof Serum3Market
+          ? small
+            ? 'w-[27px]'
+            : 'w-[34px]'
+          : small
+          ? 'w-[16px]'
+          : 'w-[20px]'
       }`}
     >
-      <div className="absolute left-0 top-0">
-        {logos.baseLogoURI ? (
-          <Image
-            alt=""
-            className="z-10 rounded-full drop-shadow-md"
-            width="20"
-            height="20"
-            src={logos.baseLogoURI}
-          />
-        ) : (
-          <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
-        )}
+      <div className="absolute left-0 top-0 z-10">
+        <LogoWithFallback
+          alt=""
+          className="flex-shrink-0 drop-shadow-md"
+          width={small ? '16' : '20'}
+          height={small ? '16' : '20'}
+          src={logos.baseLogoURI || `/icons/${logos?.name?.toLowerCase()}.svg`}
+          fallback={
+            <QuestionMarkCircleIcon
+              className={`${small ? 'h-4 w-4' : 'h-5 w-5'} text-th-fgd-3`}
+            />
+          }
+        />
       </div>
       <div className="absolute right-0 top-0">
         {logos.quoteLogoURI && market instanceof Serum3Market ? (
           <Image
             alt=""
-            className="rounded-full opacity-60"
-            width="20"
-            height="20"
+            className="flex-shrink-0 opacity-60"
+            width={small ? '16' : '20'}
+            height={small ? '16' : '20'}
             src={logos.quoteLogoURI}
           />
         ) : market instanceof PerpMarket ? null : (
-          <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
+          <QuestionMarkCircleIcon
+            className={`${
+              small ? 'h-4 w-4' : 'h-5 w-5'
+            } flex-shrink-0 text-th-fgd-3`}
+          />
         )}
       </div>
     </div>

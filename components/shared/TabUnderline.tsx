@@ -14,15 +14,19 @@ const TabUnderline = ({
   const { t } = useTranslation('common')
   return (
     <div
-      className={`relative mb-3 pb-1 md:-mt-2.5 md:border-b md:border-th-bkg-3`}
+      className={`relative mb-3 border-b border-th-bkg-3 ${
+        values.includes('buy') || values.includes('sell')
+          ? 'pb-1 font-display md:pb-2.5'
+          : 'pb-1 font-bold'
+      } md:-mt-2.5`}
     >
       <div
         className={`default-transition absolute bottom-[-1px] left-0 h-0.5 ${
           activeValue === 'buy'
-            ? 'bg-th-green'
+            ? 'bg-th-up'
             : activeValue === 'sell'
-            ? 'bg-th-red'
-            : 'bg-th-primary'
+            ? 'bg-th-down'
+            : 'bg-th-active'
         }`}
         style={{
           // maxWidth: '176px',
@@ -37,16 +41,16 @@ const TabUnderline = ({
           <button
             onClick={() => onChange(value)}
             className={`default-transition relative flex h-10 w-1/2 
-            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 font-bold md:h-auto md:rounded-none md:hover:opacity-100 ${
+            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 md:h-auto md:rounded-none md:hover:opacity-100 ${
               small ? 'text-sm' : 'text-sm lg:text-base'
             }
             ${
               activeValue === value
                 ? activeValue === 'buy'
-                  ? 'text-th-green'
+                  ? 'text-th-up'
                   : activeValue === 'sell'
-                  ? 'text-th-red'
-                  : 'text-th-primary'
+                  ? 'text-th-down'
+                  : 'text-th-active'
                 : 'text-th-fgd-4 hover:text-th-fgd-3'
             }
           `}

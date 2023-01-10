@@ -2,13 +2,12 @@ import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
-import Decimal from 'decimal.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   floorToDecimal,
   formatDecimal,
@@ -17,11 +16,12 @@ import {
   trimDecimals,
 } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
-import { calculateMarketPrice } from 'utils/tradeForm'
+import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import { LinkButton } from './Button'
 import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useMangoGroup from 'hooks/useMangoGroup'
+import AmountWithValue from './AmountWithValue'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -47,12 +47,15 @@ const BalancesTable = () => {
               Math.abs(b.balance! * b.value[0].uiPrice) -
               Math.abs(a.balance! * a.value[0].uiPrice)
           )
-          .filter(
-            (c) =>
+          .filter((c) => {
+            return (
               Math.abs(
                 floorToDecimal(c.balance!, c.value[0].mintDecimals).toNumber()
-              ) > 0
-          )
+              ) > 0 ||
+              spotBalances[c.value[0].mint.toString()]?.unsettled > 0 ||
+              spotBalances[c.value[0].mint.toString()]?.inOrders > 0
+            )
+          })
       : rawBanks
 
     return sortedBanks
@@ -105,22 +108,41 @@ const BalancesTable = () => {
                     {mangoAccount
                       ? `${formatFixedDecimals(
                           mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
+                          false,
                           true
                         )}`
                       : '$0.00'}
                   </p>
                 </Td>
-                <Td className="text-right font-mono">
-                  <p>{inOrders}</p>
-                  <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(inOrders * bank.uiPrice, true)}
-                  </p>
+                <Td className="text-right">
+                  <AmountWithValue
+                    amount={
+                      inOrders
+                        ? formatDecimal(Number(inOrders), bank.mintDecimals)
+                        : '0'
+                    }
+                    value={formatFixedDecimals(
+                      inOrders * bank.uiPrice,
+                      true,
+                      true
+                    )}
+                    stacked
+                  />
                 </Td>
-                <Td className="text-right font-mono">
-                  <p>{unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}</p>
-                  <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(unsettled * bank.uiPrice, true)}
-                  </p>
+                <Td className="text-right">
+                  <AmountWithValue
+                    amount={
+                      unsettled
+                        ? formatDecimal(Number(unsettled), bank.mintDecimals)
+                        : '0'
+                    }
+                    value={formatFixedDecimals(
+                      unsettled * bank.uiPrice,
+                      true,
+                      true
+                    )}
+                    stacked
+                  />
                 </Td>
               </TrBody>
             )
@@ -161,14 +183,13 @@ const BalancesTable = () => {
                 <div className="mb-0.5 flex justify-end space-x-1.5">
                   <Balance bank={bank} />
                   <span className="text-sm text-th-fgd-4">
-                    (
                     {mangoAccount
                       ? `${formatFixedDecimals(
                           mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
+                          false,
                           true
                         )}`
                       : '$0.00'}
-                    )
                   </span>
                 </div>
                 <div className="flex space-x-2">
@@ -203,61 +224,87 @@ const Balance = ({ bank }: { bank: Bank }) => {
   const { selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
 
-  const handleBalanceClick = (balance: number, type: 'base' | 'quote') => {
-    const set = mangoStore.getState().set
-    const group = mangoStore.getState().group
-    const tradeForm = mangoStore.getState().tradeForm
+  const handleTradeFormBalanceClick = useCallback(
+    (balance: number, type: 'base' | 'quote') => {
+      const set = mangoStore.getState().set
+      const group = mangoStore.getState().group
+      const tradeForm = mangoStore.getState().tradeForm
 
-    if (!group || !selectedMarket) return
+      if (!group || !selectedMarket) return
 
-    let price: number
-    if (tradeForm.tradeType === 'Market') {
-      const orderbook = mangoStore.getState().selectedMarket.orderbook
-      const side =
-        (balance > 0 && type === 'quote') || (balance < 0 && type === 'base')
-          ? 'buy'
-          : 'sell'
-      price = calculateMarketPrice(orderbook, balance, side)
-    } else {
-      price = new Decimal(tradeForm.price).toNumber()
-    }
-    let minOrderDecimals: number
-    let tickSize: number
-    if (selectedMarket instanceof Serum3Market) {
-      const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
-      )
-      minOrderDecimals = getDecimalCount(market.minOrderSize)
-      tickSize = getDecimalCount(market.tickSize)
-    } else {
-      minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
-      tickSize = getDecimalCount(selectedMarket.tickSize)
-    }
+      let price: number
+      if (tradeForm.tradeType === 'Market') {
+        const orderbook = mangoStore.getState().selectedMarket.orderbook
+        const side =
+          (balance > 0 && type === 'quote') || (balance < 0 && type === 'base')
+            ? 'buy'
+            : 'sell'
+        price = calculateLimitPriceForMarketOrder(orderbook, balance, side)
+      } else {
+        price = Number(tradeForm.price)
+      }
 
-    if (type === 'quote') {
-      const trimmedBalance = trimDecimals(balance, tickSize)
-      const baseSize = trimDecimals(trimmedBalance / price, minOrderDecimals)
-      const quoteSize = trimDecimals(baseSize * price, tickSize)
-      set((s) => {
-        s.tradeForm.baseSize = baseSize.toString()
-        s.tradeForm.quoteSize = quoteSize.toString()
-      })
-    } else {
-      const baseSize = trimDecimals(balance, minOrderDecimals)
-      const quoteSize = trimDecimals(baseSize * price, tickSize)
-      set((s) => {
-        s.tradeForm.baseSize = baseSize.toString()
-        s.tradeForm.quoteSize = quoteSize.toString()
-      })
-    }
-  }
+      let minOrderDecimals: number
+      let tickSize: number
+      if (selectedMarket instanceof Serum3Market) {
+        const market = group.getSerum3ExternalMarket(
+          selectedMarket.serumMarketExternal
+        )
+        minOrderDecimals = getDecimalCount(market.minOrderSize)
+        tickSize = getDecimalCount(market.tickSize)
+      } else {
+        minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
+        tickSize = getDecimalCount(selectedMarket.tickSize)
+      }
+
+      if (type === 'quote') {
+        const trimmedBalance = trimDecimals(balance, tickSize)
+        const baseSize = trimDecimals(trimmedBalance / price, minOrderDecimals)
+        const quoteSize = trimDecimals(baseSize * price, tickSize)
+        set((s) => {
+          s.tradeForm.baseSize = baseSize.toString()
+          s.tradeForm.quoteSize = quoteSize.toString()
+        })
+      } else {
+        const baseSize = trimDecimals(balance, minOrderDecimals)
+        const quoteSize = trimDecimals(baseSize * price, tickSize)
+        set((s) => {
+          s.tradeForm.baseSize = baseSize.toString()
+          s.tradeForm.quoteSize = quoteSize.toString()
+        })
+      }
+    },
+    [selectedMarket]
+  )
+
+  const handleSwapFormBalanceClick = useCallback(
+    (balance: number) => {
+      const set = mangoStore.getState().set
+      if (balance >= 0) {
+        set((s) => {
+          s.swap.inputBank = bank
+          s.swap.amountIn = balance.toString()
+          s.swap.amountOut = ''
+          s.swap.swapMode = 'ExactIn'
+        })
+      } else {
+        set((s) => {
+          s.swap.outputBank = bank
+          s.swap.amountIn = ''
+          s.swap.amountOut = Math.abs(balance).toString()
+          s.swap.swapMode = 'ExactOut'
+        })
+      }
+    },
+    [bank]
+  )
 
   const balance = useMemo(() => {
     return mangoAccount ? mangoAccount.getTokenBalanceUi(bank) : 0
-  }, [mangoAccount])
+  }, [bank, mangoAccount])
 
   const isBaseOrQuote = useMemo(() => {
-    if (selectedMarket instanceof Serum3Market && asPath.includes('/trade')) {
+    if (selectedMarket instanceof Serum3Market) {
       if (bank.tokenIndex === selectedMarket.baseTokenIndex) {
         return 'base'
       } else if (bank.tokenIndex === selectedMarket.quoteTokenIndex) {
@@ -266,26 +313,30 @@ const Balance = ({ bank }: { bank: Bank }) => {
     }
   }, [bank, selectedMarket])
 
+  if (!balance) return <p className="flex justify-end">0</p>
+
   return (
     <p className="flex justify-end">
-      {balance ? (
-        isBaseOrQuote ? (
-          <LinkButton
-            className="font-normal"
-            onClick={() =>
-              handleBalanceClick(
-                parseFloat(formatDecimal(balance, bank.mintDecimals)),
-                isBaseOrQuote
-              )
-            }
-          >
-            {formatDecimal(balance, bank.mintDecimals)}
-          </LinkButton>
-        ) : (
-          formatDecimal(balance, bank.mintDecimals)
-        )
+      {asPath.includes('/trade') && isBaseOrQuote ? (
+        <LinkButton
+          className="font-normal underline-offset-4"
+          onClick={() => handleTradeFormBalanceClick(balance, isBaseOrQuote)}
+        >
+          {formatDecimal(balance, bank.mintDecimals)}
+        </LinkButton>
+      ) : asPath.includes('/swap') ? (
+        <LinkButton
+          className="font-normal underline-offset-4"
+          onClick={() =>
+            handleSwapFormBalanceClick(
+              floorToDecimal(balance, bank.mintDecimals).toNumber()
+            )
+          }
+        >
+          {formatDecimal(balance, bank.mintDecimals)}
+        </LinkButton>
       ) : (
-        0
+        formatDecimal(balance, bank.mintDecimals)
       )}
     </p>
   )

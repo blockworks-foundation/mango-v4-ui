@@ -8,27 +8,34 @@ const MultiSelectDropdown = ({
   options,
   selected,
   toggleOption,
+  placeholder,
 }: {
   options: string[]
   selected: string[]
   toggleOption: (x: string) => void
+  placeholder?: string
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['activity', 'common'])
   return (
     <Popover className="relative w-full min-w-[120px]">
       {({ open }) => (
         <div className="flex flex-col">
           <Popover.Button
-            className={`default-transition h-12 rounded-md bg-th-bkg-1 px-3 text-th-fgd-1 ring-1 ring-inset ring-th-bkg-4 hover:ring-th-fgd-4  ${
-              open ? 'ring-th-fgd-4' : 'ring-th-bkg-4'
+            className={`default-transition h-12 rounded-md bg-th-input-bkg px-3 text-th-fgd-1 ring-1 ring-inset ring-th-input-border md:hover:ring-th-input-border-hover  ${
+              open ? 'ring-th-input-border-hover' : 'ring-th-input-border'
             }`}
           >
             <div className={`flex items-center justify-between`}>
               {selected.length ? (
-                <span>{selected.toString().replace(/,/g, ', ')}</span>
+                <span>
+                  {selected
+                    .map((v) => t(v))
+                    .toString()
+                    .replace(/,/g, ', ')}
+                </span>
               ) : (
                 <span className="text-th-fgd-4">
-                  {t('activity:select-tokens')}
+                  {placeholder || t('common:select')}
                 </span>
               )}
               <ChevronDownIcon
@@ -50,8 +57,8 @@ const MultiSelectDropdown = ({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Popover.Panel className="absolute top-14 z-10 h-72 w-full overflow-y-auto">
-              <div className="relative space-y-2.5 rounded-md bg-th-bkg-3 p-3">
+            <Popover.Panel className="absolute top-14 z-10 h-72 max-h-60 w-full overflow-y-auto rounded-md">
+              <div className="relative space-y-2.5 bg-th-bkg-3 p-3">
                 {options.map((option: string) => {
                   const isSelected = selected.includes(option)
                   return (
@@ -61,7 +68,7 @@ const MultiSelectDropdown = ({
                       key={option}
                       onChange={() => toggleOption(option)}
                     >
-                      {option}
+                      {t(option)}
                     </Checkbox>
                   )
                 })}
@@ -71,7 +78,7 @@ const MultiSelectDropdown = ({
         </div>
       )}
     </Popover>
-  );
+  )
 }
 
 export default MultiSelectDropdown

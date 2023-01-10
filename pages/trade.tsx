@@ -1,10 +1,16 @@
+import {
+  Group,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import TradeAdvancedPage from '@components/trade/TradeAdvancedPage'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { DEFAULT_TRADE_FORM } from '@store/mangoStore'
 // import mangoStore from '@store/mangoStore'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
+import { getDecimalCount } from 'utils/numbers'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -14,10 +20,28 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'onboarding',
         'onboarding-tours',
         'profile',
+        'settings',
         'trade',
       ])),
     },
   }
+}
+
+const getOraclePriceForMarket = (
+  group: Group,
+  mkt: Serum3Market | PerpMarket
+): number => {
+  let price: number
+  if (mkt instanceof Serum3Market) {
+    const baseBank = group.getFirstBankByTokenIndex(mkt.baseTokenIndex)
+
+    price = baseBank.uiPrice
+  } else if (mkt) {
+    price = mkt._uiPrice
+  } else {
+    price = 0
+  }
+  return price
 }
 
 const Trade: NextPage = () => {
@@ -34,10 +58,24 @@ const Trade: NextPage = () => {
       const mkt =
         serumMarkets.find((m) => m.name === marketName) ||
         perpMarkets.find((m) => m.name === marketName)
+
       if (mkt) {
+        let tickSize = 4
+        if (mkt instanceof Serum3Market) {
+          const market = group.getSerum3ExternalMarket(mkt.serumMarketExternal)
+          tickSize = market.tickSize
+        } else {
+          tickSize = mkt.tickSize
+        }
         set((s) => {
           s.selectedMarket.name = marketName
           s.selectedMarket.current = mkt
+          s.tradeForm = {
+            ...DEFAULT_TRADE_FORM,
+            price: getOraclePriceForMarket(group, mkt).toFixed(
+              getDecimalCount(tickSize)
+            ),
+          }
         })
       }
     }

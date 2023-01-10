@@ -11,8 +11,6 @@ import {
   Text,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
-
-import LineChartIcon from '../icons/LineChartIcon'
 import ContentBox from '../shared/ContentBox'
 import { formatFixedDecimals } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
@@ -29,6 +27,8 @@ import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import { useTranslation } from 'next-i18next'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
 
 dayjs.extend(relativeTime)
 
@@ -37,14 +37,15 @@ const CustomizedLabel = ({
   x,
   y,
   value,
+  index,
 }: {
   chartData: any[]
   x?: number
   y?: string | number
   value?: number
+  index?: number
 }) => {
   const { width } = useViewport()
-  const { theme } = useTheme()
   const [min, max] = useMemo(() => {
     if (chartData.length) {
       const prices = chartData.map((d: any) => d.price)
@@ -53,13 +54,19 @@ const CustomizedLabel = ({
     return ['', '']
   }, [chartData])
 
-  if (value === min || value === max) {
+  const [minIndex, maxIndex] = useMemo(() => {
+    const minIndex = chartData.findIndex((d) => d.price === min)
+    const maxIndex = chartData.findIndex((d) => d.price === max)
+    return [minIndex, maxIndex]
+  }, [min, max, chartData])
+
+  if (value && (minIndex === index || maxIndex === index)) {
     return (
       <Text
         x={x}
         y={y}
         dy={value === min ? 16 : -8}
-        fill={theme === 'Light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)'}
+        fill="var(--fgd-4)"
         fontSize={10}
         textAnchor={x && y && x > width / 3 ? 'end' : 'start'}
         className="font-mono"
@@ -71,12 +78,13 @@ const CustomizedLabel = ({
 }
 
 const SwapTokenChart = () => {
+  const { t } = useTranslation('common')
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
   const [mouseData, setMouseData] = useState<any>(null)
-  const [daysToShow, setDaysToShow] = useState(1)
+  const [daysToShow, setDaysToShow] = useState('1')
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -87,7 +95,7 @@ const SwapTokenChart = () => {
     ['chart-data', baseTokenId, quoteTokenId, daysToShow],
     () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
     {
-      cacheTime: 1000 * 60 * 1,
+      cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
       enabled: !!baseTokenId && !!quoteTokenId,
     }
@@ -154,9 +162,6 @@ const SwapTokenChart = () => {
           <SheenLoader className="mt-2 w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />
           </SheenLoader>
-          <SheenLoader className="mt-4 w-full rounded-md">
-            <div className="h-[308px] bg-th-bkg-2" />
-          </SheenLoader>
         </>
       ) : chartData?.length && baseTokenId && quoteTokenId ? (
         <div className="relative">
@@ -176,7 +181,7 @@ const SwapTokenChart = () => {
                         )}`}
                   </p>
                   {/* <div
-                    className="px-2 hover:cursor-pointer hover:text-th-primary"
+                    className="px-2 hover:cursor-pointer hover:text-th-active"
                     onClick={handleFlipChart}
                   >
                     <SwitchHorizontalIcon className="h-4 w-4" />
@@ -185,11 +190,11 @@ const SwapTokenChart = () => {
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="mb-1 flex flex-col text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col font-display text-5xl text-th-fgd-1 md:flex-row md:items-end">
                     {animationSettings['number-scroll'] ? (
                       <FlipNumbers
                         height={48}
-                        width={32}
+                        width={35}
                         play
                         numbers={formatFixedDecimals(mouseData['price'])}
                       />
@@ -199,7 +204,7 @@ const SwapTokenChart = () => {
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      <Change change={calculateChartChange()} />
+                      <Change change={calculateChartChange()} suffix="%" />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
@@ -208,11 +213,11 @@ const SwapTokenChart = () => {
                 </>
               ) : (
                 <>
-                  <div className="mb-1 flex flex-col text-5xl font-bold text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col font-display text-5xl text-th-fgd-1 md:flex-row md:items-end">
                     {animationSettings['number-scroll'] ? (
                       <FlipNumbers
                         height={48}
-                        width={32}
+                        width={35}
                         play
                         numbers={formatFixedDecimals(
                           chartData[chartData.length - 1]['price']
@@ -228,7 +233,7 @@ const SwapTokenChart = () => {
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
                     >
-                      <Change change={calculateChartChange()} />
+                      <Change change={calculateChartChange()} suffix="%" />
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
@@ -240,12 +245,12 @@ const SwapTokenChart = () => {
               )}
             </div>
           </div>
-          <div className="mt-2 h-40 w-auto md:h-72">
+          <div className="mt-2 h-40 w-auto md:h-80">
             <div className="absolute top-[2px] right-0 -mb-2 flex justify-end">
               <ChartRangeButtons
                 activeValue={daysToShow}
                 names={['24H', '7D', '30D']}
-                values={[1, 7, 30]}
+                values={['1', '7', '30']}
                 onChange={(v) => setDaysToShow(v)}
               />
             </div>
@@ -275,8 +280,8 @@ const SwapTokenChart = () => {
                         offset="0%"
                         stopColor={
                           calculateChartChange() >= 0
-                            ? COLORS.GREEN[theme]
-                            : COLORS.RED[theme]
+                            ? COLORS.UP[theme]
+                            : COLORS.DOWN[theme]
                         }
                         stopOpacity={0.25}
                       />
@@ -284,8 +289,8 @@ const SwapTokenChart = () => {
                         offset="99%"
                         stopColor={
                           calculateChartChange() >= 0
-                            ? COLORS.GREEN[theme]
-                            : COLORS.RED[theme]
+                            ? COLORS.UP[theme]
+                            : COLORS.DOWN[theme]
                         }
                         stopOpacity={0}
                       />
@@ -297,8 +302,8 @@ const SwapTokenChart = () => {
                     dataKey="price"
                     stroke={
                       calculateChartChange() >= 0
-                        ? COLORS.GREEN[theme]
-                        : COLORS.RED[theme]
+                        ? COLORS.UP[theme]
+                        : COLORS.DOWN[theme]
                     }
                     strokeWidth={1.5}
                     fill="url(#gradientArea)"
@@ -318,10 +323,10 @@ const SwapTokenChart = () => {
           </div>
         </div>
       ) : (
-        <div className="mt-4 flex h-full items-center justify-center rounded-lg bg-th-bkg-2 p-4 text-th-fgd-3 md:mt-0">
+        <div className="mt-4 flex h-full items-center justify-center p-4 text-th-fgd-3 md:mt-0">
           <div className="">
-            <LineChartIcon className="mx-auto h-10 w-10 text-th-fgd-4" />
-            <p className="text-th-fgd-4">Chart not available</p>
+            <NoSymbolIcon className="mx-auto mb-1 h-6 w-6 text-th-fgd-4" />
+            <p className="text-th-fgd-4">{t('chart-unavailable')}</p>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react'
+import { FunctionComponent, ReactElement } from 'react'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/20/solid'
 
 interface InlineNotificationProps {
-  desc?: string
+  desc?: string | ReactElement
   title?: string
   type: 'error' | 'info' | 'success' | 'warning'
   hideBorder?: boolean
@@ -26,30 +26,30 @@ const InlineNotification: FunctionComponent<InlineNotificationProps> = ({
       !hideBorder
         ? `border text-th-fgd-3 ${
             type === 'error'
-              ? 'border-th-red'
+              ? 'border-th-error'
               : type === 'success'
-              ? 'border-th-green'
+              ? 'border-th-success'
               : type === 'info'
               ? 'border-th-bkg-4'
-              : 'border-th-orange'
+              : 'border-th-warning'
           }`
         : type === 'error'
-        ? 'text-th-red'
+        ? 'text-th-error'
         : type === 'success'
-        ? 'text-th-green'
+        ? 'text-th-success'
         : type === 'info'
         ? 'text-th-bkg-4'
-        : 'text-th-orange'
+        : 'text-th-warning'
     } flex items-center rounded-md ${!hidePadding ? 'p-2' : ''}`}
   >
     {type === 'error' ? (
-      <ExclamationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-red" />
+      <ExclamationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-error" />
     ) : null}
     {type === 'success' ? (
-      <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-green" />
+      <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-success" />
     ) : null}
     {type === 'warning' ? (
-      <ExclamationTriangleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-orange" />
+      <ExclamationTriangleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-warning" />
     ) : null}
     {type === 'info' ? (
       <InformationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-fgd-4" />

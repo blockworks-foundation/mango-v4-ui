@@ -1,6 +1,7 @@
 import Decimal from 'decimal.js'
 
 const digits2 = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
+const digits5 = new Intl.NumberFormat('en', { maximumFractionDigits: 5 })
 const digits6 = new Intl.NumberFormat('en', { maximumFractionDigits: 6 })
 const digits8 = new Intl.NumberFormat('en', { maximumFractionDigits: 8 })
 const digits9 = new Intl.NumberFormat('en', { maximumFractionDigits: 9 })
@@ -15,10 +16,11 @@ export const formatDecimal = (
   if (value > -0.0000001 && value < 0.0000001) return '0.00'
 
   if (decimals === 2) return digits2.format(value)
+  if (decimals === 5) return digits5.format(value)
   if (decimals === 6) return digits6.format(value)
   if (decimals === 8) return digits8.format(value)
   if (decimals === 9) return digits9.format(value)
-  return value.toString()
+  return value.toLocaleString(undefined, { maximumFractionDigits: decimals })
 }
 
 export const numberFormat = new Intl.NumberFormat('en', {
@@ -48,45 +50,40 @@ const usdFormatter2 = Intl.NumberFormat('en', {
   currency: 'USD',
 })
 
-const usdFormatter4 = Intl.NumberFormat('en', {
-  minimumFractionDigits: 4,
-  maximumFractionDigits: 4,
+const usdFormatter3 = Intl.NumberFormat('en', {
+  minimumSignificantDigits: 3,
+  maximumSignificantDigits: 3,
   style: 'currency',
   currency: 'USD',
 })
 
 export const formatFixedDecimals = (
   value: number,
-  isCurrency?: boolean,
-  isPercentage?: boolean
+  isUSD?: boolean,
+  is2DP?: boolean
 ): string => {
   let formattedValue
   if (value === 0) {
-    formattedValue = isCurrency ? '$0.00' : '0'
-  } else if (isPercentage) {
-    formattedValue = Number(floorToDecimal(value, 2)).toLocaleString(
-      undefined,
-      {
-        maximumFractionDigits: 2,
-      }
-    )
+    formattedValue = isUSD ? '$0.00' : '0'
+  } else if (is2DP) {
+    formattedValue = usdFormatter2.format(value)
   } else if (Math.abs(value) >= 1000) {
-    formattedValue = isCurrency
+    formattedValue = isUSD
       ? usdFormatter0.format(value)
       : Number(floorToDecimal(value, 0)).toLocaleString(undefined, {
           maximumFractionDigits: 0,
         })
   } else if (Math.abs(value) >= 0.1) {
-    formattedValue = isCurrency
+    formattedValue = isUSD
       ? usdFormatter2.format(value)
       : Number(floorToDecimal(value, 3)).toLocaleString(undefined, {
           maximumFractionDigits: 3,
         })
   } else {
-    formattedValue = isCurrency
-      ? usdFormatter4.format(value)
-      : Number(floorToDecimal(value, 4)).toLocaleString(undefined, {
-          maximumFractionDigits: 4,
+    formattedValue = isUSD
+      ? usdFormatter3.format(value)
+      : Number(floorToDecimal(value, 8)).toLocaleString(undefined, {
+          maximumFractionDigits: 8,
         })
   }
 

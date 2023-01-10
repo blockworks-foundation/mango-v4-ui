@@ -1,22 +1,28 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Switch from '../forms/Switch'
-import { IconButton } from '../shared/Button'
+import Button, { IconButton, LinkButton } from '../shared/Button'
 
 const slippagePresets = ['0.1', '0.5', '1', '2']
 
 const SwapSettings = ({ onClose }: { onClose: () => void }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'settings', 'swap'])
   const margin = mangoStore((s) => s.swap.margin)
   const slippage = mangoStore((s) => s.swap.slippage)
   const set = mangoStore((s) => s.set)
 
-  const [showCustomSlippageForm] = useState(false)
-  const [inputValue, setInputValue] = useState('')
+  const [showCustomSlippageForm, setShowCustomSlippageForm] = useState(false)
+  const [inputValue, setInputValue] = useState(slippage.toString())
+
+  useEffect(() => {
+    if (!slippagePresets.includes(slippage.toString())) {
+      setShowCustomSlippageForm(true)
+    }
+  }, [])
 
   const handleSetMargin = () => {
     set((s) => {
@@ -38,15 +44,35 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
       </IconButton>
 
       <div className="mt-4">
-        <p className="mb-2 text-th-fgd-1">{t('swap:slippage')}</p>
+        <div className="mb-2 flex justify-between">
+          <p className="text-th-fgd-2">{t('swap:max-slippage')}</p>
+          <LinkButton
+            onClick={() => setShowCustomSlippageForm(!showCustomSlippageForm)}
+          >
+            {showCustomSlippageForm ? t('swap:preset') : t('settings:custom')}
+          </LinkButton>
+        </div>
         {showCustomSlippageForm ? (
-          <Input
-            type="text"
-            placeholder="0.00"
-            value={inputValue}
-            onChange={(e: any) => setInputValue(e.target.value)}
-            suffix="%"
-          />
+          <>
+            <Input
+              type="text"
+              placeholder="0.00"
+              value={inputValue}
+              onChange={(e: any) => setInputValue(e.target.value)}
+              suffix="%"
+            />
+            <Button
+              disabled={
+                !inputValue ||
+                isNaN(Number(inputValue)) ||
+                parseFloat(inputValue) <= 0
+              }
+              className="mt-4"
+              onClick={() => handleSetSlippage(inputValue)}
+            >
+              {t('save')}
+            </Button>
+          </>
         ) : (
           <ButtonGroup
             activeValue={slippage.toString()}

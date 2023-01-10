@@ -1,24 +1,34 @@
 import { useState } from 'react'
-import { CheckIcon, HeartIcon, PlusCircleIcon } from '@heroicons/react/20/solid'
+import {
+  CheckIcon,
+  DocumentDuplicateIcon,
+  HeartIcon,
+  PlusCircleIcon,
+  UsersIcon,
+} from '@heroicons/react/20/solid'
 import {
   HealthType,
   MangoAccount,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
-import { LinkButton } from '../shared/Button'
+import { IconButton, LinkButton } from '../shared/Button'
 import { useLocalStorageStringState } from '../../hooks/useLocalStorageState'
 import { LAST_ACCOUNT_KEY } from '../../utils/constants'
 import { useTranslation } from 'next-i18next'
 import { retryFn } from '../../utils'
 import Loading from '../shared/Loading'
 import Modal from '@components/shared/Modal'
-import { formatFixedDecimals } from 'utils/numbers'
 import CreateAccountForm from '@components/account/CreateAccountForm'
 import { EnterRightExitLeft } from '@components/shared/Transitions'
 import { useRouter } from 'next/router'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { notify } from 'utils/notifications'
+import { DEFAULT_DELEGATE } from './DelegateModal'
+import Tooltip from '@components/shared/Tooltip'
+import { abbreviateAddress } from 'utils/formatting'
+import { handleCopyAddress } from '@components/account/AccountActions'
 
 const MangoAccountsListModal = ({
   isOpen,
@@ -36,6 +46,7 @@ const MangoAccountsListModal = ({
   const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
   const router = useRouter()
   const { asPath } = useRouter()
+  const [submitting, setSubmitting] = useState('')
 
   const handleSelectMangoAccount = async (acc: MangoAccount) => {
     const set = mangoStore.getState().set
@@ -45,9 +56,11 @@ const MangoAccountsListModal = ({
       s.activityFeed.feed = []
       s.activityFeed.loading = true
     })
+    setSubmitting(acc.publicKey.toString())
     try {
       const reloadedMangoAccount = await retryFn(() => acc.reload(client))
-      await actions.fetchOpenOrders(reloadedMangoAccount)
+      actions.fetchOpenOrders(reloadedMangoAccount)
+      actions.fetchTradeHistory()
 
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
@@ -55,8 +68,14 @@ const MangoAccountsListModal = ({
       setLastAccountViewed(acc.publicKey.toString())
     } catch (e) {
       console.warn('Error selecting account', e)
+      notify({
+        type: 'info',
+        title: 'Unable to load account. Please try again.',
+        description: `${e}`,
+      })
     } finally {
       onClose()
+      setSubmitting('')
     }
   }
 
@@ -78,56 +97,101 @@ const MangoAccountsListModal = ({
             ) : mangoAccounts.length ? (
               <div className="thin-scroll mt-4 max-h-[280px] space-y-2 overflow-y-auto">
                 {mangoAccounts.map((acc) => {
-                  const accountValue = formatFixedDecimals(
-                    toUiDecimalsForQuote(Number(acc.getEquity(group!))),
-                    true
-                  )
+                  const accountValue = toUiDecimalsForQuote(
+                    Number(acc.getEquity(group!))
+                  ).toFixed(2)
                   const maintHealth = acc.getHealthRatioUi(
                     group!,
                     HealthType.maint
                   )
                   return (
-                    <div key={acc.publicKey.toString()}>
+                    <div
+                      className="flex h-16 w-full items-center text-th-fgd-1"
+                      key={acc.publicKey.toString()}
+                    >
                       <button
                         onClick={() => handleSelectMangoAccount(acc)}
-                        className="default-transition flex w-full items-center justify-between rounded-md bg-th-bkg-2 p-4 text-th-fgd-1 hover:bg-th-bkg-3"
+                        className="default-transition flex h-full w-full items-center justify-between rounded-md rounded-r-none bg-th-bkg-2 px-4 text-th-fgd-1 hover:bg-th-bkg-3"
                       >
                         <div className="flex w-full items-center justify-between">
-                          <div className="text-left">
-                            <p className="mb-0.5 text-sm font-bold text-th-fgd-1">
-                              {acc.name}
-                            </p>
-                            <div className="flex">
-                              <span className="text-sm text-th-fgd-3">
-                                {accountValue}
-                              </span>
-                              <span className="mx-2 text-th-fgd-4">|</span>
-                              <div
-                                className={`flex items-center ${
-                                  maintHealth
-                                    ? maintHealth > 15 && maintHealth < 50
-                                      ? 'text-th-orange'
-                                      : maintHealth >= 50
-                                      ? 'text-th-green'
-                                      : 'text-th-red'
-                                    : 'text-th-fgd-4'
-                                }`}
-                              >
-                                <HeartIcon className="mr-1 h-4 w-4" />
-                                <span className="text-sm">{maintHealth}%</span>
+                          <div className="flex items-center space-x-2.5">
+                            {submitting === acc.publicKey.toString() ? (
+                              <Loading className="h-4 w-4" />
+                            ) : acc.publicKey.toString() ===
+                              mangoAccount?.publicKey.toString() ? (
+                              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-th-success">
+                                <CheckIcon className="h-4 w-4 text-th-bkg-1" />
+                              </div>
+                            ) : (
+                              <div className="h-5 w-5 rounded-full bg-th-bkg-4" />
+                            )}
+                            <div className="text-left">
+                              <div className="mb-0.5">
+                                <div className="flex items-center">
+                                  {acc.name ? (
+                                    <p className="mr-2 text-sm font-bold text-th-fgd-1">
+                                      {acc.name}
+                                    </p>
+                                  ) : null}
+                                  {acc.delegate.toString() !==
+                                  DEFAULT_DELEGATE ? (
+                                    <Tooltip
+                                      content={t('delegate-account-info', {
+                                        address: abbreviateAddress(
+                                          acc.delegate
+                                        ),
+                                      })}
+                                    >
+                                      <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                                    </Tooltip>
+                                  ) : null}
+                                </div>
+                                <p className="text-xs text-th-fgd-3">
+                                  {abbreviateAddress(acc.publicKey)}
+                                </p>
                               </div>
                             </div>
                           </div>
-                          {acc.publicKey.toString() ===
-                          mangoAccount?.publicKey.toString() ? (
-                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-th-green">
-                              <CheckIcon className="h-4 w-4 text-th-bkg-1" />
+                          <div className="flex">
+                            <span className="text-sm text-th-fgd-2">
+                              ${accountValue}
+                            </span>
+                            <span className="mx-2 text-th-fgd-4">|</span>
+                            <div
+                              className={`flex items-center ${
+                                maintHealth
+                                  ? maintHealth > 15 && maintHealth < 50
+                                    ? 'text-th-warning'
+                                    : maintHealth >= 50
+                                    ? 'text-th-success'
+                                    : 'text-th-error'
+                                  : 'text-th-fgd-4'
+                              }`}
+                            >
+                              <HeartIcon className="mr-1 h-4 w-4 flex-shrink-0" />
+                              <span className="text-sm">{maintHealth}%</span>
                             </div>
-                          ) : (
-                            <div className="h-5 w-5 rounded-full bg-th-bkg-4" />
-                          )}
+                          </div>
                         </div>
                       </button>
+                      <div className="flex h-full items-center justify-center rounded-md rounded-l-none bg-th-bkg-3">
+                        <Tooltip content={t('copy-address')} delay={250}>
+                          <IconButton
+                            className="text-th-fgd-3"
+                            onClick={() =>
+                              handleCopyAddress(
+                                acc,
+                                t('copy-address-success', {
+                                  pk: abbreviateAddress(acc.publicKey),
+                                })
+                              )
+                            }
+                            hideBg
+                          >
+                            <DocumentDuplicateIcon className="h-5 w-5" />
+                          </IconButton>
+                        </Tooltip>
+                      </div>
                     </div>
                   )
                 })}
@@ -145,7 +209,7 @@ const MangoAccountsListModal = ({
               onClick={() => setShowNewAccountForm(true)}
             >
               <PlusCircleIcon className="h-5 w-5" />
-              <span className="ml-2">New Subaccount</span>
+              <span className="ml-2">{t('add-new-account')}</span>
             </LinkButton>
           </div>
           <EnterRightExitLeft

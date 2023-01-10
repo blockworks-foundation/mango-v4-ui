@@ -60,9 +60,7 @@ const Search: NextPage = () => {
           onChange={(t) => setSearchType(t)}
           values={['mango-account', 'mango-account-name', 'profile-name']}
         />
-        <Button disabled={!searchString} type="submit">
-          {t('search')}
-        </Button>
+        <Button disabled={!searchString}>{t('search')}</Button>
       </form>
       {loading ? 'Loading...' : ''}
     </div>

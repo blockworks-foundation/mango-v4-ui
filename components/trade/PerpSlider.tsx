@@ -4,9 +4,15 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
-import { notify } from 'utils/notifications'
+import { trimDecimals } from 'utils/numbers'
 
-const PerpSlider = () => {
+const PerpSlider = ({
+  minOrderDecimals,
+  tickDecimals,
+}: {
+  minOrderDecimals: number
+  tickDecimals: number
+}) => {
   const side = mangoStore((s) => s.tradeForm.side)
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
@@ -37,11 +43,7 @@ const PerpSlider = () => {
         )
       }
     } catch (e) {
-      console.error('PerpSlider: ', e)
-      notify({
-        type: 'error',
-        title: 'Error calculating max leverage.',
-      })
+      console.error('Error calculating max leverage for PerpSlider: ', e)
       return 0
     }
   }, [side, selectedMarket, mangoAccount])
@@ -54,28 +56,34 @@ const PerpSlider = () => {
         const price =
           s.tradeForm.tradeType === 'Market'
             ? marketPrice
-            : parseFloat(s.tradeForm.price)
+            : Number(s.tradeForm.price)
 
         if (s.tradeForm.side === 'buy') {
           s.tradeForm.quoteSize = val
           if (Number(price)) {
-            s.tradeForm.baseSize = (parseFloat(val) / price).toString()
+            s.tradeForm.baseSize = trimDecimals(
+              parseFloat(val) / price,
+              minOrderDecimals
+            ).toFixed(minOrderDecimals)
           } else {
             s.tradeForm.baseSize = ''
           }
         } else if (s.tradeForm.side === 'sell') {
           s.tradeForm.baseSize = val
           if (Number(price)) {
-            s.tradeForm.quoteSize = (parseFloat(val) * price).toString()
+            s.tradeForm.quoteSize = trimDecimals(
+              parseFloat(val) * price,
+              tickDecimals
+            ).toFixed(tickDecimals)
           }
         }
       })
     },
-    [marketPrice]
+    [marketPrice, minOrderDecimals, tickDecimals]
   )
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full px-3 md:px-4">
       <LeverageSlider
         amount={
           tradeForm.side === 'buy'

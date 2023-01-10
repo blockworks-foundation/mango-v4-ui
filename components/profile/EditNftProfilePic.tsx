@@ -26,7 +26,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   const nftsLoading = mangoStore((s) => s.wallet.nfts.loading)
   const connection = mangoStore((s) => s.connection)
   const [selectedProfile, setSelectedProfile] = useState<string>('')
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const profile = mangoStore((s) => s.profile.details)
 
   useEffect(() => {
@@ -36,14 +36,14 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   }, [publicKey])
 
   useEffect(() => {
-    if (profile.profile_image_url) {
+    if (profile?.profile_image_url) {
       setSelectedProfile(profile.profile_image_url)
     }
   }, [profile])
 
   const saveProfileImage = async () => {
-    const name = profile.profile_name.toLowerCase()
-    const traderCategory = profile.trader_category
+    const name = profile?.profile_name.toLowerCase()
+    const traderCategory = profile?.trader_category
     try {
       if (!publicKey) throw new Error('Wallet not connected!')
       if (!signMessage)
@@ -88,8 +88,8 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   }
 
   const removeProfileImage = async () => {
-    const name = profile.profile_name.toLowerCase()
-    const traderCategory = profile.trader_category
+    const name = profile?.profile_name.toLowerCase()
+    const traderCategory = profile?.trader_category
     try {
       if (!publicKey) throw new Error('Wallet not connected!')
       if (!signMessage)
@@ -138,7 +138,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       <div className="mb-3 flex w-full flex-col items-center sm:mt-3 sm:flex-row sm:justify-between">
         <button
           onClick={onClose}
-          className={`absolute left-2 top-3 z-50 text-th-fgd-4 focus:outline-none md:hover:text-th-primary`}
+          className={`absolute left-2 top-3 z-40 text-th-fgd-4 focus:outline-none md:hover:text-th-active`}
         >
           <ArrowLeftIcon className={`h-5 w-5`} />
         </button>
@@ -147,7 +147,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
           <Button disabled={!selectedProfile} onClick={saveProfileImage}>
             {t('save')}
           </Button>
-          {profile.profile_image_url ? (
+          {profile?.profile_image_url ? (
             <LinkButton className="text-sm" onClick={removeProfileImage}>
               {t('profile:remove')}
             </LinkButton>
@@ -161,7 +161,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
               <button
                 className={`default-transition col-span-1 flex items-center justify-center rounded-md border bg-th-bkg-2 py-3 sm:py-4 md:hover:bg-th-bkg-3 ${
                   selectedProfile === n.image
-                    ? 'border-th-primary'
+                    ? 'border-th-active'
                     : 'border-th-bkg-3'
                 }`}
                 key={n.image}

@@ -8,10 +8,10 @@ import useMangoAccount from 'hooks/useMangoAccount'
 
 const HealthImpact = ({
   maintProjectedHealth,
-  responsive,
+  small,
 }: {
   maintProjectedHealth: number
-  responsive?: boolean
+  small?: boolean
 }) => {
   const { t } = useTranslation('common')
   const group = mangoStore.getState().group
@@ -24,44 +24,44 @@ const HealthImpact = ({
 
   return (
     <div className="flex flex-wrap items-start justify-between">
-      <Tooltip content={t('health-tooltip')}>
+      <Tooltip content={t('health-tooltip')} delay={250}>
         <p
-          className={`tooltip-underline mr-4 mb-1 ${
-            responsive ? 'text-xs lg:text-sm' : ''
-          }`}
+          className={`tooltip-underline mr-4 ${small ? 'text-xs' : 'text-sm'}`}
         >
           {t('health-impact')}
         </p>
       </Tooltip>
-      <div className="flex items-center space-x-1.5 font-mono">
-        <p
-          className={`text-th-fgd-1 ${responsive ? 'text-xs lg:text-sm' : ''}`}
-        >
-          {currentMaintHealth}%
-        </p>
-        <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
-        <p
-          className={`${
-            maintProjectedHealth < 50 && maintProjectedHealth > 15
-              ? 'text-th-orange'
-              : maintProjectedHealth <= 15
-              ? 'text-th-red'
-              : 'text-th-green'
-          } ${responsive ? 'text-xs lg:text-sm' : ''}`}
-        >
-          {maintProjectedHealth}%
-        </p>
-        <span
+      {currentMaintHealth ? (
+        <div className="flex items-center space-x-1.5 font-mono">
+          <p className={`text-th-fgd-2 ${small ? 'text-xs' : 'text-sm'}`}>
+            {currentMaintHealth}%
+          </p>
+          <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
+          <p
+            className={`${
+              maintProjectedHealth < 50 && maintProjectedHealth > 15
+                ? 'text-th-warning'
+                : maintProjectedHealth <= 15
+                ? 'text-th-down'
+                : 'text-th-up'
+            } ${small ? 'text-xs' : 'text-sm'}`}
+          >
+            {maintProjectedHealth}%
+          </p>
+          {/* <span
           className={`text-xs ${
             maintProjectedHealth >= currentMaintHealth!
-              ? 'text-th-green'
-              : 'text-th-red'
+              ? 'text-th-up'
+              : 'text-th-down'
           }`}
         >
           ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
           {maintProjectedHealth - currentMaintHealth!}%)
-        </span>
-      </div>
+        </span> */}
+        </div>
+      ) : (
+        <span className="text-xs">–</span>
+      )}
     </div>
   )
 }
