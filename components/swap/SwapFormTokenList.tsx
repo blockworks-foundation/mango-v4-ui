@@ -10,6 +10,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PublicKey } from '@solana/web3.js'
+import { formatDecimal } from 'utils/numbers'
 
 // const generateSearchTerm = (item: Token, searchValue: string) => {
 //   const normalizedSearchValue = searchValue.toLowerCase()
@@ -69,11 +70,14 @@ const TokenItem = ({
             </div>
           </div>
         </div>
-        {type === 'input' ? (
-          <p className="text-sm text-th-fgd-2">
+        {type === 'input' &&
+        token.amount &&
+        token.amountWithBorrow &&
+        token.decimals ? (
+          <p className="font-mono text-sm text-th-fgd-2">
             {useMargin
-              ? token.amountWithBorrow?.toString()
-              : token.amount?.toString()}
+              ? formatDecimal(token.amountWithBorrow.toNumber(), token.decimals)
+              : formatDecimal(token.amount.toNumber(), token.decimals)}
           </p>
         ) : null}
       </button>
