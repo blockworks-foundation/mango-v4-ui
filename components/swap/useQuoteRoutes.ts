@@ -73,9 +73,20 @@ const fetchMangoRoutes = async (
     const response = await fetch(`${MANGO_ROUTER_API_URL}/swap?${paramsString}`)
 
     const res = await response.json()
-    const data = res
+    const data: RouteInfo[] = res.map((route: any) => ({
+      ...route,
+      priceImpactPct: route.priceImpact,
+      slippageBps: slippage,
+      marketInfos: route.marketInfos.map((mInfo: any) => ({
+        ...mInfo,
+        lpFee: {
+          ...mInfo.fee,
+          pct: mInfo.fee.rate,
+        },
+      })),
+    }))
     return {
-      routes: res as RouteInfo[],
+      routes: data,
       bestRoute: (data.length ? data[0] : null) as RouteInfo | null,
     }
   }
