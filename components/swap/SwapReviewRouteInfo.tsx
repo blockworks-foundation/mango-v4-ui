@@ -41,6 +41,7 @@ import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure } from '@headlessui/react'
 import RoutesModal from './RoutesModal'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -151,6 +152,7 @@ const SwapReviewRouteInfo = ({
   setSelectedRoute,
 }: JupiterRouteInfoProps) => {
   const { t } = useTranslation(['common', 'trade'])
+  const { mangoAccount } = useMangoAccount()
   const slippage = mangoStore((s) => s.swap.slippage)
   const [showRoutesModal, setShowRoutesModal] = useState<boolean>(false)
   const [swapRate, setSwapRate] = useState<boolean>(false)
@@ -452,32 +454,36 @@ const SwapReviewRouteInfo = ({
               </p>
             </div>
           ) : null}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-th-fgd-3">{t('swap:swap-route')}</p>
-            <div
-              className="flex items-center text-th-fgd-2 md:hover:cursor-pointer md:hover:text-th-fgd-3"
-              role="button"
-              onClick={() => setShowRoutesModal(true)}
-            >
-              <span className="overflow-ellipsis whitespace-nowrap">
-                {selectedRoute?.marketInfos.map((info, index) => {
-                  let includeSeparator = false
-                  if (
-                    selectedRoute?.marketInfos.length > 1 &&
-                    index !== selectedRoute?.marketInfos.length - 1
-                  ) {
-                    includeSeparator = true
-                  }
-                  return (
-                    <span key={index}>{`${info?.label} ${
-                      includeSeparator ? 'x ' : ''
-                    }`}</span>
-                  )
-                })}
-              </span>
-              <PencilIcon className="ml-2 h-4 w-4 hover:text-th-active" />
+          {mangoAccount &&
+          mangoAccount.owner.toString() ===
+            '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt' ? (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-th-fgd-3">{t('swap:swap-route')}</p>
+              <div
+                className="flex items-center text-th-fgd-2 md:hover:cursor-pointer md:hover:text-th-fgd-3"
+                role="button"
+                onClick={() => setShowRoutesModal(true)}
+              >
+                <span className="overflow-ellipsis whitespace-nowrap">
+                  {selectedRoute?.marketInfos.map((info, index) => {
+                    let includeSeparator = false
+                    if (
+                      selectedRoute?.marketInfos.length > 1 &&
+                      index !== selectedRoute?.marketInfos.length - 1
+                    ) {
+                      includeSeparator = true
+                    }
+                    return (
+                      <span key={index}>{`${info?.label} ${
+                        includeSeparator ? 'x ' : ''
+                      }`}</span>
+                    )
+                  })}
+                </span>
+                <PencilIcon className="ml-2 h-4 w-4 hover:text-th-active" />
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </div>
       <div className="p-6">
