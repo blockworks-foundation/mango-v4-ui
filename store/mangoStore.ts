@@ -17,6 +17,7 @@ import {
   PerpOrder,
   PerpPosition,
   BookSide,
+  FillEvent,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -28,13 +29,14 @@ import {
 } from '../utils/tokens'
 import { Token } from '../types/jupiter'
 import {
+  CONNECTION_COMMITMENT,
   DEFAULT_MARKET_NAME,
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
-import { OrderbookL2, SpotBalances } from 'types'
+import { OrderbookL2, SpotBalances, SpotTradeHistory } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
@@ -68,8 +70,8 @@ const emptyWallet = new EmptyWallet(Keypair.generate())
 const initMangoClient = (provider: AnchorProvider): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     // blockhashCommitment: 'confirmed',
+    prioritizationFee: 10000,
     idsSource: 'get-program-accounts',
-    prioritizationFee: 2,
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
         title: 'Transaction sent',
@@ -239,8 +241,12 @@ export type MangoStore = {
     stats: {
       interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
       performance: { data: PerformanceDataItem[]; loading: boolean }
-      swapHistory: { data: SwapHistoryItem[]; loading: boolean }
+      swapHistory: {
+        data: SwapHistoryItem[]
+        initialLoad: boolean
+      }
     }
+    tradeHistory: SpotTradeHistory[]
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
@@ -258,7 +264,7 @@ export type MangoStore = {
   selectedMarket: {
     name: string
     current: Serum3Market | PerpMarket | undefined
-    fills: any
+    fills: (FillEvent | any)[]
     bidsAccount: BookSide | Orderbook | undefined
     asksAccount: BookSide | Orderbook | undefined
     orderbook: OrderbookL2
@@ -324,6 +330,7 @@ export type MangoStore = {
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
+    fetchTradeHistory: () => Promise<void>
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     loadMarketFills: () => Promise<void>
@@ -344,9 +351,9 @@ const mangoStore = create<MangoStore>()(
 
     let connection: Connection
     try {
-      connection = new web3.Connection(rpcUrl, 'processed')
+      connection = new web3.Connection(rpcUrl, CONNECTION_COMMITMENT)
     } catch {
-      connection = new web3.Connection(ENDPOINT.url, 'processed')
+      connection = new web3.Connection(ENDPOINT.url, CONNECTION_COMMITMENT)
     }
     const provider = new AnchorProvider(connection, emptyWallet, options)
     provider.opts.skipPreflight = true
@@ -374,8 +381,9 @@ const mangoStore = create<MangoStore>()(
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
-          swapHistory: { data: [], loading: false },
+          swapHistory: { data: [], initialLoad: false },
         },
+        tradeHistory: [],
       },
       mangoAccounts: [],
       markets: undefined,
@@ -586,11 +594,6 @@ const mangoStore = create<MangoStore>()(
           try {
             const set = get().set
             const client = get().client
-            console.log(
-              'fetching group',
-              client.program.provider.connection.rpcEndpoint
-            )
-
             const group = await client.getGroup(GROUP)
             const selectedMarketName = get().selectedMarket.name
 
@@ -828,9 +831,6 @@ const mangoStore = create<MangoStore>()(
           const set = get().set
           setTimeout(async () => {
             try {
-              set((state) => {
-                state.mangoAccount.stats.swapHistory.loading = true
-              })
               const history = await fetch(
                 `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}`
               )
@@ -846,11 +846,11 @@ const mangoStore = create<MangoStore>()(
 
               set((state) => {
                 state.mangoAccount.stats.swapHistory.data = sortedHistory
-                state.mangoAccount.stats.swapHistory.loading = false
+                state.mangoAccount.stats.swapHistory.initialLoad = true
               })
             } catch {
               set((state) => {
-                state.mangoAccount.stats.swapHistory.loading = false
+                state.mangoAccount.stats.swapHistory.initialLoad = true
               })
               notify({
                 title: 'Failed to load account swap history data',
@@ -1007,10 +1007,45 @@ const mangoStore = create<MangoStore>()(
             console.log('Error fetching fills:', err)
           }
         },
+        async fetchTradeHistory() {
+          const set = get().set
+          const mangoAccount = get().mangoAccount.current
+          try {
+            const [spotRes, perpRes] = await Promise.all([
+              fetch(
+                `https://mango-transaction-log.herokuapp.com/v4/stats/openbook-trades?address=${mangoAccount?.publicKey.toString()}&address-type=mango-account`
+              ),
+              fetch(
+                `https://mango-transaction-log.herokuapp.com/v4/stats/perp-trade-history?mango-account=${mangoAccount?.publicKey.toString()}&limit=1000`
+              ),
+            ])
+            const spotHistory = await spotRes.json()
+            const perpHistory = await perpRes.json()
+            console.log('th', spotHistory, perpHistory)
+            let tradeHistory: any[] = []
+            if (spotHistory?.length) {
+              tradeHistory = tradeHistory.concat(spotHistory)
+            }
+            if (perpHistory?.length) {
+              tradeHistory = tradeHistory.concat(perpHistory)
+            }
+
+            set((s) => {
+              s.mangoAccount.tradeHistory = tradeHistory.sort(
+                (x: any) => x.block_datetime
+              )
+            })
+          } catch (e) {
+            console.error('Unable to fetch trade history', e)
+          }
+        },
         updateConnection(endpointUrl) {
           const set = get().set
           const client = mangoStore.getState().client
-          const newConnection = new web3.Connection(endpointUrl, 'processed')
+          const newConnection = new web3.Connection(
+            endpointUrl,
+            CONNECTION_COMMITMENT
+          )
           const oldProvider = client.program.provider as AnchorProvider
           const newProvider = new AnchorProvider(
             newConnection,

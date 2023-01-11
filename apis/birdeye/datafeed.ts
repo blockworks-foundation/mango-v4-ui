@@ -1,22 +1,52 @@
 import { makeApiRequest, parseResolution } from './helpers'
 import { subscribeOnStream, unsubscribeFromStream } from './streaming'
 import mangoStore from '@store/mangoStore'
+import {
+  DatafeedConfiguration,
+  LibrarySymbolInfo,
+  ResolutionString,
+  SearchSymbolResultItem,
+} from '@public/charting_library/charting_library'
+
+export const SUPPORTED_RESOLUTIONS = [
+  '1',
+  '3',
+  '5',
+  '15',
+  '30',
+  '60',
+  '120',
+  '240',
+  '1D',
+  '1W',
+] as const
+
+type BaseBar = {
+  low: number
+  high: number
+  open: number
+  close: number
+}
+
+type KlineBar = BaseBar & {
+  volume: number
+  timestamp: number
+}
+
+type TradingViewBar = BaseBar & {
+  time: number
+}
+
+type Bar = KlineBar & TradingViewBar
+
+type SymbolInfo = LibrarySymbolInfo & {
+  address: string
+}
 
 const lastBarsCache = new Map()
 
 const configurationData = {
-  supported_resolutions: [
-    '1',
-    '3',
-    '5',
-    '15',
-    '30',
-    '60',
-    '120',
-    '240',
-    '1D',
-    '1W',
-  ],
+  supported_resolutions: SUPPORTED_RESOLUTIONS,
   intraday_multipliers: ['1', '3', '5', '15', '30', '60', '120', '240'],
   exchanges: [],
 }
@@ -29,42 +59,101 @@ const configurationData = {
 //   return data.data.tokens
 // }
 
+export const queryBars = async (
+  tokenAddress: string,
+  resolution: typeof SUPPORTED_RESOLUTIONS[number],
+  periodParams: {
+    firstDataRequest: boolean
+    from: number
+    to: number
+  }
+): Promise<Bar[]> => {
+  const { from, to } = periodParams
+  const urlParameters = {
+    address: tokenAddress,
+    type: parseResolution(resolution),
+    time_from: from,
+    time_to: to,
+  }
+  const query = Object.keys(urlParameters)
+    .map(
+      (name: string) =>
+        `${name}=${encodeURIComponent((urlParameters as any)[name])}`
+    )
+    .join('&')
+
+  const data = await makeApiRequest(`defi/ohlcv/pair?${query}`)
+  if (!data.success || data.data.items.length === 0) {
+    return []
+  }
+  let bars: Bar[] = []
+  for (const bar of data.data.items) {
+    if (bar.unixTime >= from && bar.unixTime < to) {
+      const timestamp = bar.unixTime * 1000
+      bars = [
+        ...bars,
+        {
+          time: timestamp,
+          low: bar.l,
+          high: bar.h,
+          open: bar.o,
+          close: bar.c,
+          volume: bar.v,
+          timestamp,
+        },
+      ]
+    }
+  }
+  return bars
+}
+
 export default {
-  onReady: (callback: any) => {
-    console.log('[onReady]: Method call')
-    setTimeout(() => callback(configurationData))
+  onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
+    // console.log('[onReady]: Method call')
+    setTimeout(() => callback(configurationData as any))
   },
 
   searchSymbols: async (
-    _userInput: any,
-    _exchange: any,
-    _symbolType: any,
-    _onResultReadyCallback: any
+    _userInput: string,
+    _exchange: string,
+    _symbolType: string,
+    _onResultReadyCallback: (items: SearchSymbolResultItem[]) => void
   ) => {
     return
   },
 
   resolveSymbol: async (
-    symbolAddress: any,
-    onSymbolResolvedCallback: any,
-    _onResolveErrorCallback: any,
-    _extension: any
+    symbolAddress: string,
+    onSymbolResolvedCallback: (symbolInfo: SymbolInfo) => void
+    // _onResolveErrorCallback: any,
+    // _extension: any
   ) => {
-    console.log('[resolveSymbol]: Method call', symbolAddress)
+    // console.log(
+    //   '[resolveSymbol]: Method call',
+    //   symbolAddress,
+    //   onSymbolResolvedCallback
+    // )
     // const symbols = await getAllSymbols()
     // let symbolItem = symbols.find((item: any) => item.address === symbolAddress)
     // console.log('========symbols:', symbolItem, symbols)
-    let symbolItem: any
+    let symbolItem:
+      | {
+          address: string
+          type: string
+          symbol: string
+        }
+      | undefined
 
     if (!symbolItem) {
       symbolItem = {
         address: symbolAddress,
         type: 'pair',
+        symbol: '',
       }
     }
     const ticker = mangoStore.getState().selectedMarket.name
 
-    const symbolInfo = {
+    const symbolInfo: SymbolInfo = {
       address: symbolItem.address,
       ticker: symbolItem.address,
       name: symbolItem.symbol || symbolItem.address,
@@ -75,89 +164,78 @@ export default {
       minmov: 1,
       pricescale: 100,
       has_intraday: true,
-      has_no_volume: true,
       has_weekly_and_monthly: false,
-      supported_resolutions: configurationData.supported_resolutions,
+      supported_resolutions: configurationData.supported_resolutions as any,
       intraday_multipliers: configurationData.intraday_multipliers,
       volume_precision: 2,
       data_status: 'streaming',
+      full_name: '',
+      exchange: '',
+      listed_exchange: '',
+      format: 'price',
     }
 
-    console.log('[resolveSymbol]: Symbol resolved', symbolAddress)
+    // console.log('[resolveSymbol]: Symbol resolved', symbolAddress)
     onSymbolResolvedCallback(symbolInfo)
   },
-
   getBars: async (
-    symbolInfo: any,
-    resolution: any,
-    periodParams: any,
-    onHistoryCallback: any,
-    onErrorCallback: any
+    symbolInfo: SymbolInfo,
+    resolution: ResolutionString,
+    periodParams: {
+      countBack: number
+      firstDataRequest: boolean
+      from: number
+      to: number
+    },
+    onHistoryCallback: (
+      bars: Bar[],
+      t: {
+        noData: boolean
+      }
+    ) => void,
+    onErrorCallback: (e: any) => void
   ) => {
-    const { from, to, firstDataRequest } = periodParams
-    console.log('[getBars]: Method call', symbolInfo, resolution, from, to)
-    const urlParameters = {
-      address: symbolInfo.address,
-      type: parseResolution(resolution),
-      time_from: from,
-      time_to: to,
-    }
-    const query = Object.keys(urlParameters)
-      .map(
-        (name: any) =>
-          `${name}=${encodeURIComponent((urlParameters as any)[name])}`
-      )
-      .join('&')
     try {
-      const data = await makeApiRequest(`defi/ohlcv/pair?${query}`)
-      if (!data.success || data.data.items.length === 0) {
+      const { firstDataRequest } = periodParams
+      const bars = await queryBars(
+        symbolInfo.address,
+        resolution as any,
+        periodParams
+      )
+      if (!bars || bars.length === 0) {
         // "noData" should be set if there is no data in the requested period.
         onHistoryCallback([], {
           noData: true,
         })
         return
       }
-      let bars: any = []
-      data.data.items.forEach((bar: any) => {
-        if (bar.unixTime >= from && bar.unixTime < to) {
-          bars = [
-            ...bars,
-            {
-              time: bar.unixTime * 1000,
-              low: bar.l,
-              high: bar.h,
-              open: bar.o,
-              close: bar.c,
-            },
-          ]
-        }
-      })
+
       if (firstDataRequest) {
         lastBarsCache.set(symbolInfo.address, {
           ...bars[bars.length - 1],
         })
       }
-      console.log(`[getBars]: returned ${bars.length} bar(s)`)
+      // console.log(`[getBars]: returned ${bars.length} bar(s)`)
       onHistoryCallback(bars, {
         noData: false,
       })
     } catch (error) {
-      console.log('[getBars]: Get error', error)
+      console.warn('[getBars]: Get error', error)
       onErrorCallback(error)
     }
   },
 
   subscribeBars: (
-    symbolInfo: any,
-    resolution: any,
-    onRealtimeCallback: any,
-    subscriberUID: any,
-    onResetCacheNeededCallback: any
+    symbolInfo: SymbolInfo,
+    resolution: string,
+    onRealtimeCallback: (data: any) => void,
+    subscriberUID: string,
+    onResetCacheNeededCallback: () => void
   ) => {
-    console.log(
-      '[subscribeBars]: Method call with subscriberUID:',
-      subscriberUID
-    )
+    // console.log(
+    //   '[subscribeBars]: Method call with subscriberUID:',
+    //   subscriberUID
+    // )
     subscribeOnStream(
       symbolInfo,
       resolution,
@@ -169,7 +247,7 @@ export default {
   },
 
   unsubscribeBars: () => {
-    console.log('[unsubscribeBars]')
+    console.warn('[unsubscribeBars]')
     unsubscribeFromStream()
   },
 }

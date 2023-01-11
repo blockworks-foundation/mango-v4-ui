@@ -4,6 +4,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useState } from 'react'
+import { numberCompacter } from 'utils/numbers'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -16,7 +17,7 @@ const ChartTabs = ({ token }: { token: string }) => {
   const tokenStats = mangoStore((s) => s.tokenStats.data)
   const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingTokenStats = mangoStore((s) => s.tokenStats.loading)
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const { group } = useMangoGroup()
 
   useEffect(() => {
@@ -63,7 +64,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small
-                tickFormat={(x) => x.toFixed(2)}
+                tickFormat={(x) => numberCompacter.format(x)}
                 title={`${token} ${t('token:deposits')}`}
                 xKey="date_hour"
                 yKey={'total_deposits'}
@@ -107,7 +108,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small
-                tickFormat={(x) => x.toFixed(2)}
+                tickFormat={(x) => numberCompacter.format(x)}
                 title={`${token} ${t('token:borrows')}`}
                 xKey="date_hour"
                 yKey={'total_borrows'}

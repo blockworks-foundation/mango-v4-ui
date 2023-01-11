@@ -26,7 +26,11 @@ import {
 } from 'react'
 import { ALPHA_DEPOSIT_LIMIT } from 'utils/constants'
 import { notify } from 'utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from 'utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -34,8 +38,8 @@ import Label from '../forms/Label'
 import WalletIcon from '../icons/WalletIcon'
 import { walletBalanceForToken } from '../DepositForm'
 import ParticlesBackground from '../ParticlesBackground'
-import EditNftProfilePic from '../profile/EditNftProfilePic'
-import EditProfileForm from '../profile/EditProfileForm'
+// import EditNftProfilePic from '../profile/EditNftProfilePic'
+// import EditProfileForm from '../profile/EditProfileForm'
 import Button, { LinkButton } from '../shared/Button'
 import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
@@ -43,6 +47,8 @@ import MaxAmountButton from '../shared/MaxAmountButton'
 import SolBalanceWarnings from '../shared/SolBalanceWarnings'
 import { useEnhancedWallet } from '../wallet/EnhancedWalletProvider'
 import Modal from '../shared/Modal'
+import NumberFormat, { NumberFormatValues } from 'react-number-format'
+import { withValueLimit } from '@components/swap/SwapForm'
 
 const UserSetupModal = ({
   isOpen,
@@ -63,7 +69,7 @@ const UserSetupModal = ({
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const [showEditProfilePic, setShowEditProfilePic] = useState(false)
+  // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
@@ -135,8 +141,9 @@ const UserSetupModal = ({
       })
 
       await actions.reloadMangoAccount()
-      setShowSetupStep(4)
       setSubmitDeposit(false)
+      onClose()
+      // setShowSetupStep(4)
     } catch (e: any) {
       notify({
         title: 'Transaction failed',
@@ -203,7 +210,9 @@ const UserSetupModal = ({
     return { amount: 0, decimals: 0 }
   }, [banks, depositToken])
 
-  const showInsufficientBalance = tokenMax.amount < Number(depositAmount)
+  const showInsufficientBalance =
+    tokenMax.amount < Number(depositAmount) ||
+    (depositToken === 'SOL' && maxSolDeposit <= 0)
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
@@ -223,11 +232,14 @@ const UserSetupModal = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} fullScreen>
+    <Modal isOpen={isOpen} onClose={onClose} fullScreen disableOutsideClose>
       <div className="radial-gradient-bg grid h-screen overflow-auto text-left lg:grid-cols-2">
         <img
           className="absolute -bottom-6 right-0 hidden h-auto w-[53%] lg:block xl:w-[57%]"
-          src="/images/trade.png"
+          src="/images/trade@0.75x.png"
+          srcSet="/images/trade@0.75x.png 1157w, /images/trade@1x.png 1542w,
+          /images/trade@2x.png 3084w"
+          sizes="(max-width: 1600px) 1157px, (max-width: 2500px) 1542px, 3084px"
           alt="next"
         />
         <img
@@ -238,7 +250,7 @@ const UserSetupModal = ({
         <div className="absolute top-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
             style={{
-              width: `${(showSetupStep / 4) * 100}%`,
+              width: `${(showSetupStep / 3) * 100}%`,
             }}
             className="flex bg-th-active transition-all duration-700 ease-out"
           />
@@ -254,10 +266,6 @@ const UserSetupModal = ({
                 <CheckCircleIcon className="h-5 w-5 text-th-success" />
                 <p className="text-base">{t('onboarding:bullet-1')}</p>
               </div>
-              {/* <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="h-5 w-5 text-th-success" />
-              <p className="text-base">Deeply liquid markets</p>
-            </div> */}
               <div className="flex items-center space-x-2">
                 <CheckCircleIcon className="h-5 w-5 text-th-success" />
                 <p className="text-base">{t('onboarding:bullet-2')}</p>
@@ -316,7 +324,7 @@ const UserSetupModal = ({
                   ))}
                 </div>
                 <Button
-                  className="mt-10 flex w-44 items-center justify-center"
+                  className="mt-10 flex items-center justify-center"
                   onClick={handleConnect}
                   size="large"
                 >
@@ -347,7 +355,7 @@ const UserSetupModal = ({
                     {t('onboarding:create-account-desc')}
                   </p>
                 </div>
-                <div className="pb-4">
+                <div className="mb-4">
                   <Label text={t('account-name')} optional />
                   <Input
                     type="text"
@@ -361,14 +369,15 @@ const UserSetupModal = ({
                     charLimit={30}
                   />
                 </div>
-                <div>
+                <SolBalanceWarnings className="mt-4" />
+                <div className="mt-2">
                   <InlineNotification
                     type="info"
                     desc={t('insufficient-sol')}
                   />
                   <div className="mt-10">
                     <Button
-                      className="mb-6 flex w-44 items-center justify-center"
+                      className="mb-6 flex items-center justify-center"
                       disabled={maxSolDeposit <= 0}
                       onClick={handleCreateAccount}
                       size="large"
@@ -381,7 +390,6 @@ const UserSetupModal = ({
                         </div>
                       )}
                     </Button>
-                    <SolBalanceWarnings />
                     <LinkButton onClick={onClose}>
                       <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                         {t('onboarding:skip')}
@@ -406,6 +414,7 @@ const UserSetupModal = ({
                     />
                     <SolBalanceWarnings
                       amount={depositAmount}
+                      className="mt-4"
                       setAmount={setDepositAmount}
                       selectedToken={depositToken}
                     />
@@ -414,16 +423,16 @@ const UserSetupModal = ({
                     <Label text={t('amount')} />
                     <MaxAmountButton
                       className="mb-2"
-                      disabled={depositToken === 'SOL' && maxSolDeposit <= 0}
-                      label="Wallet Max"
-                      onClick={() =>
+                      label="Max"
+                      onClick={() => {
                         setDepositAmount(
                           floorToDecimal(
                             tokenMax.amount,
                             tokenMax.decimals
                           ).toFixed()
                         )
-                      }
+                        setSizePercentage('100')
+                      }}
                       value={floorToDecimal(
                         tokenMax.amount,
                         tokenMax.decimals
@@ -432,7 +441,7 @@ const UserSetupModal = ({
                   </div>
                   <div className="mb-6 grid grid-cols-2">
                     <button
-                      className="col-span-1 flex items-center rounded-lg rounded-r-none border border-r-0 border-th-bkg-4 bg-transparent px-4 hover:bg-transparent"
+                      className="col-span-1 flex items-center rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg px-4"
                       onClick={() => setDepositToken('')}
                     >
                       <div className="flex w-full items-center justify-between">
@@ -450,56 +459,67 @@ const UserSetupModal = ({
                         <PencilIcon className="ml-2 h-5 w-5 text-th-fgd-3" />
                       </div>
                     </button>
-                    <Input
-                      className="col-span-1 w-full rounded-lg rounded-l-none border border-th-bkg-4 bg-transparent p-3 text-right text-xl font-bold tracking-wider text-th-fgd-1 focus:outline-none"
-                      type="text"
-                      name="deposit"
-                      id="deposit"
+                    <NumberFormat
+                      name="amountIn"
+                      id="amountIn"
+                      inputMode="decimal"
+                      thousandSeparator=","
+                      allowNegative={false}
+                      isNumericString={true}
+                      decimalScale={tokenMax.decimals || 6}
+                      className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                       placeholder="0.00"
                       value={depositAmount}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        setDepositAmount(e.target.value)
-                      }
+                      onValueChange={(e: NumberFormatValues) => {
+                        setDepositAmount(
+                          !Number.isNaN(Number(e.value)) ? e.value : ''
+                        )
+                      }}
+                      isAllowed={withValueLimit}
                     />
                     <div className="col-span-2 mt-2">
                       <ButtonGroup
                         activeValue={sizePercentage}
-                        disabled={depositToken === 'SOL' && maxSolDeposit <= 0}
                         onChange={(p) => handleSizePercentage(p)}
                         values={['10', '25', '50', '75', '100']}
                         unit="%"
                       />
                     </div>
                   </div>
-                  <div className="mb-10 border-y border-th-bkg-3">
-                    <div className="flex justify-between px-2 py-4">
-                      <p>{t('deposit-amount')}</p>
-                      <p className="font-mono text-th-fgd-2">
-                        {depositBank?.uiPrice && depositAmount ? (
-                          <>
-                            {depositAmount}{' '}
-                            <span className="text-xs text-th-fgd-3">
-                              (
-                              {formatFixedDecimals(
-                                depositBank.uiPrice * Number(depositAmount),
-                                true
-                              )}
-                              )
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            0{' '}
-                            <span className="text-xs text-th-fgd-3">
-                              ($0.00)
-                            </span>
-                          </>
-                        )}
-                      </p>
+                  {depositBank ? (
+                    <div className="border-y border-th-bkg-3">
+                      <div className="flex justify-between px-2 py-4">
+                        <p>{t('deposit-amount')}</p>
+                        <p className="font-mono text-th-fgd-2">
+                          {depositAmount ? (
+                            <>
+                              {formatDecimal(
+                                Number(depositAmount),
+                                depositBank.mintDecimals
+                              )}{' '}
+                              <span className="text-xs text-th-fgd-3">
+                                (
+                                {formatFixedDecimals(
+                                  depositBank.uiPrice * Number(depositAmount),
+                                  true
+                                )}
+                                )
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              0{' '}
+                              <span className="text-xs text-th-fgd-3">
+                                ($0.00)
+                              </span>
+                            </>
+                          )}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
                   <Button
-                    className="mb-6 flex w-44 items-center justify-center"
+                    className="mb-6 mt-10 flex items-center justify-center"
                     disabled={
                       !depositAmount ||
                       !depositToken ||
@@ -525,7 +545,7 @@ const UserSetupModal = ({
                       </div>
                     )}
                   </Button>
-                  <LinkButton onClick={() => setShowSetupStep(4)}>
+                  <LinkButton onClick={onClose}>
                     <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                       {t('onboarding:skip')}
                     </span>
@@ -536,14 +556,14 @@ const UserSetupModal = ({
                     className="thin-scroll absolute top-36 w-full overflow-auto"
                     style={{ height: 'calc(100vh - 380px)' }}
                   >
-                    <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
-                      <div className="">
+                    <div className="flex items-center px-4 pb-2">
+                      <div className="w-1/4">
                         <p className="text-xs">{t('token')}</p>
                       </div>
-                      <div className="text-right">
+                      <div className="w-1/4 text-right">
                         <p className="text-xs">{t('deposit-rate')}</p>
                       </div>
-                      <div className="text-right">
+                      <div className="w-1/2 text-right">
                         <p className="whitespace-nowrap text-xs">
                           {t('wallet-balance')}
                         </p>
@@ -561,7 +581,7 @@ const UserSetupModal = ({
               </div>
             ) : null}
           </UserSetupTransition>
-          <UserSetupTransition delay show={showSetupStep === 4}>
+          {/* <UserSetupTransition delay show={showSetupStep === 4}>
             {showSetupStep === 4 ? (
               <div className="relative">
                 <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
@@ -594,7 +614,7 @@ const UserSetupModal = ({
                 </UserSetupTransition>
               </div>
             ) : null}
-          </UserSetupTransition>
+          </UserSetupTransition> */}
         </div>
         <div className="col-span-1 hidden h-screen lg:block">
           <ParticlesBackground />

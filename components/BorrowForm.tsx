@@ -21,7 +21,11 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -39,6 +43,8 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
+import AmountWithValue from './shared/AmountWithValue'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -58,6 +64,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
+  const { handleConnect } = useEnhancedWallet()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -85,10 +92,11 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
 
   const tokenBalance = useMemo(() => {
     if (!bank || !mangoAccount) return new Decimal(0)
-    return floorToDecimal(
+    const balance = floorToDecimal(
       mangoAccount.getTokenBalanceUi(bank),
       bank.mintDecimals
     )
+    return balance.gt(0) ? balance : new Decimal(0)
   }, [bank, mangoAccount])
 
   const isBorrow = parseFloat(inputAmount) > tokenBalance.toNumber()
@@ -104,16 +112,19 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   )
 
   const setMax = useCallback(() => {
-    setInputAmount(tokenMax.toFixed())
+    if (!bank) return
+    setInputAmount(
+      floorToDecimal(Number(tokenMax), bank.mintDecimals).toFixed()
+    )
     handleSizePercentage('100')
-  }, [tokenMax, handleSizePercentage])
+  }, [bank, tokenMax, handleSizePercentage])
 
   const handleSelectToken = (token: string) => {
     setSelectedToken(token)
     setShowTokenList(false)
   }
 
-  const handleWithdraw = async () => {
+  const handleBorrow = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -203,14 +214,14 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
           <ArrowLeftIcon className={`h-6 w-6`} />
         </button>
         <h2 className="mb-4 text-center text-lg">{t('select-borrow-token')}</h2>
-        <div className="grid auto-cols-fr grid-flow-col  px-4 pb-2">
-          <div className="">
+        <div className="flex items-center px-4 pb-2">
+          <div className="w-1/4">
             <p className="text-xs">{t('token')}</p>
           </div>
-          <div className="text-right">
+          <div className="w-1/4 text-right">
             <p className="text-xs">{t('borrow-rate')}</p>
           </div>
-          <div className="text-right">
+          <div className="w-1/2 text-right">
             <p className="whitespace-nowrap text-xs">{t('max-borrow')}</p>
           </div>
         </div>
@@ -236,16 +247,21 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 />
               </div>
             ) : null}
-            {bank ? <TokenVaultWarnings bank={bank} /> : null}
+            {bank ? <TokenVaultWarnings bank={bank} type="borrow" /> : null}
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('borrow')} ${t('token')}`} />
-                <MaxAmountButton
-                  className="mb-2"
-                  label={t('max')}
-                  onClick={setMax}
-                  value={tokenMax.toFixed()}
-                />
+                {bank ? (
+                  <MaxAmountButton
+                    className="mb-2"
+                    label={t('max')}
+                    onClick={setMax}
+                    value={floorToDecimal(
+                      Number(tokenMax),
+                      bank.mintDecimals
+                    ).toFixed()}
+                  />
+                ) : null}
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
                 <button
@@ -277,7 +293,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   allowNegative={false}
                   isNumericString={true}
                   decimalScale={bank?.mintDecimals || 6}
-                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={handleInputChange}
@@ -306,70 +322,56 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
             </div> */}
             </div>
             {bank ? (
-              <div className="my-6 space-y-2 border-y border-th-bkg-3 px-2 py-4">
+              <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4">
                 <HealthImpactTokenChange
                   mintPk={bank.mint}
                   uiAmount={Number(inputAmount)}
                 />
-                {tokenBalance ? (
-                  <div className="flex justify-between">
-                    <p>{t('withdraw-amount')}</p>
-                    <p className="font-mono text-th-fgd-2">
-                      {isBorrow ? (
-                        <>
-                          {tokenBalance.toNumber()}{' '}
-                          <span className="text-xs text-th-fgd-3">
-                            (
-                            {formatFixedDecimals(
-                              bank.uiPrice * tokenBalance.toNumber(),
-                              true
-                            )}
-                          </span>
-                        </>
-                      ) : inputAmount ? (
-                        <>
-                          {inputAmount}{' '}
-                          <span className="text-xs text-th-fgd-3">
-                            (
-                            {formatFixedDecimals(
-                              bank.uiPrice * parseFloat(inputAmount),
-                              true
-                            )}
-                            )
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          0{' '}
-                          <span className="text-xs text-th-fgd-3">($0.00)</span>
-                        </>
+                <div className="flex justify-between">
+                  <p>{t('withdraw-amount')}</p>
+                  {isBorrow ? (
+                    <AmountWithValue
+                      amount={formatDecimal(
+                        Number(tokenBalance),
+                        bank.mintDecimals
                       )}
-                    </p>
-                  </div>
-                ) : null}
+                      value={formatFixedDecimals(
+                        bank.uiPrice * tokenBalance.toNumber(),
+                        true
+                      )}
+                    />
+                  ) : inputAmount ? (
+                    <AmountWithValue
+                      amount={formatDecimal(
+                        Number(inputAmount),
+                        bank.mintDecimals
+                      )}
+                      value={formatFixedDecimals(
+                        bank.uiPrice * parseFloat(inputAmount),
+                        true
+                      )}
+                    />
+                  ) : (
+                    <AmountWithValue amount="0" value="$0.00" />
+                  )}
+                </div>
                 <div className="flex justify-between">
                   <p>{t('borrow-amount')}</p>
-                  <p className="font-mono text-th-fgd-2">
-                    {isBorrow ? (
-                      <>
-                        {parseFloat(inputAmount) - tokenBalance.toNumber()}{' '}
-                        <span className="text-xs text-th-fgd-3">
-                          (
-                          {formatFixedDecimals(
-                            bank.uiPrice *
-                              (parseFloat(inputAmount) -
-                                tokenBalance.toNumber()),
-                            true
-                          )}
-                          )
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        0 <span className="text-xs text-th-fgd-3">($0.00)</span>
-                      </>
-                    )}
-                  </p>
+                  {isBorrow ? (
+                    <AmountWithValue
+                      amount={formatDecimal(
+                        Number(inputAmount) - Number(tokenBalance),
+                        bank.mintDecimals
+                      )}
+                      value={formatFixedDecimals(
+                        bank.uiPrice *
+                          (parseFloat(inputAmount) - tokenBalance.toNumber()),
+                        true
+                      )}
+                    />
+                  ) : (
+                    <AmountWithValue amount="0" value="$0.00" />
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <Tooltip content={t('loan-origination-fee-tooltip')}>
@@ -378,23 +380,29 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                     </p>
                   </Tooltip>
                   <p className="font-mono text-th-fgd-2">
-                    {isBorrow
-                      ? formatFixedDecimals(
-                          bank.uiPrice *
-                            bank.loanOriginationFeeRate.toNumber() *
+                    {isBorrow ? (
+                      <>
+                        {formatDecimal(
+                          bank.loanOriginationFeeRate.toNumber() *
                             (parseFloat(inputAmount) - tokenBalance.toNumber()),
-                          true
-                        )
-                      : '$0.00'}
+                          bank.mintDecimals
+                        )}{' '}
+                        <span className="font-body text-th-fgd-4">
+                          {bank.name}
+                        </span>
+                      </>
+                    ) : (
+                      'N/A'
+                    )}
                   </p>
                 </div>
               </div>
             ) : null}
           </div>
           <Button
-            onClick={handleWithdraw}
+            onClick={connected ? handleBorrow : handleConnect}
             className="flex w-full items-center justify-center"
-            disabled={!inputAmount || showInsufficientBalance || !connected}
+            disabled={connected && (!inputAmount || showInsufficientBalance)}
             size="large"
           >
             {!connected ? (

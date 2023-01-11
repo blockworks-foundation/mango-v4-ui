@@ -15,7 +15,7 @@ const TABS =
 
 const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const { group } = useMangoGroup()
 
   useEffect(() => {

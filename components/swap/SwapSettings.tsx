@@ -1,6 +1,6 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -10,13 +10,19 @@ import Button, { IconButton, LinkButton } from '../shared/Button'
 const slippagePresets = ['0.1', '0.5', '1', '2']
 
 const SwapSettings = ({ onClose }: { onClose: () => void }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'settings', 'swap'])
   const margin = mangoStore((s) => s.swap.margin)
   const slippage = mangoStore((s) => s.swap.slippage)
   const set = mangoStore((s) => s.set)
 
   const [showCustomSlippageForm, setShowCustomSlippageForm] = useState(false)
-  const [inputValue, setInputValue] = useState('')
+  const [inputValue, setInputValue] = useState(slippage.toString())
+
+  useEffect(() => {
+    if (!slippagePresets.includes(slippage.toString())) {
+      setShowCustomSlippageForm(true)
+    }
+  }, [])
 
   const handleSetMargin = () => {
     set((s) => {
@@ -39,11 +45,11 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
 
       <div className="mt-4">
         <div className="mb-2 flex justify-between">
-          <p className="text-th-fgd-2">{`${t('max')} ${t('swap:slippage')}`}</p>
+          <p className="text-th-fgd-2">{t('swap:max-slippage')}</p>
           <LinkButton
             onClick={() => setShowCustomSlippageForm(!showCustomSlippageForm)}
           >
-            {showCustomSlippageForm ? 'Preset' : t('settings:custom')}
+            {showCustomSlippageForm ? t('swap:preset') : t('settings:custom')}
           </LinkButton>
         </div>
         {showCustomSlippageForm ? (

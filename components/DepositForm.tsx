@@ -1,4 +1,4 @@
-import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
+import { Bank, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -20,7 +20,11 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatFixedDecimals,
+} from './../utils/numbers'
 import { TokenAccount } from './../utils/tokens'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
@@ -36,6 +40,9 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
+import useSolBalance from 'hooks/useSolBalance'
+import AmountWithValue from './shared/AmountWithValue'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -63,6 +70,27 @@ export const walletBalanceForToken = (
   }
 }
 
+export const useAlphaMax = (inputAmount: string, bank: Bank | undefined) => {
+  const exceedsAlphaMax = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const group = mangoStore.getState().group
+    if (!group || !mangoAccount) return
+    if (
+      mangoAccount.owner.toString() ===
+      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
+    )
+      return false
+    const accountValue = toUiDecimalsForQuote(
+      mangoAccount.getEquity(group).toNumber()
+    )
+    return (
+      parseFloat(inputAmount) * (bank?.uiPrice || 1) + accountValue >
+        ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
+    )
+  }, [inputAmount, bank])
+  return exceedsAlphaMax
+}
+
 function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
@@ -74,11 +102,14 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
+  const { handleConnect } = useEnhancedWallet()
+  const { maxSolDeposit } = useSolBalance()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
+  const exceedsAlphaMax = useAlphaMax(inputAmount, bank)
 
   const logoUri = useMemo(() => {
     let logoURI
@@ -98,7 +129,9 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [walletTokens, selectedToken])
 
   const setMax = useCallback(() => {
-    setInputAmount(tokenMax.maxAmount.toString())
+    setInputAmount(
+      floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals).toFixed()
+    )
     setSizePercentage('100')
   }, [tokenMax])
 
@@ -176,25 +209,9 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     return banks
   }, [group?.banksMapByName, walletTokens])
 
-  const exceedsAlphaMax = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    const group = mangoStore.getState().group
-    if (!group || !mangoAccount) return
-    if (
-      mangoAccount.owner.toString() ===
-      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
-    )
-      return false
-    const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group).toNumber()
-    )
-    return (
-      parseFloat(inputAmount) * (bank?.uiPrice || 1) + accountValue >
-        ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
-    )
-  }, [inputAmount, bank])
-
-  const showInsufficientBalance = tokenMax.maxAmount < Number(inputAmount)
+  const showInsufficientBalance =
+    tokenMax.maxAmount < Number(inputAmount) ||
+    (selectedToken === 'SOL' && maxSolDeposit <= 0)
 
   return (
     <>
@@ -211,14 +228,14 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         <h2 className="mb-4 text-center text-lg">
           {t('select-deposit-token')}
         </h2>
-        <div className="grid auto-cols-fr grid-flow-col px-4 pb-2">
-          <div className="text-left">
+        <div className="flex items-center px-4 pb-2">
+          <div className="w-1/4 text-left">
             <p className="text-xs">{t('token')}</p>
           </div>
-          <div className="text-right">
+          <div className="w-1/4 text-right">
             <p className="text-xs">{t('deposit-rate')}</p>
           </div>
-          <div className="text-right">
+          <div className="w-1/2 text-right">
             <p className="whitespace-nowrap text-xs">{t('wallet-balance')}</p>
           </div>
         </div>
@@ -243,6 +260,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             />
             <SolBalanceWarnings
               amount={inputAmount}
+              className="mt-2"
               setAmount={setInputAmount}
               selectedToken={selectedToken}
             />
@@ -289,7 +307,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                   allowNegative={false}
                   isNumericString={true}
                   decimalScale={bank?.mintDecimals || 6}
-                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl tracking-wider text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) => {
@@ -310,35 +328,31 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 />
               </div>
             </div>
-            <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
-              <HealthImpactTokenChange
-                mintPk={bank!.mint}
-                uiAmount={Number(inputAmount)}
-                isDeposit
-              />
-              <div className="flex justify-between">
-                <p>{t('deposit-amount')}</p>
-                <p className="font-mono text-th-fgd-2">
-                  {bank?.uiPrice && inputAmount ? (
-                    <>
-                      {inputAmount}{' '}
-                      <span className="text-xs text-th-fgd-3">
-                        (
-                        {formatFixedDecimals(
-                          bank.uiPrice * Number(inputAmount),
-                          true
-                        )}
-                        )
-                      </span>
-                    </>
+            {bank ? (
+              <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4 text-sm ">
+                <HealthImpactTokenChange
+                  mintPk={bank.mint}
+                  uiAmount={Number(inputAmount)}
+                  isDeposit
+                />
+                <div className="flex justify-between">
+                  <p>{t('deposit-amount')}</p>
+                  {inputAmount ? (
+                    <AmountWithValue
+                      amount={formatDecimal(
+                        Number(inputAmount),
+                        bank.mintDecimals
+                      )}
+                      value={formatFixedDecimals(
+                        bank.uiPrice * Number(inputAmount),
+                        true
+                      )}
+                    />
                   ) : (
-                    <>
-                      0 <span className="text-xs text-th-fgd-3">($0.00)</span>
-                    </>
+                    <AmountWithValue amount="0" value="$0.00" />
                   )}
-                </p>
-              </div>
-              {/* <div className="flex justify-between">
+                </div>
+                {/* <div className="flex justify-between">
               <div className="flex items-center">
                 <Tooltip content={t('asset-weight-desc')}>
                   <p className="tooltip-underline">{t('asset-weight')}</p>
@@ -346,29 +360,28 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
               </div>
               <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
             </div> */}
-              <div className="flex justify-between">
-                <Tooltip content={t('tooltip-collateral-value')}>
-                  <p className="tooltip-underline">{t('collateral-value')}</p>
-                </Tooltip>
-                <p className="font-mono text-th-fgd-2">
-                  {formatFixedDecimals(
-                    bank!.uiPrice! *
-                      Number(inputAmount) *
-                      Number(bank!.initAssetWeight),
-                    true
-                  )}
-                </p>
+                <div className="flex justify-between">
+                  <Tooltip content={t('tooltip-collateral-value')}>
+                    <p className="tooltip-underline">{t('collateral-value')}</p>
+                  </Tooltip>
+                  <p className="font-mono text-th-fgd-2">
+                    {formatFixedDecimals(
+                      bank.uiPrice *
+                        Number(inputAmount) *
+                        Number(bank.initAssetWeight),
+                      true
+                    )}
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
           <Button
-            onClick={handleDeposit}
+            onClick={connected ? handleDeposit : handleConnect}
             className="flex w-full items-center justify-center"
             disabled={
-              !inputAmount ||
-              exceedsAlphaMax ||
-              showInsufficientBalance ||
-              !connected
+              connected &&
+              (!inputAmount || exceedsAlphaMax || showInsufficientBalance)
             }
             size="large"
           >

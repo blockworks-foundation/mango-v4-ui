@@ -28,6 +28,34 @@ export const calculateLimitPriceForMarketOrder = (
   }
 }
 
+export const calculateEstPriceForBaseSize = (
+  orderBook: OrderbookL2,
+  size: number,
+  side: 'buy' | 'sell'
+): number => {
+  const orders = side === 'buy' ? orderBook.asks : orderBook.bids
+  let acc = 0
+  let selectedOrder
+  const orderSize = size
+  for (const order of orders) {
+    acc += order[1]
+    if (acc >= orderSize) {
+      selectedOrder = order
+      break
+    }
+  }
+
+  if (!selectedOrder) {
+    throw new Error('Unable to calculate market order. Please retry.')
+  }
+
+  if (side === 'buy') {
+    return selectedOrder[0]
+  } else {
+    return selectedOrder[0]
+  }
+}
+
 export const calculateSlippage = (
   orderBook: OrderbookL2,
   size: number,
@@ -39,7 +67,7 @@ export const calculateSlippage = (
   const referencePrice = bb && ba ? (bb + ba) / 2 : markPrice
 
   if (Number(size)) {
-    const estimatedPrice = calculateLimitPriceForMarketOrder(
+    const estimatedPrice = calculateEstPriceForBaseSize(
       orderBook,
       Number(size),
       side
@@ -47,6 +75,7 @@ export const calculateSlippage = (
 
     const slippageAbs =
       Number(size) > 0 ? Math.abs(estimatedPrice - referencePrice) : 0
+
     const slippageRel = (slippageAbs / referencePrice) * 100
     return slippageRel
   }

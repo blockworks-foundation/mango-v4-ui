@@ -1,8 +1,9 @@
 import mangoStore from '@store/mangoStore'
 import { useEffect } from 'react'
 
+const set = mangoStore.getState().set
+
 export default function useMarkPrice() {
-  const set = mangoStore((s) => s.set)
   const markPrice = mangoStore((s) => s.selectedMarket.markPrice)
   const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
   const fills = mangoStore((s) => s.selectedMarket.fills)
@@ -28,7 +29,7 @@ export default function useMarkPrice() {
         state.selectedMarket.markPrice = newMarkPrice
       })
     }
-  }, [orderbook, trades])
+  }, [orderbook, trades, markPrice])
 
   return markPrice
 }

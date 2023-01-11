@@ -24,6 +24,8 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import { ArrowPathIcon } from '@heroicons/react/20/solid'
+import { sleep } from 'utils'
 
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
   const depth = 40
@@ -406,6 +408,13 @@ const Orderbook = () => {
     // return () => clearTimeout(id)
   }, [verticallyCenterOrderbook])
 
+  const resetOrderbook = useCallback(async () => {
+    setShowBuys(true)
+    setShowSells(true)
+    await sleep(300)
+    verticallyCenterOrderbook()
+  }, [])
+
   const onGroupSizeChange = useCallback((groupSize: number) => {
     setGrouping(groupSize)
   }, [])
@@ -417,10 +426,10 @@ const Orderbook = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-        <div id="trade-step-three" className="flex items-center space-x-2">
+        <div id="trade-step-three" className="flex items-center space-x-1.5">
           <Tooltip
             content={showBuys ? t('trade:hide-bids') : t('trade:show-bids')}
-            placement="top"
+            placement="bottom"
           >
             <button
               className={`rounded ${
@@ -434,7 +443,7 @@ const Orderbook = () => {
           </Tooltip>
           <Tooltip
             content={showSells ? t('trade:hide-asks') : t('trade:show-asks')}
-            placement="top"
+            placement="bottom"
           >
             <button
               className={`rounded ${
@@ -446,10 +455,24 @@ const Orderbook = () => {
               <OrderbookIcon className="h-4 w-4" side="sell" />
             </button>
           </Tooltip>
+          <Tooltip content={'Reset and center orderbook'} placement="bottom">
+            <button
+              className={`rounded ${
+                showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              onClick={resetOrderbook}
+            >
+              <ArrowPathIcon className="h-4 w-4" />
+            </button>
+          </Tooltip>
         </div>
         {market ? (
           <div id="trade-step-four">
-            <Tooltip content={t('trade:grouping')} placement="top" delay={250}>
+            <Tooltip
+              content={t('trade:grouping')}
+              placement="bottom"
+              delay={250}
+            >
               <GroupSize
                 tickSize={market.tickSize}
                 onChange={onGroupSizeChange}

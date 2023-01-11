@@ -19,10 +19,11 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import mangoStore from '@store/mangoStore'
+import AmountWithValue from '@components/shared/AmountWithValue'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const [showTokenDetails, setShowTokenDetails] = useState('')
   const { group } = useMangoGroup()
@@ -43,7 +44,7 @@ const TokenStats = () => {
         key,
         value,
       }))
-      return rawBanks
+      return rawBanks.sort((a, b) => a.key.localeCompare(b.key))
     }
     return []
   }, [group])
@@ -65,6 +66,11 @@ const TokenStats = () => {
               <Th className="text-left">{t('token')}</Th>
               <Th className="text-right">{t('total-deposits')}</Th>
               <Th className="text-right">{t('total-borrows')}</Th>
+              <Th className="text-right">
+                <Tooltip content="The amount available to borrow">
+                  <span className="tooltip-underline">{t('available')}</span>
+                </Tooltip>
+              </Th>
               <Th>
                 <div className="flex justify-end">
                   <Tooltip content="The deposit rate (green) will automatically be paid on positive balances and the borrow rate (red) will automatically be charged on negative balances.">
@@ -83,16 +89,11 @@ const TokenStats = () => {
               </Th>
               <Th>
                 <div className="flex justify-end text-right">
-                  <Tooltip content={t('asset-weight-desc')}>
+                  <Tooltip content={t('asset-liability-weight-desc')}>
                     <span className="tooltip-underline">
-                      {t('asset-weight')}
+                      {t('asset-liability-weight')}
                     </span>
                   </Tooltip>
-                </div>
-              </Th>
-              <Th>
-                <div className="flex items-center justify-end">
-                  <span className="text-right">{t('liability-weight')}</span>
                 </div>
               </Th>
             </TrHead>
@@ -107,6 +108,11 @@ const TokenStats = () => {
                   (t) => t.address === bank.mint.toString()
                 )?.logoURI
               }
+              const deposits = bank.uiDeposits()
+              const borrows = bank.uiBorrows()
+              const price = bank.uiPrice
+              const available =
+                deposits - deposits * bank.minVaultToDepositsRatio - borrows
 
               return (
                 <TrBody key={key}>
@@ -119,21 +125,39 @@ const TokenStats = () => {
                           <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                         )}
                       </div>
-                      <p className="font-body tracking-wide">{bank.name}</p>
+                      <p className="font-body tracking-wider">{bank.name}</p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiDeposits())}</p>
+                      <p>{formatFixedDecimals(deposits)}</p>
+                      <p className="text-th-fgd-4">
+                        {formatFixedDecimals(deposits * price, true, true)}
+                      </p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(bank.uiBorrows())}</p>
+                      <p>{formatFixedDecimals(borrows)}</p>
+                      <p className="text-th-fgd-4">
+                        {formatFixedDecimals(borrows * price, true, true)}
+                      </p>
                     </div>
                   </Td>
                   <Td>
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex flex-col text-right">
+                      <p>
+                        {available > 0 ? formatFixedDecimals(available) : '0'}
+                      </p>
+                      <p className="text-th-fgd-4">
+                        {available > 0
+                          ? formatFixedDecimals(available * price, false, true)
+                          : '$0.00'}
+                      </p>
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex justify-end space-x-1.5">
                       <p className="text-th-up">
                         {formatDecimal(bank.getDepositRateUi(), 2, {
                           fixed: true,
@@ -164,12 +188,9 @@ const TokenStats = () => {
                     </div>
                   </Td>
                   <Td>
-                    <div className="text-right">
+                    <div className="flex justify-end space-x-1.5 text-right">
                       <p>{bank.initAssetWeight.toFixed(2)}</p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="text-right">
+                      <span className="text-th-fgd-4">|</span>
                       <p>{bank.initLiabWeight.toFixed(2)}</p>
                     </div>
                   </Td>
@@ -198,6 +219,11 @@ const TokenStats = () => {
                 (t) => t.address === bank.mint.toString()
               )?.logoURI
             }
+            const deposits = bank.uiDeposits()
+            const borrows = bank.uiBorrows()
+            const price = bank.uiPrice
+            const available =
+              deposits - deposits * bank.minVaultToDepositsRatio - borrows
             return (
               <div key={key} className="border-b border-th-bkg-3 px-6 py-4">
                 <div className="flex items-center justify-between">
@@ -213,18 +239,28 @@ const TokenStats = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <div>
-                      <p className="text-right text-xs">
+                      <p className="mb-0.5 text-right text-xs">
                         {t('total-deposits')}
                       </p>
-                      <p className="text-right font-mono text-th-fgd-1">
-                        {formatFixedDecimals(bank.uiDeposits())}
-                      </p>
+                      <AmountWithValue
+                        amount={formatFixedDecimals(deposits)}
+                        value={formatFixedDecimals(
+                          deposits * price,
+                          true,
+                          true
+                        )}
+                        stacked
+                      />
                     </div>
                     <div>
-                      <p className="text-right text-xs">{t('total-borrows')}</p>
-                      <p className="text-right font-mono text-th-fgd-1">
-                        {formatFixedDecimals(bank.uiBorrows())}
+                      <p className="mb-0.5 text-right text-xs">
+                        {t('total-borrows')}
                       </p>
+                      <AmountWithValue
+                        amount={formatFixedDecimals(borrows)}
+                        value={formatFixedDecimals(borrows * price, true, true)}
+                        stacked
+                      />
                     </div>
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.name)}
@@ -279,20 +315,41 @@ const TokenStats = () => {
                       </p>
                     </div>
                     <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">
-                        {t('asset-weight')}
-                      </p>
-                      <p className="font-mono text-th-fgd-1">
-                        {bank.initAssetWeight.toFixed(2)}
+                      <Tooltip content="The amount available to borrow">
+                        <p className="tooltip-underline text-xs text-th-fgd-3">
+                          {t('available')}
+                        </p>
+                      </Tooltip>
+                      <p className="text-th-fgd-1">
+                        {available > 0 ? formatFixedDecimals(available) : '0'}{' '}
+                        <span className="text-th-fgd-4">
+                          (
+                          {available > 0
+                            ? formatFixedDecimals(
+                                available * price,
+                                false,
+                                true
+                              )
+                            : '$0.00'}
+                          )
+                        </span>
                       </p>
                     </div>
                     <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">
-                        {t('liability-weight')}
-                      </p>
-                      <p className="font-mono text-th-fgd-1">
-                        {bank.initLiabWeight.toFixed(2)}
-                      </p>
+                      <Tooltip content={t('asset-liability-weight-desc')}>
+                        <p className="tooltip-underline text-xs text-th-fgd-3">
+                          {t('asset-liability-weight')}
+                        </p>
+                      </Tooltip>
+                      <div className="flex space-x-1.5 text-right font-mono">
+                        <p className="text-th-fgd-1">
+                          {bank.initAssetWeight.toFixed(2)}
+                        </p>
+                        <span className="text-th-fgd-4">|</span>
+                        <p className="text-th-fgd-1">
+                          {bank.initLiabWeight.toFixed(2)}
+                        </p>
+                      </div>
                     </div>
                     <div className="col-span-1">
                       <LinkButton

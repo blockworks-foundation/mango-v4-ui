@@ -21,6 +21,8 @@ export const getMaxWithdrawForBank = (
   )
   const maxWithdraw = allowBorrow
     ? Decimal.min(vaultBalance, maxBorrow)
+    : bank.initAssetWeight.toNumber() === 0
+    ? Decimal.min(accountBalance, vaultBalance)
     : Decimal.min(accountBalance, vaultBalance, maxBorrow)
   return Decimal.max(0, maxWithdraw)
 }
@@ -43,10 +45,10 @@ export const getTokenInMax = (
     }
   }
 
-  const inputTokenBalance = floorToDecimal(
-    mangoAccount.getTokenBalanceUi(inputBank),
-    inputBank.mintDecimals
+  const inputTokenBalance = new Decimal(
+    mangoAccount.getTokenBalanceUi(inputBank)
   )
+
   const maxAmountWithoutMargin = inputTokenBalance.gt(0)
     ? inputTokenBalance
     : new Decimal(0)

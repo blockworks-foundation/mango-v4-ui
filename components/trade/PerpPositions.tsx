@@ -1,9 +1,9 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { LinkButton } from '@components/shared/Button'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
-import { LinkIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
+import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
@@ -19,10 +19,10 @@ import TableMarketName from './TableMarketName'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { connected } = useWallet()
   const { group } = useMangoGroup()
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const { selectedMarket } = useSelectedMarket()
+  const { mangoAccount } = useMangoAccount()
 
   const handlePositionClick = (positionSize: number) => {
     const tradeForm = mangoStore.getState().tradeForm
@@ -56,109 +56,98 @@ const PerpPositions = () => {
     p.basePositionLots.toNumber()
   )
 
-  return connected ? (
-    openPerpPositions.length ? (
-      <div>
-        <Table>
-          <thead>
-            <TrHead>
-              <Th className="text-left">{t('market')}</Th>
-              <Th className="text-right">{t('trade:side')}</Th>
-              <Th className="text-right">{t('trade:size')}</Th>
-              <Th className="text-right">{t('notional')}</Th>
-              <Th className="text-right">{t('trade:entry-price')}</Th>
-              <Th className="text-right">Redeemable PnL</Th>
-              <Th className="text-right">Realized PnL</Th>
-            </TrHead>
-          </thead>
-          <tbody>
-            {openPerpPositions.map((position) => {
-              const market = group.getPerpMarketByMarketIndex(
-                position.marketIndex
-              )
-              const basePosition = position.getBasePositionUi(market)
-              const trimmedBasePosition = trimDecimals(
-                basePosition,
-                getDecimalCount(market.minOrderSize)
-              )
-              const isSelectedMarket =
-                selectedMarket instanceof PerpMarket &&
-                selectedMarket.perpMarketIndex === position.marketIndex
+  return mangoAccount && openPerpPositions.length ? (
+    <div>
+      <Table>
+        <thead>
+          <TrHead>
+            <Th className="text-left">{t('market')}</Th>
+            <Th className="text-right">{t('trade:side')}</Th>
+            <Th className="text-right">{t('trade:size')}</Th>
+            <Th className="text-right">{t('trade:notional')}</Th>
+            <Th className="text-right">{t('trade:entry-price')}</Th>
+            <Th className="text-right">Redeemable PnL</Th>
+            <Th className="text-right">Realized PnL</Th>
+          </TrHead>
+        </thead>
+        <tbody>
+          {openPerpPositions.map((position) => {
+            const market = group.getPerpMarketByMarketIndex(
+              position.marketIndex
+            )
+            const basePosition = position.getBasePositionUi(market)
+            const trimmedBasePosition = trimDecimals(
+              basePosition,
+              getDecimalCount(market.minOrderSize)
+            )
+            const isSelectedMarket =
+              selectedMarket instanceof PerpMarket &&
+              selectedMarket.perpMarketIndex === position.marketIndex
 
-              if (!basePosition) return null
+            if (!basePosition) return null
 
-              const unsettledPnl = position.getEquityUi(group, market)
+            const unsettledPnl = position.getEquityUi(group, market)
 
-              return (
-                <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
-                  <Td>
-                    <TableMarketName market={market} />
-                  </Td>
-                  <Td className="text-right">
-                    <PerpSideBadge basePosition={basePosition} />
-                  </Td>
-                  <Td className="text-right">
-                    <p className="flex justify-end">
-                      {isSelectedMarket ? (
-                        <LinkButton
-                          onClick={() =>
-                            handlePositionClick(trimmedBasePosition)
-                          }
-                        >
-                          {Math.abs(trimmedBasePosition)}
-                        </LinkButton>
-                      ) : (
-                        Math.abs(trimmedBasePosition)
-                      )}
-                    </p>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    <div>
-                      $
-                      {Math.abs(trimmedBasePosition * market._uiPrice).toFixed(
-                        2
-                      )}
-                    </div>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    <div>
-                      $
-                      {numberFormat.format(
-                        position.getAverageEntryPriceUi(market)
-                      )}
-                    </div>
-                  </Td>
-                  <Td
-                    className={`text-right font-mono ${
-                      unsettledPnl > 0 ? 'text-th-up' : 'text-th-down'
-                    }`}
-                  >
-                    <div>${formatFixedDecimals(unsettledPnl)}</div>
-                  </Td>
-                  <Td className="text-right">
-                    <div>
-                      $
-                      {/* {numberFormat.format(
+            return (
+              <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
+                <Td>
+                  <TableMarketName market={market} />
+                </Td>
+                <Td className="text-right">
+                  <PerpSideBadge basePosition={basePosition} />
+                </Td>
+                <Td className="text-right">
+                  <p className="flex justify-end">
+                    {isSelectedMarket ? (
+                      <LinkButton
+                        onClick={() => handlePositionClick(trimmedBasePosition)}
+                      >
+                        {Math.abs(trimmedBasePosition)}
+                      </LinkButton>
+                    ) : (
+                      Math.abs(trimmedBasePosition)
+                    )}
+                  </p>
+                </Td>
+                <Td className="text-right font-mono">
+                  <div>
+                    $
+                    {Math.abs(trimmedBasePosition * market._uiPrice).toFixed(2)}
+                  </div>
+                </Td>
+                <Td className="text-right font-mono">
+                  <div>
+                    $
+                    {numberFormat.format(
+                      position.getAverageEntryPriceUi(market)
+                    )}
+                  </div>
+                </Td>
+                <Td
+                  className={`text-right font-mono ${
+                    unsettledPnl > 0 ? 'text-th-up' : 'text-th-down'
+                  }`}
+                >
+                  <div>{formatFixedDecimals(unsettledPnl, true)}</div>
+                </Td>
+                <Td className="text-right">
+                  <div>
+                    $
+                    {/* {numberFormat.format(
                         position.perpSpotTransfers.toNumber()
                       )} */}
-                    </div>
-                  </Td>
-                </TrBody>
-              )
-            })}
-          </tbody>
-        </Table>
-      </div>
-    ) : (
-      <div className="flex flex-col items-center p-8">
-        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-        <p>{t('trade:no-positions')}</p>
-      </div>
-    )
+                  </div>
+                </Td>
+              </TrBody>
+            )
+          })}
+        </tbody>
+      </Table>
+    </div>
   ) : (
     <div className="flex flex-col items-center p-8">
-      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('trade:connect-positions')}</p>
+      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+      <p>{t('trade:no-positions')}</p>
     </div>
   )
 }

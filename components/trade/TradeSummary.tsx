@@ -69,7 +69,7 @@ const TradeSummary = ({
       : simulatedHealthRatio < 0
       ? 0
       : Math.trunc(simulatedHealthRatio)
-  }, [group, mangoAccount, selectedMarket, tradeForm.baseSize, tradeForm.side])
+  }, [group, mangoAccount, selectedMarket, tradeForm])
 
   return (
     <div className="space-y-2 px-3 md:px-4">
@@ -79,6 +79,7 @@ const TradeSummary = ({
           {tradeForm.price && tradeForm.baseSize
             ? formatFixedDecimals(
                 parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize),
+                false,
                 true
               )
             : '0.00'}
@@ -93,8 +94,9 @@ const TradeSummary = ({
           {group && mangoAccount
             ? formatFixedDecimals(
                 toUiDecimalsForQuote(
-                  mangoAccount.getCollateralValue(group)!.toNumber()
+                  mangoAccount.getCollateralValue(group).toNumber()
                 ),
+                false,
                 true
               )
             : '–'}

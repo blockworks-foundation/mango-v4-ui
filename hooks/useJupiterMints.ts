@@ -47,7 +47,9 @@ const useJupiterMints = (): {
       (t) => t.address === WRAPPED_SOL_MINT.toString()
     )
     if (findSol) {
-      findSol.logoURI = '/icons/sol.svg'
+      if (findSol.logoURI !== '/icons/sol.svg') {
+        findSol.logoURI = '/icons/sol.svg'
+      }
     }
   }
 

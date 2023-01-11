@@ -80,7 +80,7 @@ const PerpButtonGroup = ({
   )
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full px-3 md:px-4">
       <ButtonGroup
         activeValue={sizePercentage}
         onChange={(p) => handleSizePercentage(p)}

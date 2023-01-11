@@ -1,7 +1,6 @@
 import useInterval from '@components/shared/useInterval'
 import mangoStore from '@store/mangoStore'
-import { useEffect, useMemo, useRef } from 'react'
-import isEqual from 'lodash/isEqual'
+import { useEffect, useMemo } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import Decimal from 'decimal.js'
 import { ChartTradeType } from 'types'
@@ -14,6 +13,7 @@ import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
+import usePrevious from '@components/shared/usePrevious'
 
 const buySound = new Howl({
   src: ['/sounds/trade-buy.mp3'],
@@ -25,15 +25,30 @@ const sellSound = new Howl({
 })
 
 const RecentTrades = () => {
-  // const [trades, setTrades] = useState<any[]>([])
   const { t } = useTranslation(['common', 'trade'])
   const fills = mangoStore((s) => s.selectedMarket.fills)
   const [soundSettings, setSoundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
-  const currentFillsData = useRef<any>([])
-  const nextFillsData = useRef<any>([])
+  const previousFills = usePrevious(fills)
+
+  useEffect(() => {
+    if (!soundSettings['recent-trades']) return
+    if (fills.length && previousFills && previousFills.length) {
+      const latestFill: ChartTradeType = fills[0]
+      const previousFill: ChartTradeType = previousFills[0]
+      if (previousFill.orderId.toString() !== latestFill.orderId.toString()) {
+        const side =
+          latestFill.side || (latestFill.takerSide === 1 ? 'bid' : 'ask')
+        if (['buy', 'bid'].includes(side)) {
+          buySound.play()
+        } else {
+          sellSound.play()
+        }
+      }
+    }
+  }, [fills, previousFills, soundSettings])
 
   const { selectedMarket, serumOrPerpMarket: market } = useSelectedMarket()
 
@@ -44,33 +59,6 @@ const RecentTrades = () => {
   const quoteSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[1]
   }, [selectedMarket])
-
-  // needs more testing
-  useEffect(() => {
-    if (soundSettings['recent-trades']) {
-      mangoStore.subscribe(
-        (state) => [state.selectedMarket.fills],
-        (fills) => (nextFillsData.current = fills[0])
-      )
-    }
-  }, [soundSettings['recent-trades']])
-
-  // needs more testing
-  useInterval(() => {
-    if (soundSettings['recent-trades']) {
-      if (fills.length) {
-        currentFillsData.current = fills
-      }
-      if (
-        nextFillsData.current.length &&
-        !isEqual(currentFillsData.current, nextFillsData.current)
-      ) {
-        nextFillsData.current[0].side === 'buy'
-          ? buySound.play()
-          : sellSound.play()
-      }
-    }
-  }, 1000)
 
   // const fetchRecentTrades = useCallback(async () => {
   //   if (!market) return
@@ -109,9 +97,27 @@ const RecentTrades = () => {
     actions.loadMarketFills()
   }, 5000)
 
+  const [buyRatio, sellRatio] = useMemo(() => {
+    if (!fills.length) return [0, 0]
+
+    const vol = fills.reduce(
+      (a: { buys: number; sells: number }, c: any) => {
+        if (c.side === 'buy' || c.takerSide === 1) {
+          a.buys = a.buys + c.size
+        } else {
+          a.sells = a.sells + c.size
+        }
+        return a
+      },
+      { buys: 0, sells: 0 }
+    )
+    const totalVol = vol.buys + vol.sells
+    return [vol.buys / totalVol, vol.sells / totalVol]
+  }, [fills])
+
   return (
     <div className="thin-scroll h-full overflow-y-scroll">
-      <div className="flex justify-end border-b border-th-bkg-3 px-2 py-1">
+      <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 px-2">
         <Tooltip content={t('trade:trade-sounds-tooltip')} delay={250}>
           <IconButton
             onClick={() =>
@@ -130,6 +136,17 @@ const RecentTrades = () => {
             )}
           </IconButton>
         </Tooltip>
+        <span className="text-xs text-th-fgd-4">
+          {t('trade:buys')}:{' '}
+          <span className="font-mono text-th-up">
+            {(buyRatio * 100).toFixed(1)}%
+          </span>
+          <span className="px-2">|</span>
+          {t('trade:sells')}:{' '}
+          <span className="font-mono text-th-down">
+            {(sellRatio * 100).toFixed(1)}%
+          </span>
+        </span>
       </div>
       <div className="px-2">
         <table className="min-w-full">
@@ -147,7 +164,8 @@ const RecentTrades = () => {
           <tbody>
             {!!fills.length &&
               fills.map((trade: ChartTradeType, i: number) => {
-                const side = trade.side || trade.takerSide === 1 ? 'bid' : 'ask'
+                const side =
+                  trade.side || (trade.takerSide === 1 ? 'bid' : 'ask')
 
                 // const price =
                 // typeof trade.price === 'number'
@@ -174,8 +192,8 @@ const RecentTrades = () => {
                     <td
                       className={`pb-1.5 text-right ${
                         ['buy', 'bid'].includes(side)
-                          ? `text-th-up`
-                          : `text-th-down`
+                          ? 'text-th-up'
+                          : 'text-th-down'
                       }`}
                     >
                       {formattedPrice.toFixed()}

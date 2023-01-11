@@ -111,32 +111,34 @@ const CoingeckoStats = ({
 
   return (
     <>
-      <div className="border-b border-th-bkg-3 py-4 px-6">
-        <h2 className="mb-1 text-xl">About {bank.name}</h2>
-        <div className="flex items-end">
-          <p
-            className={`${
-              showFullDesc ? 'h-full' : 'h-5'
-            } max-w-[720px] overflow-hidden`}
-            ref={descWidthRef}
-          >
-            {parse(coingeckoData.description.en)}
-          </p>
-          {width === 720 ? (
-            <span
-              className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
-              onClick={() => setShowFullDesc(!showFullDesc)}
+      {coingeckoData?.description?.en?.length ? (
+        <div className="border-b border-th-bkg-3 py-4 px-6">
+          <h2 className="mb-1 text-xl">About {bank.name}</h2>
+          <div className="flex items-end">
+            <p
+              className={`${
+                showFullDesc ? 'h-full' : 'h-5'
+              } max-w-[720px] overflow-hidden`}
+              ref={descWidthRef}
             >
-              {showFullDesc ? 'Less' : 'More'}
-              <ArrowSmallUpIcon
-                className={`h-5 w-5 ${
-                  showFullDesc ? 'rotate-360' : 'rotate-180'
-                } default-transition`}
-              />
-            </span>
-          ) : null}
+              {parse(coingeckoData.description.en)}
+            </p>
+            {width === 720 ? (
+              <span
+                className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
+                onClick={() => setShowFullDesc(!showFullDesc)}
+              >
+                {showFullDesc ? 'Less' : 'More'}
+                <ArrowSmallUpIcon
+                  className={`h-5 w-5 ${
+                    showFullDesc ? 'rotate-360' : 'rotate-180'
+                  } default-transition`}
+                />
+              </span>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
       {!loadingChart ? (
         coingeckoTokenPrices.length ? (
           <>

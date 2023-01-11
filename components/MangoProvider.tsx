@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
-import { PublicKey } from '@solana/web3.js'
+import { Keypair, PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -12,7 +12,8 @@ const actions = mangoStore.getState().actions
 const HydrateStore = () => {
   const router = useRouter()
   const { name: marketName } = router.query
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountPk, mangoAccountAddress } = useMangoAccount()
+  const connection = mangoStore((s) => s.connection)
 
   const fetchData = useCallback(async () => {
     await actions.fetchGroup()
@@ -31,15 +32,32 @@ const HydrateStore = () => {
     fetchData()
   }, 15000)
 
+  useInterval(() => {
+    if (mangoAccountAddress) {
+      actions.fetchOpenOrders()
+    }
+  }, 30000)
+
+  // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
+  // is empty after opening its first time, preventing subsequent subscriptions from receiving responses.
+  // This is a hack to prevent the list from every getting empty
+  useEffect(() => {
+    const id = connection.onAccountChange(new Keypair().publicKey, () => {
+      return
+    })
+    return () => {
+      connection.removeAccountChangeListener(id)
+    }
+  }, [connection])
+
   // watch selected Mango Account for changes
   useEffect(() => {
-    const connection = mangoStore.getState().connection
     const client = mangoStore.getState().client
 
-    if (!mangoAccount) return
+    if (!mangoAccountPk) return
 
     const subscriptionId = connection.onAccountChange(
-      mangoAccount.publicKey,
+      mangoAccountPk,
       async (info, context) => {
         if (info?.lamports === 0) return
 
@@ -80,7 +98,7 @@ const HydrateStore = () => {
     return () => {
       connection.removeAccountChangeListener(subscriptionId)
     }
-  }, [mangoAccount])
+  }, [connection, mangoAccountPk])
 
   return null
 }
@@ -103,10 +121,12 @@ const ReadOnlyMangoAccount = () => {
         const pk = new PublicKey(ma)
         const readOnlyMangoAccount = await client.getMangoAccount(pk)
         await readOnlyMangoAccount.reloadAccountData(client)
+        await actions.fetchOpenOrders(readOnlyMangoAccount)
         set((state) => {
           state.mangoAccount.current = readOnlyMangoAccount
           state.mangoAccount.initialLoad = false
         })
+        actions.fetchTradeHistory()
       } catch (error) {
         console.error('error', error)
       }

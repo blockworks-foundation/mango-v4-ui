@@ -1,4 +1,3 @@
-import Checkbox from '@components/forms/Checkbox'
 import MangoDateRangePicker from '@components/forms/DateRangePicker'
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
@@ -26,28 +25,12 @@ import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import ActivityFeedTable from './ActivityFeedTable'
 
-interface Filters {
-  deposit: boolean
-  liquidate_token_with_token: boolean
-  perp_trade: boolean
-  swap: boolean
-  withdraw: boolean
-}
-
 interface AdvancedFilters {
   symbol: string[]
   'start-date': string
   'end-date': string
   'usd-lower': string
   'usd-upper': string
-}
-
-const DEFAULT_FILTERS = {
-  deposit: true,
-  liquidate_token_with_token: true,
-  perp_trade: true,
-  swap: true,
-  withdraw: true,
 }
 
 const DEFAULT_ADVANCED_FILTERS = {
@@ -60,45 +43,31 @@ const DEFAULT_ADVANCED_FILTERS = {
 
 const DEFAULT_PARAMS = [
   'deposit',
-  'liquidate_token_with_token',
-  'swap',
   'perp_trade',
+  'liquidate_token_with_token',
+  'openbook_trade',
+  'swap',
   'withdraw',
 ]
 
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
-  const actions = mangoStore((s) => s.actions)
-  const { mangoAccount } = useMangoAccount()
+  const actions = mangoStore.getState().actions
+  const { mangoAccountAddress } = useMangoAccount()
   const [showActivityDetail, setShowActivityDetail] = useState(null)
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(
     DEFAULT_ADVANCED_FILTERS
   )
   const [params, setParams] = useState<string[]>(DEFAULT_PARAMS)
 
   useEffect(() => {
-    if (mangoAccount) {
-      const pubKey = mangoAccount.publicKey.toString()
-      actions.fetchActivityFeed(pubKey)
+    if (mangoAccountAddress) {
+      actions.fetchActivityFeed(mangoAccountAddress)
     }
-  }, [actions, mangoAccount])
+  }, [actions, mangoAccountAddress])
 
   const handleShowActivityDetails = (activity: any) => {
     setShowActivityDetail(activity)
-  }
-
-  const updateFilters = (e: ChangeEvent<HTMLInputElement>, filter: string) => {
-    setFilters({ ...filters, [filter]: e.target.checked })
-
-    let newParams: string[] = DEFAULT_PARAMS
-
-    if (params.includes(filter)) {
-      newParams = params.filter((p) => p !== filter)
-    } else {
-      newParams = [...params, filter]
-    }
-    setParams(newParams)
   }
 
   const advancedParamsString = useMemo(() => {
@@ -112,7 +81,7 @@ const ActivityFeed = () => {
   }, [advancedFilters])
 
   const queryParams = useMemo(() => {
-    return params.length === 5
+    return !params.length || params.length === 6
       ? advancedParamsString
       : `&activity-type=${params.toString()}${advancedParamsString}`
   }, [advancedParamsString, params])
@@ -120,11 +89,9 @@ const ActivityFeed = () => {
   return !showActivityDetail ? (
     <>
       <ActivityFilters
-        filters={filters}
-        setFilters={setFilters}
-        updateFilters={updateFilters}
+        filters={params}
+        setFilters={setParams}
         params={queryParams}
-        setParams={setParams}
         advancedFilters={advancedFilters}
         setAdvancedFilters={setAdvancedFilters}
       />
@@ -147,29 +114,24 @@ export default ActivityFeed
 const ActivityFilters = ({
   filters,
   setFilters,
-  updateFilters,
   params,
-  setParams,
   advancedFilters,
   setAdvancedFilters,
 }: {
-  filters: Filters
-  setFilters: (x: Filters) => void
-  updateFilters: (e: ChangeEvent<HTMLInputElement>, filter: string) => void
+  filters: string[]
+  setFilters: (x: string[]) => void
   params: string
-  setParams: (x: string[]) => void
   advancedFilters: AdvancedFilters
   setAdvancedFilters: (x: AdvancedFilters) => void
 }) => {
   const { t } = useTranslation(['common', 'activity'])
-  const actions = mangoStore((s) => s.actions)
+  const actions = mangoStore.getState().actions
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [hasFilters, setHasFilters] = useState(false)
 
   const handleUpdateResults = useCallback(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
     const set = mangoStore.getState().set
     if (params) {
       setHasFilters(true)
@@ -180,33 +142,31 @@ const ActivityFilters = ({
       s.activityFeed.feed = []
       s.activityFeed.loading = true
     })
-    if (mangoAccount) {
-      actions.fetchActivityFeed(mangoAccount.publicKey.toString(), 0, params)
+    if (mangoAccountAddress) {
+      actions.fetchActivityFeed(mangoAccountAddress, 0, params)
     }
-  }, [actions, params])
+  }, [actions, params, mangoAccountAddress])
 
   const handleResetFilters = useCallback(async () => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
     const set = mangoStore.getState().set
     setHasFilters(false)
     set((s) => {
       s.activityFeed.feed = []
       s.activityFeed.loading = true
     })
-    if (mangoAccount) {
-      await actions.fetchActivityFeed(mangoAccount.publicKey.toString())
+    if (mangoAccountAddress) {
+      await actions.fetchActivityFeed(mangoAccountAddress)
       setAdvancedFilters(DEFAULT_ADVANCED_FILTERS)
-      setFilters(DEFAULT_FILTERS)
-      setParams(DEFAULT_PARAMS)
+      setFilters(DEFAULT_PARAMS)
     }
-  }, [actions])
+  }, [actions, mangoAccountAddress])
 
   const handleUpdateMobileResults = () => {
     handleUpdateResults()
     setShowMobileFilters(false)
   }
 
-  return mangoAccount ? (
+  return mangoAccountAddress ? (
     <Disclosure>
       <div className="relative">
         {hasFilters ? (
@@ -225,7 +185,7 @@ const ActivityFilters = ({
         <div
           onClick={() => setShowMobileFilters(!showMobileFilters)}
           role="button"
-          className={`default-transition w-full bg-th-bkg-2 p-4 hover:bg-th-bkg-3 md:px-6`}
+          className={`default-transition h-12 w-full bg-th-bkg-2 px-4 hover:bg-th-bkg-3 md:px-6`}
         >
           <Disclosure.Button
             className={`flex h-full w-full items-center justify-between rounded-none`}
@@ -245,16 +205,11 @@ const ActivityFilters = ({
         </div>
       </div>
       <Disclosure.Panel className="bg-th-bkg-2 px-6 pb-6">
-        <div className="py-4">
-          <Label text={t('activity:activity-type')} />
-          <ActivityTypeFiltersForm
-            filters={filters}
-            updateFilters={updateFilters}
-          />
-        </div>
-        <AdvancedFiltersForm
+        <FiltersForm
           advancedFilters={advancedFilters}
           setAdvancedFilters={setAdvancedFilters}
+          filters={filters}
+          setFilters={setFilters}
         />
         <Button
           className="w-full md:w-auto"
@@ -268,69 +223,19 @@ const ActivityFilters = ({
   ) : null
 }
 
-const ActivityTypeFiltersForm = ({
-  filters,
-  updateFilters,
-}: {
-  filters: Filters
-  updateFilters: (e: ChangeEvent<HTMLInputElement>, filter: string) => void
-}) => {
-  const { t } = useTranslation('activity')
-  return (
-    <div className="flex w-full flex-col space-y-3 md:flex-row md:space-y-0">
-      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
-        <Checkbox
-          checked={filters.deposit}
-          onChange={(e) => updateFilters(e, 'deposit')}
-        >
-          <span className="text-sm">{t('deposits')}</span>
-        </Checkbox>
-      </div>
-      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
-        <Checkbox
-          checked={filters.withdraw}
-          onChange={(e) => updateFilters(e, 'withdraw')}
-        >
-          <span className="text-sm">{t('withdrawals')}</span>
-        </Checkbox>
-      </div>
-      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
-        <Checkbox
-          checked={filters.swap}
-          onChange={(e) => updateFilters(e, 'swap')}
-        >
-          <span className="text-sm">{t('swaps')}</span>
-        </Checkbox>
-      </div>
-      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
-        <Checkbox
-          checked={filters.perp_trade}
-          onChange={(e) => updateFilters(e, 'perp_trade')}
-        >
-          <span className="text-sm">{t('perps')}</span>
-        </Checkbox>
-      </div>
-      <div className="flex h-8 flex-1 items-center lg:h-12 lg:border-l lg:border-th-bkg-4 lg:p-4">
-        <Checkbox
-          checked={filters.liquidate_token_with_token}
-          onChange={(e) => updateFilters(e, 'liquidate_token_with_token')}
-        >
-          <span className="text-sm">{t('liquidations')}</span>
-        </Checkbox>
-      </div>
-    </div>
-  )
-}
-
-interface AdvancedFiltersFormProps {
+interface FiltersFormProps {
   advancedFilters: any
   setAdvancedFilters: (x: any) => void
+  filters: string[]
+  setFilters: (x: string[]) => void
 }
 
-const AdvancedFiltersForm = ({
+const FiltersForm = ({
   advancedFilters,
   setAdvancedFilters,
-}: AdvancedFiltersFormProps) => {
+  filters,
+  setFilters,
+}: FiltersFormProps) => {
   const { t } = useTranslation(['common', 'activity'])
   const { group } = useMangoGroup()
   const [dateFrom, setDateFrom] = useState<Date | null>(null)
@@ -352,13 +257,21 @@ const AdvancedFiltersForm = ({
     }
   }, [])
 
-  const toggleOption = (option: string) => {
+  const toggleTypeOption = (option: string) => {
+    if (filters.includes(option)) {
+      setFilters(filters.filter((opt) => opt !== option))
+    } else {
+      setFilters(filters.concat(option))
+    }
+  }
+
+  const toggleSymbolOption = (option: string) => {
     setAdvancedFilters((prevSelected: any) => {
       const newSelections = prevSelected.symbol ? [...prevSelected.symbol] : []
       if (newSelections.includes(option)) {
         return {
           ...prevSelected,
-          symbol: newSelections.filter((item) => item != option),
+          symbol: newSelections.filter((item) => item !== option),
         }
       } else {
         newSelections.push(option)
@@ -390,8 +303,8 @@ const AdvancedFiltersForm = ({
     if (valueFrom && valueTo) {
       setAdvancedFilters({
         ...advancedFilters,
-        'usd-lower': valueFrom,
-        'usd-upper': valueTo,
+        'usd-lower': Math.floor(valueFrom),
+        'usd-upper': Math.ceil(valueTo),
       })
     } else {
       setAdvancedFilters({
@@ -404,13 +317,23 @@ const AdvancedFiltersForm = ({
 
   return (
     <>
-      <Label text={t('tokens')} />
-      <div className="w-full lg:w-1/2 lg:pr-4">
-        <MultiSelectDropdown
-          options={symbols}
-          selected={advancedFilters.symbol || []}
-          toggleOption={toggleOption}
-        />
+      <div className="grid grid-cols-2 gap-x-8 pt-4">
+        <div className="col-span-2 lg:col-span-1">
+          <Label text={t('activity:activity-type')} />
+          <MultiSelectDropdown
+            options={DEFAULT_PARAMS}
+            selected={filters}
+            toggleOption={toggleTypeOption}
+          />
+        </div>
+        <div className="col-span-2 lg:col-span-1">
+          <Label text={t('tokens')} />
+          <MultiSelectDropdown
+            options={symbols}
+            selected={advancedFilters.symbol || []}
+            toggleOption={toggleSymbolOption}
+          />
+        </div>
       </div>
       <div className="my-4 w-full">
         <MangoDateRangePicker
@@ -424,7 +347,7 @@ const AdvancedFiltersForm = ({
         <div className="w-full">
           <Label text={t('activity:value-from')} />
           <Input
-            type="text"
+            type="number"
             placeholder="0.00"
             value={valueFrom}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -438,7 +361,7 @@ const AdvancedFiltersForm = ({
         <div className="w-full">
           <Label text={t('activity:value-to')} />
           <Input
-            type="text"
+            type="number"
             placeholder="0.00"
             value={valueTo || ''}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -506,10 +429,8 @@ const ActivityDetails = ({
           <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
           <p className="font-mono text-th-fgd-1">
             {formatDecimal(asset_amount)}{' '}
-            <span className="font-body tracking-wide">{asset_symbol}</span>
-            <span className="ml-2 font-body tracking-wide text-th-fgd-3">
-              at
-            </span>{' '}
+            <span className="font-body tracking-wider">{asset_symbol}</span>
+            <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
             {formatFixedDecimals(asset_price, true)}
           </p>
           <p className="font-mono text-xs text-th-fgd-3">
@@ -520,10 +441,8 @@ const ActivityDetails = ({
           <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
           <p className="font-mono text-th-fgd-1">
             {formatDecimal(liab_amount)}{' '}
-            <span className="font-body tracking-wide">{liab_symbol}</span>
-            <span className="ml-2 font-body tracking-wide text-th-fgd-3">
-              at
-            </span>{' '}
+            <span className="font-body tracking-wider">{liab_symbol}</span>
+            <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
             {formatFixedDecimals(liab_price, true)}
           </p>
           <p className="font-mono text-xs text-th-fgd-3">

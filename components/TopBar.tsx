@@ -3,6 +3,7 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ExclamationTriangleIcon,
+  EyeIcon,
   UsersIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -93,11 +94,22 @@ const TopBar = () => {
             alt="next"
           />
           {!connected ? (
-            <span className="hidden items-center md:flex">
-              <WalletIcon className="h-5 w-5 text-th-fgd-3" />
-              <span className="ml-2">{t('connect-helper')}</span>
-              <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
-            </span>
+            mangoAccount ? (
+              <span className="hidden items-center md:flex">
+                <EyeIcon className="h-5 w-5 text-th-fgd-3" />
+                <span className="ml-2">
+                  {t('unowned-helper', {
+                    accountPk: abbreviateAddress(mangoAccount.publicKey),
+                  })}
+                </span>
+              </span>
+            ) : (
+              <span className="hidden items-center md:flex">
+                <WalletIcon className="h-5 w-5 text-th-fgd-3" />
+                <span className="ml-2">{t('connect-helper')}</span>
+                <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
+              </span>
+            )
           ) : null}
         </span>
         {!isOnline ? (
@@ -112,7 +124,7 @@ const TopBar = () => {
           {/* <div className="px-3 md:px-4">
             <ThemeSwitcher />
           </div> */}
-          {!connected && isMobile ? null : (
+          {(mangoAccount && !connected) || (!connected && isMobile) ? null : (
             <Button
               onClick={() => handleDepositWithdrawModal('deposit')}
               secondary

@@ -214,7 +214,7 @@ const SwapReviewRouteInfo = ({
       const connection = mangoStore.getState().connection
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
-
+      setSubmitting(true)
       const [ixs, alts] = await fetchJupiterTransaction(
         connection,
         selectedRoute,
@@ -225,7 +225,6 @@ const SwapReviewRouteInfo = ({
       )
 
       try {
-        setSubmitting(true)
         const tx = await client.marginTrade({
           group,
           mangoAccount,
@@ -295,7 +294,11 @@ const SwapReviewRouteInfo = ({
       : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
 
-  return routes?.length && selectedRoute && outputTokenInfo && amountOut ? (
+  return routes?.length &&
+    selectedRoute &&
+    inputTokenInfo &&
+    outputTokenInfo &&
+    amountOut ? (
     <div className="thin-scroll flex h-full flex-col justify-between overflow-y-auto">
       <div>
         <IconButton
@@ -315,7 +318,7 @@ const SwapReviewRouteInfo = ({
                   alt=""
                   width="40"
                   height="40"
-                  src={outputTokenInfo.logoURI}
+                  src={outputTokenInfo?.logoURI}
                 />
               </div>
             </div>
@@ -323,12 +326,12 @@ const SwapReviewRouteInfo = ({
               <span className="mr-1 font-mono text-th-fgd-1">{`${formatFixedDecimals(
                 amountIn.toNumber()
               )}`}</span>{' '}
-              {inputTokenInfo!.symbol}
+              {inputTokenInfo?.symbol}
               <ArrowRightIcon className="mx-2 h-5 w-5 text-th-fgd-4" />
               <span className="mr-1 font-mono text-th-fgd-1">{`${formatFixedDecimals(
                 amountOut.toNumber()
               )}`}</span>{' '}
-              {`${outputTokenInfo.symbol}`}
+              {`${outputTokenInfo?.symbol}`}
             </p>
           </div>
         </div>
@@ -341,23 +344,23 @@ const SwapReviewRouteInfo = ({
                   {swapRate ? (
                     <>
                       1{' '}
-                      <span className="font-body tracking-wide">
-                        {inputTokenInfo!.name} ≈{' '}
+                      <span className="font-body tracking-wider">
+                        {inputTokenInfo?.name} ≈{' '}
                       </span>
                       {formatFixedDecimals(amountOut.div(amountIn).toNumber())}{' '}
-                      <span className="font-body tracking-wide">
+                      <span className="font-body tracking-wider">
                         {outputTokenInfo?.symbol}
                       </span>
                     </>
                   ) : (
                     <>
                       1{' '}
-                      <span className="font-body tracking-wide">
+                      <span className="font-body tracking-wider">
                         {outputTokenInfo?.symbol} ≈{' '}
                       </span>
                       {formatFixedDecimals(amountIn.div(amountOut).toNumber())}{' '}
-                      <span className="font-body tracking-wide">
-                        {inputTokenInfo!.symbol}
+                      <span className="font-body tracking-wider">
+                        {inputTokenInfo?.symbol}
                       </span>
                     </>
                   )}
@@ -378,7 +381,7 @@ const SwapReviewRouteInfo = ({
                     }`}
                   >
                     {Decimal.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
-                    <span className="font-body tracking-wide text-th-fgd-3">{`${
+                    <span className="font-body text-th-fgd-3">{`${
                       coinGeckoPriceDifference.lte(0)
                         ? 'cheaper'
                         : 'more expensive'
@@ -392,14 +395,15 @@ const SwapReviewRouteInfo = ({
             <p className="text-sm text-th-fgd-3">
               {t('swap:minimum-received')}
             </p>
-            {outputTokenInfo?.decimals ? (
+            {outputTokenInfo?.decimals &&
+            selectedRoute?.otherAmountThreshold ? (
               <p className="text-right font-mono text-sm text-th-fgd-2">
                 {formatDecimal(
-                  selectedRoute?.otherAmountThreshold /
+                  selectedRoute.otherAmountThreshold /
                     10 ** outputTokenInfo.decimals || 1,
                   outputTokenInfo.decimals
                 )}{' '}
-                <span className="font-body tracking-wide">
+                <span className="font-body tracking-wider">
                   {outputTokenInfo?.symbol}
                 </span>
               </p>
@@ -442,7 +446,7 @@ const SwapReviewRouteInfo = ({
               </Tooltip>
               <p className="text-right font-mono text-sm text-th-fgd-2">
                 ~{formatFixedDecimals(borrowAmount)}{' '}
-                <span className="font-body tracking-wide">
+                <span className="font-body tracking-wider">
                   {inputTokenInfo?.symbol}
                 </span>
               </p>
@@ -523,7 +527,7 @@ const SwapReviewRouteInfo = ({
                             .mul(inputBank!.loanOriginationFeeRate.toFixed())
                             .toNumber()
                         )}{' '}
-                        <span className="font-body tracking-wide">
+                        <span className="font-body tracking-wider">
                           {inputBank!.name}
                         </span>{' '}
                         (
@@ -561,7 +565,7 @@ const SwapReviewRouteInfo = ({
                                 info.lpFee?.amount /
                                 Math.pow(10, feeToken.decimals)
                               ).toFixed(6)}{' '}
-                              <span className="font-body tracking-wide">
+                              <span className="font-body tracking-wider">
                                 {feeToken?.symbol}
                               </span>{' '}
                               (
@@ -591,7 +595,7 @@ const SwapReviewRouteInfo = ({
           setSelectedRoute={setSelectedRoute}
           selectedRoute={selectedRoute}
           routes={routes}
-          inputTokenSymbol={inputTokenInfo!.name}
+          inputTokenSymbol={inputTokenInfo?.name}
           outputTokenInfo={outputTokenInfo}
         />
       ) : null}

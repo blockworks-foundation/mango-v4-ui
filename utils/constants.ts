@@ -10,7 +10,9 @@ export const OUTPUT_TOKEN_DEFAULT = 'SOL'
 export const JUPITER_V4_PROGRAM_ID =
   'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
 
-export const ALPHA_DEPOSIT_LIMIT = 20
+export const ALPHA_DEPOSIT_LIMIT = 100
+
+export const CONNECTION_COMMITMENT = 'processed'
 
 // Local storage keys for settings
 export const IS_ONBOARDED_KEY = 'isOnboarded-0.1'
@@ -58,7 +60,7 @@ export const CHART_DATA_FEED = `https://dry-ravine-67635.herokuapp.com/tv`
 
 export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
-export const MIN_SOL_BALANCE = 0.04
+export const MIN_SOL_BALANCE = 0.001
 
 export const ACCOUNT_ACTION_MODAL_HEIGHT = '506px'
 

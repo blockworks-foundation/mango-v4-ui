@@ -79,7 +79,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
               }`}
             />
           </button>
-          <div className={`h-full ${!isCollapsed ? 'overflow-y-auto' : ''}`}>
+          <div
+            className={`thin-scroll h-full ${
+              !isCollapsed ? 'overflow-y-auto' : ''
+            }`}
+          >
             <SideNav collapsed={isCollapsed} />
           </div>
         </div>

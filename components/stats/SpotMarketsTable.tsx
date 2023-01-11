@@ -50,7 +50,7 @@ const SpotMarketsTable = () => {
               const coingeckoData = coingeckoPrices.find((asset) =>
                 bank?.name === 'soETH'
                   ? asset.symbol === 'ETH'
-                  : asset.symbol === bank?.name
+                  : asset.symbol.toUpperCase() === bank?.name.toUpperCase()
               )
 
               const change = coingeckoData
@@ -67,12 +67,16 @@ const SpotMarketsTable = () => {
                   <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market} />
-                      <p className="font-body tracking-wide">{market.name}</p>
+                      <p className="font-body tracking-wider">{market.name}</p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(oraclePrice!, true)}</p>
+                      <p>
+                        {oraclePrice
+                          ? formatFixedDecimals(oraclePrice, true)
+                          : '–'}
+                      </p>
                     </div>
                   </Td>
                   <Td>

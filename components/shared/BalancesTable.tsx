@@ -21,6 +21,7 @@ import { LinkButton } from './Button'
 import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useMangoGroup from 'hooks/useMangoGroup'
+import AmountWithValue from './AmountWithValue'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -46,12 +47,15 @@ const BalancesTable = () => {
               Math.abs(b.balance! * b.value[0].uiPrice) -
               Math.abs(a.balance! * a.value[0].uiPrice)
           )
-          .filter(
-            (c) =>
+          .filter((c) => {
+            return (
               Math.abs(
                 floorToDecimal(c.balance!, c.value[0].mintDecimals).toNumber()
-              ) > 0
-          )
+              ) > 0 ||
+              spotBalances[c.value[0].mint.toString()]?.unsettled > 0 ||
+              spotBalances[c.value[0].mint.toString()]?.inOrders > 0
+            )
+          })
       : rawBanks
 
     return sortedBanks
@@ -104,22 +108,41 @@ const BalancesTable = () => {
                     {mangoAccount
                       ? `${formatFixedDecimals(
                           mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
+                          false,
                           true
                         )}`
                       : '$0.00'}
                   </p>
                 </Td>
-                <Td className="text-right font-mono">
-                  <p>{inOrders}</p>
-                  <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(inOrders * bank.uiPrice, true)}
-                  </p>
+                <Td className="text-right">
+                  <AmountWithValue
+                    amount={
+                      inOrders
+                        ? formatDecimal(Number(inOrders), bank.mintDecimals)
+                        : '0'
+                    }
+                    value={formatFixedDecimals(
+                      inOrders * bank.uiPrice,
+                      true,
+                      true
+                    )}
+                    stacked
+                  />
                 </Td>
-                <Td className="text-right font-mono">
-                  <p>{unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}</p>
-                  <p className="text-sm text-th-fgd-4">
-                    {formatFixedDecimals(unsettled * bank.uiPrice, true)}
-                  </p>
+                <Td className="text-right">
+                  <AmountWithValue
+                    amount={
+                      unsettled
+                        ? formatDecimal(Number(unsettled), bank.mintDecimals)
+                        : '0'
+                    }
+                    value={formatFixedDecimals(
+                      unsettled * bank.uiPrice,
+                      true,
+                      true
+                    )}
+                    stacked
+                  />
                 </Td>
               </TrBody>
             )
@@ -160,14 +183,13 @@ const BalancesTable = () => {
                 <div className="mb-0.5 flex justify-end space-x-1.5">
                   <Balance bank={bank} />
                   <span className="text-sm text-th-fgd-4">
-                    (
                     {mangoAccount
                       ? `${formatFixedDecimals(
                           mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
+                          false,
                           true
                         )}`
                       : '$0.00'}
-                    )
                   </span>
                 </div>
                 <div className="flex space-x-2">
@@ -298,12 +320,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
       {asPath.includes('/trade') && isBaseOrQuote ? (
         <LinkButton
           className="font-normal underline-offset-4"
-          onClick={() =>
-            handleTradeFormBalanceClick(
-              parseFloat(formatDecimal(balance, bank.mintDecimals)),
-              isBaseOrQuote
-            )
-          }
+          onClick={() => handleTradeFormBalanceClick(balance, isBaseOrQuote)}
         >
           {formatDecimal(balance, bank.mintDecimals)}
         </LinkButton>
@@ -312,7 +329,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
           className="font-normal underline-offset-4"
           onClick={() =>
             handleSwapFormBalanceClick(
-              parseFloat(formatDecimal(balance, bank.mintDecimals))
+              floorToDecimal(balance, bank.mintDecimals).toNumber()
             )
           }
         >

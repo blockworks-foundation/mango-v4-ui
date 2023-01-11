@@ -14,10 +14,10 @@ const SimpleAreaChart = ({
   xKey: string
   yKey: string
 }) => {
-  const flipGradientCoords = useMemo(
-    () => data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey],
-    [data]
-  )
+  const flipGradientCoords = useMemo(() => {
+    if (!data.length) return
+    return data[0][yKey] <= 0 && data[data.length - 1][yKey] <= 0
+  }, [data])
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -35,7 +35,6 @@ const SimpleAreaChart = ({
           </linearGradient>
         </defs>
         <Area
-          isAnimationActive={false}
           type="monotone"
           dataKey={yKey}
           stroke={color}

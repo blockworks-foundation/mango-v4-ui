@@ -395,11 +395,11 @@ th {
 /* Base */
 
 body {
-  @apply font-body text-sm tracking-wide;
+  @apply font-body text-sm tracking-wider;
 }
 
 button {
-  @apply tracking-wide focus:outline-none;
+  @apply tracking-wider focus:outline-none;
 }
 
 svg {

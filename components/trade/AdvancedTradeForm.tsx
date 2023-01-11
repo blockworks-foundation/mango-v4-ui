@@ -22,7 +22,7 @@ import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
-import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import { LinkIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
 import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider from './PerpSlider'
@@ -42,6 +42,8 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import MaxSizeButton from './MaxSizeButton'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 
 const set = mangoStore.getState().set
 
@@ -64,6 +66,8 @@ const AdvancedTradeForm = () => {
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
+  const { connected } = useWallet()
+  const { handleConnect } = useEnhancedWallet()
 
   const baseSymbol = useMemo(() => {
     return selectedMarket?.name.split(/-|\//)[0]
@@ -188,9 +192,9 @@ const AdvancedTradeForm = () => {
     })
   }, [])
 
-  const tickDecimals = useMemo(() => {
+  const [tickDecimals, tickSize] = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return 1
+    if (!group || !selectedMarket) return [1, 0.1]
     let tickSize: number
     if (selectedMarket instanceof Serum3Market) {
       const market = group.getSerum3ExternalMarket(
@@ -200,7 +204,8 @@ const AdvancedTradeForm = () => {
     } else {
       tickSize = selectedMarket.tickSize
     }
-    return getDecimalCount(tickSize)
+    const tickDecimals = getDecimalCount(tickSize)
+    return [tickDecimals, tickSize]
   }, [selectedMarket])
 
   /*
@@ -337,19 +342,20 @@ const AdvancedTradeForm = () => {
     }
   }, [])
 
-  const minOrderDecimals = useMemo(() => {
+  const [minOrderDecimals, minOrderSize] = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return 1
-    let minOrderDecimals = 1
+    if (!group || !selectedMarket) return [1, 0.1]
+    let minOrderSize: number
     if (selectedMarket instanceof Serum3Market) {
       const market = group.getSerum3ExternalMarket(
         selectedMarket.serumMarketExternal
       )
-      minOrderDecimals = getDecimalCount(market.minOrderSize)
+      minOrderSize = market.minOrderSize
     } else {
-      minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
+      minOrderSize = selectedMarket.minOrderSize
     }
-    return minOrderDecimals
+    const minOrderDecimals = getDecimalCount(minOrderSize)
+    return [minOrderDecimals, minOrderSize]
   }, [selectedMarket])
 
   return (
@@ -363,7 +369,7 @@ const AdvancedTradeForm = () => {
         />
       </div>
       <div className="px-3 md:px-4">
-        <SolBalanceWarnings />
+        <SolBalanceWarnings className="mt-4" />
       </div>
       <div className="mt-1 px-2 md:mt-3 md:px-4">
         <p className="mb-2 text-xs">{t('trade:order-type')}</p>
@@ -478,6 +484,7 @@ const AdvancedTradeForm = () => {
             <SpotSlider
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
+              step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
             />
           ) : (
             <SpotButtonGroup
@@ -554,16 +561,23 @@ const AdvancedTradeForm = () => {
       <div className="mt-6 mb-4 flex px-3 md:px-4">
         {ipAllowed ? (
           <Button
-            onClick={handlePlaceOrder}
-            className={`flex w-full items-center justify-center text-white ${
-              tradeForm.side === 'buy'
-                ? 'bg-th-up-dark md:hover:bg-th-up'
-                : 'bg-th-down-dark md:hover:bg-th-down'
+            onClick={connected ? handlePlaceOrder : handleConnect}
+            className={`flex w-full items-center justify-center ${
+              !connected
+                ? ''
+                : tradeForm.side === 'buy'
+                ? 'bg-th-up-dark text-white md:hover:bg-th-up'
+                : 'bg-th-down-dark text-white md:hover:bg-th-down'
             }`}
-            disabled={!tradeForm.baseSize}
+            disabled={connected && !tradeForm.baseSize}
             size="large"
           >
-            {!placingOrder ? (
+            {!connected ? (
+              <div className="flex items-center">
+                <LinkIcon className="mr-2 h-5 w-5" />
+                {t('connect')}
+              </div>
+            ) : !placingOrder ? (
               <span className="capitalize">
                 {t('trade:place-order', { side: tradeForm.side })}
               </span>
@@ -575,17 +589,11 @@ const AdvancedTradeForm = () => {
             )}
           </Button>
         ) : (
-          <div className="flex-grow">
-            <div className="flex">
-              <Button disabled className="flex-grow">
-                <span>
-                  {t('country-not-allowed', {
-                    country: ipCountry ? `(${ipCountry})` : '(Unknown)',
-                  })}
-                </span>
-              </Button>
-            </div>
-          </div>
+          <Button disabled className="w-full leading-tight" size="large">
+            {t('country-not-allowed', {
+              country: ipCountry ? `(${ipCountry})` : '',
+            })}
+          </Button>
         )}
       </div>
       <TradeSummary mangoAccount={mangoAccount} />

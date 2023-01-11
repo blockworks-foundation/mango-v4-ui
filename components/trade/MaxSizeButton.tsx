@@ -6,7 +6,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo } from 'react'
-import { trimDecimals } from 'utils/numbers'
+import { floorToDecimal } from 'utils/numbers'
 
 const MaxSizeButton = ({
   minOrderDecimals,
@@ -18,7 +18,7 @@ const MaxSizeButton = ({
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
   const { selectedMarket, price: oraclePrice } = useSelectedMarket()
-  const tradeForm = mangoStore((s) => s.tradeForm)
+  const { price, side, tradeType } = mangoStore((s) => s.tradeForm)
 
   const leverageMax = useMemo(() => {
     const group = mangoStore.getState().group
@@ -26,7 +26,7 @@ const MaxSizeButton = ({
 
     try {
       if (selectedMarket instanceof Serum3Market) {
-        if (tradeForm.side === 'buy') {
+        if (side === 'buy') {
           return mangoAccount.getMaxQuoteForSerum3BidUi(
             group,
             selectedMarket.serumMarketExternal
@@ -38,7 +38,7 @@ const MaxSizeButton = ({
           )
         }
       } else {
-        if (tradeForm.side === 'buy') {
+        if (side === 'buy') {
           return mangoAccount.getMaxQuoteForPerpBidUi(
             group,
             selectedMarket.perpMarketIndex
@@ -54,65 +54,60 @@ const MaxSizeButton = ({
       console.error('Error calculating max leverage: spot btn group: ', e)
       return 0
     }
-  }, [mangoAccount, tradeForm.side, selectedMarket])
+  }, [mangoAccount, side, selectedMarket])
 
   const handleMax = useCallback(() => {
     const set = mangoStore.getState().set
     set((state) => {
-      if (tradeForm.side === 'buy') {
-        state.tradeForm.quoteSize = trimDecimals(
+      if (side === 'buy') {
+        state.tradeForm.quoteSize = floorToDecimal(
           leverageMax,
           tickDecimals
-        ).toFixed(tickDecimals)
-        if (tradeForm.tradeType === 'Market' || !tradeForm.price) {
-          state.tradeForm.baseSize = trimDecimals(
+        ).toFixed()
+        if (tradeType === 'Market' || !price) {
+          state.tradeForm.baseSize = floorToDecimal(
             leverageMax / oraclePrice,
             minOrderDecimals
-          ).toFixed(minOrderDecimals)
+          ).toFixed()
         } else {
-          state.tradeForm.baseSize = trimDecimals(
-            leverageMax / parseFloat(tradeForm.price),
+          state.tradeForm.baseSize = floorToDecimal(
+            leverageMax / parseFloat(price),
             minOrderDecimals
-          ).toFixed(minOrderDecimals)
+          ).toFixed()
         }
       } else {
-        state.tradeForm.baseSize = trimDecimals(
+        state.tradeForm.baseSize = floorToDecimal(
           leverageMax,
           tickDecimals
-        ).toFixed(tickDecimals)
-        if (tradeForm.tradeType === 'Market' || !tradeForm.price) {
-          state.tradeForm.quoteSize = trimDecimals(
+        ).toFixed()
+        if (tradeType === 'Market' || !price) {
+          state.tradeForm.quoteSize = floorToDecimal(
             leverageMax * oraclePrice,
             minOrderDecimals
-          ).toFixed(minOrderDecimals)
+          ).toFixed()
         } else {
-          state.tradeForm.quoteSize = trimDecimals(
-            leverageMax * parseFloat(tradeForm.price),
+          state.tradeForm.quoteSize = floorToDecimal(
+            leverageMax * parseFloat(price),
             minOrderDecimals
-          ).toFixed(minOrderDecimals)
+          ).toFixed()
         }
       }
     })
-  }, [leverageMax, tradeForm])
+  }, [leverageMax, price, side, tradeType])
 
   const maxAmount = useMemo(() => {
-    if (!tradeForm.price) return '0'
-    if (tradeForm.side === 'buy') {
-      return trimDecimals(
-        leverageMax / parseFloat(tradeForm.price),
-        tickDecimals
-      ).toFixed(tickDecimals)
+    const tradePrice = tradeType === 'Market' ? oraclePrice : Number(price)
+    if (side === 'buy') {
+      return floorToDecimal(leverageMax / tradePrice, tickDecimals).toFixed()
     } else {
-      return trimDecimals(leverageMax, minOrderDecimals).toFixed(
-        minOrderDecimals
-      )
+      return floorToDecimal(leverageMax, minOrderDecimals).toFixed()
     }
-  }, [leverageMax, minOrderDecimals, tickDecimals, tradeForm])
+  }, [leverageMax, minOrderDecimals, tickDecimals, price, side, tradeType])
 
   return (
     <div className="mb-2 mt-3 flex items-center justify-between">
       <p className="text-xs text-th-fgd-3">{t('trade:size')}</p>
-      <FadeInFadeOut show={!!tradeForm.price}>
+      <FadeInFadeOut show={!!price}>
         <MaxAmountButton
           className="text-xs"
           label={t('max')}

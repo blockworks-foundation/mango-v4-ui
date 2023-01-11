@@ -18,7 +18,7 @@ const TradeInfoTabs = () => {
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.lg : false
+  const isMobile = width ? width < breakpoints['2xl'] : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const unsettledTradeCount =
@@ -38,7 +38,7 @@ const TradeInfoTabs = () => {
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll pb-5">
-      <div className="hide-scroll sticky top-0 z-10 overflow-x-auto border-b border-th-bkg-3">
+      <div className="hide-scroll sticky top-0 z-20 overflow-x-auto border-b border-th-bkg-3">
         <TabButtons
           activeValue={selectedTab}
           onChange={(tab: string) => setSelectedTab(tab)}

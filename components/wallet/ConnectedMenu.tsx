@@ -26,18 +26,18 @@ const ConnectedMenu = () => {
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
 
   const set = mangoStore((s) => s.set)
-  const actions = mangoStore((s) => s.actions)
-  const profileDetails = mangoStore((s) => s.profile.details)
+  const actions = mangoStore.getState().actions
+  // const profileDetails = mangoStore((s) => s.profile.details)
   const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
 
   const isMobile = width ? width < breakpoints.md : false
 
   const onConnectFetchAccountData = async (wallet: Wallet) => {
     if (!wallet) return
-    const actions = mangoStore.getState().actions
     await actions.fetchMangoAccounts(wallet.adapter as unknown as AnchorWallet)
     actions.fetchTourSettings(wallet.adapter.publicKey?.toString() as string)
     actions.fetchWalletTokens(wallet.adapter as unknown as AnchorWallet)
+    actions.fetchTradeHistory()
   }
 
   const handleDisconnect = useCallback(() => {
@@ -89,14 +89,17 @@ const ConnectedMenu = () => {
                 />
                 {!loadProfileDetails && !isMobile ? (
                   <div className="ml-2.5 overflow-hidden text-left">
-                    <p className="font-mono text-xs text-th-fgd-3">
+                    <p className="text-xs text-th-fgd-3">
+                      {wallet?.adapter.name}
+                    </p>
+                    <p className="truncate pr-2 text-sm font-bold text-th-fgd-1">
                       {publicKey ? abbreviateAddress(publicKey) : ''}
                     </p>
-                    <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
+                    {/* <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
                       {profileDetails?.profile_name
                         ? profileDetails.profile_name
                         : 'Profile Unavailabe'}
-                    </p>
+                    </p> */}
                   </div>
                 ) : null}
               </div>
@@ -120,7 +123,7 @@ const ConnectedMenu = () => {
                   >
                     <UserCircleIcon className="h-4 w-4" />
                     <div className="pl-2 text-left">
-                      {t('profile:edit-profile')}
+                      {t('profile:edit-profile-pic')}
                     </div>
                   </button>
                 </Menu.Item>

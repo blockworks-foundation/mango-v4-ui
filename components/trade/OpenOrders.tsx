@@ -15,7 +15,6 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
 import {
   CheckIcon,
-  LinkIcon,
   NoSymbolIcon,
   PencilIcon,
   TrashIcon,
@@ -25,6 +24,7 @@ import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
+import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
@@ -35,7 +35,6 @@ import TableMarketName from './TableMarketName'
 
 const OpenOrders = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { connected } = useWallet()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [cancelId, setCancelId] = useState<string>('')
   const [modifyOrderId, setModifyOrderId] = useState<string | undefined>(
@@ -46,6 +45,8 @@ const OpenOrders = () => {
   const [modifiedOrderPrice, setModifiedOrderPrice] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
 
   const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
     const openOrders = mangoStore.getState().mangoAccount.openOrders
@@ -224,110 +225,108 @@ const OpenOrders = () => {
     setModifiedOrderPrice('')
   }
 
-  return connected ? (
-    Object.values(openOrders).flat().length ? (
-      showTableView ? (
-        <Table>
-          <thead>
-            <TrHead>
-              <Th className="w-[16.67%] text-left">{t('market')}</Th>
-              <Th className="w-[16.67%] text-right">{t('trade:side')}</Th>
-              <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
-              <Th className="w-[16.67%] text-right">{t('price')}</Th>
-              <Th className="w-[16.67%] text-right">{t('value')}</Th>
-              <Th className="w-[16.67%] text-right"></Th>
-            </TrHead>
-          </thead>
-          <tbody>
-            {Object.entries(openOrders)
-              .map(([marketPk, orders]) => {
-                return orders.map((o) => {
-                  const group = mangoStore.getState().group!
-                  let market: PerpMarket | Serum3Market
-                  let tickSize: number
-                  let minOrderSize: number
-                  let quoteSymbol
-                  if (o instanceof PerpOrder) {
-                    market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
-                    quoteSymbol = group.getFirstBankByTokenIndex(
-                      market.settleTokenIndex
-                    ).name
-                    tickSize = market.tickSize
-                    minOrderSize = market.minOrderSize
-                  } else {
-                    market = group.getSerum3MarketByExternalMarket(
-                      new PublicKey(marketPk)
-                    )
-                    quoteSymbol = group.getFirstBankByTokenIndex(
-                      market!.quoteTokenIndex
-                    ).name
-                    const serumMarket = group.getSerum3ExternalMarket(
-                      market.serumMarketExternal
-                    )
-                    tickSize = serumMarket.tickSize
-                    minOrderSize = serumMarket.minOrderSize
-                  }
-                  return (
-                    <TrBody
-                      key={`${o.side}${o.size}${o.price}`}
-                      className="my-1 p-2"
-                    >
-                      <Td className="w-[16.67%]">
-                        <TableMarketName market={market} />
-                      </Td>
-                      <Td className="w-[16.67%] text-right">
-                        <SideBadge side={o.side} />
-                      </Td>
-                      {modifyOrderId !== o.orderId.toString() ? (
-                        <>
-                          <Td className="w-[16.67%] text-right font-mono">
-                            {o.size.toLocaleString(undefined, {
-                              maximumFractionDigits:
-                                getDecimalCount(minOrderSize),
-                            })}
-                          </Td>
-                          <Td className="w-[16.67%] whitespace-nowrap text-right">
-                            <span className="font-mono">
-                              {o.price.toLocaleString(undefined, {
-                                minimumFractionDigits:
-                                  getDecimalCount(tickSize),
-                                maximumFractionDigits:
-                                  getDecimalCount(tickSize),
-                              })}{' '}
-                              <span className="font-body tracking-wide text-th-fgd-4">
-                                {quoteSymbol}
-                              </span>
+  return mangoAccount && Object.values(openOrders).flat().length ? (
+    showTableView ? (
+      <Table>
+        <thead>
+          <TrHead>
+            <Th className="w-[16.67%] text-left">{t('market')}</Th>
+            <Th className="w-[16.67%] text-right">{t('trade:side')}</Th>
+            <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
+            <Th className="w-[16.67%] text-right">{t('price')}</Th>
+            <Th className="w-[16.67%] text-right">{t('value')}</Th>
+            {connected ? <Th className="w-[16.67%] text-right"></Th> : null}
+          </TrHead>
+        </thead>
+        <tbody>
+          {Object.entries(openOrders)
+            .map(([marketPk, orders]) => {
+              return orders.map((o) => {
+                const group = mangoStore.getState().group!
+                let market: PerpMarket | Serum3Market
+                let tickSize: number
+                let minOrderSize: number
+                let quoteSymbol
+                if (o instanceof PerpOrder) {
+                  market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
+                  quoteSymbol = group.getFirstBankByTokenIndex(
+                    market.settleTokenIndex
+                  ).name
+                  tickSize = market.tickSize
+                  minOrderSize = market.minOrderSize
+                } else {
+                  market = group.getSerum3MarketByExternalMarket(
+                    new PublicKey(marketPk)
+                  )
+                  quoteSymbol = group.getFirstBankByTokenIndex(
+                    market!.quoteTokenIndex
+                  ).name
+                  const serumMarket = group.getSerum3ExternalMarket(
+                    market.serumMarketExternal
+                  )
+                  tickSize = serumMarket.tickSize
+                  minOrderSize = serumMarket.minOrderSize
+                }
+                return (
+                  <TrBody
+                    key={`${o.side}${o.size}${o.price}`}
+                    className="my-1 p-2"
+                  >
+                    <Td className="w-[16.67%]">
+                      <TableMarketName market={market} />
+                    </Td>
+                    <Td className="w-[16.67%] text-right">
+                      <SideBadge side={o.side} />
+                    </Td>
+                    {modifyOrderId !== o.orderId.toString() ? (
+                      <>
+                        <Td className="w-[16.67%] text-right font-mono">
+                          {o.size.toLocaleString(undefined, {
+                            maximumFractionDigits:
+                              getDecimalCount(minOrderSize),
+                          })}
+                        </Td>
+                        <Td className="w-[16.67%] whitespace-nowrap text-right">
+                          <span className="font-mono">
+                            {o.price.toLocaleString(undefined, {
+                              minimumFractionDigits: getDecimalCount(tickSize),
+                              maximumFractionDigits: getDecimalCount(tickSize),
+                            })}{' '}
+                            <span className="font-body text-th-fgd-4">
+                              {quoteSymbol}
                             </span>
-                          </Td>
-                        </>
-                      ) : (
-                        <>
-                          <Td className="w-[16.67%]">
-                            <Input
-                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
-                              type="text"
-                              value={modifiedOrderSize}
-                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                setModifiedOrderSize(e.target.value)
-                              }
-                            />
-                          </Td>
-                          <Td className="w-[16.67%]">
-                            <Input
-                              autoFocus
-                              className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
-                              type="text"
-                              value={modifiedOrderPrice}
-                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                setModifiedOrderPrice(e.target.value)
-                              }
-                            />
-                          </Td>
-                        </>
-                      )}
-                      <Td className="w-[16.67%] text-right">
-                        {formatFixedDecimals(o.size * o.price, true)}
-                      </Td>
+                          </span>
+                        </Td>
+                      </>
+                    ) : (
+                      <>
+                        <Td className="w-[16.67%]">
+                          <Input
+                            className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            type="text"
+                            value={modifiedOrderSize}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setModifiedOrderSize(e.target.value)
+                            }
+                          />
+                        </Td>
+                        <Td className="w-[16.67%]">
+                          <Input
+                            autoFocus
+                            className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            type="text"
+                            value={modifiedOrderPrice}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setModifiedOrderPrice(e.target.value)
+                            }
+                          />
+                        </Td>
+                      </>
+                    )}
+                    <Td className="w-[16.67%] text-right">
+                      {formatFixedDecimals(o.size * o.price, true, true)}
+                    </Td>
+                    {connected ? (
                       <Td className="w-[16.67%]">
                         <div className="flex justify-end space-x-2">
                           {modifyOrderId !== o.orderId.toString() ? (
@@ -378,101 +377,103 @@ const OpenOrders = () => {
                           )}
                         </div>
                       </Td>
-                    </TrBody>
-                  )
-                })
+                    ) : null}
+                  </TrBody>
+                )
               })
-              .flat()}
-          </tbody>
-        </Table>
-      ) : (
-        <div>
-          {Object.entries(openOrders).map(([marketPk, orders]) => {
-            return orders.map((o) => {
-              const group = mangoStore.getState().group!
-              let market: PerpMarket | Serum3Market
-              let tickSize: number
-              let minOrderSize: number
-              let quoteSymbol: string
-              let baseSymbol: string
-              if (o instanceof PerpOrder) {
-                market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
-                baseSymbol = market.name.split('-')[0]
-                quoteSymbol = group.getFirstBankByTokenIndex(
-                  market.settleTokenIndex
-                ).name
-                tickSize = market.tickSize
-                minOrderSize = market.minOrderSize
-              } else {
-                market = group.getSerum3MarketByExternalMarket(
-                  new PublicKey(marketPk)
-                )
-                baseSymbol = market.name.split('/')[0]
-                quoteSymbol = group.getFirstBankByTokenIndex(
-                  market!.quoteTokenIndex
-                ).name
-                const serumMarket = group.getSerum3ExternalMarket(
-                  market.serumMarketExternal
-                )
-                tickSize = serumMarket.tickSize
-                minOrderSize = serumMarket.minOrderSize
-              }
-              return (
-                <div
-                  className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-                  key={`${o.side}${o.size}${o.price}`}
-                >
-                  <div>
-                    <TableMarketName market={market} />
-                    {modifyOrderId !== o.orderId.toString() ? (
-                      <div className="mt-1 flex items-center space-x-1">
-                        <SideBadge side={o.side} />
-                        <p className="text-th-fgd-4">
-                          <span className="font-mono text-th-fgd-3">
-                            {o.size.toLocaleString(undefined, {
-                              maximumFractionDigits:
-                                getDecimalCount(minOrderSize),
-                            })}
-                          </span>{' '}
-                          {baseSymbol}
-                          {' for '}
-                          <span className="font-mono text-th-fgd-3">
-                            {o.price.toLocaleString(undefined, {
-                              minimumFractionDigits: getDecimalCount(tickSize),
-                              maximumFractionDigits: getDecimalCount(tickSize),
-                            })}
-                          </span>{' '}
-                          {quoteSymbol}
-                        </p>
+            })
+            .flat()}
+        </tbody>
+      </Table>
+    ) : (
+      <div>
+        {Object.entries(openOrders).map(([marketPk, orders]) => {
+          return orders.map((o) => {
+            const group = mangoStore.getState().group!
+            let market: PerpMarket | Serum3Market
+            let tickSize: number
+            let minOrderSize: number
+            let quoteSymbol: string
+            let baseSymbol: string
+            if (o instanceof PerpOrder) {
+              market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
+              baseSymbol = market.name.split('-')[0]
+              quoteSymbol = group.getFirstBankByTokenIndex(
+                market.settleTokenIndex
+              ).name
+              tickSize = market.tickSize
+              minOrderSize = market.minOrderSize
+            } else {
+              market = group.getSerum3MarketByExternalMarket(
+                new PublicKey(marketPk)
+              )
+              baseSymbol = market.name.split('/')[0]
+              quoteSymbol = group.getFirstBankByTokenIndex(
+                market!.quoteTokenIndex
+              ).name
+              const serumMarket = group.getSerum3ExternalMarket(
+                market.serumMarketExternal
+              )
+              tickSize = serumMarket.tickSize
+              minOrderSize = serumMarket.minOrderSize
+            }
+            return (
+              <div
+                className="flex items-center justify-between border-b border-th-bkg-3 p-4"
+                key={`${o.side}${o.size}${o.price}`}
+              >
+                <div>
+                  <TableMarketName market={market} />
+                  {modifyOrderId !== o.orderId.toString() ? (
+                    <div className="mt-1 flex items-center space-x-1">
+                      <SideBadge side={o.side} />
+                      <p className="text-th-fgd-4">
+                        <span className="font-mono text-th-fgd-3">
+                          {o.size.toLocaleString(undefined, {
+                            maximumFractionDigits:
+                              getDecimalCount(minOrderSize),
+                          })}
+                        </span>{' '}
+                        {baseSymbol}
+                        {' for '}
+                        <span className="font-mono text-th-fgd-3">
+                          {o.price.toLocaleString(undefined, {
+                            minimumFractionDigits: getDecimalCount(tickSize),
+                            maximumFractionDigits: getDecimalCount(tickSize),
+                          })}
+                        </span>{' '}
+                        {quoteSymbol}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex space-x-4">
+                      <div>
+                        <p className="text-xs">{t('trade:size')}</p>
+                        <Input
+                          className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                          type="text"
+                          value={modifiedOrderSize}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            setModifiedOrderSize(e.target.value)
+                          }
+                        />
                       </div>
-                    ) : (
-                      <div className="mt-2 flex space-x-4">
-                        <div>
-                          <p className="text-xs">{t('trade:size')}</p>
-                          <Input
-                            className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
-                            type="text"
-                            value={modifiedOrderSize}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              setModifiedOrderSize(e.target.value)
-                            }
-                          />
-                        </div>
-                        <div>
-                          <p className="text-xs">{t('price')}</p>
-                          <Input
-                            autoFocus
-                            className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
-                            type="text"
-                            value={modifiedOrderPrice}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              setModifiedOrderPrice(e.target.value)
-                            }
-                          />
-                        </div>
+                      <div>
+                        <p className="text-xs">{t('price')}</p>
+                        <Input
+                          autoFocus
+                          className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                          type="text"
+                          value={modifiedOrderPrice}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            setModifiedOrderPrice(e.target.value)
+                          }
+                        />
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+                </div>
+                {connected ? (
                   <div className="flex items-center space-x-3 pl-8">
                     <div className="flex items-center space-x-2">
                       {modifyOrderId !== o.orderId.toString() ? (
@@ -513,22 +514,17 @@ const OpenOrders = () => {
                       )}
                     </div>
                   </div>
-                </div>
-              )
-            })
-          })}
-        </div>
-      )
-    ) : (
-      <div className="flex flex-col items-center p-8">
-        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-        <p>{t('trade:no-orders')}</p>
+                ) : null}
+              </div>
+            )
+          })
+        })}
       </div>
     )
   ) : (
     <div className="flex flex-col items-center p-8">
-      <LinkIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('trade:connect-orders')}</p>
+      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+      <p>{t('trade:no-orders')}</p>
     </div>
   )
 }
