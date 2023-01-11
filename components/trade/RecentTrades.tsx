@@ -99,12 +99,20 @@ const RecentTrades = () => {
 
   const [buyRatio, sellRatio] = useMemo(() => {
     if (!fills.length) return [0, 0]
-    const total = fills.length
-    const buys = fills.filter(
-      (f: any) => (f.side && f.side === 'buy') || f.takerSide === 1
-    ).length
-    const sells = total - buys
-    return [buys / total, sells / total]
+
+    const vol = fills.reduce(
+      (a: { buys: number; sells: number }, c: any) => {
+        if (c.side === 'buy' || c.takerSide === 1) {
+          a.buys = a.buys + c.size
+        } else {
+          a.sells = a.sells + c.size
+        }
+        return a
+      },
+      { buys: 0, sells: 0 }
+    )
+    const totalVol = vol.buys + vol.sells
+    return [vol.buys / totalVol, vol.sells / totalVol]
   }, [fills])
 
   return (
