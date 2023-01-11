@@ -5,7 +5,6 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import TradeAdvancedPage from '@components/trade/TradeAdvancedPage'
 import mangoStore, { DEFAULT_TRADE_FORM } from '@store/mangoStore'
-// import mangoStore from '@store/mangoStore'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useRouter } from 'next/router'
@@ -20,6 +19,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'onboarding',
         'onboarding-tours',
         'profile',
+        'search',
         'settings',
         'trade',
       ])),

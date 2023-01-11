@@ -14,6 +14,7 @@ import {
   Cog8ToothIcon,
   BuildingLibraryIcon,
   ArrowTrendingUpIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 
@@ -103,7 +104,7 @@ const MoreMenuPanel = ({
   showPanel: boolean
   setShowPanel: (showPanel: boolean) => void
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'search'])
   return (
     <div
       className={`fixed bottom-0 z-30 h-96 w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
@@ -124,6 +125,11 @@ const MoreMenuPanel = ({
           title={t('stats')}
           path="/stats"
           icon={<ChartBarIcon className="h-5 w-5" />}
+        />
+        <MoreMenuItem
+          title={t('search:search-accounts')}
+          path="/search"
+          icon={<MagnifyingGlassIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
           title={t('learn')}
