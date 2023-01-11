@@ -6,7 +6,7 @@ import Button from '../shared/Button'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useState } from 'react'
 import BounceLoader from '../shared/BounceLoader'
-import { MangoAccount } from '@blockworks-foundation/mango-v4'
+import { MangoAccount, TokenPosition } from '@blockworks-foundation/mango-v4'
 import { TrashIcon } from '@heroicons/react/20/solid'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 
@@ -72,22 +72,12 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
         mangoAccount.current
           ?.tokensActive()
           .filter(
-            (token) =>
+            (token: TokenPosition) =>
               token.balanceUi(
                 group.getFirstBankByTokenIndex(token.tokenIndex)
               ) < 0
           ).length
       ) {
-        console.log(
-          mangoAccount.current
-            ?.tokensActive()
-            .map((token) => ({
-              ...token,
-              balance: token.balanceUi(
-                group.getFirstBankByTokenIndex(token.tokenIndex)
-              ),
-            }))
-        )
         setHasBorrows(true)
       }
       if (openPerpPositions.length || unsettledPerpPositions.length) {
