@@ -35,7 +35,6 @@ const SimpleAreaChart = ({
           </linearGradient>
         </defs>
         <Area
-          isAnimationActive={false}
           type="monotone"
           dataKey={yKey}
           stroke={color}
