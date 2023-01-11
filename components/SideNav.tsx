@@ -28,7 +28,7 @@ import { useTheme } from 'next-themes'
 import { IconButton } from './shared/Button'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'search'])
   const { connected } = useWallet()
   const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
@@ -125,7 +125,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 active={pathname === '/search'}
                 collapsed={false}
                 icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-                title={t('search-accounts')}
+                title={t('search:search-accounts')}
                 pagePath="/search"
                 hideIconBg
                 showTooltip={false}
