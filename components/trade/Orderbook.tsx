@@ -1,4 +1,3 @@
-import { AccountInfo } from '@solana/web3.js'
 import Big from 'big.js'
 import mangoStore from '@store/mangoStore'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -18,8 +17,6 @@ import { breakpoints } from '../../utils/theme'
 import { useViewport } from 'hooks/useViewport'
 import {
   BookSide,
-  BookSideType,
-  MangoClient,
   PerpMarket,
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -36,52 +33,6 @@ export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
   }
   return []
 }
-
-function decodeBook(
-  client: MangoClient,
-  market: Market | PerpMarket,
-  accInfo: AccountInfo<Buffer>,
-  side: 'bids' | 'asks'
-): SpotOrderBook | BookSide {
-  if (market instanceof Market) {
-    const book = SpotOrderBook.decode(market, accInfo.data)
-    return book
-  } else {
-    const decodedAcc = client.program.coder.accounts.decode(
-      'bookSide',
-      accInfo.data
-    )
-    const book = BookSide.from(
-      client,
-      market,
-      side === 'bids' ? BookSideType.bids : BookSideType.asks,
-      decodedAcc
-    )
-    return book
-  }
-}
-
-// export function decodeBook(
-//   market: Market,
-//   accInfo: AccountInfo<Buffer>
-// ): SpotOrderBook | undefined {
-//   if (market && accInfo?.data) {
-//     if (market instanceof Market) {
-//       return SpotOrderBook.decode(market, accInfo.data)
-//     }
-//     else if (market instanceof PerpMarket) {
-//       // FIXME: Review the null being passed here
-//       return new BookSide(
-//         // @ts-ignore
-//         null,
-//         market,
-//         BookSideLayout.decode(accInfo.data),
-//         undefined,
-//         100000
-//       )
-//     }
-//   }
-// }
 
 type cumOrderbookSide = {
   price: number
@@ -319,85 +270,107 @@ const Orderbook = () => {
   }, 400)
 
   useEffect(() => {
-    const connection = mangoStore.getState().connection
     const group = mangoStore.getState().group
     const set = mangoStore.getState().set
-    const client = mangoStore.getState().client
 
     if (!market || !group) return
 
-    let previousBidInfo: AccountInfo<Buffer> | undefined = undefined
-    let previousAskInfo: AccountInfo<Buffer> | undefined = undefined
-    let bidSubscriptionId: number | undefined = undefined
-    let askSubscriptionId: number | undefined = undefined
-
-    const bidsPk =
-      market instanceof Market ? market['_decoded'].bids : market.bids
-    console.log('bidsPk', bidsPk?.toString())
-    if (bidsPk) {
-      connection.getAccountInfo(bidsPk).then((info) => {
-        if (!info) return
-        const decodedBook = decodeBook(client, market, info, 'bids')
-        set((state) => {
-          state.selectedMarket.bidsAccount = decodedBook
-          state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+    const ws = new WebSocket('wss://ws.mngo.cloud:8082')
+    // TODO: connection retries
+    ws.addEventListener('open', () => {
+      console.log('connected to orderbook feed')
+      console.log('subscribing', market.publicKey.toBase58())
+      ws.send(
+        JSON.stringify({
+          command: 'subscribe',
+          marketId: market.publicKey.toBase58(),
         })
-      })
-      bidSubscriptionId = connection.onAccountChange(
-        bidsPk,
-        (info, _context) => {
-          if (
-            !previousBidInfo ||
-            !previousBidInfo.data.equals(info.data) ||
-            previousBidInfo.lamports !== info.lamports
-          ) {
-            previousBidInfo = info
-            const decodedBook = decodeBook(client, market, info, 'bids')
+      )
+    })
+    ws.addEventListener('close', () => {
+      // TODO: reconnect logic
+      console.log('disconnected from websocket')
+    })
+    ws.addEventListener('message', (msg) => {
+      // TODO: handle errors
+      console.log(msg.data)
+      const data = JSON.parse(msg.data)
+      const selectedMarket = mangoStore.getState().selectedMarket
+      if (data['update']) {
+        // got an update from the feed
+        console.log('update', market.publicKey.toBase58())
+        const side = data['side']
+        const bookside =
+          side == 'bid'
+            ? selectedMarket.orderbook.bids
+            : selectedMarket.orderbook.asks
+
+        if (bookside.length) {
+          let new_bookside = Array.from(bookside)
+
+          for (const update of data['update']) {
+            const levelIndex = bookside.findIndex(
+              (level) => level && level.length && level[0] === update[0]
+            )
+            if (update[1] > 0) {
+              // level being added or updated
+              if (levelIndex !== -1) {
+                console.log('update')
+                new_bookside[levelIndex] = update
+              } else {
+                // add new level and resort
+                console.log('insert')
+                new_bookside.push(update)
+                new_bookside.sort((a, b) => {
+                  return side == 'bid' ? b[0] - a[0] : a[0] - b[0]
+                })
+              }
+            } else {
+              // level being removed if zero size
+              console.log('remove', update)
+              if (levelIndex !== -1) {
+                new_bookside[levelIndex] = []
+              } else {
+                console.log('tried to remove missing level')
+              }
+              console.log(bookside.length, new_bookside.length, bookside, new_bookside)
+            }
+          }
+
+          new_bookside = new_bookside.filter(x => x !== undefined && x.length)
+          if (side == 'bid') {
             set((state) => {
-              state.selectedMarket.bidsAccount = decodedBook
-              state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+              state.selectedMarket.orderbook.bids = new_bookside
+            })
+          } else {
+            set((state) => {
+              state.selectedMarket.orderbook.asks = new_bookside
             })
           }
         }
-      )
-    }
-
-    const asksPk =
-      market instanceof Market ? market['_decoded'].asks : market.asks
-    console.log('asksPk', asksPk?.toString())
-    if (asksPk) {
-      connection.getAccountInfo(asksPk).then((info) => {
-        if (!info) return
-        const decodedBook = decodeBook(client, market, info, 'asks')
-        set((state) => {
-          state.selectedMarket.asksAccount = decodedBook
-          state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
-        })
-      })
-      askSubscriptionId = connection.onAccountChange(
-        asksPk,
-        (info, _context) => {
-          if (
-            !previousAskInfo ||
-            !previousAskInfo.data.equals(info.data) ||
-            previousAskInfo.lamports !== info.lamports
-          ) {
-            previousAskInfo = info
-            const decodedBook = decodeBook(client, market, info, 'asks')
-            set((state) => {
-              state.selectedMarket.asksAccount = decodedBook
-              state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
-            })
-          }
+      } else {
+        if (data['bids'] && data['asks']) {
+          // got a checkpoint from the feed if no 'update' key
+          console.log('checkpoint', market.publicKey.toBase58())
+          set((state) => {
+            state.selectedMarket.orderbook.bids = data['bids']
+            state.selectedMarket.orderbook.asks = data['asks']
+          })
         }
-      )
-    }
-    return () => {
-      if (typeof bidSubscriptionId !== 'undefined') {
-        connection.removeAccountChangeListener(bidSubscriptionId)
       }
-      if (typeof askSubscriptionId !== 'undefined') {
-        connection.removeAccountChangeListener(askSubscriptionId)
+    })
+
+    return () => {
+      if (ws.readyState === 1) {
+        console.log('unsubscribing', market.publicKey.toBase58())
+        ws.send(
+          JSON.stringify({
+            command: 'unsubscribe',
+            marketId: market.publicKey.toBase58(),
+          })
+        )
+      } else {
+        console.log('disconnected before unsubscribe')
       }
     }
   }, [market])
