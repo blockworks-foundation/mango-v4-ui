@@ -427,6 +427,7 @@ const SwapForm = () => {
             <SwapFormSubmitButton
               loadingSwapDetails={loadingSwapDetails}
               useMargin={useMargin}
+              selectedRoute={selectedRoute}
               setShowConfirm={setShowConfirm}
               amountIn={amountInAsDecimal}
               inputSymbol={inputBank?.name}
@@ -490,6 +491,7 @@ const SwapFormSubmitButton = ({
   amountOut,
   inputSymbol,
   loadingSwapDetails,
+  selectedRoute,
   setShowConfirm,
   useMargin,
 }: {
@@ -497,6 +499,7 @@ const SwapFormSubmitButton = ({
   amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
+  selectedRoute: RouteInfo | undefined
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
 }) => {
@@ -510,7 +513,11 @@ const SwapFormSubmitButton = ({
     : tokenMax.lt(amountIn)
 
   const disabled =
-    connected && (!amountIn.toNumber() || showInsufficientBalance || !amountOut)
+    connected &&
+    (!amountIn.toNumber() ||
+      showInsufficientBalance ||
+      !amountOut ||
+      !selectedRoute)
 
   const onClick = connected ? () => setShowConfirm(true) : handleConnect
 
