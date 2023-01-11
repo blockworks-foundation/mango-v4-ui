@@ -15,23 +15,25 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const [loading, setLoading] = useState(false)
   const set = mangoStore((s) => s.set)
   const openOrders = Object.values(mangoStore((s) => s.mangoAccount.openOrders))
+  const hasOpenOrders =
+    openOrders.length && openOrders.filter((x) => x.length).length > 0
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const openPerpPositions = Object.values(perpPositions).filter((p) =>
     p.basePositionLots.toNumber()
   )
+  const group = mangoStore.getState().group
   const unsettledBalances = Object.values(mangoAccount.spotBalances).filter(
     (x) => x.unsettled && x.unsettled > 0
   )
   const unsettledPerpPositions = useUnsettledPerpPositions()
-  const [hasBorrows] = useState(false)
+  const [hasBorrows, setHasBorrows] = useState(false)
   const [hasOpenPositions, setHasOpenPositions] = useState(false)
 
   const handleCloseMangoAccount = async () => {
     const client = mangoStore.getState().client
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const mangoAccounts = mangoStore.getState().mangoAccounts
-    const group = mangoStore.getState().group
 
     if (!mangoAccount || !group) return
     setLoading(true)
@@ -65,22 +67,46 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   }
 
   useEffect(() => {
-    if (mangoAccount) {
-      //   if (mangoAccount.borrows.some((b) => b.gt(ZERO_I80F48))) {
-      //     setHasBorrows(true)
-      //   }
+    if (mangoAccount && group) {
+      if (
+        mangoAccount.current
+          ?.tokensActive()
+          .filter(
+            (token) =>
+              token.balanceUi(
+                group.getFirstBankByTokenIndex(token.tokenIndex)
+              ) < 0
+          ).length
+      ) {
+        console.log(
+          mangoAccount.current
+            ?.tokensActive()
+            .map((token) => ({
+              ...token,
+              balance: token.balanceUi(
+                group.getFirstBankByTokenIndex(token.tokenIndex)
+              ),
+            }))
+        )
+        setHasBorrows(true)
+      }
       if (openPerpPositions.length || unsettledPerpPositions.length) {
         setHasOpenPositions(true)
       }
     }
-  }, [mangoAccount])
+  }, [mangoAccount, group])
 
   const isDisabled =
-    (openOrders && openOrders.length > 0) ||
+    hasOpenOrders ||
     hasBorrows ||
     hasOpenPositions ||
     !!unsettledBalances.length
-  console.log(isDisabled)
+  console.log({
+    hasOpenOrders,
+    hasBorrows,
+    hasOpenPositions,
+    unsettle: !!unsettledBalances.length,
+  })
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="h-[300px]">
@@ -103,6 +129,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
             </div>
             <Button
               className="w-full"
+              disabled={isDisabled}
               onClick={handleCloseMangoAccount}
               size="large"
             >
