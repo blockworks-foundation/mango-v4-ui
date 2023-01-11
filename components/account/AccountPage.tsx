@@ -132,7 +132,9 @@ const AccountPage = () => {
 
     if (isNaN(assetsValue / accountValue)) {
       return 0
-    } else return assetsValue / accountValue - 1
+    } else {
+      return Math.abs(1 - assetsValue / accountValue)
+    }
   }, [mangoAccount, group, accountValue])
 
   const { accountPnl, accountValueChange } = useMemo(() => {
