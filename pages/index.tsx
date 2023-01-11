@@ -22,7 +22,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Index: NextPage = () => {
   return (
-    <div className="pb-20 md:pb-16">
+    <div className="pb-20 md:pb-0">
       <AccountPage />
     </div>
   )

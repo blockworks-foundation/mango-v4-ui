@@ -180,7 +180,7 @@ const TokenList = () => {
                 spotBalances[bank.mint.toString()]?.unsettled || 0
 
               return (
-                <TrBody key={key}>
+                <TrBody className="last:border-y-0" key={key}>
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
