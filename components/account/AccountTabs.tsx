@@ -9,21 +9,25 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 
-const TABS = [
-  'balances',
-  'activity:activity',
-  'swap:swap-history',
-  'trade:unsettled',
-]
-
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
   const { width } = useViewport()
+  const unsettledSpotBalances = useUnsettledSpotBalances()
+  const unsettledPerpPositions = useUnsettledPerpPositions()
   const isMobile = width ? width < breakpoints.md : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
-    return TABS.map((t) => [t, 0])
-  }, [])
+    const unsettledTradeCount =
+      Object.values(unsettledSpotBalances).flat().length +
+      unsettledPerpPositions?.length
+
+    return [
+      ['balances', 0],
+      ['activity:activity', 0],
+      ['swap:swap-history', 0],
+      ['trade:unsettled', unsettledTradeCount],
+    ]
+  }, [unsettledPerpPositions, unsettledSpotBalances])
 
   return (
     <>
