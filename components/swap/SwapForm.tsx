@@ -313,12 +313,11 @@ const SwapForm = () => {
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
         <div className="relative p-6 pt-10">
-          <div className="absolute right-2 top-2">
+          <div className="absolute right-4 top-4">
             <IconButton
               className="text-th-fgd-3"
               hideBg
               onClick={() => setShowSettings(true)}
-              size="small"
             >
               <Cog8ToothIcon className="h-5 w-5" />
             </IconButton>
@@ -463,7 +462,7 @@ const SwapForm = () => {
                   : '–'}
               </p>
             </div>
-            <div className="flex justify-between">
+            <div className="flex items-center justify-between">
               <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>
               <div className="flex items-center space-x-1">
                 <p className="text-right font-mono text-sm text-th-fgd-2">
@@ -473,9 +472,8 @@ const SwapForm = () => {
                   className="text-th-fgd-3"
                   hideBg
                   onClick={() => setShowSettings(true)}
-                  size="small"
                 >
-                  <PencilIcon className="h-4 w-4" />
+                  <PencilIcon className="ml-2 h-4 w-4" />
                 </IconButton>
               </div>
             </div>
