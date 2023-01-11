@@ -259,8 +259,12 @@ const SwapForm = () => {
   ])
 
   const loadingSwapDetails: boolean = useMemo(() => {
-    return !!amountInAsDecimal.toNumber() && connected && !selectedRoute
-  }, [amountInAsDecimal, connected, selectedRoute])
+    return (
+      !!(amountInAsDecimal.toNumber() || amountOutAsDecimal.toNumber()) &&
+      connected &&
+      !selectedRoute
+    )
+  }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
 
   return (
     <ContentBox
@@ -423,6 +427,7 @@ const SwapForm = () => {
             <SwapFormSubmitButton
               loadingSwapDetails={loadingSwapDetails}
               useMargin={useMargin}
+              selectedRoute={selectedRoute}
               setShowConfirm={setShowConfirm}
               amountIn={amountInAsDecimal}
               inputSymbol={inputBank?.name}
@@ -488,6 +493,7 @@ const SwapFormSubmitButton = ({
   amountOut,
   inputSymbol,
   loadingSwapDetails,
+  selectedRoute,
   setShowConfirm,
   useMargin,
 }: {
@@ -495,6 +501,7 @@ const SwapFormSubmitButton = ({
   amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
+  selectedRoute: RouteInfo | undefined
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
 }) => {
@@ -508,7 +515,11 @@ const SwapFormSubmitButton = ({
     : tokenMax.lt(amountIn)
 
   const disabled =
-    connected && (!amountIn.toNumber() || showInsufficientBalance || !amountOut)
+    connected &&
+    (!amountIn.toNumber() ||
+      showInsufficientBalance ||
+      !amountOut ||
+      !selectedRoute)
 
   const onClick = connected ? () => setShowConfirm(true) : handleConnect
 
@@ -529,11 +540,6 @@ const SwapFormSubmitButton = ({
           </div>
         ) : loadingSwapDetails ? (
           <Loading />
-        ) : disabled ? (
-          <div className="flex items-center">
-            <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-            No routes found
-          </div>
         ) : (
           <span>{t('swap:review-swap')}</span>
         )
