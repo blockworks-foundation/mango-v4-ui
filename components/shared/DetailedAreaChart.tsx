@@ -102,7 +102,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
 
   const flipGradientCoords = useMemo(() => {
     if (!data.length) return
-    return data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey]
+    return data[0][yKey] <= 0 && data[data.length - 1][yKey] <= 0
   }, [data])
 
   return (
