@@ -10,7 +10,7 @@ import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
-import SwapSuccessParticles from './swap/SwapSuccessParticles'
+import SuccessParticles from './shared/SuccessParticles'
 import { tsParticles } from 'tsparticles-engine'
 import { loadFull } from 'tsparticles'
 
@@ -56,7 +56,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <div className="fixed z-30">
-        <SwapSuccessParticles />
+        <SuccessParticles />
       </div>
       {connected && loadingMangoAccount ? (
         <div className="fixed z-30 flex h-screen w-full items-center justify-center bg-[rgba(0,0,0,0.7)]">

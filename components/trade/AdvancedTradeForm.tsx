@@ -27,7 +27,7 @@ import Loading from '@components/shared/Loading'
 import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider from './PerpSlider'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { SIZE_INPUT_UI_KEY } from 'utils/constants'
+import { SIZE_INPUT_UI_KEY, SOUND_SETTINGS_KEY } from 'utils/constants'
 import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
@@ -40,10 +40,17 @@ import ButtonGroup from '@components/forms/ButtonGroup'
 import TradeSummary from './TradeSummary'
 import useMangoAccount from 'hooks/useMangoAccount'
 import MaxSizeButton from './MaxSizeButton'
+import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
+import { Howl } from 'howler'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 
 const set = mangoStore.getState().set
+
+const successSound = new Howl({
+  src: ['/sounds/swap-success.mp3'],
+  volume: 0.5,
+})
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -55,6 +62,10 @@ const AdvancedTradeForm = () => {
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
   const { ipAllowed, ipCountry } = useIpAddress()
+  const [soundSettings] = useLocalStorageState(
+    SOUND_SETTINGS_KEY,
+    INITIAL_SOUND_SETTINGS
+  )
   const { connected } = useWallet()
   const { handleConnect } = useEnhancedWallet()
 
@@ -278,6 +289,12 @@ const AdvancedTradeForm = () => {
           10
         )
         actions.fetchOpenOrders()
+        set((s) => {
+          s.successAnimation.trade = true
+        })
+        if (soundSettings['swap-success']) {
+          successSound.play()
+        }
         notify({
           type: 'success',
           title: 'Transaction successful',
