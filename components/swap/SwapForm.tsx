@@ -452,16 +452,6 @@ const SwapForm = () => {
             <div id="swap-step-four">
               <HealthImpact maintProjectedHealth={maintProjectedHealth} />
             </div>
-            <div className="flex justify-between">
-              <p className="text-sm text-th-fgd-3">{t('swap:price-impact')}</p>
-              <p className="text-right font-mono text-sm text-th-fgd-2">
-                {selectedRoute?.priceImpactPct
-                  ? selectedRoute?.priceImpactPct * 100 < 0.1
-                    ? '<0.1%'
-                    : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                  : '–'}
-              </p>
-            </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>
               <div className="flex items-center space-x-1">
