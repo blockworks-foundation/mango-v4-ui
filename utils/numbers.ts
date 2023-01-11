@@ -121,3 +121,7 @@ export const getDecimalCount = (value: number): number => {
     return parseInt(value.toString().split('e-')[1] || '0')
   return 0
 }
+
+export const numberCompacter = Intl.NumberFormat('en', {
+  notation: 'compact',
+})
