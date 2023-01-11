@@ -186,6 +186,7 @@ const MangoAccountsListModal = ({
                               )
                             }
                             hideBg
+                            size="medium"
                           >
                             <DocumentDuplicateIcon className="h-5 w-5" />
                           </IconButton>
