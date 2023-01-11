@@ -21,6 +21,13 @@ import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 
+const formatFee = (value: number) => {
+  return value.toLocaleString(undefined, {
+    minimumSignificantDigits: 1,
+    maximumSignificantDigits: 1,
+  })
+}
+
 const ActivityFeedTable = ({
   activityFeed,
   handleShowActivityDetails,
@@ -155,25 +162,16 @@ const ActivityFeedTable = ({
     if (activity_type === 'swap') {
       const { loan_origination_fee, swap_in_symbol } = activity.activity_details
       fee = loan_origination_fee
-        ? `${loan_origination_fee.toLocaleString(undefined, {
-            minimumSignificantDigits: 1,
-            maximumSignificantDigits: 1,
-          })} ${swap_in_symbol}`
+        ? `${formatFee(loan_origination_fee)} ${swap_in_symbol}`
         : '0'
     }
     if (activity_type === 'perp_trade') {
       const { maker_fee, taker_fee } = activity.activity_details
-      fee = `${(maker_fee + taker_fee).toLocaleString(undefined, {
-        minimumSignificantDigits: 1,
-        maximumSignificantDigits: 1,
-      })} USDC`
+      fee = `${formatFee(maker_fee + taker_fee)} USDC`
     }
     if (activity_type === 'openbook_trade') {
       const { fee_cost, quote_symbol } = activity.activity_details
-      fee = `${fee_cost.toLocaleString(undefined, {
-        minimumSignificantDigits: 1,
-        maximumSignificantDigits: 1,
-      })} ${quote_symbol}`
+      fee = `${formatFee(fee_cost)} ${quote_symbol}`
     }
     return fee
   }
