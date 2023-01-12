@@ -256,7 +256,7 @@ const MenuItem = ({
             </Transition>
           </div>
           {isExternal ? (
-            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            <ArrowTopRightOnSquareIcon className="mr-4 h-4 w-4" />
           ) : null}
         </div>
       </Link>
