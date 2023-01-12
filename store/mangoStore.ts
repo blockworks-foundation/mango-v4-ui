@@ -222,7 +222,6 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
 export type MangoStore = {
   activityFeed: {
     feed: Array<DepositWithdrawFeedItem | LiquidationFeedItem>
-    initialLoad: boolean
     loading: boolean
   }
   connected: boolean
@@ -244,6 +243,7 @@ export type MangoStore = {
       swapHistory: {
         data: SwapHistoryItem[]
         initialLoad: boolean
+        loading: boolean
       }
     }
     tradeHistory: SpotTradeHistory[]
@@ -326,7 +326,8 @@ export type MangoStore = {
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
       mangoAccountPk: string,
-      timeout?: number
+      timeout?: number,
+      offset?: number
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
@@ -362,7 +363,6 @@ const mangoStore = create<MangoStore>()(
     return {
       activityFeed: {
         feed: [],
-        initialLoad: false,
         loading: true,
       },
       connected: false,
@@ -381,7 +381,7 @@ const mangoStore = create<MangoStore>()(
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
-          swapHistory: { data: [], initialLoad: false },
+          swapHistory: { data: [], initialLoad: false, loading: true },
         },
         tradeHistory: [],
       },
@@ -532,7 +532,7 @@ const mangoStore = create<MangoStore>()(
           params = ''
         ) => {
           const set = get().set
-          const currentFeed = mangoStore.getState().activityFeed.feed
+          const loadedFeed = mangoStore.getState().activityFeed.feed
           const connectedMangoAccountPk = mangoStore
             .getState()
             .mangoAccount.current?.publicKey.toString()
@@ -563,15 +563,15 @@ const mangoStore = create<MangoStore>()(
               )
 
             // only add to current feed if data request is offset and the mango account hasn't changed
-            const feed =
+            const combinedFeed =
               offset !== 0 &&
               connectedMangoAccountPk ===
-                currentFeed[0].activity_details.mango_account
-                ? currentFeed.concat(latestFeed)
+                loadedFeed[0]?.activity_details?.mango_account
+                ? loadedFeed.concat(latestFeed)
                 : latestFeed
 
             set((state) => {
-              state.activityFeed.feed = feed
+              state.activityFeed.feed = combinedFeed
             })
           } catch {
             notify({
@@ -579,12 +579,6 @@ const mangoStore = create<MangoStore>()(
               type: 'error',
             })
           } finally {
-            const initialLoad = mangoStore.getState().activityFeed.initialLoad
-            if (!initialLoad) {
-              set((state) => {
-                state.activityFeed.initialLoad = true
-              })
-            }
             set((state) => {
               state.activityFeed.loading = false
             })
@@ -827,12 +821,22 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        fetchSwapHistory: async (mangoAccountPk: string, timeout = 0) => {
+        fetchSwapHistory: async (
+          mangoAccountPk: string,
+          timeout = 0,
+          offset = 0
+        ) => {
           const set = get().set
+          const loadedSwapHistory =
+            mangoStore.getState().mangoAccount.stats.swapHistory.data
+          const connectedMangoAccountPk = mangoStore
+            .getState()
+            .mangoAccount.current?.publicKey.toString()
+
           setTimeout(async () => {
             try {
               const history = await fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}`
+                `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=10`
               )
               const parsedHistory = await history.json()
               const sortedHistory =
@@ -844,17 +848,31 @@ const mangoStore = create<MangoStore>()(
                     )
                   : []
 
+              const combinedHistory =
+                offset !== 0 &&
+                connectedMangoAccountPk === loadedSwapHistory[0]?.mango_account
+                  ? loadedSwapHistory.concat(sortedHistory)
+                  : sortedHistory
+
               set((state) => {
-                state.mangoAccount.stats.swapHistory.data = sortedHistory
-                state.mangoAccount.stats.swapHistory.initialLoad = true
+                state.mangoAccount.stats.swapHistory.data = combinedHistory
               })
             } catch {
-              set((state) => {
-                state.mangoAccount.stats.swapHistory.initialLoad = true
-              })
               notify({
                 title: 'Failed to load account swap history data',
                 type: 'error',
+              })
+            } finally {
+              if (
+                !mangoStore.getState().mangoAccount.stats.swapHistory
+                  .initialLoad
+              ) {
+                set((state) => {
+                  state.mangoAccount.stats.swapHistory.initialLoad = true
+                })
+              }
+              set((state) => {
+                state.mangoAccount.stats.swapHistory.loading = false
               })
             }
           }, timeout)

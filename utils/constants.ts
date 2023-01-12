@@ -65,3 +65,5 @@ export const MIN_SOL_BALANCE = 0.001
 export const ACCOUNT_ACTION_MODAL_HEIGHT = '506px'
 
 export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '444px'
+
+export const PAGINATION_PAGE_LENGTH = 25

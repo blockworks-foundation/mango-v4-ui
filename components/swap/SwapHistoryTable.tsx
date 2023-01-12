@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import {
   ArrowRightIcon,
   ChevronDownIcon,
@@ -9,7 +9,7 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { breakpoints } from '../../utils/theme'
 import { useViewport } from '../../hooks/useViewport'
-import { IconButton } from '../shared/Button'
+import { IconButton, LinkButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
 import mangoStore from '@store/mangoStore'
@@ -31,11 +31,15 @@ import useMangoAccount from 'hooks/useMangoAccount'
 const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
   const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
-  const initialLoad = mangoStore(
-    (s) => s.mangoAccount.stats.swapHistory.initialLoad
+  // const initialLoad = mangoStore(
+  //   (s) => s.mangoAccount.stats.swapHistory.initialLoad
+  // )
+  const loadSwapHistory = mangoStore(
+    (s) => s.mangoAccount.stats.swapHistory.loading
   )
   const { mangoTokens } = useJupiterMints()
   const [showSwapDetails, setSwapDetails] = useState('')
+  const [offset, setOffset] = useState(0)
   const actions = mangoStore.getState().actions
   const { mangoAccountAddress } = useMangoAccount()
   const { width } = useViewport()
@@ -51,13 +55,25 @@ const SwapHistoryTable = () => {
     }
   }, [actions, mangoAccountAddress])
 
+  const handleShowMore = useCallback(() => {
+    const set = mangoStore.getState().set
+    set((s) => {
+      s.mangoAccount.stats.swapHistory.loading = true
+    })
+    if (!mangoAccountAddress) return
+    setOffset(offset + 10)
+    actions.fetchSwapHistory(mangoAccountAddress, 0, offset + 10)
+  }, [actions, offset, mangoAccountAddress])
+
   const handleShowSwapDetails = (signature: string) => {
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
   }
 
-  return initialLoad ? (
-    mangoAccountAddress && swapHistory.length ? (
-      showTableView ? (
+  console.log(swapHistory)
+
+  return mangoAccountAddress && (swapHistory.length || loadSwapHistory) ? (
+    <>
+      {showTableView ? (
         <Table>
           <thead>
             <TrHead>
@@ -100,7 +116,6 @@ const SwapHistoryTable = () => {
 
               const inSymbol = formatTokenSymbol(swap_in_symbol)
               const outSymbol = formatTokenSymbol(swap_out_symbol)
-              console.log('mangoTokens', mangoTokens)
 
               if (mangoTokens.length) {
                 baseLogoURI = mangoTokens.find(
@@ -401,20 +416,26 @@ const SwapHistoryTable = () => {
             )
           })}
         </div>
-      )
-    ) : (
-      <div className="flex flex-col items-center p-8">
-        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-        <p>{t('swap:no-history')}</p>
-      </div>
-    )
+      )}
+      {loadSwapHistory ? (
+        <div className="mt-4 space-y-1.5">
+          {[...Array(4)].map((x, i) => (
+            <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
+              <div className="h-16 w-full bg-th-bkg-2" />
+            </SheenLoader>
+          ))}
+        </div>
+      ) : null}
+      {swapHistory.length && swapHistory.length % 10 === 0 ? (
+        <div className="flex justify-center pt-6">
+          <LinkButton onClick={handleShowMore}>Show More</LinkButton>
+        </div>
+      ) : null}
+    </>
   ) : (
-    <div className="mt-4 space-y-1.5">
-      {[...Array(4)].map((x, i) => (
-        <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
-          <div className="h-16 w-full bg-th-bkg-2" />
-        </SheenLoader>
-      ))}
+    <div className="flex flex-col items-center p-8">
+      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+      <p>{t('swap:no-history')}</p>
     </div>
   )
 }
