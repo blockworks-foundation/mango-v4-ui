@@ -58,8 +58,6 @@ export const PROFILE_CATEGORIES = [
 
 export const CHART_DATA_FEED = `https://dry-ravine-67635.herokuapp.com/tv`
 
-export const MANGO_ROUTER_API_URL = 'https://api.mngo.cloud/router/v1'
-
 export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
 export const MIN_SOL_BALANCE = 0.001

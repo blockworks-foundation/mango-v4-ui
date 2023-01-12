@@ -23,7 +23,7 @@ import { Transition } from '@headlessui/react'
 import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
-import useQuoteRoutes from './useQuoteRoutes'
+import useJupiterRoutes from './useJupiterRoutes'
 import SheenLoader from '../shared/SheenLoader'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
@@ -80,7 +80,7 @@ const SwapForm = () => {
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { mangoAccount } = useMangoAccount()
-  const { connected, publicKey } = useWallet()
+  const { connected } = useWallet()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
@@ -94,13 +94,12 @@ const SwapForm = () => {
       : new Decimal(0)
   }, [debouncedAmountOut])
 
-  const { bestRoute, routes } = useQuoteRoutes({
+  const { bestRoute, routes } = useJupiterRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
     amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
     slippage,
     swapMode,
-    wallet: publicKey?.toBase58(),
   })
 
   const setAmountInFormValue = useCallback(

@@ -1,14 +1,13 @@
+import { AccountMeta } from '@solana/web3.js'
 import { AccountInfo } from '@solana/web3.js'
 import Decimal from 'decimal.js'
 
 export declare type SideType = typeof Side.Ask | typeof Side.Bid
 export declare const Side: {
   Bid: {
-    // eslint-disable-next-line @typescript-eslint/ban-types
     bid: {}
   }
   Ask: {
-    // eslint-disable-next-line @typescript-eslint/ban-types
     ask: {}
   }
 }
@@ -58,7 +57,7 @@ export interface ExactOutSwapParams extends SwapParams {
 }
 export declare type AccountInfoMap = Map<string, AccountInfo<Buffer> | null>
 
-export declare type AmmLabel =
+declare type AmmLabel =
   | 'Aldrin'
   | 'Crema'
   | 'Cropper'
