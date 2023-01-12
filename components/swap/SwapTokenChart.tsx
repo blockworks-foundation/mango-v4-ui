@@ -79,7 +79,8 @@ const CustomizedLabel = ({
 
 const SwapTokenChart = () => {
   const { t } = useTranslation('common')
-  const { inputBank, outputBank } = mangoStore((s) => s.swap)
+  const inputBank = mangoStore((s) => s.swap.inputBank)
+  const outputBank = mangoStore((s) => s.swap.outputBank)
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
