@@ -131,7 +131,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
             <div className="space-y-4">
               <h2 className="mb-1">{t('close-account')}</h2>
               <p>{t('description')}</p>
-              <p>{t('youMust')}:</p>
+              <p>{t('you-must')}:</p>
               <div className="overflow-none space-y-2 rounded-md bg-th-bkg-4 p-2 sm:p-4">
                 <div className="flex items-center text-th-fgd-2">
                   {hasBorrows ? (
@@ -170,7 +170,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
               <div className="overflow-none space-y-2 rounded-md bg-th-bkg-4 p-2 sm:p-4">
                 <div className="flex items-center text-th-fgd-2">
                   <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
-                  {t('delete-your-mango-account')}
+                  {t('delete-your-account')}
                 </div>
                 <div className="flex items-center text-th-fgd-2">
                   <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
