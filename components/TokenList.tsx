@@ -442,7 +442,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
               onClick={() => goToTokenPage(bank)}
             >
               {t('token:token-details')}
-              <ChevronRightIcon className="ml-2 h-5 w-5" />
+              <ChevronRightIcon className="ml-1.5 h-5 w-5" />
             </LinkButton>
           </div>
         </div>
