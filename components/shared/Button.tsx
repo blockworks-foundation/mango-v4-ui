@@ -64,7 +64,7 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
   disabled = false,
   className,
   hideBg,
-  size = 'medium',
+  size,
   ...props
 }) => {
   return (
@@ -76,7 +76,9 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
           ? 'h-12 w-12'
           : size === 'small'
           ? 'h-8 w-8'
-          : 'h-10 w-10'
+          : size === 'medium'
+          ? 'h-10 w-10'
+          : ''
       } default-transition items-center justify-center rounded-full ${
         hideBg
           ? 'md:hover:text-th-active'

@@ -22,6 +22,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'common',
         'onboarding',
         'profile',
+        'search',
         'settings',
         'token',
         'trade',

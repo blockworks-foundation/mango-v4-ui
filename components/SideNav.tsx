@@ -11,6 +11,7 @@ import {
   ArrowsRightLeftIcon,
   ArrowTrendingUpIcon,
   XMarkIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -27,7 +28,7 @@ import { useTheme } from 'next-themes'
 import { IconButton } from './shared/Button'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'search'])
   const { connected } = useWallet()
   const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
@@ -121,6 +122,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               hideIconBg
             /> */}
               <MenuItem
+                active={pathname === '/search'}
+                collapsed={false}
+                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                title={t('search:search-accounts')}
+                pagePath="/search"
+                hideIconBg
+                showTooltip={false}
+              />
+              <MenuItem
                 collapsed={false}
                 icon={<LightBulbIcon className="h-5 w-5" />}
                 title={t('learn')}
@@ -211,7 +221,7 @@ const MenuItem = ({
       <Link
         href={pagePath}
         shallow={true}
-        className={`default-transition flex cursor-pointer px-4 focus:text-th-active focus:outline-none md:hover:text-th-active ${
+        className={`default-transition flex cursor-pointer pl-4 focus:text-th-active focus:outline-none md:hover:text-th-active ${
           active
             ? 'text-th-active'
             : theme === 'Light'
@@ -246,7 +256,7 @@ const MenuItem = ({
             </Transition>
           </div>
           {isExternal ? (
-            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            <ArrowTopRightOnSquareIcon className="mr-4 h-4 w-4" />
           ) : null}
         </div>
       </Link>
@@ -285,7 +295,7 @@ export const ExpandableMenuItem = ({
   return collapsed ? (
     <Popover>
       <div
-        className={`relative z-30 ${alignBottom ? '' : 'px-4 py-2'}`}
+        className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}
         role="button"
       >
         <Popover.Button

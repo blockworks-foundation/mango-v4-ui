@@ -6,14 +6,16 @@ export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
       ...(await serverSideTranslations(locale, [
+        'activity',
         'common',
         'onboarding',
         'onboarding-tours',
         'profile',
+        'search',
         'settings',
         'swap',
+        'token',
         'trade',
-        'activity',
         'close-account'
       ])),
     },
@@ -22,7 +24,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Index: NextPage = () => {
   return (
-    <div className="pb-20 md:pb-16">
+    <div className="pb-20 md:pb-0">
       <AccountPage />
     </div>
   )

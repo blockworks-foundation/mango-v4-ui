@@ -1,13 +1,14 @@
-import { parseResolution, getNextBarTime } from './helpers'
-
-const BE_API_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2Njc1NTI4MzV9.FpbBT3M6GN_TKSJ8CarGeOMU5U7ZUvgZOIy8789m1bk'
+import {
+  parseResolution,
+  getNextBarTime,
+  NEXT_PUBLIC_BIRDEYE_API_KEY,
+} from './helpers'
 
 let subscriptionItem: any = {}
 
 // Create WebSocket connection.
 const socket = new WebSocket(
-  `wss://public-api.birdeye.so/socket?x-api-key=${BE_API_KEY}`,
+  `wss://public-api.birdeye.so/socket?x-api-key=${NEXT_PUBLIC_BIRDEYE_API_KEY}`,
   'echo-protocol'
 )
 

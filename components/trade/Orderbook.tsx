@@ -595,7 +595,6 @@ const OrderbookRow = ({
   minOrderSize: number
   tickSize: number
 }) => {
-  const tradeForm = mangoStore((s) => s.tradeForm)
   const element = useRef<HTMLDivElement>(null)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -632,29 +631,29 @@ const OrderbookRow = ({
     const set = mangoStore.getState().set
     set((state) => {
       state.tradeForm.price = formattedPrice.toFixed()
-      if (tradeForm.baseSize && tradeForm.tradeType === 'Limit') {
+      if (state.tradeForm.baseSize && state.tradeForm.tradeType === 'Limit') {
         const quoteSize = floorToDecimal(
-          formattedPrice.mul(new Decimal(tradeForm.baseSize)),
+          formattedPrice.mul(new Decimal(state.tradeForm.baseSize)),
           getDecimalCount(tickSize)
         )
         state.tradeForm.quoteSize = quoteSize.toFixed()
       }
     })
-  }, [formattedPrice, tradeForm])
+  }, [formattedPrice, tickSize])
 
   const handleSizeClick = useCallback(() => {
     const set = mangoStore.getState().set
     set((state) => {
       state.tradeForm.baseSize = formattedSize.toString()
-      if (formattedSize && tradeForm.price) {
+      if (formattedSize && state.tradeForm.price) {
         const quoteSize = floorToDecimal(
-          formattedSize.mul(new Decimal(tradeForm.price)),
+          formattedSize.mul(new Decimal(state.tradeForm.price)),
           getDecimalCount(tickSize)
         )
         state.tradeForm.quoteSize = quoteSize.toString()
       }
     })
-  }, [formattedSize, tradeForm])
+  }, [formattedSize, tickSize])
 
   const groupingDecimalCount = useMemo(
     () => getDecimalCount(grouping),

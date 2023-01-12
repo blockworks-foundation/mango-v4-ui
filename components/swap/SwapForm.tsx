@@ -259,8 +259,12 @@ const SwapForm = () => {
   ])
 
   const loadingSwapDetails: boolean = useMemo(() => {
-    return !!amountInAsDecimal.toNumber() && connected && !selectedRoute
-  }, [amountInAsDecimal, connected, selectedRoute])
+    return (
+      !!(amountInAsDecimal.toNumber() || amountOutAsDecimal.toNumber()) &&
+      connected &&
+      !selectedRoute
+    )
+  }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
 
   return (
     <ContentBox
@@ -309,12 +313,11 @@ const SwapForm = () => {
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
         <div className="relative p-6 pt-10">
-          <div className="absolute right-2 top-2">
+          <div className="absolute right-4 top-4">
             <IconButton
               className="text-th-fgd-3"
               hideBg
               onClick={() => setShowSettings(true)}
-              size="small"
             >
               <Cog8ToothIcon className="h-5 w-5" />
             </IconButton>
@@ -423,6 +426,7 @@ const SwapForm = () => {
             <SwapFormSubmitButton
               loadingSwapDetails={loadingSwapDetails}
               useMargin={useMargin}
+              selectedRoute={selectedRoute}
               setShowConfirm={setShowConfirm}
               amountIn={amountInAsDecimal}
               inputSymbol={inputBank?.name}
@@ -448,17 +452,7 @@ const SwapForm = () => {
             <div id="swap-step-four">
               <HealthImpact maintProjectedHealth={maintProjectedHealth} />
             </div>
-            <div className="flex justify-between">
-              <p className="text-sm text-th-fgd-3">{t('swap:price-impact')}</p>
-              <p className="text-right font-mono text-sm text-th-fgd-2">
-                {selectedRoute?.priceImpactPct
-                  ? selectedRoute?.priceImpactPct * 100 < 0.1
-                    ? '<0.1%'
-                    : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                  : '–'}
-              </p>
-            </div>
-            <div className="flex justify-between">
+            <div className="flex items-center justify-between">
               <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>
               <div className="flex items-center space-x-1">
                 <p className="text-right font-mono text-sm text-th-fgd-2">
@@ -468,9 +462,8 @@ const SwapForm = () => {
                   className="text-th-fgd-3"
                   hideBg
                   onClick={() => setShowSettings(true)}
-                  size="small"
                 >
-                  <PencilIcon className="h-4 w-4" />
+                  <PencilIcon className="ml-2 h-4 w-4" />
                 </IconButton>
               </div>
             </div>
@@ -488,6 +481,7 @@ const SwapFormSubmitButton = ({
   amountOut,
   inputSymbol,
   loadingSwapDetails,
+  selectedRoute,
   setShowConfirm,
   useMargin,
 }: {
@@ -495,6 +489,7 @@ const SwapFormSubmitButton = ({
   amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
+  selectedRoute: RouteInfo | undefined
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
 }) => {
@@ -508,7 +503,11 @@ const SwapFormSubmitButton = ({
     : tokenMax.lt(amountIn)
 
   const disabled =
-    connected && (!amountIn.toNumber() || showInsufficientBalance || !amountOut)
+    connected &&
+    (!amountIn.toNumber() ||
+      showInsufficientBalance ||
+      !amountOut ||
+      !selectedRoute)
 
   const onClick = connected ? () => setShowConfirm(true) : handleConnect
 
@@ -529,11 +528,6 @@ const SwapFormSubmitButton = ({
           </div>
         ) : loadingSwapDetails ? (
           <Loading />
-        ) : disabled ? (
-          <div className="flex items-center">
-            <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-            No routes found
-          </div>
         ) : (
           <span>{t('swap:review-swap')}</span>
         )

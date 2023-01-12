@@ -196,7 +196,7 @@ const ActivityFeedTable = ({
             </TrHead>
           </thead>
           <tbody>
-            {activityFeed.map((activity: any) => {
+            {activityFeed.map((activity: any, index: number) => {
               const { activity_type, block_datetime } = activity
               const { signature } = activity.activity_details
               const isLiquidation =
@@ -207,7 +207,7 @@ const ActivityFeedTable = ({
               const fee = getFee(activity)
               return (
                 <TrBody
-                  key={signature}
+                  key={signature + index}
                   className={`default-transition text-sm hover:bg-th-bkg-2 ${
                     isLiquidation ? 'cursor-pointer' : ''
                   }`}
@@ -298,11 +298,11 @@ const ActivityFeedTable = ({
         </Table>
       ) : (
         <div>
-          {activityFeed.map((activity: any) => (
+          {activityFeed.map((activity: any, index: number) => (
             <MobileActivityFeedItem
               activity={activity}
               getValue={getValue}
-              key={activity.activity_details.signature}
+              key={activity?.activity_details?.signature + index}
             />
           ))}
         </div>
@@ -317,7 +317,7 @@ const ActivityFeedTable = ({
         </div>
       ) : null}
       {activityFeed.length && activityFeed.length % 25 === 0 ? (
-        <div className="flex justify-center pt-6">
+        <div className="flex justify-center py-6">
           <LinkButton onClick={handleShowMore}>Show More</LinkButton>
         </div>
       ) : null}

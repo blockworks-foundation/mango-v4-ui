@@ -170,7 +170,7 @@ const ActivityFilters = ({
     <Disclosure>
       <div className="relative">
         {hasFilters ? (
-          <div className="absolute right-14 top-3">
+          <div className="absolute right-14 top-2">
             <Tooltip content={t('activity:reset-filters')}>
               <IconButton
                 className={`${loadActivityFeed ? 'animate-spin' : ''}`}
