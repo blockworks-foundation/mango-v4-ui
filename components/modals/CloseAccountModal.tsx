@@ -4,17 +4,28 @@ import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
 import Button from '../shared/Button'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import BounceLoader from '../shared/BounceLoader'
-import { MangoAccount, TokenPosition } from '@blockworks-foundation/mango-v4'
-import { TrashIcon } from '@heroicons/react/20/solid'
+import {
+  MangoAccount,
+  TokenPosition,
+  toUiDecimalsForQuote,
+} from '@blockworks-foundation/mango-v4'
+import {
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  TrashIcon,
+} from '@heroicons/react/20/solid'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
+import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'
+import { formatFixedDecimals } from 'utils/numbers'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['close-account'])
   const [loading, setLoading] = useState(false)
   const set = mangoStore((s) => s.set)
   const openOrders = Object.values(mangoStore((s) => s.mangoAccount.openOrders))
+  const connection = mangoStore.getState().connection
   const hasOpenOrders =
     openOrders.length && openOrders.filter((x) => x.length).length > 0
   const mangoAccount = mangoStore((s) => s.mangoAccount)
@@ -29,6 +40,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const [hasBorrows, setHasBorrows] = useState(false)
   const [hasOpenPositions, setHasOpenPositions] = useState(false)
+  const [totalAccountSOL, setTotalAccountSOL] = useState(0)
 
   const handleCloseMangoAccount = async () => {
     const client = mangoStore.getState().client
@@ -66,6 +78,23 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     }
   }
 
+  const fetchTotalAccountSOL = useCallback(async () => {
+    if (!mangoAccount) {
+      return
+    }
+    const accountKeys = [
+      mangoAccount.current!.publicKey,
+      ...mangoAccount.openOrderAccounts.map((x) => x.address),
+    ]
+    const accounts = await getMultipleAccounts(connection, accountKeys)
+    const lamports =
+      accounts.reduce((total, account) => {
+        return total + account!.account.lamports
+      }, 0) * 0.000000001
+
+    setTotalAccountSOL(lamports)
+  }, [mangoAccount])
+
   useEffect(() => {
     if (mangoAccount && group) {
       if (
@@ -83,6 +112,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
       if (openPerpPositions.length || unsettledPerpPositions.length) {
         setHasOpenPositions(true)
       }
+      fetchTotalAccountSOL()
     }
   }, [mangoAccount, group])
 
@@ -91,32 +121,81 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     hasBorrows ||
     hasOpenPositions ||
     !!unsettledBalances.length
-  console.log({
-    hasOpenOrders,
-    hasBorrows,
-    hasOpenPositions,
-    unsettle: !!unsettledBalances.length,
-  })
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="h-[300px]">
+      <div className="h-[550px]">
         {loading ? (
           <BounceLoader loadingMessage={t('closing-account')} />
         ) : (
           <div className="flex h-full flex-col justify-between">
-            <div className="space-y-4 pb-6">
+            <div className="space-y-4">
               <h2 className="mb-1">{t('close-account')}</h2>
-              <p>
-                You can close your Mango account and recover the small amount
-                amount of SOL used to cover rent exemption.{' '}
-              </p>
-              <p>To close account you must:</p>
-              <ul>
-                <li>Close all borrows</li>
-                <li>Close and settle all Perp positions </li>
-                <li>Close all open orders</li>
-              </ul>
+              <p>{t('description')}</p>
+              <p>{t('youMust')}:</p>
+              <div className="overflow-none space-y-2 rounded-md bg-th-bkg-4 p-2 sm:p-4">
+                <div className="flex items-center text-th-fgd-2">
+                  {hasBorrows ? (
+                    <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-down" />
+                  ) : (
+                    <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
+                  )}
+                  {t('close-all-borrows')}
+                </div>
+                <div className="flex items-center text-th-fgd-2">
+                  {hasOpenPositions ? (
+                    <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-down" />
+                  ) : (
+                    <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
+                  )}
+                  {t('close-perp-positions')}
+                </div>
+                <div className="flex items-center text-th-fgd-2">
+                  {hasOpenOrders ? (
+                    <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-down" />
+                  ) : (
+                    <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
+                  )}
+                  {t('close-open-orders')}
+                </div>
+                <div className="flex items-center text-th-fgd-2">
+                  {unsettledBalances.length ? (
+                    <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-down" />
+                  ) : (
+                    <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
+                  )}
+                  {t('settle-balances')}
+                </div>
+              </div>
+              <p>By closing your account you will:</p>
+              <div className="overflow-none space-y-2 rounded-md bg-th-bkg-4 p-2 sm:p-4">
+                <div className="flex items-center text-th-fgd-2">
+                  <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
+                  {t('delete-your-mango-account')}
+                </div>
+                <div className="flex items-center text-th-fgd-2">
+                  <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
+                  {t('withdraw-assets-worth', {
+                    value:
+                      mangoAccount && group
+                        ? formatFixedDecimals(
+                            toUiDecimalsForQuote(
+                              mangoAccount!.current!.getEquity(group).toNumber()
+                            ),
+                            false,
+                            true
+                          )
+                        : 0,
+                  })}
+                </div>
+                <div className="flex items-center text-th-fgd-2">
+                  <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
+                  {t('recover-x-sol', {
+                    amount: totalAccountSOL.toFixed(3),
+                  })}
+                </div>
+              </div>
             </div>
+
             <Button
               className="w-full"
               disabled={isDisabled}
