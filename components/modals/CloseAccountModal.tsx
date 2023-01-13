@@ -50,7 +50,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     if (!mangoAccount || !group) return
     setLoading(true)
     try {
-      const tx = await client.closeMangoAccount(group, mangoAccount)
+      const tx = await client.emptyAndCloseMangoAccount(group, mangoAccount)
       if (tx) {
         const newMangoAccounts = mangoAccounts.filter(
           (ma) => !ma.publicKey.equals(mangoAccount.publicKey)
@@ -97,6 +97,16 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
 
   useEffect(() => {
     if (mangoAccount && group) {
+      console.log(
+        mangoAccount.current
+          ?.tokensActive()
+          .filter(
+            (token: TokenPosition) =>
+              token.balanceUi(
+                group.getFirstBankByTokenIndex(token.tokenIndex)
+              ) < 0
+          )
+      )
       if (
         mangoAccount.current
           ?.tokensActive()
