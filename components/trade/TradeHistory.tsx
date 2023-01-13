@@ -176,90 +176,88 @@ const TradeHistory = () => {
     (combinedTradeHistory.length || loadingTradeHistory) ? (
     <>
       {showTableView ? (
-        <div className="thin-scroll overflow-x-auto">
-          <Table>
-            <thead>
-              <TrHead>
-                <Th className="text-left">{t('market')}</Th>
-                <Th className="text-right">{t('trade:side')}</Th>
-                <Th className="text-right">{t('trade:size')}</Th>
-                <Th className="text-right">{t('price')}</Th>
-                <Th className="text-right">{t('value')}</Th>
-                <Th className="text-right">{t('fee')}</Th>
-                <Th className="text-right">{t('date')}</Th>
-              </TrHead>
-            </thead>
-            <tbody>
-              {combinedTradeHistory.map((trade: any, index: number) => {
-                let market
-                if ('market' in trade) {
-                  market = group.getSerum3MarketByExternalMarket(
-                    new PublicKey(trade.market)
-                  )
-                } else if ('perp_market' in trade) {
-                  market = group.getPerpMarketByName(trade.perp_market)
-                } else {
-                  market = selectedMarket
-                }
-                let makerTaker = trade.liquidity
-                if ('maker' in trade) {
-                  makerTaker = trade.maker ? 'Maker' : 'Taker'
-                  if (trade.taker === mangoAccount.publicKey.toString()) {
-                    makerTaker = 'Taker'
-                  }
-                }
-                const size = trade.size || trade.quantity
-                let fee
-                if (trade.fee_cost || trade.feeCost) {
-                  fee = trade.fee_cost || trade.feeCost
-                } else {
-                  fee =
-                    trade.maker === mangoAccount.publicKey.toString()
-                      ? trade.maker_fee
-                      : trade.taker_fee
-                }
-
-                return (
-                  <TrBody
-                    key={`${trade.signature || trade.marketIndex}${index}`}
-                    className="my-1 p-2"
-                  >
-                    <Td className="">
-                      <TableMarketName market={market} />
-                    </Td>
-                    <Td className="text-right">
-                      <SideBadge side={trade.side} />
-                    </Td>
-                    <Td className="text-right font-mono">{size}</Td>
-                    <Td className="text-right font-mono">
-                      {formatDecimal(trade.price)}
-                    </Td>
-                    <Td className="text-right font-mono">
-                      {formatFixedDecimals(trade.price * size, true, true)}
-                    </Td>
-                    <Td className="text-right">
-                      <span className="font-mono">{formatDecimal(fee)}</span>
-                      <p className="font-body text-xs text-th-fgd-4">
-                        {makerTaker}
-                      </p>
-                    </Td>
-
-                    <Td className="whitespace-nowrap text-right">
-                      {trade.block_datetime ? (
-                        <TableDateDisplay
-                          date={trade.block_datetime}
-                          showSeconds
-                        />
-                      ) : (
-                        'Recent'
-                      )}
-                    </Td>
-                  </TrBody>
+        <Table>
+          <thead>
+            <TrHead>
+              <Th className="text-left">{t('market')}</Th>
+              <Th className="text-right">{t('trade:side')}</Th>
+              <Th className="text-right">{t('trade:size')}</Th>
+              <Th className="text-right">{t('price')}</Th>
+              <Th className="text-right">{t('value')}</Th>
+              <Th className="text-right">{t('fee')}</Th>
+              <Th className="text-right">{t('date')}</Th>
+            </TrHead>
+          </thead>
+          <tbody>
+            {combinedTradeHistory.map((trade: any, index: number) => {
+              let market
+              if ('market' in trade) {
+                market = group.getSerum3MarketByExternalMarket(
+                  new PublicKey(trade.market)
                 )
-              })}
-            </tbody>
-          </Table>
-        </div>
+              } else if ('perp_market' in trade) {
+                market = group.getPerpMarketByName(trade.perp_market)
+              } else {
+                market = selectedMarket
+              }
+              let makerTaker = trade.liquidity
+              if ('maker' in trade) {
+                makerTaker = trade.maker ? 'Maker' : 'Taker'
+                if (trade.taker === mangoAccount.publicKey.toString()) {
+                  makerTaker = 'Taker'
+                }
+              }
+              const size = trade.size || trade.quantity
+              let fee
+              if (trade.fee_cost || trade.feeCost) {
+                fee = trade.fee_cost || trade.feeCost
+              } else {
+                fee =
+                  trade.maker === mangoAccount.publicKey.toString()
+                    ? trade.maker_fee
+                    : trade.taker_fee
+              }
+
+              return (
+                <TrBody
+                  key={`${trade.signature || trade.marketIndex}${index}`}
+                  className="my-1 p-2"
+                >
+                  <Td className="">
+                    <TableMarketName market={market} />
+                  </Td>
+                  <Td className="text-right">
+                    <SideBadge side={trade.side} />
+                  </Td>
+                  <Td className="text-right font-mono">{size}</Td>
+                  <Td className="text-right font-mono">
+                    {formatDecimal(trade.price)}
+                  </Td>
+                  <Td className="text-right font-mono">
+                    {formatFixedDecimals(trade.price * size, true, true)}
+                  </Td>
+                  <Td className="text-right">
+                    <span className="font-mono">{formatDecimal(fee)}</span>
+                    <p className="font-body text-xs text-th-fgd-4">
+                      {makerTaker}
+                    </p>
+                  </Td>
+
+                  <Td className="whitespace-nowrap text-right">
+                    {trade.block_datetime ? (
+                      <TableDateDisplay
+                        date={trade.block_datetime}
+                        showSeconds
+                      />
+                    ) : (
+                      'Recent'
+                    )}
+                  </Td>
+                </TrBody>
+              )
+            })}
+          </tbody>
+        </Table>
       ) : (
         <div>
           {combinedTradeHistory.map((trade: any, index: number) => {
