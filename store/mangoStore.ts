@@ -34,6 +34,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
+  PAGINATION_PAGE_LENGTH,
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
 import { OrderbookL2, SpotBalances, SpotTradeHistory } from 'types'
@@ -246,7 +247,7 @@ export type MangoStore = {
         initialLoad: boolean
       }
     }
-    tradeHistory: SpotTradeHistory[]
+    tradeHistory: { data: SpotTradeHistory[]; loading: boolean }
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
@@ -330,7 +331,7 @@ export type MangoStore = {
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
-    fetchTradeHistory: () => Promise<void>
+    fetchTradeHistory: (offset?: number) => Promise<void>
     fetchWalletTokens: (wallet: Wallet) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     loadMarketFills: () => Promise<void>
@@ -383,7 +384,7 @@ const mangoStore = create<MangoStore>()(
           performance: { data: [], loading: false },
           swapHistory: { data: [], initialLoad: false },
         },
-        tradeHistory: [],
+        tradeHistory: { data: [], loading: true },
       },
       mangoAccounts: [],
       markets: undefined,
@@ -539,7 +540,7 @@ const mangoStore = create<MangoStore>()(
 
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
+              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}${
                 params ? params : ''
               }`
             )
@@ -1007,36 +1008,33 @@ const mangoStore = create<MangoStore>()(
             console.log('Error fetching fills:', err)
           }
         },
-        async fetchTradeHistory() {
+        async fetchTradeHistory(offset = 0) {
           const set = get().set
-          const mangoAccount = get().mangoAccount.current
+          const mangoAccountPk =
+            get().mangoAccount?.current?.publicKey.toString()
+          const loadedHistory =
+            mangoStore.getState().mangoAccount.tradeHistory.data
           try {
-            const [spotRes, perpRes] = await Promise.all([
-              fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/openbook-trades?address=${mangoAccount?.publicKey.toString()}&address-type=mango-account`
-              ),
-              fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/perp-trade-history?mango-account=${mangoAccount?.publicKey.toString()}&limit=1000`
-              ),
-            ])
-            const spotHistory = await spotRes.json()
-            const perpHistory = await perpRes.json()
-            console.log('th', spotHistory, perpHistory)
-            let tradeHistory: any[] = []
-            if (spotHistory?.length) {
-              tradeHistory = tradeHistory.concat(spotHistory)
-            }
-            if (perpHistory?.length) {
-              tradeHistory = tradeHistory.concat(perpHistory)
-            }
+            const response = await fetch(
+              `https://mango-transaction-log.herokuapp.com/v4/stats/trade-history?mango-account=${mangoAccountPk}&limit=${PAGINATION_PAGE_LENGTH}&offset=${offset}`
+            )
+            const parsedHistory = await response.json()
+            const newHistory = parsedHistory.map((h: any) => h.activity_details)
+
+            const history =
+              offset !== 0 ? loadedHistory.concat(newHistory) : newHistory
 
             set((s) => {
-              s.mangoAccount.tradeHistory = tradeHistory.sort(
+              s.mangoAccount.tradeHistory.data = history?.sort(
                 (x: any) => x.block_datetime
               )
             })
           } catch (e) {
             console.error('Unable to fetch trade history', e)
+          } finally {
+            set((s) => {
+              s.mangoAccount.tradeHistory.loading = false
+            })
           }
         },
         updateConnection(endpointUrl) {
