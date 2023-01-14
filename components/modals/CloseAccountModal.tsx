@@ -100,11 +100,10 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
       if (
         mangoAccount.current
           ?.tokensActive()
-          .filter(
-            (token: TokenPosition) =>
-              token.balanceUi(
-                group.getFirstBankByTokenIndex(token.tokenIndex)
-              ) < 0
+          .filter((token: TokenPosition) =>
+            token
+              .balance(group.getFirstBankByTokenIndex(token.tokenIndex))
+              .isNeg()
           ).length
       ) {
         setHasBorrows(true)
