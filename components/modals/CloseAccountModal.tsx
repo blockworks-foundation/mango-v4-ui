@@ -89,7 +89,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     const accounts = await getMultipleAccounts(connection, accountKeys)
     const lamports =
       accounts.reduce((total, account) => {
-        return total + account!.account.lamports
+        return total + (account?.account.lamports || 0)
       }, 0) * 0.000000001
 
     setTotalAccountSOL(lamports)
