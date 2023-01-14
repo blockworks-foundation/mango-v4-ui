@@ -691,8 +691,6 @@ const mangoStore = create<MangoStore>()(
               return
             }
 
-            mangoAccounts.forEach((ma) => ma.reloadAccountData(client))
-
             let newSelectedMangoAccount = selectedMangoAccount
             if (!selectedMangoAccount || !selectedAccountIsNotInAccountsList) {
               const lastAccount = localStorage.getItem(LAST_ACCOUNT_KEY)
@@ -707,19 +705,23 @@ const mangoStore = create<MangoStore>()(
             }
 
             if (newSelectedMangoAccount) {
-              await actions.fetchOpenOrders(newSelectedMangoAccount)
+              await newSelectedMangoAccount.reloadAccountData(client)
+              set((state) => {
+                state.mangoAccount.current = newSelectedMangoAccount
+                state.mangoAccount.initialLoad = false
+              })
+              actions.fetchOpenOrders(newSelectedMangoAccount)
             }
+
+            await Promise.all(
+              mangoAccounts.map((ma) => ma.reloadAccountData(client))
+            )
 
             set((state) => {
               state.mangoAccounts = mangoAccounts
-              state.mangoAccount.current = newSelectedMangoAccount
             })
           } catch (e) {
             console.error('Error fetching mango accts', e)
-          } finally {
-            set((state) => {
-              state.mangoAccount.initialLoad = false
-            })
           }
         },
         fetchNfts: async (connection: Connection, ownerPk: PublicKey) => {
