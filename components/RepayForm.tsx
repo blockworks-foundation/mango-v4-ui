@@ -122,7 +122,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       //to not leave some dust on account we round amount by this number
       //with reduce only set to true we take only what is needed to be
       //deposited in need to repay borrow
-      const roundUpBy = 1.01
+      const roundUpBy = 1.05
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions

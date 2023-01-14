@@ -97,16 +97,6 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
 
   useEffect(() => {
     if (mangoAccount && group) {
-      console.log(
-        mangoAccount.current
-          ?.tokensActive()
-          .filter(
-            (token: TokenPosition) =>
-              token.balanceUi(
-                group.getFirstBankByTokenIndex(token.tokenIndex)
-              ) < 0
-          )
-      )
       if (
         mangoAccount.current
           ?.tokensActive()
