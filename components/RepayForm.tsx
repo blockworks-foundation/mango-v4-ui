@@ -128,6 +128,8 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       const actions = mangoStore.getState().actions
 
       if (!mangoAccount || !group || !bank || !wallet) return
+
+      //we don't want to left negative dust in account if someone wants to repay full amount
       const actualAmount =
         sizePercentage === '100'
           ? mangoAccount.getTokenBorrowsUi(bank) < parseFloat(amount)
