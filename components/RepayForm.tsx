@@ -130,7 +130,9 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       if (!mangoAccount || !group || !bank || !wallet) return
       const actualAmount =
         sizePercentage === '100'
-          ? mangoAccount.getTokenBorrowsUi(bank)
+          ? mangoAccount.getTokenBorrowsUi(bank) < parseFloat(amount)
+            ? parseFloat(amount)
+            : mangoAccount.getTokenBorrowsUi(bank)
           : parseFloat(amount)
 
       setSubmitting(true)
