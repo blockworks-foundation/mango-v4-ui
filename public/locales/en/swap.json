@@ -8,6 +8,7 @@
     "insufficient-balance": "Insufficient {{symbol}} Balance",
     "insufficient-collateral": "Insufficient Collateral",
     "max-slippage": "Max Slippage",
+    "maximum-cost": "Maximum Cost",
     "minimum-received": "Minimum Received",
     "no-history": "No swap history",
     "pay": "You Pay",
