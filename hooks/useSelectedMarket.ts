@@ -76,6 +76,7 @@ export default function useSelectedMarket() {
     price,
     serumOrPerpMarket,
     baseSymbol,
+    quoteBank,
     quoteSymbol,
     baseLogoURI,
     quoteLogoURI,

@@ -160,6 +160,12 @@ const AdvancedTradeForm = () => {
   }, [])
 
   const handleSetMargin = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.checked) {
+      set((s) => {
+        s.tradeForm.quoteSize = ''
+        s.tradeForm.baseSize = ''
+      })
+    }
     setUseMargin(e.target.checked)
   }, [])
 
@@ -456,11 +462,13 @@ const AdvancedTradeForm = () => {
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
               step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
+              useMargin={useMargin}
             />
           ) : (
             <SpotButtonGroup
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
+              useMargin={useMargin}
             />
           )
         ) : tradeFormSizeUi === 'slider' ? (
