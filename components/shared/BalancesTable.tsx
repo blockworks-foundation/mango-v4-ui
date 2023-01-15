@@ -1,6 +1,6 @@
 import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useJupiterMints from 'hooks/useJupiterMints'
-import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import { NoSymbolIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
@@ -212,6 +212,7 @@ const BalancesTable = () => {
     )
   ) : (
     <div className="flex flex-col items-center p-8">
+      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-balances')}</p>
     </div>
   )
