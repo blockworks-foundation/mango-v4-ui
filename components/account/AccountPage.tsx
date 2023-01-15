@@ -39,6 +39,7 @@ import dayjs from 'dayjs'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -55,7 +56,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 const AccountPage = () => {
   const { t } = useTranslation('common')
   // const { connected } = useWallet()
-  const group = mangoStore.getState().group
+  const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
   const loadPerformanceData = mangoStore(

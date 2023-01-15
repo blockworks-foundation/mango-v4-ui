@@ -6,7 +6,6 @@ import {
   ExclamationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
-import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -121,7 +120,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     return logoURI
   }, [bank?.mint, mangoTokens])
 
-  const { connected, wallet } = useWallet()
+  const { connected, publicKey } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const tokenMax = useMemo(() => {
@@ -158,7 +157,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current
 
-    if (!mangoAccount || !group || !bank) return
+    if (!mangoAccount || !group || !bank || !publicKey) return
 
     setSubmitting(true)
     try {
@@ -175,7 +174,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       })
 
       await actions.reloadMangoAccount()
-      actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
+      actions.fetchWalletTokens(publicKey)
       setSubmitting(false)
       onSuccess()
     } catch (e: any) {
@@ -188,7 +187,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       console.error('Error depositing:', e)
       setSubmitting(false)
     }
-  }, [bank, wallet, inputAmount])
+  }, [bank, publicKey, inputAmount])
 
   // TODO extract into a shared hook for UserSetup.tsx
   const banks = useMemo(() => {

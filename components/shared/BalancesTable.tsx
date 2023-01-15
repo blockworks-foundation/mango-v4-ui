@@ -1,6 +1,6 @@
 import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useJupiterMints from 'hooks/useJupiterMints'
-import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import { NoSymbolIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
@@ -33,24 +33,24 @@ const BalancesTable = () => {
   const showTableView = width ? width > breakpoints.md : false
 
   const banks = useMemo(() => {
-    if (!group) return []
+    if (!group || !mangoAccount) return []
 
     const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
       key,
       value,
-      balance: mangoAccount?.getTokenBalanceUi(value[0]),
+      balance: mangoAccount.getTokenBalanceUi(value[0]),
     }))
     const sortedBanks = mangoAccount
       ? rawBanks
           .sort(
             (a, b) =>
-              Math.abs(b.balance! * b.value[0].uiPrice) -
-              Math.abs(a.balance! * a.value[0].uiPrice)
+              Math.abs(b.balance * b.value[0].uiPrice) -
+              Math.abs(a.balance * a.value[0].uiPrice)
           )
           .filter((c) => {
             return (
               Math.abs(
-                floorToDecimal(c.balance!, c.value[0].mintDecimals).toNumber()
+                floorToDecimal(c.balance, c.value[0].mintDecimals).toNumber()
               ) > 0 ||
               spotBalances[c.value[0].mint.toString()]?.unsettled > 0 ||
               spotBalances[c.value[0].mint.toString()]?.inOrders > 0
@@ -59,7 +59,7 @@ const BalancesTable = () => {
       : rawBanks
 
     return sortedBanks
-  }, [group, mangoAccount])
+  }, [group, mangoAccount, spotBalances])
 
   return banks?.length ? (
     showTableView ? (
@@ -212,6 +212,7 @@ const BalancesTable = () => {
     )
   ) : (
     <div className="flex flex-col items-center p-8">
+      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-balances')}</p>
     </div>
   )

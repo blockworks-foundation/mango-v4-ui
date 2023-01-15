@@ -222,7 +222,7 @@ const ActivityFeedTable = ({
                   }
                 >
                   <Td>
-                    <p className="font-body tracking-wider">
+                    <p className="font-body">
                       {dayjs(block_datetime).format('ddd D MMM')}
                     </p>
                     <p className="text-xs text-th-fgd-3">
@@ -473,7 +473,7 @@ const MobileActivityFeedItem = ({
             <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
               {formatDecimal(activity.activity_details.asset_amount)}{' '}
-              <span className="font-body tracking-wider">
+              <span className="font-body">
                 {activity.activity_details.asset_symbol}
               </span>
               <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
@@ -491,7 +491,7 @@ const MobileActivityFeedItem = ({
             <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
               {formatDecimal(activity.activity_details.liab_amount)}{' '}
-              <span className="font-body tracking-wider">
+              <span className="font-body">
                 {activity.activity_details.liab_symbol}
               </span>
               <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}

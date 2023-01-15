@@ -117,7 +117,7 @@ const SwapHistoryTable = () => {
             return (
               <TrBody key={signature}>
                 <Td>
-                  <p className="font-body tracking-wider">
+                  <p className="font-body">
                     {dayjs(block_datetime).format('ddd D MMM')}
                   </p>
                   <p className="font-body text-xs text-th-fgd-3">

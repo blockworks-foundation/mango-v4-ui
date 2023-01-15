@@ -5,15 +5,16 @@ import MarketLogos from './MarketLogos'
 
 const TableMarketName = ({ market }: { market: PerpMarket | Serum3Market }) => {
   const { selectedMarket } = useSelectedMarket()
+
   return selectedMarket?.name === market.name ? (
     <div className="flex items-center">
-      <MarketLogos market={market!} />
+      <MarketLogos market={market} />
       <span className="whitespace-nowrap">{market.name}</span>
     </div>
   ) : (
     <Link href={`/trade?name=${market.name}`}>
       <div className="default-transition flex items-center underline md:hover:text-th-fgd-3 md:hover:no-underline">
-        <MarketLogos market={market!} />
+        <MarketLogos market={market} />
         <span className="whitespace-nowrap">{market.name}</span>
       </div>
     </Link>

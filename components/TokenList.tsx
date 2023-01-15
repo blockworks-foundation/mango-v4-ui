@@ -190,7 +190,7 @@ const TokenList = () => {
                           <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
                         )}
                       </div>
-                      <p className="font-body tracking-wider">{bank.name}</p>
+                      <p className="font-body">{bank.name}</p>
                     </div>
                   </Td>
                   <Td className="text-right">
@@ -565,9 +565,7 @@ const ActionsMenu = ({
             <div className="mr-2 flex flex-shrink-0 items-center">
               <Image alt="" width="20" height="20" src={logoURI || ''} />
             </div>
-            <p className="font-body tracking-wider">
-              {formatTokenSymbol(bank.name)}
-            </p>
+            <p className="font-body">{formatTokenSymbol(bank.name)}</p>
           </div>
           <ActionsLinkButton
             mangoAccount={mangoAccount!}
