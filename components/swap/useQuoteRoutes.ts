@@ -84,6 +84,7 @@ const fetchMangoRoutes = async (
           pct: mInfo.fee.rate,
         },
       })),
+      mints: route.mints.map((x: string) => new PublicKey(x)),
       instructions: route.instructions.map((ix: any) => ({
         ...ix,
         programId: new PublicKey(ix.programId),
@@ -93,6 +94,7 @@ const fetchMangoRoutes = async (
           pubkey: new PublicKey(key.pubkey),
         })),
       })),
+      routerName: 'Mango',
     }))
     return {
       routes: data,
