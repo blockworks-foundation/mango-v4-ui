@@ -217,14 +217,16 @@ const SwapReviewRouteInfo = ({
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
       setSubmitting(true)
-      const [ixs, alts] = await fetchJupiterTransaction(
-        connection,
-        selectedRoute,
-        mangoAccount.owner,
-        slippage,
-        inputBank.mint,
-        outputBank.mint
-      )
+      const [ixs, alts] = selectedRoute.instructions
+        ? [selectedRoute.instructions, []]
+        : await fetchJupiterTransaction(
+            connection,
+            selectedRoute,
+            mangoAccount.owner,
+            slippage,
+            inputBank.mint,
+            outputBank.mint
+          )
 
       try {
         const tx = await client.marginTrade({

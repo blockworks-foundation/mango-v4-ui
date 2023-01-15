@@ -1,4 +1,4 @@
-import { AccountInfo } from '@solana/web3.js'
+import { AccountInfo, TransactionInstruction } from '@solana/web3.js'
 import Decimal from 'decimal.js'
 
 export declare type SideType = typeof Side.Ask | typeof Side.Bid
@@ -128,6 +128,7 @@ export interface RouteInfo {
   priceImpactPct: number
   slippageBps: number
   swapMode: SwapMode
+  instructions?: TransactionInstruction[]
 }
 
 export type Routes = {

@@ -84,6 +84,15 @@ const fetchMangoRoutes = async (
           pct: mInfo.fee.rate,
         },
       })),
+      instructions: route.instructions.map((ix: any) => ({
+        ...ix,
+        programId: new PublicKey(ix.programId),
+        data: Buffer.from(ix.data, 'base64'),
+        keys: ix.keys.map((key: any) => ({
+          ...key,
+          pubkey: new PublicKey(key.pubkey),
+        })),
+      })),
     }))
     return {
       routes: data,
