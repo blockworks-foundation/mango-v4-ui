@@ -13,7 +13,7 @@ import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, {
   NumberFormatValues,
   SourceInfo,
@@ -31,7 +31,6 @@ import { SIZE_INPUT_UI_KEY, SOUND_SETTINGS_KEY } from 'utils/constants'
 import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
-import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
@@ -56,8 +55,6 @@ const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
-  const { mangoTokens } = useJupiterMints()
-  const { selectedMarket, price: oraclePrice } = useSelectedMarket()
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
@@ -68,44 +65,14 @@ const AdvancedTradeForm = () => {
   )
   const { connected } = useWallet()
   const { handleConnect } = useEnhancedWallet()
-
-  const baseSymbol = useMemo(() => {
-    return selectedMarket?.name.split(/-|\//)[0]
-  }, [selectedMarket])
-
-  const baseLogoURI = useMemo(() => {
-    if (!baseSymbol || !mangoTokens.length) return ''
-    const token =
-      mangoTokens.find((t) => t.symbol === baseSymbol) ||
-      mangoTokens.find((t) => t.symbol?.includes(baseSymbol))
-    if (token) {
-      return token.logoURI
-    }
-    return ''
-  }, [baseSymbol, mangoTokens])
-
-  const quoteBank = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
-    const tokenIdx =
-      selectedMarket instanceof Serum3Market
-        ? selectedMarket.quoteTokenIndex
-        : selectedMarket?.settleTokenIndex
-    return group?.getFirstBankByTokenIndex(tokenIdx)
-  }, [selectedMarket])
-
-  const quoteSymbol = useMemo(() => {
-    return quoteBank?.name
-  }, [quoteBank])
-
-  const quoteLogoURI = useMemo(() => {
-    if (!quoteSymbol || !mangoTokens.length) return ''
-    const token = mangoTokens.find((t) => t.symbol === quoteSymbol)
-    if (token) {
-      return token.logoURI
-    }
-    return ''
-  }, [quoteSymbol, mangoTokens])
+  const {
+    selectedMarket,
+    price: oraclePrice,
+    baseLogoURI,
+    baseSymbol,
+    quoteLogoURI,
+    quoteSymbol,
+  } = useSelectedMarket()
 
   const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
     set((s) => {
@@ -190,6 +157,10 @@ const AdvancedTradeForm = () => {
     set((s) => {
       s.tradeForm.side = side
     })
+  }, [])
+
+  const handleSetMargin = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setUseMargin(e.target.checked)
   }, [])
 
   const [tickDecimals, tickSize] = useMemo(() => {
@@ -548,10 +519,7 @@ const AdvancedTradeForm = () => {
               placement="left"
               content={t('trade:tooltip-enable-margin')}
             >
-              <Checkbox
-                checked={useMargin}
-                onChange={(e) => setUseMargin(e.target.checked)}
-              >
+              <Checkbox checked={useMargin} onChange={handleSetMargin}>
                 {t('trade:margin')}
               </Checkbox>
             </Tooltip>

@@ -33,24 +33,24 @@ const BalancesTable = () => {
   const showTableView = width ? width > breakpoints.md : false
 
   const banks = useMemo(() => {
-    if (!group) return []
+    if (!group || !mangoAccount) return []
 
     const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
       key,
       value,
-      balance: mangoAccount?.getTokenBalanceUi(value[0]),
+      balance: mangoAccount.getTokenBalanceUi(value[0]),
     }))
     const sortedBanks = mangoAccount
       ? rawBanks
           .sort(
             (a, b) =>
-              Math.abs(b.balance! * b.value[0].uiPrice) -
-              Math.abs(a.balance! * a.value[0].uiPrice)
+              Math.abs(b.balance * b.value[0].uiPrice) -
+              Math.abs(a.balance * a.value[0].uiPrice)
           )
           .filter((c) => {
             return (
               Math.abs(
-                floorToDecimal(c.balance!, c.value[0].mintDecimals).toNumber()
+                floorToDecimal(c.balance, c.value[0].mintDecimals).toNumber()
               ) > 0 ||
               spotBalances[c.value[0].mint.toString()]?.unsettled > 0 ||
               spotBalances[c.value[0].mint.toString()]?.inOrders > 0
@@ -59,7 +59,7 @@ const BalancesTable = () => {
       : rawBanks
 
     return sortedBanks
-  }, [group, mangoAccount])
+  }, [group, mangoAccount, spotBalances])
 
   return banks?.length ? (
     showTableView ? (
