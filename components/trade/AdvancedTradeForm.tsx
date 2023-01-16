@@ -394,6 +394,7 @@ const AdvancedTradeForm = () => {
         <MaxSizeButton
           minOrderDecimals={minOrderDecimals}
           tickDecimals={tickDecimals}
+          useMargin={useMargin}
         />
         <div className="flex flex-col">
           <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
