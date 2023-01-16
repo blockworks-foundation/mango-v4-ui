@@ -321,7 +321,9 @@ const Balance = ({ bank }: { bank: Bank }) => {
       {asPath.includes('/trade') && isBaseOrQuote ? (
         <LinkButton
           className="font-normal underline-offset-4"
-          onClick={() => handleTradeFormBalanceClick(balance, isBaseOrQuote)}
+          onClick={() =>
+            handleTradeFormBalanceClick(Math.abs(balance), isBaseOrQuote)
+          }
         >
           {formatDecimal(balance, bank.mintDecimals)}
         </LinkButton>
