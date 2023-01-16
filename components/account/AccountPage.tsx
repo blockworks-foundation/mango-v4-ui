@@ -20,7 +20,6 @@ import { IconButton } from '../shared/Button'
 import {
   ArrowsPointingOutIcon,
   ChartBarIcon,
-  ChevronRightIcon,
   ClockIcon,
 } from '@heroicons/react/20/solid'
 import { Transition } from '@headlessui/react'
@@ -62,9 +61,6 @@ const AccountPage = () => {
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
-  const loadPerformanceData = mangoStore(
-    (s) => s.mangoAccount.performance.loading
-  )
   const performanceInitialLoad = mangoStore(
     (s) => s.mangoAccount.performance.initialLoad
   )
@@ -98,10 +94,10 @@ const AccountPage = () => {
   }, [actions, mangoAccountAddress])
 
   useEffect(() => {
-    if (performanceInitialLoad) {
+    if (performanceInitialLoad && !oneDayPerformanceData.length) {
       setOneDayPerformanceData(performanceData)
     }
-  }, [performanceInitialLoad])
+  }, [performanceInitialLoad, oneDayPerformanceData])
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -125,6 +121,14 @@ const AccountPage = () => {
     setChartToShow('')
   }
 
+  const handleCloseDailyPnlModal = () => {
+    const set = mangoStore.getState().set
+    set((s) => {
+      s.mangoAccount.performance.data = oneDayPerformanceData
+    })
+    setShowPnlHistory(false)
+  }
+
   const accountValue = useMemo(() => {
     if (!group || !mangoAccount) return 0.0
     return toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber())
@@ -144,14 +148,19 @@ const AccountPage = () => {
   }, [mangoAccount, group, accountValue])
 
   const { accountPnl, accountValueChange } = useMemo(() => {
-    if (accountValue && performanceData.length) {
+    if (
+      accountValue &&
+      oneDayPerformanceData.length &&
+      performanceData.length
+    ) {
       return {
         accountPnl: performanceData[performanceData.length - 1].pnl,
-        accountValueChange: accountValue - performanceData[0].account_equity,
+        accountValueChange:
+          accountValue - oneDayPerformanceData[0].account_equity,
       }
     }
     return { accountPnl: 0, accountValueChange: 0 }
-  }, [accountValue, performanceData])
+  }, [accountValue, oneDayPerformanceData, performanceData])
 
   const oneDayPnlChange = useMemo(() => {
     if (accountPnl && oneDayPerformanceData.length) {
@@ -273,8 +282,8 @@ const AccountPage = () => {
               <p className="text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
-          {!loadPerformanceData ? (
-            mangoAccount && performanceData.length ? (
+          {performanceInitialLoad ? (
+            oneDayPerformanceData.length ? (
               <div
                 className="relative mt-4 flex h-44 items-end md:mt-0 md:h-24 md:w-48"
                 onMouseEnter={() =>
@@ -290,7 +299,7 @@ const AccountPage = () => {
                       ? COLORS.UP[theme]
                       : COLORS.DOWN[theme]
                   }
-                  data={performanceData.concat(latestAccountData)}
+                  data={oneDayPerformanceData.concat(latestAccountData)}
                   name="accountValue"
                   xKey="time"
                   yKey="account_equity"
@@ -316,11 +325,11 @@ const AccountPage = () => {
                 </Transition>
               </div>
             ) : null
-          ) : (
+          ) : mangoAccountAddress ? (
             <SheenLoader className="mt-4 flex flex-1 md:mt-0">
               <div className="h-40 w-full rounded-md bg-th-bkg-2 md:h-24 md:w-48" />
             </SheenLoader>
-          )}
+          ) : null}
         </div>
         <div className="mt-6 mb-1 lg:mt-0 lg:mb-0">
           <AccountActions />
@@ -442,7 +451,7 @@ const AccountPage = () => {
           <div id="account-step-seven" className="flex flex-col items-start">
             <div className="flex w-full items-center justify-between">
               <Tooltip
-                content="The amount your account has made or lost."
+                content="The amount your account has profited or lost."
                 placement="bottom"
                 delay={250}
               >
@@ -453,7 +462,7 @@ const AccountPage = () => {
               {mangoAccountAddress ? (
                 <div className="flex items-center space-x-3">
                   {performanceData.length > 4 ? (
-                    <Tooltip content="Show PnL Chart" delay={250}>
+                    <Tooltip content="PnL Chart" delay={250}>
                       <IconButton
                         className="text-th-fgd-3"
                         hideBg
@@ -463,7 +472,7 @@ const AccountPage = () => {
                       </IconButton>
                     </Tooltip>
                   ) : null}
-                  <Tooltip content="Show Daily PnL History" delay={250}>
+                  <Tooltip content="Daily PnL History" delay={250}>
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
@@ -484,25 +493,33 @@ const AccountPage = () => {
             </div>
           </div>
         </div>
-        <button
-          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
-            interestTotalValue > 1 || interestTotalValue < -1
-              ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
-              : 'cursor-default'
-          }`}
-          onClick={() => handleChartToShow('cumulative-interest-value')}
-        >
+        <div className="col-span-5 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-eight">
-            <Tooltip
-              content="The value of interest earned (deposits) minus interest paid (borrows)."
-              maxWidth="20rem"
-              placement="bottom-end"
-              delay={250}
-            >
-              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
-                {t('total-interest-earned')}
-              </p>
-            </Tooltip>
+            <div className="flex w-full items-center justify-between">
+              <Tooltip
+                content="The value of interest earned (deposits) minus interest paid (borrows)."
+                maxWidth="20rem"
+                placement="bottom-end"
+                delay={250}
+              >
+                <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+                  {t('total-interest-earned')}
+                </p>
+              </Tooltip>
+              {interestTotalValue > 1 || interestTotalValue < -1 ? (
+                <Tooltip content="Cumulative Interest Chart" delay={250}>
+                  <IconButton
+                    className="text-th-fgd-3"
+                    hideBg
+                    onClick={() =>
+                      handleChartToShow('cumulative-interest-value')
+                    }
+                  >
+                    <ChartBarIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
+            </div>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {formatFixedDecimals(interestTotalValue, true, true)}
             </p>
@@ -511,10 +528,7 @@ const AccountPage = () => {
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
-          {interestTotalValue > 1 || interestTotalValue < -1 ? (
-            <ChevronRightIcon className="-mt-0.5 h-6 w-6" />
-          ) : null}
-        </button>
+        </div>
       </div>
       <AccountTabs />
       {/* {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
@@ -524,7 +538,7 @@ const AccountPage = () => {
         <PnlHistoryModal
           pnlChangeToday={oneDayPnlChange}
           isOpen={showPnlHistory}
-          onClose={() => setShowPnlHistory(false)}
+          onClose={handleCloseDailyPnlModal}
         />
       ) : null}
     </>

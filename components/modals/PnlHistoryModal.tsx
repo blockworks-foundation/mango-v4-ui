@@ -3,10 +3,11 @@ import Modal from '../shared/Modal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 // import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo } from 'react'
-import BounceLoader from '../shared/BounceLoader'
 import useMangoAccount from 'hooks/useMangoAccount'
 import dayjs from 'dayjs'
 import Change from '@components/shared/Change'
+import SheenLoader from '@components/shared/SheenLoader'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
 
 interface PnlHistoryModalProps {
   pnlChangeToday: number
@@ -61,30 +62,37 @@ const PnlHistoryModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="h-96">
-        {loading ? (
-          <BounceLoader />
-        ) : (
-          <div className="flex h-full flex-col justify-between">
-            <h2 className="mb-4">Daily PnL</h2>
-            {dailyValues?.length ? (
-              <div className="thin-scroll overflow-auto pr-1">
-                <div className="border-b border-th-bkg-3">
-                  {dailyValues.map((v: any) => (
-                    <div
-                      className="flex items-center justify-between border-t border-th-bkg-3 px-2 py-3"
-                      key={v.time + v.pnlChange}
-                    >
-                      <p>{dayjs(v.time).format('YYYY-MM-DD')}</p>
-                      <Change change={v.pnlChange} prefix="$" />
-                    </div>
-                  ))}
-                </div>
+        <div className="flex h-full flex-col">
+          <h2 className="mb-4">Daily PnL</h2>
+          {loading ? (
+            <div className="space-y-1.5">
+              {[...Array(4)].map((x, i) => (
+                <SheenLoader className="flex flex-1" key={i}>
+                  <div className="h-12 w-full bg-th-bkg-2" />
+                </SheenLoader>
+              ))}
+            </div>
+          ) : dailyValues?.length ? (
+            <div className="thin-scroll overflow-auto pr-1">
+              <div className="border-b border-th-bkg-3">
+                {dailyValues.map((v: any) => (
+                  <div
+                    className="flex items-center justify-between border-t border-th-bkg-3 px-2 py-3"
+                    key={v.time + v.pnlChange}
+                  >
+                    <p>{dayjs(v.time).format('YYYY-MM-DD')}</p>
+                    <Change change={v.pnlChange} prefix="$" />
+                  </div>
+                ))}
               </div>
-            ) : (
-              <p>No daily history</p>
-            )}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center pb-12">
+              <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-3" />
+              <p>No PnL History</p>
+            </div>
+          )}
+        </div>
       </div>
     </Modal>
   )
