@@ -722,6 +722,10 @@ const mangoStore = create<MangoStore>()(
             })
           } catch (e) {
             console.error('Error fetching mango accts', e)
+          } finally {
+            set((state) => {
+              state.mangoAccount.initialLoad = false
+            })
           }
         },
         fetchNfts: async (connection: Connection, ownerPk: PublicKey) => {

@@ -204,7 +204,7 @@ const Orderbook = () => {
   const isMobile = width ? width < breakpoints.md : false
 
   const depthArray = useMemo(() => {
-    const bookDepth = !isMobile ? depth : 7
+    const bookDepth = !isMobile ? depth : 9
     return Array(bookDepth).fill(0)
   }, [isMobile])
 

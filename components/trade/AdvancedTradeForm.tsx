@@ -296,6 +296,7 @@ const AdvancedTradeForm = () => {
           undefined, // maxQuoteQuantity
           Date.now(),
           perpOrderType,
+          selectedMarket.reduceOnly,
           undefined,
           undefined
         )
