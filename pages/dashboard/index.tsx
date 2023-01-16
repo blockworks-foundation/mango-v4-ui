@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
+import Button from '@components/shared/Button'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -55,6 +56,36 @@ const Dashboard: NextPage = () => {
                 address={group?.publicKey.toString()}
                 anchorData
               ></ExplorerLink>
+              <div className="mt-4 flex space-x-4">
+                <Button
+                  secondary
+                  size="small"
+                  onClick={() => {
+                    const panels = [
+                      ...document.querySelectorAll(
+                        '[aria-expanded=false][aria-label=panel]'
+                      ),
+                    ]
+                    panels.map((panel) => (panel as HTMLElement).click())
+                  }}
+                >
+                  Expand All
+                </Button>
+                <Button
+                  secondary
+                  size="small"
+                  onClick={() => {
+                    const panels = [
+                      ...document.querySelectorAll(
+                        '[aria-expanded=true][aria-label=panel]'
+                      ),
+                    ]
+                    panels.map((panel) => (panel as HTMLElement).click())
+                  }}
+                >
+                  Collpase All
+                </Button>
+              </div>
               <h3 className="mt-6 mb-3 text-base text-th-fgd-3">Banks</h3>
               <div className="border-b border-th-bkg-3">
                 {Array.from(group.banksMapByMint).map(([mintAddress, banks]) =>
@@ -68,6 +99,7 @@ const Dashboard: NextPage = () => {
                         {({ open }) => (
                           <>
                             <Disclosure.Button
+                              aria-label="panel"
                               className={`default-transition flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
                                 open ? 'bg-th-bkg-2' : ''
                               }`}
@@ -310,6 +342,7 @@ const Dashboard: NextPage = () => {
                         {({ open }) => (
                           <>
                             <Disclosure.Button
+                              aria-label="panel"
                               className={`default-transition flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
                                 open ? 'bg-th-bkg-2' : ''
                               }`}
@@ -374,6 +407,10 @@ const Dashboard: NextPage = () => {
                               <KeyValuePair
                                 label="Perp Market Index"
                                 value={perpMarket.perpMarketIndex}
+                              />
+                              <KeyValuePair
+                                label="Reduce Only"
+                                value={perpMarket.reduceOnly ? 'True' : 'False'}
                               />
                               <KeyValuePair
                                 label="Oracle Price"
@@ -492,7 +529,7 @@ const KeyValuePair = ({
   value: number | ReactNode | string
 }) => {
   return (
-    <div className="flex justify-between border-t border-th-bkg-3 p-4 xl:py-1.5">
+    <div className="flex justify-between border-t border-th-bkg-3 p-4 xl:py-3">
       <span className="mr-4 whitespace-nowrap text-th-fgd-3">{label}</span>
       {value}
     </div>
