@@ -1,47 +1,69 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import { MangoAccount, Serum3Market } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
+import { GenericMarket } from 'types'
 import { trimDecimals } from 'utils/numbers'
+
+export const useSpotMarketMax = (
+  mangoAccount: MangoAccount | undefined,
+  selectedMarket: GenericMarket | undefined,
+  side: string,
+  useMargin: boolean
+) => {
+  const max = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!mangoAccount || !group || !selectedMarket) return 100
+    if (!(selectedMarket instanceof Serum3Market)) return 100
+
+    let leverageMax = 0
+    let spotMax = 0
+    try {
+      if (side === 'buy') {
+        leverageMax = mangoAccount.getMaxQuoteForSerum3BidUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+        spotMax = mangoAccount.getTokenBalanceUi(
+          group.getFirstBankByTokenIndex(selectedMarket.quoteTokenIndex)
+        )
+      } else {
+        leverageMax = mangoAccount.getMaxBaseForSerum3AskUi(
+          group,
+          selectedMarket.serumMarketExternal
+        )
+        spotMax = mangoAccount.getTokenBalanceUi(
+          group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+        )
+      }
+      return useMargin ? leverageMax : Math.max(spotMax, 0)
+    } catch (e) {
+      console.error('Error calculating max leverage: spot btn group: ', e)
+      return 0
+    }
+  }, [side, selectedMarket, mangoAccount, useMargin])
+
+  return max
+}
 
 const SpotSlider = ({
   minOrderDecimals,
   tickDecimals,
   step,
+  useMargin,
 }: {
   minOrderDecimals: number
   tickDecimals: number
   step: number
+  useMargin: boolean
 }) => {
   const side = mangoStore((s) => s.tradeForm.side)
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
-
-  const leverageMax = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!mangoAccount || !group || !selectedMarket) return 100
-    if (!(selectedMarket instanceof Serum3Market)) return 100
-
-    try {
-      if (side === 'buy') {
-        return mangoAccount.getMaxQuoteForSerum3BidUi(
-          group,
-          selectedMarket.serumMarketExternal
-        )
-      } else {
-        return mangoAccount.getMaxBaseForSerum3AskUi(
-          group,
-          selectedMarket.serumMarketExternal
-        )
-      }
-    } catch (e) {
-      console.error('Error calculating max leverage for spot slider: ', e)
-      return 0
-    }
-  }, [side, selectedMarket, mangoAccount])
+  const max = useSpotMarketMax(mangoAccount, selectedMarket, side, useMargin)
 
   const handleSlide = useCallback(
     (val: string) => {
@@ -85,7 +107,7 @@ const SpotSlider = ({
             ? parseFloat(tradeForm.quoteSize)
             : parseFloat(tradeForm.baseSize)
         }
-        leverageMax={leverageMax}
+        leverageMax={max}
         onChange={handleSlide}
         step={step}
       />

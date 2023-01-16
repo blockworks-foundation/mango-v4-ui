@@ -182,7 +182,12 @@ const depth = 40
 
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { selectedMarket, serumOrPerpMarket: market } = useSelectedMarket()
+  const {
+    selectedMarket,
+    serumOrPerpMarket: market,
+    baseSymbol,
+    quoteSymbol,
+  } = useSelectedMarket()
 
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)
@@ -199,7 +204,7 @@ const Orderbook = () => {
   const isMobile = width ? width < breakpoints.md : false
 
   const depthArray = useMemo(() => {
-    const bookDepth = !isMobile ? depth : 7
+    const bookDepth = !isMobile ? depth : 9
     return Array(bookDepth).fill(0)
   }, [isMobile])
 
@@ -483,8 +488,12 @@ const Orderbook = () => {
         ) : null}
       </div>
       <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">
-        <div className="col-span-1 text-right">{t('trade:size')}</div>
-        <div className="col-span-1 text-right">{t('price')}</div>
+        <div className="col-span-1 text-right">
+          {t('trade:size')} ({baseSymbol})
+        </div>
+        <div className="col-span-1 text-right">
+          {t('price')} ({quoteSymbol})
+        </div>
       </div>
       <div
         className="hide-scroll relative h-full overflow-y-scroll"

@@ -7,7 +7,6 @@ import {
   FireIcon,
   PencilIcon,
 } from '@heroicons/react/20/solid'
-import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -59,7 +58,7 @@ const UserSetupModal = ({
 }) => {
   const { t } = useTranslation(['common', 'onboarding', 'swap'])
   const { group } = useMangoGroup()
-  const { connected, select, wallet, wallets } = useWallet()
+  const { connected, select, wallet, wallets, publicKey } = useWallet()
   const { mangoAccount } = useMangoAccount()
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [accountName, setAccountName] = useState('')
@@ -84,7 +83,7 @@ const UserSetupModal = ({
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
-    if (!group || !wallet) return
+    if (!group || !publicKey) return
     setLoadingAccount(true)
     try {
       const tx = await client.createMangoAccount(
@@ -96,9 +95,9 @@ const UserSetupModal = ({
         8, // perpCount
         8 // perpOoCount
       )
-      actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
+      actions.fetchMangoAccounts(publicKey)
       if (tx) {
-        actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet) // need to update sol balance after account rent
+        actions.fetchWalletTokens(publicKey) // need to update sol balance after account rent
         setShowSetupStep(3)
         notify({
           title: t('new-account-success'),
@@ -116,7 +115,7 @@ const UserSetupModal = ({
     } finally {
       setLoadingAccount(false)
     }
-  }, [accountName, wallet, t])
+  }, [accountName, publicKey, t])
 
   const handleDeposit = useCallback(async () => {
     const client = mangoStore.getState().client
