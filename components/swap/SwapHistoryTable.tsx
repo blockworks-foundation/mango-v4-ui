@@ -31,10 +31,8 @@ import { useWallet } from '@solana/wallet-adapter-react'
 
 const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
-  const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
-  const initialLoad = mangoStore(
-    (s) => s.mangoAccount.stats.swapHistory.initialLoad
-  )
+  const swapHistory = mangoStore((s) => s.mangoAccount.swapHistory.data)
+  const initialLoad = mangoStore((s) => s.mangoAccount.swapHistory.initialLoad)
   const { connected } = useWallet()
   const { mangoTokens } = useJupiterMints()
   const [showSwapDetails, setSwapDetails] = useState('')

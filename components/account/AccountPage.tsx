@@ -19,7 +19,9 @@ import { useTheme } from 'next-themes'
 import { IconButton } from '../shared/Button'
 import {
   ArrowsPointingOutIcon,
+  ChartBarIcon,
   ChevronRightIcon,
+  ClockIcon,
 } from '@heroicons/react/20/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
@@ -40,6 +42,7 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import useMangoGroup from 'hooks/useMangoGroup'
+import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -60,13 +63,14 @@ const AccountPage = () => {
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
   const loadPerformanceData = mangoStore(
-    (s) => s.mangoAccount.stats.performance.loading
+    (s) => s.mangoAccount.performance.loading
   )
-  const performanceData = mangoStore(
-    (s) => s.mangoAccount.stats.performance.data
+  const performanceInitialLoad = mangoStore(
+    (s) => s.mangoAccount.performance.initialLoad
   )
+  const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.stats.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data
   )
   const [chartToShow, setChartToShow] = useState<
     'account-value' | 'cumulative-interest-value' | 'pnl' | ''
@@ -75,6 +79,7 @@ const AccountPage = () => {
     PerformanceDataItem[]
   >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
+  const [showPnlHistory, setShowPnlHistory] = useState<boolean>(false)
   const { theme } = useTheme()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
@@ -93,10 +98,10 @@ const AccountPage = () => {
   }, [actions, mangoAccountAddress])
 
   useEffect(() => {
-    if (mangoAccount && performanceData.length && !chartToShow) {
+    if (performanceInitialLoad) {
       setOneDayPerformanceData(performanceData)
     }
-  }, [mangoAccount, performanceData, chartToShow])
+  }, [performanceInitialLoad])
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -115,7 +120,7 @@ const AccountPage = () => {
   const handleHideChart = () => {
     const set = mangoStore.getState().set
     set((s) => {
-      s.mangoAccount.stats.performance.data = oneDayPerformanceData
+      s.mangoAccount.performance.data = oneDayPerformanceData
     })
     setChartToShow('')
   }
@@ -151,7 +156,9 @@ const AccountPage = () => {
   const oneDayPnlChange = useMemo(() => {
     if (accountPnl && oneDayPerformanceData.length) {
       const startDayPnl = oneDayPerformanceData[0].pnl
-      return accountPnl - startDayPnl
+      const endDayPnl =
+        oneDayPerformanceData[oneDayPerformanceData.length - 1].pnl
+      return endDayPnl - startDayPnl
     }
     return 0.0
   }, [accountPnl, oneDayPerformanceData])
@@ -431,24 +438,43 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <button
-          className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0 ${
-            performanceData.length > 4
-              ? 'default-transition cursor-pointer md:hover:bg-th-bkg-2'
-              : 'cursor-default'
-          }`}
-          onClick={() => handleChartToShow('pnl')}
-        >
+        <div className="col-span-5 border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-seven" className="flex flex-col items-start">
-            <Tooltip
-              content="The amount your account has made or lost."
-              placement="bottom"
-              delay={250}
-            >
-              <p className="tooltip-underline inline text-sm text-th-fgd-3 xl:text-base">
-                {t('pnl')}
-              </p>
-            </Tooltip>
+            <div className="flex w-full items-center justify-between">
+              <Tooltip
+                content="The amount your account has made or lost."
+                placement="bottom"
+                delay={250}
+              >
+                <p className="tooltip-underline inline text-sm text-th-fgd-3 xl:text-base">
+                  {t('pnl')}
+                </p>
+              </Tooltip>
+              {mangoAccountAddress ? (
+                <div className="flex items-center space-x-3">
+                  {performanceData.length > 4 ? (
+                    <Tooltip content="Show PnL Chart" delay={250}>
+                      <IconButton
+                        className="text-th-fgd-3"
+                        hideBg
+                        onClick={() => handleChartToShow('pnl')}
+                      >
+                        <ChartBarIcon className="h-5 w-5" />
+                      </IconButton>
+                    </Tooltip>
+                  ) : null}
+                  <Tooltip content="Show Daily PnL History" delay={250}>
+                    <IconButton
+                      className="text-th-fgd-3"
+                      hideBg
+                      onClick={() => setShowPnlHistory(true)}
+                    >
+                      <ClockIcon className="h-5 w-5" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              ) : null}
+            </div>
             <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {formatFixedDecimals(accountPnl, true, true)}
             </p>
@@ -457,10 +483,7 @@ const AccountPage = () => {
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
-          {performanceData.length > 4 ? (
-            <ChevronRightIcon className="h-6 w-6" />
-          ) : null}
-        </button>
+        </div>
         <button
           className={`col-span-5 flex items-center justify-between border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0 ${
             interestTotalValue > 1 || interestTotalValue < -1
@@ -497,33 +520,35 @@ const AccountPage = () => {
       {/* {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
         <AccountOnboardingTour />
       ) : null} */}
+      {showPnlHistory ? (
+        <PnlHistoryModal
+          pnlChangeToday={oneDayPnlChange}
+          isOpen={showPnlHistory}
+          onClose={() => setShowPnlHistory(false)}
+        />
+      ) : null}
     </>
   ) : (
     <div className="p-6 pb-0">
       {chartToShow === 'account-value' ? (
         <AccountChart
           chartToShow="account-value"
-          data={performanceData}
           hideChart={handleHideChart}
+          mangoAccountAddress={mangoAccountAddress}
           yKey="account_equity"
         />
       ) : chartToShow === 'pnl' ? (
         <AccountChart
           chartToShow="pnl"
-          data={performanceData}
           hideChart={handleHideChart}
+          mangoAccountAddress={mangoAccountAddress}
           yKey="pnl"
         />
       ) : (
         <AccountChart
           chartToShow="cumulative-interest-value"
-          data={performanceData.map((d) => ({
-            interest_value:
-              d.borrow_interest_cumulative_usd +
-              d.deposit_interest_cumulative_usd,
-            time: d.time,
-          }))}
           hideChart={handleHideChart}
+          mangoAccountAddress={mangoAccountAddress}
           yKey="interest_value"
         />
       )}
