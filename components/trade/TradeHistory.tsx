@@ -271,7 +271,7 @@ const TradeHistory = () => {
       </div>
     )
   ) : (
-    <div className="flex flex-col items-center justify-center px-6 pb-8 pt-4">
+    <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>No trade history</p>
     </div>

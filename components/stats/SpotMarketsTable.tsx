@@ -67,7 +67,7 @@ const SpotMarketsTable = () => {
                   <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market} />
-                      <p className="font-body tracking-wider">{market.name}</p>
+                      <p className="font-body">{market.name}</p>
                     </div>
                   </Td>
                   <Td>

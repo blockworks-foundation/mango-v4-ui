@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
+import Button from '@components/shared/Button'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -55,248 +56,284 @@ const Dashboard: NextPage = () => {
                 address={group?.publicKey.toString()}
                 anchorData
               ></ExplorerLink>
+              <div className="mt-4 flex space-x-4">
+                <Button
+                  secondary
+                  size="small"
+                  onClick={() => {
+                    const panels = [
+                      ...document.querySelectorAll(
+                        '[aria-expanded=false][aria-label=panel]'
+                      ),
+                    ]
+                    panels.map((panel) => (panel as HTMLElement).click())
+                  }}
+                >
+                  Expand All
+                </Button>
+                <Button
+                  secondary
+                  size="small"
+                  onClick={() => {
+                    const panels = [
+                      ...document.querySelectorAll(
+                        '[aria-expanded=true][aria-label=panel]'
+                      ),
+                    ]
+                    panels.map((panel) => (panel as HTMLElement).click())
+                  }}
+                >
+                  Collpase All
+                </Button>
+              </div>
               <h3 className="mt-6 mb-3 text-base text-th-fgd-3">Banks</h3>
               <div className="border-b border-th-bkg-3">
-                {Array.from(group.banksMapByMint).map(([mintAddress, banks]) =>
-                  banks.map((bank) => {
-                    const logoUri = mangoTokens.length
-                      ? mangoTokens.find((t) => t.address === mintAddress)
-                          ?.logoURI
-                      : ''
-                    return (
-                      <Disclosure key={bank.publicKey.toString()}>
-                        {({ open }) => (
-                          <>
-                            <Disclosure.Button
-                              className={`default-transition flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
-                                open ? 'bg-th-bkg-2' : ''
-                              }`}
-                            >
-                              <div className="flex items-center">
-                                {logoUri ? (
-                                  <Image
-                                    alt=""
-                                    width="20"
-                                    height="20"
-                                    src={logoUri}
-                                  />
-                                ) : (
-                                  <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-                                )}
-                                <p className="ml-2 text-th-fgd-2">
-                                  {bank.name} Bank
-                                </p>
-                              </div>
-                              <ChevronDownIcon
-                                className={`${
-                                  open ? 'rotate-180' : 'rotate-360'
-                                } h-5 w-5 text-th-fgd-3`}
-                              />
-                            </Disclosure.Button>
-                            <Disclosure.Panel>
-                              <KeyValuePair
-                                label="Mint"
-                                value={<ExplorerLink address={mintAddress} />}
-                              />
-                              <KeyValuePair
-                                label="Bank"
-                                value={
-                                  <ExplorerLink
-                                    address={bank.publicKey.toString()}
-                                    anchorData
-                                  />
-                                }
-                              />
-                              <KeyValuePair
-                                label="Vault"
-                                value={
-                                  <ExplorerLink
-                                    address={bank.vault.toString()}
-                                    anchorData
-                                  />
-                                }
-                              />
-                              <KeyValuePair
-                                label="Oracle"
-                                value={
-                                  <ExplorerLink
-                                    address={bank.oracle.toString()}
-                                  />
-                                }
-                              />
-                              <KeyValuePair
-                                label="Token Index"
-                                value={bank.tokenIndex}
-                              />
-                              <KeyValuePair
-                                label="Oracle Price"
-                                value={`$${bank.uiPrice}`}
-                              />
-                              <KeyValuePair
-                                label="Stable Price"
-                                value={`$${group.toUiPrice(
-                                  I80F48.fromNumber(
-                                    bank.stablePriceModel.stablePrice
-                                  ),
-                                  bank.mintDecimals
-                                )}`}
-                              />
-                              <VaultData bank={bank} />
-                              <KeyValuePair
-                                label="Loan Fee Rate"
-                                value={`${(
-                                  10000 * bank.loanFeeRate.toNumber()
-                                ).toFixed(2)} bps`}
-                              />
-                              <KeyValuePair
-                                label="Loan origination fee rate"
-                                value={`${(
-                                  10000 * bank.loanOriginationFeeRate.toNumber()
-                                ).toFixed(2)} bps`}
-                              />
-                              <KeyValuePair
-                                label="Collected fees native"
-                                value={bank.collectedFeesNative.toNumber()}
-                              />
-                              <KeyValuePair
-                                label="Liquidation fee"
-                                value={`${(
-                                  10000 * bank.liquidationFee.toNumber()
-                                ).toFixed(2)} bps`}
-                              />
-                              <KeyValuePair
-                                label="Dust"
-                                value={bank.dust.toNumber()}
-                              />
-                              <KeyValuePair
-                                label="Deposits"
-                                value={toUiDecimals(
-                                  bank.indexedDeposits
-                                    .mul(bank.depositIndex)
-                                    .toNumber(),
-                                  bank.mintDecimals
-                                )}
-                              />
-                              <KeyValuePair
-                                label="Borrows"
-                                value={toUiDecimals(
-                                  bank.indexedBorrows
-                                    .mul(bank.borrowIndex)
-                                    .toNumber(),
-                                  bank.mintDecimals
-                                )}
-                              />
-                              <KeyValuePair
-                                label="Avg Utilization"
-                                value={`${
-                                  bank.avgUtilization.toNumber() * 100
-                                }%`}
-                              />
-                              <KeyValuePair
-                                label="Maint Asset/Liab Weight"
-                                value={`${bank.maintAssetWeight.toFixed(2)}/
+                {Array.from(group.banksMapByMint)
+                  .sort((a, b) => a[0].localeCompare(b[0]))
+                  .map(([mintAddress, banks]) =>
+                    banks.map((bank) => {
+                      const logoUri = mangoTokens.length
+                        ? mangoTokens.find((t) => t.address === mintAddress)
+                            ?.logoURI
+                        : ''
+                      return (
+                        <Disclosure key={bank.publicKey.toString()}>
+                          {({ open }) => (
+                            <>
+                              <Disclosure.Button
+                                aria-label="panel"
+                                className={`default-transition flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
+                                  open ? 'bg-th-bkg-2' : ''
+                                }`}
+                              >
+                                <div className="flex items-center">
+                                  {logoUri ? (
+                                    <Image
+                                      alt=""
+                                      width="20"
+                                      height="20"
+                                      src={logoUri}
+                                    />
+                                  ) : (
+                                    <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+                                  )}
+                                  <p className="ml-2 text-th-fgd-2">
+                                    {bank.name} Bank
+                                  </p>
+                                </div>
+                                <ChevronDownIcon
+                                  className={`${
+                                    open ? 'rotate-180' : 'rotate-360'
+                                  } h-5 w-5 text-th-fgd-3`}
+                                />
+                              </Disclosure.Button>
+                              <Disclosure.Panel>
+                                <KeyValuePair
+                                  label="Mint"
+                                  value={<ExplorerLink address={mintAddress} />}
+                                />
+                                <KeyValuePair
+                                  label="Bank"
+                                  value={
+                                    <ExplorerLink
+                                      address={bank.publicKey.toString()}
+                                      anchorData
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Vault"
+                                  value={
+                                    <ExplorerLink
+                                      address={bank.vault.toString()}
+                                      anchorData
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Oracle"
+                                  value={
+                                    <ExplorerLink
+                                      address={bank.oracle.toString()}
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Token Index"
+                                  value={bank.tokenIndex}
+                                />
+                                <KeyValuePair
+                                  label="Oracle Price"
+                                  value={`$${bank.uiPrice}`}
+                                />
+                                <KeyValuePair
+                                  label="Stable Price"
+                                  value={`$${group.toUiPrice(
+                                    I80F48.fromNumber(
+                                      bank.stablePriceModel.stablePrice
+                                    ),
+                                    bank.mintDecimals
+                                  )}`}
+                                />
+                                <VaultData bank={bank} />
+                                <KeyValuePair
+                                  label="Loan Fee Rate"
+                                  value={`${(
+                                    10000 * bank.loanFeeRate.toNumber()
+                                  ).toFixed(2)} bps`}
+                                />
+                                <KeyValuePair
+                                  label="Loan origination fee rate"
+                                  value={`${(
+                                    10000 *
+                                    bank.loanOriginationFeeRate.toNumber()
+                                  ).toFixed(2)} bps`}
+                                />
+                                <KeyValuePair
+                                  label="Collected fees native"
+                                  value={bank.collectedFeesNative.toNumber()}
+                                />
+                                <KeyValuePair
+                                  label="Liquidation fee"
+                                  value={`${(
+                                    10000 * bank.liquidationFee.toNumber()
+                                  ).toFixed(2)} bps`}
+                                />
+                                <KeyValuePair
+                                  label="Dust"
+                                  value={bank.dust.toNumber()}
+                                />
+                                <KeyValuePair
+                                  label="Deposits"
+                                  value={toUiDecimals(
+                                    bank.indexedDeposits
+                                      .mul(bank.depositIndex)
+                                      .toNumber(),
+                                    bank.mintDecimals
+                                  )}
+                                />
+                                <KeyValuePair
+                                  label="Borrows"
+                                  value={toUiDecimals(
+                                    bank.indexedBorrows
+                                      .mul(bank.borrowIndex)
+                                      .toNumber(),
+                                    bank.mintDecimals
+                                  )}
+                                />
+                                <KeyValuePair
+                                  label="Avg Utilization"
+                                  value={`${
+                                    bank.avgUtilization.toNumber() * 100
+                                  }%`}
+                                />
+                                <KeyValuePair
+                                  label="Maint Asset/Liab Weight"
+                                  value={`${bank.maintAssetWeight.toFixed(2)}/
                               ${bank.maintLiabWeight.toFixed(2)}`}
-                              />
-                              <KeyValuePair
-                                label="Init Asset/Liab Weight"
-                                value={`${bank.initAssetWeight.toFixed(2)}/
+                                />
+                                <KeyValuePair
+                                  label="Init Asset/Liab Weight"
+                                  value={`${bank.initAssetWeight.toFixed(2)}/
                               ${bank.initLiabWeight.toFixed(2)}`}
-                              />
-                              <KeyValuePair
-                                label="Scaled Init Asset/Liab Weight"
-                                value={`${bank
-                                  .scaledInitAssetWeight()
-                                  .toFixed(4)}/
+                                />
+                                <KeyValuePair
+                                  label="Scaled Init Asset/Liab Weight"
+                                  value={`${bank
+                                    .scaledInitAssetWeight()
+                                    .toFixed(4)}/
                               ${bank.scaledInitLiabWeight().toFixed(4)}`}
-                              />
-                              <KeyValuePair
-                                label="Deposit weight scale start quote"
-                                value={bank.depositWeightScaleStartQuote}
-                              />
-                              <KeyValuePair
-                                label="Borrow weight scale start quote"
-                                value={bank.borrowWeightScaleStartQuote}
-                              />
-                              <KeyValuePair
-                                label="Rate params"
-                                value={
-                                  <span className="text-right">
-                                    {`${(100 * bank.rate0.toNumber()).toFixed(
-                                      2
-                                    )}% @ ${(
-                                      100 * bank.util0.toNumber()
-                                    ).toFixed()}% util, `}
-                                    {`${(100 * bank.rate1.toNumber()).toFixed(
-                                      2
-                                    )}% @ ${(
-                                      100 * bank.util1.toNumber()
-                                    ).toFixed()}% util, `}
-                                    {`${(100 * bank.maxRate.toNumber()).toFixed(
-                                      2
-                                    )}% @ 100% util`}
-                                  </span>
-                                }
-                              />
-                              <KeyValuePair
-                                label="Deposit rate"
-                                value={`${bank.getDepositRateUi()}%`}
-                              />
-                              <KeyValuePair
-                                label="Borrow rate"
-                                value={`${bank.getBorrowRateUi()}%`}
-                              />
-                              <KeyValuePair
-                                label="Last index update"
-                                value={new Date(
-                                  1000 * bank.indexLastUpdated.toNumber()
-                                ).toUTCString()}
-                              />
-                              <KeyValuePair
-                                label="Last rates updated"
-                                value={new Date(
-                                  1000 * bank.bankRateLastUpdated.toNumber()
-                                ).toUTCString()}
-                              />
-                              <KeyValuePair
-                                label="Last stable price updated"
-                                value={new Date(
-                                  1000 *
-                                    bank.stablePriceModel.lastUpdateTimestamp.toNumber()
-                                ).toUTCString()}
-                              />
-                              <KeyValuePair
-                                label="Stable Price: delay interval"
-                                value={`${bank.stablePriceModel.delayIntervalSeconds}s`}
-                              />
-                              <KeyValuePair
-                                label="Stable Price: growth limits"
-                                value={`${(
-                                  100 * bank.stablePriceModel.delayGrowthLimit
-                                ).toFixed(2)}% delay / ${(
-                                  100 * bank.stablePriceModel.stableGrowthLimit
-                                ).toFixed(2)}% stable`}
-                              />
-                              <KeyValuePair
-                                label="Oracle: Conf Filter"
-                                value={`${(
-                                  100 * bank.oracleConfig.confFilter.toNumber()
-                                ).toFixed(2)}%`}
-                              />
-                              <KeyValuePair
-                                label="Oracle: Max Staleness"
-                                value={`${bank.oracleConfig.maxStalenessSlots} slots`}
-                              />
-                              <KeyValuePair
-                                label="netBorrowsInWindow / netBorrowLimitPerWindowQuote"
-                                value={`${bank.netBorrowsInWindow.toNumber()} / ${bank.netBorrowLimitPerWindowQuote.toNumber()}`}
-                              />
-                            </Disclosure.Panel>
-                          </>
-                        )}
-                      </Disclosure>
-                    )
-                  })
-                )}
+                                />
+                                <KeyValuePair
+                                  label="Deposit weight scale start quote"
+                                  value={bank.depositWeightScaleStartQuote}
+                                />
+                                <KeyValuePair
+                                  label="Borrow weight scale start quote"
+                                  value={bank.borrowWeightScaleStartQuote}
+                                />
+                                <KeyValuePair
+                                  label="Rate params"
+                                  value={
+                                    <span className="text-right">
+                                      {`${(100 * bank.rate0.toNumber()).toFixed(
+                                        2
+                                      )}% @ ${(
+                                        100 * bank.util0.toNumber()
+                                      ).toFixed()}% util, `}
+                                      {`${(100 * bank.rate1.toNumber()).toFixed(
+                                        2
+                                      )}% @ ${(
+                                        100 * bank.util1.toNumber()
+                                      ).toFixed()}% util, `}
+                                      {`${(
+                                        100 * bank.maxRate.toNumber()
+                                      ).toFixed(2)}% @ 100% util`}
+                                    </span>
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Deposit rate"
+                                  value={`${bank.getDepositRateUi()}%`}
+                                />
+                                <KeyValuePair
+                                  label="Borrow rate"
+                                  value={`${bank.getBorrowRateUi()}%`}
+                                />
+                                <KeyValuePair
+                                  label="Last index update"
+                                  value={new Date(
+                                    1000 * bank.indexLastUpdated.toNumber()
+                                  ).toUTCString()}
+                                />
+                                <KeyValuePair
+                                  label="Last rates updated"
+                                  value={new Date(
+                                    1000 * bank.bankRateLastUpdated.toNumber()
+                                  ).toUTCString()}
+                                />
+                                <KeyValuePair
+                                  label="Last stable price updated"
+                                  value={new Date(
+                                    1000 *
+                                      bank.stablePriceModel.lastUpdateTimestamp.toNumber()
+                                  ).toUTCString()}
+                                />
+                                <KeyValuePair
+                                  label="Stable Price: delay interval"
+                                  value={`${bank.stablePriceModel.delayIntervalSeconds}s`}
+                                />
+                                <KeyValuePair
+                                  label="Stable Price: growth limits"
+                                  value={`${(
+                                    100 * bank.stablePriceModel.delayGrowthLimit
+                                  ).toFixed(2)}% delay / ${(
+                                    100 *
+                                    bank.stablePriceModel.stableGrowthLimit
+                                  ).toFixed(2)}% stable`}
+                                />
+                                <KeyValuePair
+                                  label="Oracle: Conf Filter"
+                                  value={`${(
+                                    100 *
+                                    bank.oracleConfig.confFilter.toNumber()
+                                  ).toFixed(2)}%`}
+                                />
+                                <KeyValuePair
+                                  label="Oracle: Max Staleness"
+                                  value={`${bank.oracleConfig.maxStalenessSlots} slots`}
+                                />
+                                <KeyValuePair
+                                  label="netBorrowsInWindow / netBorrowLimitPerWindowQuote"
+                                  value={`${bank.netBorrowsInWindow.toNumber()} / ${bank.netBorrowLimitPerWindowQuote.toNumber()}`}
+                                />
+                              </Disclosure.Panel>
+                            </>
+                          )}
+                        </Disclosure>
+                      )
+                    })
+                  )}
               </div>
 
               <h3 className="mt-6 mb-3 text-base text-th-fgd-3">
@@ -310,6 +347,7 @@ const Dashboard: NextPage = () => {
                         {({ open }) => (
                           <>
                             <Disclosure.Button
+                              aria-label="panel"
                               className={`default-transition flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
                                 open ? 'bg-th-bkg-2' : ''
                               }`}
@@ -374,6 +412,10 @@ const Dashboard: NextPage = () => {
                               <KeyValuePair
                                 label="Perp Market Index"
                                 value={perpMarket.perpMarketIndex}
+                              />
+                              <KeyValuePair
+                                label="Reduce Only"
+                                value={perpMarket.reduceOnly ? 'True' : 'False'}
                               />
                               <KeyValuePair
                                 label="Oracle Price"
@@ -492,7 +534,7 @@ const KeyValuePair = ({
   value: number | ReactNode | string
 }) => {
   return (
-    <div className="flex justify-between border-t border-th-bkg-3 p-4 xl:py-1.5">
+    <div className="flex justify-between border-t border-th-bkg-3 p-4 xl:py-3">
       <span className="mr-4 whitespace-nowrap text-th-fgd-3">{label}</span>
       {value}
     </div>

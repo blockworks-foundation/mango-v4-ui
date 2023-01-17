@@ -5,7 +5,6 @@ import {
   ExclamationCircleIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
-import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -74,7 +73,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     return logoURI
   }, [bank, mangoTokens])
 
-  const { connected, wallet } = useWallet()
+  const { connected, publicKey } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const walletBalance = useMemo(() => {
@@ -127,7 +126,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
 
-      if (!mangoAccount || !group || !bank || !wallet) return
+      if (!mangoAccount || !group || !bank || !publicKey) return
 
       //we don't want to left negative dust in account if someone wants to repay full amount
       const actualAmount =
@@ -153,7 +152,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         })
 
         await actions.reloadMangoAccount()
-        actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)
+        actions.fetchWalletTokens(publicKey)
         setSubmitting(false)
         onSuccess()
       } catch (e: any) {
@@ -167,7 +166,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         setSubmitting(false)
       }
     },
-    [bank, wallet, sizePercentage]
+    [bank, publicKey?.toBase58(), sizePercentage]
   )
 
   const banks = useMemo(() => {

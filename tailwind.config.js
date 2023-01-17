@@ -109,14 +109,14 @@ module.exports = {
           },
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
           down: {
-            DEFAULT: 'hsl(0, 59%, 58%)',
+            DEFAULT: 'hsl(358, 55%, 50%)',
             dark: 'hsl(0, 59%, 53%)',
-            muted: 'hsl(0, 19%, 53%)',
+            muted: 'hsl(0, 45%, 26%)',
           },
           up: {
             DEFAULT: 'hsl(111, 47%, 43%)',
             dark: 'hsl(111, 47%, 38%)',
-            muted: 'hsl(111, 7%, 38%)',
+            muted: 'hsl(130, 34%, 26%)',
           },
           error: 'hsl(0, 59%, 58%)',
           success: 'hsl(111, 47%, 43%)',

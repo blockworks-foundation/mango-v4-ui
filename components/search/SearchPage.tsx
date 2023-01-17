@@ -29,8 +29,14 @@ const SearchPage = () => {
   const [searchResults, setSearchResults] = useState([])
   const [searchType, setSearchType] = useState('mango-account')
   const [showNoResults, setShowNoResults] = useState(false)
+  const [isAccountSearch, setIsAccountSearch] = useState(true)
 
   const handleSearch = async () => {
+    if (searchType === 'mango-account' || searchType === 'mango-account-name') {
+      setIsAccountSearch(true)
+    } else {
+      setIsAccountSearch(false)
+    }
     try {
       setLoading(true)
       const response = await fetch(
@@ -50,9 +56,6 @@ const SearchPage = () => {
       setLoading(false)
     }
   }
-
-  const isAccountSearch =
-    searchType === 'mango-account' || searchType === 'mango-account-name'
 
   return (
     <div className="grid grid-cols-12 p-8 pb-20 md:pb-16 lg:p-10">
@@ -140,7 +143,7 @@ const MangoAccountItem = ({
   type,
 }: {
   item: MangoAccountItem
-  type: 'mango-account' | 'mango-account-name'
+  type: string
 }) => {
   const { mango_account_name, mango_account_pk, profile_name } = item
   return (

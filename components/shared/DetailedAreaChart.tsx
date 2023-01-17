@@ -121,7 +121,11 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
             <div className="flex items-start justify-between">
               <div className="flex flex-col md:flex-row md:items-start md:space-x-6">
                 {hideChart ? (
-                  <IconButton className="mb-6" onClick={hideChart}>
+                  <IconButton
+                    className="mb-6"
+                    onClick={hideChart}
+                    size="medium"
+                  >
                     <ArrowLeftIcon className="h-5 w-5" />
                   </IconButton>
                 ) : null}

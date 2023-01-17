@@ -10,7 +10,6 @@ import {
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { Wallet } from '@project-serum/anchor'
 import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat, {
   NumberFormatValues,
@@ -64,7 +63,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
-  const { connected, wallet } = useWallet()
+  const { connected, publicKey } = useWallet()
   const { handleConnect } = useEnhancedWallet()
 
   const bank = useMemo(() => {
@@ -130,7 +129,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
-    if (!mangoAccount || !group) return
+    if (!mangoAccount || !group || !publicKey) return
     setSubmitting(true)
     try {
       const tx = await client.tokenWithdraw(
@@ -146,7 +145,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
         txid: tx,
       })
       await actions.reloadMangoAccount()
-      actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
+      actions.fetchWalletTokens(publicKey)
       setSubmitting(false)
       onSuccess()
     } catch (e: any) {
@@ -159,7 +158,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       })
       setSubmitting(false)
     }
-  }, [bank, inputAmount, onSuccess, wallet])
+  }, [bank, inputAmount, onSuccess, publicKey])
 
   const banks = useMemo(() => {
     if (mangoAccount) {

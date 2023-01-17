@@ -5,6 +5,7 @@ import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
 import dayjs from 'dayjs'
+import { numberCompacter } from 'utils/numbers'
 // import { PerpMarket } from '@blockworks-foundation/mango-v4'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
@@ -143,7 +144,7 @@ const MangoStats = () => {
             daysToShow={'999'}
             heightClass="h-64"
             prefix="$"
-            tickFormat={(x) => `$${x.toFixed(2)}`}
+            tickFormat={(x) => `$${numberCompacter.format(x)}`}
             title={t('total-deposit-value')}
             xKey="date"
             yKey={'depositValue'}
@@ -169,7 +170,7 @@ const MangoStats = () => {
             daysToShow={'999'}
             heightClass="h-64"
             prefix="$"
-            tickFormat={(x) => `$${x.toFixed(2)}`}
+            tickFormat={(x) => `$${numberCompacter.format(x)}`}
             title={t('total-borrow-value')}
             xKey="date"
             yKey={'borrowValue'}
