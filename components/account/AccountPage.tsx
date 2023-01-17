@@ -472,7 +472,7 @@ const AccountPage = () => {
                       </IconButton>
                     </Tooltip>
                   ) : null}
-                  <Tooltip content="Daily PnL History" delay={250}>
+                  <Tooltip content="PnL History" delay={250}>
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg

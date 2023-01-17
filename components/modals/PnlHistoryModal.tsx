@@ -9,6 +9,11 @@ import Change from '@components/shared/Change'
 import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 
+interface PnlChange {
+  time: string
+  pnlChange: number
+}
+
 interface PnlHistoryModalProps {
   pnlChangeToday: number
 }
@@ -32,7 +37,7 @@ const PnlHistoryModal = ({
     }
   }, [actions, mangoAccountAddress])
 
-  const dailyValues = useMemo(() => {
+  const dailyValues: PnlChange[] = useMemo(() => {
     if (!performanceData.length) return []
 
     const dailyPnl = performanceData.filter((d: PerformanceDataItem) => {
@@ -48,22 +53,43 @@ const PnlHistoryModal = ({
                 time: d.time,
                 pnlChange: dailyPnl[index + 1].pnl - d.pnl,
               }
+            } else {
+              return {
+                time: performanceData[performanceData.length - 1].time,
+                pnlChange: pnlChangeToday,
+              }
             }
-          })
-          .slice(0, -1)
-          .concat({
-            time: performanceData[performanceData.length - 1].time,
-            pnlChange: pnlChangeToday,
           })
           .reverse()
       : []
   }, [performanceData])
 
+  const pnlThisWeek = useMemo(() => {
+    if (dailyValues.length) {
+      const saturdayIndex = dailyValues.findIndex((d) => {
+        const day = new Date(d.time).getDay()
+        return day === 6
+      })
+      if (saturdayIndex !== -1) {
+        return dailyValues
+          .slice(0, saturdayIndex)
+          .reduce((a, c) => a + c.pnlChange, 0)
+      } else {
+        return dailyValues.reduce((a, c) => a + c.pnlChange, 0)
+      }
+    }
+    return 0
+  }, [dailyValues])
+
+  const getLastSunday = (d: Date) => {
+    return d.setDate(d.getDate() - d.getDay())
+  }
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="h-96">
         <div className="flex h-full flex-col">
-          <h2 className="mb-4">Daily PnL</h2>
+          <h2 className="mb-4">PnL History</h2>
           {loading ? (
             <div className="space-y-1.5">
               {[...Array(4)].map((x, i) => (
@@ -73,19 +99,28 @@ const PnlHistoryModal = ({
               ))}
             </div>
           ) : dailyValues?.length ? (
-            <div className="thin-scroll overflow-auto pr-1">
-              <div className="border-b border-th-bkg-3">
-                {dailyValues.map((v: any) => (
-                  <div
-                    className="flex items-center justify-between border-t border-th-bkg-3 px-2 py-3"
-                    key={v.time + v.pnlChange}
-                  >
-                    <p>{dayjs(v.time).format('YYYY-MM-DD')}</p>
-                    <Change change={v.pnlChange} prefix="$" />
-                  </div>
-                ))}
+            <>
+              <div className="thin-scroll overflow-auto pr-1">
+                <div className="border-b border-th-bkg-3">
+                  {dailyValues.map((v: any) => (
+                    <div
+                      className="flex items-center justify-between border-t border-th-bkg-3 p-3"
+                      key={v.time + v.pnlChange}
+                    >
+                      <p>{dayjs(v.time).format('YYYY-MM-DD')}</p>
+                      <Change change={v.pnlChange} prefix="$" />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+
+              <div className="mt-4 flex justify-between rounded-md bg-th-bkg-2 p-3">
+                <p>{`Week starting ${dayjs(getLastSunday(new Date())).format(
+                  'MM-DD'
+                )}`}</p>
+                <Change change={pnlThisWeek} prefix="$" />
+              </div>
+            </>
           ) : (
             <div className="flex h-full flex-col items-center justify-center pb-12">
               <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-3" />
