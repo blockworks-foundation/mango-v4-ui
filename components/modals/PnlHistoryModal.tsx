@@ -1,7 +1,7 @@
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
-// import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo } from 'react'
 import useMangoAccount from 'hooks/useMangoAccount'
 import dayjs from 'dayjs'
@@ -25,7 +25,7 @@ const PnlHistoryModal = ({
   onClose,
   pnlChangeToday,
 }: ModalCombinedProps) => {
-  //   const { t } = useTranslation('common')
+  const { t } = useTranslation('account')
   const { mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
   const loading = mangoStore((s) => s.mangoAccount.performance.loading)
@@ -89,7 +89,7 @@ const PnlHistoryModal = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="h-96">
         <div className="flex h-full flex-col">
-          <h2 className="mb-4">PnL History</h2>
+          <h2 className="mb-4">{t('pnl-history')}</h2>
           {loading ? (
             <div className="space-y-1.5">
               {[...Array(4)].map((x, i) => (
@@ -115,16 +115,18 @@ const PnlHistoryModal = ({
               </div>
 
               <div className="mt-4 flex justify-between rounded-md bg-th-bkg-2 p-3">
-                <p>{`Week starting ${dayjs(getLastSunday(new Date())).format(
-                  'MM-DD'
-                )}`}</p>
+                <p>
+                  {t('week-starting', {
+                    week: dayjs(getLastSunday(new Date())).format('MM-DD'),
+                  })}
+                </p>
                 <Change change={pnlThisWeek} prefix="$" />
               </div>
             </>
           ) : (
             <div className="flex h-full flex-col items-center justify-center pb-12">
               <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-3" />
-              <p>No PnL History</p>
+              <p>{t('no-pnl-history')}</p>
             </div>
           )}
         </div>

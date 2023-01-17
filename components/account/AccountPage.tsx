@@ -3,7 +3,6 @@ import {
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
@@ -43,20 +42,8 @@ import { breakpoints } from 'utils/theme'
 import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 
-export async function getStaticProps({ locale }: { locale: string }) {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, [
-        'common',
-        'close-account',
-        'trade',
-      ])),
-    },
-  }
-}
-
 const AccountPage = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'account'])
   // const { connected } = useWallet()
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
@@ -385,7 +372,7 @@ const AccountPage = () => {
         <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-five">
             <Tooltip
-              content="The amount of capital you have to use for trades and loans. When your free collateral reaches $0 you won't be able to trade, borrow or withdraw."
+              content={t('account:tooltip-free-collateral')}
               maxWidth="20rem"
               placement="bottom"
               delay={250}
@@ -407,12 +394,12 @@ const AccountPage = () => {
             </p>
             <span className="text-xs font-normal text-th-fgd-4">
               <Tooltip
-                content="Total value of collateral for trading and borrowing (including unsettled PnL)."
+                content={t('account:tooltip-total-collateral')}
                 maxWidth="20rem"
                 placement="bottom"
                 delay={250}
               >
-                <span className="tooltip-underline">Total</span>:
+                <span className="tooltip-underline">{t('total')}</span>:
                 <span className="ml-1 font-mono text-th-fgd-2">
                   {group && mangoAccount
                     ? formatFixedDecimals(
@@ -433,7 +420,7 @@ const AccountPage = () => {
         <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-six">
             <Tooltip
-              content="Total assets value divided by account equity value."
+              content={t('account:tooltip-leverage')}
               maxWidth="20rem"
               placement="bottom"
               delay={250}
@@ -451,7 +438,7 @@ const AccountPage = () => {
           <div id="account-step-seven" className="flex flex-col items-start">
             <div className="flex w-full items-center justify-between">
               <Tooltip
-                content="The amount your account has profited or lost."
+                content={t('account:tooltip-pnl')}
                 placement="bottom"
                 delay={250}
               >
@@ -462,7 +449,7 @@ const AccountPage = () => {
               {mangoAccountAddress ? (
                 <div className="flex items-center space-x-3">
                   {performanceData.length > 4 ? (
-                    <Tooltip content="PnL Chart" delay={250}>
+                    <Tooltip content={t('account:pnl-chart')} delay={250}>
                       <IconButton
                         className="text-th-fgd-3"
                         hideBg
@@ -472,7 +459,7 @@ const AccountPage = () => {
                       </IconButton>
                     </Tooltip>
                   ) : null}
-                  <Tooltip content="PnL History" delay={250}>
+                  <Tooltip content={t('account:pnl-history')} delay={250}>
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
@@ -497,7 +484,7 @@ const AccountPage = () => {
           <div id="account-step-eight">
             <div className="flex w-full items-center justify-between">
               <Tooltip
-                content="The value of interest earned (deposits) minus interest paid (borrows)."
+                content={t('account:tooltip-total-interest')}
                 maxWidth="20rem"
                 placement="bottom-end"
                 delay={250}
