@@ -207,6 +207,7 @@ interface TradeForm {
   tradeType: 'Market' | 'Limit'
   postOnly: boolean
   ioc: boolean
+  reduceOnly: boolean
 }
 
 export const DEFAULT_TRADE_FORM: TradeForm = {
@@ -217,6 +218,7 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   tradeType: 'Limit',
   postOnly: false,
   ioc: false,
+  reduceOnly: false,
 }
 
 export type MangoStore = {

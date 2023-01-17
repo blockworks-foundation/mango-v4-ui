@@ -153,6 +153,12 @@ const AdvancedTradeForm = () => {
     })
   }, [])
 
+  const handleReduceOnlyChange = useCallback((reduceOnly: boolean) => {
+    set((s) => {
+      s.tradeForm.reduceOnly = reduceOnly
+    })
+  }, [])
+
   const handleSetSide = useCallback((side: 'buy' | 'sell') => {
     set((s) => {
       s.tradeForm.side = side
@@ -296,7 +302,7 @@ const AdvancedTradeForm = () => {
           undefined, // maxQuoteQuantity
           Date.now(),
           perpOrderType,
-          selectedMarket.reduceOnly,
+          selectedMarket.reduceOnly || tradeForm.reduceOnly,
           undefined,
           undefined
         )
@@ -516,6 +522,25 @@ const AdvancedTradeForm = () => {
                     onChange={(e) => handleIocChange(e.target.checked)}
                   >
                     IOC
+                  </Checkbox>
+                </div>
+              </Tooltip>
+            </div>
+            <div className="mr-3 mt-4">
+              <Tooltip
+                className="hidden md:block"
+                delay={250}
+                placement="left"
+                content={
+                  'Reduce will only decrease the size of an open position. This is often used for closing a position.'
+                }
+              >
+                <div className="flex items-center text-xs text-th-fgd-3">
+                  <Checkbox
+                    checked={tradeForm.reduceOnly}
+                    onChange={(e) => handleReduceOnlyChange(e.target.checked)}
+                  >
+                    Reduce Only
                   </Checkbox>
                 </div>
               </Tooltip>
