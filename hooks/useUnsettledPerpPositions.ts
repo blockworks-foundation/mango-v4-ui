@@ -7,8 +7,8 @@ const useUnsettledPerpPositions = () => {
 
   return perpPositions.filter((p) => {
     const market = group?.getPerpMarketByMarketIndex(p.marketIndex)
-    if (!market) return false
-    return p.getPnl(market).toNumber() > 0
+    if (!market || !group) return false
+    return p.getUnsettledPnlUi(group, market) !== 0
   })
 }
 
