@@ -2,7 +2,7 @@
     "mango-account": "Account Address",
     "mango-account-name": "Account Name",
     "no-results": "No Results",
-    "no-results-desc": "Try another search. Searches are case-sensitive execpt for profile names which are lowercase",
+    "no-results-desc": "Try another search. Searches are case-sensitive",
     "profile-name": "Profile Name",
     "results": "Results",
     "search": "Search",
