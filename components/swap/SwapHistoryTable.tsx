@@ -63,7 +63,8 @@ const SwapHistoryTable = () => {
         <thead>
           <TrHead>
             <Th className="text-left">{t('date')}</Th>
-            <Th className="w-1/3 text-left">{t('swap')}</Th>
+            <Th className="text-left">{t('swap:paid')}</Th>
+            <Th className="text-left">{t('swap:received')}</Th>
             <Th className="text-right">{t('value')}</Th>
             <Th className="text-right">{t('borrow')}</Th>
             <Th className="text-right">{t('borrow-fee')}</Th>
@@ -112,7 +113,7 @@ const SwapHistoryTable = () => {
               )?.logoURI
             }
 
-            const inDecimals = countLeadingZeros(swap_in_amount)
+            const inDecimals = countLeadingZeros(swap_in_amount) + 2
             const outDecimals = countLeadingZeros(swap_out_amount) + 2
             return (
               <TrBody key={signature}>
@@ -124,54 +125,53 @@ const SwapHistoryTable = () => {
                     {dayjs(block_datetime).format('h:mma')}
                   </p>
                 </Td>
-                <Td className="w-1/3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex w-1/2 items-center">
-                      <div className="mr-2 flex flex-shrink-0 items-center">
-                        <Image
-                          alt=""
-                          width="24"
-                          height="24"
-                          src={baseLogoURI || ''}
-                        />
-                      </div>
-                      <div>
-                        <p className="whitespace-nowrap">
-                          {`${formatDecimal(swap_in_amount, inDecimals)}`}
-                          <span className="ml-1 font-body text-th-fgd-3">
-                            {inSymbol}
-                          </span>
-                        </p>
-                        <p className="text-xs text-th-fgd-3">
-                          <span className="font-body text-th-fgd-4">
-                            {t('price')}:
-                          </span>{' '}
-                          {formatFixedDecimals(swap_in_price_usd, true)}
-                        </p>
-                      </div>
+                <Td>
+                  <div className="flex items-center">
+                    <div className="mr-2.5 flex flex-shrink-0 items-center">
+                      <Image
+                        alt=""
+                        width="24"
+                        height="24"
+                        src={baseLogoURI || ''}
+                      />
                     </div>
-                    <ArrowRightIcon className="mx-4 h-4 w-4 flex-shrink-0 text-th-fgd-4" />
-                    <div className="flex w-1/2 items-center">
-                      <div className="mr-2 flex flex-shrink-0 items-center">
-                        <Image
-                          alt=""
-                          width="24"
-                          height="24"
-                          src={quoteLogoURI || ''}
-                        />
-                      </div>
-                      <div>
-                        <p className="whitespace-nowrap">
-                          {`${formatDecimal(swap_out_amount, outDecimals)}`}
-                          <span className="ml-1 font-body text-th-fgd-3">
-                            {outSymbol}
-                          </span>
-                        </p>
-                        <p className="text-xs text-th-fgd-4">
-                          <span className="font-body">{t('price')}:</span>{' '}
-                          {formatFixedDecimals(swap_out_price_usd, true)}
-                        </p>
-                      </div>
+                    <div>
+                      <p className="whitespace-nowrap">
+                        {`${formatDecimal(swap_in_amount, inDecimals)}`}
+                        <span className="ml-1 font-body text-th-fgd-3">
+                          {inSymbol}
+                        </span>
+                      </p>
+                      <p className="text-xs text-th-fgd-3">
+                        <span className="font-body text-th-fgd-4">
+                          {t('price')}:
+                        </span>{' '}
+                        {formatFixedDecimals(swap_in_price_usd, true)}
+                      </p>
+                    </div>
+                  </div>
+                </Td>
+                <Td>
+                  <div className="flex items-center">
+                    <div className="mr-2.5 flex flex-shrink-0 items-center">
+                      <Image
+                        alt=""
+                        width="24"
+                        height="24"
+                        src={quoteLogoURI || ''}
+                      />
+                    </div>
+                    <div>
+                      <p className="whitespace-nowrap">
+                        {`${formatDecimal(swap_out_amount, outDecimals)}`}
+                        <span className="ml-1 font-body text-th-fgd-3">
+                          {outSymbol}
+                        </span>
+                      </p>
+                      <p className="text-xs text-th-fgd-4">
+                        <span className="font-body">{t('price')}:</span>{' '}
+                        {formatFixedDecimals(swap_out_price_usd, true)}
+                      </p>
                     </div>
                   </div>
                 </Td>
@@ -275,6 +275,9 @@ const SwapHistoryTable = () => {
             )?.logoURI
           }
 
+          const inDecimals = countLeadingZeros(swap_in_amount) + 2
+          const outDecimals = countLeadingZeros(swap_out_amount) + 2
+
           return (
             <div key={signature} className="border-b border-th-bkg-3 p-4">
               <div className="flex items-center justify-between">
@@ -290,7 +293,7 @@ const SwapHistoryTable = () => {
                     </div>
                     <div>
                       <p className="whitespace-nowrap font-mono text-th-fgd-1">
-                        {swap_in_amount.toFixed(2)}{' '}
+                        {formatDecimal(swap_in_amount, inDecimals)}{' '}
                         <span className="font-body text-th-fgd-3">
                           {inSymbol}
                         </span>
@@ -315,7 +318,7 @@ const SwapHistoryTable = () => {
                     </div>
                     <div>
                       <p className="whitespace-nowrap font-mono text-th-fgd-1">
-                        {swap_out_amount.toFixed(2)}{' '}
+                        {formatDecimal(swap_out_amount, outDecimals)}{' '}
                         <span className="font-body text-th-fgd-3">
                           {outSymbol}
                         </span>
@@ -329,7 +332,10 @@ const SwapHistoryTable = () => {
                     </div>
                   </div>
                 </div>
-                <IconButton onClick={() => handleShowSwapDetails(signature)}>
+                <IconButton
+                  onClick={() => handleShowSwapDetails(signature)}
+                  size="medium"
+                >
                   <ChevronDownIcon
                     className={`${
                       showSwapDetails === signature
