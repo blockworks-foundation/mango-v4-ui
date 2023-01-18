@@ -204,7 +204,7 @@ const UnsettledTrades = ({
                 </Td>
                 <Td className="text-right font-mono">
                   {formatDecimal(
-                    position.getEquityUi(group, market),
+                    position.getUnsettledPnlUi(group, market),
                     market.baseDecimals
                   )}
                 </Td>

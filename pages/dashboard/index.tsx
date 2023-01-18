@@ -441,17 +441,29 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Maint Asset/Liab Weight"
-                                value={`${perpMarket.maintAssetWeight.toFixed(
+                                value={`${perpMarket.maintBaseAssetWeight.toFixed(
                                   4
                                 )}/
-                          ${perpMarket.maintLiabWeight.toFixed(4)}`}
+                          ${perpMarket.maintBaseLiabWeight.toFixed(4)}`}
                               />
                               <KeyValuePair
                                 label="Init Asset/Liab Weight"
-                                value={`${perpMarket.initAssetWeight.toFixed(
+                                value={`${perpMarket.initBaseAssetWeight.toFixed(
                                   4
                                 )}/
-                          ${perpMarket.initLiabWeight.toFixed(4)}`}
+                          ${perpMarket.initBaseLiabWeight.toFixed(4)}`}
+                              />
+                              <KeyValuePair
+                                label="Maint PNL Asset weight"
+                                value={`${perpMarket.maintPnlAssetWeight.toFixed(
+                                  4
+                                )}`}
+                              />
+                              <KeyValuePair
+                                label="Init PNL Asset weight"
+                                value={`${perpMarket.initPnlAssetWeight.toFixed(
+                                  4
+                                )}`}
                               />
                               <KeyValuePair
                                 label="Liquidation Fee"
@@ -499,10 +511,6 @@ const Dashboard: NextPage = () => {
                               <KeyValuePair
                                 label="Oracle: Max Staleness"
                                 value={`${perpMarket.oracleConfig.maxStalenessSlots} slots`}
-                              />
-                              <KeyValuePair
-                                label="Trusted Market"
-                                value={`${perpMarket.trustedMarket}`}
                               />
                               <KeyValuePair
                                 label="Group Insurance Fund"
