@@ -20,7 +20,7 @@ import {
   trimDecimals,
 } from '../../utils/numbers'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
+import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import useJupiterMints from 'hooks/useJupiterMints'
@@ -31,9 +31,6 @@ import useMangoAccount from 'hooks/useMangoAccount'
 const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
   const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
-  // const initialLoad = mangoStore(
-  //   (s) => s.mangoAccount.stats.swapHistory.initialLoad
-  // )
   const loadSwapHistory = mangoStore(
     (s) => s.mangoAccount.stats.swapHistory.loading
   )
@@ -52,6 +49,7 @@ const SwapHistoryTable = () => {
   useEffect(() => {
     if (mangoAccountAddress) {
       actions.fetchSwapHistory(mangoAccountAddress)
+      setOffset(0)
     }
   }, [actions, mangoAccountAddress])
 
@@ -61,15 +59,17 @@ const SwapHistoryTable = () => {
       s.mangoAccount.stats.swapHistory.loading = true
     })
     if (!mangoAccountAddress) return
-    setOffset(offset + 10)
-    actions.fetchSwapHistory(mangoAccountAddress, 0, offset + 10)
+    setOffset(offset + PAGINATION_PAGE_LENGTH)
+    actions.fetchSwapHistory(
+      mangoAccountAddress,
+      0,
+      offset + PAGINATION_PAGE_LENGTH
+    )
   }, [actions, offset, mangoAccountAddress])
 
   const handleShowSwapDetails = (signature: string) => {
     showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
   }
-
-  console.log(swapHistory)
 
   return mangoAccountAddress && (swapHistory.length || loadSwapHistory) ? (
     <>
@@ -426,8 +426,9 @@ const SwapHistoryTable = () => {
           ))}
         </div>
       ) : null}
-      {swapHistory.length && swapHistory.length % 10 === 0 ? (
-        <div className="flex justify-center pt-6">
+      {swapHistory.length &&
+      swapHistory.length % PAGINATION_PAGE_LENGTH === 0 ? (
+        <div className="flex justify-center py-6">
           <LinkButton onClick={handleShowMore}>Show More</LinkButton>
         </div>
       ) : null}

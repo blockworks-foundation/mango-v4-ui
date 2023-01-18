@@ -34,6 +34,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   OUTPUT_TOKEN_DEFAULT,
+  PAGINATION_PAGE_LENGTH,
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
 import { OrderbookL2, SpotBalances, SpotTradeHistory } from 'types'
@@ -242,7 +243,6 @@ export type MangoStore = {
       performance: { data: PerformanceDataItem[]; loading: boolean }
       swapHistory: {
         data: SwapHistoryItem[]
-        initialLoad: boolean
         loading: boolean
       }
     }
@@ -381,7 +381,7 @@ const mangoStore = create<MangoStore>()(
         stats: {
           interestTotals: { data: [], loading: false },
           performance: { data: [], loading: false },
-          swapHistory: { data: [], initialLoad: false, loading: true },
+          swapHistory: { data: [], loading: true },
         },
         tradeHistory: [],
       },
@@ -836,7 +836,7 @@ const mangoStore = create<MangoStore>()(
           setTimeout(async () => {
             try {
               const history = await fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=10`
+                `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}`
               )
               const parsedHistory = await history.json()
               const sortedHistory =
@@ -849,28 +849,16 @@ const mangoStore = create<MangoStore>()(
                   : []
 
               const combinedHistory =
-                offset !== 0 &&
-                connectedMangoAccountPk === loadedSwapHistory[0]?.mango_account
+                offset !== 0
                   ? loadedSwapHistory.concat(sortedHistory)
                   : sortedHistory
 
               set((state) => {
                 state.mangoAccount.stats.swapHistory.data = combinedHistory
               })
-            } catch {
-              notify({
-                title: 'Failed to load account swap history data',
-                type: 'error',
-              })
+            } catch (e) {
+              console.error('Unable to fetch swap history', e)
             } finally {
-              if (
-                !mangoStore.getState().mangoAccount.stats.swapHistory
-                  .initialLoad
-              ) {
-                set((state) => {
-                  state.mangoAccount.stats.swapHistory.initialLoad = true
-                })
-              }
               set((state) => {
                 state.mangoAccount.stats.swapHistory.loading = false
               })
