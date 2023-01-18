@@ -221,7 +221,7 @@ const MenuItem = ({
       <Link
         href={pagePath}
         shallow={true}
-        className={`default-transition flex cursor-pointer px-4 focus:text-th-active focus:outline-none md:hover:text-th-active ${
+        className={`default-transition flex cursor-pointer pl-4 focus:text-th-active focus:outline-none md:hover:text-th-active ${
           active
             ? 'text-th-active'
             : theme === 'Light'
@@ -256,7 +256,7 @@ const MenuItem = ({
             </Transition>
           </div>
           {isExternal ? (
-            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            <ArrowTopRightOnSquareIcon className="mr-4 h-4 w-4" />
           ) : null}
         </div>
       </Link>
@@ -295,7 +295,7 @@ export const ExpandableMenuItem = ({
   return collapsed ? (
     <Popover>
       <div
-        className={`relative z-30 ${alignBottom ? '' : 'px-4 py-2'}`}
+        className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}
         role="button"
       >
         <Popover.Button

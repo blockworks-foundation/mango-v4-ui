@@ -42,6 +42,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { Disclosure } from '@headlessui/react'
 import RoutesModal from './RoutesModal'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -76,6 +77,40 @@ const deserializeJupiterIxAndAlt = async (
   })
 
   return [decompiledMessage.instructions, addressLookupTables]
+}
+
+const prepareMangoRouterInstructions = async (
+  selectedRoute: RouteInfo,
+  inputMint: PublicKey,
+  outputMint: PublicKey,
+  userPublicKey: PublicKey
+): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
+  if (!selectedRoute || !selectedRoute.mints || !selectedRoute.instructions) {
+    return [[], []]
+  }
+  const mintsToFilterOut = [inputMint, outputMint]
+  const filteredOutMints = [
+    ...selectedRoute.mints.filter(
+      (routeMint) =>
+        !mintsToFilterOut.find((filterOutMint) =>
+          filterOutMint.equals(routeMint)
+        )
+    ),
+  ]
+  const additionalInstructions = []
+  for (const mint of filteredOutMints) {
+    const ix = await createAssociatedTokenAccountIdempotentInstruction(
+      userPublicKey,
+      userPublicKey,
+      mint
+    )
+    additionalInstructions.push(ix)
+  }
+  const instructions = [
+    ...additionalInstructions,
+    ...selectedRoute.instructions,
+  ]
+  return [instructions, []]
 }
 
 const fetchJupiterTransaction = async (
@@ -217,14 +252,22 @@ const SwapReviewRouteInfo = ({
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
       setSubmitting(true)
-      const [ixs, alts] = await fetchJupiterTransaction(
-        connection,
-        selectedRoute,
-        mangoAccount.owner,
-        slippage,
-        inputBank.mint,
-        outputBank.mint
-      )
+      const [ixs, alts] =
+        selectedRoute.routerName === 'Mango'
+          ? await prepareMangoRouterInstructions(
+              selectedRoute,
+              inputBank.mint,
+              outputBank.mint,
+              mangoAccount.owner
+            )
+          : await fetchJupiterTransaction(
+              connection,
+              selectedRoute,
+              mangoAccount.owner,
+              slippage,
+              inputBank.mint,
+              outputBank.mint
+            )
 
       try {
         const tx = await client.marginTrade({
@@ -346,22 +389,22 @@ const SwapReviewRouteInfo = ({
                   {swapRate ? (
                     <>
                       1{' '}
-                      <span className="font-body tracking-wider">
-                        {inputTokenInfo?.name} ≈{' '}
+                      <span className="font-body text-th-fgd-3">
+                        {inputTokenInfo?.symbol} ≈{' '}
                       </span>
                       {formatFixedDecimals(amountOut.div(amountIn).toNumber())}{' '}
-                      <span className="font-body tracking-wider">
+                      <span className="font-body text-th-fgd-3">
                         {outputTokenInfo?.symbol}
                       </span>
                     </>
                   ) : (
                     <>
                       1{' '}
-                      <span className="font-body tracking-wider">
+                      <span className="font-body text-th-fgd-3">
                         {outputTokenInfo?.symbol} ≈{' '}
                       </span>
                       {formatFixedDecimals(amountIn.div(amountOut).toNumber())}{' '}
-                      <span className="font-body tracking-wider">
+                      <span className="font-body text-th-fgd-3">
                         {inputTokenInfo?.symbol}
                       </span>
                     </>
@@ -397,20 +440,42 @@ const SwapReviewRouteInfo = ({
             <p className="text-sm text-th-fgd-3">
               {t('swap:minimum-received')}
             </p>
-            {outputTokenInfo?.decimals &&
-            selectedRoute?.otherAmountThreshold ? (
+            {outputTokenInfo?.decimals && selectedRoute ? (
               <p className="text-right font-mono text-sm text-th-fgd-2">
-                {formatDecimal(
-                  selectedRoute.otherAmountThreshold /
-                    10 ** outputTokenInfo.decimals || 1,
-                  outputTokenInfo.decimals
-                )}{' '}
-                <span className="font-body tracking-wider">
+                {selectedRoute.swapMode === 'ExactIn'
+                  ? formatDecimal(
+                      selectedRoute.otherAmountThreshold /
+                        10 ** outputTokenInfo.decimals || 1,
+                      outputTokenInfo.decimals
+                    )
+                  : formatDecimal(
+                      selectedRoute.outAmount /
+                        10 ** outputTokenInfo.decimals || 1,
+                      outputTokenInfo.decimals
+                    )}{' '}
+                <span className="font-body text-th-fgd-3">
                   {outputTokenInfo?.symbol}
                 </span>
               </p>
             ) : null}
           </div>
+          {selectedRoute?.swapMode === 'ExactOut' ? (
+            <div className="flex justify-between">
+              <p className="text-sm text-th-fgd-3">{t('swap:maximum-cost')}</p>
+              {inputTokenInfo?.decimals && selectedRoute ? (
+                <p className="text-right font-mono text-sm text-th-fgd-2">
+                  {formatDecimal(
+                    selectedRoute.otherAmountThreshold /
+                      10 ** inputTokenInfo.decimals || 1,
+                    inputTokenInfo.decimals
+                  )}{' '}
+                  <span className="font-body text-th-fgd-3">
+                    {inputTokenInfo?.symbol}
+                  </span>
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           <div className="flex justify-between">
             <p className="text-sm text-th-fgd-3">{t('swap:price-impact')}</p>
             <p className="text-right font-mono text-sm text-th-fgd-2">
@@ -448,9 +513,7 @@ const SwapReviewRouteInfo = ({
               </Tooltip>
               <p className="text-right font-mono text-sm text-th-fgd-2">
                 ~{formatFixedDecimals(borrowAmount)}{' '}
-                <span className="font-body tracking-wider">
-                  {inputTokenInfo?.symbol}
-                </span>
+                <span className="font-body">{inputTokenInfo?.symbol}</span>
               </p>
             </div>
           ) : null}
@@ -533,10 +596,7 @@ const SwapReviewRouteInfo = ({
                             .mul(inputBank!.loanOriginationFeeRate.toFixed())
                             .toNumber()
                         )}{' '}
-                        <span className="font-body tracking-wider">
-                          {inputBank!.name}
-                        </span>{' '}
-                        (
+                        <span className="font-body">{inputBank!.name}</span> (
                         {formatFixedDecimals(
                           inputBank!.loanOriginationFeeRate.toNumber() * 100
                         )}
@@ -571,7 +631,7 @@ const SwapReviewRouteInfo = ({
                                 info.lpFee?.amount /
                                 Math.pow(10, feeToken.decimals)
                               ).toFixed(6)}{' '}
-                              <span className="font-body tracking-wider">
+                              <span className="font-body">
                                 {feeToken?.symbol}
                               </span>{' '}
                               (

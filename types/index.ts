@@ -1,3 +1,4 @@
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { BN } from '@project-serum/anchor'
 
 export interface ChartTradeType {
@@ -45,3 +46,5 @@ export interface SpotTradeHistory {
   base_symbol: string
   quote_symbol: string
 }
+
+export type GenericMarket = Serum3Market | PerpMarket

@@ -200,7 +200,7 @@ const ActivityFeedTable = ({
             </TrHead>
           </thead>
           <tbody>
-            {activityFeed.map((activity: any) => {
+            {activityFeed.map((activity: any, index: number) => {
               const { activity_type, block_datetime } = activity
               const { signature } = activity.activity_details
               const isLiquidation =
@@ -211,7 +211,7 @@ const ActivityFeedTable = ({
               const fee = getFee(activity)
               return (
                 <TrBody
-                  key={signature}
+                  key={signature + index}
                   className={`default-transition text-sm hover:bg-th-bkg-2 ${
                     isLiquidation ? 'cursor-pointer' : ''
                   }`}
@@ -222,7 +222,7 @@ const ActivityFeedTable = ({
                   }
                 >
                   <Td>
-                    <p className="font-body tracking-wider">
+                    <p className="font-body">
                       {dayjs(block_datetime).format('ddd D MMM')}
                     </p>
                     <p className="text-xs text-th-fgd-3">
@@ -302,11 +302,11 @@ const ActivityFeedTable = ({
         </Table>
       ) : (
         <div>
-          {activityFeed.map((activity: any) => (
+          {activityFeed.map((activity: any, index: number) => (
             <MobileActivityFeedItem
               activity={activity}
               getValue={getValue}
-              key={activity.activity_details.signature}
+              key={activity?.activity_details?.signature + index}
             />
           ))}
         </div>
@@ -322,7 +322,7 @@ const ActivityFeedTable = ({
       ) : null}
       {activityFeed.length &&
       activityFeed.length % PAGINATION_PAGE_LENGTH === 0 ? (
-        <div className="flex justify-center pt-6">
+        <div className="flex justify-center py-6">
           <LinkButton onClick={handleShowMore}>Show More</LinkButton>
         </div>
       ) : null}
@@ -473,7 +473,7 @@ const MobileActivityFeedItem = ({
             <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
               {formatDecimal(activity.activity_details.asset_amount)}{' '}
-              <span className="font-body tracking-wider">
+              <span className="font-body">
                 {activity.activity_details.asset_symbol}
               </span>
               <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
@@ -491,7 +491,7 @@ const MobileActivityFeedItem = ({
             <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
               {formatDecimal(activity.activity_details.liab_amount)}{' '}
-              <span className="font-body tracking-wider">
+              <span className="font-body">
                 {activity.activity_details.liab_symbol}
               </span>
               <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}

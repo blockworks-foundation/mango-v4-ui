@@ -96,6 +96,12 @@ const MangoAccountsListModal = ({
             ) : mangoAccounts.length ? (
               <div className="thin-scroll mt-4 max-h-[280px] space-y-2 overflow-y-auto">
                 {mangoAccounts.map((acc) => {
+                  if (
+                    mangoAccount &&
+                    acc.publicKey.equals(mangoAccount.publicKey)
+                  ) {
+                    acc = mangoAccount
+                  }
                   const accountValue = toUiDecimalsForQuote(
                     Number(acc.getEquity(group!))
                   ).toFixed(2)

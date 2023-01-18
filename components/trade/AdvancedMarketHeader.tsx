@@ -1,35 +1,34 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
 import { useCoingecko } from 'hooks/useCoingecko'
-import useOraclePrice from 'hooks/useOraclePrice'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
+import { getDecimalCount } from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
 
 const AdvancedMarketHeader = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { selectedMarket } = useSelectedMarket()
+  const { serumOrPerpMarket, baseSymbol, price } = useSelectedMarket()
   const { data: tokenPrices } = useCoingecko()
-  const oraclePrice = useOraclePrice()
 
-  const baseSymbol = useMemo(() => {
-    return selectedMarket?.name.split('/')[0]
-  }, [selectedMarket])
+  const coingeckoData = useMemo(() => {
+    return tokenPrices.find((asset) =>
+      baseSymbol === 'soETH'
+        ? asset.symbol === 'ETH'
+        : asset.symbol === baseSymbol
+    )
+  }, [baseSymbol, tokenPrices])
 
-  const coingeckoData = tokenPrices.find((asset) =>
-    baseSymbol === 'soETH'
-      ? asset.symbol === 'ETH'
-      : asset.symbol === baseSymbol
-  )
-
-  const change = coingeckoData
-    ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
-        coingeckoData.prices[0][1]) /
-        coingeckoData.prices[0][1]) *
-      100
-    : 0
+  const change = useMemo(() => {
+    return coingeckoData
+      ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
+          coingeckoData.prices[0][1]) /
+          coingeckoData.prices[0][1]) *
+          100
+      : 0
+  }, [coingeckoData])
 
   return (
     <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
@@ -40,8 +39,10 @@ const AdvancedMarketHeader = () => {
         <div id="trade-step-two" className="flex-col md:ml-6">
           <div className="text-xs text-th-fgd-4">{t('trade:oracle-price')}</div>
           <div className="font-mono text-xs text-th-fgd-2">
-            {oraclePrice ? (
-              `$${oraclePrice}`
+            {price ? (
+              `$${price.toFixed(
+                getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
+              )}`
             ) : (
               <span className="text-th-fgd-4">–</span>
             )}
@@ -51,7 +52,7 @@ const AdvancedMarketHeader = () => {
           <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
           <Change change={change} size="small" suffix="%" />
         </div>
-        {selectedMarket instanceof PerpMarket ? (
+        {serumOrPerpMarket instanceof PerpMarket ? (
           <div className="ml-6 flex-col">
             <div className="text-xs text-th-fgd-4">
               {t('trade:funding-rate')}

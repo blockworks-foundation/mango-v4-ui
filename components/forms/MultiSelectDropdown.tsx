@@ -27,7 +27,7 @@ const MultiSelectDropdown = ({
           >
             <div className={`flex items-center justify-between`}>
               {selected.length ? (
-                <span>
+                <span className="text-left">
                   {selected
                     .map((v) => t(v))
                     .toString()

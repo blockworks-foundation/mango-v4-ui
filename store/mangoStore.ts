@@ -208,6 +208,7 @@ interface TradeForm {
   tradeType: 'Market' | 'Limit'
   postOnly: boolean
   ioc: boolean
+  reduceOnly: boolean
 }
 
 export const DEFAULT_TRADE_FORM: TradeForm = {
@@ -218,6 +219,7 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   tradeType: 'Limit',
   postOnly: false,
   ioc: false,
+  reduceOnly: false,
 }
 
 export type MangoStore = {
@@ -319,7 +321,7 @@ export type MangoStore = {
     ) => Promise<void>
     fetchGroup: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
-    fetchMangoAccounts: (wallet: Wallet) => Promise<void>
+    fetchMangoAccounts: (ownerPk: PublicKey) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrders: (ma?: MangoAccount) => Promise<void>
     fetchPerpStats: () => void
@@ -332,7 +334,7 @@ export type MangoStore = {
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
     fetchTradeHistory: () => Promise<void>
-    fetchWalletTokens: (wallet: Wallet) => Promise<void>
+    fetchWalletTokens: (walletPk: PublicKey) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     loadMarketFills: () => Promise<void>
     updateConnection: (url: string) => void
@@ -658,7 +660,7 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        fetchMangoAccounts: async (wallet) => {
+        fetchMangoAccounts: async (ownerPk: PublicKey) => {
           const set = get().set
           const actions = get().actions
           try {
@@ -670,7 +672,7 @@ const mangoStore = create<MangoStore>()(
 
             const mangoAccounts = await client.getMangoAccountsForOwner(
               group,
-              wallet.publicKey
+              ownerPk
             )
             const selectedAccountIsNotInAccountsList = mangoAccounts.find(
               (x) =>
@@ -684,8 +686,6 @@ const mangoStore = create<MangoStore>()(
               })
               return
             }
-
-            mangoAccounts.forEach((ma) => ma.reloadAccountData(client))
 
             let newSelectedMangoAccount = selectedMangoAccount
             if (!selectedMangoAccount || !selectedAccountIsNotInAccountsList) {
@@ -701,12 +701,20 @@ const mangoStore = create<MangoStore>()(
             }
 
             if (newSelectedMangoAccount) {
-              await actions.fetchOpenOrders(newSelectedMangoAccount)
+              await newSelectedMangoAccount.reloadAccountData(client)
+              set((state) => {
+                state.mangoAccount.current = newSelectedMangoAccount
+                state.mangoAccount.initialLoad = false
+              })
+              actions.fetchOpenOrders(newSelectedMangoAccount)
             }
+
+            await Promise.all(
+              mangoAccounts.map((ma) => ma.reloadAccountData(client))
+            )
 
             set((state) => {
               state.mangoAccounts = mangoAccounts
-              state.mangoAccount.current = newSelectedMangoAccount
             })
           } catch (e) {
             console.error('Error fetching mango accts', e)
@@ -893,14 +901,14 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        fetchWalletTokens: async (wallet: Wallet) => {
+        fetchWalletTokens: async (walletPk: PublicKey) => {
           const set = get().set
           const connection = get().connection
 
-          if (wallet.publicKey) {
+          if (walletPk) {
             const token = await getTokenAccountsByOwnerWithWrappedSol(
               connection,
-              wallet.publicKey
+              walletPk
             )
 
             set((state) => {

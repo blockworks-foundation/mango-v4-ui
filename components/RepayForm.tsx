@@ -5,7 +5,6 @@ import {
   ExclamationCircleIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
-import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -74,7 +73,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     return logoURI
   }, [bank, mangoTokens])
 
-  const { connected, wallet } = useWallet()
+  const { connected, publicKey } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const walletBalance = useMemo(() => {
@@ -119,13 +118,23 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
   const handleDeposit = useCallback(
     async (amount: string) => {
+      //to not leave some dust on account we round amount by this number
+      //with reduce only set to true we take only what is needed to be
+      //deposited in need to repay borrow
+      const mangoAccount = mangoStore.getState().mangoAccount.current
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
-      const mangoAccount = mangoStore.getState().mangoAccount.current
 
-      if (!mangoAccount || !group || !bank || !wallet) return
-      console.log('inputAmount: ', amount)
+      if (!mangoAccount || !group || !bank || !publicKey) return
+
+      //we don't want to left negative dust in account if someone wants to repay full amount
+      const actualAmount =
+        sizePercentage === '100'
+          ? mangoAccount.getTokenBorrowsUi(bank) < parseFloat(amount)
+            ? parseFloat(amount)
+            : mangoAccount.getTokenBorrowsUi(bank)
+          : parseFloat(amount)
 
       setSubmitting(true)
       try {
@@ -133,7 +142,8 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
           group,
           mangoAccount,
           bank.mint,
-          parseFloat(amount)
+          actualAmount,
+          true
         )
         notify({
           title: 'Transaction confirmed',
@@ -142,7 +152,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         })
 
         await actions.reloadMangoAccount()
-        actions.fetchWalletTokens(wallet.adapter as unknown as Wallet)
+        actions.fetchWalletTokens(publicKey)
         setSubmitting(false)
         onSuccess()
       } catch (e: any) {
@@ -156,7 +166,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         setSubmitting(false)
       }
     },
-    [bank, wallet]
+    [bank, publicKey?.toBase58(), sizePercentage]
   )
 
   const banks = useMemo(() => {

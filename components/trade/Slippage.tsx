@@ -45,7 +45,7 @@ const Slippage = () => {
             : 'text-th-error'
         }`}
       >
-        {slippage === 100_000 ? 'Unavailable' : `${slippage.toFixed(2)}&`}
+        {slippage === 100_000 ? 'Unavailable' : `${slippage.toFixed(2)}%`}
       </p>
     </div>
   ) : null

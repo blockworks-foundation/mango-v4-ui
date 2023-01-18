@@ -170,7 +170,7 @@ const ActivityFilters = ({
     <Disclosure>
       <div className="relative">
         {hasFilters ? (
-          <div className="absolute right-14 top-3">
+          <div className="absolute right-14 top-2">
             <Tooltip content={t('activity:reset-filters')}>
               <IconButton
                 className={`${loadActivityFeed ? 'animate-spin' : ''}`}
@@ -429,7 +429,7 @@ const ActivityDetails = ({
           <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
           <p className="font-mono text-th-fgd-1">
             {formatDecimal(asset_amount)}{' '}
-            <span className="font-body tracking-wider">{asset_symbol}</span>
+            <span className="font-body">{asset_symbol}</span>
             <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
             {formatFixedDecimals(asset_price, true)}
           </p>
@@ -441,7 +441,7 @@ const ActivityDetails = ({
           <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
           <p className="font-mono text-th-fgd-1">
             {formatDecimal(liab_amount)}{' '}
-            <span className="font-body tracking-wider">{liab_symbol}</span>
+            <span className="font-body">{liab_symbol}</span>
             <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
             {formatFixedDecimals(liab_price, true)}
           </p>

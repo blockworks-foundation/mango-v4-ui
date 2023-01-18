@@ -8,6 +8,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import {
+  formatDecimal,
   formatFixedDecimals,
   getDecimalCount,
   numberFormat,
@@ -66,8 +67,8 @@ const PerpPositions = () => {
             <Th className="text-right">{t('trade:size')}</Th>
             <Th className="text-right">{t('trade:notional')}</Th>
             <Th className="text-right">{t('trade:entry-price')}</Th>
-            <Th className="text-right">Redeemable PnL</Th>
-            <Th className="text-right">Realized PnL</Th>
+            <Th className="text-right">Unsettled PnL</Th>
+            <Th className="text-right">PnL</Th>
           </TrHead>
         </thead>
         <tbody>
@@ -86,7 +87,11 @@ const PerpPositions = () => {
 
             if (!basePosition) return null
 
-            const unsettledPnl = position.getEquityUi(group, market)
+            const unsettledPnl = position.getUnsettledPnlUi(group, market)
+            const cummulativePnl = position.cumulativePnlOverPositionLifetimeUi(
+              group,
+              market
+            )
 
             return (
               <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
@@ -96,7 +101,7 @@ const PerpPositions = () => {
                 <Td className="text-right">
                   <PerpSideBadge basePosition={basePosition} />
                 </Td>
-                <Td className="text-right">
+                <Td className="text-right font-mono">
                   <p className="flex justify-end">
                     {isSelectedMarket ? (
                       <LinkButton
@@ -123,20 +128,15 @@ const PerpPositions = () => {
                     )}
                   </div>
                 </Td>
+                <Td className={`text-right font-mono`}>
+                  <div>{formatDecimal(unsettledPnl, market.baseDecimals)}</div>
+                </Td>
                 <Td
                   className={`text-right font-mono ${
-                    unsettledPnl > 0 ? 'text-th-up' : 'text-th-down'
+                    cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
                   }`}
                 >
-                  <div>{formatFixedDecimals(unsettledPnl, true)}</div>
-                </Td>
-                <Td className="text-right">
-                  <div>
-                    $
-                    {/* {numberFormat.format(
-                        position.perpSpotTransfers.toNumber()
-                      )} */}
-                  </div>
+                  <div>{formatFixedDecimals(cummulativePnl, true)}</div>
                 </Td>
               </TrBody>
             )
