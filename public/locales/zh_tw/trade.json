@@ -1,4 +1,5 @@
 {
+    "activate-volume-alert": "Activate Volume Alert",
     "amount": "Amount",
     "base": "Base",
     "book": "Book",
@@ -16,6 +17,7 @@
     "hourly-funding": "Hourly Funding",
     "in-orders": "In Orders",
     "instantaneous-funding": "Instantaneous Funding",
+    "interval-seconds": "Interval (seconds)",
     "limit-price": "Limit Price",
     "margin": "Margin",
     "no-balances": "No balances",
@@ -23,6 +25,7 @@
     "no-positions": "No perp positions",
     "no-unsettled": "No unsettled funds",
     "notional": "Notional",
+    "notional-volume": "Notional Volume ($)",
     "open-interest": "Open Interest",
     "oracle-price": "Oracle Price",
     "order-error": "Failed to place order",
@@ -32,6 +35,7 @@
     "post": "Post",
     "place-order": "Place {{side}} Order",
     "placing-order": "Placing Order",
+    "preview-sound": "Preview Sound",
     "quote": "Quote",
     "sells": "Sells",
     "settle-funds": "Settle Funds",
@@ -45,7 +49,9 @@
     "tooltip-ioc": "Immediate-Or-Cancel (IOC) orders are guaranteed to be the taker and must be executed immediately. Any portion of the order that can't be filled immediately will be cancelled",
     "tooltip-post": "Post orders are guaranteed to be the maker or they will be canceled",
     "tooltip-slippage": "An estimate of the difference between the current price and the price your trade will be executed at",
-    "trade-sounds-tooltip": "Play a sound alert for every new trade",
+    "tooltip-volume-alert": "Volume Alert Settings",
     "trades": "Trades",
-    "unsettled": "Unsettled"
+    "unsettled": "Unsettled",
+    "volume-alert": "Volume Alert",
+    "volume-alert-desc": "Play a sound whenever volume exceeds your alert threshold"
 }
