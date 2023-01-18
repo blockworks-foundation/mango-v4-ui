@@ -43,6 +43,8 @@ export const THEME_KEY = 'theme-0.1'
 
 export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
 
+export const DATA_PROVIDER_KEY = 'dataProviderKey-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',

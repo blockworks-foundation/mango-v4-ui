@@ -7,7 +7,7 @@ import isEqual from 'lodash/isEqual'
 import usePrevious from '@components/shared/usePrevious'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY, DATA_PROVIDER_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
 import OrderbookIcon from '@components/icons/OrderbookIcon'
@@ -21,6 +21,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import { DATA_PROVIDERS } from '@components/settings/DataSettings'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 
@@ -148,6 +149,12 @@ const Orderbook = () => {
   const previousGrouping = usePrevious(grouping)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
+  let currentSlot = 0;
+
+  const [dataProvider] = useLocalStorageState(
+    DATA_PROVIDER_KEY,
+    DATA_PROVIDERS[0]
+  )
 
   const depthArray = useMemo(() => {
     const bookDepth = !isMobile ? depth : 7
@@ -275,7 +282,9 @@ const Orderbook = () => {
 
     if (!market || !group) return
 
-    const ws = new WebSocket('wss://ws.mngo.cloud:8082')
+    const scheme = dataProvider.startsWith('localhost') ? 'ws' : 'wss'
+    const endpoint = dataProvider == 'api.mngo.cloud' ? 'orderbook/v1/' : ''
+    const ws = new WebSocket(`${scheme}://${dataProvider}/${endpoint}`)
     // TODO: connection retries
     ws.addEventListener('open', () => {
       console.log('connected to orderbook feed')
@@ -299,6 +308,12 @@ const Orderbook = () => {
       if (data['update']) {
         // got an update from the feed
         console.log('update', market.publicKey.toBase58())
+
+        if (data['slot'] < currentSlot) {
+          console.log('outdated')
+          return;
+        }
+        currentSlot = data['slot'];
         const side = data['side']
         const bookside =
           side == 'bid'

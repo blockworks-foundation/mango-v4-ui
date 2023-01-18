@@ -45,5 +45,8 @@
     "transaction-fail": "Transaction Fail",
     "transaction-success": "Transaction Success",
     "trade-chart": "Trade Chart",
-    "trading-view": "Trading View"
+    "trading-view": "Trading View",
+    "data": "Data",
+    "data-provider": "Data Provider",
+    "data-url": "Data Provider URL"
 }
