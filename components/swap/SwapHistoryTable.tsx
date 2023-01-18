@@ -105,10 +105,10 @@ const SwapHistoryTable = () => {
 
             if (mangoTokens.length) {
               baseLogoURI = mangoTokens.find(
-                (t) => t.symbol === inSymbol
+                (t) => t.symbol.toUpperCase() === inSymbol.toUpperCase()
               )?.logoURI
               quoteLogoURI = mangoTokens.find(
-                (t) => t.symbol === outSymbol
+                (t) => t.symbol.toUpperCase() === outSymbol.toUpperCase()
               )?.logoURI
             }
 
@@ -268,10 +268,10 @@ const SwapHistoryTable = () => {
 
           if (mangoTokens.length) {
             baseLogoURI = mangoTokens.find(
-              (t) => t.symbol === inSymbol
+              (t) => t.symbol.toUpperCase() === inSymbol.toUpperCase()
             )?.logoURI
             quoteLogoURI = mangoTokens.find(
-              (t) => t.symbol === outSymbol
+              (t) => t.symbol.toUpperCase() === outSymbol.toUpperCase()
             )?.logoURI
           }
 

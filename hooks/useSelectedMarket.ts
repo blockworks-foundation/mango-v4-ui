@@ -40,8 +40,8 @@ export default function useSelectedMarket() {
   const baseLogoURI = useMemo(() => {
     if (!baseSymbol || !mangoTokens.length) return ''
     const token =
-      mangoTokens.find((t) => t.symbol === baseSymbol) ||
-      mangoTokens.find((t) => t.symbol?.includes(baseSymbol))
+      mangoTokens.find((t) => t.symbol.toUpperCase() === baseSymbol) ||
+      mangoTokens.find((t) => t.symbol.toUpperCase()?.includes(baseSymbol))
     if (token) {
       return token.logoURI
     }
@@ -64,7 +64,9 @@ export default function useSelectedMarket() {
 
   const quoteLogoURI = useMemo(() => {
     if (!quoteSymbol || !mangoTokens.length) return ''
-    const token = mangoTokens.find((t) => t.symbol === quoteSymbol)
+    const token = mangoTokens.find(
+      (t) => t.symbol.toUpperCase() === quoteSymbol
+    )
     if (token) {
       return token.logoURI
     }
