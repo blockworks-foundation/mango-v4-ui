@@ -33,6 +33,7 @@ import {
   DEFAULT_MARKET_NAME,
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
+  MANGO_DATA_API_URL,
   OUTPUT_TOKEN_DEFAULT,
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
@@ -461,7 +462,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-total?mango-account=${mangoAccountPk}`
+              `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`
             )
             const parsedResponse = await response.json()
             const entries: any = Object.entries(parsedResponse).sort((a, b) =>
@@ -498,7 +499,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
+              `${MANGO_DATA_API_URL}/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
                 .subtract(range, 'day')
                 .format('YYYY-MM-DD')}`
             )
@@ -541,7 +542,7 @@ const mangoStore = create<MangoStore>()(
 
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
+              `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
                 params ? params : ''
               }`
             )
@@ -817,7 +818,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/perp-historical-stats?mango-group=${group?.publicKey.toString()}`
+              `${MANGO_DATA_API_URL}/perp-historical-stats?mango-group=${group?.publicKey.toString()}`
             )
             const data = await response.json()
 
@@ -840,7 +841,7 @@ const mangoStore = create<MangoStore>()(
           setTimeout(async () => {
             try {
               const history = await fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}`
+                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}`
               )
               const parsedHistory = await history.json()
               const sortedHistory =
@@ -876,7 +877,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/token-historical-stats?mango-group=${group?.publicKey.toString()}`
+              `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`
             )
             const data = await response.json()
 
@@ -945,7 +946,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/user-data/profile-details?wallet-pk=${walletPk}`
+              `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${walletPk}`
             )
             const data = await response.json()
             set((state) => {
@@ -967,7 +968,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/user-data/settings-unsigned?wallet-pk=${walletPk}`
+              `${MANGO_DATA_API_URL}/user-data/settings-unsigned?wallet-pk=${walletPk}`
             )
             const data = await response.json()
             set((state) => {
@@ -1021,10 +1022,10 @@ const mangoStore = create<MangoStore>()(
           try {
             const [spotRes, perpRes] = await Promise.all([
               fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/openbook-trades?address=${mangoAccount?.publicKey.toString()}&address-type=mango-account`
+                `${MANGO_DATA_API_URL}/stats/openbook-trades?address=${mangoAccount?.publicKey.toString()}&address-type=mango-account`
               ),
               fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/perp-trade-history?mango-account=${mangoAccount?.publicKey.toString()}&limit=1000`
+                `${MANGO_DATA_API_URL}/stats/perp-trade-history?mango-account=${mangoAccount?.publicKey.toString()}&limit=1000`
               ),
             ])
             const spotHistory = await spotRes.json()
