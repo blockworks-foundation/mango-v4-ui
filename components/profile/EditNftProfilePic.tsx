@@ -6,6 +6,7 @@ import { useTranslation } from 'next-i18next'
 import Button, { LinkButton } from '../shared/Button'
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { notify } from 'utils/notifications'
+import { MANGO_DATA_API_URL } from 'utils/constants'
 
 const ImgWithLoader = (props: any) => {
   const [isLoading, setIsLoading] = useState(true)
@@ -67,7 +68,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
         }),
       }
       const response = await fetch(
-        'https://mango-transaction-log.herokuapp.com/v4/user-data/profile-details',
+        `${MANGO_DATA_API_URL}/user-data/profile-details`,
         requestOptions
       )
       if (response.status === 200) {
@@ -113,7 +114,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
         }),
       }
       const response = await fetch(
-        'https://mango-transaction-log.herokuapp.com/v4/user-data/profile-details',
+        `${MANGO_DATA_API_URL}/user-data/profile-details`,
         requestOptions
       )
       if (response.status === 200) {

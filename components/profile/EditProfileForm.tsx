@@ -14,6 +14,7 @@ import mangoStore from '@store/mangoStore'
 import startCase from 'lodash/startCase'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useState } from 'react'
+import { MANGO_DATA_API_URL } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import ProfileImage from './ProfileImage'
 
@@ -42,7 +43,7 @@ const EditProfileForm = ({
     try {
       setLoadUniquenessCheck(true)
       const response = await fetch(
-        `https://mango-transaction-log.herokuapp.com/v4/user-data/check-profile-name-unique?profile-name=${name}`
+        `${MANGO_DATA_API_URL}/user-data/check-profile-name-unique?profile-name=${name}`
       )
       const uniquenessCheck = await response.json()
 
@@ -103,7 +104,7 @@ const EditProfileForm = ({
           }),
         }
         const response = await fetch(
-          'https://mango-transaction-log.herokuapp.com/v4/user-data/profile-details',
+          `${MANGO_DATA_API_URL}/user-data/profile-details`,
           requestOptions
         )
         if (response.status === 200) {
