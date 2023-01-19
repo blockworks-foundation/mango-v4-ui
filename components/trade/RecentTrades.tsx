@@ -16,6 +16,7 @@ import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import TradeVolumeAlertModal, {
   DEFAULT_VOLUME_ALERT_SETTINGS,
 } from '@components/modals/TradeVolumeAlertModal'
+import dayjs from 'dayjs'
 
 const volumeAlertSound = new Howl({
   src: ['/sounds/trade-buy.mp3'],
@@ -166,7 +167,7 @@ const RecentTrades = () => {
               {!!fills.length &&
                 fills.map((trade: ChartTradeType, i: number) => {
                   const side =
-                    trade.side || (trade.takerSide === 1 ? 'bid' : 'ask')
+                    trade.side || (trade.takerSide === 0 ? 'bid' : 'ask')
 
                   // const price =
                   // typeof trade.price === 'number'
@@ -206,9 +207,9 @@ const RecentTrades = () => {
                         {trade.time
                           ? new Date(trade.time).toLocaleTimeString()
                           : trade.timestamp
-                          ? new Date(
-                              trade.timestamp.toNumber()
-                            ).toLocaleTimeString()
+                          ? dayjs(trade.timestamp.toNumber() * 1000).format(
+                              'hh:mma'
+                            )
                           : '-'}
                       </td>
                     </tr>

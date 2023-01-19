@@ -30,7 +30,7 @@ const byTimestamp = (a: any, b: any) => {
   )
 }
 
-const reverseSide = (side: string) => (side === 'buy' ? 'sell' : 'buy')
+const reverseSide = (side: string) => (side === 'long' ? 'short' : 'long')
 
 const parsedPerpEvent = (mangoAccountAddress: string, event: any) => {
   const maker = event.maker.toString() === mangoAccountAddress
@@ -39,7 +39,8 @@ const parsedPerpEvent = (mangoAccountAddress: string, event: any) => {
   const feeRate = maker
     ? new I80F48(event.makerFee.val)
     : new I80F48(event.takerFee.val)
-  const side = maker ? reverseSide(event.takerSide) : event.takerSide
+  const takerSide = event.takerSide === 0 ? 'long' : 'short'
+  const side = maker ? reverseSide(takerSide) : takerSide
 
   return {
     ...event,
@@ -145,16 +146,13 @@ const TradeHistory = () => {
   const combinedTradeHistory = useMemo(() => {
     let newFills = []
     if (eventQueueFillsForAccount?.length) {
-      console.log('eventQueueFillsForAccount', eventQueueFillsForAccount)
-
       newFills = eventQueueFillsForAccount.filter((fill) => {
         return !tradeHistory.find((t) => {
-          if (t.order_id) {
+          if ('order_id' in t) {
             return t.order_id === fill.orderId?.toString()
+          } else {
+            return t.seq_num === fill.seqNum?.toNumber()
           }
-          // else {
-          //   return t.seq_num === fill.seqNum?.toString()
-          // }
         })
       })
     }
@@ -245,7 +243,7 @@ const TradeHistory = () => {
                     {formatDecimal(trade.price)}
                   </Td>
                   <Td className="text-right font-mono">
-                    ${formatFixedDecimals(trade.price * size, true)}
+                    {formatFixedDecimals(trade.price * size, true)}
                   </Td>
                   <Td className="text-right">
                     <span className="font-mono">{formatDecimal(fee)}</span>

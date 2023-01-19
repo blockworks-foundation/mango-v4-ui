@@ -38,7 +38,12 @@ import {
   PAGINATION_PAGE_LENGTH,
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
-import { OrderbookL2, SpotBalances, SpotTradeHistory } from 'types'
+import {
+  OrderbookL2,
+  PerpTradeHistory,
+  SpotBalances,
+  SpotTradeHistory,
+} from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
@@ -72,7 +77,7 @@ const emptyWallet = new EmptyWallet(Keypair.generate())
 const initMangoClient = (provider: AnchorProvider): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     // blockhashCommitment: 'confirmed',
-    prioritizationFee: 10000,
+    prioritizationFee: 50000,
     idsSource: 'get-program-accounts',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
@@ -226,7 +231,6 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
 export type MangoStore = {
   activityFeed: {
     feed: Array<DepositWithdrawFeedItem | LiquidationFeedItem>
-    initialLoad: boolean
     loading: boolean
   }
   connected: boolean
@@ -250,9 +254,12 @@ export type MangoStore = {
     }
     swapHistory: {
       data: SwapHistoryItem[]
-      initialLoad: boolean
+      loading: boolean
     }
-    tradeHistory: { data: SpotTradeHistory[]; loading: boolean }
+    tradeHistory: {
+      data: Array<SpotTradeHistory | PerpTradeHistory>
+      loading: boolean
+    }
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
@@ -332,7 +339,8 @@ export type MangoStore = {
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
       mangoAccountPk: string,
-      timeout?: number
+      timeout?: number,
+      offset?: number
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
@@ -368,7 +376,6 @@ const mangoStore = create<MangoStore>()(
     return {
       activityFeed: {
         feed: [],
-        initialLoad: false,
         loading: true,
       },
       connected: false,
@@ -386,7 +393,7 @@ const mangoStore = create<MangoStore>()(
         spotBalances: {},
         interestTotals: { data: [], loading: false },
         performance: { data: [], loading: false, initialLoad: false },
-        swapHistory: { data: [], initialLoad: false },
+        swapHistory: { data: [], loading: true },
         tradeHistory: { data: [], loading: true },
       },
       mangoAccounts: [],
@@ -537,7 +544,7 @@ const mangoStore = create<MangoStore>()(
           params = ''
         ) => {
           const set = get().set
-          const currentFeed = mangoStore.getState().activityFeed.feed
+          const loadedFeed = mangoStore.getState().activityFeed.feed
           const connectedMangoAccountPk = mangoStore
             .getState()
             .mangoAccount.current?.publicKey.toString()
@@ -568,15 +575,15 @@ const mangoStore = create<MangoStore>()(
               )
 
             // only add to current feed if data request is offset and the mango account hasn't changed
-            const feed =
+            const combinedFeed =
               offset !== 0 &&
               connectedMangoAccountPk ===
-                currentFeed[0].activity_details.mango_account
-                ? currentFeed.concat(latestFeed)
+                loadedFeed[0]?.activity_details?.mango_account
+                ? loadedFeed.concat(latestFeed)
                 : latestFeed
 
             set((state) => {
-              state.activityFeed.feed = feed
+              state.activityFeed.feed = combinedFeed
             })
           } catch {
             notify({
@@ -584,12 +591,6 @@ const mangoStore = create<MangoStore>()(
               type: 'error',
             })
           } finally {
-            const initialLoad = mangoStore.getState().activityFeed.initialLoad
-            if (!initialLoad) {
-              set((state) => {
-                state.activityFeed.initialLoad = true
-              })
-            }
             set((state) => {
               state.activityFeed.loading = false
             })
@@ -838,12 +839,19 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        fetchSwapHistory: async (mangoAccountPk: string, timeout = 0) => {
+        fetchSwapHistory: async (
+          mangoAccountPk: string,
+          timeout = 0,
+          offset = 0
+        ) => {
           const set = get().set
+          const loadedSwapHistory =
+            mangoStore.getState().mangoAccount.swapHistory.data
+
           setTimeout(async () => {
             try {
               const history = await fetch(
-                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}`
+                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}`
               )
               const parsedHistory = await history.json()
               const sortedHistory =
@@ -855,17 +863,19 @@ const mangoStore = create<MangoStore>()(
                     )
                   : []
 
+              const combinedHistory =
+                offset !== 0
+                  ? loadedSwapHistory.concat(sortedHistory)
+                  : sortedHistory
+
               set((state) => {
-                state.mangoAccount.swapHistory.data = sortedHistory
-                state.mangoAccount.swapHistory.initialLoad = true
+                state.mangoAccount.swapHistory.data = combinedHistory
               })
-            } catch {
+            } catch (e) {
+              console.error('Unable to fetch swap history', e)
+            } finally {
               set((state) => {
-                state.mangoAccount.swapHistory.initialLoad = true
-              })
-              notify({
-                title: 'Failed to load account swap history data',
-                type: 'error',
+                state.mangoAccount.swapHistory.loading = false
               })
             }
           }, timeout)
@@ -1010,6 +1020,7 @@ const mangoStore = create<MangoStore>()(
               loadedFills = loadedFills.filter((f) => !f?.eventFlags?.maker)
             } else if (perpMarket) {
               loadedFills = await perpMarket.loadFills(client)
+              loadedFills = loadedFills.reverse()
             }
             set((state) => {
               state.selectedMarket.fills = loadedFills
