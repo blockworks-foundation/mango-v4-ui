@@ -264,6 +264,7 @@ const TokenStats = () => {
                     </div>
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.name)}
+                      size="medium"
                     >
                       <ChevronDownIcon
                         className={`${
