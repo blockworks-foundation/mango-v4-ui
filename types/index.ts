@@ -47,4 +47,23 @@ export interface SpotTradeHistory {
   quote_symbol: string
 }
 
+export interface PerpTradeHistory {
+  signature: string
+  slot: number
+  block_datetime: string
+  maker: string
+  maker_order_id: string
+  maker_fee: number
+  taker: string
+  taker_order_id: string
+  taker_client_order_id: string
+  taker_fee: number
+  taker_side: string
+  perp_market: string
+  market_index: number
+  price: number
+  quantity: number
+  seq_num: number
+}
+
 export type GenericMarket = Serum3Market | PerpMarket

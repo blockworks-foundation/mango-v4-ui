@@ -38,7 +38,12 @@ import {
   PAGINATION_PAGE_LENGTH,
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
-import { OrderbookL2, SpotBalances, SpotTradeHistory } from 'types'
+import {
+  OrderbookL2,
+  PerpTradeHistory,
+  SpotBalances,
+  SpotTradeHistory,
+} from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
@@ -72,7 +77,7 @@ const emptyWallet = new EmptyWallet(Keypair.generate())
 const initMangoClient = (provider: AnchorProvider): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     // blockhashCommitment: 'confirmed',
-    prioritizationFee: 10000,
+    prioritizationFee: 50000,
     idsSource: 'get-program-accounts',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
@@ -252,7 +257,10 @@ export type MangoStore = {
       data: SwapHistoryItem[]
       initialLoad: boolean
     }
-    tradeHistory: { data: SpotTradeHistory[]; loading: boolean }
+    tradeHistory: {
+      data: Array<SpotTradeHistory | PerpTradeHistory>
+      loading: boolean
+    }
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
