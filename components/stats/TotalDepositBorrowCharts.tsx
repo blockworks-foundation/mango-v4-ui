@@ -5,7 +5,7 @@ import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
-import { numberCompacter } from 'utils/numbers'
+import { formatYAxis } from 'utils/formatting'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -138,7 +138,7 @@ const TotalDepositBorrowCharts = ({
           setDaysToShow={setDepositDaysToShow}
           heightClass="h-64"
           prefix="$"
-          tickFormat={(x) => `$${numberCompacter.format(x)}`}
+          tickFormat={(x) => `$${formatYAxis(x)}`}
           title={t('total-deposit-value')}
           xKey="date"
           yKey={'depositValue'}
@@ -157,7 +157,7 @@ const TotalDepositBorrowCharts = ({
           setDaysToShow={setBorrowDaysToShow}
           heightClass="h-64"
           prefix="$"
-          tickFormat={(x) => `$${numberCompacter.format(x)}`}
+          tickFormat={(x) => `$${formatYAxis(x)}`}
           title={t('total-borrow-value')}
           xKey="date"
           yKey={'borrowValue'}

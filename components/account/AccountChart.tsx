@@ -3,7 +3,7 @@ import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import dynamic from 'next/dynamic'
-import { numberCompacter } from 'utils/numbers'
+import { formatYAxis } from 'utils/formatting'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -77,7 +77,7 @@ const AccountChart = ({
       loading={loading}
       prefix="$"
       setDaysToShow={handleDaysToShow}
-      tickFormat={(x) => `$${numberCompacter.format(x)}`}
+      tickFormat={(x) => `$${formatYAxis(x)}`}
       title={t(chartToShow)}
       xKey="time"
       yKey={yKey}
