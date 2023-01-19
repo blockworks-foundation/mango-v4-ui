@@ -42,6 +42,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { Disclosure } from '@headlessui/react'
 import RoutesModal from './RoutesModal'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -76,6 +77,40 @@ const deserializeJupiterIxAndAlt = async (
   })
 
   return [decompiledMessage.instructions, addressLookupTables]
+}
+
+const prepareMangoRouterInstructions = async (
+  selectedRoute: RouteInfo,
+  inputMint: PublicKey,
+  outputMint: PublicKey,
+  userPublicKey: PublicKey
+): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
+  if (!selectedRoute || !selectedRoute.mints || !selectedRoute.instructions) {
+    return [[], []]
+  }
+  const mintsToFilterOut = [inputMint, outputMint]
+  const filteredOutMints = [
+    ...selectedRoute.mints.filter(
+      (routeMint) =>
+        !mintsToFilterOut.find((filterOutMint) =>
+          filterOutMint.equals(routeMint)
+        )
+    ),
+  ]
+  const additionalInstructions = []
+  for (const mint of filteredOutMints) {
+    const ix = await createAssociatedTokenAccountIdempotentInstruction(
+      userPublicKey,
+      userPublicKey,
+      mint
+    )
+    additionalInstructions.push(ix)
+  }
+  const instructions = [
+    ...additionalInstructions,
+    ...selectedRoute.instructions,
+  ]
+  return [instructions, []]
 }
 
 const fetchJupiterTransaction = async (
@@ -217,14 +252,22 @@ const SwapReviewRouteInfo = ({
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
       setSubmitting(true)
-      const [ixs, alts] = await fetchJupiterTransaction(
-        connection,
-        selectedRoute,
-        mangoAccount.owner,
-        slippage,
-        inputBank.mint,
-        outputBank.mint
-      )
+      const [ixs, alts] =
+        selectedRoute.routerName === 'Mango'
+          ? await prepareMangoRouterInstructions(
+              selectedRoute,
+              inputBank.mint,
+              outputBank.mint,
+              mangoAccount.owner
+            )
+          : await fetchJupiterTransaction(
+              connection,
+              selectedRoute,
+              mangoAccount.owner,
+              slippage,
+              inputBank.mint,
+              outputBank.mint
+            )
 
       try {
         const tx = await client.marginTrade({

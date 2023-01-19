@@ -153,6 +153,12 @@ const AdvancedTradeForm = () => {
     })
   }, [])
 
+  const handleReduceOnlyChange = useCallback((reduceOnly: boolean) => {
+    set((s) => {
+      s.tradeForm.reduceOnly = reduceOnly
+    })
+  }, [])
+
   const handleSetSide = useCallback((side: 'buy' | 'sell') => {
     set((s) => {
       s.tradeForm.side = side
@@ -296,6 +302,7 @@ const AdvancedTradeForm = () => {
           undefined, // maxQuoteQuantity
           Date.now(),
           perpOrderType,
+          selectedMarket.reduceOnly || tradeForm.reduceOnly,
           undefined,
           undefined
         )
@@ -533,7 +540,27 @@ const AdvancedTradeForm = () => {
               </Checkbox>
             </Tooltip>
           </div>
-        ) : null}
+        ) : (
+          <div className="mr-3 mt-4">
+            <Tooltip
+              className="hidden md:block"
+              delay={250}
+              placement="left"
+              content={
+                'Reduce will only decrease the size of an open position. This is often used for closing a position.'
+              }
+            >
+              <div className="flex items-center text-xs text-th-fgd-3">
+                <Checkbox
+                  checked={tradeForm.reduceOnly}
+                  onChange={(e) => handleReduceOnlyChange(e.target.checked)}
+                >
+                  Reduce Only
+                </Checkbox>
+              </div>
+            </Tooltip>
+          </div>
+        )}
       </div>
       <div className="mt-6 mb-4 flex px-3 md:px-4">
         {ipAllowed ? (

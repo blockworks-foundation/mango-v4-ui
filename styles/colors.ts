@@ -60,7 +60,7 @@ export const COLORS: any = {
     Olive: '#acaa8b',
   },
   UP: {
-    'Mango Classic': '#A6CD03',
+    'Mango Classic': '#89B92A',
     Dark: '#4aa13a',
     Light: '#60bf4f',
     'High Contrast': '#50f434',

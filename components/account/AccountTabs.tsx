@@ -8,6 +8,7 @@ import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
+import TradeHistory from '@components/trade/TradeHistory'
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
@@ -23,15 +24,16 @@ const AccountTabs = () => {
 
     return [
       ['balances', 0],
+      ['trade:unsettled', unsettledTradeCount],
       ['activity:activity', 0],
       ['swap:swap-history', 0],
-      ['trade:unsettled', unsettledTradeCount],
+      ['trade-history', 0],
     ]
   }, [unsettledPerpPositions, unsettledSpotBalances])
 
   return (
     <>
-      <div className="border-b border-th-bkg-3">
+      <div className="hide-scroll overflow-x-auto border-b border-th-bkg-3">
         <TabButtons
           activeValue={activeTab}
           onChange={(v) => setActiveTab(v)}
@@ -51,10 +53,6 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case 'balances':
       return <TokenList />
-    case 'activity:activity':
-      return <ActivityFeed />
-    case 'swap:swap-history':
-      return <SwapHistoryTable />
     case 'trade:unsettled':
       return (
         <UnsettledTrades
@@ -62,6 +60,12 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
           unsettledPerpPositions={unsettledPerpPositions}
         />
       )
+    case 'activity:activity':
+      return <ActivityFeed />
+    case 'swap:swap-history':
+      return <SwapHistoryTable />
+    case 'trade-history':
+      return <TradeHistory />
     default:
       return <TokenList />
   }
