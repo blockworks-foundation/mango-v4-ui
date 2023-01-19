@@ -46,7 +46,7 @@ const TokenList = () => {
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.stats.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data
   )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -304,7 +304,7 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoAccount } = useMangoAccount()
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.stats.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data
   )
   const symbol = bank.name
   const oraclePrice = bank.uiPrice
