@@ -30,10 +30,8 @@ import useMangoAccount from 'hooks/useMangoAccount'
 
 const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
-  const swapHistory = mangoStore((s) => s.mangoAccount.stats.swapHistory.data)
-  const loadSwapHistory = mangoStore(
-    (s) => s.mangoAccount.stats.swapHistory.loading
-  )
+  const swapHistory = mangoStore((s) => s.mangoAccount.swapHistory.data)
+  const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
   const { mangoTokens } = useJupiterMints()
   const [showSwapDetails, setSwapDetails] = useState('')
   const [offset, setOffset] = useState(0)
@@ -56,7 +54,7 @@ const SwapHistoryTable = () => {
   const handleShowMore = useCallback(() => {
     const set = mangoStore.getState().set
     set((s) => {
-      s.mangoAccount.stats.swapHistory.loading = true
+      s.mangoAccount.swapHistory.loading = true
     })
     if (!mangoAccountAddress) return
     setOffset(offset + PAGINATION_PAGE_LENGTH)

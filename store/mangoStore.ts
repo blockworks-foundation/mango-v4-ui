@@ -33,6 +33,7 @@ import {
   DEFAULT_MARKET_NAME,
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
+  MANGO_DATA_API_URL,
   OUTPUT_TOKEN_DEFAULT,
   PAGINATION_PAGE_LENGTH,
   RPC_PROVIDER_KEY,
@@ -240,15 +241,17 @@ export type MangoStore = {
     openOrders: Record<string, Order[] | PerpOrder[]>
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
-    stats: {
-      interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
-      performance: { data: PerformanceDataItem[]; loading: boolean }
-      swapHistory: {
-        data: SwapHistoryItem[]
-        loading: boolean
-      }
+    interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
+    performance: {
+      data: PerformanceDataItem[]
+      loading: boolean
+      initialLoad: boolean
     }
-    tradeHistory: SpotTradeHistory[]
+    swapHistory: {
+      data: SwapHistoryItem[]
+      loading: boolean
+    }
+    tradeHistory: { data: SpotTradeHistory[]; loading: boolean }
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
@@ -333,7 +336,7 @@ export type MangoStore = {
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
-    fetchTradeHistory: () => Promise<void>
+    fetchTradeHistory: (offset?: number) => Promise<void>
     fetchWalletTokens: (walletPk: PublicKey) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     loadMarketFills: () => Promise<void>
@@ -380,12 +383,10 @@ const mangoStore = create<MangoStore>()(
         openOrders: {},
         perpPositions: [],
         spotBalances: {},
-        stats: {
-          interestTotals: { data: [], loading: false },
-          performance: { data: [], loading: false },
-          swapHistory: { data: [], loading: true },
-        },
-        tradeHistory: [],
+        interestTotals: { data: [], loading: false },
+        performance: { data: [], loading: false, initialLoad: false },
+        swapHistory: { data: [], loading: true },
+        tradeHistory: { data: [], loading: true },
       },
       mangoAccounts: [],
       markets: undefined,
@@ -457,11 +458,11 @@ const mangoStore = create<MangoStore>()(
         fetchAccountInterestTotals: async (mangoAccountPk: string) => {
           const set = get().set
           set((state) => {
-            state.mangoAccount.stats.interestTotals.loading = true
+            state.mangoAccount.interestTotals.loading = true
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/interest-account-total?mango-account=${mangoAccountPk}`
+              `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`
             )
             const parsedResponse = await response.json()
             const entries: any = Object.entries(parsedResponse).sort((a, b) =>
@@ -475,12 +476,12 @@ const mangoStore = create<MangoStore>()(
               .filter((x: string) => x)
 
             set((state) => {
-              state.mangoAccount.stats.interestTotals.data = stats
-              state.mangoAccount.stats.interestTotals.loading = false
+              state.mangoAccount.interestTotals.data = stats
+              state.mangoAccount.interestTotals.loading = false
             })
           } catch {
             set((state) => {
-              state.mangoAccount.stats.interestTotals.loading = false
+              state.mangoAccount.interestTotals.loading = false
             })
             console.error({
               title: 'Failed to load account interest totals',
@@ -494,11 +495,11 @@ const mangoStore = create<MangoStore>()(
         ) => {
           const set = get().set
           set((state) => {
-            state.mangoAccount.stats.performance.loading = true
+            state.mangoAccount.performance.loading = true
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
+              `${MANGO_DATA_API_URL}/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
                 .subtract(range, 'day')
                 .format('YYYY-MM-DD')}`
             )
@@ -514,18 +515,19 @@ const mangoStore = create<MangoStore>()(
               .filter((x: string) => x)
 
             set((state) => {
-              state.mangoAccount.stats.performance.data = stats.reverse()
-              state.mangoAccount.stats.performance.loading = false
+              state.mangoAccount.performance.data = stats.reverse()
             })
           } catch (e) {
-            set((state) => {
-              state.mangoAccount.stats.performance.loading = false
-            })
             console.error('Failed to load account performance data', e)
-            // notify({
-            //   title: 'Failed to load account performance data',
-            //   type: 'error',
-            // })
+          } finally {
+            const hasLoaded =
+              mangoStore.getState().mangoAccount.performance.initialLoad
+            set((state) => {
+              state.mangoAccount.performance.loading = false
+              if (!hasLoaded) {
+                state.mangoAccount.performance.initialLoad = true
+              }
+            })
           }
         },
         fetchActivityFeed: async (
@@ -541,7 +543,7 @@ const mangoStore = create<MangoStore>()(
 
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=25${
+              `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}${
                 params ? params : ''
               }`
             )
@@ -811,7 +813,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/perp-historical-stats?mango-group=${group?.publicKey.toString()}`
+              `${MANGO_DATA_API_URL}/perp-historical-stats?mango-group=${group?.publicKey.toString()}`
             )
             const data = await response.json()
 
@@ -836,15 +838,12 @@ const mangoStore = create<MangoStore>()(
         ) => {
           const set = get().set
           const loadedSwapHistory =
-            mangoStore.getState().mangoAccount.stats.swapHistory.data
-          const connectedMangoAccountPk = mangoStore
-            .getState()
-            .mangoAccount.current?.publicKey.toString()
+            mangoStore.getState().mangoAccount.swapHistory.data
 
           setTimeout(async () => {
             try {
               const history = await fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}`
+                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}`
               )
               const parsedHistory = await history.json()
               const sortedHistory =
@@ -862,13 +861,13 @@ const mangoStore = create<MangoStore>()(
                   : sortedHistory
 
               set((state) => {
-                state.mangoAccount.stats.swapHistory.data = combinedHistory
+                state.mangoAccount.swapHistory.data = combinedHistory
               })
             } catch (e) {
               console.error('Unable to fetch swap history', e)
             } finally {
               set((state) => {
-                state.mangoAccount.stats.swapHistory.loading = false
+                state.mangoAccount.swapHistory.loading = false
               })
             }
           }, timeout)
@@ -882,7 +881,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/token-historical-stats?mango-group=${group?.publicKey.toString()}`
+              `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`
             )
             const data = await response.json()
 
@@ -951,7 +950,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/user-data/profile-details?wallet-pk=${walletPk}`
+              `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${walletPk}`
             )
             const data = await response.json()
             set((state) => {
@@ -973,7 +972,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `https://mango-transaction-log.herokuapp.com/v4/user-data/settings-unsigned?wallet-pk=${walletPk}`
+              `${MANGO_DATA_API_URL}/user-data/settings-unsigned?wallet-pk=${walletPk}`
             )
             const data = await response.json()
             set((state) => {
@@ -1021,36 +1020,33 @@ const mangoStore = create<MangoStore>()(
             console.log('Error fetching fills:', err)
           }
         },
-        async fetchTradeHistory() {
+        async fetchTradeHistory(offset = 0) {
           const set = get().set
-          const mangoAccount = get().mangoAccount.current
+          const mangoAccountPk =
+            get().mangoAccount?.current?.publicKey.toString()
+          const loadedHistory =
+            mangoStore.getState().mangoAccount.tradeHistory.data
           try {
-            const [spotRes, perpRes] = await Promise.all([
-              fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/openbook-trades?address=${mangoAccount?.publicKey.toString()}&address-type=mango-account`
-              ),
-              fetch(
-                `https://mango-transaction-log.herokuapp.com/v4/stats/perp-trade-history?mango-account=${mangoAccount?.publicKey.toString()}&limit=1000`
-              ),
-            ])
-            const spotHistory = await spotRes.json()
-            const perpHistory = await perpRes.json()
-            console.log('th', spotHistory, perpHistory)
-            let tradeHistory: any[] = []
-            if (spotHistory?.length) {
-              tradeHistory = tradeHistory.concat(spotHistory)
-            }
-            if (perpHistory?.length) {
-              tradeHistory = tradeHistory.concat(perpHistory)
-            }
+            const response = await fetch(
+              `${MANGO_DATA_API_URL}/stats/trade-history?mango-account=${mangoAccountPk}&limit=${PAGINATION_PAGE_LENGTH}&offset=${offset}`
+            )
+            const parsedHistory = await response.json()
+            const newHistory = parsedHistory.map((h: any) => h.activity_details)
+
+            const history =
+              offset !== 0 ? loadedHistory.concat(newHistory) : newHistory
 
             set((s) => {
-              s.mangoAccount.tradeHistory = tradeHistory.sort(
+              s.mangoAccount.tradeHistory.data = history?.sort(
                 (x: any) => x.block_datetime
               )
             })
           } catch (e) {
             console.error('Unable to fetch trade history', e)
+          } finally {
+            set((s) => {
+              s.mangoAccount.tradeHistory.loading = false
+            })
           }
         },
         updateConnection(endpointUrl) {

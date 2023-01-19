@@ -17,9 +17,9 @@ const TradingChartContainer = () => {
   const [tradingChart] = useLocalStorageState(TRADE_CHART_UI_KEY)
   const isTradingChart = tradingChart === 'custom'
   return !isTradingChart ? (
-    <TradingViewChart></TradingViewChart>
+    <TradingViewChart />
   ) : (
-    <TradingViewChartKlineContainer></TradingViewChartKlineContainer>
+    <TradingViewChartKlineContainer />
   )
 }
 
