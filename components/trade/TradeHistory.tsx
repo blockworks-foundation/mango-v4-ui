@@ -207,6 +207,17 @@ const TradeHistory = () => {
                   makerTaker = 'Taker'
                 }
               }
+              let side = trade.side
+              if ('perp_market' in trade) {
+                const sideObj: any = {}
+                if (makerTaker == 'Taker') {
+                  sideObj[trade.taker_side] = 1
+                } else {
+                  sideObj[trade.taker_side == 'bid' ? 'ask' : 'bid'] = 1
+                }
+                side = sideObj
+              }
+
               const size = trade.size || trade.quantity
               let fee
               if (trade.fee_cost || trade.feeCost) {
@@ -227,14 +238,14 @@ const TradeHistory = () => {
                     <TableMarketName market={market} />
                   </Td>
                   <Td className="text-right">
-                    <SideBadge side={trade.side} />
+                    <SideBadge side={side} />
                   </Td>
                   <Td className="text-right font-mono">{size}</Td>
                   <Td className="text-right font-mono">
                     {formatDecimal(trade.price)}
                   </Td>
                   <Td className="text-right font-mono">
-                    {formatFixedDecimals(trade.price * size, true, true)}
+                    ${formatFixedDecimals(trade.price * size, true)}
                   </Td>
                   <Td className="text-right">
                     <span className="font-mono">{formatDecimal(fee)}</span>
