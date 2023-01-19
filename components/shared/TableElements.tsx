@@ -59,7 +59,7 @@ export const Td = ({
 }: {
   children: ReactNode
   className?: string
-}) => <td className={`px-6 py-3 ${className}`}>{children}</td>
+}) => <td className={`px-2 py-3 xl:px-4 ${className}`}>{children}</td>
 
 export const TableDateDisplay = ({
   date,

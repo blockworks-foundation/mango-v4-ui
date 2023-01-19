@@ -262,6 +262,20 @@ const TradeHistory = () => {
                       'Recent'
                     )}
                   </Td>
+                  <Td className="break-keep w-[0.1%] !py-2">
+                    {market.name.includes('PERP') ? (
+                      <a
+                        className="text-xs text-th-fgd-4 underline underline-offset-4"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={`/?address=${
+                          makerTaker === 'Taker' ? trade.maker : trade.taker
+                        }`}
+                      >
+                        View Counterparty
+                      </a>
+                    ) : null}
+                  </Td>
                 </TrBody>
               )
             })}
