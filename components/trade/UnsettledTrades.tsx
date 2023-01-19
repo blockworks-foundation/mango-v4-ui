@@ -260,6 +260,7 @@ const UnsettledTrades = ({
                 {connected ? (
                   <IconButton
                     onClick={() => handleSettleSerumFunds(mktAddress)}
+                    size="medium"
                   >
                     {settleMktAddress === mktAddress ? (
                       <Loading className="h-4 w-4" />

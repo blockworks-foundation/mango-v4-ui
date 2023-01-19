@@ -480,6 +480,7 @@ const OpenOrders = () => {
                         <>
                           <IconButton
                             onClick={() => showEditOrderForm(o, tickSize)}
+                            size="medium"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </IconButton>
@@ -490,6 +491,7 @@ const OpenOrders = () => {
                                 ? handleCancelPerpOrder(o)
                                 : handleCancelSerumOrder(o)
                             }
+                            size="medium"
                           >
                             {cancelId === o.orderId.toString() ? (
                               <Loading className="h-4 w-4" />
@@ -500,14 +502,20 @@ const OpenOrders = () => {
                         </>
                       ) : (
                         <>
-                          <IconButton onClick={() => modifyOrder(o)}>
+                          <IconButton
+                            onClick={() => modifyOrder(o)}
+                            size="medium"
+                          >
                             {loadingModifyOrder ? (
                               <Loading className="h-4 w-4" />
                             ) : (
                               <CheckIcon className="h-4 w-4" />
                             )}
                           </IconButton>
-                          <IconButton onClick={cancelEditOrderForm}>
+                          <IconButton
+                            onClick={cancelEditOrderForm}
+                            size="medium"
+                          >
                             <XMarkIcon className="h-4 w-4" />
                           </IconButton>
                         </>
