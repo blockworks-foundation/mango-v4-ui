@@ -191,6 +191,23 @@ const AdvancedTradeForm = () => {
     return [tickDecimals, tickSize]
   }, [selectedMarket])
 
+  const [minOrderDecimals, minOrderSize] = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return [1, 0.1]
+    let minOrderSize: number
+    if (selectedMarket instanceof Serum3Market) {
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      minOrderSize = market.minOrderSize
+    } else {
+      minOrderSize = selectedMarket.minOrderSize
+    }
+    const minOrderDecimals = getDecimalCount(minOrderSize)
+    return [minOrderDecimals, minOrderSize]
+  }, [selectedMarket])
+  console.log(minOrderDecimals, minOrderSize)
+
   /*
    * Updates the limit price on page load
    */
@@ -326,22 +343,6 @@ const AdvancedTradeForm = () => {
     }
   }, [])
 
-  const [minOrderDecimals, minOrderSize] = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return [1, 0.1]
-    let minOrderSize: number
-    if (selectedMarket instanceof Serum3Market) {
-      const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
-      )
-      minOrderSize = market.minOrderSize
-    } else {
-      minOrderSize = selectedMarket.minOrderSize
-    }
-    const minOrderDecimals = getDecimalCount(minOrderSize)
-    return [minOrderDecimals, minOrderSize]
-  }, [selectedMarket])
-
   return (
     <div>
       <div className="mt-1.5 px-2 md:mt-0 md:border-t md:border-th-bkg-3 md:px-4 md:pt-5 lg:mt-5 lg:border-t-0 lg:pt-0">
@@ -422,7 +423,7 @@ const AdvancedTradeForm = () => {
               thousandSeparator=","
               allowNegative={false}
               isNumericString={true}
-              decimalScale={6}
+              decimalScale={minOrderDecimals}
               name="amountIn"
               id="amountIn"
               className="ml-2 w-full bg-transparent font-mono focus:outline-none"
@@ -449,7 +450,7 @@ const AdvancedTradeForm = () => {
               thousandSeparator=","
               allowNegative={false}
               isNumericString={true}
-              decimalScale={6}
+              decimalScale={tickDecimals}
               name="amountIn"
               id="amountIn"
               className="ml-2 w-full bg-transparent font-mono focus:outline-none"
