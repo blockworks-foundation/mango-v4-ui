@@ -75,16 +75,25 @@ const AccountPage = () => {
 
   useEffect(() => {
     if (mangoAccountAddress) {
+      const set = mangoStore.getState().set
+      set((s) => {
+        s.mangoAccount.performance.initialLoad = false
+      })
+      setOneDayPerformanceData([])
       actions.fetchAccountPerformance(mangoAccountAddress, 1)
       actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
   }, [actions, mangoAccountAddress])
 
   useEffect(() => {
-    if (performanceInitialLoad && !oneDayPerformanceData.length) {
+    if (
+      performanceData.length &&
+      performanceInitialLoad &&
+      !oneDayPerformanceData.length
+    ) {
       setOneDayPerformanceData(performanceData)
     }
-  }, [performanceInitialLoad, oneDayPerformanceData])
+  }, [performanceInitialLoad, oneDayPerformanceData, performanceData])
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -134,30 +143,24 @@ const AccountPage = () => {
     }
   }, [mangoAccount, group, accountValue])
 
-  const { accountPnl, accountValueChange } = useMemo(() => {
+  const [accountPnl, accountValueChange, oneDayPnlChange] = useMemo(() => {
     if (
       accountValue &&
       oneDayPerformanceData.length &&
       performanceData.length
     ) {
-      return {
-        accountPnl: performanceData[performanceData.length - 1].pnl,
-        accountValueChange:
-          accountValue - oneDayPerformanceData[0].account_equity,
-      }
-    }
-    return { accountPnl: 0, accountValueChange: 0 }
-  }, [accountValue, oneDayPerformanceData, performanceData])
-
-  const oneDayPnlChange = useMemo(() => {
-    if (accountPnl && oneDayPerformanceData.length) {
+      const accountPnl = performanceData[performanceData.length - 1].pnl
+      const accountValueChange =
+        accountValue - oneDayPerformanceData[0].account_equity
       const startDayPnl = oneDayPerformanceData[0].pnl
       const endDayPnl =
         oneDayPerformanceData[oneDayPerformanceData.length - 1].pnl
-      return endDayPnl - startDayPnl
+      const oneDayPnlChange = endDayPnl - startDayPnl
+
+      return [accountPnl, accountValueChange, oneDayPnlChange]
     }
-    return 0.0
-  }, [accountPnl, oneDayPerformanceData])
+    return [0, 0, 0]
+  }, [accountValue, oneDayPerformanceData, performanceData])
 
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
@@ -170,7 +173,7 @@ const AccountPage = () => {
   }, [totalInterestData])
 
   const oneDayInterestChange = useMemo(() => {
-    if (oneDayPerformanceData.length && mangoAccount) {
+    if (oneDayPerformanceData.length) {
       const startDayInterest =
         oneDayPerformanceData[0].borrow_interest_cumulative_usd +
         oneDayPerformanceData[0].deposit_interest_cumulative_usd
@@ -184,7 +187,7 @@ const AccountPage = () => {
       return endDayInterest - startDayInterest
     }
     return 0.0
-  }, [oneDayPerformanceData, mangoAccount])
+  }, [oneDayPerformanceData])
 
   const maintHealth = useMemo(() => {
     return group && mangoAccount
