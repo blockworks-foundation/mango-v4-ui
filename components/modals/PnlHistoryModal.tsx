@@ -8,6 +8,7 @@ import dayjs from 'dayjs'
 import Change from '@components/shared/Change'
 import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import { formatDecimal } from 'utils/numbers'
 
 interface PnlChange {
   time: string
@@ -49,9 +50,10 @@ const PnlHistoryModal = ({
       ? dailyPnl
           .map((d: PerformanceDataItem, index: number) => {
             if (index < dailyPnl.length - 1) {
+              const change = dailyPnl[index + 1].pnl - d.pnl
               return {
                 time: d.time,
-                pnlChange: dailyPnl[index + 1].pnl - d.pnl,
+                pnlChange: change,
               }
             } else {
               return {
@@ -108,7 +110,10 @@ const PnlHistoryModal = ({
                       key={v.time + v.pnlChange}
                     >
                       <p>{dayjs(v.time).format('YYYY-MM-DD')}</p>
-                      <Change change={v.pnlChange} prefix="$" />
+                      <Change
+                        change={Number(formatDecimal(v.pnlChange, 2))}
+                        prefix="$"
+                      />
                     </div>
                   ))}
                 </div>
