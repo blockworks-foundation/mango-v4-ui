@@ -31,7 +31,7 @@ export const Th = ({
   id?: string
 }) => (
   <th
-    className={`px-2 py-3 text-xs font-normal text-th-fgd-3 first:pl-4 last:pr-4 xl:px-4 ${className}`}
+    className={`px-2 py-3 text-xs font-normal text-th-fgd-3 first:pl-6 last:pr-6 xl:px-4 ${className}`}
     id={id}
     scope="col"
   >
@@ -60,7 +60,7 @@ export const Td = ({
   children: ReactNode
   className?: string
 }) => (
-  <td className={`px-2 py-3 first:pl-4 last:pr-4 xl:px-4 ${className}`}>
+  <td className={`px-2 py-3 first:pl-6 last:pr-6 xl:px-4 ${className}`}>
     {children}
   </td>
 )
