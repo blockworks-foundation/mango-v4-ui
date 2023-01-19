@@ -6,7 +6,7 @@ import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
-import { formatFixedDecimals } from '../../utils/numbers'
+import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import dynamic from 'next/dynamic'
 const SimpleAreaChart = dynamic(
@@ -268,7 +268,10 @@ const AccountPage = () => {
               )}
             </div>
             <div className="flex items-center space-x-1.5">
-              <Change change={accountValueChange} prefix="$" />
+              <Change
+                change={Number(formatDecimal(accountValueChange, 2))}
+                prefix="$"
+              />
               <p className="text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
@@ -478,7 +481,11 @@ const AccountPage = () => {
               {formatFixedDecimals(accountPnl, true, true)}
             </p>
             <div className="flex space-x-1">
-              <Change change={oneDayPnlChange} prefix="$" size="small" />
+              <Change
+                change={Number(formatDecimal(oneDayPnlChange, 2))}
+                prefix="$"
+                size="small"
+              />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
@@ -514,7 +521,11 @@ const AccountPage = () => {
               {formatFixedDecimals(interestTotalValue, true, true)}
             </p>
             <div className="flex space-x-1">
-              <Change change={oneDayInterestChange} prefix="$" size="small" />
+              <Change
+                change={Number(formatDecimal(oneDayInterestChange, 2))}
+                prefix="$"
+                size="small"
+              />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
