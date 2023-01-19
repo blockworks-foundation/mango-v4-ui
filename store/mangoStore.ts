@@ -1018,6 +1018,7 @@ const mangoStore = create<MangoStore>()(
               loadedFills = loadedFills.filter((f) => !f?.eventFlags?.maker)
             } else if (perpMarket) {
               loadedFills = await perpMarket.loadFills(client)
+              loadedFills = loadedFills.reverse()
             }
             set((state) => {
               state.selectedMarket.fills = loadedFills

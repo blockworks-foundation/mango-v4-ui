@@ -14,6 +14,7 @@ import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import usePrevious from '@components/shared/usePrevious'
+import dayjs from 'dayjs'
 
 const buySound = new Howl({
   src: ['/sounds/trade-buy.mp3'],
@@ -27,6 +28,7 @@ const sellSound = new Howl({
 const RecentTrades = () => {
   const { t } = useTranslation(['common', 'trade'])
   const fills = mangoStore((s) => s.selectedMarket.fills)
+
   const [soundSettings, setSoundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
@@ -162,7 +164,7 @@ const RecentTrades = () => {
             {!!fills.length &&
               fills.map((trade: ChartTradeType, i: number) => {
                 const side =
-                  trade.side || (trade.takerSide === 1 ? 'bid' : 'ask')
+                  trade.side || (trade.takerSide === 0 ? 'bid' : 'ask')
 
                 // const price =
                 // typeof trade.price === 'number'
@@ -202,9 +204,9 @@ const RecentTrades = () => {
                       {trade.time
                         ? new Date(trade.time).toLocaleTimeString()
                         : trade.timestamp
-                        ? new Date(
-                            trade.timestamp.toNumber()
-                          ).toLocaleTimeString()
+                        ? dayjs(trade.timestamp.toNumber() * 1000).format(
+                            'hh:mma'
+                          )
                         : '-'}
                     </td>
                   </tr>
