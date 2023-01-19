@@ -17,7 +17,7 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { Fragment, useCallback, useState } from 'react'
-import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
+import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 
@@ -55,8 +55,12 @@ const ActivityFeedTable = ({
       s.activityFeed.loading = true
     })
     if (!mangoAccountAddress) return
-    setOffset(offset + 25)
-    actions.fetchActivityFeed(mangoAccountAddress, offset + 25, params)
+    setOffset(offset + PAGINATION_PAGE_LENGTH)
+    actions.fetchActivityFeed(
+      mangoAccountAddress,
+      offset + PAGINATION_PAGE_LENGTH,
+      params
+    )
   }, [actions, offset, params, mangoAccountAddress])
 
   const getCreditAndDebit = (activity: any) => {
@@ -316,7 +320,8 @@ const ActivityFeedTable = ({
           ))}
         </div>
       ) : null}
-      {activityFeed.length && activityFeed.length % 25 === 0 ? (
+      {activityFeed.length &&
+      activityFeed.length % PAGINATION_PAGE_LENGTH === 0 ? (
         <div className="flex justify-center py-6">
           <LinkButton onClick={handleShowMore}>Show More</LinkButton>
         </div>

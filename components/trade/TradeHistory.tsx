@@ -1,4 +1,6 @@
 import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { LinkButton } from '@components/shared/Button'
+import SheenLoader from '@components/shared/SheenLoader'
 import SideBadge from '@components/shared/SideBadge'
 import {
   Table,
@@ -14,7 +16,9 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useViewport } from 'hooks/useViewport'
-import { useMemo } from 'react'
+import { useTranslation } from 'next-i18next'
+import { useCallback, useMemo, useState } from 'react'
+import { PAGINATION_PAGE_LENGTH } from 'utils/constants'
 import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import TableMarketName from './TableMarketName'
@@ -86,11 +90,17 @@ const formatTradeHistory = (
 }
 
 const TradeHistory = () => {
+  const { t } = useTranslation(['common', 'trade'])
   const group = mangoStore.getState().group
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const actions = mangoStore((s) => s.actions)
   const fills = mangoStore((s) => s.selectedMarket.fills)
-  const tradeHistory = mangoStore((s) => s.mangoAccount.tradeHistory)
+  const tradeHistory = mangoStore((s) => s.mangoAccount.tradeHistory.data)
+  const loadingTradeHistory = mangoStore(
+    (s) => s.mangoAccount.tradeHistory.loading
+  )
+  const [offset, setOffset] = useState(0)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
@@ -151,27 +161,35 @@ const TradeHistory = () => {
     return [...newFills, ...tradeHistory]
   }, [eventQueueFillsForAccount, tradeHistory])
 
-  console.log('trade history', tradeHistory)
+  const handleShowMore = useCallback(() => {
+    const set = mangoStore.getState().set
+    set((s) => {
+      s.mangoAccount.tradeHistory.loading = true
+    })
+    setOffset(offset + PAGINATION_PAGE_LENGTH)
+    actions.fetchTradeHistory(offset + PAGINATION_PAGE_LENGTH)
+  }, [actions, offset])
 
   if (!selectedMarket || !group) return null
 
-  return mangoAccount && combinedTradeHistory.length ? (
-    showTableView ? (
-      <div>
+  return mangoAccount &&
+    (combinedTradeHistory.length || loadingTradeHistory) ? (
+    <>
+      {showTableView ? (
         <Table>
           <thead>
             <TrHead>
-              <Th className="text-left">Market</Th>
-              <Th className="text-right">Side</Th>
-              <Th className="text-right">Size</Th>
-              <Th className="text-right">Price</Th>
-              <Th className="text-right">Value</Th>
-              <Th className="text-right">Fee</Th>
-              <Th className="text-right">Time</Th>
+              <Th className="text-left">{t('market')}</Th>
+              <Th className="text-right">{t('trade:side')}</Th>
+              <Th className="text-right">{t('trade:size')}</Th>
+              <Th className="text-right">{t('price')}</Th>
+              <Th className="text-right">{t('value')}</Th>
+              <Th className="text-right">{t('fee')}</Th>
+              <Th className="text-right">{t('date')}</Th>
             </TrHead>
           </thead>
           <tbody>
-            {combinedTradeHistory.map((trade: any) => {
+            {combinedTradeHistory.map((trade: any, index: number) => {
               let market
               if ('market' in trade) {
                 market = group.getSerum3MarketByExternalMarket(
@@ -213,7 +231,7 @@ const TradeHistory = () => {
 
               return (
                 <TrBody
-                  key={`${trade.signature || trade.marketIndex}${size}`}
+                  key={`${trade.signature || trade.marketIndex}${index}`}
                   className="my-1 p-2"
                 >
                   <Td className="">
@@ -227,7 +245,7 @@ const TradeHistory = () => {
                     {formatDecimal(trade.price)}
                   </Td>
                   <Td className="text-right font-mono">
-                    ${formatFixedDecimals(trade.price * size)}
+                    ${formatFixedDecimals(trade.price * size, true)}
                   </Td>
                   <Td className="text-right">
                     <span className="font-mono">{formatDecimal(fee)}</span>
@@ -251,36 +269,64 @@ const TradeHistory = () => {
             })}
           </tbody>
         </Table>
-      </div>
-    ) : (
-      <div>
-        {eventQueueFillsForAccount.map((trade: any) => {
-          return (
-            <div
-              className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-              key={`${trade.marketIndex}`}
-            >
-              <div>
-                <TableMarketName market={selectedMarket} />
-                <div className="mt-1 flex items-center space-x-1">
-                  <SideBadge side={trade.side} />
-                  <p className="text-th-fgd-4">
-                    <span className="font-mono text-th-fgd-3">
-                      {trade.size}
-                    </span>
-                    {' for '}
-                    <span className="font-mono text-th-fgd-3">
-                      {formatDecimal(trade.price)}
-                    </span>
+      ) : (
+        <div>
+          {combinedTradeHistory.map((trade: any, index: number) => {
+            const size = trade.size || trade.quantity
+            return (
+              <div
+                className="flex items-center justify-between border-b border-th-bkg-3 p-4"
+                key={`${trade.marketIndex}${index}`}
+              >
+                <div>
+                  <TableMarketName market={selectedMarket} />
+                  <div className="mt-1 flex items-center space-x-1">
+                    <SideBadge side={trade.side} />
+                    <p className="text-th-fgd-4">
+                      <span className="font-mono text-th-fgd-2">{size}</span>
+                      {' for '}
+                      <span className="font-mono text-th-fgd-2">
+                        {formatDecimal(trade.price)}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="mb-0.5 flex items-center space-x-1.5">
+                    {trade.block_datetime ? (
+                      <TableDateDisplay
+                        date={trade.block_datetime}
+                        showSeconds
+                      />
+                    ) : (
+                      'Recent'
+                    )}
+                  </span>
+                  <p className="font-mono text-th-fgd-2">
+                    {formatFixedDecimals(trade.price * size, true, true)}
                   </p>
                 </div>
               </div>
-              <p className="font-mono">${trade.value.toFixed(2)}</p>
-            </div>
-          )
-        })}
-      </div>
-    )
+            )
+          })}
+        </div>
+      )}
+      {loadingTradeHistory ? (
+        <div className="mt-4 space-y-1.5">
+          {[...Array(4)].map((x, i) => (
+            <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
+              <div className="h-16 w-full bg-th-bkg-2" />
+            </SheenLoader>
+          ))}
+        </div>
+      ) : null}
+      {combinedTradeHistory.length &&
+      combinedTradeHistory.length % PAGINATION_PAGE_LENGTH === 0 ? (
+        <div className="flex justify-center py-6">
+          <LinkButton onClick={handleShowMore}>Show More</LinkButton>
+        </div>
+      ) : null}
+    </>
   ) : (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
