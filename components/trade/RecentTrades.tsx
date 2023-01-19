@@ -135,16 +135,12 @@ const RecentTrades = () => {
             )}
           </IconButton>
         </Tooltip>
-        <span className="text-xs text-th-fgd-4">
+        <span className="text-xxs text-th-fgd-4 xl:text-xs">
           {t('trade:buys')}:{' '}
-          <span className="font-mono text-th-up">
-            {(buyRatio * 100).toFixed(1)}%
-          </span>
+          <span className="text-th-up">{(buyRatio * 100).toFixed(1)}%</span>
           <span className="px-2">|</span>
           {t('trade:sells')}:{' '}
-          <span className="font-mono text-th-down">
-            {(sellRatio * 100).toFixed(1)}%
-          </span>
+          <span className="text-th-down">{(sellRatio * 100).toFixed(1)}%</span>
         </span>
       </div>
       <div className="px-2">

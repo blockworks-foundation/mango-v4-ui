@@ -345,7 +345,7 @@ const AdvancedTradeForm = () => {
 
   return (
     <div>
-      <div className="mt-1.5 px-2 md:mt-0 md:border-t md:border-th-bkg-3 md:px-4 md:pt-5 lg:mt-5 lg:border-t-0 lg:pt-0">
+      <div className="mt-1.5 px-2 md:mt-0 md:px-4 md:pt-5 lg:mt-5 lg:pt-0">
         <TabUnderline
           activeValue={tradeForm.side}
           values={['buy', 'sell']}
