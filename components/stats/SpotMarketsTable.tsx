@@ -140,7 +140,9 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
 
   const coingeckoData = useMemo(() => {
     if (!loadingPrices && bank) {
-      return coingeckoPrices.find((asset) => asset.symbol === bank?.name)
+      return coingeckoPrices.find(
+        (asset) => asset.symbol.toUpperCase() === bank?.name
+      )
     }
     return null
   }, [loadingPrices, bank])
