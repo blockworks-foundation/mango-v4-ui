@@ -6,6 +6,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
       ...(await serverSideTranslations(locale, [
+        'account',
         'activity',
         'common',
         'onboarding',
@@ -16,6 +17,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'swap',
         'token',
         'trade',
+        'close-account'
       ])),
     },
   }

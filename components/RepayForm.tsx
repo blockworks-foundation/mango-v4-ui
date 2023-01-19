@@ -118,13 +118,23 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
   const handleDeposit = useCallback(
     async (amount: string) => {
+      //to not leave some dust on account we round amount by this number
+      //with reduce only set to true we take only what is needed to be
+      //deposited in need to repay borrow
+      const mangoAccount = mangoStore.getState().mangoAccount.current
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
-      const mangoAccount = mangoStore.getState().mangoAccount.current
 
       if (!mangoAccount || !group || !bank || !publicKey) return
-      console.log('inputAmount: ', amount)
+
+      //we don't want to left negative dust in account if someone wants to repay full amount
+      const actualAmount =
+        sizePercentage === '100'
+          ? mangoAccount.getTokenBorrowsUi(bank) < parseFloat(amount)
+            ? parseFloat(amount)
+            : mangoAccount.getTokenBorrowsUi(bank)
+          : parseFloat(amount)
 
       setSubmitting(true)
       try {
@@ -132,7 +142,8 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
           group,
           mangoAccount,
           bank.mint,
-          parseFloat(amount)
+          actualAmount,
+          true
         )
         notify({
           title: 'Transaction confirmed',
@@ -155,7 +166,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         setSubmitting(false)
       }
     },
-    [bank, publicKey]
+    [bank, publicKey?.toBase58(), sizePercentage]
   )
 
   const banks = useMemo(() => {
