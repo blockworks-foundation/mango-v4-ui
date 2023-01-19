@@ -125,7 +125,7 @@ const TotalDepositBorrowCharts = ({
     </>
   ) : totalDepositBorrowValues.length ? (
     <>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
+      <div className="col-span-2 h-96 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
         <DetailedAreaChart
           data={filteredDepositValues.concat([
             {
@@ -144,7 +144,7 @@ const TotalDepositBorrowCharts = ({
           yKey={'depositValue'}
         />
       </div>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
+      <div className="col-span-2 h-96 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
         <DetailedAreaChart
           data={filteredBorrowValues.concat([
             {
