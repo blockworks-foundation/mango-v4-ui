@@ -57,7 +57,7 @@ const AdvancedTradeForm = () => {
   const tradeForm = mangoStore((s) => s.tradeForm)
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
-  const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
+  const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,

@@ -65,7 +65,7 @@ const SwapForm = () => {
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const { group } = useMangoGroup()
-  const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
+  const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
 
   const {
