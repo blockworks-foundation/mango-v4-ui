@@ -1,5 +1,5 @@
 import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
-import { LinkButton } from '@components/shared/Button'
+import { IconButton, LinkButton } from '@components/shared/Button'
 import SheenLoader from '@components/shared/SheenLoader'
 import SideBadge from '@components/shared/SideBadge'
 import {
@@ -10,7 +10,8 @@ import {
   TrBody,
   TrHead,
 } from '@components/shared/TableElements'
-import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import Tooltip from '@components/shared/Tooltip'
+import { NoSymbolIcon, UsersIcon } from '@heroicons/react/20/solid'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -262,20 +263,26 @@ const TradeHistory = () => {
                       'Recent'
                     )}
                   </Td>
-                  <Td className="break-keep w-[0.1%] !py-2">
-                    {market.name.includes('PERP') ? (
-                      <a
-                        className="text-xs text-th-fgd-4 underline underline-offset-4"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={`/?address=${
-                          makerTaker === 'Taker' ? trade.maker : trade.taker
-                        }`}
-                      >
-                        View Counterparty
-                      </a>
-                    ) : null}
-                  </Td>
+                  {market.name.includes('PERP') ? (
+                    <Td>
+                      <div className="flex justify-end">
+                        <Tooltip content="View Counterparty" delay={250}>
+                          <a
+                            className=""
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={`/?address=${
+                              makerTaker === 'Taker' ? trade.maker : trade.taker
+                            }`}
+                          >
+                            <IconButton size="small">
+                              <UsersIcon className="h-4 w-4" />
+                            </IconButton>
+                          </a>
+                        </Tooltip>
+                      </div>
+                    </Td>
+                  ) : null}
                 </TrBody>
               )
             })}
@@ -284,6 +291,23 @@ const TradeHistory = () => {
       ) : (
         <div>
           {combinedTradeHistory.map((trade: any, index: number) => {
+            let market
+            if ('market' in trade) {
+              market = group.getSerum3MarketByExternalMarket(
+                new PublicKey(trade.market)
+              )
+            } else if ('perp_market' in trade) {
+              market = group.getPerpMarketByName(trade.perp_market)
+            } else {
+              market = selectedMarket
+            }
+            let makerTaker = trade.liquidity
+            if ('maker' in trade) {
+              makerTaker = trade.maker ? 'Maker' : 'Taker'
+              if (trade.taker === mangoAccount.publicKey.toString()) {
+                makerTaker = 'Taker'
+              }
+            }
             const size = trade.size || trade.quantity
             return (
               <div
@@ -303,20 +327,36 @@ const TradeHistory = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col items-end">
-                  <span className="mb-0.5 flex items-center space-x-1.5">
-                    {trade.block_datetime ? (
-                      <TableDateDisplay
-                        date={trade.block_datetime}
-                        showSeconds
-                      />
-                    ) : (
-                      'Recent'
-                    )}
-                  </span>
-                  <p className="font-mono text-th-fgd-2">
-                    {formatFixedDecimals(trade.price * size, true, true)}
-                  </p>
+                <div className="flex items-center space-x-2.5">
+                  <div className="flex flex-col items-end">
+                    <span className="mb-0.5 flex items-center space-x-1.5">
+                      {trade.block_datetime ? (
+                        <TableDateDisplay
+                          date={trade.block_datetime}
+                          showSeconds
+                        />
+                      ) : (
+                        'Recent'
+                      )}
+                    </span>
+                    <p className="font-mono text-th-fgd-2">
+                      {formatFixedDecimals(trade.price * size, true, true)}
+                    </p>
+                  </div>
+                  {market.name.includes('PERP') ? (
+                    <a
+                      className=""
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={`/?address=${
+                        makerTaker === 'Taker' ? trade.maker : trade.taker
+                      }`}
+                    >
+                      <IconButton size="medium">
+                        <UsersIcon className="h-4 w-4" />
+                      </IconButton>
+                    </a>
+                  ) : null}
                 </div>
               </div>
             )
