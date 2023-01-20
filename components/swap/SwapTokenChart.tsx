@@ -107,6 +107,7 @@ const SwapTokenChart = () => {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
       enabled: !!baseTokenId && !!quoteTokenId,
+      refetchOnWindowFocus: false,
     }
   )
 

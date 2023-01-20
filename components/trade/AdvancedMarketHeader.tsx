@@ -25,7 +25,7 @@ const AdvancedMarketHeader = ({
     return tokenPrices.find((asset) =>
       baseSymbol === 'soETH'
         ? asset.symbol === 'ETH'
-        : asset.symbol === baseSymbol
+        : asset.symbol.toUpperCase() === baseSymbol?.toUpperCase()
     )
   }, [baseSymbol, tokenPrices])
 

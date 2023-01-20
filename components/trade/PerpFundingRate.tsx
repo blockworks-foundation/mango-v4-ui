@@ -21,9 +21,9 @@ export const usePerpFundingRate = () => {
     ['funding-rate'],
     () => fetchFundingRate(group?.publicKey?.toString()),
     {
-      cacheTime: 1000 * 60,
+      cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
-      retry: true,
+      retry: 3,
       enabled: !!group,
     }
   )

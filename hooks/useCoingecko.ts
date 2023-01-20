@@ -9,21 +9,21 @@ const fetchCoingecko = async (
     id: token.extensions?.coingeckoId,
     symbol: token.symbol,
   }))
+
   const promises: any = []
   for (const token of coingeckoIds) {
     if (token.id) {
       promises.push(
         fetch(
           `https://api.coingecko.com/api/v3/coins/${token.id}/market_chart?vs_currency=usd&days=1`
-        ).then((res) => res.json())
+        ).then((res) =>
+          res.json().then((r) => ({ ...r, symbol: token.symbol }))
+        )
       )
     }
   }
 
   const data = await Promise.all(promises)
-  for (let i = 0; i < data.length; i++) {
-    data[i].symbol = coingeckoIds[i].symbol
-  }
 
   return data || []
 }
@@ -33,12 +33,13 @@ export const useCoingecko = () => {
 
   const res = useQuery<any[], Error>(
     ['coingecko-tokens'],
-    () => fetchCoingecko(mangoTokens!),
+    () => fetchCoingecko(mangoTokens),
     {
-      cacheTime: 1000 * 60 * 2,
-      staleTime: 1000 * 60 * 2,
-      retry: true,
-      enabled: !!mangoTokens,
+      cacheTime: 1000 * 60 * 15,
+      staleTime: 1000 * 60 * 10,
+      retry: 3,
+      enabled: !!mangoTokens?.length,
+      refetchOnWindowFocus: false,
     }
   )
 

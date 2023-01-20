@@ -185,7 +185,10 @@ const useQuoteRoutes = ({
         wallet
       ),
     {
+      cacheTime: 1000 * 60,
+      staleTime: 1000 * 30,
       enabled: amount ? true : false,
+      retry: 3,
     }
   )
 
