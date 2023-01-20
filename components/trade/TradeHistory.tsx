@@ -1,4 +1,9 @@
-import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
+import {
+  Group,
+  I80F48,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import SheenLoader from '@components/shared/SheenLoader'
@@ -35,7 +40,7 @@ const byTimestamp = (a: any, b: any) => {
 
 const reverseSide = (side: string) => (side === 'long' ? 'short' : 'long')
 
-const parsedPerpEvent = (mangoAccountAddress: string, event: any) => {
+const parsePerpEvent = (mangoAccountAddress: string, event: any) => {
   const maker = event.maker.toString() === mangoAccountAddress
   const orderId = maker ? event.makerOrderId : event.takerOrderId
   const value = event.quantity * event.price
@@ -57,7 +62,7 @@ const parsedPerpEvent = (mangoAccountAddress: string, event: any) => {
   }
 }
 
-const parsedSerumEvent = (event: any) => {
+const parseSerumEvent = (event: any) => {
   let liquidity
   if (event.eventFlags) {
     liquidity = event?.eventFlags?.maker ? 'Maker' : 'Taker'
@@ -73,20 +78,74 @@ const parsedSerumEvent = (event: any) => {
   }
 }
 
+const parseApiTradeHistory = (mangoAccountAddress: string, trade: any) => {
+  let makerTaker
+  if ('maker' in trade) {
+    makerTaker = trade.maker ? 'Maker' : 'Taker'
+    if (trade.taker && trade.taker.toString() === mangoAccountAddress) {
+      makerTaker = 'Taker'
+    }
+  }
+
+  let side = trade.side
+  if ('perp_market' in trade) {
+    const sideObj: any = {}
+    if (makerTaker == 'Taker') {
+      sideObj[trade.taker_side] = 1
+    } else {
+      sideObj[trade.taker_side == 'bid' ? 'ask' : 'bid'] = 1
+    }
+    side = sideObj
+  }
+
+  const size = trade.size || trade.quantity
+  let fee
+  if (trade.fee_cost) {
+    fee = trade.fee_cost
+  } else {
+    fee =
+      trade.maker === mangoAccountAddress ? trade.maker_fee : trade.taker_fee
+  }
+
+  return {
+    ...trade,
+    liquidity: trade.liquidity || makerTaker,
+    side,
+    size,
+    feeCost: fee,
+  }
+}
+
 const formatTradeHistory = (
+  group: Group,
+  selectedMarket: Serum3Market | PerpMarket | undefined,
   mangoAccountAddress: string,
   tradeHistory: any[]
 ) => {
   return tradeHistory
     .flat()
     .map((event) => {
+      let trade
       if (event.eventFlags || event.nativeQuantityPaid) {
-        return parsedSerumEvent(event)
-      } else if (event.maker) {
-        return parsedPerpEvent(mangoAccountAddress, event)
+        trade = parseSerumEvent(event)
+      } else if (event.makerFee) {
+        trade = parsePerpEvent(mangoAccountAddress, event)
       } else {
-        return event
+        trade = parseApiTradeHistory(mangoAccountAddress, event)
       }
+
+      let market
+      if ('market' in trade) {
+        market = group.getSerum3MarketByExternalMarket(
+          new PublicKey(trade.market)
+        )
+      } else if ('perp_market' in trade) {
+        market = group.getPerpMarketByName(trade.perp_market)
+      } else {
+        market = selectedMarket
+      }
+
+      return { ...trade, market }
     })
     .sort(byTimestamp)
 }
@@ -125,9 +184,9 @@ const TradeHistory = () => {
   }, [mangoAccount, selectedMarket])
 
   const eventQueueFillsForAccount = useMemo(() => {
-    if (!mangoAccountAddress || !selectedMarket) return []
+    if (!selectedMarket) return []
 
-    const mangoAccountFills = fills.filter((fill: any) => {
+    return fills.filter((fill: any) => {
       if (fill.openOrders) {
         // handles serum event queue for spot trades
         return openOrderOwner ? fill.openOrders.equals(openOrderOwner) : false
@@ -138,11 +197,11 @@ const TradeHistory = () => {
         )
       }
     })
-
-    return formatTradeHistory(mangoAccountAddress, mangoAccountFills)
-  }, [selectedMarket, mangoAccountAddress, openOrderOwner, fills])
+  }, [selectedMarket, openOrderOwner, fills])
 
   const combinedTradeHistory = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group) return []
     let newFills = []
     if (eventQueueFillsForAccount?.length) {
       newFills = eventQueueFillsForAccount.filter((fill) => {
@@ -155,8 +214,16 @@ const TradeHistory = () => {
         })
       })
     }
-    return [...newFills, ...tradeHistory]
-  }, [eventQueueFillsForAccount, tradeHistory])
+    return formatTradeHistory(group, selectedMarket, mangoAccountAddress, [
+      ...newFills,
+      ...tradeHistory,
+    ])
+  }, [
+    eventQueueFillsForAccount,
+    mangoAccountAddress,
+    tradeHistory,
+    selectedMarket,
+  ])
 
   const handleShowMore = useCallback(() => {
     const set = mangoStore.getState().set
@@ -188,71 +255,30 @@ const TradeHistory = () => {
           </thead>
           <tbody>
             {combinedTradeHistory.map((trade: any, index: number) => {
-              let market
-              if ('market' in trade) {
-                market = group.getSerum3MarketByExternalMarket(
-                  new PublicKey(trade.market)
-                )
-              } else if ('perp_market' in trade) {
-                market = group.getPerpMarketByName(trade.perp_market)
-              } else {
-                market = selectedMarket
-              }
-              let makerTaker = trade.liquidity
-
-              if (!makerTaker && 'maker' in trade) {
-                makerTaker = trade.maker ? 'Maker' : 'Taker'
-                if (
-                  trade.taker &&
-                  trade.taker.toString() === mangoAccount?.publicKey.toString()
-                ) {
-                  makerTaker = 'Taker'
-                }
-              }
-              let side = trade.side
-              if ('perp_market' in trade) {
-                const sideObj: any = {}
-                if (makerTaker == 'Taker') {
-                  sideObj[trade.taker_side] = 1
-                } else {
-                  sideObj[trade.taker_side == 'bid' ? 'ask' : 'bid'] = 1
-                }
-                side = sideObj
-              }
-
-              const size = trade.size || trade.quantity
-              let fee
-              if (trade.fee_cost || trade.feeCost) {
-                fee = trade.fee_cost || trade.feeCost
-              } else {
-                fee =
-                  trade.maker === mangoAccount?.publicKey.toString()
-                    ? trade.maker_fee
-                    : trade.taker_fee
-              }
-
               return (
                 <TrBody
                   key={`${trade.signature || trade.marketIndex}${index}`}
                   className="my-1 p-2"
                 >
                   <Td className="">
-                    <TableMarketName market={market} />
+                    <TableMarketName market={trade.market} />
                   </Td>
                   <Td className="text-right">
-                    <SideBadge side={side} />
+                    <SideBadge side={trade.side} />
                   </Td>
-                  <Td className="text-right font-mono">{size}</Td>
+                  <Td className="text-right font-mono">{trade.size}</Td>
                   <Td className="text-right font-mono">
                     {formatDecimal(trade.price)}
                   </Td>
                   <Td className="text-right font-mono">
-                    {formatFixedDecimals(trade.price * size, true)}
+                    {formatFixedDecimals(trade.price * trade.size, true)}
                   </Td>
                   <Td className="text-right">
-                    <span className="font-mono">{formatDecimal(fee)}</span>
+                    <span className="font-mono">
+                      {formatDecimal(trade.feeCost)}
+                    </span>
                     <p className="font-body text-xs text-th-fgd-4">
-                      {makerTaker}
+                      {trade.liquidity}
                     </p>
                   </Td>
                   <Td className="whitespace-nowrap text-right">
@@ -266,7 +292,7 @@ const TradeHistory = () => {
                     )}
                   </Td>
                   <Td className="xl:!pl-0">
-                    {market.name.includes('PERP') ? (
+                  {trade.market.name.includes('PERP') ? (
                       <div className="flex justify-end">
                         <Tooltip content="View Counterparty" delay={250}>
                           <a
@@ -274,7 +300,9 @@ const TradeHistory = () => {
                             target="_blank"
                             rel="noopener noreferrer"
                             href={`/?address=${
-                              makerTaker === 'Taker' ? trade.maker : trade.taker
+                              trade.liquidity === 'Taker'
+                                ? trade.maker
+                                : trade.taker
                             }`}
                           >
                             <IconButton size="small">
@@ -293,24 +321,6 @@ const TradeHistory = () => {
       ) : (
         <div>
           {combinedTradeHistory.map((trade: any, index: number) => {
-            let market
-            if ('market' in trade) {
-              market = group.getSerum3MarketByExternalMarket(
-                new PublicKey(trade.market)
-              )
-            } else if ('perp_market' in trade) {
-              market = group.getPerpMarketByName(trade.perp_market)
-            } else {
-              market = selectedMarket
-            }
-            let makerTaker = trade.liquidity
-            if ('maker' in trade) {
-              makerTaker = trade.maker ? 'Maker' : 'Taker'
-              if (trade.taker === mangoAccount?.publicKey.toString()) {
-                makerTaker = 'Taker'
-              }
-            }
-            const size = trade.size || trade.quantity
             return (
               <div
                 className="flex items-center justify-between border-b border-th-bkg-3 p-4"
@@ -321,7 +331,9 @@ const TradeHistory = () => {
                   <div className="mt-1 flex items-center space-x-1">
                     <SideBadge side={trade.side} />
                     <p className="text-th-fgd-4">
-                      <span className="font-mono text-th-fgd-2">{size}</span>
+                      <span className="font-mono text-th-fgd-2">
+                        {trade.size}
+                      </span>
                       {' for '}
                       <span className="font-mono text-th-fgd-2">
                         {formatDecimal(trade.price)}
@@ -342,16 +354,20 @@ const TradeHistory = () => {
                       )}
                     </span>
                     <p className="font-mono text-th-fgd-2">
-                      {formatFixedDecimals(trade.price * size, true, true)}
+                      {formatFixedDecimals(
+                        trade.price * trade.size,
+                        true,
+                        true
+                      )}
                     </p>
                   </div>
-                  {market.name.includes('PERP') ? (
+                  {trade.market.name.includes('PERP') ? (
                     <a
                       className=""
                       target="_blank"
                       rel="noopener noreferrer"
                       href={`/?address=${
-                        makerTaker === 'Taker' ? trade.maker : trade.taker
+                        trade.liquidity === 'Taker' ? trade.maker : trade.taker
                       }`}
                     >
                       <IconButton size="medium">
