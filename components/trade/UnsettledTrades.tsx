@@ -202,6 +202,7 @@ const UnsettledTrades = ({
                   <TableMarketName market={market} />
                 </Td>
                 <Td className="text-right font-mono">
+                  $
                   {formatDecimal(
                     position.getUnsettledPnlUi(group, market),
                     market.baseDecimals

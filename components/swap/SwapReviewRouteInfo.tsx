@@ -220,15 +220,19 @@ const SwapReviewRouteInfo = ({
       const outputId = outputTokenInfo?.extensions?.coingeckoId
 
       if (inputId && outputId) {
-        const results = await fetch(
-          `https://api.coingecko.com/api/v3/simple/price?ids=${inputId},${outputId}&vs_currencies=usd`
-        )
-        const json = await results.json()
-        if (json[inputId]?.usd && json[outputId]?.usd) {
-          setCoingeckoPrices({
-            inputCoingeckoPrice: json[inputId].usd,
-            outputCoingeckoPrice: json[outputId].usd,
-          })
+        try {
+          const results = await fetch(
+            `https://api.coingecko.com/api/v3/simple/price?ids=${inputId},${outputId}&vs_currencies=usd`
+          )
+          const json = await results.json()
+          if (json[inputId]?.usd && json[outputId]?.usd) {
+            setCoingeckoPrices({
+              inputCoingeckoPrice: json[inputId].usd,
+              outputCoingeckoPrice: json[outputId].usd,
+            })
+          }
+        } catch (e) {
+          console.error('Loading coingecko prices: ', e)
         }
       }
     }
