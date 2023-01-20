@@ -61,6 +61,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 data={statsHistory}
                 daysToShow={'999'}
                 heightClass="h-64"
+                loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small
@@ -74,6 +75,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 data={statsHistory}
                 daysToShow={'999'}
                 heightClass="h-64"
+                loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 hideChange
@@ -105,6 +107,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 data={statsHistory}
                 daysToShow={'999'}
                 heightClass="h-64"
+                loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small
@@ -118,6 +121,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 data={statsHistory}
                 daysToShow={'999'}
                 heightClass="h-64"
+                loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small

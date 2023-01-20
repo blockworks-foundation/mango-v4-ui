@@ -35,6 +35,7 @@ interface DetailedAreaChartProps {
   heightClass?: string
   hideChange?: boolean
   hideChart?: () => void
+  loaderHeightClass?: string
   loading?: boolean
   prefix?: string
   setDaysToShow?: (x: string) => void
@@ -61,6 +62,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   heightClass,
   hideChange,
   hideChart,
+  loaderHeightClass,
   loading,
   prefix = '',
   setDaysToShow,
@@ -112,7 +114,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
           <SheenLoader className="flex flex-1">
             <div
               className={`${
-                heightClass ? heightClass : 'h-96'
+                loaderHeightClass ? loaderHeightClass : 'h-96'
               } w-full rounded-lg bg-th-bkg-2`}
             />
           </SheenLoader>

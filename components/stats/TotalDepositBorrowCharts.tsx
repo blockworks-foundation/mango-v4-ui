@@ -1,4 +1,3 @@
-import SheenLoader from '@components/shared/SheenLoader'
 import { TokenStatsItem } from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
@@ -110,20 +109,7 @@ const TotalDepositBorrowCharts = ({
     return [0, 0]
   }, [banks])
 
-  return loadingStats ? (
-    <>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
-        <SheenLoader className="flex flex-1">
-          <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
-        </SheenLoader>
-      </div>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
-        <SheenLoader className="flex flex-1">
-          <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
-        </SheenLoader>
-      </div>
-    </>
-  ) : totalDepositBorrowValues.length ? (
+  return totalDepositBorrowValues.length ? (
     <>
       <div className="col-span-2 h-96 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
         <DetailedAreaChart
@@ -136,7 +122,9 @@ const TotalDepositBorrowCharts = ({
           ])}
           daysToShow={depositDaysToShow}
           setDaysToShow={setDepositDaysToShow}
+          loading={loadingStats}
           heightClass="h-64"
+          loaderHeightClass="h-[350px]"
           prefix="$"
           tickFormat={(x) => `$${formatYAxis(x)}`}
           title={t('total-deposit-value')}
@@ -156,6 +144,8 @@ const TotalDepositBorrowCharts = ({
           daysToShow={borrowDaysToShow}
           setDaysToShow={setBorrowDaysToShow}
           heightClass="h-64"
+          loaderHeightClass="h-[350px]"
+          loading={loadingStats}
           prefix="$"
           tickFormat={(x) => `$${formatYAxis(x)}`}
           title={t('total-borrow-value')}

@@ -73,6 +73,7 @@ const AccountChart = ({
       data={data.concat(currentValue)}
       daysToShow={daysToShow}
       heightClass="h-[calc(100vh-200px)]"
+      loaderHeightClass="h-[calc(100vh-116px)]"
       hideChart={hideChart}
       loading={loading}
       prefix="$"
