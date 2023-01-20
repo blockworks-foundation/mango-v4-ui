@@ -54,7 +54,6 @@ const parsedPerpEvent = (mangoAccountAddress: string, event: any) => {
     value,
     feeCost: (feeRate.toNumber() * value).toFixed(4),
     side,
-    marketName: event.marketName,
   }
 }
 
@@ -71,7 +70,6 @@ const parsedSerumEvent = (event: any) => {
     key: `${event.maker}-${event.price}`,
     value: event.price * event.size,
     side: event.side,
-    marketName: event.marketName,
   }
 }
 
@@ -129,20 +127,17 @@ const TradeHistory = () => {
   const eventQueueFillsForAccount = useMemo(() => {
     if (!mangoAccountAddress || !selectedMarket) return []
 
-    const mangoAccountFills = fills
-      .filter((fill: any) => {
-        if (fill.openOrders) {
-          // handles serum event queue for spot trades
-          return openOrderOwner ? fill.openOrders.equals(openOrderOwner) : false
-        } else {
-          // handles mango event queue for perp trades
-          return (
-            fill.taker.equals(openOrderOwner) ||
-            fill.maker.equals(openOrderOwner)
-          )
-        }
-      })
-      .map((fill: any) => ({ ...fill, marketName: selectedMarket.name }))
+    const mangoAccountFills = fills.filter((fill: any) => {
+      if (fill.openOrders) {
+        // handles serum event queue for spot trades
+        return openOrderOwner ? fill.openOrders.equals(openOrderOwner) : false
+      } else {
+        // handles mango event queue for perp trades
+        return (
+          fill.taker.equals(openOrderOwner) || fill.maker.equals(openOrderOwner)
+        )
+      }
+    })
 
     return formatTradeHistory(mangoAccountAddress, mangoAccountFills)
   }, [selectedMarket, mangoAccountAddress, openOrderOwner, fills])
@@ -204,7 +199,7 @@ const TradeHistory = () => {
               }
               let makerTaker = trade.liquidity
 
-              if ('maker' in trade) {
+              if (!makerTaker && 'maker' in trade) {
                 makerTaker = trade.maker ? 'Maker' : 'Taker'
                 if (
                   trade.taker &&

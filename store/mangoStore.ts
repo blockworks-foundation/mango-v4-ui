@@ -1047,17 +1047,23 @@ const mangoStore = create<MangoStore>()(
             const response = await fetch(
               `${MANGO_DATA_API_URL}/stats/trade-history?mango-account=${mangoAccountPk}&limit=${PAGINATION_PAGE_LENGTH}&offset=${offset}`
             )
-            const parsedHistory = await response.json()
-            const newHistory = parsedHistory.map((h: any) => h.activity_details)
-
-            const history =
-              offset !== 0 ? loadedHistory.concat(newHistory) : newHistory
-
-            set((s) => {
-              s.mangoAccount.tradeHistory.data = history?.sort(
-                (x: any) => x.block_datetime
+            const jsonResponse = await response.json()
+            if (jsonResponse?.length) {
+              const newHistory = jsonResponse.map(
+                (h: any) => h.activity_details
               )
-            })
+              const history =
+                offset !== 0 ? loadedHistory.concat(newHistory) : newHistory
+              set((s) => {
+                s.mangoAccount.tradeHistory.data = history?.sort(
+                  (x: any) => x.block_datetime
+                )
+              })
+            } else {
+              set((s) => {
+                s.mangoAccount.tradeHistory.data = []
+              })
+            }
           } catch (e) {
             console.error('Unable to fetch trade history', e)
           } finally {
