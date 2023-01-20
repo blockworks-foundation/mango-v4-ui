@@ -24,6 +24,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import AmountWithValue from './AmountWithValue'
 import ConnectEmptyState from './ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
+import Decimal from 'decimal.js'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -111,7 +112,6 @@ const BalancesTable = () => {
                     {mangoAccount
                       ? `${formatFixedDecimals(
                           mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
-                          false,
                           true
                         )}`
                       : '$0.00'}
@@ -321,6 +321,7 @@ const Balance = ({ bank }: { bank: Bank }) => {
     }
   }, [bank, selectedMarket])
 
+  console.log(bank.name, ' balance', new Decimal(balance).toFixed())
   if (!balance) return <p className="flex justify-end">0</p>
 
   return (

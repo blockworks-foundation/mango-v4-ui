@@ -83,16 +83,16 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   }, [walletTokens, selectedToken])
 
   const borrowAmount = useMemo(() => {
-    if (!mangoAccount || !bank) return 0
-    return floorToDecimal(
+    if (!mangoAccount || !bank) return '0'
+    return formatDecimal(
       mangoAccount.getTokenBorrowsUi(bank),
       bank.mintDecimals
-    ).toNumber()
+    )
   }, [bank, mangoAccount])
 
   const setMax = useCallback(() => {
     if (!bank) return
-    setInputAmount(floorToDecimal(borrowAmount, bank.mintDecimals).toFixed())
+    setInputAmount(borrowAmount)
     setSizePercentage('100')
   }, [bank, borrowAmount])
 
@@ -176,23 +176,22 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
             return {
               key,
               value,
-              borrowAmount: floorToDecimal(
-                mangoAccount?.getTokenBorrowsUi(value[0]),
-                value[0].mintDecimals
-              ).toNumber(),
+              borrowAmount: mangoAccount.getTokenBorrowsUi(value[0]),
               borrowAmountValue:
-                mangoAccount?.getTokenBorrowsUi(value[0]) * value[0].uiPrice!,
+                mangoAccount.getTokenBorrowsUi(value[0]) * value[0].uiPrice,
             }
-          }).filter((b) => b.borrowAmount > 0)
+          })
+            .filter((b) => b.borrowAmount > 0)
+            .sort((a, b) => a.borrowAmount - b.borrowAmount)
         : []
     return banks
   }, [group?.banksMapByName, mangoAccount])
 
   useEffect(() => {
-    if (!token && banks.length) {
+    if (!selectedToken && !token && banks.length) {
       setSelectedToken(banks[0].key)
     }
-  }, [token, banks])
+  }, [token, banks, selectedToken])
 
   const exceedsAlphaMax = useAlphaMax(inputAmount, bank)
 
@@ -245,10 +244,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   className="mb-2"
                   label={t('amount-owed')}
                   onClick={setMax}
-                  value={floorToDecimal(
-                    borrowAmount,
-                    walletBalance.maxDecimals
-                  ).toFixed()}
+                  value={borrowAmount}
                 />
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
@@ -328,10 +324,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                     <p>{t('outstanding-balance')}</p>
                   </div>
                   <p className="font-mono text-th-fgd-2">
-                    {floorToDecimal(
-                      borrowAmount - Number(inputAmount),
-                      walletBalance.maxDecimals
-                    ).toFixed()}{' '}
+                    {Number(borrowAmount) - Number(inputAmount)}{' '}
                     <span className="font-body text-th-fgd-4">
                       {selectedToken}
                     </span>

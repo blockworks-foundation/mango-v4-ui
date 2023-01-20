@@ -154,10 +154,7 @@ const TokenList = () => {
               }
 
               const tokenBalance = mangoAccount
-                ? floorToDecimal(
-                    mangoAccount.getTokenBalanceUi(bank),
-                    bank.mintDecimals
-                  ).toNumber()
+                ? mangoAccount.getTokenBalanceUi(bank)
                 : 0
 
               const hasInterestEarned = totalInterestData.find(
@@ -544,16 +541,6 @@ const ActionsMenu = ({
     return mangoTokens.find((t) => t.address === bank.mint.toString())?.logoURI
   }, [bank, mangoTokens])
 
-  const hasBorrow = useMemo(() => {
-    if (!mangoAccount || !bank) return false
-    return (
-      floorToDecimal(
-        mangoAccount.getTokenBorrowsUi(bank),
-        bank.mintDecimals
-      ).toNumber() > 0
-    )
-  }, [mangoAccount, bank])
-
   return (
     <>
       {mangoAccount && !connected ? null : (
@@ -573,7 +560,7 @@ const ActionsMenu = ({
           >
             {t('deposit')}
           </ActionsLinkButton>
-          {hasBorrow ? (
+          {balance < 0 ? (
             <ActionsLinkButton
               mangoAccount={mangoAccount!}
               onClick={() => handleShowActionModals(bank.name, 'repay')}

@@ -8,7 +8,7 @@ export const Table = ({
   children: ReactNode
   className?: string
 }) => (
-  <div className="thin-scroll overflow-x-auto">
+  <div className="thin-scroll">
     <table className={`m-0 min-w-full p-0 ${className}`}>{children}</table>
   </div>
 )

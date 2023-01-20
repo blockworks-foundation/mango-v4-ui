@@ -38,16 +38,18 @@ const ActionTokenList = ({
           banks
             .filter((b: BankParams) => !!b)
             .sort((a: any, b: any) => b[sortByKey] - a[sortByKey])
-            .map((bank: any) => (
-              <ActionTokenItem
-                bank={bank.value[0]}
-                customValue={bank[valueKey]}
-                key={bank.value[0].name}
-                onSelect={onSelect}
-                showBorrowRates={showBorrowRates}
-                showDepositRates={showDepositRates}
-              />
-            ))
+            .map((bank: any) => {
+              return (
+                <ActionTokenItem
+                  bank={bank.value[0]}
+                  customValue={bank[valueKey]}
+                  key={bank.value[0].name}
+                  onSelect={onSelect}
+                  showBorrowRates={showBorrowRates}
+                  showDepositRates={showDepositRates}
+                />
+              )
+            })
         ) : (
           <div className="mt-4 rounded border border-th-bkg-2 py-3 text-center text-th-fgd-4">
             Nothing to select
