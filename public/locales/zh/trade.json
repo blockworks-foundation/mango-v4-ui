@@ -6,6 +6,7 @@
     "cancel-order-error": "Failed to cancel order",
     "connect-orders": "Connect to view your open orders",
     "connect-positions": "Connect to view your perp positions",
+    "connect-trade-history": "Connect to view your trade history",
     "connect-unsettled": "Connect to view your unsettled funds",
     "entry-price": "Entry Price",
     "est-slippage": "Est. Slippage",

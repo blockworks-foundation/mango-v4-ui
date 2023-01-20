@@ -37,6 +37,7 @@
   "closing-account": "Closing your account...",
   "collateral-value": "Collateral Value",
   "connect": "Connect",
+  "connect-balances": "Connect to view your balances",
   "connect-helper": "Connect to get started",
   "copy-address": "Copy Address",
   "copy-address-success": "Copied address: {{pk}}",

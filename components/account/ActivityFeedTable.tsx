@@ -1,5 +1,6 @@
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import { IconButton, LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import SheenLoader from '@components/shared/SheenLoader'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
@@ -9,6 +10,7 @@ import {
   ChevronRightIcon,
   NoSymbolIcon,
 } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -42,6 +44,7 @@ const ActivityFeedTable = ({
   const actions = mangoStore.getState().actions
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
   const [offset, setOffset] = useState(0)
+  const { connected } = useWallet()
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
@@ -327,10 +330,14 @@ const ActivityFeedTable = ({
         </div>
       ) : null}
     </>
-  ) : (
+  ) : connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('activity:no-activity')}</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('activity:connect-activity')} />
     </div>
   )
 }

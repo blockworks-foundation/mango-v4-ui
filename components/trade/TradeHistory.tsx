@@ -1,5 +1,6 @@
 import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import SheenLoader from '@components/shared/SheenLoader'
 import SideBadge from '@components/shared/SideBadge'
 import {
@@ -12,6 +13,7 @@ import {
 } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
 import { NoSymbolIcon, UsersIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -104,6 +106,7 @@ const TradeHistory = () => {
   )
   const [offset, setOffset] = useState(0)
   const { width } = useViewport()
+  const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
 
   const openOrderOwner = useMemo(() => {
@@ -379,10 +382,14 @@ const TradeHistory = () => {
         </div>
       ) : null}
     </>
-  ) : (
+  ) : connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>No trade history</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-trade-history')} />
     </div>
   )
 }

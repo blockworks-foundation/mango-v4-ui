@@ -1,7 +1,9 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -23,6 +25,7 @@ const PerpPositions = () => {
   const { group } = useMangoGroup()
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const { selectedMarket } = useSelectedMarket()
+  const { connected } = useWallet()
   const { mangoAccount } = useMangoAccount()
 
   const handlePositionClick = (positionSize: number) => {
@@ -144,10 +147,14 @@ const PerpPositions = () => {
         </tbody>
       </Table>
     </div>
-  ) : (
+  ) : connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-positions')}</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-positions')} />
     </div>
   )
 }

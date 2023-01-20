@@ -22,6 +22,8 @@ import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useMangoGroup from 'hooks/useMangoGroup'
 import AmountWithValue from './AmountWithValue'
+import ConnectEmptyState from './ConnectEmptyState'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -30,6 +32,7 @@ const BalancesTable = () => {
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
+  const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
 
   const banks = useMemo(() => {
@@ -210,10 +213,14 @@ const BalancesTable = () => {
         })}
       </>
     )
-  ) : (
+  ) : connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-balances')}</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('connect-balances')} />
     </div>
   )
 }
