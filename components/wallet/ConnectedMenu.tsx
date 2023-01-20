@@ -44,6 +44,7 @@ const ConnectedMenu = () => {
       state.activityFeed.feed = []
       state.mangoAccount.current = undefined
       state.mangoAccounts = []
+      state.mangoAccount.initialLoad = true
       state.mangoAccount.openOrders = {}
       state.mangoAccount.interestTotals = { data: [], loading: false }
       state.mangoAccount.performance = {
