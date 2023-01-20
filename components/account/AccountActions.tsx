@@ -6,7 +6,7 @@ import {
   DocumentDuplicateIcon,
   PencilIcon,
   TrashIcon,
-  UsersIcon,
+  UserPlusIcon,
   WrenchIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
@@ -132,7 +132,7 @@ const AccountActions = () => {
                         mangoAccount={mangoAccount!}
                         onClick={() => setShowDelegateModal(true)}
                       >
-                        <UsersIcon className="h-4 w-4" />
+                        <UserPlusIcon className="h-4 w-4" />
                         <span className="ml-2">{t('delegate-account')}</span>
                       </ActionsLinkButton>
                     </Menu.Item>

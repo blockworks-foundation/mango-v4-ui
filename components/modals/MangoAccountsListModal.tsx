@@ -4,7 +4,7 @@ import {
   DocumentDuplicateIcon,
   HeartIcon,
   PlusCircleIcon,
-  UsersIcon,
+  UserPlusIcon,
 } from '@heroicons/react/20/solid'
 import {
   HealthType,
@@ -147,7 +147,7 @@ const MangoAccountsListModal = ({
                                         ),
                                       })}
                                     >
-                                      <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                                      <UserPlusIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
                                     </Tooltip>
                                   ) : null}
                                 </div>

@@ -1,4 +1,4 @@
-import { UsersIcon } from '@heroicons/react/20/solid'
+import { UserPlusIcon } from '@heroicons/react/20/solid'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
@@ -39,7 +39,7 @@ const AccountsButton = () => {
                     address: abbreviateAddress(mangoAccount.delegate),
                   })}
                 >
-                  <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                  <UserPlusIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
                 </Tooltip>
               ) : null}
             </div>
