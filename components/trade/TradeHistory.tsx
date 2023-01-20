@@ -1,5 +1,6 @@
 import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
-import { LinkButton } from '@components/shared/Button'
+import { IconButton, LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import SheenLoader from '@components/shared/SheenLoader'
 import SideBadge from '@components/shared/SideBadge'
 import {
@@ -10,7 +11,9 @@ import {
   TrBody,
   TrHead,
 } from '@components/shared/TableElements'
-import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import Tooltip from '@components/shared/Tooltip'
+import { NoSymbolIcon, UsersIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -51,7 +54,6 @@ const parsedPerpEvent = (mangoAccountAddress: string, event: any) => {
     value,
     feeCost: (feeRate.toNumber() * value).toFixed(4),
     side,
-    marketName: event.marketName,
   }
 }
 
@@ -68,7 +70,6 @@ const parsedSerumEvent = (event: any) => {
     key: `${event.maker}-${event.price}`,
     value: event.price * event.size,
     side: event.side,
-    marketName: event.marketName,
   }
 }
 
@@ -103,6 +104,7 @@ const TradeHistory = () => {
   )
   const [offset, setOffset] = useState(0)
   const { width } = useViewport()
+  const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
 
   const openOrderOwner = useMemo(() => {
@@ -125,20 +127,17 @@ const TradeHistory = () => {
   const eventQueueFillsForAccount = useMemo(() => {
     if (!mangoAccountAddress || !selectedMarket) return []
 
-    const mangoAccountFills = fills
-      .filter((fill: any) => {
-        if (fill.openOrders) {
-          // handles serum event queue for spot trades
-          return openOrderOwner ? fill.openOrders.equals(openOrderOwner) : false
-        } else {
-          // handles mango event queue for perp trades
-          return (
-            fill.taker.equals(openOrderOwner) ||
-            fill.maker.equals(openOrderOwner)
-          )
-        }
-      })
-      .map((fill: any) => ({ ...fill, marketName: selectedMarket.name }))
+    const mangoAccountFills = fills.filter((fill: any) => {
+      if (fill.openOrders) {
+        // handles serum event queue for spot trades
+        return openOrderOwner ? fill.openOrders.equals(openOrderOwner) : false
+      } else {
+        // handles mango event queue for perp trades
+        return (
+          fill.taker.equals(openOrderOwner) || fill.maker.equals(openOrderOwner)
+        )
+      }
+    })
 
     return formatTradeHistory(mangoAccountAddress, mangoAccountFills)
   }, [selectedMarket, mangoAccountAddress, openOrderOwner, fills])
@@ -170,7 +169,7 @@ const TradeHistory = () => {
 
   if (!selectedMarket || !group) return null
 
-  return mangoAccount &&
+  return mangoAccountAddress &&
     (combinedTradeHistory.length || loadingTradeHistory) ? (
     <>
       {showTableView ? (
@@ -184,6 +183,7 @@ const TradeHistory = () => {
               <Th className="text-right">{t('value')}</Th>
               <Th className="text-right">{t('fee')}</Th>
               <Th className="text-right">{t('date')}</Th>
+              <Th />
             </TrHead>
           </thead>
           <tbody>
@@ -199,9 +199,13 @@ const TradeHistory = () => {
                 market = selectedMarket
               }
               let makerTaker = trade.liquidity
-              if ('maker' in trade) {
+
+              if (!makerTaker && 'maker' in trade) {
                 makerTaker = trade.maker ? 'Maker' : 'Taker'
-                if (trade.taker === mangoAccount.publicKey.toString()) {
+                if (
+                  trade.taker &&
+                  trade.taker.toString() === mangoAccount?.publicKey.toString()
+                ) {
                   makerTaker = 'Taker'
                 }
               }
@@ -222,7 +226,7 @@ const TradeHistory = () => {
                 fee = trade.fee_cost || trade.feeCost
               } else {
                 fee =
-                  trade.maker === mangoAccount.publicKey.toString()
+                  trade.maker === mangoAccount?.publicKey.toString()
                     ? trade.maker_fee
                     : trade.taker_fee
               }
@@ -251,7 +255,6 @@ const TradeHistory = () => {
                       {makerTaker}
                     </p>
                   </Td>
-
                   <Td className="whitespace-nowrap text-right">
                     {trade.block_datetime ? (
                       <TableDateDisplay
@@ -262,6 +265,26 @@ const TradeHistory = () => {
                       'Recent'
                     )}
                   </Td>
+                  <Td className="xl:!pl-0">
+                    {market.name.includes('PERP') ? (
+                      <div className="flex justify-end">
+                        <Tooltip content="View Counterparty" delay={250}>
+                          <a
+                            className=""
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={`/?address=${
+                              makerTaker === 'Taker' ? trade.maker : trade.taker
+                            }`}
+                          >
+                            <IconButton size="small">
+                              <UsersIcon className="h-4 w-4" />
+                            </IconButton>
+                          </a>
+                        </Tooltip>
+                      </div>
+                    ) : null}
+                  </Td>
                 </TrBody>
               )
             })}
@@ -270,6 +293,23 @@ const TradeHistory = () => {
       ) : (
         <div>
           {combinedTradeHistory.map((trade: any, index: number) => {
+            let market
+            if ('market' in trade) {
+              market = group.getSerum3MarketByExternalMarket(
+                new PublicKey(trade.market)
+              )
+            } else if ('perp_market' in trade) {
+              market = group.getPerpMarketByName(trade.perp_market)
+            } else {
+              market = selectedMarket
+            }
+            let makerTaker = trade.liquidity
+            if ('maker' in trade) {
+              makerTaker = trade.maker ? 'Maker' : 'Taker'
+              if (trade.taker === mangoAccount?.publicKey.toString()) {
+                makerTaker = 'Taker'
+              }
+            }
             const size = trade.size || trade.quantity
             return (
               <div
@@ -289,20 +329,36 @@ const TradeHistory = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col items-end">
-                  <span className="mb-0.5 flex items-center space-x-1.5">
-                    {trade.block_datetime ? (
-                      <TableDateDisplay
-                        date={trade.block_datetime}
-                        showSeconds
-                      />
-                    ) : (
-                      'Recent'
-                    )}
-                  </span>
-                  <p className="font-mono text-th-fgd-2">
-                    {formatFixedDecimals(trade.price * size, true, true)}
-                  </p>
+                <div className="flex items-center space-x-2.5">
+                  <div className="flex flex-col items-end">
+                    <span className="mb-0.5 flex items-center space-x-1.5">
+                      {trade.block_datetime ? (
+                        <TableDateDisplay
+                          date={trade.block_datetime}
+                          showSeconds
+                        />
+                      ) : (
+                        'Recent'
+                      )}
+                    </span>
+                    <p className="font-mono text-th-fgd-2">
+                      {formatFixedDecimals(trade.price * size, true, true)}
+                    </p>
+                  </div>
+                  {market.name.includes('PERP') ? (
+                    <a
+                      className=""
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={`/?address=${
+                        makerTaker === 'Taker' ? trade.maker : trade.taker
+                      }`}
+                    >
+                      <IconButton size="medium">
+                        <UsersIcon className="h-4 w-4" />
+                      </IconButton>
+                    </a>
+                  ) : null}
                 </div>
               </div>
             )
@@ -325,10 +381,14 @@ const TradeHistory = () => {
         </div>
       ) : null}
     </>
-  ) : (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>No trade history</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-trade-history')} />
     </div>
   )
 }

@@ -11,6 +11,7 @@ const SuccessParticles = () => {
   const { mangoTokens } = useJupiterMints()
   const showForSwap = mangoStore((s) => s.successAnimation.swap)
   const showForTrade = mangoStore((s) => s.successAnimation.trade)
+  const tradeType = mangoStore((s) => s.tradeForm.tradeType)
   const set = mangoStore((s) => s.set)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -23,17 +24,21 @@ const SuccessParticles = () => {
       const tokenMint = mangoStore.getState().swap.outputBank?.mint.toString()
       return mangoTokens.find((t) => t.address === tokenMint)?.logoURI
     }
-    if (showForTrade) {
+    if (showForTrade && tradeType === 'Market') {
       const market = mangoStore.getState().selectedMarket.current
       const side = mangoStore.getState().tradeForm.side
       if (market instanceof Serum3Market) {
         const symbol =
           side === 'buy' ? market.name.split('/')[0] : market.name.split('/')[1]
-        return mangoTokens.find((t) => t.symbol === symbol)?.logoURI
+        return mangoTokens.find((t) => t.symbol.toUpperCase() === symbol)
+          ?.logoURI
       }
       if (market instanceof PerpMarket) {
         const symbol = side === 'buy' ? market.name.split('-')[0] : 'USDC'
-        return mangoTokens.find((t) => t.symbol === symbol)?.logoURI
+        return (
+          mangoTokens.find((t) => t.symbol.toUpperCase() === symbol)?.logoURI ||
+          `/icons/${symbol.toLowerCase()}.svg`
+        )
       }
     }
   }, [mangoTokens, showForSwap, showForTrade])

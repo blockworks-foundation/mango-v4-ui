@@ -16,9 +16,13 @@ const TAB_VALUES = isTesting ? ['spot', 'perp'] : ['spot']
 const MarketSelectDropdown = () => {
   const { selectedMarket } = useSelectedMarket()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
-  const perpMarkets = mangoStore((s) => s.perpMarkets)
+  const allPerpMarkets = mangoStore((s) => s.perpMarkets)
   const [activeTab, setActiveTab] = useState('spot')
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
+
+  const perpMarkets = useMemo(() => {
+    return allPerpMarkets.filter((p) => p.name !== 'MNGO-PERP')
+  }, [allPerpMarkets])
 
   const spotBaseTokens: string[] = useMemo(() => {
     if (serumMarkets.length) {

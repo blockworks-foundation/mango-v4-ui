@@ -116,31 +116,33 @@ const TokenPage = () => {
                   <h1 className="text-base font-normal">{bank.name}</h1>
                 )}
               </div>
-              <div className="flex items-end space-x-3 font-display text-5xl text-th-fgd-1">
-                {animationSettings['number-scroll'] ? (
-                  <FlipNumbers
-                    height={48}
-                    width={35}
-                    play
-                    delay={0.05}
-                    duration={1}
-                    numbers={formatFixedDecimals(bank.uiPrice, true)}
-                  />
-                ) : (
-                  <span>{formatFixedDecimals(bank.uiPrice, true)}</span>
-                )}
+              <div className="flex flex-wrap items-end font-display text-5xl text-th-fgd-1">
+                <div className="mr-3 mb-2">
+                  {animationSettings['number-scroll'] ? (
+                    <FlipNumbers
+                      height={48}
+                      width={35}
+                      play
+                      delay={0.05}
+                      duration={1}
+                      numbers={formatFixedDecimals(bank.uiPrice, true)}
+                    />
+                  ) : (
+                    <span>{formatFixedDecimals(bank.uiPrice, true)}</span>
+                  )}
+                </div>
                 {coingeckoData ? (
-                  <Change change={price_change_percentage_24h} suffix="%" />
+                  <div className="mb-2">
+                    <Change change={price_change_percentage_24h} suffix="%" />
+                  </div>
                 ) : null}
               </div>
               {coingeckoData ? (
-                <div className="mt-2">
-                  <DailyRange
-                    high={high_24h.usd}
-                    low={low_24h.usd}
-                    price={bank.uiPrice}
-                  />
-                </div>
+                <DailyRange
+                  high={high_24h.usd}
+                  low={low_24h.usd}
+                  price={bank.uiPrice}
+                />
               ) : null}
             </div>
             <ActionPanel bank={bank} />

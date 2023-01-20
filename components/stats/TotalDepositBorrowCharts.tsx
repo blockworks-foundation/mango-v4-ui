@@ -1,11 +1,10 @@
-import SheenLoader from '@components/shared/SheenLoader'
 import { TokenStatsItem } from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
-import { numberCompacter } from 'utils/numbers'
+import { formatYAxis } from 'utils/formatting'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -110,22 +109,9 @@ const TotalDepositBorrowCharts = ({
     return [0, 0]
   }, [banks])
 
-  return loadingStats ? (
+  return totalDepositBorrowValues.length ? (
     <>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
-        <SheenLoader className="flex flex-1">
-          <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
-        </SheenLoader>
-      </div>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
-        <SheenLoader className="flex flex-1">
-          <div className="h-96 w-full rounded-lg bg-th-bkg-2" />
-        </SheenLoader>
-      </div>
-    </>
-  ) : totalDepositBorrowValues.length ? (
-    <>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
+      <div className="col-span-2 h-96 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
         <DetailedAreaChart
           data={filteredDepositValues.concat([
             {
@@ -136,15 +122,17 @@ const TotalDepositBorrowCharts = ({
           ])}
           daysToShow={depositDaysToShow}
           setDaysToShow={setDepositDaysToShow}
+          loading={loadingStats}
           heightClass="h-64"
+          loaderHeightClass="h-[350px]"
           prefix="$"
-          tickFormat={(x) => `$${numberCompacter.format(x)}`}
+          tickFormat={(x) => `$${formatYAxis(x)}`}
           title={t('total-deposit-value')}
           xKey="date"
           yKey={'depositValue'}
         />
       </div>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
+      <div className="col-span-2 h-96 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
         <DetailedAreaChart
           data={filteredBorrowValues.concat([
             {
@@ -156,8 +144,10 @@ const TotalDepositBorrowCharts = ({
           daysToShow={borrowDaysToShow}
           setDaysToShow={setBorrowDaysToShow}
           heightClass="h-64"
+          loaderHeightClass="h-[350px]"
+          loading={loadingStats}
           prefix="$"
-          tickFormat={(x) => `$${numberCompacter.format(x)}`}
+          tickFormat={(x) => `$${formatYAxis(x)}`}
           title={t('total-borrow-value')}
           xKey="date"
           yKey={'borrowValue'}

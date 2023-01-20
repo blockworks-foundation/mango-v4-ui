@@ -1,12 +1,15 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
-import { LinkButton } from '@components/shared/Button'
+import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
+import Button, { LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
+import { useCallback, useState } from 'react'
 import {
   formatDecimal,
   formatFixedDecimals,
@@ -15,15 +18,21 @@ import {
   trimDecimals,
 } from 'utils/numbers'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
+import MarketCloseModal from './MarketCloseModal'
 import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
+  const [showMarketCloseModal, setShowMarketCloseModal] = useState(false)
+  const [positionToClose, setPositionToClose] = useState<PerpPosition | null>(
+    null
+  )
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const { selectedMarket } = useSelectedMarket()
-  const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
+  const { mangoAccountAddress } = useMangoAccount()
 
   const handlePositionClick = (positionSize: number) => {
     const tradeForm = mangoStore.getState().tradeForm
@@ -51,13 +60,23 @@ const PerpPositions = () => {
     })
   }
 
+  const showClosePositionModal = useCallback((position: PerpPosition) => {
+    setShowMarketCloseModal(true)
+    setPositionToClose(position)
+  }, [])
+
+  const hideClosePositionModal = useCallback(() => {
+    setShowMarketCloseModal(false)
+    setPositionToClose(null)
+  }, [])
+
   if (!group) return null
 
   const openPerpPositions = Object.values(perpPositions).filter((p) =>
     p.basePositionLots.toNumber()
   )
 
-  return mangoAccount && openPerpPositions.length ? (
+  return mangoAccountAddress && openPerpPositions.length ? (
     <div>
       <Table>
         <thead>
@@ -138,16 +157,37 @@ const PerpPositions = () => {
                 >
                   <div>{formatFixedDecimals(cummulativePnl, true)}</div>
                 </Td>
+                <Td className={`text-right`}>
+                  <Button
+                    className="text-xs"
+                    secondary
+                    size="small"
+                    onClick={() => showClosePositionModal(position)}
+                  >
+                    Close
+                  </Button>
+                </Td>
               </TrBody>
             )
           })}
         </tbody>
       </Table>
+      {showMarketCloseModal && positionToClose ? (
+        <MarketCloseModal
+          isOpen={showMarketCloseModal}
+          onClose={hideClosePositionModal}
+          position={positionToClose}
+        />
+      ) : null}
     </div>
-  ) : (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-positions')}</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-positions')} />
     </div>
   )
 }

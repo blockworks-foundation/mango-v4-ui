@@ -16,6 +16,7 @@ import TableMarketName from './TableMarketName'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { formatDecimal } from 'utils/numbers'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -29,7 +30,7 @@ const UnsettledTrades = ({
   const [settleMktAddress, setSettleMktAddress] = useState<string>('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
 
   const handleSettleSerumFunds = useCallback(async (mktAddress: string) => {
@@ -131,7 +132,7 @@ const UnsettledTrades = ({
 
   if (!group) return null
 
-  return mangoAccount &&
+  return mangoAccountAddress &&
     Object.values(unsettledSpotBalances).flat().concat(unsettledPerpPositions)
       .length ? (
     showTableView ? (
@@ -140,7 +141,7 @@ const UnsettledTrades = ({
           <TrHead>
             <Th className="bg-th-bkg-1 text-left">{t('market')}</Th>
             <Th className="bg-th-bkg-1 text-right">{t('trade:amount')}</Th>
-            {connected ? <Th className="bg-th-bkg-1 text-right" /> : null}
+            <Th className="bg-th-bkg-1 text-right" />
           </TrHead>
         </thead>
         <tbody>
@@ -172,24 +173,22 @@ const UnsettledTrades = ({
                     ) : null}
                   </div>
                 </Td>
-                {connected ? (
-                  <Td>
-                    <div className="flex justify-end">
-                      <Tooltip content={t('trade:settle-funds')}>
-                        <IconButton
-                          onClick={() => handleSettleSerumFunds(mktAddress)}
-                          size="small"
-                        >
-                          {settleMktAddress === mktAddress ? (
-                            <Loading className="h-4 w-4" />
-                          ) : (
-                            <CheckIcon className="h-4 w-4" />
-                          )}
-                        </IconButton>
-                      </Tooltip>
-                    </div>
-                  </Td>
-                ) : null}
+                <Td>
+                  <div className="flex justify-end">
+                    <Tooltip content={t('trade:settle-funds')}>
+                      <IconButton
+                        onClick={() => handleSettleSerumFunds(mktAddress)}
+                        size="small"
+                      >
+                        {settleMktAddress === mktAddress ? (
+                          <Loading className="h-4 w-4" />
+                        ) : (
+                          <CheckIcon className="h-4 w-4" />
+                        )}
+                      </IconButton>
+                    </Tooltip>
+                  </div>
+                </Td>
               </TrBody>
             )
           })}
@@ -206,7 +205,8 @@ const UnsettledTrades = ({
                   {formatDecimal(
                     position.getUnsettledPnlUi(group, market),
                     market.baseDecimals
-                  )}
+                  )}{' '}
+                  <span className="font-body text-th-fgd-4">USDC</span>
                 </Td>
                 <Td>
                   <div className="flex justify-end">
@@ -257,27 +257,30 @@ const UnsettledTrades = ({
                     <span className="font-body text-th-fgd-4">{quote}</span>
                   </span>
                 ) : null}
-                {connected ? (
-                  <IconButton
-                    onClick={() => handleSettleSerumFunds(mktAddress)}
-                  >
-                    {settleMktAddress === mktAddress ? (
-                      <Loading className="h-4 w-4" />
-                    ) : (
-                      <CheckIcon className="h-4 w-4" />
-                    )}
-                  </IconButton>
-                ) : null}
+                <IconButton
+                  onClick={() => handleSettleSerumFunds(mktAddress)}
+                  size="medium"
+                >
+                  {settleMktAddress === mktAddress ? (
+                    <Loading className="h-4 w-4" />
+                  ) : (
+                    <CheckIcon className="h-4 w-4" />
+                  )}
+                </IconButton>
               </div>
             </div>
           )
         })}
       </div>
     )
-  ) : (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-unsettled')}</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-unsettled')} />
     </div>
   )
 }

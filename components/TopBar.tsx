@@ -4,7 +4,6 @@ import {
   ArrowRightIcon,
   ExclamationTriangleIcon,
   EyeIcon,
-  UsersIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
@@ -15,18 +14,16 @@ import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../utils/constants'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import CreateAccountModal from './modals/CreateAccountModal'
-import MangoAccountsListModal from './modals/MangoAccountsListModal'
 import { useRouter } from 'next/router'
 import UserSetupModal from './modals/UserSetupModal'
 import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useOnlineStatus from 'hooks/useOnlineStatus'
-import { DEFAULT_DELEGATE } from './modals/DelegateModal'
-import Tooltip from './shared/Tooltip'
 import { abbreviateAddress } from 'utils/formatting'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import AccountsButton from './AccountsButton'
 // import ThemeSwitcher from './ThemeSwitcher'
 
 const TopBar = () => {
@@ -35,11 +32,10 @@ const TopBar = () => {
   const { connected } = useWallet()
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
-  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
-  const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
   const [showUserSetup, setShowUserSetup] = useState(false)
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
+  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const isOnline = useOnlineStatus()
   const router = useRouter()
   const { query } = router
@@ -54,14 +50,6 @@ const TopBar = () => {
   const handleShowSetup = useCallback(() => {
     setShowUserSetup(true)
   }, [])
-
-  const handleShowAccounts = useCallback(() => {
-    if (mangoAccount) {
-      setShowMangoAccountsModal(true)
-    } else {
-      setShowCreateAccountModal(true)
-    }
-  }, [mangoAccount])
 
   const handleDepositWithdrawModal = (action: 'deposit' | 'withdraw') => {
     if (!connected || mangoAccount) {
@@ -133,34 +121,7 @@ const TopBar = () => {
           )}
           {connected ? (
             <div className="flex items-center pr-4 md:pr-0">
-              <button
-                className="hidden h-16 border-l border-th-bkg-3 px-4 md:block"
-                id="account-step-two"
-                onClick={handleShowAccounts}
-              >
-                <p className="text-right text-xs">{t('accounts')}</p>
-                <div className="text-left text-sm font-bold text-th-fgd-1">
-                  {mangoAccount ? (
-                    <div className="flex items-center">
-                      {mangoAccount.name}
-                      {mangoAccount.delegate.toString() !== DEFAULT_DELEGATE ? (
-                        <Tooltip
-                          content={t('delegate-account-info', {
-                            address: abbreviateAddress(mangoAccount.delegate),
-                          })}
-                        >
-                          <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
-                        </Tooltip>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <span>
-                      <span className="mr-1.5">🥭</span>
-                      {t('create-account')}
-                    </span>
-                  )}
-                </div>
-              </button>
+              <AccountsButton />
               <ConnectedMenu />
             </div>
           ) : isOnboarded ? (
@@ -183,12 +144,6 @@ const TopBar = () => {
           action={action}
           isOpen={showDepositWithdrawModal}
           onClose={() => setShowDepositWithdrawModal(false)}
-        />
-      ) : null}
-      {showMangoAccountsModal ? (
-        <MangoAccountsListModal
-          isOpen={showMangoAccountsModal}
-          onClose={() => setShowMangoAccountsModal(false)}
         />
       ) : null}
       {showUserSetup ? (

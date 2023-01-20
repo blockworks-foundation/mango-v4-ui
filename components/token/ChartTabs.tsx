@@ -4,7 +4,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useState } from 'react'
-import { numberCompacter } from 'utils/numbers'
+import { formatYAxis } from 'utils/formatting'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -55,16 +55,17 @@ const ChartTabs = ({ token }: { token: string }) => {
               ['token:deposit-rates', 0],
             ]}
           />
-          <div className="border-t border-th-bkg-3 px-6 py-4">
+          <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeDepositsTab === 'token:deposits' ? (
               <DetailedAreaChart
                 data={statsHistory}
                 daysToShow={'999'}
                 heightClass="h-64"
+                loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small
-                tickFormat={(x) => numberCompacter.format(x)}
+                tickFormat={(x) => formatYAxis(x)}
                 title={`${token} ${t('token:deposits')}`}
                 xKey="date_hour"
                 yKey={'total_deposits'}
@@ -74,6 +75,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 data={statsHistory}
                 daysToShow={'999'}
                 heightClass="h-64"
+                loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 hideChange
@@ -99,16 +101,17 @@ const ChartTabs = ({ token }: { token: string }) => {
               ['token:borrow-rates', 0],
             ]}
           />
-          <div className="border-t border-th-bkg-3 px-6 py-4">
+          <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeBorrowsTab === 'token:borrows' ? (
               <DetailedAreaChart
                 data={statsHistory}
                 daysToShow={'999'}
                 heightClass="h-64"
+                loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small
-                tickFormat={(x) => numberCompacter.format(x)}
+                tickFormat={(x) => formatYAxis(x)}
                 title={`${token} ${t('token:borrows')}`}
                 xKey="date_hour"
                 yKey={'total_borrows'}
@@ -118,6 +121,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 data={statsHistory}
                 daysToShow={'999'}
                 heightClass="h-64"
+                loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small

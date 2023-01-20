@@ -10,7 +10,7 @@ export const OUTPUT_TOKEN_DEFAULT = 'SOL'
 export const JUPITER_V4_PROGRAM_ID =
   'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
 
-export const ALPHA_DEPOSIT_LIMIT = 100
+export const ALPHA_DEPOSIT_LIMIT = 1000
 
 export const CONNECTION_COMMITMENT = 'processed'
 
@@ -35,13 +35,15 @@ export const GRID_LAYOUT_KEY = 'savedLayouts-0.2'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.2'
 
-export const TRADE_CHART_UI_KEY = 'tradeChart-0.2'
+export const TRADE_CHART_UI_KEY = 'tradeChart-0.3'
 
 export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
 export const THEME_KEY = 'theme-0.1'
 
 export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
+
+export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [

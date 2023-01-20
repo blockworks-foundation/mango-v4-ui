@@ -36,6 +36,7 @@ import {
   MANGO_DATA_API_URL,
   OUTPUT_TOKEN_DEFAULT,
   PAGINATION_PAGE_LENGTH,
+  PRIORITY_FEE_KEY,
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
 import {
@@ -47,6 +48,7 @@ import {
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
+import { PRIORITY_FEES } from '@components/settings/RpcSettings'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -74,10 +76,13 @@ export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
 const emptyWallet = new EmptyWallet(Keypair.generate())
 
-const initMangoClient = (provider: AnchorProvider): MangoClient => {
+const initMangoClient = (
+  provider: AnchorProvider,
+  opts = { prioritizationFee: PRIORITY_FEES[2].value }
+): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     // blockhashCommitment: 'confirmed',
-    prioritizationFee: 50000,
+    prioritizationFee: opts.prioritizationFee,
     idsSource: 'get-program-accounts',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
@@ -936,7 +941,10 @@ const mangoStore = create<MangoStore>()(
               options
             )
             provider.opts.skipPreflight = true
-            const client = initMangoClient(provider)
+            const prioritizationFee = Number(
+              localStorage.getItem(PRIORITY_FEE_KEY)
+            )
+            const client = initMangoClient(provider, { prioritizationFee })
 
             set((s) => {
               s.client = client
@@ -1039,17 +1047,23 @@ const mangoStore = create<MangoStore>()(
             const response = await fetch(
               `${MANGO_DATA_API_URL}/stats/trade-history?mango-account=${mangoAccountPk}&limit=${PAGINATION_PAGE_LENGTH}&offset=${offset}`
             )
-            const parsedHistory = await response.json()
-            const newHistory = parsedHistory.map((h: any) => h.activity_details)
-
-            const history =
-              offset !== 0 ? loadedHistory.concat(newHistory) : newHistory
-
-            set((s) => {
-              s.mangoAccount.tradeHistory.data = history?.sort(
-                (x: any) => x.block_datetime
+            const jsonResponse = await response.json()
+            if (jsonResponse?.length) {
+              const newHistory = jsonResponse.map(
+                (h: any) => h.activity_details
               )
-            })
+              const history =
+                offset !== 0 ? loadedHistory.concat(newHistory) : newHistory
+              set((s) => {
+                s.mangoAccount.tradeHistory.data = history?.sort(
+                  (x: any) => x.block_datetime
+                )
+              })
+            } else {
+              set((s) => {
+                s.mangoAccount.tradeHistory.data = []
+              })
+            }
           } catch (e) {
             console.error('Unable to fetch trade history', e)
           } finally {

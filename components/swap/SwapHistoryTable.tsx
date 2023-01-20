@@ -27,6 +27,8 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import useMangoAccount from 'hooks/useMangoAccount'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
@@ -37,6 +39,7 @@ const SwapHistoryTable = () => {
   const [offset, setOffset] = useState(0)
   const actions = mangoStore.getState().actions
   const { mangoAccountAddress } = useMangoAccount()
+  const { connected } = useWallet()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const [preferredExplorer] = useLocalStorageState(
@@ -437,10 +440,14 @@ const SwapHistoryTable = () => {
         </div>
       ) : null}
     </>
-  ) : (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('swap:no-history')}</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('swap:connect-swap')} />
     </div>
   )
 }
