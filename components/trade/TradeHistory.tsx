@@ -183,6 +183,7 @@ const TradeHistory = () => {
               <Th className="text-right">{t('value')}</Th>
               <Th className="text-right">{t('fee')}</Th>
               <Th className="text-right">{t('date')}</Th>
+              <Th />
             </TrHead>
           </thead>
           <tbody>
@@ -254,7 +255,6 @@ const TradeHistory = () => {
                       {makerTaker}
                     </p>
                   </Td>
-
                   <Td className="whitespace-nowrap text-right">
                     {trade.block_datetime ? (
                       <TableDateDisplay
@@ -265,8 +265,8 @@ const TradeHistory = () => {
                       'Recent'
                     )}
                   </Td>
-                  {market.name.includes('PERP') ? (
-                    <Td className="xl:!pl-0">
+                  <Td className="xl:!pl-0">
+                    {market.name.includes('PERP') ? (
                       <div className="flex justify-end">
                         <Tooltip content="View Counterparty" delay={250}>
                           <a
@@ -283,8 +283,8 @@ const TradeHistory = () => {
                           </a>
                         </Tooltip>
                       </div>
-                    </Td>
-                  ) : null}
+                    ) : null}
+                  </Td>
                 </TrBody>
               )
             })}
