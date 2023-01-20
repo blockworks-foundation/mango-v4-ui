@@ -202,11 +202,11 @@ const UnsettledTrades = ({
                   <TableMarketName market={market} />
                 </Td>
                 <Td className="text-right font-mono">
-                  $
                   {formatDecimal(
                     position.getUnsettledPnlUi(group, market),
                     market.baseDecimals
-                  )}
+                  )}{' '}
+                  <span className="font-body text-th-fgd-4">USDC</span>
                 </Td>
                 <Td>
                   <div className="flex justify-end">
