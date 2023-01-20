@@ -27,7 +27,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
@@ -213,7 +213,7 @@ const BalancesTable = () => {
         })}
       </>
     )
-  ) : connected ? (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-balances')}</p>

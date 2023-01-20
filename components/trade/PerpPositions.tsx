@@ -32,7 +32,7 @@ const PerpPositions = () => {
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const { selectedMarket } = useSelectedMarket()
   const { connected } = useWallet()
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
 
   const handlePositionClick = (positionSize: number) => {
     const tradeForm = mangoStore.getState().tradeForm
@@ -76,7 +76,7 @@ const PerpPositions = () => {
     p.basePositionLots.toNumber()
   )
 
-  return mangoAccount && openPerpPositions.length ? (
+  return mangoAccountAddress && openPerpPositions.length ? (
     <div>
       <Table>
         <thead>
@@ -180,7 +180,7 @@ const PerpPositions = () => {
         />
       ) : null}
     </div>
-  ) : connected ? (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-positions')}</p>

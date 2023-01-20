@@ -46,7 +46,7 @@ const OpenOrders = () => {
   const [modifiedOrderPrice, setModifiedOrderPrice] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
 
   const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
@@ -226,7 +226,7 @@ const OpenOrders = () => {
     setModifiedOrderPrice('')
   }
 
-  return mangoAccount && Object.values(openOrders).flat().length ? (
+  return mangoAccountAddress && Object.values(openOrders).flat().length ? (
     showTableView ? (
       <Table>
         <thead>
@@ -528,7 +528,7 @@ const OpenOrders = () => {
         })}
       </div>
     )
-  ) : connected ? (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-orders')}</p>

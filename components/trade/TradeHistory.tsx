@@ -174,7 +174,7 @@ const TradeHistory = () => {
 
   if (!selectedMarket || !group) return null
 
-  return mangoAccount &&
+  return mangoAccountAddress &&
     (combinedTradeHistory.length || loadingTradeHistory) ? (
     <>
       {showTableView ? (
@@ -208,7 +208,7 @@ const TradeHistory = () => {
                 makerTaker = trade.maker ? 'Maker' : 'Taker'
                 if (
                   trade.taker &&
-                  trade.taker.toString() === mangoAccount.publicKey.toString()
+                  trade.taker.toString() === mangoAccount?.publicKey.toString()
                 ) {
                   makerTaker = 'Taker'
                 }
@@ -230,7 +230,7 @@ const TradeHistory = () => {
                 fee = trade.fee_cost || trade.feeCost
               } else {
                 fee =
-                  trade.maker === mangoAccount.publicKey.toString()
+                  trade.maker === mangoAccount?.publicKey.toString()
                     ? trade.maker_fee
                     : trade.taker_fee
               }
@@ -311,7 +311,7 @@ const TradeHistory = () => {
             let makerTaker = trade.liquidity
             if ('maker' in trade) {
               makerTaker = trade.maker ? 'Maker' : 'Taker'
-              if (trade.taker === mangoAccount.publicKey.toString()) {
+              if (trade.taker === mangoAccount?.publicKey.toString()) {
                 makerTaker = 'Taker'
               }
             }
@@ -386,7 +386,7 @@ const TradeHistory = () => {
         </div>
       ) : null}
     </>
-  ) : connected ? (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>No trade history</p>

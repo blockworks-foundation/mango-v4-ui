@@ -440,7 +440,7 @@ const SwapHistoryTable = () => {
         </div>
       ) : null}
     </>
-  ) : connected ? (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('swap:no-history')}</p>

@@ -30,7 +30,7 @@ const UnsettledTrades = ({
   const [settleMktAddress, setSettleMktAddress] = useState<string>('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
 
   const handleSettleSerumFunds = useCallback(async (mktAddress: string) => {
@@ -132,7 +132,7 @@ const UnsettledTrades = ({
 
   if (!group) return null
 
-  return mangoAccount &&
+  return mangoAccountAddress &&
     Object.values(unsettledSpotBalances).flat().concat(unsettledPerpPositions)
       .length ? (
     showTableView ? (
@@ -272,7 +272,7 @@ const UnsettledTrades = ({
         })}
       </div>
     )
-  ) : connected ? (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-unsettled')}</p>
