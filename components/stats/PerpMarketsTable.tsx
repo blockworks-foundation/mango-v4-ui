@@ -33,8 +33,6 @@ const PerpMarketsTable = ({
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
 
-  console.log(coingeckoPrices.find((asset) => asset.symbol === 'soBTC'))
-
   return (
     <ContentBox hideBorder hidePadding>
       {showTableView ? (

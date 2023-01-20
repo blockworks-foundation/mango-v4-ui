@@ -109,7 +109,6 @@ export const queryBars = async (
 
 export default {
   onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
-    // console.log('[onReady]: Method call')
     setTimeout(() => callback(configurationData as any))
   },
 
@@ -128,14 +127,6 @@ export default {
     // _onResolveErrorCallback: any,
     // _extension: any
   ) => {
-    // console.log(
-    //   '[resolveSymbol]: Method call',
-    //   symbolAddress,
-    //   onSymbolResolvedCallback
-    // )
-    // const symbols = await getAllSymbols()
-    // let symbolItem = symbols.find((item: any) => item.address === symbolAddress)
-    // console.log('========symbols:', symbolItem, symbols)
     let symbolItem:
       | {
           address: string
@@ -175,7 +166,6 @@ export default {
       format: 'price',
     }
 
-    // console.log('[resolveSymbol]: Symbol resolved', symbolAddress)
     onSymbolResolvedCallback(symbolInfo)
   },
   getBars: async (
@@ -215,7 +205,6 @@ export default {
           ...bars[bars.length - 1],
         })
       }
-      // console.log(`[getBars]: returned ${bars.length} bar(s)`)
       onHistoryCallback(bars, {
         noData: false,
       })
@@ -232,10 +221,6 @@ export default {
     subscriberUID: string,
     onResetCacheNeededCallback: () => void
   ) => {
-    // console.log(
-    //   '[subscribeBars]: Method call with subscriberUID:',
-    //   subscriberUID
-    // )
     subscribeOnStream(
       symbolInfo,
       resolution,
