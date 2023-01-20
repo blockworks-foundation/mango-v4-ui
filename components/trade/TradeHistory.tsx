@@ -203,9 +203,13 @@ const TradeHistory = () => {
                 market = selectedMarket
               }
               let makerTaker = trade.liquidity
+
               if ('maker' in trade) {
                 makerTaker = trade.maker ? 'Maker' : 'Taker'
-                if (trade.taker === mangoAccount.publicKey.toString()) {
+                if (
+                  trade.taker &&
+                  trade.taker.toString() === mangoAccount.publicKey.toString()
+                ) {
                   makerTaker = 'Taker'
                 }
               }
@@ -267,7 +271,7 @@ const TradeHistory = () => {
                     )}
                   </Td>
                   {market.name.includes('PERP') ? (
-                    <Td>
+                    <Td className="xl:!pl-0">
                       <div className="flex justify-end">
                         <Tooltip content="View Counterparty" delay={250}>
                           <a

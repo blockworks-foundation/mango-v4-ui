@@ -206,7 +206,6 @@ const AdvancedTradeForm = () => {
     const minOrderDecimals = getDecimalCount(minOrderSize)
     return [minOrderDecimals, minOrderSize]
   }, [selectedMarket])
-  console.log(minOrderDecimals, minOrderSize)
 
   /*
    * Updates the limit price on page load
