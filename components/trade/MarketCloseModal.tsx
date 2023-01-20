@@ -23,7 +23,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
   isOpen,
   position,
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const [submitting, setSubmitting] = useState(false)
   const group = mangoStore.getState().group
   const perpMarket = group?.getPerpMarketByMarketIndex(position.marketIndex)
@@ -92,17 +92,18 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
   return (
     <Modal onClose={onClose} isOpen={isOpen}>
       <h3 className="mb-2">
-        {t('close-confirm', { config_name: perpMarket?.name })}
+        {t('trade:close-confirm', { config_name: perpMarket?.name })}
       </h3>
-      <div className="pb-6 text-th-fgd-3">{t('price-expect')}</div>
-      <div className="flex items-center justify-center">
-        <Button onClick={handleMarketClose}>
-          {submitting ? <Loading /> : <span>Close Position</span>}
-        </Button>
-        <LinkButton className="ml-4 text-th-fgd-1" onClick={onClose}>
-          {t('cancel')}
-        </LinkButton>
-      </div>
+      <div className="pb-6 text-th-fgd-3">{t('trade:price-expect')}</div>
+      <Button className="mb-4 w-full" onClick={handleMarketClose} size="large">
+        {submitting ? <Loading /> : <span>{t('trade:close-position')}</span>}
+      </Button>
+      <LinkButton
+        className="inline-flex items-center text-th-fgd-1"
+        onClick={onClose}
+      >
+        {t('cancel')}
+      </LinkButton>
     </Modal>
   )
 }
