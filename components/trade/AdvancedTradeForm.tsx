@@ -323,6 +323,12 @@ const AdvancedTradeForm = () => {
           undefined
         )
         actions.fetchOpenOrders()
+        set((s) => {
+          s.successAnimation.trade = true
+        })
+        if (soundSettings['swap-success']) {
+          successSound.play()
+        }
         notify({
           type: 'success',
           title: 'Transaction successful',
