@@ -85,6 +85,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
       console.error('Place trade error:', e)
     } finally {
       setSubmitting(false)
+      onClose()
     }
   }, [])
 
