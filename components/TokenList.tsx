@@ -97,19 +97,15 @@ const TokenList = () => {
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="md:-mt-[36px]">
-      <div className="flex items-center justify-end md:mb-4">
-        <div className="flex w-full items-center justify-between border-b border-th-bkg-3 py-3 px-6 md:w-auto md:border-0 md:py-0">
-          {!showTableView ? <p>{t('show-zero-balances')}</p> : null}
-          <Switch
-            className="text-th-fgd-3"
-            checked={showZeroBalances}
-            disabled={!mangoAccount}
-            onChange={() => setShowZeroBalances(!showZeroBalances)}
-          >
-            {showTableView ? t('show-zero-balances') : ''}
-          </Switch>
-        </div>
+    <ContentBox hideBorder hidePadding className="lg:-mt-[36px]">
+      <div className="flex w-full items-center justify-end border-b border-th-bkg-3 py-3 px-6 lg:mb-4 lg:w-auto lg:border-0 lg:py-0">
+        <Switch
+          checked={showZeroBalances}
+          disabled={!mangoAccount}
+          onChange={() => setShowZeroBalances(!showZeroBalances)}
+        >
+          {t('show-zero-balances')}
+        </Switch>
       </div>
       {showTableView ? (
         <Table>
