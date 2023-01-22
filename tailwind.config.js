@@ -14,8 +14,14 @@ module.exports = {
         shake: 'shake 0.4s linear 4',
         'spin-fast': 'spin 0.5s linear infinite',
       },
-      cursor: {
-        help: 'help',
+      backgroundImage: {
+        'long-loss': "url('/share_images/bg-long-loss.png')",
+        'long-profit': "url('/share_images/bg-long-profit.png')",
+        'short-loss': "url('/share_images/bg-short-loss.png')",
+        'short-profit': "url('/share_images/bg-short-profit.png')",
+      },
+      boxShadow: {
+        bottomBar: '0px -4px 8px -1px rgba(0,0,0,0.2)',
       },
       // each color category in a theme has a single base color with the variations acheived by adjusting lightness (dark and hover variants) and lightness and saturation for muted variants
       colors: {
@@ -416,6 +422,9 @@ module.exports = {
         'th-input-border': 'var(--input-border)',
         'th-input-border-hover': 'var(--input-border-hover)',
       },
+      cursor: {
+        help: 'help',
+      },
       fontSize: {
         xxs: '.65rem',
       },
@@ -436,12 +445,6 @@ module.exports = {
             transform: 'translateX(100%)',
           },
         },
-      },
-      backgroundImage: {
-        'long-loss': "url('/share_images/bg-long-loss.png')",
-        'long-profit': "url('/share_images/bg-long-profit.png')",
-        'short-loss': "url('/share_images/bg-short-loss.png')",
-        'short-profit': "url('/share_images/bg-short-profit.png')",
       },
       screens: {
         xl: '1600px',

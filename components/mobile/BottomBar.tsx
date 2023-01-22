@@ -29,6 +29,30 @@ const StyledBarItemLabel = ({
   </div>
 )
 
+const BottomBarLink = ({
+  children,
+  isActive,
+  pathName,
+}: {
+  children: ReactNode
+  isActive: boolean
+  pathName: string
+}) => {
+  return (
+    <Link
+      href={{
+        pathname: pathName,
+      }}
+      className={`${
+        isActive ? 'text-th-active' : 'text-th-fgd-2'
+      } col-span-1 flex flex-col items-center justify-center`}
+      shallow={true}
+    >
+      {children}
+    </Link>
+  )
+}
+
 const BottomBar = () => {
   const { t } = useTranslation('common')
   const { asPath } = useRouter()
@@ -36,59 +60,32 @@ const BottomBar = () => {
 
   return (
     <>
-      <div className="grid grid-cols-5 grid-rows-1 bg-th-bkg-2 py-2.5">
-        <Link
-          href={{
-            pathname: '/',
-          }}
-          className={`${
-            asPath === '/' ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
-        >
+      <div className="grid h-12 grid-cols-5 grid-rows-1 bg-th-bkg-3 shadow-bottomBar">
+        <BottomBarLink isActive={asPath === '/'} pathName="/">
           <CurrencyDollarIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('account')}</StyledBarItemLabel>
-        </Link>
-        <Link
-          href={{
-            pathname: '/swap',
-          }}
-          shallow={true}
-          className={`${
-            asPath === '/swap' ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
-        >
+        </BottomBarLink>
+        <BottomBarLink isActive={asPath === '/swap'} pathName="/swap">
           <ArrowsRightLeftIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('swap')}</StyledBarItemLabel>
-        </Link>
-        <Link
-          href="/trade"
-          shallow={true}
-          className={`${
-            asPath === '/trade' ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
-        >
+        </BottomBarLink>
+        <BottomBarLink isActive={asPath === '/trade'} pathName="/trade">
           <ArrowTrendingUpIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
-        </Link>
-        <Link
-          href="/settings"
-          shallow={true}
-          className={`${
-            asPath === '/settings' ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
-        >
+        </BottomBarLink>
+        <BottomBarLink isActive={asPath === '/settings'} pathName="/settings">
           <Cog8ToothIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('settings')}</StyledBarItemLabel>
-        </Link>
-        <a
+        </BottomBarLink>
+        <button
           className={`${
-            showPanel ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
+            showPanel ? 'text-th-active' : 'text-th-fgd-2'
+          } col-span-1 flex cursor-pointer flex-col items-center justify-center`}
           onClick={() => setShowPanel(!showPanel)}
         >
           <Bars3Icon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('more')}</StyledBarItemLabel>
-        </a>
+        </button>
       </div>
       <MoreMenuPanel showPanel={showPanel} setShowPanel={setShowPanel} />
     </>
