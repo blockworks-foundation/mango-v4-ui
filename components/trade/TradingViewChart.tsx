@@ -136,7 +136,7 @@ const TradingViewChart = () => {
     if (window) {
       // const tempBtcDatafeedUrl = 'https://dex-pyth-price-mainnet.zeta.markets/tv/history?symbol=BTC-USDC&resolution=5&from=1674427748&to=1674430748&countback=2'
       const tempBtcDatafeedUrl =
-        'http://redirect-origin.mangomarkets.workers.dev'
+        'https://redirect-origin.mangomarkets.workers.dev'
       const btcDatafeed = new (window as any).Datafeeds.UDFCompatibleDatafeed(
         tempBtcDatafeedUrl
       )
