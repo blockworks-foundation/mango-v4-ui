@@ -111,8 +111,8 @@ const ActivityFeedTable = ({
       }
     }
     if (activity_type === 'perp_trade') {
-      const { perp_market, price, quantity } = activity.activity_details
-      credit = { value: quantity, symbol: perp_market }
+      const { perp_market_name, price, quantity } = activity.activity_details
+      credit = { value: quantity, symbol: perp_market_name }
       debit = { value: formatDecimal(quantity * price * -1), symbol: 'USDC' }
     }
     if (activity_type === 'openbook_trade') {
@@ -165,20 +165,20 @@ const ActivityFeedTable = ({
 
   const getFee = (activity: any) => {
     const { activity_type } = activity
-    let fee = '0'
+    let fee = { value: '0', symbol: '' }
     if (activity_type === 'swap') {
       const { loan_origination_fee, swap_in_symbol } = activity.activity_details
       fee = loan_origination_fee
-        ? `${formatFee(loan_origination_fee)} ${swap_in_symbol}`
-        : '0'
+        ? { value: formatFee(loan_origination_fee), symbol: swap_in_symbol }
+        : { value: '0', symbol: '' }
     }
     if (activity_type === 'perp_trade') {
       const { maker_fee, taker_fee } = activity.activity_details
-      fee = `${formatFee(maker_fee + taker_fee)} USDC`
+      fee = { value: formatFee(maker_fee + taker_fee), symbol: 'USDC' }
     }
     if (activity_type === 'openbook_trade') {
       const { fee_cost, quote_symbol } = activity.activity_details
-      fee = `${formatFee(fee_cost)} ${quote_symbol}`
+      fee = { value: formatFee(fee_cost), symbol: quote_symbol }
     }
     return fee
   }
@@ -251,7 +251,12 @@ const ActivityFeedTable = ({
                       {amounts.debit.symbol}
                     </span>
                   </Td>
-                  <Td className="text-right font-mono">{fee}</Td>
+                  <Td className="text-right font-mono">
+                    {fee.value}{' '}
+                    <span className="font-body text-th-fgd-3">
+                      {fee.symbol}
+                    </span>
+                  </Td>
                   <Td
                     className={`text-right font-mono ${
                       activity_type === 'swap' ||
