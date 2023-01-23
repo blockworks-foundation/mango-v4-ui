@@ -21,7 +21,7 @@ socket.addEventListener('open', (_event) => {
 socket.addEventListener('message', (msg) => {
   const data = JSON.parse(msg.data)
 
-  if (data.type !== 'PRICE_DATA') return console.log(data)
+  if (data.type !== 'PRICE_DATA') return console.warn(data)
 
   const currTime = data.data.unixTime * 1000
   const lastBar = subscriptionItem.lastBar
@@ -39,7 +39,6 @@ socket.addEventListener('message', (msg) => {
       close: data.data.c,
       volume: data.data.v,
     }
-    // console.log('[socket] Generate new bar')
   } else {
     bar = {
       ...lastBar,
@@ -48,7 +47,6 @@ socket.addEventListener('message', (msg) => {
       close: data.data.c,
       volume: data.data.v,
     }
-    // console.log('[socket] Update the latest bar by price')
   }
 
   subscriptionItem.lastBar = bar

@@ -97,19 +97,15 @@ const TokenList = () => {
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="md:-mt-[36px]">
-      <div className="flex items-center justify-end md:mb-4">
-        <div className="flex w-full items-center justify-between border-b border-th-bkg-3 py-3 px-6 md:w-auto md:border-0 md:py-0">
-          {!showTableView ? <p>{t('show-zero-balances')}</p> : null}
-          <Switch
-            className="text-th-fgd-3"
-            checked={showZeroBalances}
-            disabled={!mangoAccount}
-            onChange={() => setShowZeroBalances(!showZeroBalances)}
-          >
-            {showTableView ? t('show-zero-balances') : ''}
-          </Switch>
-        </div>
+    <ContentBox hideBorder hidePadding className="lg:-mt-[36px]">
+      <div className="flex w-full items-center justify-end border-b border-th-bkg-3 py-3 px-6 lg:mb-4 lg:w-auto lg:border-0 lg:py-0">
+        <Switch
+          checked={showZeroBalances}
+          disabled={!mangoAccount}
+          onChange={() => setShowZeroBalances(!showZeroBalances)}
+        >
+          {t('show-zero-balances')}
+        </Switch>
       </div>
       {showTableView ? (
         <Table>
@@ -154,10 +150,7 @@ const TokenList = () => {
               }
 
               const tokenBalance = mangoAccount
-                ? floorToDecimal(
-                    mangoAccount.getTokenBalanceUi(bank),
-                    bank.mintDecimals
-                  ).toNumber()
+                ? mangoAccount.getTokenBalanceUi(bank)
                 : 0
 
               const hasInterestEarned = totalInterestData.find(
@@ -544,16 +537,6 @@ const ActionsMenu = ({
     return mangoTokens.find((t) => t.address === bank.mint.toString())?.logoURI
   }, [bank, mangoTokens])
 
-  const hasBorrow = useMemo(() => {
-    if (!mangoAccount || !bank) return false
-    return (
-      floorToDecimal(
-        mangoAccount.getTokenBorrowsUi(bank),
-        bank.mintDecimals
-      ).toNumber() > 0
-    )
-  }, [mangoAccount, bank])
-
   return (
     <>
       {mangoAccount && !connected ? null : (
@@ -573,7 +556,7 @@ const ActionsMenu = ({
           >
             {t('deposit')}
           </ActionsLinkButton>
-          {hasBorrow ? (
+          {balance < 0 ? (
             <ActionsLinkButton
               mangoAccount={mangoAccount!}
               onClick={() => handleShowActionModals(bank.name, 'repay')}

@@ -94,8 +94,10 @@ const CoingeckoStats = ({
 
   const coingeckoTokenPrices = useMemo(() => {
     if (daysToShow === '1' && coingeckoPrices.length && bank) {
-      const tokenPriceData = coingeckoPrices.find(
-        (asset) => asset.symbol === bank.name
+      const tokenPriceData = coingeckoPrices.find((asset) =>
+        bank.name === 'soETH'
+          ? asset.symbol === 'ETH'
+          : asset.symbol.toUpperCase() === bank.name.toUpperCase()
       )
 
       if (tokenPriceData) {

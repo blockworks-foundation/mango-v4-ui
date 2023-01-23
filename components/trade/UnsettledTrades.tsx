@@ -99,10 +99,6 @@ const UnsettledTrades = ({
         mangoAccountPnl >= 0 ? mangoAccount : filteredAccounts[0].mangoAccount
       const unprofitableAccount =
         mangoAccountPnl < 0 ? mangoAccount : filteredAccounts[0].mangoAccount
-      // const profitableAccount = mangoAccount
-      // const unprofitableAccount =
-      //   filteredAccounts[filteredAccounts.length - 1].mangoAccount
-      // console.log('unprofitableAccount', unprofitableAccount)
 
       const txid = await client.perpSettlePnl(
         group,

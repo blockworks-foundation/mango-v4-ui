@@ -76,7 +76,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       return dataList
     } catch (e) {
       setIsLoading(false)
-      console.log(e)
+      console.error(e)
       return []
     }
   }
@@ -132,7 +132,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         try {
           fetchFreshData(365)
         } catch (e) {
-          console.log('Error fetching new data')
+          console.error('Error fetching new data')
         }
         chart.loadMore(() => null)
       })

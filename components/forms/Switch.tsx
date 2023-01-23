@@ -21,7 +21,7 @@ const Switch: FunctionComponent<SwitchProps> = ({
 
   return (
     <div className={`flex items-center ${className}`}>
-      <span className="mr-2 text-xs text-th-fgd-1">{children}</span>
+      <span className="mr-2 text-xs text-th-fgd-2">{children}</span>
       <button
         type="button"
         className={`${

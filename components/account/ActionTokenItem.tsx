@@ -1,7 +1,11 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Image from 'next/legacy/image'
 import { useMemo } from 'react'
-import { formatDecimal } from '../../utils/numbers'
+import {
+  formatDecimal,
+  formatFixedDecimals,
+  trimDecimals,
+} from '../../utils/numbers'
 import useJupiterMints from 'hooks/useJupiterMints'
 
 const ActionTokenItem = ({
@@ -65,7 +69,9 @@ const ActionTokenItem = ({
       ) : null}
       <div className="w-1/2 pl-3 text-right">
         <p className="truncate font-mono text-th-fgd-1">
-          {formatDecimal(customValue)}
+          {formatFixedDecimals(
+            trimDecimals(customValue, bank.mintDecimals + 1)
+          )}
         </p>
       </div>
     </button>

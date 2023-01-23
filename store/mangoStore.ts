@@ -1034,7 +1034,7 @@ const mangoStore = create<MangoStore>()(
               state.selectedMarket.fills = loadedFills
             })
           } catch (err) {
-            console.log('Error fetching fills:', err)
+            console.error('Error fetching fills:', err)
           }
         },
         async fetchTradeHistory(offset = 0) {
@@ -1087,8 +1087,6 @@ const mangoStore = create<MangoStore>()(
           )
           newProvider.opts.skipPreflight = true
           const newClient = initMangoClient(newProvider)
-          console.log('here')
-
           set((state) => {
             state.connection = newConnection
             state.client = newClient

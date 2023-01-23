@@ -21,7 +21,7 @@ const getRecentPerformance = async (
 
     setTps(tps)
   } catch {
-    console.log('Unable to fetch TPS')
+    console.warn('Unable to fetch TPS')
   }
 }
 

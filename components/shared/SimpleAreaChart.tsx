@@ -41,7 +41,18 @@ const SimpleAreaChart = ({
           fill={`url(#gradientArea-${name})`}
         />
         <XAxis dataKey={xKey} hide />
-        <YAxis domain={['dataMin', 'dataMax']} dataKey={yKey} hide />
+        <YAxis
+          domain={([dataMin, dataMax]) => {
+            const absMax = Math.max(Math.abs(dataMin), Math.abs(dataMax))
+            if (absMax < 1) {
+              return [dataMin - 0.01, dataMax + 0.01]
+            } else {
+              return [dataMin, dataMax]
+            }
+          }}
+          dataKey={yKey}
+          hide
+        />
       </AreaChart>
     </ResponsiveContainer>
   )

@@ -11,12 +11,23 @@ import Button, { LinkButton } from '@components/shared/Button'
 import { calculateEstPriceForBaseSize } from 'utils/tradeForm'
 import { notify } from 'utils/notifications'
 import Loading from '@components/shared/Loading'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { SOUND_SETTINGS_KEY } from 'utils/constants'
+import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
+import { Howl } from 'howler'
 
 interface MarketCloseModalProps {
   onClose: () => void
   isOpen: boolean
   position: PerpPosition
 }
+
+const set = mangoStore.getState().set
+
+const successSound = new Howl({
+  src: ['/sounds/swap-success.mp3'],
+  volume: 0.5,
+})
 
 const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
   onClose,
@@ -27,6 +38,10 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
   const [submitting, setSubmitting] = useState(false)
   const group = mangoStore.getState().group
   const perpMarket = group?.getPerpMarketByMarketIndex(position.marketIndex)
+  const [soundSettings] = useLocalStorageState(
+    SOUND_SETTINGS_KEY,
+    INITIAL_SOUND_SETTINGS
+  )
 
   const handleMarketClose = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -70,6 +85,12 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         undefined
       )
       actions.fetchOpenOrders()
+      set((s) => {
+        s.successAnimation.trade = true
+      })
+      if (soundSettings['swap-success']) {
+        successSound.play()
+      }
       notify({
         type: 'success',
         title: 'Transaction successful',

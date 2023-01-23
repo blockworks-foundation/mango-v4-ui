@@ -13,7 +13,7 @@ export const formatDecimal = (
 ): string => {
   if (opts?.fixed) return value.toFixed(decimals)
 
-  if (value > -0.0000001 && value < 0.0000001) return '0.00'
+  if (value > -0.0000000001 && value < 0.000000001) return '0.00'
 
   if (decimals === 2) return digits2.format(value)
   if (decimals === 5) return digits5.format(value)
@@ -80,11 +80,7 @@ export const formatFixedDecimals = (
           maximumFractionDigits: 3,
         })
   } else {
-    formattedValue = isUSD
-      ? usdFormatter3.format(value)
-      : Number(floorToDecimal(value, 8)).toLocaleString(undefined, {
-          maximumFractionDigits: 8,
-        })
+    formattedValue = isUSD ? usdFormatter3.format(value) : digits9.format(value)
   }
 
   if (formattedValue === '-$0.00') return '$0.00'

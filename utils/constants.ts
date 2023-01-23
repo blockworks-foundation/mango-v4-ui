@@ -45,6 +45,10 @@ export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
+export const HIDE_ACCOUNT_VALUE_KEY = 'hideAccountValue-0.1'
+
+export const HIDE_PNL_KEY = 'hidePnl-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
@@ -74,4 +78,4 @@ export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '444px'
 
 export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 
-export const PAGINATION_PAGE_LENGTH = 25
+export const PAGINATION_PAGE_LENGTH = 250

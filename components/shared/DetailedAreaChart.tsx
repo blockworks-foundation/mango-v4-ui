@@ -324,7 +324,21 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       dataKey={yKey}
                       minTickGap={20}
                       type="number"
-                      domain={domain ? domain : ['dataMin', 'dataMax']}
+                      domain={
+                        domain
+                          ? domain
+                          : ([dataMin, dataMax]) => {
+                              const absMax = Math.max(
+                                Math.abs(dataMin),
+                                Math.abs(dataMax)
+                              )
+                              if (absMax < 1) {
+                                return [dataMin - 0.01, dataMax + 0.01]
+                              } else {
+                                return [dataMin, dataMax]
+                              }
+                            }
+                      }
                       padding={{ top: 20, bottom: 20 }}
                       tick={{
                         fill: 'var(--fgd-4)',
