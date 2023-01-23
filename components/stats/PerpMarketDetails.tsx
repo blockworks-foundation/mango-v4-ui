@@ -32,7 +32,11 @@ const PerpMarketDetails = ({
   return (
     <div className="grid grid-cols-2">
       <div className="col-span-2 flex items-center border-b border-th-bkg-3 px-6 py-3">
-        <IconButton className="mr-4" onClick={() => setShowPerpDetails('')}>
+        <IconButton
+          className="mr-4"
+          onClick={() => setShowPerpDetails('')}
+          size="small"
+        >
           <ChevronLeftIcon className="h-5 w-5" />
         </IconButton>
         <h2 className="text-lg">{`${perpMarket} ${t('stats')}`}</h2>

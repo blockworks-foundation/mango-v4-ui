@@ -7,7 +7,9 @@ export function abbreviateAddress(address: PublicKey, size = 5) {
 }
 
 export const formatYAxis = (value: number) => {
-  return Math.abs(value) > 1
+  return value === 0
+    ? '0'
+    : Math.abs(value) > 1
     ? numberCompacter.format(value)
     : formatDecimal(value, 2)
 }
