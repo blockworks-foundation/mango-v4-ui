@@ -1,5 +1,6 @@
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import mangoStore from '@store/mangoStore'
+import useMangoAccount from 'hooks/useMangoAccount'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import { floorToDecimal } from 'utils/numbers'
@@ -14,7 +15,7 @@ const MaxSwapAmount = ({
 }) => {
   const { t } = useTranslation('common')
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
-  const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+  const { mangoAccount } = useMangoAccount()
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const {
     amount: tokenMax,
