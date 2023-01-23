@@ -116,7 +116,7 @@ const RecentTrades = () => {
 
   return (
     <div className="thin-scroll h-full overflow-y-scroll">
-      <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 px-2">
+      <div className="flex items-center justify-between border-b border-th-bkg-3 p-1 xl:px-2">
         <Tooltip content={t('trade:trade-sounds-tooltip')} delay={250}>
           <IconButton
             onClick={() =>
@@ -143,7 +143,7 @@ const RecentTrades = () => {
           <span className="text-th-down">{(sellRatio * 100).toFixed(1)}%</span>
         </span>
       </div>
-      <div className="px-2">
+      <div className="px-1 xl:px-2">
         <table className="min-w-full">
           <thead>
             <tr className="text-right text-xxs text-th-fgd-4">
@@ -193,7 +193,7 @@ const RecentTrades = () => {
                     >
                       {formattedPrice.toFixed()}
                     </td>
-                    <td className="pb-1.5 text-right">
+                    <td className="pb-1.5 text-right text-th-fgd-3">
                       {formattedSize.toFixed()}
                     </td>
                     <td className="pb-1.5 text-right text-th-fgd-4">
@@ -201,7 +201,7 @@ const RecentTrades = () => {
                         ? new Date(trade.time).toLocaleTimeString()
                         : trade.timestamp
                         ? dayjs(trade.timestamp.toNumber() * 1000).format(
-                            'hh:mma'
+                            'h:mma'
                           )
                         : '-'}
                     </td>
