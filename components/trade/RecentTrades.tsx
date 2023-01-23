@@ -40,7 +40,7 @@ const RecentTrades = () => {
     if (fills.length && previousFills && previousFills.length) {
       const latestFill: ChartTradeType = fills[0]
       const previousFill: ChartTradeType = previousFills[0]
-      if (previousFill.orderId.toString() !== latestFill.orderId.toString()) {
+      if (previousFill.orderId?.toString() !== latestFill.orderId?.toString()) {
         const side =
           latestFill.side || (latestFill.takerSide === 1 ? 'bid' : 'ask')
         if (['buy', 'bid'].includes(side)) {
