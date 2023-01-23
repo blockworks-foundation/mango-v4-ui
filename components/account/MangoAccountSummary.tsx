@@ -8,6 +8,8 @@ import { useTranslation } from 'next-i18next'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useMemo } from 'react'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { HIDE_ACCOUNT_VALUE_KEY, HIDE_PNL_KEY } from 'utils/constants'
 
 const SummaryItem = ({ label, value }: { label: string; value: string }) => {
   return (
@@ -23,6 +25,8 @@ const MangoAccountSummary = () => {
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
+  const [hideAccountValue] = useLocalStorageState(HIDE_ACCOUNT_VALUE_KEY, true)
+  const [hidePnl] = useLocalStorageState(HIDE_PNL_KEY, true)
 
   const [accountValue, freeCollateral, health] = useMemo(() => {
     if (!group || !mangoAccount) return [0, 0, 0]
@@ -58,7 +62,11 @@ const MangoAccountSummary = () => {
     <div className="space-y-2">
       <SummaryItem
         label={t('account-value')}
-        value={formatFixedDecimals(accountValue, true, true)}
+        value={
+          !hideAccountValue
+            ? formatFixedDecimals(accountValue, true, true)
+            : '*****'
+        }
       />
       <SummaryItem label={t('health')} value={`${health}%`} />
       <SummaryItem
@@ -68,7 +76,7 @@ const MangoAccountSummary = () => {
       <SummaryItem label={t('leverage')} value={`${leverage.toFixed(2)}x`} />
       <SummaryItem
         label={t('pnl')}
-        value={formatFixedDecimals(pnl, true, true)}
+        value={!hidePnl ? formatFixedDecimals(pnl, true, true) : '*****'}
       />
     </div>
   )

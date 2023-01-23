@@ -45,6 +45,10 @@ export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
+export const HIDE_ACCOUNT_VALUE_KEY = 'hideAccountValue-0.1'
+
+export const HIDE_PNL_KEY = 'hidePnl-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
