@@ -22,10 +22,8 @@ const AdvancedMarketHeader = ({
   const { data: tokenPrices } = useCoingecko()
 
   const coingeckoData = useMemo(() => {
-    return tokenPrices.find((asset) =>
-      baseSymbol === 'soETH'
-        ? asset.symbol === 'ETH'
-        : asset.symbol.toUpperCase() === baseSymbol?.toUpperCase()
+    return tokenPrices.find(
+      (asset) => asset.symbol.toUpperCase() === baseSymbol?.toUpperCase()
     )
   }, [baseSymbol, tokenPrices])
 

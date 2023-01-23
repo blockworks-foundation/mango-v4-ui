@@ -47,10 +47,9 @@ const SpotMarketsTable = () => {
               )
               const oraclePrice = bank?.uiPrice
 
-              const coingeckoData = coingeckoPrices.find((asset) =>
-                bank?.name === 'soETH'
-                  ? asset.symbol === 'ETH'
-                  : asset.symbol.toUpperCase() === bank?.name.toUpperCase()
+              const coingeckoData = coingeckoPrices.find(
+                (asset) =>
+                  asset.symbol.toUpperCase() === bank?.name.toUpperCase()
               )
 
               const change = coingeckoData

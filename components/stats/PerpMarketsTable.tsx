@@ -51,10 +51,8 @@ const PerpMarketsTable = ({
             {perpMarkets.map((market) => {
               const symbol = market.name.split('-')[0]
 
-              const coingeckoData = coingeckoPrices.find((asset) =>
-                symbol === 'soETH'
-                  ? asset.symbol === 'ETH'
-                  : asset.symbol.toUpperCase() === symbol.toUpperCase()
+              const coingeckoData = coingeckoPrices.find(
+                (asset) => asset.symbol.toUpperCase() === symbol.toUpperCase()
               )
 
               const change = coingeckoData
@@ -181,9 +179,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
 
   const symbol = market.name.split('-')[0]
 
-  const coingeckoData = coingeckoPrices.find((asset) =>
-    symbol === 'soETH' ? asset.symbol === 'ETH' : asset.symbol === symbol
-  )
+  const coingeckoData = coingeckoPrices.find((asset) => asset.symbol === symbol)
 
   const change = coingeckoData
     ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
