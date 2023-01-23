@@ -114,7 +114,7 @@ const TokenList = () => {
               <Th className="text-left">{t('token')}</Th>
               <Th>
                 <div className="flex justify-end">
-                  <Tooltip content="If your balance is negative, you have a borrow for that token, of that amount.">
+                  <Tooltip content="A negative balance represents a borrow">
                     <span className="tooltip-underline">{t('balance')}</span>
                   </Tooltip>
                 </div>
@@ -122,7 +122,7 @@ const TokenList = () => {
               <Th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</Th>
               <Th className="bg-th-bkg-1 text-right">{t('trade:unsettled')}</Th>
               <Th className="flex justify-end" id="account-step-nine">
-                <Tooltip content="The sum of interest earned and interest paid for each token.">
+                <Tooltip content="The sum of interest earned and interest paid for each token">
                   <span className="tooltip-underline">
                     {t('interest-earned-paid')}
                   </span>
@@ -130,7 +130,7 @@ const TokenList = () => {
               </Th>
               <Th id="account-step-ten">
                 <div className="flex justify-end">
-                  <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right).">
+                  <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right)">
                     <span className="tooltip-underline">{t('rates')}</span>
                   </Tooltip>
                 </div>
