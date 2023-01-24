@@ -13,12 +13,7 @@ import { IconButton, LinkButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
 import mangoStore from '@store/mangoStore'
-import {
-  countLeadingZeros,
-  formatDecimal,
-  formatFixedDecimals,
-  trimDecimals,
-} from '../../utils/numbers'
+import { countLeadingZeros, trimDecimals } from '../../utils/numbers'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import Tooltip from '@components/shared/Tooltip'
@@ -29,6 +24,7 @@ import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
@@ -152,8 +148,11 @@ const SwapHistoryTable = () => {
                       </div>
                       <div>
                         <p className="whitespace-nowrap">
-                          {`${formatDecimal(swap_in_amount, inDecimals)}`}
-                          <span className="ml-1 font-body text-th-fgd-3">
+                          <FormatNumericValue
+                            value={swap_in_amount}
+                            decimals={inDecimals}
+                          />{' '}
+                          <span className="font-body text-th-fgd-3">
                             {inSymbol}
                           </span>
                         </p>
@@ -161,7 +160,7 @@ const SwapHistoryTable = () => {
                           <span className="font-body text-th-fgd-4">
                             {t('price')}:
                           </span>{' '}
-                          {formatFixedDecimals(swap_in_price_usd, true)}
+                          <FormatNumericValue value={swap_in_price_usd} isUsd />
                         </p>
                       </div>
                     </div>
@@ -178,25 +177,31 @@ const SwapHistoryTable = () => {
                       </div>
                       <div>
                         <p className="whitespace-nowrap">
-                          {`${formatDecimal(swap_out_amount, outDecimals)}`}
-                          <span className="ml-1 font-body text-th-fgd-3">
+                          <FormatNumericValue
+                            value={swap_out_amount}
+                            decimals={outDecimals}
+                          />{' '}
+                          <span className="font-body text-th-fgd-3">
                             {outSymbol}
                           </span>
                         </p>
                         <p className="text-xs text-th-fgd-4">
                           <span className="font-body">{t('price')}:</span>{' '}
-                          {formatFixedDecimals(swap_out_price_usd, true)}
+                          <FormatNumericValue
+                            value={swap_out_price_usd}
+                            isUsd
+                          />
                         </p>
                       </div>
                     </div>
                   </Td>
                   <Td>
                     <p className="text-right">
-                      {formatFixedDecimals(
-                        swap_out_price_usd * swap_out_amount,
-                        false,
-                        true
-                      )}
+                      <FormatNumericValue
+                        value={swap_out_price_usd * swap_out_amount}
+                        decimals={2}
+                        isUsd
+                      />
                     </p>
                   </Td>
                   <Td>
@@ -310,7 +315,10 @@ const SwapHistoryTable = () => {
                       </div>
                       <div>
                         <p className="whitespace-nowrap font-mono text-th-fgd-1">
-                          {formatDecimal(swap_in_amount, inDecimals)}{' '}
+                          <FormatNumericValue
+                            value={swap_in_amount}
+                            decimals={inDecimals}
+                          />{' '}
                           <span className="font-body text-th-fgd-3">
                             {inSymbol}
                           </span>
@@ -319,7 +327,7 @@ const SwapHistoryTable = () => {
                           <span className="font-body text-th-fgd-4">
                             {t('price')}:
                           </span>{' '}
-                          {formatFixedDecimals(swap_in_price_usd, true)}
+                          <FormatNumericValue value={swap_in_price_usd} isUsd />
                         </p>
                       </div>
                     </div>
@@ -335,7 +343,10 @@ const SwapHistoryTable = () => {
                       </div>
                       <div>
                         <p className="whitespace-nowrap font-mono text-th-fgd-1">
-                          {formatDecimal(swap_out_amount, outDecimals)}{' '}
+                          <FormatNumericValue
+                            value={swap_out_amount}
+                            decimals={outDecimals}
+                          />{' '}
                           <span className="font-body text-th-fgd-3">
                             {outSymbol}
                           </span>
@@ -344,7 +355,10 @@ const SwapHistoryTable = () => {
                           <span className="font-body text-th-fgd-4">
                             {t('price')}:
                           </span>{' '}
-                          {formatFixedDecimals(swap_out_price_usd, true)}
+                          <FormatNumericValue
+                            value={swap_out_price_usd}
+                            isUsd
+                          />
                         </p>
                       </div>
                     </div>
