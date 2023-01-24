@@ -1,6 +1,7 @@
 import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
 import Button, { LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -10,13 +11,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
-import {
-  formatDecimal,
-  formatFixedDecimals,
-  getDecimalCount,
-  numberFormat,
-  trimDecimals,
-} from 'utils/numbers'
+import { getDecimalCount, trimDecimals } from 'utils/numbers'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import MarketCloseModal from './MarketCloseModal'
 import PerpSideBadge from './PerpSideBadge'
@@ -126,36 +121,44 @@ const PerpPositions = () => {
                       <LinkButton
                         onClick={() => handlePositionClick(trimmedBasePosition)}
                       >
-                        {Math.abs(trimmedBasePosition)}
+                        <FormatNumericValue
+                          value={Math.abs(basePosition)}
+                          decimals={getDecimalCount(market.minOrderSize)}
+                        />
                       </LinkButton>
                     ) : (
-                      Math.abs(trimmedBasePosition)
+                      <FormatNumericValue
+                        value={Math.abs(basePosition)}
+                        decimals={getDecimalCount(market.minOrderSize)}
+                      />
                     )}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
-                  <div>
-                    $
-                    {Math.abs(trimmedBasePosition * market._uiPrice).toFixed(2)}
-                  </div>
+                  <FormatNumericValue
+                    value={trimmedBasePosition * market._uiPrice}
+                    decimals={2}
+                    isUsd
+                  />
                 </Td>
                 <Td className="text-right font-mono">
-                  <div>
-                    $
-                    {numberFormat.format(
-                      position.getAverageEntryPriceUi(market)
-                    )}
-                  </div>
+                  <FormatNumericValue
+                    value={position.getAverageEntryPriceUi(market)}
+                    isUsd
+                  />
                 </Td>
                 <Td className={`text-right font-mono`}>
-                  <div>{formatDecimal(unsettledPnl, market.baseDecimals)}</div>
+                  <FormatNumericValue
+                    value={unsettledPnl}
+                    decimals={market.baseDecimals}
+                  />
                 </Td>
                 <Td
                   className={`text-right font-mono ${
                     cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
                   }`}
                 >
-                  <div>{formatFixedDecimals(cummulativePnl, true)}</div>
+                  <FormatNumericValue value={cummulativePnl} isUsd />
                 </Td>
                 <Td className={`text-right`}>
                   <Button
