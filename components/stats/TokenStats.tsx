@@ -243,12 +243,8 @@ const TokenStats = () => {
                         {t('total-deposits')}
                       </p>
                       <AmountWithValue
-                        amount={formatFixedDecimals(deposits)}
-                        value={formatFixedDecimals(
-                          deposits * price,
-                          true,
-                          true
-                        )}
+                        amount={deposits}
+                        value={deposits * price}
                         stacked
                       />
                     </div>
@@ -257,8 +253,8 @@ const TokenStats = () => {
                         {t('total-borrows')}
                       </p>
                       <AmountWithValue
-                        amount={formatFixedDecimals(borrows)}
-                        value={formatFixedDecimals(borrows * price, true, true)}
+                        amount={borrows}
+                        value={borrows * price}
                         stacked
                       />
                     </div>

@@ -19,11 +19,7 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from './../utils/numbers'
+import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
 import { TokenAccount } from './../utils/tokens'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
@@ -338,17 +334,12 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                   <p>{t('deposit-amount')}</p>
                   {inputAmount ? (
                     <AmountWithValue
-                      amount={formatDecimal(
-                        Number(inputAmount),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
-                        bank.uiPrice * Number(inputAmount),
-                        true
-                      )}
+                      amount={inputAmount}
+                      amountDecimals={bank.mintDecimals}
+                      value={bank.uiPrice * Number(inputAmount)}
                     />
                   ) : (
-                    <AmountWithValue amount="0" value="$0.00" />
+                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
                   )}
                 </div>
                 {/* <div className="flex justify-between">

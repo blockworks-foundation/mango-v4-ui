@@ -119,31 +119,17 @@ const BalancesTable = () => {
                 </Td>
                 <Td className="text-right">
                   <AmountWithValue
-                    amount={
-                      inOrders
-                        ? formatDecimal(Number(inOrders), bank.mintDecimals)
-                        : '0'
-                    }
-                    value={formatFixedDecimals(
-                      inOrders * bank.uiPrice,
-                      true,
-                      true
-                    )}
+                    amount={inOrders}
+                    amountDecimals={bank.mintDecimals}
+                    value={inOrders * bank.uiPrice}
                     stacked
                   />
                 </Td>
                 <Td className="text-right">
                   <AmountWithValue
-                    amount={
-                      unsettled
-                        ? formatDecimal(Number(unsettled), bank.mintDecimals)
-                        : '0'
-                    }
-                    value={formatFixedDecimals(
-                      unsettled * bank.uiPrice,
-                      true,
-                      true
-                    )}
+                    amount={unsettled}
+                    amountDecimals={bank.mintDecimals}
+                    value={unsettled * bank.uiPrice}
                     stacked
                   />
                 </Td>

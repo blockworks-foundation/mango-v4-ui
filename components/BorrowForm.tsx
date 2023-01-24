@@ -21,11 +21,7 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from './../utils/numbers'
+import { floorToDecimal, formatDecimal } from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -332,46 +328,33 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   <p>{t('withdraw-amount')}</p>
                   {isBorrow ? (
                     <AmountWithValue
-                      amount={formatDecimal(
-                        Number(tokenBalance),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
-                        bank.uiPrice * tokenBalance.toNumber(),
-                        true
-                      )}
+                      amount={tokenBalance}
+                      amountDecimals={bank.mintDecimals}
+                      value={bank.uiPrice * tokenBalance.toNumber()}
                     />
                   ) : inputAmount ? (
                     <AmountWithValue
-                      amount={formatDecimal(
-                        Number(inputAmount),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
-                        bank.uiPrice * parseFloat(inputAmount),
-                        true
-                      )}
+                      amount={inputAmount}
+                      amountDecimals={bank.mintDecimals}
+                      value={bank.uiPrice * parseFloat(inputAmount)}
                     />
                   ) : (
-                    <AmountWithValue amount="0" value="$0.00" />
+                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
                   )}
                 </div>
                 <div className="flex justify-between">
                   <p>{t('borrow-amount')}</p>
                   {isBorrow ? (
                     <AmountWithValue
-                      amount={formatDecimal(
-                        Number(inputAmount) - Number(tokenBalance),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
+                      amount={Number(inputAmount) - Number(tokenBalance)}
+                      amountDecimals={bank.mintDecimals}
+                      value={
                         bank.uiPrice *
-                          (parseFloat(inputAmount) - tokenBalance.toNumber()),
-                        true
-                      )}
+                        (parseFloat(inputAmount) - tokenBalance.toNumber())
+                      }
                     />
                   ) : (
-                    <AmountWithValue amount="0" value="$0.00" />
+                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
                   )}
                 </div>
                 <div className="flex justify-between">

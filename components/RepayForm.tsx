@@ -13,11 +13,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import { notify } from './../utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from './../utils/numbers'
+import { floorToDecimal, formatDecimal } from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -306,17 +302,12 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   <p>{t('repayment-amount')}</p>
                   {inputAmount ? (
                     <AmountWithValue
-                      amount={formatDecimal(
-                        Number(inputAmount),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
-                        bank.uiPrice * Number(inputAmount),
-                        true
-                      )}
+                      amount={inputAmount}
+                      amountDecimals={bank.mintDecimals}
+                      value={bank.uiPrice * Number(inputAmount)}
                     />
                   ) : (
-                    <AmountWithValue amount="0" value="$0.00" />
+                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
                   )}
                 </div>
                 <div className="flex justify-between">
