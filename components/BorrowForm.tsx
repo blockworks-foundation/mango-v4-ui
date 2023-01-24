@@ -21,7 +21,11 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatDecimal } from './../utils/numbers'
+import {
+  floorToDecimal,
+  formatDecimal,
+  formatNumericValue,
+} from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -109,9 +113,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
 
   const setMax = useCallback(() => {
     if (!bank) return
-    setInputAmount(
-      floorToDecimal(Number(tokenMax), bank.mintDecimals).toFixed()
-    )
+    setInputAmount(formatNumericValue(tokenMax, bank.mintDecimals))
     handleSizePercentage('100')
   }, [bank, tokenMax, handleSizePercentage])
 
@@ -251,12 +253,10 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 {bank ? (
                   <MaxAmountButton
                     className="mb-2"
+                    decimals={bank.mintDecimals}
                     label={t('max')}
                     onClick={setMax}
-                    value={floorToDecimal(
-                      Number(tokenMax),
-                      bank.mintDecimals
-                    ).toFixed()}
+                    value={tokenMax}
                   />
                 ) : null}
               </div>

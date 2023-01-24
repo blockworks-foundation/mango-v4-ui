@@ -19,7 +19,11 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatFixedDecimals } from './../utils/numbers'
+import {
+  floorToDecimal,
+  formatFixedDecimals,
+  formatNumericValue,
+} from './../utils/numbers'
 import { TokenAccount } from './../utils/tokens'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
@@ -124,9 +128,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [walletTokens, selectedToken])
 
   const setMax = useCallback(() => {
-    setInputAmount(
-      floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals).toFixed()
-    )
+    setInputAmount(formatNumericValue(tokenMax.maxAmount, tokenMax.maxDecimals))
     setSizePercentage('100')
   }, [tokenMax])
 
@@ -264,12 +266,10 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 <Label text={`${t('deposit')} ${t('token')}`} />
                 <MaxAmountButton
                   className="mb-2"
+                  decimals={tokenMax.maxDecimals}
                   label={t('wallet-balance')}
                   onClick={setMax}
-                  value={floorToDecimal(
-                    tokenMax.maxAmount,
-                    tokenMax.maxDecimals
-                  ).toFixed()}
+                  value={tokenMax.maxAmount}
                 />
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">

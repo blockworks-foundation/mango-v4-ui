@@ -13,7 +13,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatDecimal } from './../utils/numbers'
+import { floorToDecimal, formatNumericValue } from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -80,15 +80,12 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
   const borrowAmount = useMemo(() => {
     if (!mangoAccount || !bank) return '0'
-    return formatDecimal(
-      mangoAccount.getTokenBorrowsUi(bank),
-      bank.mintDecimals
-    )
+    return mangoAccount.getTokenBorrowsUi(bank)
   }, [bank, mangoAccount])
 
   const setMax = useCallback(() => {
     if (!bank) return
-    setInputAmount(borrowAmount)
+    setInputAmount(formatNumericValue(borrowAmount, bank.mintDecimals))
     setSizePercentage('100')
   }, [bank, borrowAmount])
 
@@ -236,12 +233,15 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('repay')} ${t('token')}`} />
-                <MaxAmountButton
-                  className="mb-2"
-                  label={t('amount-owed')}
-                  onClick={setMax}
-                  value={borrowAmount}
-                />
+                {bank ? (
+                  <MaxAmountButton
+                    className="mb-2"
+                    decimals={bank.mintDecimals}
+                    label={t('amount-owed')}
+                    onClick={setMax}
+                    value={borrowAmount}
+                  />
+                ) : null}
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
                 <button
@@ -315,7 +315,10 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                     <p>{t('outstanding-balance')}</p>
                   </div>
                   <p className="font-mono text-th-fgd-2">
-                    {Number(borrowAmount) - Number(inputAmount)}{' '}
+                    {formatNumericValue(
+                      Number(borrowAmount) - Number(inputAmount),
+                      bank.mintDecimals
+                    )}{' '}
                     <span className="font-body text-th-fgd-4">
                       {selectedToken}
                     </span>

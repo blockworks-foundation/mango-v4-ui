@@ -29,6 +29,7 @@ import {
   floorToDecimal,
   formatDecimal,
   formatFixedDecimals,
+  formatNumericValue,
 } from 'utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
@@ -422,20 +423,15 @@ const UserSetupModal = ({
                     <Label text={t('amount')} />
                     <MaxAmountButton
                       className="mb-2"
+                      decimals={tokenMax.decimals}
                       label="Max"
                       onClick={() => {
                         setDepositAmount(
-                          floorToDecimal(
-                            tokenMax.amount,
-                            tokenMax.decimals
-                          ).toFixed()
+                          formatNumericValue(tokenMax.amount, tokenMax.decimals)
                         )
                         setSizePercentage('100')
                       }}
-                      value={floorToDecimal(
-                        tokenMax.amount,
-                        tokenMax.decimals
-                      ).toFixed()}
+                      value={tokenMax.amount}
                     />
                   </div>
                   <div className="mb-6 grid grid-cols-2">

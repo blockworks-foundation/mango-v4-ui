@@ -221,12 +221,10 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                 {bank ? (
                   <MaxAmountButton
                     className="mb-2"
+                    decimals={bank.mintDecimals}
                     label={t('max')}
                     onClick={() => handleSizePercentage('100')}
-                    value={floorToDecimal(
-                      Number(tokenMax),
-                      bank.mintDecimals
-                    ).toFixed()}
+                    value={tokenMax}
                   />
                 ) : null}
               </div>

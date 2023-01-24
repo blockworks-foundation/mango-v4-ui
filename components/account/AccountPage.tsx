@@ -440,7 +440,7 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              <FormatNumericValue value={leverage} decimals={2} />x
+              <FormatNumericValue value={leverage} decimals={2} roundUp />x
             </p>
           </div>
         </div>
