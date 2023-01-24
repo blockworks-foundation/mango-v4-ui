@@ -19,52 +19,43 @@ export const formatNumericValue = (
           currency: 'USD',
         }).format(numberValue)
       : roundUp
-      ? roundValueUp(numberValue, decimals)
-      : roundValueFloor(numberValue, decimals)
+      ? roundValue(numberValue, decimals, true)
+      : roundValue(numberValue, decimals)
   } else if (Math.abs(numberValue) >= 1000) {
     formattedValue = isUSD
       ? usdFormatter0.format(numberValue)
       : roundUp
-      ? roundValueUp(numberValue, 0)
-      : roundValueFloor(numberValue, 0)
+      ? roundValue(numberValue, 0, true)
+      : roundValue(numberValue, 0)
   } else if (Math.abs(numberValue) >= 0.1) {
     formattedValue = isUSD
       ? usdFormatter2.format(numberValue)
       : roundUp
-      ? roundValueUp(numberValue, 3)
-      : roundValueFloor(numberValue, 3)
+      ? roundValue(numberValue, 3, true)
+      : roundValue(numberValue, 3)
   } else {
     formattedValue = isUSD
       ? usdFormatter3Sig.format(numberValue)
       : roundUp
-      ? roundValueUp(numberValue, 9)
-      : roundValueFloor(numberValue, 9)
+      ? roundValue(numberValue, 9, true)
+      : roundValue(numberValue, 9)
   }
 
   if (formattedValue === '-$0.00') return '$0.00'
   return formattedValue
 }
 
-export const roundValueFloor = (
+const roundValue = (
   value: number | string | Decimal,
-  decimals: number
+  decimals: number,
+  roundUp?: boolean
 ): string => {
   const decimal = value instanceof Decimal ? value : new Decimal(value)
-
-  return Number(
-    decimal.toDecimalPlaces(decimals, Decimal.ROUND_FLOOR)
-  ).toLocaleString(undefined, { maximumFractionDigits: decimals })
-}
-
-export const roundValueUp = (
-  value: number | string | Decimal,
-  decimals: number
-): string => {
-  const decimal = value instanceof Decimal ? value : new Decimal(value)
-
-  return Number(
-    decimal.toDecimalPlaces(decimals, Decimal.ROUND_UP)
-  ).toLocaleString(undefined, { maximumFractionDigits: decimals })
+  const roundMode = roundUp ? Decimal.ROUND_UP : Decimal.ROUND_FLOOR
+  return Number(decimal.toDecimalPlaces(decimals, roundMode)).toLocaleString(
+    undefined,
+    { maximumFractionDigits: decimals }
+  )
 }
 
 const digits2 = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
