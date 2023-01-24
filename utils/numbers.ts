@@ -51,7 +51,9 @@ export const roundValueDown = (
 ): string => {
   const decimal = value instanceof Decimal ? value : new Decimal(value)
 
-  return decimal.toDecimalPlaces(decimals, Decimal.ROUND_DOWN).toFixed(decimals)
+  return Number(
+    decimal.toDecimalPlaces(decimals, Decimal.ROUND_DOWN)
+  ).toLocaleString(undefined, { maximumFractionDigits: decimals })
 }
 
 export const roundValueUp = (
@@ -60,7 +62,9 @@ export const roundValueUp = (
 ): string => {
   const decimal = value instanceof Decimal ? value : new Decimal(value)
 
-  return decimal.toDecimalPlaces(decimals, Decimal.ROUND_UP).toFixed(decimals)
+  return Number(
+    decimal.toDecimalPlaces(decimals, Decimal.ROUND_UP)
+  ).toLocaleString(undefined, { maximumFractionDigits: decimals })
 }
 
 const digits2 = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
