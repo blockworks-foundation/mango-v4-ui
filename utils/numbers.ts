@@ -20,39 +20,39 @@ export const formatNumericValue = (
         }).format(numberValue)
       : roundUp
       ? roundValueUp(numberValue, decimals)
-      : roundValueDown(numberValue, decimals)
+      : roundValueFloor(numberValue, decimals)
   } else if (Math.abs(numberValue) >= 1000) {
     formattedValue = isUSD
       ? usdFormatter0.format(numberValue)
       : roundUp
       ? roundValueUp(numberValue, 0)
-      : roundValueDown(numberValue, 0)
+      : roundValueFloor(numberValue, 0)
   } else if (Math.abs(numberValue) >= 0.1) {
     formattedValue = isUSD
       ? usdFormatter2.format(numberValue)
       : roundUp
       ? roundValueUp(numberValue, 3)
-      : roundValueDown(numberValue, 3)
+      : roundValueFloor(numberValue, 3)
   } else {
     formattedValue = isUSD
       ? usdFormatter3Sig.format(numberValue)
       : roundUp
       ? roundValueUp(numberValue, 9)
-      : roundValueDown(numberValue, 9)
+      : roundValueFloor(numberValue, 9)
   }
 
   if (formattedValue === '-$0.00') return '$0.00'
   return formattedValue
 }
 
-export const roundValueDown = (
+export const roundValueFloor = (
   value: number | string | Decimal,
   decimals: number
 ): string => {
   const decimal = value instanceof Decimal ? value : new Decimal(value)
 
   return Number(
-    decimal.toDecimalPlaces(decimals, Decimal.ROUND_DOWN)
+    decimal.toDecimalPlaces(decimals, Decimal.ROUND_FLOOR)
   ).toLocaleString(undefined, { maximumFractionDigits: decimals })
 }
 
