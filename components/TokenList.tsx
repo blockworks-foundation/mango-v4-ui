@@ -36,6 +36,7 @@ import { USDC_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import ActionsLinkButton from './account/ActionsLinkButton'
 import AmountWithValue from './shared/AmountWithValue'
+import FormatNumericValue from './shared/FormatNumericValue'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -189,57 +190,60 @@ const TokenList = () => {
                   <Td className="text-right">
                     {tokenBalance ? (
                       <AmountWithValue
-                        amount={formatDecimal(tokenBalance, bank.mintDecimals)}
-                        value={formatFixedDecimals(
-                          tokenBalance * oraclePrice,
-                          true,
-                          true
-                        )}
+                        amount={tokenBalance}
+                        amountDecimals={bank.mintDecimals}
+                        value={tokenBalance * oraclePrice}
                         stacked
                       />
                     ) : (
-                      <AmountWithValue amount="0" value="$0.00" stacked />
+                      <AmountWithValue
+                        amount="0"
+                        amountDecimals={0}
+                        value={0}
+                        stacked
+                      />
                     )}
                   </Td>
                   <Td className="text-right">
                     {inOrders ? (
                       <AmountWithValue
-                        amount={formatDecimal(inOrders, bank.mintDecimals)}
-                        value={formatFixedDecimals(
-                          inOrders * oraclePrice,
-                          true,
-                          true
-                        )}
+                        amount={inOrders}
+                        amountDecimals={bank.mintDecimals}
+                        value={inOrders * oraclePrice}
                         stacked
                       />
                     ) : (
-                      <AmountWithValue amount="0" value="$0.00" stacked />
+                      <AmountWithValue
+                        amount="0"
+                        amountDecimals={0}
+                        value={0}
+                        stacked
+                      />
                     )}
                   </Td>
                   <Td className="text-right">
                     {unsettled ? (
                       <AmountWithValue
-                        amount={formatDecimal(unsettled, bank.mintDecimals)}
-                        value={formatFixedDecimals(
-                          unsettled * oraclePrice,
-                          true,
-                          true
-                        )}
+                        amount={unsettled}
+                        amountDecimals={bank.mintDecimals}
+                        value={unsettled * oraclePrice}
                         stacked
                       />
                     ) : (
-                      <AmountWithValue amount="0" value="$0.00" stacked />
+                      <AmountWithValue
+                        amount="0"
+                        amountDecimals={0}
+                        value={0}
+                        stacked
+                      />
                     )}
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
                       <AmountWithValue
-                        amount={
-                          interestAmount
-                            ? formatDecimal(interestAmount, bank.mintDecimals)
-                            : '0'
-                        }
-                        value={formatFixedDecimals(interestValue, true, true)}
+                        amount={interestAmount}
+                        amountDecimals={bank.mintDecimals}
+                        value={interestValue}
                         stacked
                       />
                     </div>
@@ -247,16 +251,18 @@ const TokenList = () => {
                   <Td>
                     <div className="flex justify-end space-x-1.5">
                       <p className="text-th-up">
-                        {formatDecimal(bank.getDepositRateUi(), 2, {
-                          fixed: true,
-                        })}
+                        <FormatNumericValue
+                          value={bank.getDepositRateUi()}
+                          decimals={2}
+                        />
                         %
                       </p>
                       <span className="text-th-fgd-4">|</span>
                       <p className="text-th-down">
-                        {formatDecimal(bank.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        })}
+                        <FormatNumericValue
+                          value={bank.getBorrowRateUi()}
+                          decimals={2}
+                        />
                         %
                       </p>
                     </div>

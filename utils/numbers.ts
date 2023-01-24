@@ -1,5 +1,68 @@
 import Decimal from 'decimal.js'
 
+export const formatNumericValue = (
+  value: number | string | Decimal,
+  decimals?: number,
+  isUSD?: boolean,
+  roundUp?: boolean
+): string => {
+  const numberValue = Number(value)
+  let formattedValue
+  if (numberValue > -0.0000000001 && numberValue < 0.000000001) {
+    formattedValue = isUSD ? '$0.00' : '0'
+  } else if (decimals) {
+    formattedValue = isUSD
+      ? Intl.NumberFormat('en', {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+          style: 'currency',
+          currency: 'USD',
+        }).format(numberValue)
+      : roundUp
+      ? roundValueUp(numberValue, decimals)
+      : roundValueDown(numberValue, decimals)
+  } else if (Math.abs(numberValue) >= 1000) {
+    formattedValue = isUSD
+      ? usdFormatter0.format(numberValue)
+      : roundUp
+      ? roundValueUp(numberValue, 0)
+      : roundValueDown(numberValue, 0)
+  } else if (Math.abs(numberValue) >= 0.1) {
+    formattedValue = isUSD
+      ? usdFormatter2.format(numberValue)
+      : roundUp
+      ? roundValueUp(numberValue, 3)
+      : roundValueDown(numberValue, 3)
+  } else {
+    formattedValue = isUSD
+      ? usdFormatter3Sig.format(numberValue)
+      : roundUp
+      ? roundValueUp(numberValue, 9)
+      : roundValueDown(numberValue, 9)
+  }
+
+  if (formattedValue === '-$0.00') return '$0.00'
+  return formattedValue
+}
+
+export const roundValueDown = (
+  value: number | string | Decimal,
+  decimals: number
+): string => {
+  const decimal = value instanceof Decimal ? value : new Decimal(value)
+
+  return decimal.toDecimalPlaces(decimals, Decimal.ROUND_DOWN).toFixed(decimals)
+}
+
+export const roundValueUp = (
+  value: number | string | Decimal,
+  decimals: number
+): string => {
+  const decimal = value instanceof Decimal ? value : new Decimal(value)
+
+  return decimal.toDecimalPlaces(decimals, Decimal.ROUND_UP).toFixed(decimals)
+}
+
 const digits2 = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
 const digits5 = new Intl.NumberFormat('en', { maximumFractionDigits: 5 })
 const digits6 = new Intl.NumberFormat('en', { maximumFractionDigits: 6 })
@@ -50,7 +113,7 @@ const usdFormatter2 = Intl.NumberFormat('en', {
   currency: 'USD',
 })
 
-const usdFormatter3 = Intl.NumberFormat('en', {
+const usdFormatter3Sig = Intl.NumberFormat('en', {
   minimumSignificantDigits: 3,
   maximumSignificantDigits: 3,
   style: 'currency',
@@ -80,7 +143,9 @@ export const formatFixedDecimals = (
           maximumFractionDigits: 3,
         })
   } else {
-    formattedValue = isUSD ? usdFormatter3.format(value) : digits9.format(value)
+    formattedValue = isUSD
+      ? usdFormatter3Sig.format(value)
+      : digits9.format(value)
   }
 
   if (formattedValue === '-$0.00') return '$0.00'
