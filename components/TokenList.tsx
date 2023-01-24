@@ -262,6 +262,7 @@ const TokenList = () => {
                         <FormatNumericValue
                           value={bank.getBorrowRateUi()}
                           decimals={2}
+                          roundUp
                         />
                         %
                       </p>
