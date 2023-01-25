@@ -1,4 +1,4 @@
-name: Dependency Security Scan
+name: Code Review
 
 on:
   pull_request: 
@@ -6,10 +6,42 @@ on:
   push:
 
 jobs:
-  trivy:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      # use yarn setup to include allow-script config
+      - name: Run yarn setup
+        run: yarn setup
+
+      - name: Run build
+        run: yarn build
+
+  semgrep:
+    name: Code Scan
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - run: semgrep ci --exclude 'public/charting_library'
+        env:
+           SEMGREP_RULES: p/typescript
+  
+  sca:
     name: Dependency Scan
     runs-on: ubuntu-latest
-    if: (github.actor != 'dependabot[bot]')
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -21,7 +53,6 @@ jobs:
           scan-type: 'fs'
           ignore-unfixed: true
           hide-progress: true
-          security-checks: 'vuln' # disable secrets scanning until public
           format: 'table'
           
       # Fail the job on critical vulnerabiliies with fix available
