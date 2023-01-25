@@ -1,7 +1,6 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Image from 'next/legacy/image'
 import { useMemo } from 'react'
-import { formatDecimal } from '../../utils/numbers'
 import useJupiterMints from 'hooks/useJupiterMints'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 
@@ -53,14 +52,14 @@ const ActionTokenItem = ({
       {showDepositRates ? (
         <div className="w-1/4 text-right font-mono">
           <p className="text-th-up">
-            {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
+            <FormatNumericValue value={bank.getDepositRateUi()} decimals={2} />%
           </p>
         </div>
       ) : null}
       {showBorrowRates ? (
         <div className="w-1/4 text-right font-mono">
           <p className="text-th-down">
-            {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
+            <FormatNumericValue value={bank.getBorrowRateUi()} decimals={2} />%
           </p>
         </div>
       ) : null}

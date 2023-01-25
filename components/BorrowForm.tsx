@@ -21,11 +21,7 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatNumericValue,
-} from './../utils/numbers'
+import { floorToDecimal, formatNumericValue } from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -45,6 +41,7 @@ import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import AmountWithValue from './shared/AmountWithValue'
+import FormatNumericValue from './shared/FormatNumericValue'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -366,11 +363,13 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   <p className="font-mono text-th-fgd-2">
                     {isBorrow ? (
                       <>
-                        {formatDecimal(
-                          bank.loanOriginationFeeRate.toNumber() *
-                            (parseFloat(inputAmount) - tokenBalance.toNumber()),
-                          bank.mintDecimals
-                        )}{' '}
+                        <FormatNumericValue
+                          value={
+                            bank.loanOriginationFeeRate.toNumber() *
+                            (parseFloat(inputAmount) - tokenBalance.toNumber())
+                          }
+                          decimals={bank.mintDecimals}
+                        />{' '}
                         <span className="font-body text-th-fgd-4">
                           {bank.name}
                         </span>

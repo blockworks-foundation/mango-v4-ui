@@ -25,11 +25,7 @@ import {
 } from 'react'
 import { ALPHA_DEPOSIT_LIMIT } from 'utils/constants'
 import { notify } from 'utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatNumericValue,
-} from 'utils/numbers'
+import { floorToDecimal, formatNumericValue } from 'utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -488,10 +484,10 @@ const UserSetupModal = ({
                         <p className="font-mono text-th-fgd-2">
                           {depositAmount ? (
                             <>
-                              {formatDecimal(
-                                Number(depositAmount),
-                                depositBank.mintDecimals
-                              )}{' '}
+                              <FormatNumericValue
+                                value={depositAmount}
+                                decimals={depositBank.mintDecimals}
+                              />{' '}
                               <span className="text-xs text-th-fgd-3">
                                 (
                                 <FormatNumericValue

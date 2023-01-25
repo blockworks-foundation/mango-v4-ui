@@ -28,7 +28,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { formatDecimal, formatNumericValue } from '../../utils/numbers'
+import { formatNumericValue } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
@@ -447,17 +447,22 @@ const SwapReviewRouteInfo = ({
             </p>
             {outputTokenInfo?.decimals && selectedRoute ? (
               <p className="text-right font-mono text-sm text-th-fgd-2">
-                {selectedRoute.swapMode === 'ExactIn'
-                  ? formatDecimal(
+                {selectedRoute.swapMode === 'ExactIn' ? (
+                  <FormatNumericValue
+                    value={
                       selectedRoute.otherAmountThreshold /
-                        10 ** outputTokenInfo.decimals || 1,
-                      outputTokenInfo.decimals
-                    )
-                  : formatDecimal(
-                      selectedRoute.outAmount /
-                        10 ** outputTokenInfo.decimals || 1,
-                      outputTokenInfo.decimals
-                    )}{' '}
+                      10 ** outputTokenInfo.decimals
+                    }
+                    decimals={outputTokenInfo.decimals}
+                  />
+                ) : (
+                  <FormatNumericValue
+                    value={
+                      selectedRoute.outAmount / 10 ** outputTokenInfo.decimals
+                    }
+                    decimals={outputTokenInfo.decimals}
+                  />
+                )}{' '}
                 <span className="font-body text-th-fgd-3">
                   {outputTokenInfo?.symbol}
                 </span>
@@ -469,11 +474,13 @@ const SwapReviewRouteInfo = ({
               <p className="text-sm text-th-fgd-3">{t('swap:maximum-cost')}</p>
               {inputTokenInfo?.decimals && selectedRoute ? (
                 <p className="text-right font-mono text-sm text-th-fgd-2">
-                  {formatDecimal(
-                    selectedRoute.otherAmountThreshold /
-                      10 ** inputTokenInfo.decimals || 1,
-                    inputTokenInfo.decimals
-                  )}{' '}
+                  <FormatNumericValue
+                    value={
+                      selectedRoute.otherAmountThreshold /
+                      10 ** inputTokenInfo.decimals
+                    }
+                    decimals={inputTokenInfo.decimals}
+                  />{' '}
                   <span className="font-body text-th-fgd-3">
                     {inputTokenInfo?.symbol}
                   </span>
@@ -498,16 +505,18 @@ const SwapReviewRouteInfo = ({
                         balance: formatNumericValue(balance),
                         borrowAmount: formatNumericValue(borrowAmount),
                         token: inputTokenInfo?.symbol,
-                        rate: formatDecimal(inputBank!.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        }),
+                        rate: formatNumericValue(
+                          inputBank!.getBorrowRateUi(),
+                          2
+                        ),
                       })
                     : t('swap:tooltip-borrow-no-balance', {
                         borrowAmount: formatNumericValue(borrowAmount),
                         token: inputTokenInfo?.symbol,
-                        rate: formatDecimal(inputBank!.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        }),
+                        rate: formatNumericValue(
+                          inputBank!.getBorrowRateUi(),
+                          2
+                        ),
                       })
                 }
                 delay={250}

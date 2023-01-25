@@ -5,7 +5,7 @@ import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 import FlipNumbers from 'react-flip-numbers'
-import { formatCurrencyValue, formatDecimal } from 'utils/numbers'
+import { formatCurrencyValue } from 'utils/numbers'
 import Link from 'next/link'
 import SheenLoader from '@components/shared/SheenLoader'
 import Tooltip from '@components/shared/Tooltip'
@@ -157,13 +157,14 @@ const TokenPage = () => {
               <p className="tooltip-underline mr-1">{t('utilization')}:</p>
             </Tooltip>
             <span className="font-mono text-th-fgd-2 no-underline">
-              {bank.uiDeposits() > 0
-                ? formatDecimal(
-                    (bank.uiBorrows() / bank.uiDeposits()) * 100,
-                    1,
-                    { fixed: true }
-                  )
-                : '0.0'}
+              {bank.uiDeposits() > 0 ? (
+                <FormatNumericValue
+                  value={(bank.uiBorrows() / bank.uiDeposits()) * 100}
+                  decimals={1}
+                />
+              ) : (
+                '0.0'
+              )}
               %
             </span>
           </div>

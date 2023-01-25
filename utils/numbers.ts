@@ -88,23 +88,6 @@ const digits7 = new Intl.NumberFormat('en', { maximumFractionDigits: 7 })
 const digits8 = new Intl.NumberFormat('en', { maximumFractionDigits: 8 })
 const digits9 = new Intl.NumberFormat('en', { maximumFractionDigits: 9 })
 
-export const formatDecimal = (
-  value: number,
-  decimals = 6,
-  opts = { fixed: false }
-): string => {
-  if (opts?.fixed) return value.toFixed(decimals)
-
-  if (value > -0.0000000001 && value < 0.000000001) return '0.00'
-
-  if (decimals === 2) return digits2.format(value)
-  if (decimals === 5) return digits5.format(value)
-  if (decimals === 6) return digits6.format(value)
-  if (decimals === 8) return digits8.format(value)
-  if (decimals === 9) return digits9.format(value)
-  return value.toLocaleString(undefined, { maximumFractionDigits: decimals })
-}
-
 export const numberFormat = new Intl.NumberFormat('en', {
   maximumSignificantDigits: 7,
 })

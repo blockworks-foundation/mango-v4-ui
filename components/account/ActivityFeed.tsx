@@ -23,7 +23,6 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
-import { formatDecimal } from 'utils/numbers'
 import ActivityFeedTable from './ActivityFeedTable'
 
 interface AdvancedFilters {
@@ -429,7 +428,7 @@ const ActivityDetails = ({
         <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
           <p className="font-mono text-th-fgd-1">
-            {formatDecimal(asset_amount)}{' '}
+            <FormatNumericValue value={asset_amount} />{' '}
             <span className="font-body">{asset_symbol}</span>
             <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
             <FormatNumericValue value={asset_price} isUsd />
@@ -441,7 +440,7 @@ const ActivityDetails = ({
         <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
           <p className="font-mono text-th-fgd-1">
-            {formatDecimal(liab_amount)}{' '}
+            <FormatNumericValue value={liab_amount} />{' '}
             <span className="font-body">{liab_symbol}</span>
             <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
             <FormatNumericValue value={liab_price} isUsd />
