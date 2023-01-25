@@ -365,7 +365,7 @@ const UserSetupModal = ({
                     onChange={(e: ChangeEvent<HTMLInputElement>) =>
                       setAccountName(e.target.value)
                     }
-                    charLimit={30}
+                    maxLength={30}
                   />
                 </div>
                 <SolBalanceWarnings className="mt-4" />
