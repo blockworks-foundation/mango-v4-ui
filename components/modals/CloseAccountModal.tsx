@@ -11,11 +11,7 @@ import {
   TokenPosition,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
-import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  TrashIcon,
-} from '@heroicons/react/20/solid'
+import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/20/solid'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'
 import { formatFixedDecimals } from 'utils/numbers'
@@ -120,81 +116,76 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     hasBorrows ||
     hasOpenPositions ||
     !!unsettledBalances.length
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="h-[550px]">
+      <div className="h-[268px]">
         {loading ? (
           <BounceLoader loadingMessage={t('closing-account')} />
         ) : (
           <div className="flex h-full flex-col justify-between">
-            <div className="space-y-4">
-              <h2 className="mb-1">{t('close-account')}</h2>
-              <p>{t('description')}</p>
-              <p>{t('you-must')}:</p>
-              <div className="overflow-none space-y-2 rounded-md bg-th-bkg-4 p-2 sm:p-4">
-                <div className="flex items-center text-th-fgd-2">
-                  {hasBorrows ? (
-                    <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-down" />
-                  ) : (
-                    <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
-                  )}
-                  {t('close-all-borrows')}
-                </div>
-                <div className="flex items-center text-th-fgd-2">
-                  {hasOpenPositions ? (
-                    <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-down" />
-                  ) : (
-                    <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
-                  )}
-                  {t('close-perp-positions')}
-                </div>
-                <div className="flex items-center text-th-fgd-2">
-                  {hasOpenOrders ? (
-                    <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-down" />
-                  ) : (
-                    <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
-                  )}
-                  {t('close-open-orders')}
-                </div>
-                <div className="flex items-center text-th-fgd-2">
-                  {unsettledBalances.length ? (
-                    <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-down" />
-                  ) : (
-                    <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
-                  )}
-                  {t('settle-balances')}
-                </div>
-              </div>
-              <p>By closing your account you will:</p>
-              <div className="overflow-none space-y-2 rounded-md bg-th-bkg-4 p-2 sm:p-4">
-                <div className="flex items-center text-th-fgd-2">
-                  <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
-                  {t('delete-your-account')}
-                </div>
-                <div className="flex items-center text-th-fgd-2">
-                  <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
-                  {t('withdraw-assets-worth', {
-                    value:
-                      mangoAccount && group
-                        ? formatFixedDecimals(
-                            toUiDecimalsForQuote(
-                              mangoAccount!.current!.getEquity(group).toNumber()
-                            ),
-                            false,
-                            true
-                          )
-                        : 0,
-                  })}
-                </div>
-                <div className="flex items-center text-th-fgd-2">
-                  <CheckCircleIcon className="mr-1.5 h-4 w-4 text-th-success"></CheckCircleIcon>
-                  {t('recover-x-sol', {
-                    amount: totalAccountSOL.toFixed(3),
-                  })}
-                </div>
-              </div>
+            <div>
+              <h2 className="mb-2">{t('close-account')}</h2>
+              {!isDisabled ? (
+                <>
+                  <p className="mb-3">{t('are-you-sure')}:</p>
+                  <ol className="list-inside list-decimal space-y-1.5 border-y border-th-bkg-3 py-3 text-left">
+                    <li>{t('delete-your-account')}</li>
+                    <li>
+                      {t('withdraw-assets-worth', {
+                        value:
+                          mangoAccount && group
+                            ? formatFixedDecimals(
+                                toUiDecimalsForQuote(
+                                  mangoAccount!
+                                    .current!.getEquity(group)
+                                    .toNumber()
+                                ),
+                                false,
+                                true
+                              )
+                            : 0,
+                      })}
+                    </li>
+                    <li>
+                      {t('recover-x-sol', {
+                        amount: totalAccountSOL.toFixed(4),
+                      })}
+                    </li>
+                  </ol>
+                </>
+              ) : (
+                <>
+                  <p className="mb-3">{t('you-must')}:</p>
+                  <div className="space-y-1.5 border-y border-th-bkg-3 py-3">
+                    {hasBorrows ? (
+                      <div className="flex items-center">
+                        <ExclamationCircleIcon className="mr-1.5 h-5 w-5 text-th-down" />
+                        <p>{t('close-all-borrows')}</p>
+                      </div>
+                    ) : null}
+                    {hasOpenPositions ? (
+                      <div className="flex items-center">
+                        <ExclamationCircleIcon className="mr-1.5 h-5 w-5 text-th-down" />
+                        <p>{t('close-perp-positions')}</p>
+                      </div>
+                    ) : null}
+                    {hasOpenOrders ? (
+                      <div className="flex items-center">
+                        <ExclamationCircleIcon className="mr-1.5 h-5 w-5 text-th-down" />
+                        <p>{t('close-open-orders')}</p>
+                      </div>
+                    ) : null}
+                    {unsettledBalances.length ? (
+                      <div className="flex items-center">
+                        <ExclamationCircleIcon className="mr-1.5 h-5 w-5 text-th-down" />
+                        <p>{t('settle-balances')}</p>
+                      </div>
+                    ) : null}
+                  </div>
+                </>
+              )}
             </div>
-
             <Button
               className="w-full"
               disabled={isDisabled}
