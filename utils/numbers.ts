@@ -130,14 +130,6 @@ export const countLeadingZeros = (x: number) => {
   }
 }
 
-export const trimDecimals = (n: number | Decimal, digits: number) => {
-  const number = Number(n)
-  const step = Math.pow(10, digits || 0)
-  const temp = Math.trunc(step * number)
-
-  return temp / step
-}
-
 export const getDecimalCount = (value: number): number => {
   if (
     !isNaN(value) &&

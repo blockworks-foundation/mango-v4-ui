@@ -11,7 +11,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
-import { getDecimalCount, trimDecimals } from 'utils/numbers'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import MarketCloseModal from './MarketCloseModal'
 import PerpSideBadge from './PerpSideBadge'
@@ -91,10 +91,10 @@ const PerpPositions = () => {
               position.marketIndex
             )
             const basePosition = position.getBasePositionUi(market)
-            const trimmedBasePosition = trimDecimals(
+            const floorBasePosition = floorToDecimal(
               basePosition,
               getDecimalCount(market.minOrderSize)
-            )
+            ).toNumber()
             const isSelectedMarket =
               selectedMarket instanceof PerpMarket &&
               selectedMarket.perpMarketIndex === position.marketIndex
@@ -119,7 +119,7 @@ const PerpPositions = () => {
                   <p className="flex justify-end">
                     {isSelectedMarket ? (
                       <LinkButton
-                        onClick={() => handlePositionClick(trimmedBasePosition)}
+                        onClick={() => handlePositionClick(floorBasePosition)}
                       >
                         <FormatNumericValue
                           value={Math.abs(basePosition)}
@@ -136,7 +136,7 @@ const PerpPositions = () => {
                 </Td>
                 <Td className="text-right font-mono">
                   <FormatNumericValue
-                    value={trimmedBasePosition * market._uiPrice}
+                    value={floorBasePosition * market._uiPrice}
                     decimals={2}
                     isUsd
                   />

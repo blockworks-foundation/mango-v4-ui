@@ -3,7 +3,7 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useState } from 'react'
-import { trimDecimals } from 'utils/numbers'
+import { floorToDecimal } from 'utils/numbers'
 import { useSpotMarketMax } from './SpotSlider'
 
 const SpotButtonGroup = ({
@@ -29,28 +29,24 @@ const SpotButtonGroup = ({
 
       set((s) => {
         if (s.tradeForm.side === 'buy') {
-          s.tradeForm.quoteSize = trimDecimals(size, tickDecimals).toFixed(
-            tickDecimals
-          )
+          s.tradeForm.quoteSize = floorToDecimal(size, tickDecimals).toString()
 
           if (Number(s.tradeForm.price)) {
-            s.tradeForm.baseSize = trimDecimals(
+            s.tradeForm.baseSize = floorToDecimal(
               size / Number(s.tradeForm.price),
               minOrderDecimals
-            ).toFixed(minOrderDecimals)
+            ).toString()
           } else {
             s.tradeForm.baseSize = ''
           }
         } else if (s.tradeForm.side === 'sell') {
-          s.tradeForm.baseSize = trimDecimals(size, tickDecimals).toFixed(
-            minOrderDecimals
-          )
+          s.tradeForm.baseSize = floorToDecimal(size, tickDecimals).toString()
 
           if (Number(s.tradeForm.price)) {
-            s.tradeForm.quoteSize = trimDecimals(
+            s.tradeForm.quoteSize = floorToDecimal(
               size * Number(s.tradeForm.price),
               tickDecimals
-            ).toFixed(tickDecimals)
+            ).toString()
           }
         }
       })

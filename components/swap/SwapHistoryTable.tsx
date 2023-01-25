@@ -13,7 +13,7 @@ import { IconButton, LinkButton } from '../shared/Button'
 import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
 import mangoStore from '@store/mangoStore'
-import { countLeadingZeros, trimDecimals } from '../../utils/numbers'
+import { countLeadingZeros, floorToDecimal } from '../../utils/numbers'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import Tooltip from '@components/shared/Tooltip'
@@ -100,7 +100,7 @@ const SwapHistoryTable = () => {
               } = h
               const borrowAmount =
                 loan > 0
-                  ? `${trimDecimals(loan, countLeadingZeros(loan) + 2)}`
+                  ? `${floorToDecimal(loan, countLeadingZeros(loan) + 2)}`
                   : 0
               const borrowFee =
                 swap_in_loan_origination_fee > 0
@@ -273,7 +273,7 @@ const SwapHistoryTable = () => {
 
             const borrowAmount =
               loan > 0
-                ? `${trimDecimals(loan, countLeadingZeros(loan) + 2)}`
+                ? `${floorToDecimal(loan, countLeadingZeros(loan) + 2)}`
                 : 0
             const borrowFee =
               swap_in_loan_origination_fee > 0

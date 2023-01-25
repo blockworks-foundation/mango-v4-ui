@@ -12,7 +12,6 @@ import {
   floorToDecimal,
   formatNumericValue,
   getDecimalCount,
-  trimDecimals,
 } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
@@ -250,29 +249,32 @@ const Balance = ({ bank }: { bank: Bank }) => {
       }
 
       let minOrderDecimals: number
-      let tickSize: number
+      let tickDecimals: number
       if (selectedMarket instanceof Serum3Market) {
         const market = group.getSerum3ExternalMarket(
           selectedMarket.serumMarketExternal
         )
         minOrderDecimals = getDecimalCount(market.minOrderSize)
-        tickSize = getDecimalCount(market.tickSize)
+        tickDecimals = getDecimalCount(market.tickSize)
       } else {
         minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
-        tickSize = getDecimalCount(selectedMarket.tickSize)
+        tickDecimals = getDecimalCount(selectedMarket.tickSize)
       }
 
       if (type === 'quote') {
-        const trimmedBalance = trimDecimals(balance, tickSize)
-        const baseSize = trimDecimals(trimmedBalance / price, minOrderDecimals)
-        const quoteSize = trimDecimals(baseSize * price, tickSize)
+        const floorBalance = floorToDecimal(balance, tickDecimals).toNumber()
+        const baseSize = floorToDecimal(
+          floorBalance / price,
+          minOrderDecimals
+        ).toNumber()
+        const quoteSize = floorToDecimal(baseSize * price, tickDecimals)
         set((s) => {
           s.tradeForm.baseSize = baseSize.toString()
           s.tradeForm.quoteSize = quoteSize.toString()
         })
       } else {
-        const baseSize = trimDecimals(balance, minOrderDecimals)
-        const quoteSize = trimDecimals(baseSize * price, tickSize)
+        const baseSize = floorToDecimal(balance, minOrderDecimals).toNumber()
+        const quoteSize = floorToDecimal(baseSize * price, tickDecimals)
         set((s) => {
           s.tradeForm.baseSize = baseSize.toString()
           s.tradeForm.quoteSize = quoteSize.toString()
