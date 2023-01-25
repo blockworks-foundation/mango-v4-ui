@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js'
-import { formatNumericValue } from 'utils/numbers'
+import { formatCurrencyValue, formatNumericValue } from 'utils/numbers'
 
 const FormatNumericValue = ({
   value,
@@ -12,7 +12,13 @@ const FormatNumericValue = ({
   isUsd?: boolean
   roundUp?: boolean
 }) => {
-  return <span>{formatNumericValue(value, decimals, isUsd, roundUp)}</span>
+  return (
+    <span>
+      {isUsd
+        ? formatCurrencyValue(value, decimals)
+        : formatNumericValue(value, decimals, roundUp)}
+    </span>
+  )
 }
 
 export default FormatNumericValue
