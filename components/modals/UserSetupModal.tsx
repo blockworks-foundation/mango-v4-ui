@@ -25,7 +25,6 @@ import {
 } from 'react'
 import { ALPHA_DEPOSIT_LIMIT } from 'utils/constants'
 import { notify } from 'utils/notifications'
-import { floorToDecimal, formatNumericValue } from 'utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -166,10 +165,7 @@ const UserSetupModal = ({
             key,
             value,
             tokenDecimals: walletBalance.maxDecimals,
-            walletBalance: floorToDecimal(
-              walletBalance.maxAmount,
-              walletBalance.maxDecimals
-            ).toNumber(),
+            walletBalance: walletBalance.maxAmount,
             walletBalanceValue: walletBalance.maxAmount * value?.[0].uiPrice,
           }
         })
@@ -210,14 +206,22 @@ const UserSetupModal = ({
     tokenMax.amount < Number(depositAmount) ||
     (depositToken === 'SOL' && maxSolDeposit <= 0)
 
+  const setMax = useCallback(() => {
+    const max = new Decimal(tokenMax.amount).toDecimalPlaces(
+      tokenMax.decimals,
+      Decimal.ROUND_FLOOR
+    )
+    setDepositAmount(max.toString())
+    setSizePercentage('100')
+  }, [tokenMax])
+
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       setSizePercentage(percentage)
-      let amount = new Decimal(tokenMax.amount).mul(percentage).div(100)
-      if (percentage !== '100') {
-        amount = floorToDecimal(amount, tokenMax.decimals)
-      }
-
+      const amount = new Decimal(tokenMax.amount)
+        .mul(percentage)
+        .div(100)
+        .toDecimalPlaces(tokenMax.decimals, Decimal.ROUND_FLOOR)
       setDepositAmount(amount.toString())
     },
     [tokenMax]
@@ -421,12 +425,7 @@ const UserSetupModal = ({
                       className="mb-2"
                       decimals={tokenMax.decimals}
                       label="Max"
-                      onClick={() => {
-                        setDepositAmount(
-                          formatNumericValue(tokenMax.amount, tokenMax.decimals)
-                        )
-                        setSizePercentage('100')
-                      }}
+                      onClick={setMax}
                       value={tokenMax.amount}
                     />
                   </div>

@@ -13,7 +13,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatNumericValue } from './../utils/numbers'
+import { formatNumericValue } from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -79,13 +79,20 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   }, [walletTokens, selectedToken])
 
   const borrowAmount = useMemo(() => {
-    if (!mangoAccount || !bank) return '0'
-    return mangoAccount.getTokenBorrowsUi(bank)
+    if (!mangoAccount || !bank) return new Decimal(0)
+    const amount = new Decimal(
+      mangoAccount.getTokenBorrowsUi(bank)
+    ).toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
+    return amount
   }, [bank, mangoAccount])
 
   const setMax = useCallback(() => {
     if (!bank) return
-    setInputAmount(formatNumericValue(borrowAmount, bank.mintDecimals))
+    const amount = new Decimal(borrowAmount).toDecimalPlaces(
+      bank.mintDecimals,
+      Decimal.ROUND_UP
+    )
+    setInputAmount(amount.toString())
     setSizePercentage('100')
   }, [bank, borrowAmount])
 
@@ -93,13 +100,12 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     (percentage: string) => {
       if (!bank) return
       setSizePercentage(percentage)
-
-      let amount: Decimal | number = new Decimal(borrowAmount)
+      const amount = new Decimal(borrowAmount)
         .mul(percentage)
         .div(100)
-      amount = floorToDecimal(amount, bank.mintDecimals).toNumber()
+        .toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
 
-      setInputAmount(amount.toFixed(bank.mintDecimals))
+      setInputAmount(amount.toString())
     },
     [bank, borrowAmount]
   )

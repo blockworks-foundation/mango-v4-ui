@@ -7,7 +7,6 @@ import {
   LinkIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
-import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -19,7 +18,6 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatNumericValue } from './../utils/numbers'
 import { TokenAccount } from './../utils/tokens'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
@@ -39,6 +37,8 @@ import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import useSolBalance from 'hooks/useSolBalance'
 import AmountWithValue from './shared/AmountWithValue'
 import FormatNumericValue from './shared/FormatNumericValue'
+import Decimal from 'decimal.js'
+import { floorToDecimal } from 'utils/numbers'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -125,17 +125,18 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [walletTokens, selectedToken])
 
   const setMax = useCallback(() => {
-    setInputAmount(formatNumericValue(tokenMax.maxAmount, tokenMax.maxDecimals))
+    const max = floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals)
+    setInputAmount(max.toString())
     setSizePercentage('100')
   }, [tokenMax])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       setSizePercentage(percentage)
-
-      let amount = new Decimal(tokenMax.maxAmount).mul(percentage).div(100)
-      amount = floorToDecimal(amount, tokenMax.maxDecimals)
-
+      const amount = floorToDecimal(
+        new Decimal(tokenMax.maxAmount).mul(percentage).div(100),
+        tokenMax.maxDecimals
+      )
       setInputAmount(amount.toString())
     },
     [tokenMax]
@@ -192,10 +193,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           return {
             key,
             value,
-            walletBalance: floorToDecimal(
-              walletBalance.maxAmount,
-              walletBalance.maxDecimals
-            ).toNumber(),
+            walletBalance: walletBalance.maxAmount,
             walletBalanceValue: walletBalance.maxAmount * value[0].uiPrice!,
           }
         })

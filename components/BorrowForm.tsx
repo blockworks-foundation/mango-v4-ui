@@ -21,7 +21,6 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import { floorToDecimal, formatNumericValue } from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -42,6 +41,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import AmountWithValue from './shared/AmountWithValue'
 import FormatNumericValue from './shared/FormatNumericValue'
+import { floorToDecimal } from 'utils/numbers'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -82,17 +82,12 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     const group = mangoStore.getState().group
     if (!group || !bank || !mangoAccount) return new Decimal(0)
     const amount = getMaxWithdrawForBank(group, bank, mangoAccount, true)
-    return amount && amount.gt(0)
-      ? floorToDecimal(amount, bank.mintDecimals)
-      : new Decimal(0)
+    return amount && amount.gt(0) ? new Decimal(amount) : new Decimal(0)
   }, [mangoAccount, bank])
 
   const tokenBalance = useMemo(() => {
     if (!bank || !mangoAccount) return new Decimal(0)
-    const balance = floorToDecimal(
-      mangoAccount.getTokenBalanceUi(bank),
-      bank.mintDecimals
-    )
+    const balance = new Decimal(mangoAccount.getTokenBalanceUi(bank))
     return balance.gt(0) ? balance : new Decimal(0)
   }, [bank, mangoAccount])
 
@@ -102,15 +97,19 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     (percentage: string) => {
       if (!bank) return
       setSizePercentage(percentage)
-      const amount = (Number(percentage) / 100) * (tokenMax.toNumber() || 0)
-      setInputAmount(floorToDecimal(amount, bank.mintDecimals).toFixed())
+      const amount = floorToDecimal(
+        new Decimal(percentage).div(100).mul(tokenMax),
+        bank.mintDecimals
+      )
+      setInputAmount(amount.toString())
     },
     [tokenMax, bank]
   )
 
   const setMax = useCallback(() => {
     if (!bank) return
-    setInputAmount(formatNumericValue(tokenMax, bank.mintDecimals))
+    const max = floorToDecimal(tokenMax, bank.mintDecimals)
+    setInputAmount(max.toString())
     handleSizePercentage('100')
   }, [bank, tokenMax, handleSizePercentage])
 
@@ -165,14 +164,11 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
               bank,
               mangoAccount,
               true
-            )
+            ).toNumber()
             return {
               key,
               value,
-              maxAmount: floorToDecimal(
-                maxAmount,
-                bank.mintDecimals
-              ).toNumber(),
+              maxAmount,
             }
           })
         : []

@@ -8,12 +8,14 @@ const ActionTokenItem = ({
   bank,
   customValue,
   onSelect,
+  roundUp,
   showBorrowRates,
   showDepositRates,
 }: {
   bank: Bank
   customValue: number
   onSelect: (x: string) => void
+  roundUp?: boolean
   showBorrowRates?: boolean
   showDepositRates?: boolean
 }) => {
@@ -67,7 +69,8 @@ const ActionTokenItem = ({
         <p className="truncate font-mono text-th-fgd-1">
           <FormatNumericValue
             value={customValue}
-            decimals={bank.mintDecimals + 1}
+            decimals={bank.mintDecimals}
+            roundUp={roundUp}
           />
         </p>
       </div>

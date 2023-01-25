@@ -98,7 +98,7 @@ export const floorToDecimal = (
 ): Decimal => {
   const decimal = value instanceof Decimal ? value : new Decimal(value)
 
-  return decimal.toDecimalPlaces(decimals, Decimal.ROUND_DOWN)
+  return decimal.toDecimalPlaces(decimals, Decimal.ROUND_FLOOR)
 }
 
 const usdFormatter0 = Intl.NumberFormat('en', {
@@ -130,9 +130,10 @@ export const countLeadingZeros = (x: number) => {
   }
 }
 
-export const trimDecimals = (n: number, digits: number) => {
+export const trimDecimals = (n: number | Decimal, digits: number) => {
+  const number = Number(n)
   const step = Math.pow(10, digits || 0)
-  const temp = Math.trunc(step * n)
+  const temp = Math.trunc(step * number)
 
   return temp / step
 }
