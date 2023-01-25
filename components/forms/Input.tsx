@@ -4,7 +4,7 @@ interface InputProps {
   type: string
   value: any
   onChange: (e: ChangeEvent<HTMLInputElement>) => void
-  charLimit?: number
+  maxLength?: number
   className?: string
   disabled?: boolean
   prefixClassname?: string
@@ -21,7 +21,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     type,
     value,
     onChange,
-    charLimit,
+    maxLength,
     className,
     error,
     wrapperClassName = 'w-full',
@@ -59,20 +59,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           type={type}
           value={value}
           onChange={onChange}
-          maxLength={charLimit && charLimit}
+          maxLength={maxLength ? maxLength : undefined}
         />
         {suffix ? (
           <span className="absolute right-0 flex h-full items-center bg-transparent pr-2 text-xs text-th-fgd-4">
             {suffix}
           </span>
         ) : null}
-        {charLimit ? (
+        {maxLength ? (
           <p
             className={`absolute -top-7 right-0 mt-1 flex justify-end text-xs ${
-              value.length === charLimit ? 'text-th-down' : 'text-th-fgd-4'
+              value.length === maxLength ? 'text-th-down' : 'text-th-fgd-4'
             }`}
           >
-            {`${value.length}/${charLimit}`}
+            {`${value.length}/${maxLength}`}
           </p>
         ) : null}
       </div>

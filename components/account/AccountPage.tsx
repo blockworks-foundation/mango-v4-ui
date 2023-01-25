@@ -32,7 +32,7 @@ import {
   ANIMATION_SETTINGS_KEY,
   // IS_ONBOARDED_KEY
 } from 'utils/constants'
-// import { useWallet } from '@solana/wallet-adapter-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 // import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
@@ -45,7 +45,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
-  // const { connected } = useWallet()
+  const { connected } = useWallet()
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
@@ -75,7 +75,7 @@ const AccountPage = () => {
   )
 
   useEffect(() => {
-    if (mangoAccountAddress) {
+    if (mangoAccountAddress || (connected && !mangoAccountAddress)) {
       const set = mangoStore.getState().set
       set((s) => {
         s.mangoAccount.performance.initialLoad = false
@@ -84,7 +84,7 @@ const AccountPage = () => {
       actions.fetchAccountPerformance(mangoAccountAddress, 1)
       actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
-  }, [actions, mangoAccountAddress])
+  }, [actions, connected, mangoAccountAddress])
 
   useEffect(() => {
     if (
