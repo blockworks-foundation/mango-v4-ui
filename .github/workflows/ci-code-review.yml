@@ -17,11 +17,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-          registry-url: 'https://registry.npmjs.org'
+          cache: 'yarn'
 
       # use yarn setup to include allow-script config
       - name: Run yarn setup
-        run: yarn setup
+        run: yarn ci
 
       - name: Run build
         run: yarn build
