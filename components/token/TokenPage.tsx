@@ -5,7 +5,7 @@ import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 import FlipNumbers from 'react-flip-numbers'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import { formatCurrencyValue, formatDecimal } from 'utils/numbers'
 import Link from 'next/link'
 import SheenLoader from '@components/shared/SheenLoader'
 import Tooltip from '@components/shared/Tooltip'
@@ -18,6 +18,7 @@ import ActionPanel from './ActionPanel'
 import ChartTabs from './ChartTabs'
 import CoingeckoStats from './CoingeckoStats'
 import { useQuery } from '@tanstack/react-query'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -126,10 +127,10 @@ const TokenPage = () => {
                       play
                       delay={0.05}
                       duration={1}
-                      numbers={formatFixedDecimals(bank.uiPrice, true)}
+                      numbers={formatCurrencyValue(bank.uiPrice)}
                     />
                   ) : (
-                    <span>{formatFixedDecimals(bank.uiPrice, true)}</span>
+                    <FormatNumericValue value={bank.uiPrice} isUsd />
                   )}
                 </div>
                 {coingeckoTokenInfo.data ? (

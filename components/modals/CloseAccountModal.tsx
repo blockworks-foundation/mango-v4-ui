@@ -18,7 +18,7 @@ import {
 } from '@heroicons/react/20/solid'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatCurrencyValue } from 'utils/numbers'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation(['close-account'])
@@ -176,12 +176,10 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
                   {t('withdraw-assets-worth', {
                     value:
                       mangoAccount && group
-                        ? formatFixedDecimals(
+                        ? formatCurrencyValue(
                             toUiDecimalsForQuote(
-                              mangoAccount!.current!.getEquity(group).toNumber()
-                            ),
-                            false,
-                            true
+                              mangoAccount!.current!.getEquity(group)
+                            )
                           )
                         : 0,
                   })}

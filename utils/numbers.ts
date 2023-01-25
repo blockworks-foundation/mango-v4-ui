@@ -139,38 +139,6 @@ const usdFormatter3Sig = Intl.NumberFormat('en', {
   currency: 'USD',
 })
 
-export const formatFixedDecimals = (
-  value: number,
-  isUSD?: boolean,
-  is2DP?: boolean
-): string => {
-  let formattedValue
-  if (value === 0) {
-    formattedValue = isUSD ? '$0.00' : '0'
-  } else if (is2DP) {
-    formattedValue = usdFormatter2.format(value)
-  } else if (Math.abs(value) >= 1000) {
-    formattedValue = isUSD
-      ? usdFormatter0.format(value)
-      : Number(floorToDecimal(value, 0)).toLocaleString(undefined, {
-          maximumFractionDigits: 0,
-        })
-  } else if (Math.abs(value) >= 0.1) {
-    formattedValue = isUSD
-      ? usdFormatter2.format(value)
-      : Number(floorToDecimal(value, 3)).toLocaleString(undefined, {
-          maximumFractionDigits: 3,
-        })
-  } else {
-    formattedValue = isUSD
-      ? usdFormatter3Sig.format(value)
-      : digits9.format(value)
-  }
-
-  if (formattedValue === '-$0.00') return '$0.00'
-  return formattedValue
-}
-
 export const countLeadingZeros = (x: number) => {
   if (x % 1 == 0) {
     return 0

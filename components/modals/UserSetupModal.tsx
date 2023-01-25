@@ -28,7 +28,6 @@ import { notify } from 'utils/notifications'
 import {
   floorToDecimal,
   formatDecimal,
-  formatFixedDecimals,
   formatNumericValue,
 } from 'utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
@@ -49,6 +48,7 @@ import { useEnhancedWallet } from '../wallet/EnhancedWalletProvider'
 import Modal from '../shared/Modal'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { withValueLimit } from '@components/swap/SwapForm'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const UserSetupModal = ({
   isOpen,
@@ -494,10 +494,13 @@ const UserSetupModal = ({
                               )}{' '}
                               <span className="text-xs text-th-fgd-3">
                                 (
-                                {formatFixedDecimals(
-                                  depositBank.uiPrice * Number(depositAmount),
-                                  true
-                                )}
+                                <FormatNumericValue
+                                  value={
+                                    depositBank.uiPrice * Number(depositAmount)
+                                  }
+                                  decimals={2}
+                                  isUsd
+                                />
                                 )
                               </span>
                             </>

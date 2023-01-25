@@ -3,7 +3,7 @@ import { useTheme } from 'next-themes'
 import { useMemo } from 'react'
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { COLORS } from 'styles/colors'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatYAxis } from 'utils/formatting'
 
 const PriceChart = ({
   prices,
@@ -71,7 +71,7 @@ const PriceChart = ({
                 fill: 'var(--fgd-4)',
                 fontSize: 10,
               }}
-              tickFormatter={(x) => formatFixedDecimals(x, true)}
+              tickFormatter={(x) => formatYAxis(x)}
               tickLine={false}
             />
           </AreaChart>

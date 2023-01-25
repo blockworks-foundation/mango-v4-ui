@@ -19,11 +19,7 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import {
-  floorToDecimal,
-  formatFixedDecimals,
-  formatNumericValue,
-} from './../utils/numbers'
+import { floorToDecimal, formatNumericValue } from './../utils/numbers'
 import { TokenAccount } from './../utils/tokens'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
@@ -42,6 +38,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import useSolBalance from 'hooks/useSolBalance'
 import AmountWithValue from './shared/AmountWithValue'
+import FormatNumericValue from './shared/FormatNumericValue'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -355,12 +352,14 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                     <p className="tooltip-underline">{t('collateral-value')}</p>
                   </Tooltip>
                   <p className="font-mono text-th-fgd-2">
-                    {formatFixedDecimals(
-                      bank.uiPrice *
+                    <FormatNumericValue
+                      value={
+                        bank.uiPrice *
                         Number(inputAmount) *
-                        Number(bank.initAssetWeight),
-                      true
-                    )}
+                        Number(bank.initAssetWeight)
+                      }
+                      isUsd
+                    />
                   </p>
                 </div>
               </div>
