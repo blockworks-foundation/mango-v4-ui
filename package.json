@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@lavamoat/allow-scripts": "2.3.0",
-    "@lavamoat/preinstall-always-fail": "1.0.0",
+    "@lavamoat/preinstall-always-fail": "^1.0.0",
     "@types/big.js": "6.1.6",
     "@types/node": "17.0.23",
     "@types/react": "18.0.3",
@@ -89,7 +89,7 @@
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-torus>@toruslabs/solana-embed>@toruslabs/base-controllers>@toruslabs/broadcast-channel>@toruslabs/eccrypto": true,
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-torus>@toruslabs/solana-embed>@toruslabs/base-controllers>@toruslabs/broadcast-channel>@toruslabs/eccrypto>secp256k1": true,
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-torus>@toruslabs/solana-embed>@toruslabs/openlogin-jrpc>@toruslabs/openlogin-utils>keccak": true,
-      "@solana/web3.js>bigint-buffer": true,
+      "@solana/web3.js>bigint-buffer": false,
       "@solana/web3.js>rpc-websockets>bufferutil": true,
       "@solana/web3.js>rpc-websockets>utf-8-validate": true,
       "@solflare-wallet/pfp>@solana/web3.js>secp256k1": true,
