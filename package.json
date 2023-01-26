@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "setup": "yarn install && yarn allow-scripts && cd node_modules/bigint-buffer && yarn rebuild",
-    "ci": "yarn install --frozen-lockfile --network-concurrency 1 && yarn allow-scripts && cd node_modules/bigint-buffer && yarn rebuild",
+    "ci": "yarn install --frozen-lockfile --network-concurrency 1 --color=always && yarn allow-scripts && cd node_modules/bigint-buffer && yarn rebuild",
     "dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
