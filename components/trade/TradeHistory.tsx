@@ -292,7 +292,7 @@ const TradeHistory = () => {
                     )}
                   </Td>
                   <Td className="xl:!pl-0">
-                  {trade.market.name.includes('PERP') ? (
+                    {trade.market.name.includes('PERP') ? (
                       <div className="flex justify-end">
                         <Tooltip content="View Counterparty" delay={250}>
                           <a
