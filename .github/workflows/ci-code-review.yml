@@ -6,6 +6,25 @@ on:
   push:
 
 jobs:
+  format:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn setup
+
+      - name: Format
+        run: yarn build
+
   semgrep:
     name: Code Scan
     runs-on: ubuntu-latest
