@@ -8,6 +8,7 @@
     "dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
+    "format": "prettier --check .",
     "lint": "next lint",
     "typecheck": "tsc",
     "prepare": "husky install",

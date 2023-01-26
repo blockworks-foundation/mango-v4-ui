@@ -1,7 +1,7 @@
 name: Code Review
 
 on:
-  pull_request: 
+  pull_request:
     branches: ['main']
   push:
 
@@ -17,8 +17,8 @@ jobs:
 
       - run: semgrep ci --exclude 'public/charting_library'
         env:
-           SEMGREP_RULES: p/typescript
-  
+          SEMGREP_RULES: p/typescript
+
   sca:
     name: Dependency Scan
     runs-on: ubuntu-latest
@@ -34,7 +34,7 @@ jobs:
           ignore-unfixed: true
           hide-progress: true
           format: 'table'
-          
+
       # Fail the job on critical vulnerabiliies with fix available
       - name: Fail on critical vulnerabilities
         uses: aquasecurity/trivy-action@master
