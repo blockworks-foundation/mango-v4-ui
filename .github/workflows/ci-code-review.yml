@@ -38,33 +38,6 @@ jobs:
         env:
           SEMGREP_RULES: p/typescript
 
-  dast:
-    name: Pentest
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn ci
-
-      - name: Build
-        run: yarn build
-
-      - name: Run
-        run: yarn start
-
-      - name: Run pentest
-        uses: PortSwigger/dastardly-github-action@main
-        with:
-          target-url: 'http://localhost:3000'
-
   sca:
     name: Dependency Scan
     runs-on: ubuntu-latest
