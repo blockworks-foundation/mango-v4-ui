@@ -1,6 +1,6 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Working with dependencies
+## Dependency Management
 
 When updating dependencies, there are various files that must be kept up-to-date. Newly added, or updated dependencies can introduce unwanted/malicious scripts that can introduce risks for users and/or developers. The `lavamoat allow-scripts` feature allows us to deny by default, but adds some additional steps to the usual workflow.
 
@@ -8,6 +8,7 @@ When updating dependencies, there are various files that must be kept up-to-date
 
 - Instead of running `yarn` or `yarn install`, run `yarn setup` to ensure the `yarn.lock` file is in sync and that dependency scripts are run according to the `allowScripts` policy (set in `packages.json`)
 - If `lavamoat` detects new scripts that are not explicitely allowed/denied, it'll throw and error with details (see below)
+- The `postinstall` step will dedupe the `yarn.lock` file to rationalise the dependency tree
 
 The `allowScripts` configuration in `package.json`:
 

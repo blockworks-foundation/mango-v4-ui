@@ -12,7 +12,7 @@
     "lint": "next lint",
     "typecheck": "tsc",
     "prepare": "husky install",
-    "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz"
+    "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz && npx yarn-deduplicate"
   },
   "dependencies": {
     "@blockworks-foundation/mango-v4": "https://github.com/blockworks-foundation/mango-v4.git#ts-client",
