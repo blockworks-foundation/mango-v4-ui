@@ -1,0 +1,11 @@
+{
+    "assets-to-borrow": "Assets to Borrow",
+    "available-to-borrow": "Available to Borrow",
+    "borrowed-amount": "Borrowed Amount",
+    "connect-borrows": "Connect to see your borrows",
+    "current-borrow-value": "Current Borrow Value",
+    "liability-weight-desc": "Liability weight adds to the value of the liability in your account health calculation.",
+    "no-borrows": "No Borrows",
+    "tooltip-available": "The max amount you can borrow",
+    "your-borrows": "Your Borrows"
+}
