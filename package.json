@@ -5,7 +5,7 @@
   "scripts": {
     "setup": "yarn install && npx yarn-deduplicate && yarn allow-scripts && yarn bigint-fix",
     "ci": "yarn ci-dupe-check && yarn install --frozen-lockfile --network-concurrency 1 --color=always && yarn allow-scripts && yarn bigint-fix",
-    "ci-dupe-check": "yarn-deduplicate --list --fail",
+    "ci-dupe-check": "npx yarn-deduplicate --list --fail",
     "bigint-fix": "cd node_modules/bigint-buffer && yarn rebuild && cd ../../",
     "dev": "rm -rf .next && next dev",
     "build": "next build",
