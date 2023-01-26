@@ -20,7 +20,7 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn setup
+        run: yarn ci
 
       - name: Format
         run: yarn build
