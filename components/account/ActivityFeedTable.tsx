@@ -370,8 +370,10 @@ const MobileActivityFeedItem = ({
   const { signature } = activity.activity_details
   const isLiquidation = activity_type === 'liquidate_token_with_token'
   const isSwap = activity_type === 'swap'
+  const isOpenbook = activity_type === 'openbook_trade'
   const isPerp = activity_type === 'perp_trade'
   const value = getValue(activity)
+
   return (
     <div key={signature} className="border-b border-th-bkg-3 p-4">
       <div className="flex items-center justify-between">
@@ -430,7 +432,23 @@ const MobileActivityFeedItem = ({
                     {activity.activity_details.quantity}
                   </span>
                   <span className="font-body text-th-fgd-3">
-                    {activity.activity_details.perp_market}
+                    {activity.activity_details.perp_market_name}
+                  </span>
+                </>
+              ) : isOpenbook ? (
+                <>
+                  <span
+                    className={`mr-1 font-body ${
+                      activity.activity_details.side === 'buy'
+                        ? 'text-th-up'
+                        : 'text-th-down'
+                    }`}
+                  >
+                    {activity.activity_details.side === 'buy' ? 'BUY' : 'SELL'}
+                  </span>
+                  <span className="mr-1">{activity.activity_details.size}</span>
+                  <span className="font-body text-th-fgd-3">
+                    {activity.activity_details.base_symbol}
                   </span>
                 </>
               ) : (
