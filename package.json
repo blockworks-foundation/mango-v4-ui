@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "setup": "yarn install && yarn allow-scripts && cd node_modules/bigint-buffer && yarn rebuild",
-    "ci": "yarn install --frozen-lockfile --network-concurrency 1 --color=always && yarn allow-scripts && cd node_modules/bigint-buffer && yarn rebuild",
+    "setup": "yarn install && npx yarn-deduplicate && yarn allow-scripts && yarn bigint-fix",
+    "ci": "yarn ci-dupe-check && yarn install --frozen-lockfile --network-concurrency 1 --color=always && yarn allow-scripts && yarn bigint-fix",
+    "ci-dupe-check": "yarn-deduplicate --list --fail",
+    "bigint-fix": "cd node_modules/bigint-buffer && yarn rebuild && cd ../../",
     "dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
@@ -12,7 +14,7 @@
     "lint": "next lint",
     "typecheck": "tsc",
     "prepare": "husky install",
-    "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz && npx yarn-deduplicate"
+    "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz"
   },
   "dependencies": {
     "@blockworks-foundation/mango-v4": "https://github.com/blockworks-foundation/mango-v4.git#ts-client",
@@ -93,6 +95,7 @@
       "@lavamoat/preinstall-always-fail": false,
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-torus>@toruslabs/solana-embed>@toruslabs/base-controllers>@toruslabs/broadcast-channel>@toruslabs/eccrypto": true,
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-torus>@toruslabs/solana-embed>@toruslabs/base-controllers>@toruslabs/broadcast-channel>@toruslabs/eccrypto>secp256k1": true,
+      "@solana/wallet-adapter-wallets>@solana/wallet-adapter-torus>@toruslabs/solana-embed>@toruslabs/base-controllers>ethereumjs-util>ethereum-cryptography>secp256k1": true,
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-torus>@toruslabs/solana-embed>@toruslabs/openlogin-jrpc>@toruslabs/openlogin-utils>keccak": true,
       "@solana/web3.js>bigint-buffer": false,
       "@solana/web3.js>rpc-websockets>bufferutil": true,
