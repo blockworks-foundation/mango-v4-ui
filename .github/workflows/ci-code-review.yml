@@ -21,7 +21,7 @@ jobs:
 
       - name: Check dep dupes
         run: yarn ci-dupe-check
-      
+
       - name: Install dependencies
         run: yarn ci
 
