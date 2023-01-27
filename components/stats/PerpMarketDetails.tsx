@@ -6,7 +6,8 @@ import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatYAxis } from 'utils/formatting'
+import { formatNumericValue } from 'utils/numbers'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -72,7 +73,7 @@ const PerpMarketDetails = ({
               daysToShow={'999'}
               heightClass="h-64"
               prefix="$"
-              tickFormat={(x) => formatFixedDecimals(x, true)}
+              tickFormat={(x) => formatYAxis(x)}
               title={t('price')}
               xKey="date_hour"
               yKey={'price'}
@@ -95,7 +96,7 @@ const PerpMarketDetails = ({
               daysToShow={'999'}
               heightClass="h-64"
               suffix="%"
-              tickFormat={(x) => formatFixedDecimals(x)}
+              tickFormat={(x) => formatNumericValue(x)}
               title={t('hourly-funding')}
               xKey="date_hour"
               yKey={'funding_rate_hourly'}
@@ -107,7 +108,7 @@ const PerpMarketDetails = ({
               daysToShow={'999'}
               heightClass="h-64"
               suffix="%"
-              tickFormat={(x) => formatFixedDecimals(x)}
+              tickFormat={(x) => formatNumericValue(x)}
               title={t('instantaneous-funding')}
               xKey="date_hour"
               yKey={'instantaneous_funding_rate'}

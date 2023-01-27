@@ -12,7 +12,7 @@ import {
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
 import ContentBox from '../shared/ContentBox'
-import { formatFixedDecimals } from '../../utils/numbers'
+import { formatNumericValue } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
@@ -29,6 +29,7 @@ import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { useTranslation } from 'next-i18next'
 import { ArrowsRightLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 dayjs.extend(relativeTime)
 
@@ -78,7 +79,7 @@ const CustomizedLabel = ({
         textAnchor={x && y && x > width / 3 ? 'end' : 'start'}
         className="font-mono"
       >
-        {formatFixedDecimals(value)}
+        {formatNumericValue(value)}
       </Text>
     )
   } else return <div />
@@ -220,10 +221,10 @@ const SwapTokenChart = () => {
                         height={48}
                         width={35}
                         play
-                        numbers={formatFixedDecimals(mouseData['price'])}
+                        numbers={formatNumericValue(mouseData['price'])}
                       />
                     ) : (
-                      <span>{formatFixedDecimals(mouseData['price'])}</span>
+                      <FormatNumericValue value={mouseData['price']} />
                     )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
@@ -243,16 +244,14 @@ const SwapTokenChart = () => {
                         height={48}
                         width={35}
                         play
-                        numbers={formatFixedDecimals(
+                        numbers={formatNumericValue(
                           chartData[chartData.length - 1]['price']
                         )}
                       />
                     ) : (
-                      <span>
-                        {formatFixedDecimals(
-                          chartData[chartData.length - 1]['price']
-                        )}
-                      </span>
+                      <FormatNumericValue
+                        value={chartData[chartData.length - 1]['price']}
+                      />
                     )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}

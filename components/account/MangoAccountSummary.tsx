@@ -3,17 +3,30 @@ import {
   HealthType,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
-import { formatFixedDecimals } from '../../utils/numbers'
 import { useTranslation } from 'next-i18next'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useMemo } from 'react'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
-const SummaryItem = ({ label, value }: { label: string; value: string }) => {
+const SummaryItem = ({
+  label,
+  value,
+  isUsd,
+  suffix,
+}: {
+  label: string
+  value: number
+  isUsd?: boolean
+  suffix?: string
+}) => {
   return (
     <div>
       <p className="text-sm text-th-fgd-3">{label}</p>
-      <p className="font-mono text-sm text-th-fgd-1">{value}</p>
+      <p className="font-mono text-sm text-th-fgd-1">
+        <FormatNumericValue value={value} decimals={2} isUsd={isUsd} />
+        {suffix}
+      </p>
     </div>
   )
 }
@@ -56,20 +69,11 @@ const MangoAccountSummary = () => {
 
   return (
     <div className="space-y-2">
-      <SummaryItem
-        label={t('account-value')}
-        value={formatFixedDecimals(accountValue, true, true)}
-      />
-      <SummaryItem label={t('health')} value={`${health}%`} />
-      <SummaryItem
-        label={t('free-collateral')}
-        value={formatFixedDecimals(freeCollateral, true, true)}
-      />
-      <SummaryItem label={t('leverage')} value={`${leverage.toFixed(2)}x`} />
-      <SummaryItem
-        label={t('pnl')}
-        value={formatFixedDecimals(pnl, true, true)}
-      />
+      <SummaryItem label={t('account-value')} value={accountValue} isUsd />
+      <SummaryItem label={t('health')} value={health} suffix="%" />
+      <SummaryItem label={t('free-collateral')} value={freeCollateral} isUsd />
+      <SummaryItem label={t('leverage')} value={leverage} suffix="x" />
+      <SummaryItem label={t('pnl')} value={pnl} isUsd />
     </div>
   )
 }

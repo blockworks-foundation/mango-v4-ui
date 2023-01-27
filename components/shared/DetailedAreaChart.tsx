@@ -21,10 +21,11 @@ import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatNumericValue } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
 import { useTranslation } from 'next-i18next'
+import FormatNumericValue from './FormatNumericValue'
 
 dayjs.extend(relativeTime)
 
@@ -155,17 +156,18 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             play
                             numbers={`${
                               mouseData[yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
+                            }${prefix}${formatNumericValue(
                               Math.abs(mouseData[yKey])
                             )}${suffix}`}
                           />
                         ) : (
                           <span>
-                            {`${
-                              mouseData[yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
-                              Math.abs(mouseData[yKey])
-                            )}${suffix}`}
+                            {mouseData[yKey] < 0 ? '-' : ''}
+                            {prefix}
+                            <FormatNumericValue
+                              value={Math.abs(mouseData[yKey])}
+                            />
+                            {suffix}
                           </span>
                         )}
                         {!hideChange ? (
@@ -202,17 +204,18 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             play
                             numbers={`${
                               data[data.length - 1][yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
+                            }${prefix}${formatNumericValue(
                               Math.abs(data[data.length - 1][yKey])
                             )}${suffix}`}
                           />
                         ) : (
                           <span>
-                            {`${
-                              data[data.length - 1][yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
-                              Math.abs(data[data.length - 1][yKey])
-                            )}${suffix}`}
+                            {data[data.length - 1][yKey] < 0 ? '-' : ''}
+                            {prefix}
+                            <FormatNumericValue
+                              value={Math.abs(data[data.length - 1][yKey])}
+                            />
+                            {suffix}
                           </span>
                         )}
                         {!hideChange ? (

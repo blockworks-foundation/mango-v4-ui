@@ -10,6 +10,7 @@ import {
 import Input from '@components/forms/Input'
 import { IconButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
@@ -30,7 +31,7 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { notify } from 'utils/notifications'
-import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
+import { getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import TableMarketName from './TableMarketName'
 
@@ -325,7 +326,11 @@ const OpenOrders = () => {
                       </>
                     )}
                     <Td className="w-[16.67%] text-right">
-                      {formatFixedDecimals(o.size * o.price, true, true)}
+                      <FormatNumericValue
+                        value={o.size * o.price}
+                        decimals={2}
+                        isUsd
+                      />
                     </Td>
                     <Td className="w-[16.67%]">
                       <div className="flex justify-end space-x-2">

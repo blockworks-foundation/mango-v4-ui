@@ -10,10 +10,8 @@ import { useRouter } from 'next/router'
 import { useCallback, useMemo } from 'react'
 import {
   floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
+  formatNumericValue,
   getDecimalCount,
-  trimDecimals,
 } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
@@ -25,6 +23,7 @@ import AmountWithValue from './AmountWithValue'
 import ConnectEmptyState from './ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
+import FormatNumericValue from './FormatNumericValue'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -109,41 +108,29 @@ const BalancesTable = () => {
                 <Td className="text-right">
                   <Balance bank={bank} />
                   <p className="text-sm text-th-fgd-4">
-                    {mangoAccount
-                      ? `${formatFixedDecimals(
-                          mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
-                          true
-                        )}`
-                      : '$0.00'}
+                    <FormatNumericValue
+                      value={
+                        mangoAccount
+                          ? mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice
+                          : 0
+                      }
+                      isUsd
+                    />
                   </p>
                 </Td>
                 <Td className="text-right">
                   <AmountWithValue
-                    amount={
-                      inOrders
-                        ? formatDecimal(Number(inOrders), bank.mintDecimals)
-                        : '0'
-                    }
-                    value={formatFixedDecimals(
-                      inOrders * bank.uiPrice,
-                      true,
-                      true
-                    )}
+                    amount={inOrders}
+                    amountDecimals={bank.mintDecimals}
+                    value={inOrders * bank.uiPrice}
                     stacked
                   />
                 </Td>
                 <Td className="text-right">
                   <AmountWithValue
-                    amount={
-                      unsettled
-                        ? formatDecimal(Number(unsettled), bank.mintDecimals)
-                        : '0'
-                    }
-                    value={formatFixedDecimals(
-                      unsettled * bank.uiPrice,
-                      true,
-                      true
-                    )}
+                    amount={unsettled}
+                    amountDecimals={bank.mintDecimals}
+                    value={unsettled * bank.uiPrice}
                     stacked
                   />
                 </Td>
@@ -186,24 +173,33 @@ const BalancesTable = () => {
                 <div className="mb-0.5 flex justify-end space-x-1.5">
                   <Balance bank={bank} />
                   <span className="text-sm text-th-fgd-4">
-                    {mangoAccount
-                      ? `${formatFixedDecimals(
-                          mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
-                          false,
-                          true
-                        )}`
-                      : '$0.00'}
+                    <FormatNumericValue
+                      value={
+                        mangoAccount
+                          ? mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice
+                          : 0
+                      }
+                      isUsd
+                    />
                   </span>
                 </div>
                 <div className="flex space-x-2">
                   <p className="text-xs text-th-fgd-4">
                     {t('trade:in-orders')}:{' '}
-                    <span className="font-mono text-th-fgd-3">{inOrders}</span>
+                    <span className="font-mono text-th-fgd-3">
+                      <FormatNumericValue
+                        value={inOrders}
+                        decimals={bank.mintDecimals}
+                      />
+                    </span>
                   </p>
                   <p className="text-xs text-th-fgd-4">
                     {t('trade:unsettled')}:{' '}
                     <span className="font-mono text-th-fgd-3">
-                      {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
+                      <FormatNumericValue
+                        value={unsettled}
+                        decimals={bank.mintDecimals}
+                      />
                     </span>
                   </p>
                 </div>
@@ -253,29 +249,32 @@ const Balance = ({ bank }: { bank: Bank }) => {
       }
 
       let minOrderDecimals: number
-      let tickSize: number
+      let tickDecimals: number
       if (selectedMarket instanceof Serum3Market) {
         const market = group.getSerum3ExternalMarket(
           selectedMarket.serumMarketExternal
         )
         minOrderDecimals = getDecimalCount(market.minOrderSize)
-        tickSize = getDecimalCount(market.tickSize)
+        tickDecimals = getDecimalCount(market.tickSize)
       } else {
         minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
-        tickSize = getDecimalCount(selectedMarket.tickSize)
+        tickDecimals = getDecimalCount(selectedMarket.tickSize)
       }
 
       if (type === 'quote') {
-        const trimmedBalance = trimDecimals(balance, tickSize)
-        const baseSize = trimDecimals(trimmedBalance / price, minOrderDecimals)
-        const quoteSize = trimDecimals(baseSize * price, tickSize)
+        const floorBalance = floorToDecimal(balance, tickDecimals).toNumber()
+        const baseSize = floorToDecimal(
+          floorBalance / price,
+          minOrderDecimals
+        ).toNumber()
+        const quoteSize = floorToDecimal(baseSize * price, tickDecimals)
         set((s) => {
           s.tradeForm.baseSize = baseSize.toString()
           s.tradeForm.quoteSize = quoteSize.toString()
         })
       } else {
-        const baseSize = trimDecimals(balance, minOrderDecimals)
-        const quoteSize = trimDecimals(baseSize * price, tickSize)
+        const baseSize = floorToDecimal(balance, minOrderDecimals).toNumber()
+        const quoteSize = floorToDecimal(baseSize * price, tickDecimals)
         set((s) => {
           s.tradeForm.baseSize = baseSize.toString()
           s.tradeForm.quoteSize = quoteSize.toString()
@@ -333,21 +332,21 @@ const Balance = ({ bank }: { bank: Bank }) => {
             handleTradeFormBalanceClick(Math.abs(balance), isBaseOrQuote)
           }
         >
-          {formatDecimal(balance, bank.mintDecimals)}
+          <FormatNumericValue value={balance} decimals={bank.mintDecimals} />
         </LinkButton>
       ) : asPath.includes('/swap') ? (
         <LinkButton
           className="font-normal underline-offset-4"
           onClick={() =>
             handleSwapFormBalanceClick(
-              floorToDecimal(balance, bank.mintDecimals).toNumber()
+              Number(formatNumericValue(balance, bank.mintDecimals))
             )
           }
         >
-          {formatDecimal(balance, bank.mintDecimals)}
+          <FormatNumericValue value={balance} decimals={bank.mintDecimals} />
         </LinkButton>
       ) : (
-        formatDecimal(balance, bank.mintDecimals)
+        <FormatNumericValue value={balance} decimals={bank.mintDecimals} />
       )}
     </p>
   )

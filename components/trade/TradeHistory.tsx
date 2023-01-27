@@ -6,6 +6,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
 import SideBadge from '@components/shared/SideBadge'
 import {
@@ -27,7 +28,6 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { PAGINATION_PAGE_LENGTH } from 'utils/constants'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import TableMarketName from './TableMarketName'
 
@@ -268,14 +268,18 @@ const TradeHistory = () => {
                   </Td>
                   <Td className="text-right font-mono">{trade.size}</Td>
                   <Td className="text-right font-mono">
-                    {formatDecimal(trade.price)}
+                    <FormatNumericValue value={trade.price} />
                   </Td>
                   <Td className="text-right font-mono">
-                    {formatFixedDecimals(trade.price * trade.size, true)}
+                    <FormatNumericValue
+                      value={trade.price * trade.size}
+                      decimals={2}
+                      isUsd
+                    />
                   </Td>
                   <Td className="text-right">
                     <span className="font-mono">
-                      {formatDecimal(trade.feeCost)}
+                      <FormatNumericValue value={trade.feeCost} />
                     </span>
                     <p className="font-body text-xs text-th-fgd-4">
                       {trade.liquidity}
@@ -292,7 +296,7 @@ const TradeHistory = () => {
                     )}
                   </Td>
                   <Td className="xl:!pl-0">
-                  {trade.market.name.includes('PERP') ? (
+                    {trade.market.name.includes('PERP') ? (
                       <div className="flex justify-end">
                         <Tooltip content="View Counterparty" delay={250}>
                           <a
@@ -336,7 +340,7 @@ const TradeHistory = () => {
                       </span>
                       {' for '}
                       <span className="font-mono text-th-fgd-2">
-                        {formatDecimal(trade.price)}
+                        <FormatNumericValue value={trade.price} />
                       </span>
                     </p>
                   </div>
@@ -354,11 +358,11 @@ const TradeHistory = () => {
                       )}
                     </span>
                     <p className="font-mono text-th-fgd-2">
-                      {formatFixedDecimals(
-                        trade.price * trade.size,
-                        true,
-                        true
-                      )}
+                      <FormatNumericValue
+                        value={trade.price * trade.size}
+                        decimals={2}
+                        isUsd
+                      />
                     </p>
                   </div>
                   {trade.market.name.includes('PERP') ? (

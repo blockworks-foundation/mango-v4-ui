@@ -1,23 +1,21 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Image from 'next/legacy/image'
 import { useMemo } from 'react'
-import {
-  formatDecimal,
-  formatFixedDecimals,
-  trimDecimals,
-} from '../../utils/numbers'
 import useJupiterMints from 'hooks/useJupiterMints'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const ActionTokenItem = ({
   bank,
   customValue,
   onSelect,
+  roundUp,
   showBorrowRates,
   showDepositRates,
 }: {
   bank: Bank
   customValue: number
   onSelect: (x: string) => void
+  roundUp?: boolean
   showBorrowRates?: boolean
   showDepositRates?: boolean
 }) => {
@@ -56,22 +54,24 @@ const ActionTokenItem = ({
       {showDepositRates ? (
         <div className="w-1/4 text-right font-mono">
           <p className="text-th-up">
-            {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
+            <FormatNumericValue value={bank.getDepositRateUi()} decimals={2} />%
           </p>
         </div>
       ) : null}
       {showBorrowRates ? (
         <div className="w-1/4 text-right font-mono">
           <p className="text-th-down">
-            {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
+            <FormatNumericValue value={bank.getBorrowRateUi()} decimals={2} />%
           </p>
         </div>
       ) : null}
       <div className="w-1/2 pl-3 text-right">
         <p className="truncate font-mono text-th-fgd-1">
-          {formatFixedDecimals(
-            trimDecimals(customValue, bank.mintDecimals + 1)
-          )}
+          <FormatNumericValue
+            value={customValue}
+            decimals={bank.mintDecimals}
+            roundUp={roundUp}
+          />
         </p>
       </div>
     </button>

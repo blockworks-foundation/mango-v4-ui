@@ -18,11 +18,6 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -41,6 +36,7 @@ import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import AmountWithValue from './shared/AmountWithValue'
+import { floorToDecimal } from 'utils/numbers'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -81,20 +77,28 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     if (!bank || !mangoAccount || !group) return new Decimal(0)
     const amount = getMaxWithdrawForBank(group, bank, mangoAccount)
 
-    return amount && amount.gt(0)
-      ? floorToDecimal(amount, bank.mintDecimals)
-      : new Decimal(0)
+    return amount
   }, [mangoAccount, bank, group])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       if (!bank) return
       setSizePercentage(percentage)
-      const amount = tokenMax.mul(Number(percentage) / 100)
-      setInputAmount(floorToDecimal(amount, bank.mintDecimals).toFixed())
+      const amount = floorToDecimal(
+        new Decimal(tokenMax).mul(percentage).div(100),
+        bank.mintDecimals
+      )
+      setInputAmount(amount.toString())
     },
     [bank, tokenMax]
   )
+
+  const setMax = useCallback(() => {
+    if (!bank) return
+    const max = floorToDecimal(tokenMax, bank.mintDecimals)
+    setInputAmount(max.toString())
+    setSizePercentage('100')
+  }, [bank, tokenMax])
 
   const handleWithdraw = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -145,16 +149,14 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               group,
               bank,
               mangoAccount
-            )
+            ).toNumber()
             return {
               key,
               value,
-              accountBalance: accountBalance
-                ? floorToDecimal(accountBalance, bank.mintDecimals).toNumber()
-                : 0,
+              accountBalance,
               accountBalanceValue:
                 accountBalance && bank.uiPrice
-                  ? accountBalance.toNumber() * bank.uiPrice
+                  ? accountBalance * bank.uiPrice
                   : 0,
             }
           })
@@ -225,12 +227,10 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                 {bank ? (
                   <MaxAmountButton
                     className="mb-2"
+                    decimals={bank.mintDecimals}
                     label={t('max')}
-                    onClick={() => handleSizePercentage('100')}
-                    value={floorToDecimal(
-                      Number(tokenMax),
-                      bank.mintDecimals
-                    ).toFixed()}
+                    onClick={setMax}
+                    value={tokenMax}
                   />
                 ) : null}
               </div>
@@ -295,17 +295,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   <p>{t('withdraw-amount')}</p>
                   {inputAmount ? (
                     <AmountWithValue
-                      amount={formatDecimal(
-                        Number(inputAmount),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
-                        bank.uiPrice * Number(inputAmount),
-                        true
-                      )}
+                      amount={inputAmount}
+                      amountDecimals={bank.mintDecimals}
+                      value={bank.uiPrice * Number(inputAmount)}
                     />
                   ) : (
-                    <AmountWithValue amount="0" value="$0.00" />
+                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
                   )}
                 </div>
               </div>

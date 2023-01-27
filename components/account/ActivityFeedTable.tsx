@@ -1,6 +1,7 @@
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
@@ -20,7 +21,7 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { Fragment, useCallback, useState } from 'react'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 
 const formatFee = (value: number) => {
@@ -74,25 +75,28 @@ const ActivityFeedTable = ({
       const { side, liab_amount, liab_symbol, asset_amount, asset_symbol } =
         activity.activity_details
       if (side === 'liqee') {
-        credit = { value: formatDecimal(liab_amount), symbol: liab_symbol }
+        credit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
         debit = {
-          value: formatDecimal(asset_amount),
+          value: formatNumericValue(asset_amount),
           symbol: asset_symbol,
         }
       } else {
-        credit = { value: formatDecimal(asset_amount), symbol: asset_symbol }
-        debit = { value: formatDecimal(liab_amount), symbol: liab_symbol }
+        credit = {
+          value: formatNumericValue(asset_amount),
+          symbol: asset_symbol,
+        }
+        debit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
       }
     }
     if (activity_type === 'deposit') {
       const { symbol, quantity } = activity.activity_details
-      credit = { value: formatDecimal(quantity), symbol }
+      credit = { value: formatNumericValue(quantity), symbol }
       debit = { value: '0', symbol: '' }
     }
     if (activity_type === 'withdraw') {
       const { symbol, quantity } = activity.activity_details
       credit = { value: '0', symbol: '' }
-      debit = { value: formatDecimal(quantity * -1), symbol }
+      debit = { value: formatNumericValue(quantity * -1), symbol }
     }
     if (activity_type === 'swap') {
       const {
@@ -102,30 +106,36 @@ const ActivityFeedTable = ({
         swap_out_symbol,
       } = activity.activity_details
       credit = {
-        value: formatDecimal(swap_out_amount),
+        value: formatNumericValue(swap_out_amount),
         symbol: swap_out_symbol,
       }
       debit = {
-        value: formatDecimal(swap_in_amount * -1),
+        value: formatNumericValue(swap_in_amount * -1),
         symbol: swap_in_symbol,
       }
     }
     if (activity_type === 'perp_trade') {
       const { perp_market_name, price, quantity } = activity.activity_details
       credit = { value: quantity, symbol: perp_market_name }
-      debit = { value: formatDecimal(quantity * price * -1), symbol: 'USDC' }
+      debit = {
+        value: formatNumericValue(quantity * price * -1),
+        symbol: 'USDC',
+      }
     }
     if (activity_type === 'openbook_trade') {
       const { side, price, size, base_symbol, quote_symbol } =
         activity.activity_details
       credit =
         side === 'buy'
-          ? { value: formatDecimal(size), symbol: base_symbol }
-          : { value: formatDecimal(size * price), symbol: quote_symbol }
+          ? { value: formatNumericValue(size), symbol: base_symbol }
+          : { value: formatNumericValue(size * price), symbol: quote_symbol }
       debit =
         side === 'buy'
-          ? { value: formatDecimal(size * price * -1), symbol: quote_symbol }
-          : { value: formatDecimal(size * -1), symbol: base_symbol }
+          ? {
+              value: formatNumericValue(size * price * -1),
+              symbol: quote_symbol,
+            }
+          : { value: formatNumericValue(size * -1), symbol: base_symbol }
     }
     return { credit, debit }
   }
@@ -274,7 +284,7 @@ const ActivityFeedTable = ({
                     !isOpenbook
                       ? '+'
                       : ''}
-                    {formatFixedDecimals(value, true)}
+                    <FormatNumericValue value={value} isUsd />
                   </Td>
                   <Td>
                     {activity_type !== 'liquidate_token_with_token' ? (
@@ -392,24 +402,24 @@ const MobileActivityFeedItem = ({
             </p>
             <p className="text-right font-mono text-sm text-th-fgd-1">
               {isLiquidation ? (
-                formatFixedDecimals(value, true)
+                <FormatNumericValue value={value} isUsd />
               ) : isSwap ? (
                 <>
                   <span className="mr-1">
-                    {activity.activity_details.swap_in_amount.toLocaleString(
-                      undefined,
-                      { maximumFractionDigits: 6 }
-                    )}
+                    <FormatNumericValue
+                      value={activity.activity_details.swap_in_amount}
+                      decimals={6}
+                    />
                   </span>
                   <span className="font-body text-th-fgd-3">
                     {activity.activity_details.swap_in_symbol}
                   </span>
                   <span className="mx-1 font-body text-th-fgd-3">for</span>
                   <span className="mr-1">
-                    {activity.activity_details.swap_out_amount.toLocaleString(
-                      undefined,
-                      { maximumFractionDigits: 6 }
-                    )}
+                    <FormatNumericValue
+                      value={activity.activity_details.swap_out_amount}
+                      decimals={6}
+                    />
                   </span>
                   <span className="font-body text-th-fgd-3">
                     {activity.activity_details.swap_out_symbol}
@@ -506,37 +516,51 @@ const MobileActivityFeedItem = ({
           <div className="col-span-1">
             <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
-              {formatDecimal(activity.activity_details.asset_amount)}{' '}
+              <FormatNumericValue
+                value={activity.activity_details.asset_amount}
+              />{' '}
               <span className="font-body">
                 {activity.activity_details.asset_symbol}
               </span>
               <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-              {formatFixedDecimals(activity.activity_details.asset_price, true)}
+              <FormatNumericValue
+                value={activity.activity_details.asset_price}
+                isUsd
+              />
             </p>
             <p className="font-mono text-xs text-th-fgd-3">
-              {formatFixedDecimals(
-                activity.activity_details.asset_price *
-                  activity.activity_details.asset_amount,
-                true
-              )}
+              <FormatNumericValue
+                value={
+                  activity.activity_details.asset_price *
+                  activity.activity_details.asset_amount
+                }
+                isUsd
+              />
             </p>
           </div>
           <div className="col-span-1">
             <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
-              {formatDecimal(activity.activity_details.liab_amount)}{' '}
+              <FormatNumericValue
+                value={activity.activity_details.liab_amount}
+              />{' '}
               <span className="font-body">
                 {activity.activity_details.liab_symbol}
               </span>
               <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-              {formatFixedDecimals(activity.activity_details.liab_price, true)}
+              <FormatNumericValue
+                value={activity.activity_details.liab_price}
+                isUsd
+              />
             </p>
             <p className="font-mono text-xs text-th-fgd-3">
-              {formatFixedDecimals(
-                activity.activity_details.liab_price *
-                  activity.activity_details.liab_amount,
-                true
-              )}
+              <FormatNumericValue
+                value={
+                  activity.activity_details.liab_price *
+                  activity.activity_details.liab_amount
+                }
+                isUsd
+              />
             </p>
           </div>
           <div className="col-span-2 flex justify-center pt-3">
