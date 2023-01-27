@@ -18,6 +18,8 @@ import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import TabButtons from '@components/shared/TabButtons'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 const BorrowPage = () => {
   const { t } = useTranslation(['common', 'borrow'])
@@ -28,6 +30,8 @@ const BorrowPage = () => {
   const [showRepayModal, setShowRepayModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const { connected } = useWallet()
+  const { width } = useViewport()
+  const fullWidthTabs = width ? width < breakpoints.sm : false
 
   const handleBorrowModal = () => {
     if (!connected || mangoAccount) {
@@ -77,16 +81,16 @@ const BorrowPage = () => {
     return []
   }, [group, mangoAccount])
 
-  useEffect(() => {
-    if (mangoAccountAddress && !banks.length) {
-      setActiveTab('borrow:assets-to-borrow')
-    }
-  }, [banks, mangoAccountAddress])
-
   const borrowValue = useMemo(() => {
     if (!banks.length) return 0
     return banks.reduce((a, c) => a + Math.abs(c.balance) * c.bank.uiPrice, 0)
   }, [banks])
+
+  useEffect(() => {
+    if (mangoAccountAddress && !borrowValue) {
+      setActiveTab('borrow:assets-to-borrow')
+    }
+  }, [borrowValue, mangoAccountAddress])
 
   const [collateralRemaining, collateralRemainingRatio] = useMemo(() => {
     if (mangoAccount && group) {
@@ -186,6 +190,7 @@ const BorrowPage = () => {
       <div className="border-b border-th-bkg-3">
         <TabButtons
           activeValue={activeTab}
+          fillWidth={fullWidthTabs}
           onChange={(v) => setActiveTab(v)}
           showBorders
           values={[

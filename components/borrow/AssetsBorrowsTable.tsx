@@ -1,16 +1,14 @@
-import { Transition } from '@headlessui/react'
 import {
   ArrowUpLeftIcon,
-  ChevronDownIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
-import Button, { IconButton } from '../shared/Button'
+import { IconButton } from '../shared/Button'
 import Tooltip from '@components/shared/Tooltip'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
@@ -27,7 +25,6 @@ const AssetsBorrowsTable = () => {
   const [selectedToken, setSelectedToken] = useState('')
   const actions = mangoStore.getState().actions
   const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
-  const [showTokenDetails, setShowTokenDetails] = useState('')
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const { mangoTokens } = useJupiterMints()
@@ -56,10 +53,6 @@ const AssetsBorrowsTable = () => {
     return []
   }, [group])
 
-  const handleShowTokenDetails = (name: string) => {
-    showTokenDetails ? setShowTokenDetails('') : setShowTokenDetails(name)
-  }
-
   return (
     <>
       {showTableView ? (
@@ -77,24 +70,6 @@ const AssetsBorrowsTable = () => {
               </Th>
               <Th>
                 <div className="flex justify-end">{t('rate')}</div>
-              </Th>
-              {/* <Th>
-                <div className="flex justify-end">
-                  <Tooltip content="The percentage of deposits that have been lent out.">
-                    <span className="tooltip-underline">
-                      {t('utilization')}
-                    </span>
-                  </Tooltip>
-                </div>
-              </Th> */}
-              <Th>
-                <div className="flex justify-end text-right">
-                  <Tooltip content={t('borrow:liability-weight-desc')}>
-                    <span className="tooltip-underline">
-                      {t('liability-weight')}
-                    </span>
-                  </Tooltip>
-                </div>
               </Th>
               <Th />
             </TrHead>
@@ -164,29 +139,11 @@ const AssetsBorrowsTable = () => {
                       %
                     </p>
                   </Td>
-                  {/* <Td>
-                    <div className="flex flex-col text-right">
-                      <p>
-                        {bank.uiDeposits() > 0
-                          ? formatDecimal(
-                              (bank.uiBorrows() / bank.uiDeposits()) * 100,
-                              1,
-                              { fixed: true }
-                            )
-                          : '0.0'}
-                        %
-                      </p>
-                    </div>
-                  </Td> */}
-                  <Td>
-                    <div className="flex justify-end space-x-1.5 text-right">
-                      <p>{bank.initLiabWeight.toFixed(2)}</p>
-                    </div>
-                  </Td>
                   <Td>
                     <div className="flex justify-end">
                       <Tooltip content={`${t('borrow')} ${bank.name}`}>
                         <IconButton
+                          disabled={available === 0}
                           onClick={() => handleShowBorrowModal(bank.name)}
                           size="small"
                         >
@@ -210,7 +167,6 @@ const AssetsBorrowsTable = () => {
                 (t) => t.address === bank.mint.toString()
               )?.logoURI
             }
-            const borrows = bank.uiBorrows()
             const price = bank.uiPrice
 
             const available =
@@ -260,78 +216,14 @@ const AssetsBorrowsTable = () => {
                       </p>
                     </div>
                     <IconButton
-                      onClick={() => handleShowTokenDetails(bank.name)}
+                      disabled={available === 0}
+                      onClick={() => handleShowBorrowModal(bank.name)}
                       size="medium"
                     >
-                      <ChevronDownIcon
-                        className={`${
-                          showTokenDetails === bank.name
-                            ? 'rotate-180'
-                            : 'rotate-360'
-                        } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
-                      />
+                      <ArrowUpLeftIcon className="h-5 w-5" />
                     </IconButton>
                   </div>
                 </div>
-                <Transition
-                  appear={true}
-                  show={showTokenDetails === bank.name}
-                  as={Fragment}
-                  enter="transition ease-in duration-200"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="transition ease-out"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
-                    <div className="col-span-1">
-                      <p className="mb-0.5 text-xs">{t('total-borrows')}</p>
-                      <AmountWithValue
-                        amount={formatFixedDecimals(borrows)}
-                        value={formatFixedDecimals(borrows * price, true, true)}
-                      />
-                    </div>
-                    {/* <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">
-                        {t('utilization')}
-                      </p>
-                      <p className="font-mono text-th-fgd-1">
-                        {bank.uiDeposits() > 0
-                          ? formatDecimal(
-                              (bank.uiBorrows() / bank.uiDeposits()) * 100,
-                              1,
-                              { fixed: true }
-                            )
-                          : '0.0'}
-                        %
-                      </p>
-                    </div> */}
-                    <div className="col-span-1">
-                      <Tooltip content={t('borrow:liability-weight-desc')}>
-                        <p className="tooltip-underline text-xs text-th-fgd-3">
-                          {t('liability-weight')}
-                        </p>
-                      </Tooltip>
-                      <div className="flex space-x-1.5 font-mono">
-                        <p className="text-th-fgd-1">
-                          {bank.initLiabWeight.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="col-span-1">
-                      <Button
-                        className="flex items-center"
-                        onClick={() => handleShowBorrowModal(bank.name)}
-                        secondary
-                        size="small"
-                      >
-                        <ArrowUpLeftIcon className="mr-1.5 h-5 w-5" />
-                        {`${t('borrow')} ${bank.name}`}
-                      </Button>
-                    </div>
-                  </div>
-                </Transition>
               </div>
             )
           })}

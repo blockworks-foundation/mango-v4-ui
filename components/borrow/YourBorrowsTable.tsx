@@ -87,6 +87,10 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                     ? getMaxWithdrawForBank(group, bank, mangoAccount, true)
                     : new Decimal(0)
 
+                const borrowedAmount = mangoAccount
+                  ? Math.abs(mangoAccount.getTokenBalanceUi(bank))
+                  : 0
+
                 return (
                   <TrBody key={bank.name} className="text-sm">
                     <Td>
@@ -110,11 +114,11 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                       {mangoAccount ? (
                         <AmountWithValue
                           amount={formatDecimal(
-                            mangoAccount.getTokenBalanceUi(bank),
+                            borrowedAmount,
                             bank.mintDecimals
                           )}
                           value={formatFixedDecimals(
-                            mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
+                            borrowedAmount * bank.uiPrice,
                             true
                           )}
                           stacked
@@ -156,6 +160,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                         </Tooltip>
                         <Tooltip content={`${t('borrow')} ${bank.name}`}>
                           <IconButton
+                            disabled={available.eq(0)}
                             onClick={() =>
                               handleShowActionModals(bank.name, 'borrow')
                             }
@@ -172,64 +177,94 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
             </tbody>
           </Table>
         ) : (
-          <>
-            {/* {banks.map(({ key, value }) => {
-          const bank = value[0]
+          banks.map((b) => {
+            const bank: Bank = b.bank
 
-          let logoURI
-          if (mangoTokens.length) {
-            logoURI = mangoTokens.find(
-              (t) => t.address === bank.mint.toString()
-            )?.logoURI
-          }
+            let logoURI
+            if (mangoTokens.length) {
+              logoURI = mangoTokens.find(
+                (t) => t.address === bank.mint.toString()
+              )?.logoURI
+            }
 
-          const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
-          const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+            const available =
+              group && mangoAccount
+                ? getMaxWithdrawForBank(group, bank, mangoAccount, true)
+                : new Decimal(0)
 
-          return (
-            <div
-              className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-              key={key}
-            >
-              <div className="flex items-center">
-                <div className="mr-2.5 flex flex-shrink-0 items-center">
-                  {logoURI ? (
-                    <Image alt="" width="20" height="20" src={logoURI} />
-                  ) : (
-                    <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                  )}
-                </div>
-                <span>{bank.name}</span>
-              </div>
-              <div className="text-right">
-                <div className="mb-0.5 flex justify-end space-x-1.5">
-                  <span className="text-sm text-th-fgd-4">
-                    {mangoAccount
-                      ? `${formatFixedDecimals(
-                          mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice,
-                          false,
+            const borrowedAmount = mangoAccount
+              ? Math.abs(mangoAccount.getTokenBalanceUi(bank))
+              : 0
+
+            return (
+              <div
+                key={bank.name}
+                className="border-b border-th-bkg-3 px-6 py-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="mr-2.5 flex flex-shrink-0 items-center">
+                      {logoURI ? (
+                        <Image alt="" width="24" height="24" src={logoURI} />
+                      ) : (
+                        <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                      )}
+                    </div>
+                    <p className="text-th-fgd-1">{bank.name}</p>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div>
+                      <p className="mb-0.5 text-right text-xs">
+                        {t('borrow:borrowed-amount')}
+                      </p>
+                      <AmountWithValue
+                        amount={formatDecimal(
+                          borrowedAmount,
+                          bank.mintDecimals
+                        )}
+                        value={formatFixedDecimals(
+                          borrowedAmount * bank.uiPrice,
                           true
-                        )}`
-                      : '$0.00'}
-                  </span>
-                </div>
-                <div className="flex space-x-2">
-                  <p className="text-xs text-th-fgd-4">
-                    {t('trade:in-orders')}:{' '}
-                    <span className="font-mono text-th-fgd-3">{inOrders}</span>
-                  </p>
-                  <p className="text-xs text-th-fgd-4">
-                    {t('trade:unsettled')}:{' '}
-                    <span className="font-mono text-th-fgd-3">
-                      {unsettled ? unsettled.toFixed(bank.mintDecimals) : 0}
-                    </span>
-                  </p>
+                        )}
+                      />
+                    </div>
+                    <div>
+                      <p className="mb-0.5 text-right text-xs">{t('rate')}</p>
+                      <p className="text-right text-th-down">
+                        {formatDecimal(bank.getBorrowRateUi(), 2, {
+                          fixed: true,
+                        })}
+                        %
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Tooltip content={`${t('repay')} ${bank.name}`}>
+                        <IconButton
+                          onClick={() =>
+                            handleShowActionModals(bank.name, 'repay')
+                          }
+                          size="medium"
+                        >
+                          <ArrowDownRightIcon className="h-5 w-5" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip content={`${t('borrow')} ${bank.name}`}>
+                        <IconButton
+                          disabled={available.eq(0)}
+                          onClick={() =>
+                            handleShowActionModals(bank.name, 'borrow')
+                          }
+                          size="medium"
+                        >
+                          <ArrowUpLeftIcon className="h-5 w-5" />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        })} */}
-          </>
+            )
+          })
         )
       ) : mangoAccountAddress || connected ? (
         <div className="border-b border-th-bkg-3">
