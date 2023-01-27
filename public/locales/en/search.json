@@ -9,6 +9,6 @@
     "search-accounts": "Search Accounts",
     "search-by": "Search By",
     "search-for": "Search For",
-    "search-failed": "Failed to search",
+    "search-failed": "Something went wrong. Try again later",
     "wallet-pk": "Wallet Address"
 }
