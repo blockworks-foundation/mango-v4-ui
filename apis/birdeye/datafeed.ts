@@ -6,7 +6,7 @@ import {
   LibrarySymbolInfo,
   ResolutionString,
   SearchSymbolResultItem,
-} from '@public/charting_library/charting_library'
+} from '@public/charting_library'
 
 export const SUPPORTED_RESOLUTIONS = [
   '1',
