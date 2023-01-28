@@ -15,6 +15,7 @@ import {
   BuildingLibraryIcon,
   ArrowTrendingUpIcon,
   MagnifyingGlassIcon,
+  BanknotesIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 
@@ -73,9 +74,9 @@ const BottomBar = () => {
           <ArrowTrendingUpIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
         </BottomBarLink>
-        <BottomBarLink isActive={asPath === '/settings'} pathName="/settings">
-          <Cog8ToothIcon className="mb-1 h-4 w-4" />
-          <StyledBarItemLabel>{t('settings')}</StyledBarItemLabel>
+        <BottomBarLink isActive={asPath === '/borrow'} pathName="/borrow">
+          <BanknotesIcon className="mb-1 h-4 w-4" />
+          <StyledBarItemLabel>{t('borrow')}</StyledBarItemLabel>
         </BottomBarLink>
         <button
           className={`${
@@ -118,6 +119,11 @@ const MoreMenuPanel = ({
         className="border-b border-th-bkg-4"
         onClick={() => setShowPanel(false)}
       >
+        <MoreMenuItem
+          title={t('settings')}
+          path="/settings"
+          icon={<Cog8ToothIcon className="h-5 w-5" />}
+        />
         <MoreMenuItem
           title={t('stats')}
           path="/stats"

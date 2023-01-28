@@ -12,6 +12,7 @@ import {
   ArrowTrendingUpIcon,
   XMarkIcon,
   MagnifyingGlassIcon,
+  BanknotesIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -93,6 +94,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
               title={t('trade')}
               pagePath="/trade"
+            />
+            <MenuItem
+              active={pathname === '/borrow'}
+              collapsed={collapsed}
+              icon={<BanknotesIcon className="h-5 w-5" />}
+              title={t('borrow')}
+              pagePath="/borrow"
             />
             <MenuItem
               active={pathname === '/stats'}
