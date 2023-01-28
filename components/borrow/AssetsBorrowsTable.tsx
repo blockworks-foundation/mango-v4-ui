@@ -6,7 +6,7 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
-import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
+import { formatNumericValue } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import { IconButton } from '../shared/Button'
 import Tooltip from '@components/shared/Tooltip'
@@ -113,30 +113,26 @@ const AssetsBorrowsTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(borrows)}</p>
-                      <p className="text-th-fgd-4">
-                        {formatFixedDecimals(borrows * price, true, true)}
-                      </p>
+                      <AmountWithValue
+                        amount={borrows}
+                        value={borrows * price}
+                        stacked
+                      />
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>
-                        {available > 0 ? formatFixedDecimals(available) : '0'}
-                      </p>
-                      <p className="text-th-fgd-4">
-                        {available > 0
-                          ? formatFixedDecimals(available * price, false, true)
-                          : '$0.00'}
-                      </p>
+                      <AmountWithValue
+                        amount={available}
+                        amountDecimals={bank.mintDecimals}
+                        value={available * price}
+                        stacked
+                      />
                     </div>
                   </Td>
                   <Td>
                     <p className="text-right text-th-down">
-                      {formatDecimal(bank.getBorrowRateUi(), 2, {
-                        fixed: true,
-                      })}
-                      %
+                      {formatNumericValue(bank.getBorrowRateUi(), 2)}%
                     </p>
                   </Td>
                   <Td>
@@ -198,21 +194,15 @@ const AssetsBorrowsTable = () => {
                         {t('available')}
                       </p>
                       <AmountWithValue
-                        amount={formatFixedDecimals(available)}
-                        value={formatFixedDecimals(
-                          available * price,
-                          true,
-                          true
-                        )}
+                        amount={available}
+                        amountDecimals={bank.mintDecimals}
+                        value={available * price}
                       />
                     </div>
                     <div>
                       <p className="mb-0.5 text-right text-xs">{t('rate')}</p>
                       <p className="text-right text-th-down">
-                        {formatDecimal(bank.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        })}
-                        %
+                        {formatNumericValue(bank.getBorrowRateUi(), 2)}%
                       </p>
                     </div>
                     <IconButton

@@ -10,7 +10,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { Table, Td, Th, TrBody, TrHead } from '../shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -113,14 +113,9 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                     <Td className="text-right">
                       {mangoAccount ? (
                         <AmountWithValue
-                          amount={formatDecimal(
-                            borrowedAmount,
-                            bank.mintDecimals
-                          )}
-                          value={formatFixedDecimals(
-                            borrowedAmount * bank.uiPrice,
-                            true
-                          )}
+                          amount={borrowedAmount}
+                          amountDecimals={bank.mintDecimals}
+                          value={borrowedAmount * bank.uiPrice}
                           stacked
                         />
                       ) : (
@@ -129,22 +124,14 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                     </Td>
                     <Td className="text-right">
                       <AmountWithValue
-                        amount={formatDecimal(
-                          available.toNumber(),
-                          bank.mintDecimals
-                        )}
-                        value={formatFixedDecimals(
-                          available.toNumber() * bank.uiPrice,
-                          true
-                        )}
+                        amount={available}
+                        amountDecimals={bank.mintDecimals}
+                        value={available.toNumber() * bank.uiPrice}
                         stacked
                       />
                     </Td>
                     <Td className="text-right text-th-down">
-                      {formatDecimal(bank.getBorrowRateUi(), 2, {
-                        fixed: true,
-                      })}
-                      %
+                      {formatNumericValue(bank.getBorrowRateUi(), 2)}%
                     </Td>
                     <Td>
                       <div className="flex items-center justify-end space-x-2">
@@ -218,23 +205,15 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                         {t('borrow:borrowed-amount')}
                       </p>
                       <AmountWithValue
-                        amount={formatDecimal(
-                          borrowedAmount,
-                          bank.mintDecimals
-                        )}
-                        value={formatFixedDecimals(
-                          borrowedAmount * bank.uiPrice,
-                          true
-                        )}
+                        amount={borrowedAmount}
+                        amountDecimals={bank.mintDecimals}
+                        value={borrowedAmount * bank.uiPrice}
                       />
                     </div>
                     <div>
                       <p className="mb-0.5 text-right text-xs">{t('rate')}</p>
                       <p className="text-right text-th-down">
-                        {formatDecimal(bank.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        })}
-                        %
+                        {formatNumericValue(bank.getBorrowRateUi(), 2)}%
                       </p>
                     </div>
                     <div className="flex space-x-2">

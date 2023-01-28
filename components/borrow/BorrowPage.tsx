@@ -8,7 +8,7 @@ import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import FlipNumbers from 'react-flip-numbers'
 import Button from '@components/shared/Button'
 import mangoStore from '@store/mangoStore'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatCurrencyValue } from 'utils/numbers'
 import { useEffect, useMemo, useState } from 'react'
 import YourBorrowsTable from './YourBorrowsTable'
 import AssetsBorrowsTable from './AssetsBorrowsTable'
@@ -20,6 +20,7 @@ import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import TabButtons from '@components/shared/TabButtons'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const BorrowPage = () => {
   const { t } = useTranslation(['common', 'borrow'])
@@ -131,7 +132,7 @@ const BorrowPage = () => {
                     play
                     delay={0.05}
                     duration={1}
-                    numbers={formatFixedDecimals(borrowValue, true, true)}
+                    numbers={formatCurrencyValue(borrowValue, 2)}
                   />
                 ) : (
                   <FlipNumbers
@@ -144,7 +145,7 @@ const BorrowPage = () => {
                   />
                 )
               ) : (
-                <span>{formatFixedDecimals(borrowValue, true, true)}</span>
+                <FormatNumericValue value={borrowValue} decimals={2} isUsd />
               )}
             </div>
           </div>
@@ -153,7 +154,11 @@ const BorrowPage = () => {
               {t('borrow:available-to-borrow')}
             </p>
             <p className="mb-1 font-display text-2xl text-th-fgd-2">
-              {formatFixedDecimals(collateralRemaining, true, true)}
+              <FormatNumericValue
+                value={collateralRemaining}
+                decimals={2}
+                isUsd
+              />
             </p>
             <div className="mt-[2px] flex h-2 w-full rounded-full bg-th-bkg-3 md:w-48">
               <div
