@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "setup": "yarn install && npx yarn-deduplicate && yarn allow-scripts && yarn bigint-fix",
+    "setup": "yarn install --network-concurrency 1 && npx yarn-deduplicate && yarn allow-scripts && yarn bigint-fix",
     "ci": "yarn install --frozen-lockfile --network-concurrency 1 --color=always && yarn allow-scripts && yarn bigint-fix",
     "ci-dupe-check": "npx yarn-deduplicate --list --fail",
     "bigint-fix": "cd node_modules/bigint-buffer && yarn rebuild && cd ../../",
