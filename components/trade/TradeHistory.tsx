@@ -140,7 +140,7 @@ const formatTradeHistory = (
           new PublicKey(trade.market)
         )
       } else if ('perp_market' in trade) {
-        market = group.getPerpMarketByName(trade.perp_market)
+        market = group.getPerpMarketByMarketIndex(trade.market_index)
       } else {
         market = selectedMarket
       }
