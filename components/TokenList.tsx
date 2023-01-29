@@ -30,8 +30,8 @@ import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 import { USDC_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import ActionsLinkButton from './account/ActionsLinkButton'
-import AmountWithValue from './shared/AmountWithValue'
 import FormatNumericValue from './shared/FormatNumericValue'
+import BankAmountWithValue from './shared/BankAmountWithValue'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -136,7 +136,6 @@ const TokenList = () => {
           <tbody>
             {banks.map(({ key, value }) => {
               const bank = value[0]
-              const oraclePrice = bank.uiPrice
 
               let logoURI
               if (mangoTokens?.length) {
@@ -183,34 +182,31 @@ const TokenList = () => {
                     </div>
                   </Td>
                   <Td className="text-right">
-                    <AmountWithValue
+                    <BankAmountWithValue
                       amount={tokenBalance}
-                      amountDecimals={bank.mintDecimals}
-                      value={tokenBalance * oraclePrice}
+                      bank={bank}
                       stacked
                     />
                   </Td>
                   <Td className="text-right">
-                    <AmountWithValue
+                    <BankAmountWithValue
                       amount={inOrders}
-                      amountDecimals={bank.mintDecimals}
-                      value={inOrders * oraclePrice}
+                      bank={bank}
                       stacked
                     />
                   </Td>
                   <Td className="text-right">
-                    <AmountWithValue
+                    <BankAmountWithValue
                       amount={unsettled}
-                      amountDecimals={bank.mintDecimals}
-                      value={unsettled * oraclePrice}
+                      bank={bank}
                       stacked
                     />
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={interestAmount}
-                        amountDecimals={bank.mintDecimals}
+                        bank={bank}
                         value={interestValue}
                         stacked
                       />
@@ -275,7 +271,6 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
     (s) => s.mangoAccount.interestTotals.data
   )
   const symbol = bank.name
-  const oraclePrice = bank.uiPrice
   const router = useRouter()
 
   let logoURI
@@ -361,25 +356,17 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
         <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:in-orders')}</p>
-            <AmountWithValue
-              amount={inOrders}
-              amountDecimals={bank.mintDecimals}
-              value={inOrders * oraclePrice}
-            />
+            <BankAmountWithValue amount={inOrders} bank={bank} />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:unsettled')}</p>
-            <AmountWithValue
-              amount={unsettled}
-              amountDecimals={bank.mintDecimals}
-              value={unsettled * oraclePrice}
-            />
+            <BankAmountWithValue amount={unsettled} bank={bank} />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('interest-earned-paid')}</p>
-            <AmountWithValue
+            <BankAmountWithValue
               amount={interestAmount}
-              amountDecimals={bank.mintDecimals}
+              bank={bank}
               value={interestValue}
             />
           </div>

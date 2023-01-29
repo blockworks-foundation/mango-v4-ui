@@ -19,11 +19,11 @@ import { LinkButton } from './Button'
 import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useMangoGroup from 'hooks/useMangoGroup'
-import AmountWithValue from './AmountWithValue'
 import ConnectEmptyState from './ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import FormatNumericValue from './FormatNumericValue'
+import BankAmountWithValue from './BankAmountWithValue'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -119,20 +119,10 @@ const BalancesTable = () => {
                   </p>
                 </Td>
                 <Td className="text-right">
-                  <AmountWithValue
-                    amount={inOrders}
-                    amountDecimals={bank.mintDecimals}
-                    value={inOrders * bank.uiPrice}
-                    stacked
-                  />
+                  <BankAmountWithValue amount={inOrders} bank={bank} stacked />
                 </Td>
                 <Td className="text-right">
-                  <AmountWithValue
-                    amount={unsettled}
-                    amountDecimals={bank.mintDecimals}
-                    value={unsettled * bank.uiPrice}
-                    stacked
-                  />
+                  <BankAmountWithValue amount={unsettled} bank={bank} stacked />
                 </Td>
               </TrBody>
             )

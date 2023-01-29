@@ -14,7 +14,6 @@ import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { Table, Td, Th, TrBody, TrHead } from '../shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
-import AmountWithValue from '../shared/AmountWithValue'
 import ConnectEmptyState from '../shared/ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
@@ -23,6 +22,7 @@ import { IconButton } from '@components/shared/Button'
 import { useCallback, useState } from 'react'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import Tooltip from '@components/shared/Tooltip'
+import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 
 interface BankWithBalance {
   balance: number
@@ -111,22 +111,16 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                       </div>
                     </Td>
                     <Td className="text-right">
-                      {mangoAccount ? (
-                        <AmountWithValue
-                          amount={borrowedAmount}
-                          amountDecimals={bank.mintDecimals}
-                          value={borrowedAmount * bank.uiPrice}
-                          stacked
-                        />
-                      ) : (
-                        <AmountWithValue amount={0} value={'0'} />
-                      )}
+                      <BankAmountWithValue
+                        amount={borrowedAmount}
+                        bank={bank}
+                        stacked
+                      />
                     </Td>
                     <Td className="text-right">
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={available}
-                        amountDecimals={bank.mintDecimals}
-                        value={available.toNumber() * bank.uiPrice}
+                        bank={bank}
                         stacked
                       />
                     </Td>
@@ -204,10 +198,9 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                       <p className="mb-0.5 text-right text-xs">
                         {t('borrow:borrowed-amount')}
                       </p>
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={borrowedAmount}
-                        amountDecimals={bank.mintDecimals}
-                        value={borrowedAmount * bank.uiPrice}
+                        bank={bank}
                       />
                     </div>
                     <div>

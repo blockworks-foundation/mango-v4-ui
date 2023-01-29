@@ -35,10 +35,10 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import useSolBalance from 'hooks/useSolBalance'
-import AmountWithValue from './shared/AmountWithValue'
 import FormatNumericValue from './shared/FormatNumericValue'
 import Decimal from 'decimal.js'
 import { floorToDecimal } from 'utils/numbers'
+import BankAmountWithValue from './shared/BankAmountWithValue'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -327,15 +327,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 />
                 <div className="flex justify-between">
                   <p>{t('deposit-amount')}</p>
-                  {inputAmount ? (
-                    <AmountWithValue
-                      amount={inputAmount}
-                      amountDecimals={bank.mintDecimals}
-                      value={bank.uiPrice * Number(inputAmount)}
-                    />
-                  ) : (
-                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
-                  )}
+                  <BankAmountWithValue amount={inputAmount} bank={bank} />
                 </div>
                 {/* <div className="flex justify-between">
               <div className="flex items-center">

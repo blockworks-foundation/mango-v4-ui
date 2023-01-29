@@ -18,8 +18,8 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import mangoStore from '@store/mangoStore'
-import AmountWithValue from '@components/shared/AmountWithValue'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -111,7 +111,6 @@ const TokenStats = () => {
               }
               const deposits = bank.uiDeposits()
               const borrows = bank.uiBorrows()
-              const price = bank.uiPrice
               const available =
                 deposits - deposits * bank.minVaultToDepositsRatio - borrows
 
@@ -131,28 +130,29 @@ const TokenStats = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={deposits.toFixed(4)}
-                        value={(deposits * price).toFixed(2)}
+                        bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={borrows.toFixed(4)}
-                        value={(borrows * price).toFixed(2)}
+                        bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={available}
-                        amountDecimals={bank.mintDecimals}
-                        value={(available * price).toFixed(2)}
+                        bank={bank}
                         stacked
                       />
                     </div>
@@ -244,9 +244,10 @@ const TokenStats = () => {
                       <p className="mb-0.5 text-right text-xs">
                         {t('total-deposits')}
                       </p>
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={deposits.toFixed(4)}
-                        value={(deposits * price).toFixed(2)}
+                        bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>
@@ -254,9 +255,10 @@ const TokenStats = () => {
                       <p className="mb-0.5 text-right text-xs">
                         {t('total-borrows')}
                       </p>
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={borrows.toFixed(4)}
-                        value={(borrows * price).toFixed(2)}
+                        bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>

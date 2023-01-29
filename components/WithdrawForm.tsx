@@ -35,8 +35,8 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
-import AmountWithValue from './shared/AmountWithValue'
 import { floorToDecimal } from 'utils/numbers'
+import BankAmountWithValue from './shared/BankAmountWithValue'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -293,15 +293,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                 />
                 <div className="flex justify-between">
                   <p>{t('withdraw-amount')}</p>
-                  {inputAmount ? (
-                    <AmountWithValue
-                      amount={inputAmount}
-                      amountDecimals={bank.mintDecimals}
-                      value={bank.uiPrice * Number(inputAmount)}
-                    />
-                  ) : (
-                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
-                  )}
+                  <BankAmountWithValue amount={inputAmount} bank={bank} />
                 </div>
               </div>
             ) : null}

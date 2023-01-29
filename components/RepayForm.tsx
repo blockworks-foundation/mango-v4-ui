@@ -33,7 +33,7 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from 'utils/constants'
 import ConnectEmptyState from './shared/ConnectEmptyState'
-import AmountWithValue from './shared/AmountWithValue'
+import BankAmountWithValue from './shared/BankAmountWithValue'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -306,15 +306,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                 />
                 <div className="flex justify-between">
                   <p>{t('repayment-amount')}</p>
-                  {inputAmount ? (
-                    <AmountWithValue
-                      amount={inputAmount}
-                      amountDecimals={bank.mintDecimals}
-                      value={bank.uiPrice * Number(inputAmount)}
-                    />
-                  ) : (
-                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
-                  )}
+                  <BankAmountWithValue amount={inputAmount} bank={bank} />
                 </div>
                 <div className="flex justify-between">
                   <div className="flex items-center">

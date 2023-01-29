@@ -14,10 +14,10 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import mangoStore from '@store/mangoStore'
-import AmountWithValue from '@components/shared/AmountWithValue'
 import { getMaxWithdrawForBank } from '@components/swap/useTokenMax'
 import useMangoAccount from 'hooks/useMangoAccount'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
+import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 
 const AssetsBorrowsTable = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -85,7 +85,6 @@ const AssetsBorrowsTable = () => {
                 )?.logoURI
               }
               const borrows = bank.uiBorrows()
-              const price = bank.uiPrice
 
               const available =
                 group && mangoAccount
@@ -113,19 +112,19 @@ const AssetsBorrowsTable = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={borrows}
-                        value={borrows * price}
+                        bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <AmountWithValue
+                      <BankAmountWithValue
                         amount={available}
-                        amountDecimals={bank.mintDecimals}
-                        value={available * price}
+                        bank={bank}
                         stacked
                       />
                     </div>
@@ -163,7 +162,6 @@ const AssetsBorrowsTable = () => {
                 (t) => t.address === bank.mint.toString()
               )?.logoURI
             }
-            const price = bank.uiPrice
 
             const available =
               group && mangoAccount
@@ -193,11 +191,7 @@ const AssetsBorrowsTable = () => {
                       <p className="mb-0.5 text-right text-xs">
                         {t('available')}
                       </p>
-                      <AmountWithValue
-                        amount={available}
-                        amountDecimals={bank.mintDecimals}
-                        value={available * price}
-                      />
+                      <BankAmountWithValue amount={available} bank={bank} />
                     </div>
                     <div>
                       <p className="mb-0.5 text-right text-xs">{t('rate')}</p>

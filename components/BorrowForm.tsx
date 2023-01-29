@@ -39,9 +39,9 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
-import AmountWithValue from './shared/AmountWithValue'
 import FormatNumericValue from './shared/FormatNumericValue'
 import { floorToDecimal } from 'utils/numbers'
+import BankAmountWithValue from './shared/BankAmountWithValue'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -320,35 +320,26 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 <div className="flex justify-between">
                   <p>{t('withdraw-amount')}</p>
                   {isBorrow ? (
-                    <AmountWithValue
-                      amount={tokenBalance}
-                      amountDecimals={bank.mintDecimals}
-                      value={bank.uiPrice * tokenBalance.toNumber()}
-                    />
-                  ) : inputAmount ? (
-                    <AmountWithValue
-                      amount={inputAmount}
-                      amountDecimals={bank.mintDecimals}
-                      value={bank.uiPrice * parseFloat(inputAmount)}
-                    />
+                    <BankAmountWithValue amount={tokenBalance} bank={bank} />
                   ) : (
-                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
+                    <BankAmountWithValue
+                      amount={inputAmount}
+                      bank={bank}
+                      fixDecimals={!!inputAmount}
+                    />
                   )}
                 </div>
                 <div className="flex justify-between">
                   <p>{t('borrow-amount')}</p>
-                  {isBorrow ? (
-                    <AmountWithValue
-                      amount={Number(inputAmount) - Number(tokenBalance)}
-                      amountDecimals={bank.mintDecimals}
-                      value={
-                        bank.uiPrice *
-                        (parseFloat(inputAmount) - tokenBalance.toNumber())
-                      }
-                    />
-                  ) : (
-                    <AmountWithValue amount="0" amountDecimals={0} value={0} />
-                  )}
+                  <BankAmountWithValue
+                    amount={
+                      isBorrow
+                        ? Number(inputAmount) - tokenBalance.toNumber()
+                        : 0
+                    }
+                    bank={bank}
+                    fixDecimals={isBorrow}
+                  />
                 </div>
                 <div className="flex justify-between">
                   <Tooltip content={t('loan-origination-fee-tooltip')}>
