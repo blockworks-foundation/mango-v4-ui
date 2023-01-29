@@ -81,8 +81,11 @@ const PerpPositions = () => {
             <Th className="text-right">{t('trade:size')}</Th>
             <Th className="text-right">{t('trade:notional')}</Th>
             <Th className="text-right">{t('trade:entry-price')}</Th>
-            <Th className="text-right">Unsettled PnL</Th>
-            <Th className="text-right">PnL</Th>
+            <Th className="text-right">{`${t('trade:unsettled')} ${t(
+              'pnl'
+            )}`}</Th>
+            <Th className="text-right">{t('pnl')}</Th>
+            <Th />
           </TrHead>
         </thead>
         <tbody>

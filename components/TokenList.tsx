@@ -131,6 +131,7 @@ const TokenList = () => {
                   </Tooltip>
                 </div>
               </Th>
+              <Th />
             </TrHead>
           </thead>
           <tbody>
