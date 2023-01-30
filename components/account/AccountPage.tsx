@@ -6,7 +6,7 @@ import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
-import { formatNumericValue } from '../../utils/numbers'
+import { formatCurrencyValue } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import dynamic from 'next/dynamic'
 const SimpleAreaChart = dynamic(
@@ -252,7 +252,7 @@ const AccountPage = () => {
                     play
                     delay={0.05}
                     duration={1}
-                    numbers={formatNumericValue(accountValue, 2, true)}
+                    numbers={formatCurrencyValue(accountValue, 2)}
                   />
                 ) : (
                   <FlipNumbers
@@ -265,11 +265,7 @@ const AccountPage = () => {
                   />
                 )
               ) : (
-                <FormatNumericValue
-                  value={accountValue}
-                  isUsd={true}
-                  decimals={2}
-                />
+                <FormatNumericValue value={accountValue} isUsd decimals={2} />
               )}
             </div>
             <div className="flex items-center space-x-1.5">
