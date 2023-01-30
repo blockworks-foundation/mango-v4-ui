@@ -2,13 +2,13 @@ import { Bank } from '@blockworks-foundation/mango-v4'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import Button from '@components/shared/Button'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
-import { formatDecimal } from 'utils/numbers'
 
 const ActionPanel = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation('common')
@@ -46,12 +46,14 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
             {bank.name} {t('balance')}:
           </p>
           <p className="font-mono text-th-fgd-2">
-            {mangoAccount
-              ? formatDecimal(
-                  mangoAccount.getTokenBalanceUi(bank),
-                  bank.mintDecimals
-                )
-              : 0}
+            {mangoAccount ? (
+              <FormatNumericValue
+                value={mangoAccount.getTokenBalanceUi(bank)}
+                decimals={bank.mintDecimals}
+              />
+            ) : (
+              0
+            )}
           </p>
         </div>
         <div className="flex space-x-2">

@@ -65,7 +65,7 @@ const IconDropMenu = ({
             leaveTo="opacity-0"
           >
             <Popover.Panel
-              className={`absolute ${panelPosition[postion]} thin-scroll z-20 max-h-60 space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4 ${panelClassName}`}
+              className={`absolute ${panelPosition[postion]} thin-scroll z-40 max-h-60 space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4 ${panelClassName}`}
             >
               {children}
             </Popover.Panel>

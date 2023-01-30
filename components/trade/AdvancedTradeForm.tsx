@@ -57,7 +57,7 @@ const AdvancedTradeForm = () => {
   const tradeForm = mangoStore((s) => s.tradeForm)
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
-  const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
+  const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
@@ -191,6 +191,22 @@ const AdvancedTradeForm = () => {
     return [tickDecimals, tickSize]
   }, [selectedMarket])
 
+  const [minOrderDecimals, minOrderSize] = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return [1, 0.1]
+    let minOrderSize: number
+    if (selectedMarket instanceof Serum3Market) {
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      minOrderSize = market.minOrderSize
+    } else {
+      minOrderSize = selectedMarket.minOrderSize
+    }
+    const minOrderDecimals = getDecimalCount(minOrderSize)
+    return [minOrderDecimals, minOrderSize]
+  }, [selectedMarket])
+
   /*
    * Updates the limit price on page load
    */
@@ -307,6 +323,12 @@ const AdvancedTradeForm = () => {
           undefined
         )
         actions.fetchOpenOrders()
+        set((s) => {
+          s.successAnimation.trade = true
+        })
+        if (soundSettings['swap-success']) {
+          successSound.play()
+        }
         notify({
           type: 'success',
           title: 'Transaction successful',
@@ -326,25 +348,9 @@ const AdvancedTradeForm = () => {
     }
   }, [])
 
-  const [minOrderDecimals, minOrderSize] = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return [1, 0.1]
-    let minOrderSize: number
-    if (selectedMarket instanceof Serum3Market) {
-      const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
-      )
-      minOrderSize = market.minOrderSize
-    } else {
-      minOrderSize = selectedMarket.minOrderSize
-    }
-    const minOrderDecimals = getDecimalCount(minOrderSize)
-    return [minOrderDecimals, minOrderSize]
-  }, [selectedMarket])
-
   return (
     <div>
-      <div className="mt-1.5 px-2 md:mt-0 md:border-t md:border-th-bkg-3 md:px-4 md:pt-5 lg:mt-5 lg:border-t-0 lg:pt-0">
+      <div className="mt-1.5 px-2 md:mt-0 md:px-4 md:pt-5 lg:mt-5 lg:pt-0">
         <TabUnderline
           activeValue={tradeForm.side}
           values={['buy', 'sell']}
@@ -422,7 +428,7 @@ const AdvancedTradeForm = () => {
               thousandSeparator=","
               allowNegative={false}
               isNumericString={true}
-              decimalScale={6}
+              decimalScale={minOrderDecimals}
               name="amountIn"
               id="amountIn"
               className="ml-2 w-full bg-transparent font-mono focus:outline-none"
@@ -449,7 +455,7 @@ const AdvancedTradeForm = () => {
               thousandSeparator=","
               allowNegative={false}
               isNumericString={true}
-              decimalScale={6}
+              decimalScale={tickDecimals}
               name="amountIn"
               id="amountIn"
               className="ml-2 w-full bg-transparent font-mono focus:outline-none"

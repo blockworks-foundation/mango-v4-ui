@@ -4,6 +4,7 @@ import Label from '@components/forms/Label'
 import MultiSelectDropdown from '@components/forms/MultiSelectDropdown'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import Button, { IconButton } from '@components/shared/Button'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure } from '@headlessui/react'
 import {
@@ -22,7 +23,6 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
 import ActivityFeedTable from './ActivityFeedTable'
 
 interface AdvancedFilters {
@@ -428,25 +428,25 @@ const ActivityDetails = ({
         <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
           <p className="font-mono text-th-fgd-1">
-            {formatDecimal(asset_amount)}{' '}
+            <FormatNumericValue value={asset_amount} />{' '}
             <span className="font-body">{asset_symbol}</span>
             <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-            {formatFixedDecimals(asset_price, true)}
+            <FormatNumericValue value={asset_price} isUsd />
           </p>
           <p className="font-mono text-xs text-th-fgd-3">
-            {formatFixedDecimals(asset_price * asset_amount, true)}
+            <FormatNumericValue value={asset_price * asset_amount} isUsd />
           </p>
         </div>
         <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
           <p className="font-mono text-th-fgd-1">
-            {formatDecimal(liab_amount)}{' '}
+            <FormatNumericValue value={liab_amount} />{' '}
             <span className="font-body">{liab_symbol}</span>
             <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-            {formatFixedDecimals(liab_price, true)}
+            <FormatNumericValue value={liab_price} isUsd />
           </p>
           <p className="font-mono text-xs text-th-fgd-3">
-            {formatFixedDecimals(liab_price * liab_amount, true)}
+            <FormatNumericValue value={liab_price * liab_amount} isUsd />
           </p>
         </div>
       </div>

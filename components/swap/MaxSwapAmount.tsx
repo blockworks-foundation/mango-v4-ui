@@ -3,7 +3,7 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
-import { floorToDecimal } from 'utils/numbers'
+import { floorToDecimal, formatNumericValue } from 'utils/numbers'
 import { useTokenMax } from './useTokenMax'
 
 const MaxSwapAmount = ({
@@ -35,6 +35,10 @@ const MaxSwapAmount = ({
   const maxWithBorrow = floorToDecimal(amountWithBorrow, decimals).toFixed()
   const max = useMargin ? maxWithBorrow : maxBalance
 
+  const setMax = (value: string) => {
+    setAmountIn(formatNumericValue(value, decimals))
+  }
+
   if (mangoAccountLoading) return null
 
   return (
@@ -42,15 +46,17 @@ const MaxSwapAmount = ({
       {Number(tokenBalance) < Number(max) ? (
         <MaxAmountButton
           className="mb-0.5"
+          decimals={decimals}
           label={t('bal')}
-          onClick={() => setAmountIn(tokenBalance)}
+          onClick={() => setMax(tokenBalance)}
           value={tokenBalance}
         />
       ) : null}
       <MaxAmountButton
         className="mb-0.5 ml-2"
+        decimals={decimals}
         label={t('max')}
-        onClick={() => setAmountIn(max)}
+        onClick={() => setMax(max)}
         value={max}
       />
     </div>

@@ -25,11 +25,6 @@ import {
 } from 'react'
 import { ALPHA_DEPOSIT_LIMIT } from 'utils/constants'
 import { notify } from 'utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from 'utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -48,6 +43,7 @@ import { useEnhancedWallet } from '../wallet/EnhancedWalletProvider'
 import Modal from '../shared/Modal'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { withValueLimit } from '@components/swap/SwapForm'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const UserSetupModal = ({
   isOpen,
@@ -169,10 +165,7 @@ const UserSetupModal = ({
             key,
             value,
             tokenDecimals: walletBalance.maxDecimals,
-            walletBalance: floorToDecimal(
-              walletBalance.maxAmount,
-              walletBalance.maxDecimals
-            ).toNumber(),
+            walletBalance: walletBalance.maxAmount,
             walletBalanceValue: walletBalance.maxAmount * value?.[0].uiPrice,
           }
         })
@@ -213,14 +206,22 @@ const UserSetupModal = ({
     tokenMax.amount < Number(depositAmount) ||
     (depositToken === 'SOL' && maxSolDeposit <= 0)
 
+  const setMax = useCallback(() => {
+    const max = new Decimal(tokenMax.amount).toDecimalPlaces(
+      tokenMax.decimals,
+      Decimal.ROUND_FLOOR
+    )
+    setDepositAmount(max.toString())
+    setSizePercentage('100')
+  }, [tokenMax])
+
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       setSizePercentage(percentage)
-      let amount = new Decimal(tokenMax.amount).mul(percentage).div(100)
-      if (percentage !== '100') {
-        amount = floorToDecimal(amount, tokenMax.decimals)
-      }
-
+      const amount = new Decimal(tokenMax.amount)
+        .mul(percentage)
+        .div(100)
+        .toDecimalPlaces(tokenMax.decimals, Decimal.ROUND_FLOOR)
       setDepositAmount(amount.toString())
     },
     [tokenMax]
@@ -365,7 +366,7 @@ const UserSetupModal = ({
                     onChange={(e: ChangeEvent<HTMLInputElement>) =>
                       setAccountName(e.target.value)
                     }
-                    charLimit={30}
+                    maxLength={30}
                   />
                 </div>
                 <SolBalanceWarnings className="mt-4" />
@@ -422,20 +423,10 @@ const UserSetupModal = ({
                     <Label text={t('amount')} />
                     <MaxAmountButton
                       className="mb-2"
+                      decimals={tokenMax.decimals}
                       label="Max"
-                      onClick={() => {
-                        setDepositAmount(
-                          floorToDecimal(
-                            tokenMax.amount,
-                            tokenMax.decimals
-                          ).toFixed()
-                        )
-                        setSizePercentage('100')
-                      }}
-                      value={floorToDecimal(
-                        tokenMax.amount,
-                        tokenMax.decimals
-                      ).toFixed()}
+                      onClick={setMax}
+                      value={tokenMax.amount}
                     />
                   </div>
                   <div className="mb-6 grid grid-cols-2">
@@ -492,16 +483,19 @@ const UserSetupModal = ({
                         <p className="font-mono text-th-fgd-2">
                           {depositAmount ? (
                             <>
-                              {formatDecimal(
-                                Number(depositAmount),
-                                depositBank.mintDecimals
-                              )}{' '}
+                              <FormatNumericValue
+                                value={depositAmount}
+                                decimals={depositBank.mintDecimals}
+                              />{' '}
                               <span className="text-xs text-th-fgd-3">
                                 (
-                                {formatFixedDecimals(
-                                  depositBank.uiPrice * Number(depositAmount),
-                                  true
-                                )}
+                                <FormatNumericValue
+                                  value={
+                                    depositBank.uiPrice * Number(depositAmount)
+                                  }
+                                  decimals={2}
+                                  isUsd
+                                />
                                 )
                               </span>
                             </>

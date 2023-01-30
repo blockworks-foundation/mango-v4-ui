@@ -28,7 +28,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
+import { formatNumericValue } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
 import { RouteInfo } from 'types/jupiter'
@@ -42,6 +42,8 @@ import Tooltip from '@components/shared/Tooltip'
 import { Disclosure } from '@headlessui/react'
 import RoutesModal from './RoutesModal'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -76,6 +78,40 @@ const deserializeJupiterIxAndAlt = async (
   })
 
   return [decompiledMessage.instructions, addressLookupTables]
+}
+
+const prepareMangoRouterInstructions = async (
+  selectedRoute: RouteInfo,
+  inputMint: PublicKey,
+  outputMint: PublicKey,
+  userPublicKey: PublicKey
+): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
+  if (!selectedRoute || !selectedRoute.mints || !selectedRoute.instructions) {
+    return [[], []]
+  }
+  const mintsToFilterOut = [inputMint, outputMint]
+  const filteredOutMints = [
+    ...selectedRoute.mints.filter(
+      (routeMint) =>
+        !mintsToFilterOut.find((filterOutMint) =>
+          filterOutMint.equals(routeMint)
+        )
+    ),
+  ]
+  const additionalInstructions = []
+  for (const mint of filteredOutMints) {
+    const ix = await createAssociatedTokenAccountIdempotentInstruction(
+      userPublicKey,
+      userPublicKey,
+      mint
+    )
+    additionalInstructions.push(ix)
+  }
+  const instructions = [
+    ...additionalInstructions,
+    ...selectedRoute.instructions,
+  ]
+  return [instructions, []]
 }
 
 const fetchJupiterTransaction = async (
@@ -185,15 +221,19 @@ const SwapReviewRouteInfo = ({
       const outputId = outputTokenInfo?.extensions?.coingeckoId
 
       if (inputId && outputId) {
-        const results = await fetch(
-          `https://api.coingecko.com/api/v3/simple/price?ids=${inputId},${outputId}&vs_currencies=usd`
-        )
-        const json = await results.json()
-        if (json[inputId]?.usd && json[outputId]?.usd) {
-          setCoingeckoPrices({
-            inputCoingeckoPrice: json[inputId].usd,
-            outputCoingeckoPrice: json[outputId].usd,
-          })
+        try {
+          const results = await fetch(
+            `https://api.coingecko.com/api/v3/simple/price?ids=${inputId},${outputId}&vs_currencies=usd`
+          )
+          const json = await results.json()
+          if (json[inputId]?.usd && json[outputId]?.usd) {
+            setCoingeckoPrices({
+              inputCoingeckoPrice: json[inputId].usd,
+              outputCoingeckoPrice: json[outputId].usd,
+            })
+          }
+        } catch (e) {
+          console.error('Loading coingecko prices: ', e)
         }
       }
     }
@@ -217,14 +257,22 @@ const SwapReviewRouteInfo = ({
 
       if (!mangoAccount || !group || !inputBank || !outputBank) return
       setSubmitting(true)
-      const [ixs, alts] = await fetchJupiterTransaction(
-        connection,
-        selectedRoute,
-        mangoAccount.owner,
-        slippage,
-        inputBank.mint,
-        outputBank.mint
-      )
+      const [ixs, alts] =
+        selectedRoute.routerName === 'Mango'
+          ? await prepareMangoRouterInstructions(
+              selectedRoute,
+              inputBank.mint,
+              outputBank.mint,
+              mangoAccount.owner
+            )
+          : await fetchJupiterTransaction(
+              connection,
+              selectedRoute,
+              mangoAccount.owner,
+              slippage,
+              inputBank.mint,
+              outputBank.mint
+            )
 
       try {
         const tx = await client.marginTrade({
@@ -325,14 +373,14 @@ const SwapReviewRouteInfo = ({
               </div>
             </div>
             <p className="mb-0.5 flex items-center text-center text-lg">
-              <span className="mr-1 font-mono text-th-fgd-1">{`${formatFixedDecimals(
-                amountIn.toNumber()
-              )}`}</span>{' '}
+              <span className="mr-1 font-mono text-th-fgd-1">
+                <FormatNumericValue value={amountIn} />
+              </span>{' '}
               {inputTokenInfo?.symbol}
               <ArrowRightIcon className="mx-2 h-5 w-5 text-th-fgd-4" />
-              <span className="mr-1 font-mono text-th-fgd-1">{`${formatFixedDecimals(
-                amountOut.toNumber()
-              )}`}</span>{' '}
+              <span className="mr-1 font-mono text-th-fgd-1">
+                <FormatNumericValue value={amountOut} />
+              </span>{' '}
               {`${outputTokenInfo?.symbol}`}
             </p>
           </div>
@@ -349,7 +397,7 @@ const SwapReviewRouteInfo = ({
                       <span className="font-body text-th-fgd-3">
                         {inputTokenInfo?.symbol} ≈{' '}
                       </span>
-                      {formatFixedDecimals(amountOut.div(amountIn).toNumber())}{' '}
+                      <FormatNumericValue value={amountOut.div(amountIn)} />{' '}
                       <span className="font-body text-th-fgd-3">
                         {outputTokenInfo?.symbol}
                       </span>
@@ -360,7 +408,7 @@ const SwapReviewRouteInfo = ({
                       <span className="font-body text-th-fgd-3">
                         {outputTokenInfo?.symbol} ≈{' '}
                       </span>
-                      {formatFixedDecimals(amountIn.div(amountOut).toNumber())}{' '}
+                      <FormatNumericValue value={amountIn.div(amountOut)} />{' '}
                       <span className="font-body text-th-fgd-3">
                         {inputTokenInfo?.symbol}
                       </span>
@@ -399,17 +447,22 @@ const SwapReviewRouteInfo = ({
             </p>
             {outputTokenInfo?.decimals && selectedRoute ? (
               <p className="text-right font-mono text-sm text-th-fgd-2">
-                {selectedRoute.swapMode === 'ExactIn'
-                  ? formatDecimal(
+                {selectedRoute.swapMode === 'ExactIn' ? (
+                  <FormatNumericValue
+                    value={
                       selectedRoute.otherAmountThreshold /
-                        10 ** outputTokenInfo.decimals || 1,
-                      outputTokenInfo.decimals
-                    )
-                  : formatDecimal(
-                      selectedRoute.outAmount /
-                        10 ** outputTokenInfo.decimals || 1,
-                      outputTokenInfo.decimals
-                    )}{' '}
+                      10 ** outputTokenInfo.decimals
+                    }
+                    decimals={outputTokenInfo.decimals}
+                  />
+                ) : (
+                  <FormatNumericValue
+                    value={
+                      selectedRoute.outAmount / 10 ** outputTokenInfo.decimals
+                    }
+                    decimals={outputTokenInfo.decimals}
+                  />
+                )}{' '}
                 <span className="font-body text-th-fgd-3">
                   {outputTokenInfo?.symbol}
                 </span>
@@ -421,11 +474,13 @@ const SwapReviewRouteInfo = ({
               <p className="text-sm text-th-fgd-3">{t('swap:maximum-cost')}</p>
               {inputTokenInfo?.decimals && selectedRoute ? (
                 <p className="text-right font-mono text-sm text-th-fgd-2">
-                  {formatDecimal(
-                    selectedRoute.otherAmountThreshold /
-                      10 ** inputTokenInfo.decimals || 1,
-                    inputTokenInfo.decimals
-                  )}{' '}
+                  <FormatNumericValue
+                    value={
+                      selectedRoute.otherAmountThreshold /
+                      10 ** inputTokenInfo.decimals
+                    }
+                    decimals={inputTokenInfo.decimals}
+                  />{' '}
                   <span className="font-body text-th-fgd-3">
                     {inputTokenInfo?.symbol}
                   </span>
@@ -447,19 +502,21 @@ const SwapReviewRouteInfo = ({
                 content={
                   balance
                     ? t('swap:tooltip-borrow-balance', {
-                        balance: formatFixedDecimals(balance),
-                        borrowAmount: formatFixedDecimals(borrowAmount),
+                        balance: formatNumericValue(balance),
+                        borrowAmount: formatNumericValue(borrowAmount),
                         token: inputTokenInfo?.symbol,
-                        rate: formatDecimal(inputBank!.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        }),
+                        rate: formatNumericValue(
+                          inputBank!.getBorrowRateUi(),
+                          2
+                        ),
                       })
                     : t('swap:tooltip-borrow-no-balance', {
-                        borrowAmount: formatFixedDecimals(borrowAmount),
+                        borrowAmount: formatNumericValue(borrowAmount),
                         token: inputTokenInfo?.symbol,
-                        rate: formatDecimal(inputBank!.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        }),
+                        rate: formatNumericValue(
+                          inputBank!.getBorrowRateUi(),
+                          2
+                        ),
                       })
                 }
                 delay={250}
@@ -469,7 +526,7 @@ const SwapReviewRouteInfo = ({
                 </p>
               </Tooltip>
               <p className="text-right font-mono text-sm text-th-fgd-2">
-                ~{formatFixedDecimals(borrowAmount)}{' '}
+                ~<FormatNumericValue value={borrowAmount} />{' '}
                 <span className="font-body">{inputTokenInfo?.symbol}</span>
               </p>
             </div>
@@ -548,15 +605,17 @@ const SwapReviewRouteInfo = ({
                       </Tooltip>
                       <p className="text-right font-mono text-sm text-th-fgd-2">
                         ~
-                        {formatFixedDecimals(
-                          amountIn
-                            .mul(inputBank!.loanOriginationFeeRate.toFixed())
-                            .toNumber()
-                        )}{' '}
+                        <FormatNumericValue
+                          value={amountIn.mul(
+                            inputBank!.loanOriginationFeeRate.toNumber()
+                          )}
+                        />{' '}
                         <span className="font-body">{inputBank!.name}</span> (
-                        {formatFixedDecimals(
-                          inputBank!.loanOriginationFeeRate.toNumber() * 100
-                        )}
+                        <FormatNumericValue
+                          value={
+                            inputBank!.loanOriginationFeeRate.toNumber() * 100
+                          }
+                        />
                         %)
                       </p>
                     </div>

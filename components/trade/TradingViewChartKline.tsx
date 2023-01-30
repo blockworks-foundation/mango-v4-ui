@@ -76,7 +76,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       return dataList
     } catch (e) {
       setIsLoading(false)
-      console.log(e)
+      console.error(e)
       return []
     }
   }
@@ -132,7 +132,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         try {
           fetchFreshData(365)
         } catch (e) {
-          console.log('Error fetching new data')
+          console.error('Error fetching new data')
         }
         chart.loadMore(() => null)
       })
@@ -405,9 +405,9 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   return (
     <div
       className={clsx(
-        'fixed h-full w-full',
+        'h-full w-full',
         isFullView
-          ? 'left-0 top-0 right-0 bottom-0 z-40 bg-th-bkg-1 text-th-fgd-1'
+          ? 'fixed left-0 top-0 right-0 bottom-0 z-40 bg-th-bkg-1 text-th-fgd-1'
           : ''
       )}
     >

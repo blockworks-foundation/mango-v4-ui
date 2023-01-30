@@ -4,7 +4,6 @@ import { useTheme } from 'next-themes'
 import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
-import { formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
@@ -15,6 +14,7 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
 import { IconButton } from '@components/shared/Button'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -32,8 +32,6 @@ const PerpMarketsTable = ({
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
-
-  console.log(coingeckoPrices.find((asset) => asset.symbol === 'soBTC'))
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -53,10 +51,8 @@ const PerpMarketsTable = ({
             {perpMarkets.map((market) => {
               const symbol = market.name.split('-')[0]
 
-              const coingeckoData = coingeckoPrices.find((asset) =>
-                symbol === 'soETH'
-                  ? asset.symbol === 'ETH'
-                  : asset.symbol === symbol
+              const coingeckoData = coingeckoPrices.find(
+                (asset) => asset.symbol.toUpperCase() === symbol.toUpperCase()
               )
 
               const change = coingeckoData
@@ -90,7 +86,9 @@ const PerpMarketsTable = ({
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(market.uiPrice, true)}</p>
+                      <p>
+                        <FormatNumericValue value={market.uiPrice} isUsd />
+                      </p>
                     </div>
                   </Td>
                   <Td>
@@ -130,10 +128,12 @@ const PerpMarketsTable = ({
                         </span>
                       </p>
                       <p className="text-xs text-th-fgd-4">
-                        {formatFixedDecimals(
-                          market.openInterest.toNumber() * market.uiPrice,
-                          true
-                        )}
+                        <FormatNumericValue
+                          value={
+                            market.openInterest.toNumber() * market.uiPrice
+                          }
+                          isUsd
+                        />
                       </p>
                     </div>
                   </Td>
@@ -183,9 +183,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
 
   const symbol = market.name.split('-')[0]
 
-  const coingeckoData = coingeckoPrices.find((asset) =>
-    symbol === 'soETH' ? asset.symbol === 'ETH' : asset.symbol === symbol
-  )
+  const coingeckoData = coingeckoPrices.find((asset) => asset.symbol === symbol)
 
   const change = coingeckoData
     ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
@@ -219,7 +217,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
             <p className="text-th-fgd-1">{market.name}</p>
             <div className="flex items-center space-x-3">
               <p className="font-mono">
-                {formatFixedDecimals(market.uiPrice, true)}
+                <FormatNumericValue value={market.uiPrice} isUsd />
               </p>
               <Change change={change} suffix="%" />
             </div>

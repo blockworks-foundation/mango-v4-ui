@@ -18,7 +18,9 @@ export const calculateLimitPriceForMarketOrder = (
   }
 
   if (!selectedOrder) {
-    throw new Error('Unable to calculate market order. Please retry.')
+    throw new Error(
+      'Unable to place market order for this order size. Please retry.'
+    )
   }
 
   if (side === 'buy') {

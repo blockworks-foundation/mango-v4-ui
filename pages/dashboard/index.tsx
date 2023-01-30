@@ -46,7 +46,7 @@ const Dashboard: NextPage = () => {
 
   return (
     <div className="grid grid-cols-12">
-      <div className="col-span-12 lg:col-span-8 lg:col-start-3 xl:col-span-6 xl:col-start-4">
+      <div className="col-span-12 lg:col-span-8 lg:col-start-3">
         <div className="p-8 pb-20 md:pb-16 lg:p-10">
           <h1>Dashboard</h1>
           {group ? (
@@ -102,8 +102,8 @@ const Dashboard: NextPage = () => {
                             <>
                               <Disclosure.Button
                                 aria-label="panel"
-                                className={`default-transition flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
-                                  open ? 'bg-th-bkg-2' : ''
+                                className={`default-transition flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-4 ${
+                                  open ? 'bg-th-bkg-4' : ''
                                 }`}
                               >
                                 <div className="flex items-center">
@@ -441,17 +441,29 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Maint Asset/Liab Weight"
-                                value={`${perpMarket.maintAssetWeight.toFixed(
+                                value={`${perpMarket.maintBaseAssetWeight.toFixed(
                                   4
                                 )}/
-                          ${perpMarket.maintLiabWeight.toFixed(4)}`}
+                          ${perpMarket.maintBaseLiabWeight.toFixed(4)}`}
                               />
                               <KeyValuePair
                                 label="Init Asset/Liab Weight"
-                                value={`${perpMarket.initAssetWeight.toFixed(
+                                value={`${perpMarket.initBaseAssetWeight.toFixed(
                                   4
                                 )}/
-                          ${perpMarket.initLiabWeight.toFixed(4)}`}
+                          ${perpMarket.initBaseLiabWeight.toFixed(4)}`}
+                              />
+                              <KeyValuePair
+                                label="Maint PNL Asset weight"
+                                value={`${perpMarket.maintPnlAssetWeight.toFixed(
+                                  4
+                                )}`}
+                              />
+                              <KeyValuePair
+                                label="Init PNL Asset weight"
+                                value={`${perpMarket.initPnlAssetWeight.toFixed(
+                                  4
+                                )}`}
                               />
                               <KeyValuePair
                                 label="Liquidation Fee"
@@ -501,10 +513,6 @@ const Dashboard: NextPage = () => {
                                 value={`${perpMarket.oracleConfig.maxStalenessSlots} slots`}
                               />
                               <KeyValuePair
-                                label="Trusted Market"
-                                value={`${perpMarket.trustedMarket}`}
-                              />
-                              <KeyValuePair
                                 label="Group Insurance Fund"
                                 value={`${perpMarket.groupInsuranceFund}`}
                               />
@@ -534,9 +542,9 @@ const KeyValuePair = ({
   value: number | ReactNode | string
 }) => {
   return (
-    <div className="flex justify-between border-t border-th-bkg-3 p-4 xl:py-3">
+    <div className="flex justify-between border-t border-th-bkg-2 px-6 py-3">
       <span className="mr-4 whitespace-nowrap text-th-fgd-3">{label}</span>
-      {value}
+      <span className="font-mono text-th-fgd-2">{value}</span>
     </div>
   )
 }

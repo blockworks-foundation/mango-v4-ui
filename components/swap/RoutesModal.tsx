@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import { RouteInfo, Token } from '../../types/jupiter'
-import { formatDecimal } from '../../utils/numbers'
 import Modal from '../shared/Modal'
 import useJupiterMints from '../../hooks/useJupiterMints'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 type RoutesModalProps = {
   onClose: () => void
@@ -92,10 +92,12 @@ const RoutesModal = ({
                     </div>
                   </div>
                   <div className="text-lg">
-                    {formatDecimal(
-                      route.outAmount / 10 ** (outputTokenInfo?.decimals || 1),
-                      6
-                    )}
+                    <FormatNumericValue
+                      value={
+                        route.outAmount / 10 ** (outputTokenInfo?.decimals || 1)
+                      }
+                      decimals={outputTokenInfo?.decimals || 6}
+                    />
                   </div>
                 </div>
               </button>

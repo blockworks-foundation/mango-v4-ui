@@ -5,10 +5,11 @@ import { useQuery } from '@tanstack/react-query'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useMemo } from 'react'
+import { MANGO_DATA_API_URL } from 'utils/constants'
 
 const fetchFundingRate = async (groupPk: string | undefined) => {
   const res = await fetch(
-    `https://mango-transaction-log.herokuapp.com/v4/one-hour-funding-rate?mango-group=${groupPk}`
+    `${MANGO_DATA_API_URL}/one-hour-funding-rate?mango-group=${groupPk}`
   )
   return await res.json()
 }
@@ -20,9 +21,9 @@ export const usePerpFundingRate = () => {
     ['funding-rate'],
     () => fetchFundingRate(group?.publicKey?.toString()),
     {
-      cacheTime: 1000 * 60,
+      cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
-      retry: true,
+      retry: 3,
       enabled: !!group,
     }
   )

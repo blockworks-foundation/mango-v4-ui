@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   CheckIcon,
   DocumentDuplicateIcon,
   HeartIcon,
   PlusCircleIcon,
-  UsersIcon,
+  UserPlusIcon,
 } from '@heroicons/react/20/solid'
 import {
   HealthType,
@@ -47,6 +47,18 @@ const MangoAccountsListModal = ({
   const router = useRouter()
   const { asPath } = useRouter()
   const [submitting, setSubmitting] = useState('')
+
+  const sortedMangoAccounts = useMemo(() => {
+    if (!group) return mangoAccounts
+
+    return [...mangoAccounts].sort((a, b) => {
+      if (b.publicKey.toString() === mangoAccount?.publicKey.toString())
+        return 1
+      if (a.publicKey.toString() === mangoAccount?.publicKey.toString())
+        return -1
+      return b.getEquity(group).toNumber() - a.getEquity(group).toNumber()
+    })
+  }, [group, mangoAccounts])
 
   const handleSelectMangoAccount = async (acc: MangoAccount) => {
     const set = mangoStore.getState().set
@@ -94,8 +106,8 @@ const MangoAccountsListModal = ({
             {loading ? (
               <Loading />
             ) : mangoAccounts.length ? (
-              <div className="thin-scroll mt-4 max-h-[280px] space-y-2 overflow-y-auto">
-                {mangoAccounts.map((acc) => {
+              <div className="thin-scroll mt-4 max-h-[320px] space-y-2 overflow-y-auto">
+                {sortedMangoAccounts.map((acc) => {
                   if (
                     mangoAccount &&
                     acc.publicKey.equals(mangoAccount.publicKey)
@@ -147,7 +159,7 @@ const MangoAccountsListModal = ({
                                         ),
                                       })}
                                     >
-                                      <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                                      <UserPlusIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
                                     </Tooltip>
                                   ) : null}
                                 </div>

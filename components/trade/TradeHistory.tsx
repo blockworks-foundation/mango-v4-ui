@@ -1,4 +1,13 @@
-import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
+import {
+  Group,
+  I80F48,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
+import { IconButton, LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
+import SheenLoader from '@components/shared/SheenLoader'
 import SideBadge from '@components/shared/SideBadge'
 import {
   Table,
@@ -8,14 +17,17 @@ import {
   TrBody,
   TrHead,
 } from '@components/shared/TableElements'
-import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import Tooltip from '@components/shared/Tooltip'
+import { NoSymbolIcon, UsersIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useViewport } from 'hooks/useViewport'
-import { useMemo } from 'react'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import { useTranslation } from 'next-i18next'
+import { useCallback, useMemo, useState } from 'react'
+import { PAGINATION_PAGE_LENGTH } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import TableMarketName from './TableMarketName'
 
@@ -26,16 +38,17 @@ const byTimestamp = (a: any, b: any) => {
   )
 }
 
-const reverseSide = (side: string) => (side === 'buy' ? 'sell' : 'buy')
+const reverseSide = (side: string) => (side === 'long' ? 'short' : 'long')
 
-const parsedPerpEvent = (mangoAccountAddress: string, event: any) => {
+const parsePerpEvent = (mangoAccountAddress: string, event: any) => {
   const maker = event.maker.toString() === mangoAccountAddress
   const orderId = maker ? event.makerOrderId : event.takerOrderId
   const value = event.quantity * event.price
   const feeRate = maker
     ? new I80F48(event.makerFee.val)
     : new I80F48(event.takerFee.val)
-  const side = maker ? reverseSide(event.takerSide) : event.takerSide
+  const takerSide = event.takerSide === 0 ? 'long' : 'short'
+  const side = maker ? reverseSide(takerSide) : takerSide
 
   return {
     ...event,
@@ -46,11 +59,10 @@ const parsedPerpEvent = (mangoAccountAddress: string, event: any) => {
     value,
     feeCost: (feeRate.toNumber() * value).toFixed(4),
     side,
-    marketName: event.marketName,
   }
 }
 
-const parsedSerumEvent = (event: any) => {
+const parseSerumEvent = (event: any) => {
   let liquidity
   if (event.eventFlags) {
     liquidity = event?.eventFlags?.maker ? 'Maker' : 'Taker'
@@ -63,35 +75,95 @@ const parsedSerumEvent = (event: any) => {
     key: `${event.maker}-${event.price}`,
     value: event.price * event.size,
     side: event.side,
-    marketName: event.marketName,
+  }
+}
+
+const parseApiTradeHistory = (mangoAccountAddress: string, trade: any) => {
+  let makerTaker
+  if ('maker' in trade) {
+    makerTaker = trade.maker ? 'Maker' : 'Taker'
+    if (trade.taker && trade.taker.toString() === mangoAccountAddress) {
+      makerTaker = 'Taker'
+    }
+  }
+
+  let side = trade.side
+  if ('perp_market' in trade) {
+    const sideObj: any = {}
+    if (makerTaker == 'Taker') {
+      sideObj[trade.taker_side] = 1
+    } else {
+      sideObj[trade.taker_side == 'bid' ? 'ask' : 'bid'] = 1
+    }
+    side = sideObj
+  }
+
+  const size = trade.size || trade.quantity
+  let fee
+  if (trade.fee_cost) {
+    fee = trade.fee_cost
+  } else {
+    fee =
+      trade.maker === mangoAccountAddress ? trade.maker_fee : trade.taker_fee
+  }
+
+  return {
+    ...trade,
+    liquidity: trade.liquidity || makerTaker,
+    side,
+    size,
+    feeCost: fee,
   }
 }
 
 const formatTradeHistory = (
+  group: Group,
+  selectedMarket: Serum3Market | PerpMarket | undefined,
   mangoAccountAddress: string,
   tradeHistory: any[]
 ) => {
   return tradeHistory
     .flat()
     .map((event) => {
+      let trade
       if (event.eventFlags || event.nativeQuantityPaid) {
-        return parsedSerumEvent(event)
-      } else if (event.maker) {
-        return parsedPerpEvent(mangoAccountAddress, event)
+        trade = parseSerumEvent(event)
+      } else if (event.makerFee) {
+        trade = parsePerpEvent(mangoAccountAddress, event)
       } else {
-        return event
+        trade = parseApiTradeHistory(mangoAccountAddress, event)
       }
+
+      let market
+      if ('market' in trade) {
+        market = group.getSerum3MarketByExternalMarket(
+          new PublicKey(trade.market)
+        )
+      } else if ('perp_market' in trade) {
+        market = group.getPerpMarketByMarketIndex(trade.market_index)
+      } else {
+        market = selectedMarket
+      }
+
+      return { ...trade, market }
     })
     .sort(byTimestamp)
 }
 
 const TradeHistory = () => {
+  const { t } = useTranslation(['common', 'trade'])
   const group = mangoStore.getState().group
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const actions = mangoStore((s) => s.actions)
   const fills = mangoStore((s) => s.selectedMarket.fills)
-  const tradeHistory = mangoStore((s) => s.mangoAccount.tradeHistory)
+  const tradeHistory = mangoStore((s) => s.mangoAccount.tradeHistory.data)
+  const loadingTradeHistory = mangoStore(
+    (s) => s.mangoAccount.tradeHistory.loading
+  )
+  const [offset, setOffset] = useState(0)
   const { width } = useViewport()
+  const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
 
   const openOrderOwner = useMemo(() => {
@@ -112,119 +184,107 @@ const TradeHistory = () => {
   }, [mangoAccount, selectedMarket])
 
   const eventQueueFillsForAccount = useMemo(() => {
-    if (!mangoAccountAddress || !selectedMarket) return []
+    if (!selectedMarket) return []
 
-    const mangoAccountFills = fills
-      .filter((fill: any) => {
-        if (fill.openOrders) {
-          // handles serum event queue for spot trades
-          return openOrderOwner ? fill.openOrders.equals(openOrderOwner) : false
-        } else {
-          // handles mango event queue for perp trades
-          return (
-            fill.taker.equals(openOrderOwner) ||
-            fill.maker.equals(openOrderOwner)
-          )
-        }
-      })
-      .map((fill: any) => ({ ...fill, marketName: selectedMarket.name }))
-
-    return formatTradeHistory(mangoAccountAddress, mangoAccountFills)
-  }, [selectedMarket, mangoAccountAddress, openOrderOwner, fills])
+    return fills.filter((fill: any) => {
+      if (fill.openOrders) {
+        // handles serum event queue for spot trades
+        return openOrderOwner ? fill.openOrders.equals(openOrderOwner) : false
+      } else {
+        // handles mango event queue for perp trades
+        return (
+          fill.taker.equals(openOrderOwner) || fill.maker.equals(openOrderOwner)
+        )
+      }
+    })
+  }, [selectedMarket, openOrderOwner, fills])
 
   const combinedTradeHistory = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group) return []
     let newFills = []
     if (eventQueueFillsForAccount?.length) {
-      console.log('eventQueueFillsForAccount', eventQueueFillsForAccount)
-
       newFills = eventQueueFillsForAccount.filter((fill) => {
         return !tradeHistory.find((t) => {
-          if (t.order_id) {
+          if ('order_id' in t) {
             return t.order_id === fill.orderId?.toString()
+          } else {
+            return t.seq_num === fill.seqNum?.toNumber()
           }
-          // else {
-          //   return t.seq_num === fill.seqNum?.toString()
-          // }
         })
       })
     }
-    return [...newFills, ...tradeHistory]
-  }, [eventQueueFillsForAccount, tradeHistory])
+    return formatTradeHistory(group, selectedMarket, mangoAccountAddress, [
+      ...newFills,
+      ...tradeHistory,
+    ])
+  }, [
+    eventQueueFillsForAccount,
+    mangoAccountAddress,
+    tradeHistory,
+    selectedMarket,
+  ])
 
-  console.log('trade history', tradeHistory)
+  const handleShowMore = useCallback(() => {
+    const set = mangoStore.getState().set
+    set((s) => {
+      s.mangoAccount.tradeHistory.loading = true
+    })
+    setOffset(offset + PAGINATION_PAGE_LENGTH)
+    actions.fetchTradeHistory(offset + PAGINATION_PAGE_LENGTH)
+  }, [actions, offset])
 
   if (!selectedMarket || !group) return null
 
-  return mangoAccount && combinedTradeHistory.length ? (
-    showTableView ? (
-      <div>
+  return mangoAccountAddress &&
+    (combinedTradeHistory.length || loadingTradeHistory) ? (
+    <>
+      {showTableView ? (
         <Table>
           <thead>
             <TrHead>
-              <Th className="text-left">Market</Th>
-              <Th className="text-right">Side</Th>
-              <Th className="text-right">Size</Th>
-              <Th className="text-right">Price</Th>
-              <Th className="text-right">Value</Th>
-              <Th className="text-right">Fee</Th>
-              <Th className="text-right">Time</Th>
+              <Th className="text-left">{t('market')}</Th>
+              <Th className="text-right">{t('trade:side')}</Th>
+              <Th className="text-right">{t('trade:size')}</Th>
+              <Th className="text-right">{t('price')}</Th>
+              <Th className="text-right">{t('value')}</Th>
+              <Th className="text-right">{t('fee')}</Th>
+              <Th className="text-right">{t('date')}</Th>
+              <Th />
             </TrHead>
           </thead>
           <tbody>
-            {combinedTradeHistory.map((trade: any) => {
-              let market
-              if ('market' in trade) {
-                market = group.getSerum3MarketByExternalMarket(
-                  new PublicKey(trade.market)
-                )
-              } else if ('perp_market' in trade) {
-                market = group.getPerpMarketByName(trade.perp_market)
-              } else {
-                market = selectedMarket
-              }
-              let makerTaker = trade.liquidity
-              if ('maker' in trade) {
-                makerTaker = trade.maker ? 'Maker' : 'Taker'
-                if (trade.taker === mangoAccount.publicKey.toString()) {
-                  makerTaker = 'Taker'
-                }
-              }
-              const size = trade.size || trade.quantity
-              let fee
-              if (trade.fee_cost || trade.feeCost) {
-                fee = trade.fee_cost || trade.feeCost
-              } else {
-                fee =
-                  trade.maker === mangoAccount.publicKey.toString()
-                    ? trade.maker_fee
-                    : trade.taker_fee
-              }
-
+            {combinedTradeHistory.map((trade: any, index: number) => {
               return (
                 <TrBody
-                  key={`${trade.signature || trade.marketIndex}${size}`}
+                  key={`${trade.signature || trade.marketIndex}${index}`}
                   className="my-1 p-2"
                 >
                   <Td className="">
-                    <TableMarketName market={market} />
+                    <TableMarketName market={trade.market} />
                   </Td>
                   <Td className="text-right">
                     <SideBadge side={trade.side} />
                   </Td>
-                  <Td className="text-right font-mono">{size}</Td>
+                  <Td className="text-right font-mono">{trade.size}</Td>
                   <Td className="text-right font-mono">
-                    {formatDecimal(trade.price)}
+                    <FormatNumericValue value={trade.price} />
                   </Td>
                   <Td className="text-right font-mono">
-                    {formatFixedDecimals(trade.price * size)}
+                    <FormatNumericValue
+                      value={trade.price * trade.size}
+                      decimals={2}
+                      isUsd
+                    />
                   </Td>
                   <Td className="text-right">
-                    <span className="font-mono">{formatDecimal(fee)}</span>
+                    <span className="font-mono">
+                      <FormatNumericValue value={trade.feeCost} />
+                    </span>
                     <p className="font-body text-xs text-th-fgd-4">
-                      {makerTaker}
+                      {trade.liquidity}
                     </p>
                   </Td>
-
                   <Td className="whitespace-nowrap text-right">
                     {trade.block_datetime ? (
                       <TableDateDisplay
@@ -235,45 +295,120 @@ const TradeHistory = () => {
                       'Recent'
                     )}
                   </Td>
+                  <Td className="xl:!pl-0">
+                    {trade.market.name.includes('PERP') ? (
+                      <div className="flex justify-end">
+                        <Tooltip content="View Counterparty" delay={250}>
+                          <a
+                            className=""
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={`/?address=${
+                              trade.liquidity === 'Taker'
+                                ? trade.maker
+                                : trade.taker
+                            }`}
+                          >
+                            <IconButton size="small">
+                              <UsersIcon className="h-4 w-4" />
+                            </IconButton>
+                          </a>
+                        </Tooltip>
+                      </div>
+                    ) : null}
+                  </Td>
                 </TrBody>
               )
             })}
           </tbody>
         </Table>
-      </div>
-    ) : (
-      <div>
-        {eventQueueFillsForAccount.map((trade: any) => {
-          return (
-            <div
-              className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-              key={`${trade.marketIndex}`}
-            >
-              <div>
-                <TableMarketName market={selectedMarket} />
-                <div className="mt-1 flex items-center space-x-1">
-                  <SideBadge side={trade.side} />
-                  <p className="text-th-fgd-4">
-                    <span className="font-mono text-th-fgd-3">
-                      {trade.size}
+      ) : (
+        <div>
+          {combinedTradeHistory.map((trade: any, index: number) => {
+            return (
+              <div
+                className="flex items-center justify-between border-b border-th-bkg-3 p-4"
+                key={`${trade.marketIndex}${index}`}
+              >
+                <div>
+                  <TableMarketName market={selectedMarket} />
+                  <div className="mt-1 flex items-center space-x-1">
+                    <SideBadge side={trade.side} />
+                    <p className="text-th-fgd-4">
+                      <span className="font-mono text-th-fgd-2">
+                        {trade.size}
+                      </span>
+                      {' for '}
+                      <span className="font-mono text-th-fgd-2">
+                        <FormatNumericValue value={trade.price} />
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2.5">
+                  <div className="flex flex-col items-end">
+                    <span className="mb-0.5 flex items-center space-x-1.5">
+                      {trade.block_datetime ? (
+                        <TableDateDisplay
+                          date={trade.block_datetime}
+                          showSeconds
+                        />
+                      ) : (
+                        'Recent'
+                      )}
                     </span>
-                    {' for '}
-                    <span className="font-mono text-th-fgd-3">
-                      {formatDecimal(trade.price)}
-                    </span>
-                  </p>
+                    <p className="font-mono text-th-fgd-2">
+                      <FormatNumericValue
+                        value={trade.price * trade.size}
+                        decimals={2}
+                        isUsd
+                      />
+                    </p>
+                  </div>
+                  {trade.market.name.includes('PERP') ? (
+                    <a
+                      className=""
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={`/?address=${
+                        trade.liquidity === 'Taker' ? trade.maker : trade.taker
+                      }`}
+                    >
+                      <IconButton size="medium">
+                        <UsersIcon className="h-4 w-4" />
+                      </IconButton>
+                    </a>
+                  ) : null}
                 </div>
               </div>
-              <p className="font-mono">${trade.value.toFixed(2)}</p>
-            </div>
-          )
-        })}
-      </div>
-    )
-  ) : (
+            )
+          })}
+        </div>
+      )}
+      {loadingTradeHistory ? (
+        <div className="mt-4 space-y-1.5">
+          {[...Array(4)].map((x, i) => (
+            <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
+              <div className="h-16 w-full bg-th-bkg-2" />
+            </SheenLoader>
+          ))}
+        </div>
+      ) : null}
+      {combinedTradeHistory.length &&
+      combinedTradeHistory.length % PAGINATION_PAGE_LENGTH === 0 ? (
+        <div className="flex justify-center py-6">
+          <LinkButton onClick={handleShowMore}>Show More</LinkButton>
+        </div>
+      ) : null}
+    </>
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>No trade history</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-trade-history')} />
     </div>
   )
 }

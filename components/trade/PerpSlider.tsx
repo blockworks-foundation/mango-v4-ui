@@ -4,7 +4,7 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
-import { trimDecimals } from 'utils/numbers'
+import { floorToDecimal } from 'utils/numbers'
 
 const PerpSlider = ({
   minOrderDecimals,
@@ -61,20 +61,20 @@ const PerpSlider = ({
         if (s.tradeForm.side === 'buy') {
           s.tradeForm.quoteSize = val
           if (Number(price)) {
-            s.tradeForm.baseSize = trimDecimals(
+            s.tradeForm.baseSize = floorToDecimal(
               parseFloat(val) / price,
               minOrderDecimals
-            ).toFixed(minOrderDecimals)
+            ).toString()
           } else {
             s.tradeForm.baseSize = ''
           }
         } else if (s.tradeForm.side === 'sell') {
           s.tradeForm.baseSize = val
           if (Number(price)) {
-            s.tradeForm.quoteSize = trimDecimals(
+            s.tradeForm.quoteSize = floorToDecimal(
               parseFloat(val) * price,
               tickDecimals
-            ).toFixed(tickDecimals)
+            ).toString()
           }
         }
       })

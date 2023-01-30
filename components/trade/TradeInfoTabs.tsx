@@ -31,14 +31,14 @@ const TradeInfoTabs = () => {
       ['balances', 0],
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', unsettledTradeCount],
-      ['Positions', openPerpPositions.length],
-      ['Trade History', 0],
+      ['trade:positions', openPerpPositions.length],
+      ['trade-history', 0],
     ]
   }, [openOrders, unsettledPerpPositions, unsettledSpotBalances, perpPositions])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll pb-5">
-      <div className="hide-scroll sticky top-0 z-20 overflow-x-auto border-b border-th-bkg-3">
+      <div className="hide-scroll overflow-x-auto border-b border-th-bkg-3">
         <TabButtons
           activeValue={selectedTab}
           onChange={(tab: string) => setSelectedTab(tab)}
@@ -55,8 +55,8 @@ const TradeInfoTabs = () => {
           unsettledPerpPositions={unsettledPerpPositions}
         />
       ) : null}
-      {selectedTab === 'Positions' ? <PerpPositions /> : null}
-      {selectedTab === 'Trade History' ? <TradeHistory /> : null}
+      {selectedTab === 'trade:positions' ? <PerpPositions /> : null}
+      {selectedTab === 'trade-history' ? <TradeHistory /> : null}
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import { useState } from 'react'
+import { MANGO_DATA_API_URL } from 'utils/constants'
 import { WalktourLogic } from 'walktour'
 
 const CustomTooltip = ({
@@ -37,7 +38,7 @@ const CustomTooltip = ({
           body: message,
         }
         const response = await fetch(
-          'https://mango-transaction-log.herokuapp.com/v4/user-data/settings-unsigned',
+          `${MANGO_DATA_API_URL}/user-data/settings-unsigned`,
           requestOptions
         )
         if (response.status === 200) {

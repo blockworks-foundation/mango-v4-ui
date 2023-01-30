@@ -1,15 +1,49 @@
-name: Dependency Security Scan
+name: Code Review
 
 on:
-  pull_request: 
+  pull_request:
     branches: ['main']
   push:
 
 jobs:
-  trivy:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Check dep dupes
+        run: yarn ci-dupe-check
+
+      - name: Install dependencies
+        run: yarn ci
+
+      - name: Build
+        run: yarn build
+
+  semgrep:
+    name: Code Scan
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - run: semgrep ci --exclude 'public/charting_library'
+        env:
+          SEMGREP_RULES: p/typescript
+
+  sca:
     name: Dependency Scan
     runs-on: ubuntu-latest
-    if: (github.actor != 'dependabot[bot]')
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -21,9 +55,8 @@ jobs:
           scan-type: 'fs'
           ignore-unfixed: true
           hide-progress: true
-          security-checks: 'vuln' # disable secrets scanning until public
           format: 'table'
-          
+
       # Fail the job on critical vulnerabiliies with fix available
       - name: Fail on critical vulnerabilities
         uses: aquasecurity/trivy-action@master

@@ -13,11 +13,6 @@ import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from '../utils/numbers'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
 import { IconButton, LinkButton } from './shared/Button'
@@ -35,7 +30,8 @@ import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 import { USDC_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import ActionsLinkButton from './account/ActionsLinkButton'
-import AmountWithValue from './shared/AmountWithValue'
+import FormatNumericValue from './shared/FormatNumericValue'
+import BankAmountWithValue from './shared/BankAmountWithValue'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -46,7 +42,7 @@ const TokenList = () => {
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.stats.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data
   )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -97,19 +93,15 @@ const TokenList = () => {
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="md:-mt-[36px]">
-      <div className="flex items-center justify-end md:mb-4">
-        <div className="flex w-full items-center justify-between border-b border-th-bkg-3 py-3 px-6 md:w-auto md:border-0 md:py-0">
-          {!showTableView ? <p>{t('show-zero-balances')}</p> : null}
-          <Switch
-            className="text-th-fgd-3"
-            checked={showZeroBalances}
-            disabled={!mangoAccount}
-            onChange={() => setShowZeroBalances(!showZeroBalances)}
-          >
-            {showTableView ? t('show-zero-balances') : ''}
-          </Switch>
-        </div>
+    <ContentBox hideBorder hidePadding className="lg:-mt-[36px]">
+      <div className="flex w-full items-center justify-end border-b border-th-bkg-3 py-3 px-6 lg:mb-4 lg:w-auto lg:border-0 lg:py-0">
+        <Switch
+          checked={showZeroBalances}
+          disabled={!mangoAccount}
+          onChange={() => setShowZeroBalances(!showZeroBalances)}
+        >
+          {t('show-zero-balances')}
+        </Switch>
       </div>
       {showTableView ? (
         <Table>
@@ -118,7 +110,7 @@ const TokenList = () => {
               <Th className="text-left">{t('token')}</Th>
               <Th>
                 <div className="flex justify-end">
-                  <Tooltip content="If your balance is negative, you have a borrow for that token, of that amount.">
+                  <Tooltip content="A negative balance represents a borrow">
                     <span className="tooltip-underline">{t('balance')}</span>
                   </Tooltip>
                 </div>
@@ -126,7 +118,7 @@ const TokenList = () => {
               <Th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</Th>
               <Th className="bg-th-bkg-1 text-right">{t('trade:unsettled')}</Th>
               <Th className="flex justify-end" id="account-step-nine">
-                <Tooltip content="The sum of interest earned and interest paid for each token.">
+                <Tooltip content="The sum of interest earned and interest paid for each token">
                   <span className="tooltip-underline">
                     {t('interest-earned-paid')}
                   </span>
@@ -134,17 +126,17 @@ const TokenList = () => {
               </Th>
               <Th id="account-step-ten">
                 <div className="flex justify-end">
-                  <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right).">
+                  <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right)">
                     <span className="tooltip-underline">{t('rates')}</span>
                   </Tooltip>
                 </div>
               </Th>
+              <Th />
             </TrHead>
           </thead>
           <tbody>
             {banks.map(({ key, value }) => {
               const bank = value[0]
-              const oraclePrice = bank.uiPrice
 
               let logoURI
               if (mangoTokens?.length) {
@@ -154,10 +146,7 @@ const TokenList = () => {
               }
 
               const tokenBalance = mangoAccount
-                ? floorToDecimal(
-                    mangoAccount.getTokenBalanceUi(bank),
-                    bank.mintDecimals
-                  ).toNumber()
+                ? mangoAccount.getTokenBalanceUi(bank)
                 : 0
 
               const hasInterestEarned = totalInterestData.find(
@@ -194,59 +183,32 @@ const TokenList = () => {
                     </div>
                   </Td>
                   <Td className="text-right">
-                    {tokenBalance ? (
-                      <AmountWithValue
-                        amount={formatDecimal(tokenBalance, bank.mintDecimals)}
-                        value={formatFixedDecimals(
-                          tokenBalance * oraclePrice,
-                          true,
-                          true
-                        )}
-                        stacked
-                      />
-                    ) : (
-                      <AmountWithValue amount="0" value="$0.00" stacked />
-                    )}
+                    <BankAmountWithValue
+                      amount={tokenBalance}
+                      bank={bank}
+                      stacked
+                    />
                   </Td>
                   <Td className="text-right">
-                    {inOrders ? (
-                      <AmountWithValue
-                        amount={formatDecimal(inOrders, bank.mintDecimals)}
-                        value={formatFixedDecimals(
-                          inOrders * oraclePrice,
-                          true,
-                          true
-                        )}
-                        stacked
-                      />
-                    ) : (
-                      <AmountWithValue amount="0" value="$0.00" stacked />
-                    )}
+                    <BankAmountWithValue
+                      amount={inOrders}
+                      bank={bank}
+                      stacked
+                    />
                   </Td>
                   <Td className="text-right">
-                    {unsettled ? (
-                      <AmountWithValue
-                        amount={formatDecimal(unsettled, bank.mintDecimals)}
-                        value={formatFixedDecimals(
-                          unsettled * oraclePrice,
-                          true,
-                          true
-                        )}
-                        stacked
-                      />
-                    ) : (
-                      <AmountWithValue amount="0" value="$0.00" stacked />
-                    )}
+                    <BankAmountWithValue
+                      amount={unsettled}
+                      bank={bank}
+                      stacked
+                    />
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <AmountWithValue
-                        amount={
-                          interestAmount
-                            ? formatDecimal(interestAmount, bank.mintDecimals)
-                            : '0'
-                        }
-                        value={formatFixedDecimals(interestValue, true, true)}
+                      <BankAmountWithValue
+                        amount={interestAmount}
+                        bank={bank}
+                        value={interestValue}
                         stacked
                       />
                     </div>
@@ -254,16 +216,19 @@ const TokenList = () => {
                   <Td>
                     <div className="flex justify-end space-x-1.5">
                       <p className="text-th-up">
-                        {formatDecimal(bank.getDepositRateUi(), 2, {
-                          fixed: true,
-                        })}
+                        <FormatNumericValue
+                          value={bank.getDepositRateUi()}
+                          decimals={2}
+                        />
                         %
                       </p>
                       <span className="text-th-fgd-4">|</span>
                       <p className="text-th-down">
-                        {formatDecimal(bank.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        })}
+                        <FormatNumericValue
+                          value={bank.getBorrowRateUi()}
+                          decimals={2}
+                          roundUp
+                        />
                         %
                       </p>
                     </div>
@@ -304,10 +269,9 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoAccount } = useMangoAccount()
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.stats.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data
   )
   const symbol = bank.name
-  const oraclePrice = bank.uiPrice
   const router = useRouter()
 
   let logoURI
@@ -329,14 +293,9 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
   const interestValue = hasInterestEarned
     ? hasInterestEarned.borrow_interest_usd * -1 +
       hasInterestEarned.deposit_interest_usd
-    : 0.0
-
-  const tokenBalance = mangoAccount
-    ? floorToDecimal(
-        mangoAccount.getTokenBalanceUi(bank),
-        bank.mintDecimals
-      ).toNumber()
     : 0
+
+  const tokenBalance = mangoAccount ? mangoAccount.getTokenBalanceUi(bank) : 0
 
   const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
 
@@ -363,9 +322,10 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
               <span className="mr-1 font-body text-th-fgd-4">
                 {t('balance')}:
               </span>
-              {tokenBalance
-                ? formatDecimal(tokenBalance, bank.mintDecimals)
-                : '0'}
+              <FormatNumericValue
+                value={tokenBalance}
+                decimals={bank.mintDecimals}
+              />
             </p>
           </div>
         </div>
@@ -397,42 +357,38 @@ const MobileTokenListItem = ({ bank }: { bank: Bank }) => {
         <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:in-orders')}</p>
-            <AmountWithValue
-              amount={
-                inOrders ? formatDecimal(inOrders, bank.mintDecimals) : '0'
-              }
-              value={formatFixedDecimals(inOrders * oraclePrice, true, true)}
-            />
+            <BankAmountWithValue amount={inOrders} bank={bank} />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('trade:unsettled')}</p>
-            <AmountWithValue
-              amount={
-                unsettled ? formatDecimal(unsettled, bank.mintDecimals) : '0'
-              }
-              value={formatFixedDecimals(unsettled * oraclePrice, true, true)}
-            />
+            <BankAmountWithValue amount={unsettled} bank={bank} />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('interest-earned-paid')}</p>
-            <AmountWithValue
-              amount={
-                interestAmount
-                  ? formatDecimal(interestAmount, bank.mintDecimals)
-                  : '0'
-              }
-              value={formatFixedDecimals(interestValue, true, true)}
+            <BankAmountWithValue
+              amount={interestAmount}
+              bank={bank}
+              value={interestValue}
             />
           </div>
           <div className="col-span-1">
             <p className="text-xs text-th-fgd-3">{t('rates')}</p>
             <p className="space-x-2 font-mono">
               <span className="text-th-up">
-                {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
+                <FormatNumericValue
+                  value={bank.getDepositRateUi()}
+                  decimals={2}
+                />
+                %
               </span>
               <span className="font-normal text-th-fgd-4">|</span>
               <span className="text-th-down">
-                {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
+                <FormatNumericValue
+                  value={bank.getBorrowRateUi()}
+                  decimals={2}
+                  roundUp
+                />
+                %
               </span>
             </p>
           </div>
@@ -544,16 +500,6 @@ const ActionsMenu = ({
     return mangoTokens.find((t) => t.address === bank.mint.toString())?.logoURI
   }, [bank, mangoTokens])
 
-  const hasBorrow = useMemo(() => {
-    if (!mangoAccount || !bank) return false
-    return (
-      floorToDecimal(
-        mangoAccount.getTokenBorrowsUi(bank),
-        bank.mintDecimals
-      ).toNumber() > 0
-    )
-  }, [mangoAccount, bank])
-
   return (
     <>
       {mangoAccount && !connected ? null : (
@@ -573,7 +519,7 @@ const ActionsMenu = ({
           >
             {t('deposit')}
           </ActionsLinkButton>
-          {hasBorrow ? (
+          {balance < 0 ? (
             <ActionsLinkButton
               mangoAccount={mangoAccount!}
               onClick={() => handleShowActionModals(bank.name, 'repay')}

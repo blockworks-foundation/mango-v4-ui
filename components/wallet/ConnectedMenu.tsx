@@ -42,12 +42,16 @@ const ConnectedMenu = () => {
   const handleDisconnect = useCallback(() => {
     set((state) => {
       state.activityFeed.feed = []
-      state.activityFeed.initialLoad = false
       state.mangoAccount.current = undefined
       state.mangoAccounts = []
+      state.mangoAccount.initialLoad = true
       state.mangoAccount.openOrders = {}
-      state.mangoAccount.stats.interestTotals = { data: [], loading: false }
-      state.mangoAccount.stats.performance = { data: [], loading: false }
+      state.mangoAccount.interestTotals = { data: [], loading: false }
+      state.mangoAccount.performance = {
+        data: [],
+        loading: false,
+        initialLoad: false,
+      }
     })
     disconnect()
     wallet?.adapter.disconnect()

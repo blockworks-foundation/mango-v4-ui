@@ -6,7 +6,8 @@ import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatYAxis } from 'utils/formatting'
+import { formatNumericValue } from 'utils/numbers'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -32,7 +33,11 @@ const PerpMarketDetails = ({
   return (
     <div className="grid grid-cols-2">
       <div className="col-span-2 flex items-center border-b border-th-bkg-3 px-6 py-3">
-        <IconButton className="mr-4" onClick={() => setShowPerpDetails('')}>
+        <IconButton
+          className="mr-4"
+          onClick={() => setShowPerpDetails('')}
+          size="small"
+        >
           <ChevronLeftIcon className="h-5 w-5" />
         </IconButton>
         <h2 className="text-lg">{`${perpMarket} ${t('stats')}`}</h2>
@@ -68,7 +73,7 @@ const PerpMarketDetails = ({
               daysToShow={'999'}
               heightClass="h-64"
               prefix="$"
-              tickFormat={(x) => formatFixedDecimals(x, true)}
+              tickFormat={(x) => formatYAxis(x)}
               title={t('price')}
               xKey="date_hour"
               yKey={'price'}
@@ -91,7 +96,7 @@ const PerpMarketDetails = ({
               daysToShow={'999'}
               heightClass="h-64"
               suffix="%"
-              tickFormat={(x) => formatFixedDecimals(x)}
+              tickFormat={(x) => formatNumericValue(x)}
               title={t('hourly-funding')}
               xKey="date_hour"
               yKey={'funding_rate_hourly'}
@@ -103,7 +108,7 @@ const PerpMarketDetails = ({
               daysToShow={'999'}
               heightClass="h-64"
               suffix="%"
-              tickFormat={(x) => formatFixedDecimals(x)}
+              tickFormat={(x) => formatNumericValue(x)}
               title={t('instantaneous-funding')}
               xKey="date_hour"
               yKey={'instantaneous_funding_rate'}

@@ -3,9 +3,9 @@ import DailyRange from '@components/shared/DailyRange'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import FlipNumbers from 'react-flip-numbers'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import { formatCurrencyValue } from 'utils/numbers'
 import Link from 'next/link'
 import SheenLoader from '@components/shared/SheenLoader'
 import Tooltip from '@components/shared/Tooltip'
@@ -17,6 +17,8 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import ActionPanel from './ActionPanel'
 import ChartTabs from './ChartTabs'
 import CoingeckoStats from './CoingeckoStats'
+import { useQuery } from '@tanstack/react-query'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -36,9 +38,18 @@ const DEFAULT_COINGECKO_VALUES = {
   total_volume: 0,
 }
 
+const fetchTokenInfo = async (tokenId: string | undefined) => {
+  if (!tokenId) return
+  const response = await fetch(
+    `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=false&developer_data=false&sparkline=false
+    `
+  )
+  const data = await response.json()
+  return data
+}
+
 const TokenPage = () => {
   const { t } = useTranslation(['common', 'token'])
-  const [coingeckoData, setCoingeckoData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const { token } = router.query
@@ -74,30 +85,21 @@ const TokenPage = () => {
     }
   }, [bank, mangoTokens])
 
-  const fetchTokenInfo = async (tokenId: string) => {
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=false&developer_data=false&sparkline=false
-      `
-    )
-    const data = await response.json()
-    return data
-  }
+  const coingeckoTokenInfo = useQuery<
+    { market_data: any; name: string },
+    Error
+  >(['ip-address', coingeckoId], () => fetchTokenInfo(coingeckoId), {
+    cacheTime: 1000 * 60 * 15,
+    staleTime: 1000 * 60 * 5,
+    retry: 3,
+    refetchOnWindowFocus: false,
+    enabled: !!coingeckoId,
+  })
 
-  useEffect(() => {
-    const getCoingeckoData = async (id: string) => {
-      const response = await fetchTokenInfo(id)
-      setCoingeckoData(response)
-      setLoading(false)
-    }
-
-    if (coingeckoId) {
-      getCoingeckoData(coingeckoId)
-    }
-  }, [coingeckoId])
-
-  const { high_24h, low_24h, price_change_percentage_24h } = coingeckoData
-    ? coingeckoData.market_data
-    : DEFAULT_COINGECKO_VALUES
+  const { high_24h, low_24h, price_change_percentage_24h } =
+    coingeckoTokenInfo.data
+      ? coingeckoTokenInfo.data.market_data
+      : DEFAULT_COINGECKO_VALUES
 
   return (
     <>
@@ -107,40 +109,42 @@ const TokenPage = () => {
             <div className="mb-4 md:mb-1">
               <div className="mb-1.5 flex items-center space-x-2">
                 <Image src={logoURI!} height="20" width="20" />
-                {coingeckoData ? (
+                {coingeckoTokenInfo.data ? (
                   <h1 className="text-base font-normal">
-                    {coingeckoData.name}{' '}
+                    {coingeckoTokenInfo.data.name}{' '}
                     <span className="text-th-fgd-4">({bank.name})</span>
                   </h1>
                 ) : (
                   <h1 className="text-base font-normal">{bank.name}</h1>
                 )}
               </div>
-              <div className="flex items-end space-x-3 font-display text-5xl text-th-fgd-1">
-                {animationSettings['number-scroll'] ? (
-                  <FlipNumbers
-                    height={48}
-                    width={35}
-                    play
-                    delay={0.05}
-                    duration={1}
-                    numbers={formatFixedDecimals(bank.uiPrice, true)}
-                  />
-                ) : (
-                  <span>{formatFixedDecimals(bank.uiPrice, true)}</span>
-                )}
-                {coingeckoData ? (
-                  <Change change={price_change_percentage_24h} suffix="%" />
+              <div className="flex flex-wrap items-end font-display text-5xl text-th-fgd-1">
+                <div className="mr-3 mb-2">
+                  {animationSettings['number-scroll'] ? (
+                    <FlipNumbers
+                      height={48}
+                      width={35}
+                      play
+                      delay={0.05}
+                      duration={1}
+                      numbers={formatCurrencyValue(bank.uiPrice)}
+                    />
+                  ) : (
+                    <FormatNumericValue value={bank.uiPrice} isUsd />
+                  )}
+                </div>
+                {coingeckoTokenInfo.data ? (
+                  <div className="mb-2">
+                    <Change change={price_change_percentage_24h} suffix="%" />
+                  </div>
                 ) : null}
               </div>
-              {coingeckoData ? (
-                <div className="mt-2">
-                  <DailyRange
-                    high={high_24h.usd}
-                    low={low_24h.usd}
-                    price={bank.uiPrice}
-                  />
-                </div>
+              {coingeckoTokenInfo.data ? (
+                <DailyRange
+                  high={high_24h.usd}
+                  low={low_24h.usd}
+                  price={bank.uiPrice}
+                />
               ) : null}
             </div>
             <ActionPanel bank={bank} />
@@ -153,20 +157,21 @@ const TokenPage = () => {
               <p className="tooltip-underline mr-1">{t('utilization')}:</p>
             </Tooltip>
             <span className="font-mono text-th-fgd-2 no-underline">
-              {bank.uiDeposits() > 0
-                ? formatDecimal(
-                    (bank.uiBorrows() / bank.uiDeposits()) * 100,
-                    1,
-                    { fixed: true }
-                  )
-                : '0.0'}
+              {bank.uiDeposits() > 0 ? (
+                <FormatNumericValue
+                  value={(bank.uiBorrows() / bank.uiDeposits()) * 100}
+                  decimals={1}
+                />
+              ) : (
+                '0.0'
+              )}
               %
             </span>
           </div>
-          {coingeckoData && coingeckoId ? (
+          {coingeckoTokenInfo.data && coingeckoId ? (
             <CoingeckoStats
               bank={bank}
-              coingeckoData={coingeckoData}
+              coingeckoData={coingeckoTokenInfo.data}
               coingeckoId={coingeckoId}
             />
           ) : (

@@ -1,28 +1,33 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
-import { LinkButton } from '@components/shared/Button'
+import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
+import Button, { LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
-import {
-  formatFixedDecimals,
-  getDecimalCount,
-  numberFormat,
-  trimDecimals,
-} from 'utils/numbers'
+import { useCallback, useState } from 'react'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
+import MarketCloseModal from './MarketCloseModal'
 import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
+  const [showMarketCloseModal, setShowMarketCloseModal] = useState(false)
+  const [positionToClose, setPositionToClose] = useState<PerpPosition | null>(
+    null
+  )
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const { selectedMarket } = useSelectedMarket()
-  const { mangoAccount } = useMangoAccount()
+  const { connected } = useWallet()
+  const { mangoAccountAddress } = useMangoAccount()
 
   const handlePositionClick = (positionSize: number) => {
     const tradeForm = mangoStore.getState().tradeForm
@@ -50,13 +55,23 @@ const PerpPositions = () => {
     })
   }
 
+  const showClosePositionModal = useCallback((position: PerpPosition) => {
+    setShowMarketCloseModal(true)
+    setPositionToClose(position)
+  }, [])
+
+  const hideClosePositionModal = useCallback(() => {
+    setShowMarketCloseModal(false)
+    setPositionToClose(null)
+  }, [])
+
   if (!group) return null
 
   const openPerpPositions = Object.values(perpPositions).filter((p) =>
     p.basePositionLots.toNumber()
   )
 
-  return mangoAccount && openPerpPositions.length ? (
+  return mangoAccountAddress && openPerpPositions.length ? (
     <div>
       <Table>
         <thead>
@@ -66,8 +81,11 @@ const PerpPositions = () => {
             <Th className="text-right">{t('trade:size')}</Th>
             <Th className="text-right">{t('trade:notional')}</Th>
             <Th className="text-right">{t('trade:entry-price')}</Th>
-            <Th className="text-right">Redeemable PnL</Th>
-            <Th className="text-right">Realized PnL</Th>
+            <Th className="text-right">{`${t('trade:unsettled')} ${t(
+              'pnl'
+            )}`}</Th>
+            <Th className="text-right">{t('pnl')}</Th>
+            <Th />
           </TrHead>
         </thead>
         <tbody>
@@ -76,17 +94,21 @@ const PerpPositions = () => {
               position.marketIndex
             )
             const basePosition = position.getBasePositionUi(market)
-            const trimmedBasePosition = trimDecimals(
+            const floorBasePosition = floorToDecimal(
               basePosition,
               getDecimalCount(market.minOrderSize)
-            )
+            ).toNumber()
             const isSelectedMarket =
               selectedMarket instanceof PerpMarket &&
               selectedMarket.perpMarketIndex === position.marketIndex
 
             if (!basePosition) return null
 
-            const unsettledPnl = position.getEquityUi(group, market)
+            const unsettledPnl = position.getUnsettledPnlUi(group, market)
+            const cummulativePnl = position.cumulativePnlOverPositionLifetimeUi(
+              group,
+              market
+            )
 
             return (
               <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
@@ -96,58 +118,82 @@ const PerpPositions = () => {
                 <Td className="text-right">
                   <PerpSideBadge basePosition={basePosition} />
                 </Td>
-                <Td className="text-right">
+                <Td className="text-right font-mono">
                   <p className="flex justify-end">
                     {isSelectedMarket ? (
                       <LinkButton
-                        onClick={() => handlePositionClick(trimmedBasePosition)}
+                        onClick={() => handlePositionClick(floorBasePosition)}
                       >
-                        {Math.abs(trimmedBasePosition)}
+                        <FormatNumericValue
+                          value={Math.abs(basePosition)}
+                          decimals={getDecimalCount(market.minOrderSize)}
+                        />
                       </LinkButton>
                     ) : (
-                      Math.abs(trimmedBasePosition)
+                      <FormatNumericValue
+                        value={Math.abs(basePosition)}
+                        decimals={getDecimalCount(market.minOrderSize)}
+                      />
                     )}
                   </p>
                 </Td>
                 <Td className="text-right font-mono">
-                  <div>
-                    $
-                    {Math.abs(trimmedBasePosition * market._uiPrice).toFixed(2)}
-                  </div>
+                  <FormatNumericValue
+                    value={floorBasePosition * market._uiPrice}
+                    decimals={2}
+                    isUsd
+                  />
                 </Td>
                 <Td className="text-right font-mono">
-                  <div>
-                    $
-                    {numberFormat.format(
-                      position.getAverageEntryPriceUi(market)
-                    )}
-                  </div>
+                  <FormatNumericValue
+                    value={position.getAverageEntryPriceUi(market)}
+                    isUsd
+                  />
+                </Td>
+                <Td className={`text-right font-mono`}>
+                  <FormatNumericValue
+                    value={unsettledPnl}
+                    decimals={market.baseDecimals}
+                  />
                 </Td>
                 <Td
                   className={`text-right font-mono ${
-                    unsettledPnl > 0 ? 'text-th-up' : 'text-th-down'
+                    cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
                   }`}
                 >
-                  <div>{formatFixedDecimals(unsettledPnl, true)}</div>
+                  <FormatNumericValue value={cummulativePnl} isUsd />
                 </Td>
-                <Td className="text-right">
-                  <div>
-                    $
-                    {/* {numberFormat.format(
-                        position.perpSpotTransfers.toNumber()
-                      )} */}
-                  </div>
+                <Td className={`text-right`}>
+                  <Button
+                    className="text-xs"
+                    secondary
+                    size="small"
+                    onClick={() => showClosePositionModal(position)}
+                  >
+                    Close
+                  </Button>
                 </Td>
               </TrBody>
             )
           })}
         </tbody>
       </Table>
+      {showMarketCloseModal && positionToClose ? (
+        <MarketCloseModal
+          isOpen={showMarketCloseModal}
+          onClose={hideClosePositionModal}
+          position={positionToClose}
+        />
+      ) : null}
     </div>
-  ) : (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-positions')}</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-positions')} />
     </div>
   )
 }

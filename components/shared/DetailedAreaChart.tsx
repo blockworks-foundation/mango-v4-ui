@@ -21,10 +21,11 @@ import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatNumericValue } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
 import { useTranslation } from 'next-i18next'
+import FormatNumericValue from './FormatNumericValue'
 
 dayjs.extend(relativeTime)
 
@@ -35,6 +36,7 @@ interface DetailedAreaChartProps {
   heightClass?: string
   hideChange?: boolean
   hideChart?: () => void
+  loaderHeightClass?: string
   loading?: boolean
   prefix?: string
   setDaysToShow?: (x: string) => void
@@ -61,6 +63,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   heightClass,
   hideChange,
   hideChart,
+  loaderHeightClass,
   loading,
   prefix = '',
   setDaysToShow,
@@ -112,7 +115,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
           <SheenLoader className="flex flex-1">
             <div
               className={`${
-                heightClass ? heightClass : 'h-96'
+                loaderHeightClass ? loaderHeightClass : 'h-96'
               } w-full rounded-lg bg-th-bkg-2`}
             />
           </SheenLoader>
@@ -153,17 +156,18 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             play
                             numbers={`${
                               mouseData[yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
+                            }${prefix}${formatNumericValue(
                               Math.abs(mouseData[yKey])
                             )}${suffix}`}
                           />
                         ) : (
                           <span>
-                            {`${
-                              mouseData[yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
-                              Math.abs(mouseData[yKey])
-                            )}${suffix}`}
+                            {mouseData[yKey] < 0 ? '-' : ''}
+                            {prefix}
+                            <FormatNumericValue
+                              value={Math.abs(mouseData[yKey])}
+                            />
+                            {suffix}
                           </span>
                         )}
                         {!hideChange ? (
@@ -200,17 +204,18 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             play
                             numbers={`${
                               data[data.length - 1][yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
+                            }${prefix}${formatNumericValue(
                               Math.abs(data[data.length - 1][yKey])
                             )}${suffix}`}
                           />
                         ) : (
                           <span>
-                            {`${
-                              data[data.length - 1][yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
-                              Math.abs(data[data.length - 1][yKey])
-                            )}${suffix}`}
+                            {data[data.length - 1][yKey] < 0 ? '-' : ''}
+                            {prefix}
+                            <FormatNumericValue
+                              value={Math.abs(data[data.length - 1][yKey])}
+                            />
+                            {suffix}
                           </span>
                         )}
                         {!hideChange ? (
@@ -322,7 +327,21 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       dataKey={yKey}
                       minTickGap={20}
                       type="number"
-                      domain={domain ? domain : ['dataMin', 'dataMax']}
+                      domain={
+                        domain
+                          ? domain
+                          : ([dataMin, dataMax]) => {
+                              const absMax = Math.max(
+                                Math.abs(dataMin),
+                                Math.abs(dataMax)
+                              )
+                              if (absMax < 1) {
+                                return [dataMin - 0.01, dataMax + 0.01]
+                              } else {
+                                return [dataMin, dataMax]
+                              }
+                            }
+                      }
                       padding={{ top: 20, bottom: 20 }}
                       tick={{
                         fill: 'var(--fgd-4)',

@@ -8,7 +8,6 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
-import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import { IconButton, LinkButton } from '../shared/Button'
 import ContentBox from '../shared/ContentBox'
@@ -19,7 +18,8 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import mangoStore from '@store/mangoStore'
-import AmountWithValue from '@components/shared/AmountWithValue'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
+import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -96,11 +96,12 @@ const TokenStats = () => {
                   </Tooltip>
                 </div>
               </Th>
+              <Th />
             </TrHead>
           </thead>
           <tbody>
             {banks.map(({ key, value }) => {
-              const bank = value[0]
+              const bank: Bank = value[0]
 
               let logoURI
               if (mangoTokens?.length) {
@@ -110,7 +111,6 @@ const TokenStats = () => {
               }
               const deposits = bank.uiDeposits()
               const borrows = bank.uiBorrows()
-              const price = bank.uiPrice
               const available =
                 deposits - deposits * bank.minVaultToDepositsRatio - borrows
 
@@ -130,45 +130,48 @@ const TokenStats = () => {
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(deposits)}</p>
-                      <p className="text-th-fgd-4">
-                        {formatFixedDecimals(deposits * price, true, true)}
-                      </p>
+                      <BankAmountWithValue
+                        amount={deposits.toFixed(4)}
+                        bank={bank}
+                        fixDecimals={false}
+                        stacked
+                      />
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>{formatFixedDecimals(borrows)}</p>
-                      <p className="text-th-fgd-4">
-                        {formatFixedDecimals(borrows * price, true, true)}
-                      </p>
+                      <BankAmountWithValue
+                        amount={borrows.toFixed(4)}
+                        bank={bank}
+                        fixDecimals={false}
+                        stacked
+                      />
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>
-                        {available > 0 ? formatFixedDecimals(available) : '0'}
-                      </p>
-                      <p className="text-th-fgd-4">
-                        {available > 0
-                          ? formatFixedDecimals(available * price, false, true)
-                          : '$0.00'}
-                      </p>
+                      <BankAmountWithValue
+                        amount={available}
+                        bank={bank}
+                        stacked
+                      />
                     </div>
                   </Td>
                   <Td>
                     <div className="flex justify-end space-x-1.5">
                       <p className="text-th-up">
-                        {formatDecimal(bank.getDepositRateUi(), 2, {
-                          fixed: true,
-                        })}
+                        <FormatNumericValue
+                          value={bank.getDepositRateUi()}
+                          decimals={2}
+                        />
                         %
                       </p>
                       <span className="text-th-fgd-4">|</span>
                       <p className="text-th-down">
-                        {formatDecimal(bank.getBorrowRateUi(), 2, {
-                          fixed: true,
-                        })}
+                        <FormatNumericValue
+                          value={bank.getBorrowRateUi()}
+                          decimals={2}
+                        />
                         %
                       </p>
                     </div>
@@ -177,11 +180,10 @@ const TokenStats = () => {
                     <div className="flex flex-col text-right">
                       <p>
                         {bank.uiDeposits() > 0
-                          ? formatDecimal(
-                              (bank.uiBorrows() / bank.uiDeposits()) * 100,
-                              1,
-                              { fixed: true }
-                            )
+                          ? (
+                              (bank.uiBorrows() / bank.uiDeposits()) *
+                              100
+                            ).toFixed(1)
                           : '0.0'}
                         %
                       </p>
@@ -242,13 +244,10 @@ const TokenStats = () => {
                       <p className="mb-0.5 text-right text-xs">
                         {t('total-deposits')}
                       </p>
-                      <AmountWithValue
-                        amount={formatFixedDecimals(deposits)}
-                        value={formatFixedDecimals(
-                          deposits * price,
-                          true,
-                          true
-                        )}
+                      <BankAmountWithValue
+                        amount={deposits.toFixed(4)}
+                        bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>
@@ -256,14 +255,16 @@ const TokenStats = () => {
                       <p className="mb-0.5 text-right text-xs">
                         {t('total-borrows')}
                       </p>
-                      <AmountWithValue
-                        amount={formatFixedDecimals(borrows)}
-                        value={formatFixedDecimals(borrows * price, true, true)}
+                      <BankAmountWithValue
+                        amount={borrows.toFixed(4)}
+                        bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>
                     <IconButton
                       onClick={() => handleShowTokenDetails(bank.name)}
+                      size="medium"
                     >
                       <ChevronDownIcon
                         className={`${
@@ -291,11 +292,19 @@ const TokenStats = () => {
                       <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                       <p className="space-x-2">
                         <span className="font-mono text-th-up">
-                          {formatDecimal(bank.getDepositRate().toNumber(), 2)}%
+                          <FormatNumericValue
+                            value={bank.getDepositRateUi()}
+                            decimals={2}
+                          />
+                          %
                         </span>
                         <span className="font-normal text-th-fgd-4">|</span>
                         <span className="font-mono text-th-down">
-                          {formatDecimal(bank.getBorrowRate().toNumber(), 2)}%
+                          <FormatNumericValue
+                            value={bank.getBorrowRateUi()}
+                            decimals={2}
+                          />
+                          %
                         </span>
                       </p>
                     </div>
@@ -305,11 +314,10 @@ const TokenStats = () => {
                       </p>
                       <p className="font-mono text-th-fgd-1">
                         {bank.uiDeposits() > 0
-                          ? formatDecimal(
-                              (bank.uiBorrows() / bank.uiDeposits()) * 100,
-                              1,
-                              { fixed: true }
-                            )
+                          ? (
+                              (bank.uiBorrows() / bank.uiDeposits()) *
+                              100
+                            ).toFixed(1)
                           : '0.0'}
                         %
                       </p>
@@ -321,17 +329,15 @@ const TokenStats = () => {
                         </p>
                       </Tooltip>
                       <p className="text-th-fgd-1">
-                        {available > 0 ? formatFixedDecimals(available) : '0'}{' '}
+                        <FormatNumericValue
+                          value={available}
+                          decimals={bank.mintDecimals}
+                        />{' '}
                         <span className="text-th-fgd-4">
-                          (
-                          {available > 0
-                            ? formatFixedDecimals(
-                                available * price,
-                                false,
-                                true
-                              )
-                            : '$0.00'}
-                          )
+                          <FormatNumericValue
+                            value={(available * price).toFixed(2)}
+                            isUsd
+                          />
                         </span>
                       </p>
                     </div>

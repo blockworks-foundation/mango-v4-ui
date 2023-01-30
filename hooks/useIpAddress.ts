@@ -1,5 +1,6 @@
 import { CLUSTER } from '@store/mangoStore'
-import { useCallback, useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 
 const SANCTIONED_COUNTRIES = [
   ['AG', 'Antigua and Barbuda'],
@@ -36,29 +37,37 @@ const SANCTIONED_COUNTRY_CODES = SANCTIONED_COUNTRIES.map(
 
 const SPOT_ALLOWED = ['GB']
 
+const fetchIpGeolocation = async () => {
+  const response = await fetch(`https://country-code.mangomarkets.workers.dev`)
+  const parsedResponse = await response.json()
+  const ipCountryCode = parsedResponse ? parsedResponse?.country : ''
+
+  return ipCountryCode
+}
+
 export default function useIpAddress() {
   const [ipAllowed, setIpAllowed] = useState(false)
   const [spotAllowed, setSpotAllowed] = useState(false)
   const [ipCountry, setIpCountry] = useState('')
 
-  const checkIpLocation = useCallback(async () => {
-    const response = await fetch(
-      `https://country-code.mangomarkets.workers.dev`
-    )
-    const parsedResponse = await response.json()
-    const ipCountryCode = parsedResponse ? parsedResponse?.country : ''
-
-    setIpCountry(ipCountryCode)
-
-    if (ipCountryCode) {
-      setIpAllowed(!SANCTIONED_COUNTRY_CODES.includes(ipCountryCode))
-      setSpotAllowed(SPOT_ALLOWED.includes(ipCountryCode))
+  const ipCountryCode = useQuery<string, Error>(
+    ['ip-address'],
+    () => fetchIpGeolocation(),
+    {
+      cacheTime: 1000 * 60 * 2,
+      staleTime: 1000 * 60 * 2,
+      retry: 3,
+      refetchOnWindowFocus: true,
     }
-  }, [])
+  )
 
   useEffect(() => {
-    checkIpLocation()
-  }, [checkIpLocation])
+    if (ipCountryCode.data) {
+      setIpCountry(ipCountryCode.data)
+      setIpAllowed(!SANCTIONED_COUNTRY_CODES.includes(ipCountryCode.data))
+      setSpotAllowed(SPOT_ALLOWED.includes(ipCountryCode.data))
+    }
+  }, [ipCountryCode])
 
   if (CLUSTER === 'mainnet-beta') {
     return { ipAllowed, spotAllowed, ipCountry }
