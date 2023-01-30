@@ -1,11 +1,11 @@
 {
-    "description": "You can close your Mango account and recover the small amount amount of SOL used to cover rent exemption.",
-    "you-must": "To close account you must",
-    "are-you-sure": "Are you sure?",
+    "are-you-sure": "Are you sure? Closing your account will",
     "before-you-continue": "Before you can continue",
-    "close-all-borrows": "Close all borrows",
+    "close-account": "Close Account",
+    "closing-account": "Closing your account...",
+    "close-all-borrows": "Repay all borrows",
     "close-open-orders": "Close all open orders",
-    "close-perp-positions": "Close and settle all futures positons",
+    "close-perp-positions": "Close and settle all perp positons",
     "closing-account-will": "Closing your Mango Account will:",
     "delete-your-account": "Delete your Mango Account",
     "error-deleting-account": "Error deleting your Mango Account",
@@ -14,6 +14,5 @@
     "settle-balances": "Settle all balances",
     "transaction-confirmed": "Transaction Confirmed",
     "withdraw-assets-worth": "Withdraw assets worth {{value}}",
-    "close-account": "Close Account",
-    "closing-account": "Closing your account..."
+    "you-must": "Before you can close your account"
 }

@@ -6,7 +6,7 @@ import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
-import { formatDecimal, formatFixedDecimals } from '../../utils/numbers'
+import { formatNumericValue } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import dynamic from 'next/dynamic'
 const SimpleAreaChart = dynamic(
@@ -20,8 +20,6 @@ import {
   ArrowsPointingOutIcon,
   ChartBarIcon,
   ClockIcon,
-  EyeIcon,
-  EyeSlashIcon,
 } from '@heroicons/react/20/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
@@ -32,8 +30,6 @@ import Change from '../shared/Change'
 import Tooltip from '@components/shared/Tooltip'
 import {
   ANIMATION_SETTINGS_KEY,
-  HIDE_ACCOUNT_VALUE_KEY,
-  HIDE_PNL_KEY,
   // IS_ONBOARDED_KEY
 } from 'utils/constants'
 // import { useWallet } from '@solana/wallet-adapter-react'
@@ -45,12 +41,13 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
   // const { connected } = useWallet()
   const { group } = useMangoGroup()
-  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress, initialLoad } = useMangoAccount()
   const actions = mangoStore.getState().actions
   const performanceInitialLoad = mangoStore(
     (s) => s.mangoAccount.performance.initialLoad
@@ -76,14 +73,9 @@ const AccountPage = () => {
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
   )
-  const [hideAccountValue, setHideAccountValue] = useLocalStorageState(
-    HIDE_ACCOUNT_VALUE_KEY,
-    false
-  )
-  const [hidePnl, setHidePnl] = useLocalStorageState(HIDE_PNL_KEY, false)
 
   useEffect(() => {
-    if (mangoAccountAddress) {
+    if (mangoAccountAddress || (!initialLoad && !mangoAccountAddress)) {
       const set = mangoStore.getState().set
       set((s) => {
         s.mangoAccount.performance.initialLoad = false
@@ -92,7 +84,7 @@ const AccountPage = () => {
       actions.fetchAccountPerformance(mangoAccountAddress, 1)
       actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
-  }, [actions, mangoAccountAddress])
+  }, [actions, initialLoad, mangoAccountAddress])
 
   useEffect(() => {
     if (
@@ -241,72 +233,52 @@ const AccountPage = () => {
       <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 lg:flex-row lg:items-center lg:justify-between lg:border-b">
         <div className="flex flex-col md:flex-row md:items-center md:space-x-6">
           <div id="account-step-three">
-            <div className="mb-2 flex items-center space-x-2">
-              <Tooltip
-                maxWidth="20rem"
-                placement="bottom-start"
-                content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
-                delay={250}
-              >
-                <p className="tooltip-underline text-base">
-                  {t('account-value')}
-                </p>
-              </Tooltip>
-              <IconButton
-                className="text-th-fgd-4"
-                hideBg
-                onClick={() => setHideAccountValue(!hideAccountValue)}
-              >
-                {hideAccountValue ? (
-                  <EyeSlashIcon className="h-4 w-4" />
-                ) : (
-                  <EyeIcon className="h-4 w-4" />
-                )}
-              </IconButton>
-            </div>
+            <Tooltip
+              maxWidth="20rem"
+              placement="bottom-start"
+              content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
+              delay={250}
+            >
+              <p className="tooltip-underline mb-2 text-base">
+                {t('account-value')}
+              </p>
+            </Tooltip>
             <div className="mb-2 flex items-center font-display text-5xl text-th-fgd-1">
-              {!hideAccountValue ? (
-                animationSettings['number-scroll'] ? (
-                  group && mangoAccount ? (
-                    <FlipNumbers
-                      height={48}
-                      width={35}
-                      play
-                      delay={0.05}
-                      duration={1}
-                      numbers={formatFixedDecimals(accountValue, true, true)}
-                    />
-                  ) : (
-                    <FlipNumbers
-                      height={48}
-                      width={36}
-                      play
-                      delay={0.05}
-                      duration={1}
-                      numbers={'$0.00'}
-                    />
-                  )
+              {animationSettings['number-scroll'] ? (
+                group && mangoAccount ? (
+                  <FlipNumbers
+                    height={48}
+                    width={35}
+                    play
+                    delay={0.05}
+                    duration={1}
+                    numbers={formatNumericValue(accountValue, 2, true)}
+                  />
                 ) : (
-                  <span>{formatFixedDecimals(accountValue, true, true)}</span>
+                  <FlipNumbers
+                    height={48}
+                    width={36}
+                    play
+                    delay={0.05}
+                    duration={1}
+                    numbers={'$0.00'}
+                  />
                 )
               ) : (
-                <span className={!mangoAccount ? 'mb-1' : ''}>*****</span>
+                <FormatNumericValue
+                  value={accountValue}
+                  isUsd={true}
+                  decimals={2}
+                />
               )}
             </div>
             <div className="flex items-center space-x-1.5">
-              {!hideAccountValue ? (
-                <Change
-                  change={Number(formatDecimal(accountValueChange, 2))}
-                  prefix="$"
-                />
-              ) : (
-                <p>*****</p>
-              )}
+              <Change change={accountValueChange} prefix="$" />
               <p className="text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
           {performanceInitialLoad ? (
-            !hideAccountValue && oneDayPerformanceData.length ? (
+            oneDayPerformanceData.length ? (
               <div
                 className="relative mt-4 flex h-40 items-end md:mt-0 md:h-24 md:w-48"
                 onMouseEnter={() =>
@@ -418,15 +390,17 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {group && mangoAccount
-                ? formatFixedDecimals(
-                    toUiDecimalsForQuote(
-                      mangoAccount.getCollateralValue(group).toNumber()
-                    ),
-                    false,
-                    true
-                  )
-                : `$${(0).toFixed(2)}`}
+              <FormatNumericValue
+                value={
+                  group && mangoAccount
+                    ? toUiDecimalsForQuote(
+                        mangoAccount.getCollateralValue(group)
+                      )
+                    : 0
+                }
+                decimals={2}
+                isUsd={true}
+              />
             </p>
             <span className="text-xs font-normal text-th-fgd-4">
               <Tooltip
@@ -437,17 +411,17 @@ const AccountPage = () => {
               >
                 <span className="tooltip-underline">{t('total')}</span>:
                 <span className="ml-1 font-mono text-th-fgd-2">
-                  {group && mangoAccount
-                    ? formatFixedDecimals(
-                        toUiDecimalsForQuote(
-                          mangoAccount
-                            .getAssetsValue(group, HealthType.init)
-                            .toNumber()
-                        ),
-                        false,
-                        true
-                      )
-                    : `$${(0).toFixed(2)}`}
+                  <FormatNumericValue
+                    value={
+                      group && mangoAccount
+                        ? toUiDecimalsForQuote(
+                            mangoAccount.getAssetsValue(group, HealthType.init)
+                          )
+                        : 0
+                    }
+                    decimals={2}
+                    isUsd={true}
+                  />
                 </span>
               </Tooltip>
             </span>
@@ -466,35 +440,22 @@ const AccountPage = () => {
               </p>
             </Tooltip>
             <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {leverage.toFixed(2)}x
+              <FormatNumericValue value={leverage} decimals={2} roundUp />x
             </p>
           </div>
         </div>
         <div className="col-span-5 border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0">
           <div id="account-step-seven" className="flex flex-col items-start">
             <div className="flex w-full items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Tooltip
-                  content={t('account:tooltip-pnl')}
-                  placement="bottom"
-                  delay={250}
-                >
-                  <p className="tooltip-underline inline text-sm text-th-fgd-3 xl:text-base">
-                    {t('pnl')}
-                  </p>
-                </Tooltip>
-                <IconButton
-                  className="text-th-fgd-4"
-                  hideBg
-                  onClick={() => setHidePnl(!hidePnl)}
-                >
-                  {hidePnl ? (
-                    <EyeSlashIcon className="h-4 w-4" />
-                  ) : (
-                    <EyeIcon className="h-4 w-4" />
-                  )}
-                </IconButton>
-              </div>
+              <Tooltip
+                content={t('account:tooltip-pnl')}
+                placement="bottom"
+                delay={250}
+              >
+                <p className="tooltip-underline inline text-sm text-th-fgd-3 xl:text-base">
+                  {t('pnl')}
+                </p>
+              </Tooltip>
               {mangoAccountAddress ? (
                 <div className="flex items-center space-x-3">
                   {performanceData.length > 4 ? (
@@ -521,18 +482,14 @@ const AccountPage = () => {
               ) : null}
             </div>
             <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {!hidePnl ? formatFixedDecimals(accountPnl, true, true) : '*****'}
+              <FormatNumericValue
+                value={accountPnl}
+                decimals={2}
+                isUsd={true}
+              />
             </p>
             <div className="flex space-x-1">
-              {!hidePnl ? (
-                <Change
-                  change={Number(formatDecimal(oneDayPnlChange, 2))}
-                  prefix="$"
-                  size="small"
-                />
-              ) : (
-                <p className="leading-none">*****</p>
-              )}
+              <Change change={oneDayPnlChange} prefix="$" size="small" />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>
@@ -565,14 +522,14 @@ const AccountPage = () => {
               ) : null}
             </div>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {formatFixedDecimals(interestTotalValue, true, true)}
+              <FormatNumericValue
+                value={interestTotalValue}
+                decimals={2}
+                isUsd={true}
+              />
             </p>
             <div className="flex space-x-1">
-              <Change
-                change={Number(formatDecimal(oneDayInterestChange, 2))}
-                prefix="$"
-                size="small"
-              />
+              <Change change={oneDayInterestChange} prefix="$" size="small" />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
             </div>
           </div>

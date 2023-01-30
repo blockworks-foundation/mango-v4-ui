@@ -6,7 +6,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo } from 'react'
-import { floorToDecimal } from 'utils/numbers'
+import { formatNumericValue } from 'utils/numbers'
 import { useSpotMarketMax } from './SpotSlider'
 
 const MaxSizeButton = ({
@@ -57,33 +57,30 @@ const MaxSizeButton = ({
     const set = mangoStore.getState().set
     set((state) => {
       if (side === 'buy') {
-        state.tradeForm.quoteSize = floorToDecimal(max, tickDecimals).toFixed()
+        state.tradeForm.quoteSize = formatNumericValue(max, tickDecimals)
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.baseSize = floorToDecimal(
+          state.tradeForm.baseSize = formatNumericValue(
             max / oraclePrice,
             minOrderDecimals
-          ).toFixed()
+          )
         } else {
-          state.tradeForm.baseSize = floorToDecimal(
+          state.tradeForm.baseSize = formatNumericValue(
             max / parseFloat(price),
             minOrderDecimals
-          ).toFixed()
+          )
         }
       } else {
-        state.tradeForm.baseSize = floorToDecimal(
-          max,
-          minOrderDecimals
-        ).toFixed()
+        state.tradeForm.baseSize = formatNumericValue(max, minOrderDecimals)
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.quoteSize = floorToDecimal(
+          state.tradeForm.quoteSize = formatNumericValue(
             max * oraclePrice,
             minOrderDecimals
-          ).toFixed()
+          )
         } else {
-          state.tradeForm.quoteSize = floorToDecimal(
+          state.tradeForm.quoteSize = formatNumericValue(
             max * parseFloat(price),
             minOrderDecimals
-          ).toFixed()
+          )
         }
       }
     })
@@ -102,20 +99,11 @@ const MaxSizeButton = ({
     const max = selectedMarket instanceof Serum3Market ? spotMax : perpMax || 0
     const tradePrice = tradeType === 'Market' ? oraclePrice : Number(price)
     if (side === 'buy') {
-      return floorToDecimal(max / tradePrice, minOrderDecimals).toFixed()
+      return max / tradePrice
     } else {
-      return floorToDecimal(max, minOrderDecimals).toFixed()
+      return max
     }
-  }, [
-    perpMax,
-    spotMax,
-    selectedMarket,
-    minOrderDecimals,
-    tickDecimals,
-    price,
-    side,
-    tradeType,
-  ])
+  }, [perpMax, spotMax, selectedMarket, price, side, tradeType])
 
   return (
     <div className="mb-2 mt-3 flex items-center justify-between">
@@ -123,6 +111,7 @@ const MaxSizeButton = ({
       <FadeInFadeOut show={!!price}>
         <MaxAmountButton
           className="text-xs"
+          decimals={minOrderDecimals}
           label={t('max')}
           onClick={handleMax}
           value={maxAmount}

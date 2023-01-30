@@ -1,5 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
-import { formatDecimal, numberCompacter } from './numbers'
+import { formatNumericValue, numberCompacter } from './numbers'
 
 export function abbreviateAddress(address: PublicKey, size = 5) {
   const base58 = address.toBase58()
@@ -7,7 +7,9 @@ export function abbreviateAddress(address: PublicKey, size = 5) {
 }
 
 export const formatYAxis = (value: number) => {
-  return Math.abs(value) > 1
+  return value === 0
+    ? '0'
+    : Math.abs(value) > 1
     ? numberCompacter.format(value)
-    : formatDecimal(value, 2)
+    : formatNumericValue(value, 2)
 }

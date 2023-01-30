@@ -1,8 +1,7 @@
 import useInterval from '@components/shared/useInterval'
 import mangoStore from '@store/mangoStore'
 import { useEffect, useMemo, useState } from 'react'
-import { floorToDecimal, getDecimalCount } from 'utils/numbers'
-import Decimal from 'decimal.js'
+import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -167,25 +166,21 @@ const RecentTrades = () => {
                   const side =
                     trade.side || (trade.takerSide === 0 ? 'bid' : 'ask')
 
-                  // const price =
-                  // typeof trade.price === 'number'
-                  //   ? trade.price
-                  //   : trade.price.toNumber()
-                  const formattedPrice = market?.tickSize
-                    ? floorToDecimal(
-                        trade.price,
-                        getDecimalCount(market.tickSize)
-                      )
-                    : new Decimal(trade?.price || 0)
+                  const formattedPrice =
+                    market?.tickSize && trade.price
+                      ? formatNumericValue(
+                          trade.price,
+                          getDecimalCount(market.tickSize)
+                        )
+                      : trade?.price || 0
 
-                  // const size = trade?.quantity?.toNumber() || trade?.size
                   const formattedSize =
                     market?.minOrderSize && trade.size
-                      ? floorToDecimal(
+                      ? formatNumericValue(
                           trade.size,
                           getDecimalCount(market.minOrderSize)
                         )
-                      : new Decimal(trade.size || 0)
+                      : trade?.size || 0
 
                   return (
                     <tr className="font-mono text-xs" key={i}>
@@ -196,11 +191,9 @@ const RecentTrades = () => {
                             : 'text-th-down'
                         }`}
                       >
-                        {formattedPrice.toFixed()}
+                        {formattedPrice}
                       </td>
-                      <td className="pb-1.5 text-right">
-                        {formattedSize.toFixed()}
-                      </td>
+                      <td className="pb-1.5 text-right">{formattedSize}</td>
                       <td className="pb-1.5 text-right text-th-fgd-4">
                         {trade.time
                           ? new Date(trade.time).toLocaleTimeString()

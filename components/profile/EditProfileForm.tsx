@@ -164,7 +164,7 @@ const EditProfileForm = ({
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             onChangeNameInput(e.target.value)
           }
-          charLimit={20}
+          maxLength={20}
         />
         {inputError ? (
           <div className="mt-1.5 flex items-center space-x-1">

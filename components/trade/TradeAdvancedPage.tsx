@@ -74,13 +74,13 @@ const TradeAdvancedPage = () => {
       ],
       xxl: [
         { i: 'market-header', x: 0, y: 0, w: 15, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 15, h: 536 },
+        { i: 'tv-chart', x: 0, y: 1, w: 15, h: 488 },
         {
           i: 'balances',
           x: 0,
           y: 2,
           w: 15,
-          h: getHeight(innerHeight, 0, 536 + marketHeaderHeight),
+          h: getHeight(innerHeight, 0, 488 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
@@ -118,13 +118,13 @@ const TradeAdvancedPage = () => {
       ],
       lg: [
         { i: 'market-header', x: 0, y: 0, w: 13, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 13, h: 488 },
+        { i: 'tv-chart', x: 0, y: 1, w: 13, h: 456 },
         {
           i: 'balances',
           x: 0,
           y: 2,
           w: 13,
-          h: getHeight(innerHeight, 0, 488 + marketHeaderHeight),
+          h: getHeight(innerHeight, 0, 456 + marketHeaderHeight),
         },
         {
           i: 'orderbook',

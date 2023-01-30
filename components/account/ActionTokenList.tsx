@@ -45,6 +45,7 @@ const ActionTokenList = ({
                   customValue={bank[valueKey]}
                   key={bank.value[0].name}
                   onSelect={onSelect}
+                  roundUp={valueKey === 'borrowAmount'}
                   showBorrowRates={showBorrowRates}
                   showDepositRates={showDepositRates}
                 />

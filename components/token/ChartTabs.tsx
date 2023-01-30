@@ -14,6 +14,10 @@ const ChartTabs = ({ token }: { token: string }) => {
   const { t } = useTranslation('token')
   const [activeDepositsTab, setActiveDepositsTab] = useState('token:deposits')
   const [activeBorrowsTab, setActiveBorrowsTab] = useState('token:borrows')
+  const [depositDaysToShow, setDepositDaysToShow] = useState('30')
+  const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
+  const [depositRateDaysToShow, setDepositRateDaysToShow] = useState('30')
+  const [borrowRateDaysToShow, setBorrowRateDaysToShow] = useState('30')
   const tokenStats = mangoStore((s) => s.tokenStats.data)
   const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingTokenStats = mangoStore((s) => s.tokenStats.loading)
@@ -42,6 +46,21 @@ const ChartTabs = ({ token }: { token: string }) => {
     }, [])
   }, [tokenStats])
 
+  const filterStats = (daysToShow: string) => {
+    if (!statsHistory.length) return []
+    if (daysToShow !== '30') {
+      const seconds = Number(daysToShow) * 86400
+      const data = statsHistory.filter((d) => {
+        const dataTime = new Date(d.date_hour).getTime() / 1000
+        const now = new Date().getTime() / 1000
+        const limit = now - seconds
+        return dataTime >= limit
+      })
+      return data
+    }
+    return statsHistory
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
       <div className="col-span-1 border-b border-th-bkg-3 md:border-r md:border-b-0">
@@ -58,11 +77,12 @@ const ChartTabs = ({ token }: { token: string }) => {
           <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeDepositsTab === 'token:deposits' ? (
               <DetailedAreaChart
-                data={statsHistory}
-                daysToShow={'999'}
+                data={filterStats(depositDaysToShow)}
+                daysToShow={depositDaysToShow}
+                setDaysToShow={setDepositDaysToShow}
                 heightClass="h-64"
                 loaderHeightClass="h-[334px]"
-                // domain={[0, 'dataMax']}
+                domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small
                 tickFormat={(x) => formatYAxis(x)}
@@ -72,8 +92,9 @@ const ChartTabs = ({ token }: { token: string }) => {
               />
             ) : (
               <DetailedAreaChart
-                data={statsHistory}
-                daysToShow={'999'}
+                data={filterStats(depositRateDaysToShow)}
+                daysToShow={depositRateDaysToShow}
+                setDaysToShow={setDepositRateDaysToShow}
                 heightClass="h-64"
                 loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}
@@ -104,11 +125,12 @@ const ChartTabs = ({ token }: { token: string }) => {
           <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeBorrowsTab === 'token:borrows' ? (
               <DetailedAreaChart
-                data={statsHistory}
-                daysToShow={'999'}
+                data={filterStats(borrowDaysToShow)}
+                daysToShow={borrowDaysToShow}
+                setDaysToShow={setBorrowDaysToShow}
                 heightClass="h-64"
                 loaderHeightClass="h-[334px]"
-                // domain={[0, 'dataMax']}
+                domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small
                 tickFormat={(x) => formatYAxis(x)}
@@ -118,8 +140,9 @@ const ChartTabs = ({ token }: { token: string }) => {
               />
             ) : (
               <DetailedAreaChart
-                data={statsHistory}
-                daysToShow={'999'}
+                data={filterStats(borrowRateDaysToShow)}
+                daysToShow={borrowRateDaysToShow}
+                setDaysToShow={setBorrowRateDaysToShow}
                 heightClass="h-64"
                 loaderHeightClass="h-[334px]"
                 // domain={[0, 'dataMax']}

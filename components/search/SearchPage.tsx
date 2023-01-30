@@ -92,7 +92,7 @@ const SearchPage = () => {
           </Button>
         </div>
         <div className="space-y-2 pt-8">
-          {searchResults.length || showNoResults ? (
+          {searchResults?.length || showNoResults ? (
             <h2 className="mb-4 border-t border-th-bkg-3 pt-4 text-base">
               {t('results')}
             </h2>
@@ -108,7 +108,7 @@ const SearchPage = () => {
                 <div className="h-20 w-full rounded-md bg-th-bkg-2" />
               </SheenLoader>
             </>
-          ) : searchResults.length ? (
+          ) : searchResults?.length ? (
             searchResults.map((r) =>
               isAccountSearch ? (
                 <MangoAccountItem item={r} type={searchType} />

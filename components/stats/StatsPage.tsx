@@ -1,7 +1,9 @@
 import TabButtons from '@components/shared/TabButtons'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { useViewport } from 'hooks/useViewport'
 import { useEffect, useMemo, useState } from 'react'
+import { breakpoints } from 'utils/theme'
 import MangoStats from './MangoStats'
 import PerpStats from './PerpStats'
 import SpotMarketsTable from './SpotMarketsTable'
@@ -17,6 +19,8 @@ const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')
   const actions = mangoStore.getState().actions
   const { group } = useMangoGroup()
+  const { width } = useViewport()
+  const fullWidthTabs = width ? width < breakpoints.lg : false
 
   useEffect(() => {
     if (group) {
@@ -32,9 +36,10 @@ const StatsPage = () => {
       <div className="border-b border-th-bkg-3">
         <TabButtons
           activeValue={activeTab}
+          fillWidth={fullWidthTabs}
           onChange={(v) => setActiveTab(v)}
-          values={tabsWithCount}
           showBorders
+          values={tabsWithCount}
         />
       </div>
       <TabContent activeTab={activeTab} />

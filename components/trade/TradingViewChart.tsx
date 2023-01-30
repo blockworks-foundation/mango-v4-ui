@@ -34,6 +34,7 @@ const TradingViewChart = () => {
   const { width } = useViewport()
 
   const [chartReady, setChartReady] = useState(false)
+  const [spotOrPerp, setSpotOrPerp] = useState('spot')
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const isMobile = width ? width < breakpoints.sm : false
 
@@ -96,9 +97,16 @@ const TradingViewChart = () => {
     const group = mangoStore.getState().group
     if (tvWidgetRef.current && chartReady && selectedMarketName && group) {
       try {
-        const market = group.getSerum3MarketByName(selectedMarketName)
+        let symbolName
+        if (!selectedMarketName.toLowerCase().includes('PERP')) {
+          symbolName = group
+            .getSerum3MarketByName(selectedMarketName)
+            .serumMarketExternal.toString()
+        } else {
+          symbolName = selectedMarketName
+        }
         tvWidgetRef.current.setSymbol(
-          market?.serumMarketExternal.toString(),
+          symbolName,
           tvWidgetRef.current.activeChart().resolution(),
           () => {
             return
@@ -111,13 +119,37 @@ const TradingViewChart = () => {
   }, [selectedMarketName, chartReady])
 
   useEffect(() => {
+    if (
+      selectedMarketName?.toLowerCase().includes('perp') &&
+      spotOrPerp !== 'perp'
+    ) {
+      setSpotOrPerp('perp')
+    } else if (
+      !selectedMarketName?.toLowerCase().includes('perp') &&
+      spotOrPerp !== 'spot'
+    ) {
+      setSpotOrPerp('spot')
+    }
+  }, [selectedMarketName, spotOrPerp])
+
+  useEffect(() => {
     if (window) {
+      // const tempBtcDatafeedUrl = 'https://dex-pyth-price-mainnet.zeta.markets/tv/history?symbol=BTC-USDC&resolution=5&from=1674427748&to=1674430748&countback=2'
+      const tempBtcDatafeedUrl =
+        'https://redirect-origin.mangomarkets.workers.dev'
+      const btcDatafeed = new (window as any).Datafeeds.UDFCompatibleDatafeed(
+        tempBtcDatafeedUrl
+      )
+
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
-        symbol: '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6',
+        symbol:
+          spotOrPerp === 'spot'
+            ? '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+            : 'BTC-USDC',
         // BEWARE: no trailing slash is expected in feed URL
         // tslint:disable-next-line:no-any
-        datafeed: Datafeed,
+        datafeed: spotOrPerp === 'spot' ? Datafeed : btcDatafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
@@ -190,7 +222,7 @@ const TradingViewChart = () => {
       })
       //eslint-disable-next-line
     }
-  }, [theme, isMobile, defaultProps])
+  }, [theme, isMobile, defaultProps, spotOrPerp])
 
   return (
     <div id={defaultProps.container as string} className="tradingview-chart" />

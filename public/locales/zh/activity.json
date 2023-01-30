@@ -25,6 +25,7 @@
     "spot-trade": "Spot Trade",
     "swap": "Swap",
     "swaps": "Swaps",
+    "tooltip-fee": "Swap fees paid to other DEXs are not displayed",
     "update": "Update",
     "value-from": "Value From",
     "value-to": "Value To",

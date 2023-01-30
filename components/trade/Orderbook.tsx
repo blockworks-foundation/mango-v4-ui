@@ -188,6 +188,7 @@ const Orderbook = () => {
     baseSymbol,
     quoteSymbol,
   } = useSelectedMarket()
+  const connection = mangoStore((s) => s.connection)
 
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)
@@ -324,7 +325,6 @@ const Orderbook = () => {
   }, 400)
 
   useEffect(() => {
-    const connection = mangoStore.getState().connection
     const group = mangoStore.getState().group
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
@@ -405,7 +405,7 @@ const Orderbook = () => {
         connection.removeAccountChangeListener(askSubscriptionId)
       }
     }
-  }, [market])
+  }, [market, connection])
 
   useEffect(() => {
     window.addEventListener('resize', verticallyCenterOrderbook)

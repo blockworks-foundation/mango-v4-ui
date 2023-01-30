@@ -5,7 +5,6 @@ import { useMemo } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
-import { formatFixedDecimals } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
@@ -14,6 +13,7 @@ import dynamic from 'next/dynamic'
 import { useCoingecko } from 'hooks/useCoingecko'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -47,10 +47,9 @@ const SpotMarketsTable = () => {
               )
               const oraclePrice = bank?.uiPrice
 
-              const coingeckoData = coingeckoPrices.find((asset) =>
-                bank?.name === 'soETH'
-                  ? asset.symbol === 'ETH'
-                  : asset.symbol.toUpperCase() === bank?.name.toUpperCase()
+              const coingeckoData = coingeckoPrices.find(
+                (asset) =>
+                  asset.symbol.toUpperCase() === bank?.name.toUpperCase()
               )
 
               const change = coingeckoData
@@ -73,9 +72,11 @@ const SpotMarketsTable = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>
-                        {oraclePrice
-                          ? formatFixedDecimals(oraclePrice, true)
-                          : '–'}
+                        {oraclePrice ? (
+                          <FormatNumericValue value={oraclePrice} isUsd />
+                        ) : (
+                          '–'
+                        )}
                       </p>
                     </div>
                   </Td>
@@ -175,7 +176,11 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
             <p className="text-th-fgd-1">{market.name}</p>
             <div className="flex items-center space-x-3">
               <p className="font-mono">
-                {bank?.uiPrice ? formatFixedDecimals(bank.uiPrice, true) : '-'}
+                {bank?.uiPrice ? (
+                  <FormatNumericValue value={bank.uiPrice} isUsd />
+                ) : (
+                  '-'
+                )}
               </p>
               <Change change={change} suffix="%" />
             </div>

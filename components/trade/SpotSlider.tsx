@@ -5,7 +5,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
 import { GenericMarket } from 'types'
-import { trimDecimals } from 'utils/numbers'
+import { floorToDecimal } from 'utils/numbers'
 
 export const useSpotMarketMax = (
   mangoAccount: MangoAccount | undefined,
@@ -78,20 +78,20 @@ const SpotSlider = ({
         if (s.tradeForm.side === 'buy') {
           s.tradeForm.quoteSize = val
           if (Number(price)) {
-            s.tradeForm.baseSize = trimDecimals(
+            s.tradeForm.baseSize = floorToDecimal(
               parseFloat(val) / price,
               minOrderDecimals
-            ).toFixed(minOrderDecimals)
+            ).toString()
           } else {
             s.tradeForm.baseSize = ''
           }
         } else if (s.tradeForm.side === 'sell') {
           s.tradeForm.baseSize = val
           if (Number(price)) {
-            s.tradeForm.quoteSize = trimDecimals(
+            s.tradeForm.quoteSize = floorToDecimal(
               parseFloat(val) * price,
               tickDecimals
-            ).toFixed(tickDecimals)
+            ).toString()
           }
         }
       })

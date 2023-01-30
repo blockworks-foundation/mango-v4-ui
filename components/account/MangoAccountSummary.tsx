@@ -3,19 +3,30 @@ import {
   HealthType,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
-import { formatFixedDecimals } from '../../utils/numbers'
 import { useTranslation } from 'next-i18next'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useMemo } from 'react'
-import useLocalStorageState from 'hooks/useLocalStorageState'
-import { HIDE_ACCOUNT_VALUE_KEY, HIDE_PNL_KEY } from 'utils/constants'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
-const SummaryItem = ({ label, value }: { label: string; value: string }) => {
+const SummaryItem = ({
+  label,
+  value,
+  isUsd,
+  suffix,
+}: {
+  label: string
+  value: number
+  isUsd?: boolean
+  suffix?: string
+}) => {
   return (
     <div>
       <p className="text-sm text-th-fgd-3">{label}</p>
-      <p className="font-mono text-sm text-th-fgd-1">{value}</p>
+      <p className="font-mono text-sm text-th-fgd-1">
+        <FormatNumericValue value={value} decimals={2} isUsd={isUsd} />
+        {suffix}
+      </p>
     </div>
   )
 }
@@ -25,8 +36,6 @@ const MangoAccountSummary = () => {
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
-  const [hideAccountValue] = useLocalStorageState(HIDE_ACCOUNT_VALUE_KEY, true)
-  const [hidePnl] = useLocalStorageState(HIDE_PNL_KEY, true)
 
   const [accountValue, freeCollateral, health] = useMemo(() => {
     if (!group || !mangoAccount) return [0, 0, 0]
@@ -60,24 +69,11 @@ const MangoAccountSummary = () => {
 
   return (
     <div className="space-y-2">
-      <SummaryItem
-        label={t('account-value')}
-        value={
-          !hideAccountValue
-            ? formatFixedDecimals(accountValue, true, true)
-            : '*****'
-        }
-      />
-      <SummaryItem label={t('health')} value={`${health}%`} />
-      <SummaryItem
-        label={t('free-collateral')}
-        value={formatFixedDecimals(freeCollateral, true, true)}
-      />
-      <SummaryItem label={t('leverage')} value={`${leverage.toFixed(2)}x`} />
-      <SummaryItem
-        label={t('pnl')}
-        value={!hidePnl ? formatFixedDecimals(pnl, true, true) : '*****'}
-      />
+      <SummaryItem label={t('account-value')} value={accountValue} isUsd />
+      <SummaryItem label={t('health')} value={health} suffix="%" />
+      <SummaryItem label={t('free-collateral')} value={freeCollateral} isUsd />
+      <SummaryItem label={t('leverage')} value={leverage} suffix="x" />
+      <SummaryItem label={t('pnl')} value={pnl} isUsd />
     </div>
   )
 }
