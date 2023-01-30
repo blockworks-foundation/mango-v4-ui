@@ -4,7 +4,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import { formatNumericValue } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
@@ -14,10 +14,9 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import mangoStore from '@store/mangoStore'
-import { getMaxWithdrawForBank } from '@components/swap/useTokenMax'
-import useMangoAccount from 'hooks/useMangoAccount'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 
 const AssetsBorrowsTable = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -26,10 +25,10 @@ const AssetsBorrowsTable = () => {
   const actions = mangoStore.getState().actions
   const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const { group } = useMangoGroup()
-  const { mangoAccount } = useMangoAccount()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const banks = useBanksWithBalances('maxBorrow')
 
   const handleShowBorrowModal = useCallback((token: string) => {
     setSelectedToken(token)
@@ -40,17 +39,6 @@ const AssetsBorrowsTable = () => {
     if (group && !initialStatsLoad) {
       actions.fetchTokenStats()
     }
-  }, [group])
-
-  const banks = useMemo(() => {
-    if (group) {
-      const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
-        key,
-        value,
-      }))
-      return rawBanks.sort((a, b) => a.key.localeCompare(b.key))
-    }
-    return []
   }, [group])
 
   return (
@@ -75,8 +63,8 @@ const AssetsBorrowsTable = () => {
             </TrHead>
           </thead>
           <tbody>
-            {banks.map(({ key, value }) => {
-              const bank = value[0]
+            {banks.map((b) => {
+              const bank = b.bank
 
               let logoURI
               if (mangoTokens?.length) {
@@ -86,18 +74,8 @@ const AssetsBorrowsTable = () => {
               }
               const borrows = bank.uiBorrows()
 
-              const available =
-                group && mangoAccount
-                  ? getMaxWithdrawForBank(
-                      group,
-                      bank,
-                      mangoAccount,
-                      true
-                    ).toNumber()
-                  : 0
-
               return (
-                <TrBody key={key}>
+                <TrBody key={bank.name}>
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -123,7 +101,7 @@ const AssetsBorrowsTable = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <BankAmountWithValue
-                        amount={available}
+                        amount={b.maxBorrow}
                         bank={bank}
                         stacked
                       />
@@ -138,7 +116,7 @@ const AssetsBorrowsTable = () => {
                     <div className="flex justify-end">
                       <Tooltip content={`${t('borrow')} ${bank.name}`}>
                         <IconButton
-                          disabled={available === 0}
+                          disabled={b.maxBorrow === 0}
                           onClick={() => handleShowBorrowModal(bank.name)}
                           size="small"
                         >
@@ -154,8 +132,8 @@ const AssetsBorrowsTable = () => {
         </Table>
       ) : (
         <div>
-          {banks.map(({ key, value }) => {
-            const bank = value[0]
+          {banks.map((b) => {
+            const bank = b.bank
             let logoURI
             if (mangoTokens?.length) {
               logoURI = mangoTokens.find(
@@ -163,18 +141,11 @@ const AssetsBorrowsTable = () => {
               )?.logoURI
             }
 
-            const available =
-              group && mangoAccount
-                ? getMaxWithdrawForBank(
-                    group,
-                    bank,
-                    mangoAccount,
-                    true
-                  ).toNumber()
-                : 0
-
             return (
-              <div key={key} className="border-b border-th-bkg-3 px-6 py-4">
+              <div
+                key={bank.name}
+                className="border-b border-th-bkg-3 px-6 py-4"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -191,7 +162,7 @@ const AssetsBorrowsTable = () => {
                       <p className="mb-0.5 text-right text-xs">
                         {t('available')}
                       </p>
-                      <BankAmountWithValue amount={available} bank={bank} />
+                      <BankAmountWithValue amount={b.maxBorrow} bank={bank} />
                     </div>
                     <div>
                       <p className="mb-0.5 text-right text-xs">{t('rate')}</p>
@@ -200,7 +171,7 @@ const AssetsBorrowsTable = () => {
                       </p>
                     </div>
                     <IconButton
-                      disabled={available === 0}
+                      disabled={b.maxBorrow === 0}
                       onClick={() => handleShowBorrowModal(bank.name)}
                       size="medium"
                     >

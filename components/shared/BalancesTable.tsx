@@ -1,4 +1,4 @@
-import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { NoSymbolIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
@@ -18,53 +18,40 @@ import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import { LinkButton } from './Button'
 import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import useMangoGroup from 'hooks/useMangoGroup'
 import ConnectEmptyState from './ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import FormatNumericValue from './FormatNumericValue'
 import BankAmountWithValue from './BankAmountWithValue'
+import useBanksWithBalances, {
+  BankWithBalance,
+} from 'hooks/useBanksWithBalances'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
-  const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
+  const banks = useBanksWithBalances('balance')
 
-  const banks = useMemo(() => {
-    if (!group || !mangoAccount) return []
+  const filteredBanks = useMemo(() => {
+    if (banks.length) {
+      return banks.filter((b) => {
+        return (
+          Math.abs(floorToDecimal(b.balance, b.bank.mintDecimals).toNumber()) >
+            0 ||
+          spotBalances[b.bank.mint.toString()]?.unsettled > 0 ||
+          spotBalances[b.bank.mint.toString()]?.inOrders > 0
+        )
+      })
+    }
+    return []
+  }, [banks])
 
-    const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
-      key,
-      value,
-      balance: mangoAccount.getTokenBalanceUi(value[0]),
-    }))
-    const sortedBanks = mangoAccount
-      ? rawBanks
-          .sort(
-            (a, b) =>
-              Math.abs(b.balance * b.value[0].uiPrice) -
-              Math.abs(a.balance * a.value[0].uiPrice)
-          )
-          .filter((c) => {
-            return (
-              Math.abs(
-                floorToDecimal(c.balance, c.value[0].mintDecimals).toNumber()
-              ) > 0 ||
-              spotBalances[c.value[0].mint.toString()]?.unsettled > 0 ||
-              spotBalances[c.value[0].mint.toString()]?.inOrders > 0
-            )
-          })
-      : rawBanks
-
-    return sortedBanks
-  }, [group, mangoAccount, spotBalances])
-
-  return banks?.length ? (
+  return filteredBanks.length ? (
     showTableView ? (
       <Table>
         <thead>
@@ -78,8 +65,8 @@ const BalancesTable = () => {
           </TrHead>
         </thead>
         <tbody>
-          {banks.map(({ key, value }) => {
-            const bank = value[0]
+          {filteredBanks.map((b) => {
+            const bank = b.bank
 
             let logoURI
             if (mangoTokens.length) {
@@ -92,7 +79,7 @@ const BalancesTable = () => {
             const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
 
             return (
-              <TrBody key={key} className="text-sm">
+              <TrBody key={bank.name} className="text-sm">
                 <Td>
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -106,14 +93,10 @@ const BalancesTable = () => {
                   </div>
                 </Td>
                 <Td className="text-right">
-                  <Balance bank={bank} />
+                  <Balance bank={b} />
                   <p className="text-sm text-th-fgd-4">
                     <FormatNumericValue
-                      value={
-                        mangoAccount
-                          ? mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice
-                          : 0
-                      }
+                      value={mangoAccount ? b.balance * bank.uiPrice : 0}
                       isUsd
                     />
                   </p>
@@ -131,8 +114,8 @@ const BalancesTable = () => {
       </Table>
     ) : (
       <>
-        {banks.map(({ key, value }) => {
-          const bank = value[0]
+        {filteredBanks.map((b) => {
+          const bank = b.bank
 
           let logoURI
           if (mangoTokens.length) {
@@ -147,7 +130,7 @@ const BalancesTable = () => {
           return (
             <div
               className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-              key={key}
+              key={bank.name}
             >
               <div className="flex items-center">
                 <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -161,14 +144,10 @@ const BalancesTable = () => {
               </div>
               <div className="text-right">
                 <div className="mb-0.5 flex justify-end space-x-1.5">
-                  <Balance bank={bank} />
+                  <Balance bank={b} />
                   <span className="text-sm text-th-fgd-4">
                     <FormatNumericValue
-                      value={
-                        mangoAccount
-                          ? mangoAccount.getTokenBalanceUi(bank) * bank.uiPrice
-                          : 0
-                      }
+                      value={mangoAccount ? b.balance * bank.uiPrice : 0}
                       isUsd
                     />
                   </span>
@@ -213,10 +192,11 @@ const BalancesTable = () => {
 
 export default BalancesTable
 
-const Balance = ({ bank }: { bank: Bank }) => {
-  const { mangoAccount } = useMangoAccount()
+const Balance = ({ bank }: { bank: BankWithBalance }) => {
   const { selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
+
+  const tokenBank = bank.bank
 
   const handleTradeFormBalanceClick = useCallback(
     (balance: number, type: 'base' | 'quote') => {
@@ -279,14 +259,14 @@ const Balance = ({ bank }: { bank: Bank }) => {
       const set = mangoStore.getState().set
       if (balance >= 0) {
         set((s) => {
-          s.swap.inputBank = bank
+          s.swap.inputBank = tokenBank
           s.swap.amountIn = balance.toString()
           s.swap.amountOut = ''
           s.swap.swapMode = 'ExactIn'
         })
       } else {
         set((s) => {
-          s.swap.outputBank = bank
+          s.swap.outputBank = tokenBank
           s.swap.amountIn = ''
           s.swap.amountOut = Math.abs(balance).toString()
           s.swap.swapMode = 'ExactOut'
@@ -296,21 +276,19 @@ const Balance = ({ bank }: { bank: Bank }) => {
     [bank]
   )
 
-  const balance = useMemo(() => {
-    return mangoAccount ? mangoAccount.getTokenBalanceUi(bank) : 0
-  }, [bank, mangoAccount])
+  const balance = bank.balance
 
   const isBaseOrQuote = useMemo(() => {
     if (selectedMarket instanceof Serum3Market) {
-      if (bank.tokenIndex === selectedMarket.baseTokenIndex) {
+      if (tokenBank.tokenIndex === selectedMarket.baseTokenIndex) {
         return 'base'
-      } else if (bank.tokenIndex === selectedMarket.quoteTokenIndex) {
+      } else if (tokenBank.tokenIndex === selectedMarket.quoteTokenIndex) {
         return 'quote'
       } else return ''
     }
-  }, [bank, selectedMarket])
+  }, [tokenBank, selectedMarket])
 
-  console.log(bank.name, ' balance', new Decimal(balance).toFixed())
+  console.log(tokenBank.name, ' balance', new Decimal(balance).toFixed())
   if (!balance) return <p className="flex justify-end">0</p>
 
   return (
@@ -322,21 +300,27 @@ const Balance = ({ bank }: { bank: Bank }) => {
             handleTradeFormBalanceClick(Math.abs(balance), isBaseOrQuote)
           }
         >
-          <FormatNumericValue value={balance} decimals={bank.mintDecimals} />
+          <FormatNumericValue
+            value={balance}
+            decimals={tokenBank.mintDecimals}
+          />
         </LinkButton>
       ) : asPath.includes('/swap') ? (
         <LinkButton
           className="font-normal underline-offset-4"
           onClick={() =>
             handleSwapFormBalanceClick(
-              Number(formatNumericValue(balance, bank.mintDecimals))
+              Number(formatNumericValue(balance, tokenBank.mintDecimals))
             )
           }
         >
-          <FormatNumericValue value={balance} decimals={bank.mintDecimals} />
+          <FormatNumericValue
+            value={balance}
+            decimals={tokenBank.mintDecimals}
+          />
         </LinkButton>
       ) : (
-        <FormatNumericValue value={balance} decimals={bank.mintDecimals} />
+        <FormatNumericValue value={balance} decimals={tokenBank.mintDecimals} />
       )}
     </p>
   )

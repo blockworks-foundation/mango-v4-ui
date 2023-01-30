@@ -21,6 +21,7 @@ import TabButtons from '@components/shared/TabButtons'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 
 const BorrowPage = () => {
   const { t } = useTranslation(['common', 'borrow'])
@@ -33,6 +34,7 @@ const BorrowPage = () => {
   const { connected } = useWallet()
   const { width } = useViewport()
   const fullWidthTabs = width ? width < breakpoints.sm : false
+  const banks = useBanksWithBalances('borrowedAmount')
 
   const handleBorrowModal = () => {
     if (!connected || mangoAccount) {
@@ -57,35 +59,20 @@ const BorrowPage = () => {
     }
   }, [actions, mangoAccountAddress])
 
-  const banks = useMemo(() => {
-    if (group && mangoAccount) {
-      const borrowBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
-        key,
-        value,
-      })).filter((b) => {
-        const bank = b.value[0]
-        return mangoAccount.getTokenBalanceUi(bank) < 0
-      })
-      return borrowBanks
-        .map((b) => {
-          return {
-            balance: mangoAccount.getTokenBalanceUi(b.value[0]),
-            bank: b.value[0],
-          }
-        })
-        .sort((a, b) => {
-          const aBalance = Math.abs(a.balance * a.bank.uiPrice)
-          const bBalance = Math.abs(b.balance * b.bank.uiPrice)
-          return aBalance > bBalance ? -1 : 1
-        })
+  const filteredBanks = useMemo(() => {
+    if (banks.length) {
+      return banks.filter((b) => b.borrowedAmount > 0)
     }
     return []
-  }, [group, mangoAccount])
+  }, [banks])
 
   const borrowValue = useMemo(() => {
-    if (!banks.length) return 0
-    return banks.reduce((a, c) => a + Math.abs(c.balance) * c.bank.uiPrice, 0)
-  }, [banks])
+    if (!filteredBanks.length) return 0
+    return filteredBanks.reduce(
+      (a, c) => a + Math.abs(c.borrowedAmount) * c.bank.uiPrice,
+      0
+    )
+  }, [filteredBanks])
 
   useEffect(() => {
     if (mangoAccountAddress && !borrowValue) {
@@ -205,7 +192,7 @@ const BorrowPage = () => {
         />
       </div>
       {activeTab === 'borrow:your-borrows' ? (
-        <YourBorrowsTable banks={banks} />
+        <YourBorrowsTable banks={filteredBanks} />
       ) : (
         <AssetsBorrowsTable />
       )}
