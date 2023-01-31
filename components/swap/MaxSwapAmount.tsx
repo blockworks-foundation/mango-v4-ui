@@ -32,7 +32,7 @@ const MaxSwapAmount = ({
         <MaxAmountButton
           className="mb-0.5"
           decimals={decimals}
-          label="Bal"
+          label={t('bal')}
           onClick={() => setMax(tokenMax)}
           value={tokenMax}
         />

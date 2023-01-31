@@ -21,6 +21,7 @@
   "asset-weight-desc": "Asset weight applies a haircut to the value of the collateral in your account health calculation. The lower the asset weight, the less the asset counts towards collateral.",
   "available": "Available",
   "available-balance": "Available Balance",
+  "bal": "Bal",
   "balance": "Balance",
   "balances": "Balances",
   "borrow": "Borrow",
