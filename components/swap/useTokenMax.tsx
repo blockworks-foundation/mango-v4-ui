@@ -75,7 +75,11 @@ export const getTokenInMax = (
         inputBankVaultBalance,
         maxUiAmountWithBorrow
       )
-    : Decimal.min(maxAmountWithoutMargin, inputBankVaultBalance)
+    : Decimal.min(
+        maxAmountWithoutMargin,
+        inputBankVaultBalance,
+        maxUiAmountWithBorrow
+      )
 
   const maxAmountWithBorrow = Decimal.min(
     maxUiAmountWithBorrow,
