@@ -11,7 +11,8 @@ import { useViewport } from 'hooks/useViewport'
 import { CHART_DATA_FEED, DEFAULT_MARKET_NAME } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
-import Datafeed from 'apis/birdeye/datafeed'
+import SpotDatafeed from 'apis/birdeye/datafeed'
+import PerpDatafeed from 'apis/mngo/datafeed'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -134,22 +135,15 @@ const TradingViewChart = () => {
 
   useEffect(() => {
     if (window) {
-      // const tempBtcDatafeedUrl = 'https://dex-pyth-price-mainnet.zeta.markets/tv/history?symbol=BTC-USDC&resolution=5&from=1674427748&to=1674430748&countback=2'
-      const tempBtcDatafeedUrl =
-        'https://redirect-origin.mangomarkets.workers.dev'
-      const btcDatafeed = new (window as any).Datafeeds.UDFCompatibleDatafeed(
-        tempBtcDatafeedUrl
-      )
-
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
         symbol:
           spotOrPerp === 'spot'
             ? '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
-            : 'BTC-USDC',
+            : 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
         // BEWARE: no trailing slash is expected in feed URL
         // tslint:disable-next-line:no-any
-        datafeed: spotOrPerp === 'spot' ? Datafeed : btcDatafeed,
+        datafeed: spotOrPerp === 'spot' ? SpotDatafeed : PerpDatafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
