@@ -94,20 +94,26 @@ const TradingViewChart = () => {
     }
   })
 
+  const selectedMarket = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarketName)
+      return '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+
+    if (!selectedMarketName.toLowerCase().includes('perp')) {
+      return group
+        .getSerum3MarketByName(selectedMarketName)
+        .serumMarketExternal.toString()
+    } else {
+      return group.getPerpMarketByName(selectedMarketName).publicKey.toString()
+    }
+  }, [selectedMarketName])
+
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (tvWidgetRef.current && chartReady && selectedMarketName && group) {
+    if (tvWidgetRef.current && chartReady && selectedMarket && group) {
       try {
-        let symbolName
-        if (!selectedMarketName.toLowerCase().includes('PERP')) {
-          symbolName = group
-            .getSerum3MarketByName(selectedMarketName)
-            .serumMarketExternal.toString()
-        } else {
-          symbolName = selectedMarketName
-        }
         tvWidgetRef.current.setSymbol(
-          symbolName,
+          selectedMarket,
           tvWidgetRef.current.activeChart().resolution(),
           () => {
             return
@@ -117,7 +123,7 @@ const TradingViewChart = () => {
         console.warn('Trading View change symbol error: ', e)
       }
     }
-  }, [selectedMarketName, chartReady])
+  }, [selectedMarket, chartReady])
 
   useEffect(() => {
     if (
@@ -137,10 +143,7 @@ const TradingViewChart = () => {
     if (window) {
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
-        symbol:
-          spotOrPerp === 'spot'
-            ? '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
-            : 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
+        symbol: selectedMarket,
         // BEWARE: no trailing slash is expected in feed URL
         // tslint:disable-next-line:no-any
         datafeed: spotOrPerp === 'spot' ? SpotDatafeed : PerpDatafeed,
