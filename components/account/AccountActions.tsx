@@ -75,9 +75,9 @@ const AccountActions = () => {
             <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
             {t('borrow')}
           </Button>
-          <Popover>
+          <Popover className="relative w-1/3 md:w-auto">
             {({ open }) => (
-              <div className="relative w-1/3 md:w-auto">
+              <>
                 <Popover.Button
                   className={`default-transition w-full focus:outline-none`}
                   as="div"
@@ -139,7 +139,7 @@ const AccountActions = () => {
                     </ActionsLinkButton>
                   </Popover.Panel>
                 </Transition>
-              </div>
+              </>
             )}
           </Popover>
         </div>
