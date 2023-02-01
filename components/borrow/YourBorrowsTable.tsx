@@ -23,11 +23,7 @@ import { useCallback, useState } from 'react'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import Tooltip from '@components/shared/Tooltip'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
-
-interface BankWithBalance {
-  balance: number
-  bank: Bank
-}
+import { BankWithBalance } from 'hooks/useBanksWithBalances'
 
 const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
   const { t } = useTranslation(['common', 'trade'])
@@ -82,14 +78,9 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                   )?.logoURI
                 }
 
-                const available =
-                  group && mangoAccount
-                    ? getMaxWithdrawForBank(group, bank, mangoAccount, true)
-                    : new Decimal(0)
+                const available = b.maxBorrow
 
-                const borrowedAmount = mangoAccount
-                  ? Math.abs(mangoAccount.getTokenBalanceUi(bank))
-                  : 0
+                const borrowedAmount = b.borrowedAmount
 
                 return (
                   <TrBody key={bank.name} className="text-sm">
@@ -141,7 +132,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                         </Tooltip>
                         <Tooltip content={`${t('borrow')} ${bank.name}`}>
                           <IconButton
-                            disabled={available.eq(0)}
+                            disabled={available === 0}
                             onClick={() =>
                               handleShowActionModals(bank.name, 'borrow')
                             }
