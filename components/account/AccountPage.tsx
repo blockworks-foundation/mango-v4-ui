@@ -166,7 +166,7 @@ const AccountPage = () => {
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
       return totalInterestData.reduce(
-        (a, c) => a + c.borrow_interest_usd + c.deposit_interest_usd,
+        (a, c) => a + c.borrow_interest_usd * -1 + c.deposit_interest_usd,
         0
       )
     }
