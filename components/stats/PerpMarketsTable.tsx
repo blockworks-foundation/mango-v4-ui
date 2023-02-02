@@ -15,6 +15,7 @@ import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
 import { IconButton } from '@components/shared/Button'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { getDecimalCount } from 'utils/numbers'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -76,6 +77,8 @@ const PerpMarketsTable = ({
                 fundingRate = '–'
               }
 
+              const openInterest = market.baseLotsToUi(market.openInterest)
+
               return (
                 <TrBody key={market.publicKey.toString()}>
                   <Td>
@@ -122,16 +125,14 @@ const PerpMarketsTable = ({
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>
-                        {market.openInterest.toString()}{' '}
-                        <span className="font-body text-th-fgd-3">
-                          {market.name.slice(0, -5)}
-                        </span>
+                        <FormatNumericValue
+                          value={openInterest}
+                          decimals={getDecimalCount(market.minOrderSize)}
+                        />
                       </p>
                       <p className="text-xs text-th-fgd-4">
                         <FormatNumericValue
-                          value={
-                            market.openInterest.toNumber() * market.uiPrice
-                          }
+                          value={openInterest * market.uiPrice}
                           isUsd
                         />
                       </p>

@@ -144,6 +144,7 @@ const TokenStats = () => {
                       <BankAmountWithValue
                         amount={available}
                         bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>
