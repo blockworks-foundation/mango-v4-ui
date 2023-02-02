@@ -156,6 +156,7 @@ export default {
       pricescale: 100,
       has_intraday: true,
       has_weekly_and_monthly: false,
+      has_empty_bars: true,
       supported_resolutions: configurationData.supported_resolutions as any,
       intraday_multipliers: configurationData.intraday_multipliers,
       volume_precision: 2,
