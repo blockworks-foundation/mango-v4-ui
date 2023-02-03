@@ -28,7 +28,7 @@ import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
-  const depth = 40
+  const depth = 300
   if (book instanceof SpotOrderBook) {
     return book.getL2(depth).map(([price, size]) => [price, size])
   } else if (book instanceof BookSide) {
