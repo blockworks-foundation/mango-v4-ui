@@ -1,5 +1,5 @@
 {
-    "activity": "Activity",
+    "activity": "Activity Feed",
     "activity-type": "Activity Type",
     "activity-value": "Activity Value",
     "advanced-filters": "Advanced Filters",
@@ -10,7 +10,7 @@
     "debit": "Debit",
     "deposit": "Deposit",
     "deposits": "Deposits",
-    "filter-results": "Filter Results",
+    "filter-results": "Filter",
     "liquidation": "Liquidation",
     "liquidation-type": "Liquidation Type",
     "liquidations": "Liquidations",
@@ -26,6 +26,7 @@
     "swap": "Swap",
     "swaps": "Swaps",
     "tooltip-fee": "Swap fees paid to other DEXs are not displayed",
+    "trades": "Trades",
     "update": "Update",
     "value-from": "Value From",
     "value-to": "Value To",
