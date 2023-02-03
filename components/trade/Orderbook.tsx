@@ -473,11 +473,7 @@ const Orderbook = () => {
         </div>
         {market ? (
           <div id="trade-step-four">
-            <Tooltip
-              content={t('trade:grouping')}
-              placement="bottom"
-              delay={250}
-            >
+            <Tooltip content={t('trade:grouping')} placement="left" delay={250}>
               <GroupSize
                 tickSize={market.tickSize}
                 onChange={onGroupSizeChange}
