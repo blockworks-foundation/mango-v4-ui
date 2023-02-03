@@ -660,6 +660,12 @@ const mangoStore = create<MangoStore>()(
             const { value: reloadedMangoAccount, slot } =
               await mangoAccount.reloadWithSlot(client)
             if (slot > lastSlot) {
+              const ma = get().mangoAccounts.find((ma) =>
+                ma.publicKey.equals(reloadedMangoAccount.publicKey)
+              )
+              if (ma) {
+                Object.assign(ma, reloadedMangoAccount)
+              }
               set((state) => {
                 state.mangoAccount.current = reloadedMangoAccount
                 state.mangoAccount.lastSlot = slot
