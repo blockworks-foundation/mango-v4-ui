@@ -70,7 +70,7 @@ const TokenList = () => {
   }
 
   return (
-    <ContentBox hideBorder hidePadding className="">
+    <ContentBox hideBorder hidePadding>
       <div className="flex w-full items-center justify-end border-b border-th-bkg-3 py-3 px-6 xl:-mt-[36px] xl:mb-4 xl:w-auto xl:border-0 xl:py-0">
         <Switch
           checked={showZeroBalances}
