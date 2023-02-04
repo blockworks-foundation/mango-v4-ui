@@ -4,7 +4,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
-import AccountActions from './AccountActions'
+import AccountActions, { handleCopyAddress } from './AccountActions'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatCurrencyValue } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
@@ -15,11 +15,12 @@ const SimpleAreaChart = dynamic(
 )
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
-import { IconButton } from '../shared/Button'
+import { IconButton, LinkButton } from '../shared/Button'
 import {
   ArrowsPointingOutIcon,
   ChartBarIcon,
   ClockIcon,
+  DocumentDuplicateIcon,
 } from '@heroicons/react/20/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
@@ -42,6 +43,7 @@ import { breakpoints } from 'utils/theme'
 import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { abbreviateAddress } from 'utils/formatting'
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
@@ -230,6 +232,34 @@ const AccountPage = () => {
 
   return !chartToShow ? (
     <>
+      {mangoAccount ? (
+        <div className="flex items-center justify-between border-b border-th-bkg-3 bg-th-bkg-2 py-2 px-6 sm:py-3.5">
+          <div className="flex divide-x divide-th-bkg-4 pr-4">
+            <div className="flex items-center pr-3">
+              <button className="text-left font-display text-sm text-th-fgd-1">
+                {mangoAccount.name}
+              </button>
+            </div>
+            <LinkButton
+              className="space-x-1 pl-3 font-normal text-th-fgd-4 no-underline md:hover:text-th-fgd-3"
+              onClick={() =>
+                handleCopyAddress(
+                  mangoAccount,
+                  t('copy-address-success', {
+                    pk: abbreviateAddress(mangoAccount.publicKey),
+                  })
+                )
+              }
+            >
+              <span className="whitespace-nowrap">
+                {abbreviateAddress(mangoAccount.publicKey)}
+              </span>
+              <DocumentDuplicateIcon className="h-4 w-4" />
+            </LinkButton>
+          </div>
+          <AccountActions />
+        </div>
+      ) : null}
       <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 lg:flex-row lg:items-center lg:justify-between lg:border-b">
         <div className="flex flex-col md:flex-row md:items-center md:space-x-6">
           <div id="account-step-three">
@@ -248,7 +278,7 @@ const AccountPage = () => {
                 group && mangoAccount ? (
                   <FlipNumbers
                     height={48}
-                    width={35}
+                    width={36}
                     play
                     delay={0.05}
                     duration={1}
@@ -276,7 +306,7 @@ const AccountPage = () => {
           {performanceInitialLoad ? (
             oneDayPerformanceData.length ? (
               <div
-                className="relative mt-4 flex h-40 items-end md:mt-0 md:h-24 md:w-48"
+                className="relative mt-4 flex h-40 items-end md:mt-0 md:h-28 md:w-60"
                 onMouseEnter={() =>
                   onHoverMenu(showExpandChart, 'onMouseEnter')
                 }
@@ -318,13 +348,13 @@ const AccountPage = () => {
             ) : null
           ) : mangoAccountAddress ? (
             <SheenLoader className="mt-4 flex flex-1 md:mt-0">
-              <div className="h-40 w-full rounded-md bg-th-bkg-2 md:h-24 md:w-48" />
+              <div className="h-40 w-full rounded-md bg-th-bkg-2 md:h-28 md:w-60" />
             </SheenLoader>
           ) : null}
         </div>
-        <div className="mt-6 mb-1 lg:mt-0 lg:mb-0">
+        {/* <div className="mt-6 mb-1 lg:mt-0 lg:mb-0">
           <AccountActions />
-        </div>
+        </div> */}
       </div>
       <div className="grid grid-cols-5 border-b border-th-bkg-3">
         <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-t-0">
