@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 const HealthHeart = ({
   health,
   size,
@@ -5,7 +7,23 @@ const HealthHeart = ({
   health: number | undefined
   size: number
 }) => {
+  const fillColor = useMemo(() => {
+    if (!health) return 'var(--fgd-4)'
+    if (health <= 25) {
+      return 'var(--down)'
+    }
+    if (health <= 50) {
+      return 'var(--warning)'
+    }
+    if (health <= 75) {
+      return 'var(--up)'
+    }
+    return 'var(--up)'
+  }, [health])
+
   const styles = {
+    color: fillColor,
+    // filter: `drop-shadow(0px 0px 8px ${fillColor})`,
     height: `${size}px`,
     width: `${size}px`,
   }
@@ -14,15 +32,6 @@ const HealthHeart = ({
     <svg
       id="account-step-eleven"
       xmlns="http://www.w3.org/2000/svg"
-      className={
-        health
-          ? health > 15 && health < 50
-            ? 'text-th-warning'
-            : health >= 50
-            ? 'text-th-success'
-            : 'text-th-error'
-          : 'text-th-fgd-4'
-      }
       style={styles}
       viewBox="0 0 20 20"
       fill="currentColor"
@@ -33,7 +42,7 @@ const HealthHeart = ({
           d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
           clipRule="evenodd"
         />
-        <animateTransform
+        {/* <animateTransform
           attributeName="transform"
           type="scale"
           keyTimes="0;0.5;1"
@@ -62,7 +71,7 @@ const HealthHeart = ({
               : '0s'
           }
           repeatCount="indefinite"
-        />
+        /> */}
       </g>
     </svg>
   )
