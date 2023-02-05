@@ -112,43 +112,49 @@ const handleGetRoutes = async (
   feeBps = 0,
   wallet: string | undefined | null
 ) => {
-  wallet ||= PublicKey.default.toBase58()
+  try {
+    wallet ||= PublicKey.default.toBase58()
 
-  const results = await Promise.allSettled([
-    fetchMangoRoutes(
-      inputMint,
-      outputMint,
-      amount,
-      slippage,
-      swapMode,
-      feeBps,
-      wallet
-    ),
-    fetchJupiterRoutes(
-      inputMint,
-      outputMint,
-      amount,
-      slippage,
-      swapMode,
-      feeBps
-    ),
-  ])
-  const responses = results
-    .filter((x) => x.status === 'fulfilled' && x.value.bestRoute !== null)
-    .map((x) => (x as any).value)
+    const results = await Promise.allSettled([
+      fetchMangoRoutes(
+        inputMint,
+        outputMint,
+        amount,
+        slippage,
+        swapMode,
+        feeBps,
+        wallet
+      ),
+      fetchJupiterRoutes(
+        inputMint,
+        outputMint,
+        amount,
+        slippage,
+        swapMode,
+        feeBps
+      ),
+    ])
+    const responses = results
+      .filter((x) => x.status === 'fulfilled' && x.value.bestRoute !== null)
+      .map((x) => (x as any).value)
 
-  const sortedByBiggestOutAmount = (
-    responses as {
-      routes: RouteInfo[]
-      bestRoute: RouteInfo
-    }[]
-  ).sort(
-    (a, b) => Number(b.bestRoute.outAmount) - Number(a.bestRoute.outAmount)
-  )
-
-  return {
-    routes: sortedByBiggestOutAmount[0].routes,
-    bestRoute: sortedByBiggestOutAmount[0].bestRoute,
+    const sortedByBiggestOutAmount = (
+      responses as {
+        routes: RouteInfo[]
+        bestRoute: RouteInfo
+      }[]
+    ).sort(
+      (a, b) => Number(b.bestRoute.outAmount) - Number(a.bestRoute.outAmount)
+    )
+    return {
+      routes: sortedByBiggestOutAmount[0].routes,
+      bestRoute: sortedByBiggestOutAmount[0].bestRoute,
+    }
+  } catch (e) {
+    return {
+      routes: [],
+      bestRoute: null,
+    }
   }
 }
 
@@ -172,7 +178,10 @@ const useQuoteRoutes = ({
       ? new Decimal(amount).mul(10 ** decimals)
       : new Decimal(0)
 
-  const res = useQuery<{ routes: RouteInfo[]; bestRoute: RouteInfo }, Error>(
+  const res = useQuery<
+    { routes: RouteInfo[]; bestRoute: RouteInfo | null },
+    Error
+  >(
     ['swap-routes', inputMint, outputMint, amount, slippage, swapMode, wallet],
     async () =>
       handleGetRoutes(
