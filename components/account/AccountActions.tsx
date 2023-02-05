@@ -4,6 +4,7 @@ import {
   EllipsisHorizontalIcon,
   PencilIcon,
   PencilSquareIcon,
+  PlusCircleIcon,
   TrashIcon,
   UserPlusIcon,
 } from '@heroicons/react/20/solid'
@@ -98,6 +99,13 @@ const AccountActions = () => {
         </Popover>
       ) : (
         <div className="flex items-center">
+          <LinkButton
+            className="border-r border-th-bkg-4 px-3 no-underline hover:text-th-fgd-1"
+            onClick={() => setShowCreateAccountModal(true)}
+          >
+            <PlusCircleIcon className="h-4 w-4" />
+            <span className="ml-2">{t('new')}</span>
+          </LinkButton>
           <LinkButton
             className="border-r border-th-bkg-4 px-3 no-underline hover:text-th-fgd-1"
             onClick={() => setShowEditAccountModal(true)}

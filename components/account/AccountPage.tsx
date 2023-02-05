@@ -44,6 +44,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { abbreviateAddress } from 'utils/formatting'
+import HealthBar from './HealthBar'
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
@@ -357,7 +358,7 @@ const AccountPage = () => {
         </div> */}
       </div>
       <div className="grid grid-cols-5 border-b border-th-bkg-3">
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-t-0">
+        <div className="col-span-5 border-t border-th-bkg-3 py-3 px-6 lg:col-span-1 lg:border-t-0">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
@@ -398,9 +399,10 @@ const AccountPage = () => {
                 {t('health')}
               </p>
             </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mt-1 mb-2 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               {maintHealth}%
             </p>
+            <HealthBar health={maintHealth} />
           </div>
         </div>
         <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
