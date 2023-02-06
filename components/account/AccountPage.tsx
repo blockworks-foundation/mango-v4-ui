@@ -274,10 +274,10 @@ const AccountPage = () => {
         <div className="hide-scroll flex space-x-2">
           {TABS.map((tab) => (
             <button
-              className={`default-transition rounded-md border py-1.5 px-2.5 text-sm font-medium md:hover:bg-th-bkg-3 ${
+              className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium md:hover:text-th-fgd-2 ${
                 activeTab === tab
-                  ? 'border-th-bkg-2 bg-th-bkg-2 text-th-active'
-                  : 'border-th-bkg-4 text-th-fgd-3'
+                  ? 'bg-th-bkg-3 text-th-active'
+                  : 'text-th-fgd-3'
               }`}
               onClick={() => setActiveTab(tab)}
               key={tab}

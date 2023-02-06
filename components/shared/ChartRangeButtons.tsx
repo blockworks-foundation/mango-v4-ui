@@ -1,3 +1,4 @@
+import { useTranslation } from 'next-i18next'
 import { FunctionComponent } from 'react'
 
 interface ChartRangeButtonsProps {
@@ -15,6 +16,7 @@ const ChartRangeButtons: FunctionComponent<ChartRangeButtonsProps> = ({
   onChange,
   names,
 }) => {
+  const { t } = useTranslation(['common', 'account'])
   return (
     <div>
       <div className="relative flex">
@@ -44,7 +46,7 @@ const ChartRangeButtons: FunctionComponent<ChartRangeButtonsProps> = ({
               width: `${100 / values.length}%`,
             }}
           >
-            {names ? names[i] : v}
+            {names ? t(names[i]) : v}
           </button>
         ))}
       </div>
