@@ -614,7 +614,13 @@ const mangoStore = create<MangoStore>()(
             const serumMarkets = Array.from(
               group.serum3MarketsMapByExternal.values()
             )
-            const perpMarkets = Array.from(group.perpMarketsMapByName.values())
+            const perpMarkets = Array.from(
+              group.perpMarketsMapByName.values()
+            ).filter(
+              (p) =>
+                p.publicKey.toString() !==
+                '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+            )
 
             const defaultMarket =
               serumMarkets.find((m) => m.name === selectedMarketName) ||
