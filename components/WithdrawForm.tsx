@@ -1,4 +1,4 @@
-import { Bank, HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowLeftIcon,
   ArrowUpTrayIcon,
@@ -37,6 +37,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -57,6 +58,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const { handleConnect } = useEnhancedWallet()
+  const banks = useBanksWithBalances('maxWithdraw')
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -140,32 +142,6 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     setShowTokenList(false)
   }, [])
 
-  const withdrawBanks = useMemo(() => {
-    if (mangoAccount) {
-      const banks = group?.banksMapByName
-        ? Array.from(group?.banksMapByName, ([key, value]) => {
-            const bank: Bank = value[0]
-            const accountBalance = getMaxWithdrawForBank(
-              group,
-              bank,
-              mangoAccount
-            ).toNumber()
-            return {
-              key,
-              value,
-              accountBalance,
-              accountBalanceValue:
-                accountBalance && bank.uiPrice
-                  ? accountBalance * bank.uiPrice
-                  : 0,
-            }
-          })
-        : []
-      return banks
-    }
-    return []
-  }, [mangoAccount, group])
-
   const initHealth = useMemo(() => {
     return group && mangoAccount
       ? mangoAccount.getHealthRatioUi(group, HealthType.init)
@@ -200,10 +176,9 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
           </div>
         </div>
         <ActionTokenList
-          banks={withdrawBanks}
+          banks={banks}
           onSelect={handleSelectToken}
-          sortByKey="accountBalanceValue"
-          valueKey="accountBalance"
+          valueKey="maxWithdraw"
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut show={!showTokenList}>

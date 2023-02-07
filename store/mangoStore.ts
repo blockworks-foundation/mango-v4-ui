@@ -48,7 +48,7 @@ import {
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
-import { PRIORITY_FEES } from '@components/settings/RpcSettings'
+import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -78,10 +78,9 @@ const emptyWallet = new EmptyWallet(Keypair.generate())
 
 const initMangoClient = (
   provider: AnchorProvider,
-  opts = { prioritizationFee: PRIORITY_FEES[2].value }
+  opts = { prioritizationFee: DEFAULT_PRIORITY_FEE.value }
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
-    // blockhashCommitment: 'confirmed',
     prioritizationFee: opts.prioritizationFee,
     idsSource: 'get-program-accounts',
     postSendTxCallback: ({ txid }: { txid: string }) => {
@@ -615,7 +614,13 @@ const mangoStore = create<MangoStore>()(
             const serumMarkets = Array.from(
               group.serum3MarketsMapByExternal.values()
             )
-            const perpMarkets = Array.from(group.perpMarketsMapByName.values())
+            const perpMarkets = Array.from(
+              group.perpMarketsMapByName.values()
+            ).filter(
+              (p) =>
+                p.publicKey.toString() !==
+                '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+            )
 
             const defaultMarket =
               serumMarkets.find((m) => m.name === selectedMarketName) ||
@@ -661,6 +666,12 @@ const mangoStore = create<MangoStore>()(
             const { value: reloadedMangoAccount, slot } =
               await mangoAccount.reloadWithSlot(client)
             if (slot > lastSlot) {
+              const ma = get().mangoAccounts.find((ma) =>
+                ma.publicKey.equals(reloadedMangoAccount.publicKey)
+              )
+              if (ma) {
+                Object.assign(ma, reloadedMangoAccount)
+              }
               set((state) => {
                 state.mangoAccount.current = reloadedMangoAccount
                 state.mangoAccount.lastSlot = slot
@@ -942,7 +953,8 @@ const mangoStore = create<MangoStore>()(
             )
             provider.opts.skipPreflight = true
             const prioritizationFee = Number(
-              localStorage.getItem(PRIORITY_FEE_KEY)
+              localStorage.getItem(PRIORITY_FEE_KEY) ??
+                DEFAULT_PRIORITY_FEE.value
             )
             const client = initMangoClient(provider, { prioritizationFee })
 

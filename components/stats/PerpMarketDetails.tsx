@@ -2,7 +2,6 @@ import { IconButton } from '@components/shared/Button'
 import SheenLoader from '@components/shared/SheenLoader'
 import { ChevronLeftIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
-// import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
@@ -23,7 +22,6 @@ const PerpMarketDetails = ({
   const { t } = useTranslation(['common', 'trade'])
   const perpStats = mangoStore((s) => s.perpStats.data)
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
-  // const perpMarkets = mangoStore((s) => s.perpMarkets)
 
   const marketStats = useMemo(() => {
     if (!perpStats) return []
@@ -96,8 +94,8 @@ const PerpMarketDetails = ({
               daysToShow={'999'}
               heightClass="h-64"
               suffix="%"
-              tickFormat={(x) => formatNumericValue(x)}
-              title={t('hourly-funding')}
+              tickFormat={(x) => formatNumericValue(x, 4)}
+              title={t('trade:hourly-funding')}
               xKey="date_hour"
               yKey={'funding_rate_hourly'}
             />
@@ -108,8 +106,8 @@ const PerpMarketDetails = ({
               daysToShow={'999'}
               heightClass="h-64"
               suffix="%"
-              tickFormat={(x) => formatNumericValue(x)}
-              title={t('instantaneous-funding')}
+              tickFormat={(x) => formatNumericValue(x, 4)}
+              title={t('trade:instantaneous-funding')}
               xKey="date_hour"
               yKey={'instantaneous_funding_rate'}
             />

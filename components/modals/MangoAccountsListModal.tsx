@@ -52,10 +52,11 @@ const MangoAccountsListModal = ({
     if (!group) return mangoAccounts
 
     return [...mangoAccounts].sort((a, b) => {
-      if (b.publicKey.toString() === mangoAccount?.publicKey.toString())
-        return 1
-      if (a.publicKey.toString() === mangoAccount?.publicKey.toString())
-        return -1
+      // keeps the current selected mango account at the top of the list
+      // if (b.publicKey.toString() === mangoAccount?.publicKey.toString())
+      //   return 1
+      // if (a.publicKey.toString() === mangoAccount?.publicKey.toString())
+      //   return -1
       return b.getEquity(group).toNumber() - a.getEquity(group).toNumber()
     })
   }, [group, mangoAccounts])

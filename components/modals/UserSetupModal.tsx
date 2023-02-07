@@ -30,7 +30,6 @@ import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import WalletIcon from '../icons/WalletIcon'
-import { walletBalanceForToken } from '../DepositForm'
 import ParticlesBackground from '../ParticlesBackground'
 // import EditNftProfilePic from '../profile/EditNftProfilePic'
 // import EditProfileForm from '../profile/EditProfileForm'
@@ -43,7 +42,8 @@ import { useEnhancedWallet } from '../wallet/EnhancedWalletProvider'
 import Modal from '../shared/Modal'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { withValueLimit } from '@components/swap/SwapForm'
-import FormatNumericValue from '@components/shared/FormatNumericValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 
 const UserSetupModal = ({
   isOpen,
@@ -65,9 +65,9 @@ const UserSetupModal = ({
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
-  const walletTokens = mangoStore((s) => s.wallet.tokens)
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
+  const banks = useBanksWithBalances('walletBalance')
 
   useEffect(() => {
     if (connected) {
@@ -157,24 +157,8 @@ const UserSetupModal = ({
     }
   }, [mangoAccount, showSetupStep, onClose])
 
-  const banks = useMemo(() => {
-    const banks = group?.banksMapByName
-      ? Array.from(group?.banksMapByName, ([key, value]) => {
-          const walletBalance = walletBalanceForToken(walletTokens, key)
-          return {
-            key,
-            value,
-            tokenDecimals: walletBalance.maxDecimals,
-            walletBalance: walletBalance.maxAmount,
-            walletBalanceValue: walletBalance.maxAmount * value?.[0].uiPrice,
-          }
-        })
-      : []
-    return banks
-  }, [group?.banksMapByName, walletTokens])
-
   const depositBank = useMemo(() => {
-    return banks.find((b) => b.key === depositToken)?.value[0]
+    return banks.find((b) => b.bank.name === depositToken)?.bank
   }, [depositToken, banks])
 
   const exceedsAlphaMax = useMemo(() => {
@@ -195,9 +179,9 @@ const UserSetupModal = ({
   }, [depositAmount, depositBank, group])
 
   const tokenMax = useMemo(() => {
-    const bank = banks.find((bank) => bank.key === depositToken)
+    const bank = banks.find((b) => b.bank.name === depositToken)
     if (bank) {
-      return { amount: bank.walletBalance, decimals: bank.tokenDecimals }
+      return { amount: bank.walletBalance, decimals: bank.bank.mintDecimals }
     }
     return { amount: 0, decimals: 0 }
   }, [banks, depositToken])
@@ -481,7 +465,11 @@ const UserSetupModal = ({
                       <div className="flex justify-between px-2 py-4">
                         <p>{t('deposit-amount')}</p>
                         <p className="font-mono text-th-fgd-2">
-                          {depositAmount ? (
+                          <BankAmountWithValue
+                            amount={depositAmount}
+                            bank={depositBank}
+                          />
+                          {/* {depositAmount ? (
                             <>
                               <FormatNumericValue
                                 value={depositAmount}
@@ -506,7 +494,7 @@ const UserSetupModal = ({
                                 ($0.00)
                               </span>
                             </>
-                          )}
+                          )} */}
                         </p>
                       </div>
                     </div>
@@ -566,7 +554,6 @@ const UserSetupModal = ({
                       banks={banks}
                       onSelect={setDepositToken}
                       showDepositRates
-                      sortByKey="walletBalanceValue"
                       valueKey="walletBalance"
                     />
                   </div>

@@ -1,10 +1,10 @@
 import { TokenStatsItem } from '@store/mangoStore'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { formatYAxis } from 'utils/formatting'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -26,7 +26,7 @@ const TotalDepositBorrowCharts = ({
   const { t } = useTranslation(['common', 'token', 'trade'])
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
-  const { group } = useMangoGroup()
+  const banks = useBanksWithBalances()
 
   const totalDepositBorrowValues = useMemo(() => {
     if (!tokenStats) return []
@@ -82,28 +82,11 @@ const TotalDepositBorrowCharts = ({
     return totalDepositBorrowValues
   }, [totalDepositBorrowValues, depositDaysToShow])
 
-  const banks = useMemo(() => {
-    if (group) {
-      const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
-        key,
-        value,
-      }))
-      return rawBanks
-    }
-    return []
-  }, [group])
-
   const [currentTotalDepositValue, currentTotalBorrowValue] = useMemo(() => {
     if (banks.length) {
       return [
-        banks.reduce(
-          (a, c) => a + c.value[0].uiPrice * c.value[0].uiDeposits(),
-          0
-        ),
-        banks.reduce(
-          (a, c) => a + c.value[0].uiPrice * c.value[0].uiBorrows(),
-          0
-        ),
+        banks.reduce((a, c) => a + c.bank.uiPrice * c.bank.uiDeposits(), 0),
+        banks.reduce((a, c) => a + c.bank.uiPrice * c.bank.uiBorrows(), 0),
       ]
     }
     return [0, 0]

@@ -26,6 +26,8 @@ export const PRIORITY_FEES = [
   { label: 'High', value: 100000 },
 ]
 
+export const DEFAULT_PRIORITY_FEE = PRIORITY_FEES[1]
+
 const RpcSettings = () => {
   const { t } = useTranslation('settings')
   const actions = mangoStore.getState().actions
@@ -38,7 +40,7 @@ const RpcSettings = () => {
   )
   const [storedPriorityFee, setStoredPriorityFee] = useLocalStorageState(
     PRIORITY_FEE_KEY,
-    PRIORITY_FEES[2].value
+    DEFAULT_PRIORITY_FEE.value
   )
 
   const rpcEndpoint = useMemo(() => {
@@ -53,7 +55,7 @@ const RpcSettings = () => {
   const priorityFee = useMemo(() => {
     return (
       PRIORITY_FEES.find((node) => node.value === storedPriorityFee) ||
-      PRIORITY_FEES[2]
+      DEFAULT_PRIORITY_FEE
     )
   }, [storedPriorityFee])
 

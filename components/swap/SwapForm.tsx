@@ -47,6 +47,7 @@ import PercentageSelectButtons from './PercentageSelectButtons'
 import useIpAddress from 'hooks/useIpAddress'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import SwapSettings from './SwapSettings'
+import InlineNotification from '@components/shared/InlineNotification'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -59,7 +60,8 @@ const set = mangoStore.getState().set
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
-  const [selectedRoute, setSelectedRoute] = useState<RouteInfo>()
+  //initial state is undefined null is returned on error
+  const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showTokenSelect, setShowTokenSelect] = useState('')
   const [showSettings, setShowSettings] = useState(false)
@@ -132,16 +134,16 @@ const SwapForm = () => {
     depending on the swapMode and set those values in state
   */
   useEffect(() => {
-    if (bestRoute) {
+    if (typeof bestRoute !== 'undefined') {
       setSelectedRoute(bestRoute)
 
-      if (inputBank && swapMode === 'ExactOut') {
-        const inAmount = new Decimal(bestRoute.inAmount)
+      if (inputBank && swapMode === 'ExactOut' && bestRoute) {
+        const inAmount = new Decimal(bestRoute!.inAmount)
           .div(10 ** inputBank.mintDecimals)
           .toString()
         setAmountInFormValue(inAmount)
-      } else if (outputBank && swapMode === 'ExactIn') {
-        const outAmount = new Decimal(bestRoute.outAmount)
+      } else if (outputBank && swapMode === 'ExactIn' && bestRoute) {
+        const outAmount = new Decimal(bestRoute!.outAmount)
           .div(10 ** outputBank.mintDecimals)
           .toString()
         setAmountOutFormValue(outAmount)
@@ -263,7 +265,7 @@ const SwapForm = () => {
     return (
       !!(amountInAsDecimal.toNumber() || amountOutAsDecimal.toNumber()) &&
       connected &&
-      !selectedRoute
+      typeof selectedRoute === 'undefined'
     )
   }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
 
@@ -490,7 +492,7 @@ const SwapFormSubmitButton = ({
   amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
-  selectedRoute: RouteInfo | undefined
+  selectedRoute: RouteInfo | undefined | null
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
 }) => {
@@ -513,31 +515,38 @@ const SwapFormSubmitButton = ({
   const onClick = connected ? () => setShowConfirm(true) : handleConnect
 
   return (
-    <Button
-      onClick={onClick}
-      className="mt-6 mb-4 flex w-full items-center justify-center text-base"
-      disabled={disabled}
-      size="large"
-    >
-      {connected ? (
-        showInsufficientBalance ? (
-          <div className="flex items-center">
-            <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-            {t('swap:insufficient-balance', {
-              symbol: inputSymbol,
-            })}
-          </div>
-        ) : loadingSwapDetails ? (
-          <Loading />
+    <>
+      <Button
+        onClick={onClick}
+        className="mt-6 mb-4 flex w-full items-center justify-center text-base"
+        disabled={disabled}
+        size="large"
+      >
+        {connected ? (
+          showInsufficientBalance ? (
+            <div className="flex items-center">
+              <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+              {t('swap:insufficient-balance', {
+                symbol: inputSymbol,
+              })}
+            </div>
+          ) : loadingSwapDetails ? (
+            <Loading />
+          ) : (
+            <span>{t('swap:review-swap')}</span>
+          )
         ) : (
-          <span>{t('swap:review-swap')}</span>
-        )
-      ) : (
-        <div className="flex items-center">
-          <LinkIcon className="mr-2 h-5 w-5" />
-          {t('connect')}
+          <div className="flex items-center">
+            <LinkIcon className="mr-2 h-5 w-5" />
+            {t('connect')}
+          </div>
+        )}
+      </Button>
+      {selectedRoute === null && (
+        <div className="mb-4">
+          <InlineNotification type="error" desc={t('swap:no-swap-found')} />
         </div>
       )}
-    </Button>
+    </>
   )
 }

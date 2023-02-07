@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import { IconButton, LinkButton } from '../shared/Button'
@@ -20,6 +20,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import mangoStore from '@store/mangoStore'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -31,22 +32,12 @@ const TokenStats = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
+  const banks = useBanksWithBalances()
 
   useEffect(() => {
     if (group && !initialStatsLoad) {
       actions.fetchTokenStats()
     }
-  }, [group])
-
-  const banks = useMemo(() => {
-    if (group) {
-      const rawBanks = Array.from(group?.banksMapByName, ([key, value]) => ({
-        key,
-        value,
-      }))
-      return rawBanks.sort((a, b) => a.key.localeCompare(b.key))
-    }
-    return []
   }, [group])
 
   const handleShowTokenDetails = (name: string) => {
@@ -100,8 +91,8 @@ const TokenStats = () => {
             </TrHead>
           </thead>
           <tbody>
-            {banks.map(({ key, value }) => {
-              const bank: Bank = value[0]
+            {banks.map((b) => {
+              const bank: Bank = b.bank
 
               let logoURI
               if (mangoTokens?.length) {
@@ -115,7 +106,7 @@ const TokenStats = () => {
                 deposits - deposits * bank.minVaultToDepositsRatio - borrows
 
               return (
-                <TrBody key={key}>
+                <TrBody key={bank.name}>
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -153,6 +144,7 @@ const TokenStats = () => {
                       <BankAmountWithValue
                         amount={available}
                         bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>
@@ -213,8 +205,8 @@ const TokenStats = () => {
         </Table>
       ) : (
         <div>
-          {banks.map(({ key, value }) => {
-            const bank = value[0]
+          {banks.map((b) => {
+            const bank = b.bank
             let logoURI
             if (mangoTokens?.length) {
               logoURI = mangoTokens.find(
@@ -227,7 +219,10 @@ const TokenStats = () => {
             const available =
               deposits - deposits * bank.minVaultToDepositsRatio - borrows
             return (
-              <div key={key} className="border-b border-th-bkg-3 px-6 py-4">
+              <div
+                key={bank.name}
+                className="border-b border-th-bkg-3 px-6 py-4"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
