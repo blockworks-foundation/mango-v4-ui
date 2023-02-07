@@ -34,16 +34,15 @@ const formatFee = (value: number) => {
 const ActivityFeedTable = ({
   activityFeed,
   handleShowActivityDetails,
-  params,
 }: {
   activityFeed: any
   handleShowActivityDetails: (x: LiquidationFeedItem) => void
-  params: string
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const { mangoAccountAddress } = useMangoAccount()
-  const actions = mangoStore.getState().actions
+  const actions = mangoStore((s) => s.actions)
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
+  const queryParams = mangoStore((s) => s.activityFeed.queryParams)
   const [offset, setOffset] = useState(0)
   const { connected } = useWallet()
   const [preferredExplorer] = useLocalStorageState(
@@ -63,9 +62,9 @@ const ActivityFeedTable = ({
     actions.fetchActivityFeed(
       mangoAccountAddress,
       offset + PAGINATION_PAGE_LENGTH,
-      params
+      queryParams
     )
-  }, [actions, offset, params, mangoAccountAddress])
+  }, [actions, offset, queryParams, mangoAccountAddress])
 
   const getCreditAndDebit = (activity: any) => {
     const { activity_type } = activity
@@ -197,7 +196,7 @@ const ActivityFeedTable = ({
     <>
       {showTableView ? (
         <Table className="min-w-full">
-          <thead className="sticky top-0 z-10">
+          <thead>
             <TrHead>
               <Th className="bg-th-bkg-1 text-left">{t('date')}</Th>
               <Th className="bg-th-bkg-1 text-right">

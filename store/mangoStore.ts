@@ -236,6 +236,7 @@ export type MangoStore = {
   activityFeed: {
     feed: Array<DepositWithdrawFeedItem | LiquidationFeedItem>
     loading: boolean
+    queryParams: string
   }
   connected: boolean
   connection: Connection
@@ -381,6 +382,7 @@ const mangoStore = create<MangoStore>()(
       activityFeed: {
         feed: [],
         loading: true,
+        queryParams: '',
       },
       connected: false,
       connection,
@@ -589,11 +591,8 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.activityFeed.feed = combinedFeed
             })
-          } catch {
-            notify({
-              title: 'Failed to fetch account activity feed',
-              type: 'error',
-            })
+          } catch (e) {
+            console.log('Failed to fetch account activity feed', e)
           } finally {
             set((state) => {
               state.activityFeed.loading = false
