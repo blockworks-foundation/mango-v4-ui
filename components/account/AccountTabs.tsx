@@ -7,16 +7,18 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import mangoStore from '@store/mangoStore'
+import TradeHistory from '@components/trade/TradeHistory'
 import PerpPositions from '@components/trade/PerpPositions'
+import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import OpenOrders from '@components/trade/OpenOrders'
 import HistoryTabs from './HistoryTabs'
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
   const { width } = useViewport()
-  const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
+  const openPerpPositions = useOpenPerpPositions()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const isMobile = width ? width < breakpoints.lg : false
 
@@ -24,9 +26,6 @@ const AccountTabs = () => {
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
       unsettledPerpPositions?.length
-    const openPerpPositions = Object.values(perpPositions).filter((p) =>
-      p.basePositionLots.toNumber()
-    )
 
     return [
       ['balances', 0],
@@ -35,7 +34,7 @@ const AccountTabs = () => {
       ['trade:unsettled', unsettledTradeCount],
       ['history', 0],
     ]
-  }, [unsettledPerpPositions, unsettledSpotBalances])
+  }, [openPerpPositions, unsettledPerpPositions, unsettledSpotBalances])
 
   return (
     <>
