@@ -10,13 +10,14 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import TradeHistory from './TradeHistory'
+import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
-  const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
+  const openPerpPositions = useOpenPerpPositions()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints['2xl'] : false
 
@@ -24,9 +25,6 @@ const TradeInfoTabs = () => {
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
       unsettledPerpPositions?.length
-    const openPerpPositions = Object.values(perpPositions).filter((p) =>
-      p.basePositionLots.toNumber()
-    )
     return [
       ['balances', 0],
       ['trade:orders', Object.values(openOrders).flat().length],
@@ -34,7 +32,12 @@ const TradeInfoTabs = () => {
       ['trade:positions', openPerpPositions.length],
       ['trade-history', 0],
     ]
-  }, [openOrders, unsettledPerpPositions, unsettledSpotBalances, perpPositions])
+  }, [
+    openOrders,
+    unsettledPerpPositions,
+    unsettledSpotBalances,
+    openPerpPositions,
+  ])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll pb-5">
