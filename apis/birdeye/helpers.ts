@@ -1,6 +1,6 @@
 export const NEXT_PUBLIC_BIRDEYE_API_KEY =
   process.env.NEXT_PUBLIC_BIRDEYE_API_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2Njc1NTI4MzV9.FpbBT3M6GN_TKSJ8CarGeOMU5U7ZUvgZOIy8789m1bk'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NzM0NTE4MDF9.KTEqB1hrmZTMzk19rZNx9aesh2bIHj98Cb8sg5Ikz-Y'
 
 export const API_URL = 'https://public-api.birdeye.so/'
 
