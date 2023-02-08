@@ -29,7 +29,7 @@ const PerpPositions = () => {
   const { connected } = useWallet()
   const { mangoAccountAddress } = useMangoAccount()
 
-  const handlePositionClick = (positionSize: number) => {
+  const handlePositionClick = (positionSize: number, market: PerpMarket) => {
     const tradeForm = mangoStore.getState().tradeForm
     const set = mangoStore.getState().set
 
@@ -43,15 +43,15 @@ const PerpPositions = () => {
       )
     }
     const newSide = positionSize > 0 ? 'sell' : 'buy'
+    const quoteSize = floorToDecimal(
+      positionSize * price,
+      getDecimalCount(market.tickSize)
+    )
 
     set((s) => {
       s.tradeForm.side = newSide
       s.tradeForm.baseSize = positionSize.toString()
-      if (newSide === 'buy') {
-        s.tradeForm.quoteSize = (positionSize * price).toString()
-      } else {
-        s.tradeForm.quoteSize = (positionSize / price).toString()
-      }
+      s.tradeForm.quoteSize = quoteSize.toString()
     })
   }
 
@@ -122,7 +122,9 @@ const PerpPositions = () => {
                   <p className="flex justify-end">
                     {isSelectedMarket ? (
                       <LinkButton
-                        onClick={() => handlePositionClick(floorBasePosition)}
+                        onClick={() =>
+                          handlePositionClick(floorBasePosition, market)
+                        }
                       >
                         <FormatNumericValue
                           value={Math.abs(basePosition)}
