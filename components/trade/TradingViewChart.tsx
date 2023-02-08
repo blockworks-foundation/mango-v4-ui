@@ -61,7 +61,7 @@ function hexToRgb(hex: string) {
 }
 
 const TradingViewChart = () => {
-  const { t } = useTranslation('tv-chart')
+  const { t } = useTranslation(['tv-chart', 'trade'])
   const { theme } = useTheme()
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
@@ -280,7 +280,7 @@ const TradingViewChart = () => {
     }
   }, [showOrderLines])
 
-  // updated order lines if a user's open orders change
+  // update order lines if a user's open orders change
   useEffect(() => {
     let subscription
     if (chartReady && tvWidgetRef?.current) {
