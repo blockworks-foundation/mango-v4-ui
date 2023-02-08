@@ -35,10 +35,15 @@ type Props = {
 }
 
 const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
+  const socket = new WebSocket(socketUrl, 'echo-protocol')
+  const unsub_msg = {
+    type: 'UNSUBSCRIBE_PRICE',
+  }
   const { width } = useViewport()
   const { theme } = useTheme()
   const prevWidth = usePrevious(width)
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const [socketConnected, setSocketConnected] = useState(false)
   const selectedMarketName = selectedMarket?.name
   const [isTechnicalModalOpen, setIsTechnicalModalOpen] = useState(false)
   const [mainTechnicalIndicators, setMainTechnicalIndicators] = useState<
@@ -65,7 +70,6 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         time_from: from,
         time_to: to ? to : baseQuery.time_to,
       }
-      console.log(query)
       const response = await queryBars(query.address, query.type, {
         firstDataRequest: false,
         from: query.time_from,
@@ -94,7 +98,6 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     kLineChart: klinecharts.Chart,
     baseQuery: BASE_CHART_QUERY
   ) {
-    const socket = new WebSocket(socketUrl, 'echo-protocol')
     // Connection opened
     socket.addEventListener('open', (_event) => {
       console.log('[socket] Connected')
@@ -102,11 +105,8 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     socket.addEventListener('message', (msg) => {
       const data = JSON.parse(msg.data)
       if (data.type === 'WELLCOME') {
-        const unsub_msg = {
-          type: 'UNSUBSCRIBE_PRICE',
-        }
+        setSocketConnected(true)
         socket.send(JSON.stringify(unsub_msg))
-
         const msg = {
           type: 'SUBSCRIBE_PRICE',
           data: {
@@ -455,8 +455,12 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       setChart(kLineChart)
     }
     initKline()
+
     return () => {
       dispose('update-k-line')
+      if (socketConnected) {
+        socket.send(JSON.stringify(unsub_msg))
+      }
     }
   }, [])
 
