@@ -1,7 +1,7 @@
 {
-    "activity": "Activity Feed",
+    "activity": "Activity",
+    "activity-feed": "Activity Feed",
     "activity-type": "Activity Type",
-    "activity-value": "Activity Value",
     "advanced-filters": "Advanced Filters",
     "asset-liquidated": "Asset Liquidated",
     "asset-returned": "Asset Returned",
