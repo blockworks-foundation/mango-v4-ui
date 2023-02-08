@@ -1,6 +1,6 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
-import klinecharts, { init, dispose } from 'klinecharts'
+import klinecharts, { init, dispose, KLineData } from 'klinecharts'
 import { useViewport } from 'hooks/useViewport'
 import usePrevious from '@components/shared/usePrevious'
 import Modal from '@components/shared/Modal'
@@ -23,8 +23,11 @@ import { COLORS } from 'styles/colors'
 import { IconButton } from '@components/shared/Button'
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import { queryBars } from 'apis/birdeye/datafeed'
-
-const UPDATE_INTERVAL = 10000
+import {
+  getNextBarTime,
+  parseResolution,
+  socketUrl,
+} from 'apis/birdeye/helpers'
 
 type Props = {
   setIsFullView?: Dispatch<SetStateAction<boolean>>
@@ -50,7 +53,6 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   const [chart, setChart] = useState<klinecharts.Chart | null>(null)
   const previousChart = usePrevious(chart)
   const [baseChartQuery, setQuery] = useState<BASE_CHART_QUERY | null>(null)
-  const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
   const fetchData = async (baseQuery: BASE_CHART_QUERY, from: number) => {
     try {
       setIsLoading(true)
@@ -82,24 +84,67 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   }
 
   //update data every 10 secs
-  function updateData(
+  function setupSocket(
     kLineChart: klinecharts.Chart,
     baseQuery: BASE_CHART_QUERY
   ) {
-    if (clearTimerRef.current) {
-      clearInterval(clearTimerRef.current)
-    }
-    clearTimerRef.current = setTimeout(async () => {
-      if (kLineChart) {
-        const from = baseQuery.time_to - resolution.seconds
-        const newData = (await fetchData(baseQuery!, from))[0]
-        if (newData) {
-          newData.timestamp += UPDATE_INTERVAL
-          kLineChart.updateData(newData)
-          updateData(kLineChart, baseQuery)
+    const socket = new WebSocket(socketUrl, 'echo-protocol')
+    // Connection opened
+    socket.addEventListener('open', (_event) => {
+      console.log('[socket] Connected')
+    })
+    socket.addEventListener('message', (msg) => {
+      const data = JSON.parse(msg.data)
+      if (data.type === 'WELLCOME') {
+        const unsub_msg = {
+          type: 'UNSUBSCRIBE_PRICE',
         }
+
+        socket.send(JSON.stringify(unsub_msg))
+        const msg = {
+          type: 'SUBSCRIBE_PRICE',
+          data: {
+            chartType: parseResolution(baseQuery.type),
+            address: baseQuery.address,
+            currency: 'pair',
+          },
+        }
+        socket.send(JSON.stringify(msg))
       }
-    }, UPDATE_INTERVAL)
+      if (data.type === 'PRICE_DATA') {
+        const dataList = kLineChart.getDataList()
+        const currTime = data.data.unixTime * 1000
+        const lastBar = dataList[0]
+        const resolution = parseResolution(baseQuery.type)
+        const nextBarTime = getNextBarTime(lastBar, resolution)
+
+        let bar: KLineData
+
+        if (currTime >= nextBarTime) {
+          bar = {
+            timestamp: nextBarTime,
+            open: data.data.o,
+            high: data.data.h,
+            low: data.data.l,
+            close: data.data.c,
+            volume: data.data.v,
+          }
+        } else {
+          bar = {
+            ...lastBar,
+            high: Math.max(lastBar.high, data.data.h),
+            low: Math.min(lastBar.low, data.data.l),
+            close: data.data.c,
+            volume: data.data.v,
+          }
+        }
+        console.log({
+          lastBar,
+          bar,
+        })
+        kLineChart.updateData(bar)
+      }
+    })
   }
   const fetchFreshData = async (daysToSubtractFromToday: number) => {
     const from =
@@ -108,7 +153,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     if (chart) {
       chart.applyNewData(data)
       //after we fetch fresh data start to update data every x seconds
-      updateData(chart, baseChartQuery!)
+      setupSocket(chart, baseChartQuery!)
     }
   }
 
