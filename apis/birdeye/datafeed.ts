@@ -86,6 +86,7 @@ export const queryBars = async (
   if (!data.success || data.data.items.length === 0) {
     return []
   }
+  console.log(urlParameters, data)
   let bars: Bar[] = []
   for (const bar of data.data.items) {
     if (bar.unixTime >= from && bar.unixTime < to) {

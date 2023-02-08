@@ -53,13 +53,19 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   const [chart, setChart] = useState<klinecharts.Chart | null>(null)
   const previousChart = usePrevious(chart)
   const [baseChartQuery, setQuery] = useState<BASE_CHART_QUERY | null>(null)
-  const fetchData = async (baseQuery: BASE_CHART_QUERY, from: number) => {
+  const fetchData = async (
+    baseQuery: BASE_CHART_QUERY,
+    from: number,
+    to?: number
+  ) => {
     try {
       setIsLoading(true)
       const query: CHART_QUERY = {
         ...baseQuery,
         time_from: from,
+        time_to: to ? to : baseQuery.time_to,
       }
+      console.log(query)
       const response = await queryBars(query.address, query.type, {
         firstDataRequest: false,
         from: query.time_from,
@@ -99,8 +105,8 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         const unsub_msg = {
           type: 'UNSUBSCRIBE_PRICE',
         }
-
         socket.send(JSON.stringify(unsub_msg))
+
         const msg = {
           type: 'SUBSCRIBE_PRICE',
           data: {
@@ -114,10 +120,10 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       if (data.type === 'PRICE_DATA') {
         const dataList = kLineChart.getDataList()
         const currTime = data.data.unixTime * 1000
-        const lastBar = dataList[0]
+        const lastBar = dataList[dataList.length - 1] as any
+        lastBar.time = lastBar.timestamp
         const resolution = parseResolution(baseQuery.type)
         const nextBarTime = getNextBarTime(lastBar, resolution)
-
         let bar: KLineData
 
         if (currTime >= nextBarTime) {
@@ -138,10 +144,6 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
             volume: data.data.v,
           }
         }
-        console.log({
-          lastBar,
-          bar,
-        })
         kLineChart.updateData(bar)
       }
     })
@@ -171,15 +173,26 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   //when base query change we refetch with fresh data
   useEffect(() => {
     if (chart && baseChartQuery) {
-      fetchFreshData(14)
+      //becuase bird eye send onlu 1k records at one time
+      //we query for lower amounts of days at the start
+      const halfDayThreshold = ['1', '3']
+      const twoDaysThreshold = ['5', '15', '30']
+      const daysToSub = halfDayThreshold.includes(baseChartQuery.type)
+        ? 0.5
+        : twoDaysThreshold.includes(baseChartQuery.type)
+        ? 2
+        : 5
+      fetchFreshData(daysToSub)
       //add callback to fetch more data when zoom out
-      chart.loadMore(() => {
+      chart.loadMore(async (timestap) => {
         try {
-          fetchFreshData(365)
+          const unixTime = timestap / 1000
+          const from = unixTime - ONE_DAY_SECONDS * daysToSub
+          const data = await fetchData(baseChartQuery!, from, unixTime)
+          chart.applyMoreData(data)
         } catch (e) {
           console.error('Error fetching new data')
         }
-        chart.loadMore(() => null)
       })
     }
   }, [baseChartQuery])
