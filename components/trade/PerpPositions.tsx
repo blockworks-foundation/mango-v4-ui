@@ -105,9 +105,9 @@ const PerpPositions = () => {
 
               if (!basePosition) return null
 
-              const unsettledPnl = position.getUnsettledPnlUi(group, market)
+              const unsettledPnl = position.getUnsettledPnlUi(market)
               const cummulativePnl =
-                position.cumulativePnlOverPositionLifetimeUi(group, market)
+                position.cumulativePnlOverPositionLifetimeUi(market)
 
               return (
                 <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
