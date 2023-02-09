@@ -141,14 +141,14 @@ const PerpPositions = () => {
                 </Td>
                 <Td className="text-right font-mono">
                   <FormatNumericValue
-                    value={floorBasePosition * market._uiPrice}
-                    decimals={2}
+                    value={Math.abs(floorBasePosition) * market._uiPrice}
                     isUsd
                   />
                 </Td>
                 <Td className="text-right font-mono">
                   <FormatNumericValue
                     value={position.getAverageEntryPriceUi(market)}
+                    decimals={getDecimalCount(market.tickSize)}
                     isUsd
                   />
                 </Td>
