@@ -459,7 +459,9 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     return () => {
       dispose('update-k-line')
       if (socketConnected) {
+        console.log('[socket] disconnected')
         socket.send(JSON.stringify(unsub_msg))
+        socket.close()
       }
     }
   }, [])
