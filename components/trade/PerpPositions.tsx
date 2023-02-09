@@ -72,114 +72,114 @@ const PerpPositions = () => {
   )
 
   return mangoAccountAddress && openPerpPositions.length ? (
-    <div>
-      <Table>
-        <thead>
-          <TrHead>
-            <Th className="text-left">{t('market')}</Th>
-            <Th className="text-right">{t('trade:side')}</Th>
-            <Th className="text-right">{t('trade:size')}</Th>
-            <Th className="text-right">{t('trade:notional')}</Th>
-            <Th className="text-right">{t('trade:entry-price')}</Th>
-            <Th className="text-right">{`${t('trade:unsettled')} ${t(
-              'pnl'
-            )}`}</Th>
-            <Th className="text-right">{t('pnl')}</Th>
-            <Th />
-          </TrHead>
-        </thead>
-        <tbody>
-          {openPerpPositions.map((position) => {
-            const market = group.getPerpMarketByMarketIndex(
-              position.marketIndex
-            )
-            const basePosition = position.getBasePositionUi(market)
-            const floorBasePosition = floorToDecimal(
-              basePosition,
-              getDecimalCount(market.minOrderSize)
-            ).toNumber()
-            const isSelectedMarket =
-              selectedMarket instanceof PerpMarket &&
-              selectedMarket.perpMarketIndex === position.marketIndex
+    <>
+      <div className="thin-scroll overflow-x-auto">
+        <Table>
+          <thead>
+            <TrHead>
+              <Th className="text-left">{t('market')}</Th>
+              <Th className="text-right">{t('trade:side')}</Th>
+              <Th className="text-right">{t('trade:size')}</Th>
+              <Th className="text-right">{t('trade:notional')}</Th>
+              <Th className="text-right">{t('trade:entry-price')}</Th>
+              <Th className="text-right">{`${t('trade:unsettled')} ${t(
+                'pnl'
+              )}`}</Th>
+              <Th className="text-right">{t('pnl')}</Th>
+              <Th />
+            </TrHead>
+          </thead>
+          <tbody>
+            {openPerpPositions.map((position) => {
+              const market = group.getPerpMarketByMarketIndex(
+                position.marketIndex
+              )
+              const basePosition = position.getBasePositionUi(market)
+              const floorBasePosition = floorToDecimal(
+                basePosition,
+                getDecimalCount(market.minOrderSize)
+              ).toNumber()
+              const isSelectedMarket =
+                selectedMarket instanceof PerpMarket &&
+                selectedMarket.perpMarketIndex === position.marketIndex
 
-            if (!basePosition) return null
+              if (!basePosition) return null
 
-            const unsettledPnl = position.getUnsettledPnlUi(group, market)
-            const cummulativePnl = position.cumulativePnlOverPositionLifetimeUi(
-              group,
-              market
-            )
+              const unsettledPnl = position.getUnsettledPnlUi(group, market)
+              const cummulativePnl =
+                position.cumulativePnlOverPositionLifetimeUi(group, market)
 
-            return (
-              <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
-                <Td>
-                  <TableMarketName market={market} />
-                </Td>
-                <Td className="text-right">
-                  <PerpSideBadge basePosition={basePosition} />
-                </Td>
-                <Td className="text-right font-mono">
-                  <p className="flex justify-end">
-                    {isSelectedMarket ? (
-                      <LinkButton
-                        onClick={() =>
-                          handlePositionClick(floorBasePosition, market)
-                        }
-                      >
+              return (
+                <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
+                  <Td>
+                    <TableMarketName market={market} />
+                  </Td>
+                  <Td className="text-right">
+                    <PerpSideBadge basePosition={basePosition} />
+                  </Td>
+                  <Td className="text-right font-mono">
+                    <p className="flex justify-end">
+                      {isSelectedMarket ? (
+                        <LinkButton
+                          onClick={() =>
+                            handlePositionClick(floorBasePosition, market)
+                          }
+                        >
+                          <FormatNumericValue
+                            value={Math.abs(basePosition)}
+                            decimals={getDecimalCount(market.minOrderSize)}
+                          />
+                        </LinkButton>
+                      ) : (
                         <FormatNumericValue
                           value={Math.abs(basePosition)}
                           decimals={getDecimalCount(market.minOrderSize)}
                         />
-                      </LinkButton>
-                    ) : (
-                      <FormatNumericValue
-                        value={Math.abs(basePosition)}
-                        decimals={getDecimalCount(market.minOrderSize)}
-                      />
-                    )}
-                  </p>
-                </Td>
-                <Td className="text-right font-mono">
-                  <FormatNumericValue
-                    value={Math.abs(floorBasePosition) * market._uiPrice}
-                    isUsd
-                  />
-                </Td>
-                <Td className="text-right font-mono">
-                  <FormatNumericValue
-                    value={position.getAverageEntryPriceUi(market)}
-                    decimals={getDecimalCount(market.tickSize)}
-                    isUsd
-                  />
-                </Td>
-                <Td className={`text-right font-mono`}>
-                  <FormatNumericValue
-                    value={unsettledPnl}
-                    decimals={market.baseDecimals}
-                  />
-                </Td>
-                <Td
-                  className={`text-right font-mono ${
-                    cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
-                  }`}
-                >
-                  <FormatNumericValue value={cummulativePnl} isUsd />
-                </Td>
-                <Td className={`text-right`}>
-                  <Button
-                    className="text-xs"
-                    secondary
-                    size="small"
-                    onClick={() => showClosePositionModal(position)}
+                      )}
+                    </p>
+                  </Td>
+                  <Td className="text-right font-mono">
+                    <FormatNumericValue
+                      value={Math.abs(floorBasePosition) * market._uiPrice}
+                      isUsd
+                    />
+                  </Td>
+                  <Td className="text-right font-mono">
+                    <FormatNumericValue
+                      value={position.getAverageEntryPriceUi(market)}
+                      decimals={getDecimalCount(market.tickSize)}
+                      isUsd
+                    />
+                  </Td>
+                  <Td className={`text-right font-mono`}>
+                    <FormatNumericValue
+                      value={unsettledPnl}
+                      decimals={market.baseDecimals}
+                    />
+                  </Td>
+                  <Td
+                    className={`text-right font-mono ${
+                      cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
+                    }`}
                   >
-                    Close
-                  </Button>
-                </Td>
-              </TrBody>
-            )
-          })}
-        </tbody>
-      </Table>
+                    <FormatNumericValue value={cummulativePnl} isUsd />
+                  </Td>
+                  <Td className={`text-right`}>
+                    <Button
+                      className="text-xs"
+                      secondary
+                      size="small"
+                      onClick={() => showClosePositionModal(position)}
+                    >
+                      Close
+                    </Button>
+                  </Td>
+                </TrBody>
+              )
+            })}
+          </tbody>
+        </Table>
+      </div>
       {showMarketCloseModal && positionToClose ? (
         <MarketCloseModal
           isOpen={showMarketCloseModal}
@@ -187,7 +187,7 @@ const PerpPositions = () => {
           position={positionToClose}
         />
       ) : null}
-    </div>
+    </>
   ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
