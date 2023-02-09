@@ -7,7 +7,11 @@ import useInterval from '@components/shared/useInterval'
 import isEqual from 'lodash/isEqual'
 import usePrevious from '@components/shared/usePrevious'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatNumericValue,
+  getDecimalCount,
+} from 'utils/numbers'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
@@ -543,7 +547,10 @@ const Orderbook = () => {
               </div>
             </div>
             <div className="col-span-1 text-right font-mono">
-              {orderbookData?.spread.toFixed(2)}
+              {formatNumericValue(
+                orderbookData?.spread,
+                market ? getDecimalCount(market.tickSize) : undefined
+              )}
             </div>
           </div>
         ) : null}
