@@ -67,7 +67,6 @@ export function subscribeOnStream(
       currency: symbolInfo.type || 'usd',
     },
   }
-  console.log(msg)
   socket.send(JSON.stringify(msg))
 }
 
