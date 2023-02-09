@@ -726,7 +726,7 @@ const mangoStore = create<MangoStore>()(
             }
 
             if (newSelectedMangoAccount) {
-              await newSelectedMangoAccount.reloadAccountData(client)
+              await newSelectedMangoAccount.reloadSerum3OpenOrders(client)
               set((state) => {
                 state.mangoAccount.current = newSelectedMangoAccount
                 state.mangoAccount.initialLoad = false
@@ -735,7 +735,7 @@ const mangoStore = create<MangoStore>()(
             }
 
             await Promise.all(
-              mangoAccounts.map((ma) => ma.reloadAccountData(client))
+              mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client))
             )
 
             set((state) => {
