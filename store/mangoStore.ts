@@ -49,6 +49,7 @@ import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
+import { EntityId } from '@public/charting_library/charting_library'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -317,6 +318,9 @@ export type MangoStore = {
     data: TokenStatsItem[] | null
   }
   tradeForm: TradeForm
+  tradingView: {
+    stablePriceLine: Map<string, EntityId> | undefined
+  }
   wallet: {
     tokens: TokenAccount[]
     nfts: {
@@ -461,6 +465,9 @@ const mangoStore = create<MangoStore>()(
         data: [],
       },
       tradeForm: DEFAULT_TRADE_FORM,
+      tradingView: {
+        stablePriceLine: new Map(),
+      },
       wallet: {
         tokens: [],
         nfts: {

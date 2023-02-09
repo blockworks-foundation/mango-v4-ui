@@ -5,13 +5,21 @@ import {
   ChartingLibraryWidgetOptions,
   IChartingLibraryWidget,
   ResolutionString,
+  EntityId,
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
-import { CHART_DATA_FEED, DEFAULT_MARKET_NAME } from 'utils/constants'
+import {
+  CHART_DATA_FEED,
+  DEFAULT_MARKET_NAME,
+  SHOW_STABLE_PRICE_KEY,
+} from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
 import Datafeed from 'apis/birdeye/datafeed'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { useTranslation } from 'next-i18next'
+import useStablePrice from 'hooks/useStablePrice'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -29,12 +37,30 @@ export interface ChartContainerProps {
   theme: string
 }
 
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  return result
+    ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(
+        result[3],
+        16
+      )})`
+    : null
+}
+
 const TradingViewChart = () => {
+  const { t } = useTranslation('tv-chart')
   const { theme } = useTheme()
   const { width } = useViewport()
 
   const [chartReady, setChartReady] = useState(false)
   const [spotOrPerp, setSpotOrPerp] = useState('spot')
+  const [showStablePriceLocalStorage, toggleShowStablePriceLocalStorage] =
+    useLocalStorageState(SHOW_STABLE_PRICE_KEY, false)
+  const [showStablePrice, toggleShowStablePrice] = useState(
+    showStablePriceLocalStorage
+  )
+  const stablePrice = useStablePrice()
+  const stablePriceLine = mangoStore((s) => s.tradingView.stablePriceLine)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const isMobile = width ? width < breakpoints.sm : false
 
@@ -117,6 +143,97 @@ const TradingViewChart = () => {
       }
     }
   }, [selectedMarketName, chartReady])
+
+  const createStablePriceButton = () => {
+    const button = tvWidgetRef?.current?.createButton()
+    if (!button) {
+      return
+    }
+    button.textContent = 'SP'
+    if (showStablePriceLocalStorage) {
+      button.style.color = COLORS.ACTIVE[theme]
+    } else {
+      button.style.color = COLORS.FGD4[theme]
+    }
+    button.setAttribute('title', t('tv-chart:toggle-stable-price'))
+    button.addEventListener('click', toggleStablePrice)
+  }
+
+  function toggleStablePrice(this: HTMLElement) {
+    toggleShowStablePrice((prevState: boolean) => !prevState)
+    if (this.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
+      this.style.color = COLORS.FGD4[theme]
+    } else {
+      this.style.color = COLORS.ACTIVE[theme]
+    }
+  }
+
+  useEffect(() => {
+    if (showStablePrice !== showStablePriceLocalStorage) {
+      toggleShowStablePriceLocalStorage(showStablePrice)
+    }
+  }, [showStablePrice])
+
+  useEffect(() => {
+    if (tvWidgetRef.current && chartReady) {
+      if (stablePriceLine) {
+        removeStablePrice(stablePriceLine)
+      }
+      if (showStablePrice && stablePrice) {
+        const set = mangoStore.getState().set
+        set((s) => {
+          s.tradingView.stablePriceLine = drawStablePriceLine(stablePrice)
+        })
+      }
+    }
+  }, [stablePrice, showStablePrice, chartReady, tvWidgetRef])
+
+  function drawStablePriceLine(price: number) {
+    if (!tvWidgetRef?.current?.chart()) return
+    const newStablePrice: Map<string, EntityId> = new Map()
+    const now = Date.now() / 1000
+    try {
+      const id = tvWidgetRef.current.chart().createShape(
+        { time: now, price: price },
+        {
+          shape: 'horizontal_line',
+          overrides: {
+            linecolor: COLORS.FGD4[theme],
+            linestyle: 1,
+            linewidth: 1,
+          },
+        }
+      )
+
+      if (id) {
+        try {
+          newStablePrice.set(`${now}${price}`, id)
+        } catch (error) {
+          console.log('failed to set stable price line')
+        }
+      } else {
+        console.log('failed to create stable price line')
+      }
+    } catch {
+      console.log('failed to create stable price line')
+    }
+    return newStablePrice
+  }
+
+  const removeStablePrice = (stablePrice: Map<string, EntityId>) => {
+    if (!tvWidgetRef?.current?.chart()) return
+    const set = mangoStore.getState().set
+    for (const val of stablePrice.values()) {
+      try {
+        tvWidgetRef.current.chart().removeEntity(val)
+      } catch (error) {
+        console.log('stable price could not be removed')
+      }
+    }
+    set((s) => {
+      s.tradingView.stablePriceLine = new Map()
+    })
+  }
 
   useEffect(() => {
     if (
@@ -218,6 +335,13 @@ const TradingViewChart = () => {
       tvWidgetRef.current = tvWidget
 
       tvWidgetRef.current.onChartReady(function () {
+        if (showStablePrice && stablePrice) {
+          const set = mangoStore.getState().set
+          set((s) => {
+            s.tradingView.stablePriceLine = drawStablePriceLine(stablePrice)
+          })
+        }
+        createStablePriceButton()
         setChartReady(true)
       })
       //eslint-disable-next-line
