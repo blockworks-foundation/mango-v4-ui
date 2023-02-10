@@ -68,42 +68,12 @@ const MangoPerpStatsCharts = () => {
     return values.reverse()
   }, [perpStats])
 
-  const filteredOiValues = useMemo(() => {
-    if (!totalOpenInterestValues.length) return []
-    if (oiDaysToShow !== '30') {
-      const seconds = Number(oiDaysToShow) * 86400
-      const data = totalOpenInterestValues.filter((d: OiValueItem) => {
-        const dataTime = new Date(d.date).getTime() / 1000
-        const now = new Date().getTime() / 1000
-        const limit = now - seconds
-        return dataTime >= limit
-      })
-      return data
-    }
-    return totalOpenInterestValues
-  }, [totalOpenInterestValues, oiDaysToShow])
-
-  const filteredFeesValues = useMemo(() => {
-    if (!totalFeeValues.length) return []
-    if (feesDaysToShow !== '30') {
-      const seconds = Number(feesDaysToShow) * 86400
-      const data = totalFeeValues.filter((d: FeeValueItem) => {
-        const dataTime = new Date(d.date).getTime() / 1000
-        const now = new Date().getTime() / 1000
-        const limit = now - seconds
-        return dataTime >= limit
-      })
-      return data
-    }
-    return totalFeeValues
-  }, [totalFeeValues, feesDaysToShow])
-
   return (
     <>
-      {totalFeeValues.length ? (
+      {totalOpenInterestValues.length ? (
         <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
           <DetailedAreaChart
-            data={filteredOiValues}
+            data={totalOpenInterestValues}
             daysToShow={oiDaysToShow}
             setDaysToShow={setOiDaysToShow}
             heightClass="h-64"
@@ -117,10 +87,10 @@ const MangoPerpStatsCharts = () => {
           />
         </div>
       ) : null}
-      {totalOpenInterestValues.length ? (
+      {totalFeeValues.length ? (
         <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
           <DetailedAreaChart
-            data={filteredFeesValues}
+            data={totalFeeValues}
             daysToShow={feesDaysToShow}
             setDaysToShow={setFeesDaysToShow}
             heightClass="h-64"
