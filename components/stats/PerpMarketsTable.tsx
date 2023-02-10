@@ -15,6 +15,7 @@ import { IconButton } from '@components/shared/Button'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { getDecimalCount } from 'utils/numbers'
+import Tooltip from '@components/shared/Tooltip'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -60,7 +61,14 @@ const PerpMarketsTable = ({
             <TrHead>
               <Th className="text-left">{t('market')}</Th>
               <Th className="text-right">{t('price')}</Th>
-              <Th className="hidden text-right lg:block"></Th>
+              <Th className="text-right"></Th>
+              <Th className="text-right">
+                <Tooltip content={t('trade:tooltip-stable-price')}>
+                  <span className="tooltip-underline">
+                    {t('trade:stable-price')}
+                  </span>
+                </Tooltip>
+              </Th>
               <Th className="text-right">{t('trade:funding-rate')}</Th>
               <Th className="text-right">{t('trade:open-interest')}</Th>
               <Th className="text-right">{t('rolling-change')}</Th>
@@ -97,7 +105,9 @@ const PerpMarketsTable = ({
                   <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market} />
-                      <p className="font-body">{market.name}</p>
+                      <p className="whitespace-nowrap font-body">
+                        {market.name}
+                      </p>
                     </div>
                   </Td>
                   <Td>
@@ -129,6 +139,16 @@ const PerpMarketsTable = ({
                     ) : (
                       <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
                     )}
+                  </Td>
+                  <Td>
+                    <div className="flex flex-col text-right">
+                      <p>
+                        <FormatNumericValue
+                          value={market.stablePriceModel.stablePrice}
+                          isUsd
+                        />
+                      </p>
+                    </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
