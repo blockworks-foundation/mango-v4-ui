@@ -1,7 +1,7 @@
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { PerpStatsItem } from '@store/mangoStore'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -34,9 +34,9 @@ const MangoPerpStatsCharts = () => {
   // }, [perpMarkets])
 
   const totalFeeValues = useMemo(() => {
-    if (!perpStats.length) return []
-    const values = perpStats.reduce((a, c) => {
-      const hasDate = a.find((d: any) => d.date === c.date_hour)
+    if (!perpStats || !perpStats.length) return []
+    const values = perpStats.reduce((a: FeeValueItem[], c: PerpStatsItem) => {
+      const hasDate = a.find((d: FeeValueItem) => d.date === c.date_hour)
       if (!hasDate) {
         a.push({
           date: c.date_hour,
@@ -51,9 +51,9 @@ const MangoPerpStatsCharts = () => {
   }, [perpStats])
 
   const totalOpenInterestValues = useMemo(() => {
-    if (!perpStats) return []
-    const values = perpStats.reduce((a, c) => {
-      const hasDate = a.find((d: any) => d.date === c.date_hour)
+    if (!perpStats || !perpStats.length) return []
+    const values = perpStats.reduce((a: OiValueItem[], c: PerpStatsItem) => {
+      const hasDate = a.find((d: OiValueItem) => d.date === c.date_hour)
       if (!hasDate) {
         a.push({
           date: c.date_hour,
