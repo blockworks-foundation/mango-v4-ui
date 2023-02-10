@@ -126,7 +126,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
 
   const setMax = useCallback(() => {
     const max = floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals)
-    setInputAmount(max.toString())
+    setInputAmount(max.toFixed())
     setSizePercentage('100')
   }, [tokenMax])
 
@@ -137,7 +137,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         new Decimal(tokenMax.maxAmount).mul(percentage).div(100),
         tokenMax.maxDecimals
       )
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed())
     },
     [tokenMax]
   )

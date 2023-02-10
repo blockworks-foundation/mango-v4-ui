@@ -92,7 +92,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       bank.mintDecimals,
       Decimal.ROUND_UP
     )
-    setInputAmount(amount.toString())
+    setInputAmount(amount.toFixed())
     setSizePercentage('100')
   }, [bank, borrowAmount])
 
@@ -105,7 +105,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         .div(100)
         .toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
 
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed())
     },
     [bank, borrowAmount]
   )
