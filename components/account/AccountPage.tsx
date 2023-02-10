@@ -16,11 +16,7 @@ const SimpleAreaChart = dynamic(
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../shared/Button'
-import {
-  ArrowsPointingOutIcon,
-  ChartBarIcon,
-  ClockIcon,
-} from '@heroicons/react/20/solid'
+import { ArrowsPointingOutIcon, ChartBarIcon } from '@heroicons/react/20/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
 import SheenLoader from '../shared/SheenLoader'
@@ -271,7 +267,7 @@ const AccountPage = () => {
             </div>
             <div className="flex items-center space-x-1.5">
               <Change change={accountValueChange} prefix="$" />
-              <p className="text-th-fgd-4">{t('today')}</p>
+              <p className="text-th-fgd-4">24h Change</p>
             </div>
           </div>
           {performanceInitialLoad ? (
@@ -467,7 +463,7 @@ const AccountPage = () => {
                       </IconButton>
                     </Tooltip>
                   ) : null}
-                  <Tooltip content={t('account:pnl-history')} delay={250}>
+                  {/* <Tooltip content={t('account:pnl-history')} delay={250}>
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
@@ -475,7 +471,7 @@ const AccountPage = () => {
                     >
                       <ClockIcon className="h-5 w-5" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
                 </div>
               ) : null}
             </div>
@@ -486,10 +482,10 @@ const AccountPage = () => {
                 isUsd={true}
               />
             </p>
-            <div className="flex space-x-1">
+            {/* <div className="flex space-x-1">
               <Change change={oneDayPnlChange} prefix="$" size="small" />
               <p className="text-xs text-th-fgd-4">{t('today')}</p>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="col-span-5 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0">
