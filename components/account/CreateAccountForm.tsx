@@ -62,13 +62,13 @@ const CreateAccountForm = ({
         const pk = wallet.adapter.publicKey
         const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
         const reloadedMangoAccounts = await Promise.all(
-          mangoAccounts.map((ma) => ma.reloadAccountData(client))
+          mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client))
         )
         const newAccount = mangoAccounts.find(
           (acc) => acc.accountNum === newAccountNum
         )
         if (newAccount) {
-          await newAccount.reloadAccountData(client)
+          await newAccount.reloadSerum3OpenOrders(client)
           set((s) => {
             s.mangoAccount.current = newAccount
             s.mangoAccounts = reloadedMangoAccounts

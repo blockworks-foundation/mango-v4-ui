@@ -82,7 +82,7 @@ const HydrateStore = () => {
             mangoAccount.publicKey,
             decodedMangoAccount
           )
-          await newMangoAccount.reloadAccountData(client)
+          await newMangoAccount.reloadSerum3OpenOrders(client)
           actions.fetchOpenOrders()
           // newMangoAccount.spotOpenOrdersAccounts =
           //   mangoAccount.spotOpenOrdersAccounts
@@ -120,7 +120,7 @@ const ReadOnlyMangoAccount = () => {
         const client = mangoStore.getState().client
         const pk = new PublicKey(ma)
         const readOnlyMangoAccount = await client.getMangoAccount(pk)
-        await readOnlyMangoAccount.reloadAccountData(client)
+        await readOnlyMangoAccount.reloadSerum3OpenOrders(client)
         await actions.fetchOpenOrders(readOnlyMangoAccount)
         set((state) => {
           state.mangoAccount.current = readOnlyMangoAccount

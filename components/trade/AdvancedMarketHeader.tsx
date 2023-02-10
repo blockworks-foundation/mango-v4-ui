@@ -1,11 +1,13 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { IconButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
+import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
 import { ChartBarIcon } from '@heroicons/react/20/solid'
+import mangoStore from '@store/mangoStore'
 import { useCoingecko } from 'hooks/useCoingecko'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { getDecimalCount } from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
@@ -18,23 +20,38 @@ const AdvancedMarketHeader = ({
   setShowChart?: (x: boolean) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
+  const perpStats = mangoStore((s) => s.perpStats.data)
   const { serumOrPerpMarket, baseSymbol, price } = useSelectedMarket()
+  const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
   const { data: tokenPrices } = useCoingecko()
 
-  const coingeckoData = useMemo(() => {
-    return tokenPrices.find(
-      (asset) => asset.symbol.toUpperCase() === baseSymbol?.toUpperCase()
-    )
-  }, [baseSymbol, tokenPrices])
+  useEffect(() => {
+    if (serumOrPerpMarket instanceof PerpMarket) {
+      const actions = mangoStore.getState().actions
+      actions.fetchPerpStats()
+    }
+  }, [serumOrPerpMarket])
+
+  const changeData = useMemo(() => {
+    if (serumOrPerpMarket instanceof PerpMarket) {
+      return getOneDayPerpStats(perpStats, selectedMarketName)
+    } else {
+      return tokenPrices.find(
+        (asset) => asset.symbol.toUpperCase() === baseSymbol?.toUpperCase()
+      )
+    }
+  }, [baseSymbol, perpStats, serumOrPerpMarket, tokenPrices])
 
   const change = useMemo(() => {
-    return coingeckoData
-      ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
-          coingeckoData.prices[0][1]) /
-          coingeckoData.prices[0][1]) *
-          100
-      : 0
-  }, [coingeckoData])
+    if (!changeData || !price || !serumOrPerpMarket) return 0
+    if (serumOrPerpMarket instanceof PerpMarket) {
+      return changeData.length
+        ? ((price - changeData[0].price) / changeData[0].price) * 100
+        : 0
+    } else {
+      return ((price - changeData.prices[0][1]) / changeData.prices[0][1]) * 100
+    }
+  }, [changeData, price, serumOrPerpMarket])
 
   return (
     <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">

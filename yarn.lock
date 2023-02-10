@@ -23,8 +23,8 @@
     regenerator-runtime "^0.13.11"
 
 "@blockworks-foundation/mango-v4@https://github.com/blockworks-foundation/mango-v4.git#ts-client":
-  version "0.0.1-beta.6"
-  resolved "https://github.com/blockworks-foundation/mango-v4.git#2f754115d06745282b863e7a905bdb25bf85d309"
+  version "0.4.3"
+  resolved "https://github.com/blockworks-foundation/mango-v4.git#35763da947e3b15175dcee5c81633e409803b2f7"
   dependencies:
     "@project-serum/anchor" "^0.25.0"
     "@project-serum/serum" "^0.13.65"
@@ -369,9 +369,9 @@
     sha.js "^2.4.11"
 
 "@noble/ed25519@^1.7.0":
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/@noble/ed25519/-/ed25519-1.7.1.tgz#6899660f6fbb97798a6fbd227227c4589a454724"
-  integrity sha512-Rk4SkJFaXZiznFyC/t77Q0NKS4FL7TLJJsVG2V2oiEq3kJVeTdxysEe/yRWSpnWMe808XRDJ+VFh5pt/FN5plw==
+  version "1.7.3"
+  resolved "https://registry.yarnpkg.com/@noble/ed25519/-/ed25519-1.7.3.tgz#57e1677bf6885354b466c38e2b620c62f45a7123"
+  integrity sha512-iR8GBkDt0Q3GyaVcIu7mSsVIqnFbkbRzGLWlvhwunacoLwt4J3swfKhfaM6rN6WY+TBGoYT1GtT1mIh2/jGbRQ==
 
 "@noble/hashes@^1.1.2":
   version "1.2.0"
@@ -1509,9 +1509,9 @@
   integrity sha512-evMDG1bC4rgQg4ku9tKpuMh5iBNEwNa3tf9zRHdP1qlv+1WUg44xat4IxCE14gIpZRGUUWAx2VhItCZc25NfMA==
 
 "@types/node@*":
-  version "18.11.18"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.18.tgz#8dfb97f0da23c2293e554c5a50d61ef134d7697f"
-  integrity sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==
+  version "18.13.0"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.13.0.tgz#0400d1e6ce87e9d3032c19eb6c58205b0d3f7850"
+  integrity sha512-gC3TazRzGoOnoKAhUx+Q0t8S9Tzs74z7m0ipwGpSqQrleP14hKxP4/JUeEQcD3W1/aIpnWl8pHowI7WokuZpXg==
 
 "@types/node@17.0.23":
   version "17.0.23"
@@ -2313,9 +2313,9 @@ bin-links@4.0.1:
     write-file-atomic "^5.0.0"
 
 binance-api-node@^0.12.0:
-  version "0.12.2"
-  resolved "https://registry.yarnpkg.com/binance-api-node/-/binance-api-node-0.12.2.tgz#a7f9b8d94c2d75f64cb709d7b041b80da1e0e79d"
-  integrity sha512-X9zKjYhcp+smUMxmZvJdcqd22wQnD8gyjRKCmf1dno9Ft/mr9ZavtzHzjJaoXGbHbcGI2gSSg6fa8ozfT6B6Yg==
+  version "0.12.3"
+  resolved "https://registry.yarnpkg.com/binance-api-node/-/binance-api-node-0.12.3.tgz#1703282ce7ef1b52a893d7de046fd305806808f7"
+  integrity sha512-JMBOmcva/nlM9k0SDG3nBm2i/kSNva74jDU55j/mpoXMbb4AYP9luG1JuI5dgPvmkaKiR2A05MPI5aQiLhWTDw==
   dependencies:
     https-proxy-agent "^5.0.0"
     isomorphic-fetch "^3.0.0"
