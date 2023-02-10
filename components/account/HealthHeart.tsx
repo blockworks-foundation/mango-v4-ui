@@ -1,12 +1,6 @@
 import { useMemo } from 'react'
 
-const HealthHeart = ({
-  health,
-  size,
-}: {
-  health: number | undefined
-  size: number
-}) => {
+const HealthHeart = ({ health, size }: { health: number; size: number }) => {
   const fillColor = useMemo(() => {
     if (!health) return 'var(--fgd-4)'
     if (health <= 25) {
@@ -30,6 +24,7 @@ const HealthHeart = ({
 
   return (
     <svg
+      className={health && health < 10 ? 'animate-pulse' : ''}
       id="account-step-eleven"
       xmlns="http://www.w3.org/2000/svg"
       style={styles}

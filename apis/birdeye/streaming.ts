@@ -1,16 +1,9 @@
-import {
-  parseResolution,
-  getNextBarTime,
-  NEXT_PUBLIC_BIRDEYE_API_KEY,
-} from './helpers'
+import { parseResolution, getNextBarTime, socketUrl } from './helpers'
 
 let subscriptionItem: any = {}
 
 // Create WebSocket connection.
-const socket = new WebSocket(
-  `wss://public-api.birdeye.so/socket?x-api-key=${NEXT_PUBLIC_BIRDEYE_API_KEY}`,
-  'echo-protocol'
-)
+const socket = new WebSocket(socketUrl, 'echo-protocol')
 
 // Connection opened
 socket.addEventListener('open', (_event) => {
@@ -20,7 +13,6 @@ socket.addEventListener('open', (_event) => {
 // Listen for messages
 socket.addEventListener('message', (msg) => {
   const data = JSON.parse(msg.data)
-
   if (data.type !== 'PRICE_DATA') return console.warn(data)
 
   const currTime = data.data.unixTime * 1000
@@ -75,7 +67,6 @@ export function subscribeOnStream(
       currency: symbolInfo.type || 'usd',
     },
   }
-
   socket.send(JSON.stringify(msg))
 }
 

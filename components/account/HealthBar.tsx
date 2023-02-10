@@ -32,7 +32,9 @@ const HealthBar = ({ health }: { health: number }) => {
             ...sharedStyles,
             width: `${barWidths[0]}%`,
           }}
-          className={`flex rounded-full`}
+          className={`flex rounded-full ${
+            health && health < 10 ? 'animate-pulse' : ''
+          }`}
         />
       </div>
       <div className="col-span-1 flex h-1 rounded-full bg-th-bkg-3">

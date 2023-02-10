@@ -167,6 +167,19 @@ interface NFT {
   image: string
 }
 
+export interface PerpStatsItem {
+  date_hour: string
+  fees_accrued: number
+  funding_rate_hourly: number
+  instantaneous_funding_rate: number
+  mango_group: string
+  market_index: number
+  open_interest: number
+  perp_market: string
+  price: number
+  stable_price: number
+}
+
 interface ProfileDetails {
   profile_image_url?: string
   profile_name: string
@@ -273,7 +286,7 @@ export type MangoStore = {
   perpMarkets: PerpMarket[]
   perpStats: {
     loading: boolean
-    data: any[]
+    data: PerpStatsItem[] | null
   }
   profile: {
     details: ProfileDetails | null
@@ -726,7 +739,7 @@ const mangoStore = create<MangoStore>()(
             }
 
             if (newSelectedMangoAccount) {
-              await newSelectedMangoAccount.reloadAccountData(client)
+              await newSelectedMangoAccount.reloadSerum3OpenOrders(client)
               set((state) => {
                 state.mangoAccount.current = newSelectedMangoAccount
                 state.mangoAccount.initialLoad = false
@@ -735,7 +748,7 @@ const mangoStore = create<MangoStore>()(
             }
 
             await Promise.all(
-              mangoAccounts.map((ma) => ma.reloadAccountData(client))
+              mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client))
             )
 
             set((state) => {
@@ -830,7 +843,7 @@ const mangoStore = create<MangoStore>()(
           const set = get().set
           const group = get().group
           const stats = get().perpStats.data
-          if (stats.length || !group) return
+          if ((stats && stats.length) || !group) return
           set((state) => {
             state.perpStats.loading = true
           })

@@ -11,7 +11,7 @@ const useOpenPerpPositions = () => {
     return Object.values(perpPositions).filter((p) =>
       p.basePositionLots.toNumber()
     )
-  }, [mangoAccountAddress])
+  }, [mangoAccountAddress, perpPositions])
 
   return openPositions
 }

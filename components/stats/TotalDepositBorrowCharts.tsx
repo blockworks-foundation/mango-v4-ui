@@ -1,4 +1,4 @@
-import { TokenStatsItem } from '@store/mangoStore'
+import mangoStore, { TokenStatsItem } from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
@@ -16,14 +16,10 @@ interface TotalValueItem {
   depositValue: number
 }
 
-const TotalDepositBorrowCharts = ({
-  tokenStats,
-  loadingStats,
-}: {
-  tokenStats: TokenStatsItem[] | null
-  loadingStats: boolean
-}) => {
+const TotalDepositBorrowCharts = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
+  const tokenStats = mangoStore((s) => s.tokenStats.data)
+  const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
   const banks = useBanksWithBalances()
