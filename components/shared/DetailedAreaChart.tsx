@@ -101,17 +101,14 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
 
   const filteredData = useMemo(() => {
     if (!data.length) return []
-    if (daysToShow !== '30') {
-      const seconds = Number(daysToShow) * 86400
-      const filtered = data.filter((d: any) => {
-        const dataTime = new Date(d[xKey]).getTime() / 1000
-        const now = new Date().getTime() / 1000
-        const limit = now - seconds
-        return dataTime >= limit
-      })
-      return filtered
-    }
-    return data
+    const start = Number(daysToShow) * 86400000
+    const filtered = data.filter((d: any) => {
+      const dataTime = new Date(d[xKey]).getTime()
+      const now = new Date().getTime()
+      const limit = now - start
+      return dataTime >= limit
+    })
+    return filtered
   }, [data, daysToShow])
 
   const calculateChartChange = () => {
