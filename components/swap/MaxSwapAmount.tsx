@@ -28,13 +28,15 @@ const MaxSwapAmount = ({
 
   return (
     <div className="flex flex-wrap justify-end pl-6 text-xs">
-      <MaxAmountButton
-        className="mb-0.5"
-        decimals={decimals}
-        label="Bal"
-        onClick={() => setMax(tokenMax)}
-        value={tokenMax}
-      />
+      {tokenMax.lt(amountWithBorrow) ? (
+        <MaxAmountButton
+          className="mb-0.5"
+          decimals={decimals}
+          label={t('bal')}
+          onClick={() => setMax(tokenMax)}
+          value={tokenMax}
+        />
+      ) : null}
       {useMargin ? (
         <MaxAmountButton
           className="mb-0.5 ml-2"

@@ -21,7 +21,11 @@ const MarketSelectDropdown = () => {
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
 
   const perpMarkets = useMemo(() => {
-    return allPerpMarkets.filter((p) => p.name !== 'MNGO-PERP')
+    return allPerpMarkets.filter(
+      (p) =>
+        p.publicKey.toString() !==
+        '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+    )
   }, [allPerpMarkets])
 
   const spotBaseTokens: string[] = useMemo(() => {
@@ -118,38 +122,36 @@ const MarketSelectDropdown = () => {
             ) : null}
             {activeTab === 'perp'
               ? perpMarkets?.length
-                ? perpMarkets
-                    .filter((m) => m.name !== 'MNGO-PERP' || isTesting)
-                    .map((m) => {
-                      return (
-                        <div
-                          className="flex items-center justify-between py-2 px-4"
-                          key={m.publicKey.toString()}
+                ? perpMarkets.map((m) => {
+                    return (
+                      <div
+                        className="flex items-center justify-between py-2 px-4"
+                        key={m.publicKey.toString()}
+                      >
+                        <Link
+                          href={{
+                            pathname: '/trade',
+                            query: { name: m.name },
+                          }}
+                          shallow={true}
                         >
-                          <Link
-                            href={{
-                              pathname: '/trade',
-                              query: { name: m.name },
-                            }}
-                            shallow={true}
-                          >
-                            <div className="default-transition flex items-center hover:cursor-pointer hover:bg-th-bkg-2">
-                              <MarketLogos market={m} />
-                              <span
-                                className={
-                                  m.name === selectedMarket?.name
-                                    ? 'text-th-active'
-                                    : ''
-                                }
-                              >
-                                {m.name}
-                              </span>
-                            </div>
-                          </Link>
-                          <FavoriteMarketButton market={m} />
-                        </div>
-                      )
-                    })
+                          <div className="default-transition flex items-center hover:cursor-pointer hover:bg-th-bkg-2">
+                            <MarketLogos market={m} />
+                            <span
+                              className={
+                                m.name === selectedMarket?.name
+                                  ? 'text-th-active'
+                                  : ''
+                              }
+                            >
+                              {m.name}
+                            </span>
+                          </div>
+                        </Link>
+                        <FavoriteMarketButton market={m} />
+                      </div>
+                    )
+                  })
                 : null
               : null}
           </Popover.Panel>

@@ -1,4 +1,4 @@
-import { Bank, HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowLeftIcon,
   ArrowUpLeftIcon,
@@ -42,6 +42,7 @@ import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import FormatNumericValue from './shared/FormatNumericValue'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -62,6 +63,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const { mangoAccount } = useMangoAccount()
   const { connected, publicKey } = useWallet()
   const { handleConnect } = useEnhancedWallet()
+  const banks = useBanksWithBalances('maxBorrow')
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -101,7 +103,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
         new Decimal(percentage).div(100).mul(tokenMax),
         bank.mintDecimals
       )
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed())
     },
     [tokenMax, bank]
   )
@@ -109,7 +111,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const setMax = useCallback(() => {
     if (!bank) return
     const max = floorToDecimal(tokenMax, bank.mintDecimals)
-    setInputAmount(max.toString())
+    setInputAmount(max.toFixed())
     handleSizePercentage('100')
   }, [bank, tokenMax, handleSizePercentage])
 
@@ -153,28 +155,6 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       setSubmitting(false)
     }
   }, [bank, inputAmount, onSuccess, publicKey])
-
-  const banks = useMemo(() => {
-    if (mangoAccount) {
-      return group?.banksMapByName
-        ? Array.from(group?.banksMapByName, ([key, value]) => {
-            const bank: Bank = value[0]
-            const maxAmount = getMaxWithdrawForBank(
-              group,
-              bank,
-              mangoAccount,
-              true
-            ).toNumber()
-            return {
-              key,
-              value,
-              maxAmount,
-            }
-          })
-        : []
-    }
-    return []
-  }, [mangoAccount, group])
 
   const handleInputChange = (e: NumberFormatValues, info: SourceInfo) => {
     if (info.source === 'event') {
@@ -221,8 +201,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
           banks={banks}
           onSelect={handleSelectToken}
           showBorrowRates
-          sortByKey="maxAmount"
-          valueKey="maxAmount"
+          valueKey="maxBorrow"
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut show={!showTokenList}>

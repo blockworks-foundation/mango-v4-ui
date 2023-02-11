@@ -8,7 +8,7 @@ const PerpStats = () => {
     <PerpMarketsTable setShowPerpDetails={setShowPerpDetails} />
   ) : (
     <PerpMarketDetails
-      perpMarket={showPerpDetails}
+      perpMarketName={showPerpDetails}
       setShowPerpDetails={setShowPerpDetails}
     />
   )

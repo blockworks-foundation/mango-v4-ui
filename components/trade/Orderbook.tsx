@@ -7,7 +7,11 @@ import useInterval from '@components/shared/useInterval'
 import isEqual from 'lodash/isEqual'
 import usePrevious from '@components/shared/usePrevious'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatNumericValue,
+  getDecimalCount,
+} from 'utils/numbers'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
@@ -28,7 +32,7 @@ import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
-  const depth = 40
+  const depth = 300
   if (book instanceof SpotOrderBook) {
     return book.getL2(depth).map(([price, size]) => [price, size])
   } else if (book instanceof BookSide) {
@@ -473,11 +477,7 @@ const Orderbook = () => {
         </div>
         {market ? (
           <div id="trade-step-four">
-            <Tooltip
-              content={t('trade:grouping')}
-              placement="bottom"
-              delay={250}
-            >
+            <Tooltip content={t('trade:grouping')} placement="left" delay={250}>
               <GroupSize
                 tickSize={market.tickSize}
                 onChange={onGroupSizeChange}
@@ -547,7 +547,10 @@ const Orderbook = () => {
               </div>
             </div>
             <div className="col-span-1 text-right font-mono">
-              {orderbookData?.spread.toFixed(2)}
+              {formatNumericValue(
+                orderbookData?.spread,
+                market ? getDecimalCount(market.tickSize) : undefined
+              )}
             </div>
           </div>
         ) : null}

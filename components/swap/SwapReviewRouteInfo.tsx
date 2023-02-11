@@ -49,8 +49,8 @@ type JupiterRouteInfoProps = {
   amountIn: Decimal
   onClose: () => void
   routes: RouteInfo[] | undefined
-  selectedRoute: RouteInfo | undefined
-  setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined>>
+  selectedRoute: RouteInfo | undefined | null
+  setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined | null>>
   slippage: number
 }
 

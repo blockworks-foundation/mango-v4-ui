@@ -7,7 +7,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 type RoutesModalProps = {
   onClose: () => void
-  setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined>>
+  setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined | null>>
   show: boolean
   routes: RouteInfo[]
   selectedRoute: RouteInfo

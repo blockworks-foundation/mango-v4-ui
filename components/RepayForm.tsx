@@ -27,13 +27,13 @@ import { useAlphaMax, walletBalanceForToken } from './DepositForm'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
-import useMangoGroup from 'hooks/useMangoGroup'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
 } from 'utils/constants'
 import ConnectEmptyState from './shared/ConnectEmptyState'
 import BankAmountWithValue from './shared/BankAmountWithValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -42,7 +42,6 @@ interface RepayFormProps {
 
 function RepayForm({ onSuccess, token }: RepayFormProps) {
   const { t } = useTranslation('common')
-  const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -52,6 +51,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
+  const banks = useBanksWithBalances('borrowedAmount')
   // const { maxSolDeposit } = useSolBalance()
 
   const bank = useMemo(() => {
@@ -92,7 +92,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       bank.mintDecimals,
       Decimal.ROUND_UP
     )
-    setInputAmount(amount.toString())
+    setInputAmount(amount.toFixed())
     setSizePercentage('100')
   }, [bank, borrowAmount])
 
@@ -105,7 +105,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         .div(100)
         .toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
 
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed())
     },
     [bank, borrowAmount]
   )
@@ -127,12 +127,12 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
       if (!mangoAccount || !group || !bank || !publicKey) return
 
-      //we don't want to left negative dust in account if someone wants to repay full amount
+      // we don't want to leave negative dust in the account if someone wants to repay the full amount
       const actualAmount =
         sizePercentage === '100'
-          ? mangoAccount.getTokenBorrowsUi(bank) < parseFloat(amount)
-            ? parseFloat(amount)
-            : mangoAccount.getTokenBorrowsUi(bank)
+          ? borrowAmount.toNumber() > parseFloat(amount)
+            ? borrowAmount.toNumber()
+            : parseFloat(amount)
           : parseFloat(amount)
 
       setSubmitting(true)
@@ -168,33 +168,18 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     [bank, publicKey?.toBase58(), sizePercentage]
   )
 
-  const banks = useMemo(() => {
-    const banks =
-      group?.banksMapByName && mangoAccount
-        ? Array.from(group?.banksMapByName, ([key, value]) => {
-            return {
-              key,
-              value,
-              borrowAmount: mangoAccount.getTokenBorrowsUi(value[0]),
-              borrowAmountValue:
-                mangoAccount.getTokenBorrowsUi(value[0]) * value[0].uiPrice,
-            }
-          })
-            .filter((b) => b.borrowAmount > 0)
-            .sort((a, b) => a.borrowAmount - b.borrowAmount)
-        : []
-    return banks
-  }, [group?.banksMapByName, mangoAccount])
-
   useEffect(() => {
     if (!selectedToken && !token && banks.length) {
-      setSelectedToken(banks[0].key)
+      setSelectedToken(banks[0].bank.name)
     }
   }, [token, banks, selectedToken])
 
   const exceedsAlphaMax = useAlphaMax(inputAmount, bank)
 
   const showInsufficientBalance = walletBalance.maxAmount < Number(inputAmount)
+
+  const outstandingAmount = borrowAmount.toNumber() - parseFloat(inputAmount)
+  const isDeposit = parseFloat(inputAmount) > borrowAmount.toNumber()
 
   return banks.length ? (
     <>
@@ -220,8 +205,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         <ActionTokenList
           banks={banks}
           onSelect={handleSelectToken}
-          sortByKey="borrowAmountValue"
-          valueKey="borrowAmount"
+          valueKey="borrowedAmount"
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut show={!showTokenList}>
@@ -308,15 +292,23 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   <p>{t('repayment-amount')}</p>
                   <BankAmountWithValue amount={inputAmount} bank={bank} />
                 </div>
+                {isDeposit ? (
+                  <div className="flex justify-between">
+                    <p>{t('deposit-amount')}</p>
+                    <BankAmountWithValue
+                      amount={parseFloat(inputAmount) - borrowAmount.toNumber()}
+                      bank={bank}
+                    />
+                  </div>
+                ) : null}
                 <div className="flex justify-between">
                   <div className="flex items-center">
                     <p>{t('outstanding-balance')}</p>
                   </div>
                   <p className="font-mono text-th-fgd-2">
-                    {formatNumericValue(
-                      Number(borrowAmount) - Number(inputAmount),
-                      bank.mintDecimals
-                    )}{' '}
+                    {outstandingAmount > 0
+                      ? formatNumericValue(outstandingAmount, bank.mintDecimals)
+                      : 0}{' '}
                     <span className="font-body text-th-fgd-4">
                       {selectedToken}
                     </span>
@@ -345,7 +337,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
             ) : (
               <div className="flex items-center">
                 <ArrowDownRightIcon className="mr-2 h-5 w-5" />
-                {t('repay')}
+                {isDeposit ? t('repay-deposit') : t('repay')}
               </div>
             )}
           </Button>

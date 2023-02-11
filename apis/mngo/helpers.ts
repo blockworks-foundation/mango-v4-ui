@@ -1,36 +1,27 @@
-export const NEXT_PUBLIC_BIRDEYE_API_KEY =
-  process.env.NEXT_PUBLIC_BIRDEYE_API_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NzM0NTE4MDF9.KTEqB1hrmZTMzk19rZNx9aesh2bIHj98Cb8sg5Ikz-Y'
+import { MANGO_DATA_API_URL } from 'utils/constants'
 
-export const API_URL = 'https://public-api.birdeye.so/'
-
-export const socketUrl = `wss://public-api.birdeye.so/socket?x-api-key=${NEXT_PUBLIC_BIRDEYE_API_KEY}`
-
-// Make requests to CryptoCompare API
+// Make requests to mngo.cloud API
 export async function makeApiRequest(path: string) {
   try {
-    const response = await fetch(`${API_URL}${path}`, {
-      headers: {
-        'X-API-KEY': NEXT_PUBLIC_BIRDEYE_API_KEY,
-      },
-    })
+    const response = await fetch(`${MANGO_DATA_API_URL}${path}`)
     return response.json()
   } catch (error: any) {
-    throw new Error(`CryptoCompare request error: ${error.status}`)
+    throw new Error(`mngo.cloud request error: ${error.status}`)
   }
 }
 
 const RESOLUTION_MAPPING: Record<string, string> = {
-  '1': '1m',
-  '3': '3m',
-  '5': '5m',
-  '15': '15m',
-  '30': '30m',
-  '60': '1H',
-  '120': '2H',
-  '240': '4H',
-  '1D': '1D',
-  '1W': '1W',
+  '1': '1',
+  '3': '3',
+  '5': '5',
+  '15': '15',
+  '30': '30',
+  '45': '45',
+  '60': '60',
+  '120': '120',
+  '240': '240',
+  '1D': '1440',
+  '1W': '10080',
 }
 
 export function parseResolution(resolution: string) {

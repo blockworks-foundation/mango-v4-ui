@@ -240,88 +240,90 @@ const TradeHistory = () => {
     (combinedTradeHistory.length || loadingTradeHistory) ? (
     <>
       {showTableView ? (
-        <Table>
-          <thead>
-            <TrHead>
-              <Th className="text-left">{t('market')}</Th>
-              <Th className="text-right">{t('trade:side')}</Th>
-              <Th className="text-right">{t('trade:size')}</Th>
-              <Th className="text-right">{t('price')}</Th>
-              <Th className="text-right">{t('value')}</Th>
-              <Th className="text-right">{t('fee')}</Th>
-              <Th className="text-right">{t('date')}</Th>
-              <Th />
-            </TrHead>
-          </thead>
-          <tbody>
-            {combinedTradeHistory.map((trade: any, index: number) => {
-              return (
-                <TrBody
-                  key={`${trade.signature || trade.marketIndex}${index}`}
-                  className="my-1 p-2"
-                >
-                  <Td className="">
-                    <TableMarketName market={trade.market} />
-                  </Td>
-                  <Td className="text-right">
-                    <SideBadge side={trade.side} />
-                  </Td>
-                  <Td className="text-right font-mono">{trade.size}</Td>
-                  <Td className="text-right font-mono">
-                    <FormatNumericValue value={trade.price} />
-                  </Td>
-                  <Td className="text-right font-mono">
-                    <FormatNumericValue
-                      value={trade.price * trade.size}
-                      decimals={2}
-                      isUsd
-                    />
-                  </Td>
-                  <Td className="text-right">
-                    <span className="font-mono">
-                      <FormatNumericValue value={trade.feeCost} />
-                    </span>
-                    <p className="font-body text-xs text-th-fgd-4">
-                      {trade.liquidity}
-                    </p>
-                  </Td>
-                  <Td className="whitespace-nowrap text-right">
-                    {trade.block_datetime ? (
-                      <TableDateDisplay
-                        date={trade.block_datetime}
-                        showSeconds
+        <div className="thin-scroll overflow-x-auto">
+          <Table>
+            <thead>
+              <TrHead>
+                <Th className="text-left">{t('market')}</Th>
+                <Th className="text-right">{t('trade:side')}</Th>
+                <Th className="text-right">{t('trade:size')}</Th>
+                <Th className="text-right">{t('price')}</Th>
+                <Th className="text-right">{t('value')}</Th>
+                <Th className="text-right">{t('fee')}</Th>
+                <Th className="text-right">{t('date')}</Th>
+                <Th />
+              </TrHead>
+            </thead>
+            <tbody>
+              {combinedTradeHistory.map((trade: any, index: number) => {
+                return (
+                  <TrBody
+                    key={`${trade.signature || trade.marketIndex}${index}`}
+                    className="my-1 p-2"
+                  >
+                    <Td className="">
+                      <TableMarketName market={trade.market} />
+                    </Td>
+                    <Td className="text-right">
+                      <SideBadge side={trade.side} />
+                    </Td>
+                    <Td className="text-right font-mono">{trade.size}</Td>
+                    <Td className="text-right font-mono">
+                      <FormatNumericValue value={trade.price} />
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <FormatNumericValue
+                        value={trade.price * trade.size}
+                        decimals={2}
+                        isUsd
                       />
-                    ) : (
-                      'Recent'
-                    )}
-                  </Td>
-                  <Td className="xl:!pl-0">
-                    {trade.market.name.includes('PERP') ? (
-                      <div className="flex justify-end">
-                        <Tooltip content="View Counterparty" delay={250}>
-                          <a
-                            className=""
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            href={`/?address=${
-                              trade.liquidity === 'Taker'
-                                ? trade.maker
-                                : trade.taker
-                            }`}
-                          >
-                            <IconButton size="small">
-                              <UsersIcon className="h-4 w-4" />
-                            </IconButton>
-                          </a>
-                        </Tooltip>
-                      </div>
-                    ) : null}
-                  </Td>
-                </TrBody>
-              )
-            })}
-          </tbody>
-        </Table>
+                    </Td>
+                    <Td className="text-right">
+                      <span className="font-mono">
+                        <FormatNumericValue value={trade.feeCost} />
+                      </span>
+                      <p className="font-body text-xs text-th-fgd-4">
+                        {trade.liquidity}
+                      </p>
+                    </Td>
+                    <Td className="whitespace-nowrap text-right">
+                      {trade.block_datetime ? (
+                        <TableDateDisplay
+                          date={trade.block_datetime}
+                          showSeconds
+                        />
+                      ) : (
+                        'Recent'
+                      )}
+                    </Td>
+                    <Td className="xl:!pl-0">
+                      {trade.market.name.includes('PERP') ? (
+                        <div className="flex justify-end">
+                          <Tooltip content="View Counterparty" delay={250}>
+                            <a
+                              className=""
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              href={`/?address=${
+                                trade.liquidity === 'Taker'
+                                  ? trade.maker
+                                  : trade.taker
+                              }`}
+                            >
+                              <IconButton size="small">
+                                <UsersIcon className="h-4 w-4" />
+                              </IconButton>
+                            </a>
+                          </Tooltip>
+                        </div>
+                      ) : null}
+                    </Td>
+                  </TrBody>
+                )
+              })}
+            </tbody>
+          </Table>
+        </div>
       ) : (
         <div>
           {combinedTradeHistory.map((trade: any, index: number) => {

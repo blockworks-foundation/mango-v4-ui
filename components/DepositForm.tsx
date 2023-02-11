@@ -32,13 +32,13 @@ import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import useSolBalance from 'hooks/useSolBalance'
 import FormatNumericValue from './shared/FormatNumericValue'
 import Decimal from 'decimal.js'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -89,7 +89,6 @@ export const useAlphaMax = (inputAmount: string, bank: Bank | undefined) => {
 
 function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { t } = useTranslation('common')
-  const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
@@ -100,6 +99,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { mangoTokens } = useJupiterMints()
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
+  const banks = useBanksWithBalances('walletBalance')
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -126,7 +126,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
 
   const setMax = useCallback(() => {
     const max = floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals)
-    setInputAmount(max.toString())
+    setInputAmount(max.toFixed())
     setSizePercentage('100')
   }, [tokenMax])
 
@@ -137,7 +137,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         new Decimal(tokenMax.maxAmount).mul(percentage).div(100),
         tokenMax.maxDecimals
       )
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed())
     },
     [tokenMax]
   )
@@ -185,22 +185,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     }
   }, [bank, publicKey, inputAmount])
 
-  // TODO extract into a shared hook for UserSetup.tsx
-  const banks = useMemo(() => {
-    const banks = group?.banksMapByName
-      ? Array.from(group?.banksMapByName, ([key, value]) => {
-          const walletBalance = walletBalanceForToken(walletTokens, key)
-          return {
-            key,
-            value,
-            walletBalance: walletBalance.maxAmount,
-            walletBalanceValue: walletBalance.maxAmount * value[0].uiPrice!,
-          }
-        })
-      : []
-    return banks
-  }, [group?.banksMapByName, walletTokens])
-
   const showInsufficientBalance =
     tokenMax.maxAmount < Number(inputAmount) ||
     (selectedToken === 'SOL' && maxSolDeposit <= 0)
@@ -235,7 +219,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           banks={banks}
           onSelect={handleSelectToken}
           showDepositRates
-          sortByKey="walletBalanceValue"
           valueKey="walletBalance"
         />
       </EnterBottomExitBottom>

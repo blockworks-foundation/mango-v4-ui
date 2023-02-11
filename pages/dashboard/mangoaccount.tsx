@@ -175,7 +175,7 @@ const Dashboard: NextPage = () => {
                     />
                     <KeyValuePair
                       label="Equity"
-                      value={`$${perp.getEquityUi(group, market).toFixed(6)}`}
+                      value={`$${perp.getEquityUi(market).toFixed(6)}`}
                     />
                     <KeyValuePair
                       label="Unsettled Funding"

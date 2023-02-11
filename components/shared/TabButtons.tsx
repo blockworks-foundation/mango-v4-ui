@@ -50,7 +50,7 @@ const TabButtons: FunctionComponent<TabButtonsProps> = ({
                 label === 'buy' || label === 'sell'
                   ? 'font-display'
                   : 'font-medium'
-              } leading-tight`}
+              } whitespace-nowrap`}
             >
               {t(label)}
             </span>

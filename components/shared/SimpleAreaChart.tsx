@@ -43,9 +43,13 @@ const SimpleAreaChart = ({
         <XAxis dataKey={xKey} hide />
         <YAxis
           domain={([dataMin, dataMax]) => {
-            const absMax = Math.max(Math.abs(dataMin), Math.abs(dataMax))
-            if (absMax < 1) {
+            const difference = Math.abs(dataMax) - Math.abs(dataMin)
+            if (difference < 0.1) {
               return [dataMin - 0.01, dataMax + 0.01]
+            } else if (difference < 1) {
+              return [dataMin - 0.1, dataMax + 0.11]
+            } else if (difference < 10) {
+              return [dataMin - 1, dataMax + 1]
             } else {
               return [dataMin, dataMax]
             }
