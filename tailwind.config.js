@@ -14,8 +14,14 @@ module.exports = {
         shake: 'shake 0.4s linear 4',
         'spin-fast': 'spin 0.5s linear infinite',
       },
-      cursor: {
-        help: 'help',
+      backgroundImage: {
+        'long-loss': "url('/share_images/bg-long-loss.png')",
+        'long-profit': "url('/share_images/bg-long-profit.png')",
+        'short-loss': "url('/share_images/bg-short-loss.png')",
+        'short-profit': "url('/share_images/bg-short-profit.png')",
+      },
+      boxShadow: {
+        bottomBar: '0px -4px 8px -1px rgba(0,0,0,0.2)',
       },
       // each color category in a theme has a single base color with the variations acheived by adjusting lightness (dark and hover variants) and lightness and saturation for muted variants
       colors: {
@@ -35,17 +41,17 @@ module.exports = {
           },
           link: { DEFAULT: 'hsl(33, 100%, 57%)', hover: 'hsl(33, 100%, 52%)' },
           down: {
-            DEFAULT: 'hsl(4, 93%, 60%)',
+            DEFAULT: 'hsl(4, 63%, 55%)',
             dark: 'hsl(4, 93%, 55%)',
-            muted: 'hsl(4, 53%, 55%)',
+            muted: 'hsl(4, 43%, 38%)',
           },
           up: {
-            DEFAULT: 'hsl(72, 97%, 41%)',
-            dark: 'hsl(72, 97%, 36%)',
-            muted: 'hsl(72, 57%, 36%)',
+            DEFAULT: 'hsl(77, 63%, 40%)',
+            dark: 'hsl(85, 50%, 36%)',
+            muted: 'hsl(84, 40%, 32%)',
           },
           error: 'hsl(4, 93%, 60%)',
-          success: 'hsl(72, 97%, 41%)',
+          success: 'hsl(82, 97%, 41%)',
           warning: 'hsl(33, 100%, 57%)',
           'bkg-1': 'hsl(256, 18%, 12%)',
           'bkg-2': 'hsl(256, 18%, 17%)',
@@ -109,14 +115,14 @@ module.exports = {
           },
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
           down: {
-            DEFAULT: 'hsl(0, 59%, 58%)',
-            dark: 'hsl(0, 59%, 53%)',
-            muted: 'hsl(0, 19%, 53%)',
+            DEFAULT: 'hsl(358, 55%, 50%)',
+            dark: 'hsl(0, 45%, 26%)',
+            muted: 'hsl(0, 45%, 30%)',
           },
           up: {
             DEFAULT: 'hsl(111, 47%, 43%)',
             dark: 'hsl(111, 47%, 38%)',
-            muted: 'hsl(111, 7%, 38%)',
+            muted: 'hsl(130, 34%, 26%)',
           },
           error: 'hsl(0, 59%, 58%)',
           success: 'hsl(111, 47%, 43%)',
@@ -416,6 +422,9 @@ module.exports = {
         'th-input-border': 'var(--input-border)',
         'th-input-border-hover': 'var(--input-border-hover)',
       },
+      cursor: {
+        help: 'help',
+      },
       fontSize: {
         xxs: '.65rem',
       },
@@ -436,12 +445,6 @@ module.exports = {
             transform: 'translateX(100%)',
           },
         },
-      },
-      backgroundImage: {
-        'long-loss': "url('/share_images/bg-long-loss.png')",
-        'long-profit': "url('/share_images/bg-long-profit.png')",
-        'short-loss': "url('/share_images/bg-short-loss.png')",
-        'short-profit': "url('/share_images/bg-short-profit.png')",
       },
       screens: {
         xl: '1600px',

@@ -10,15 +10,23 @@ import { useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import MarketLogos from './MarketLogos'
 
-const TAB_VALUES =
-  process.env.NEXT_PUBLIC_SHOW_PERPS === 'true' ? ['spot', 'perp'] : ['spot']
+const isTesting = process.env.NEXT_PUBLIC_SHOW_PERPS === 'true'
+const TAB_VALUES = isTesting ? ['spot', 'perp'] : ['spot']
 
 const MarketSelectDropdown = () => {
   const { selectedMarket } = useSelectedMarket()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
-  const perpMarkets = mangoStore((s) => s.perpMarkets)
+  const allPerpMarkets = mangoStore((s) => s.perpMarkets)
   const [activeTab, setActiveTab] = useState('spot')
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
+
+  const perpMarkets = useMemo(() => {
+    return allPerpMarkets.filter(
+      (p) =>
+        p.publicKey.toString() !==
+        '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+    )
+  }, [allPerpMarkets])
 
   const spotBaseTokens: string[] = useMemo(() => {
     if (serumMarkets.length) {

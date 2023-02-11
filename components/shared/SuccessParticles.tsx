@@ -1,3 +1,4 @@
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import mangoStore from '@store/mangoStore'
 import useJupiterMints from 'hooks/useJupiterMints'
@@ -6,10 +7,11 @@ import { useEffect, useMemo } from 'react'
 import Particles from 'react-tsparticles'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 
-const SwapSuccessParticles = () => {
+const SuccessParticles = () => {
   const { mangoTokens } = useJupiterMints()
-  const showSwapAnimation = mangoStore((s) => s.swap.success)
-  const swapTokenMint = mangoStore((s) => s.swap.outputBank)?.mint.toString()
+  const showForSwap = mangoStore((s) => s.successAnimation.swap)
+  const showForTrade = mangoStore((s) => s.successAnimation.trade)
+  const tradeType = mangoStore((s) => s.tradeForm.tradeType)
   const set = mangoStore((s) => s.set)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -17,24 +19,54 @@ const SwapSuccessParticles = () => {
   )
 
   const tokenLogo = useMemo(() => {
-    if (!mangoTokens.length || !swapTokenMint) return ''
-    const token = mangoTokens.find((t) => t.address === swapTokenMint)
-    return token?.logoURI ? token.logoURI : ''
-  }, [mangoTokens, swapTokenMint])
+    if (!mangoTokens.length) return ''
+    if (showForSwap) {
+      const tokenMint = mangoStore.getState().swap.outputBank?.mint.toString()
+      return mangoTokens.find((t) => t.address === tokenMint)?.logoURI
+    }
+    if (showForTrade && tradeType === 'Market') {
+      const market = mangoStore.getState().selectedMarket.current
+      const side = mangoStore.getState().tradeForm.side
+      if (market instanceof Serum3Market) {
+        const symbol =
+          side === 'buy' ? market.name.split('/')[0] : market.name.split('/')[1]
+        return mangoTokens.find((t) => t.symbol.toUpperCase() === symbol)
+          ?.logoURI
+      }
+      if (market instanceof PerpMarket) {
+        const symbol = side === 'buy' ? market.name.split('-')[0] : 'USDC'
+        return (
+          mangoTokens.find((t) => t.symbol.toUpperCase() === symbol)?.logoURI ||
+          `/icons/${symbol.toLowerCase()}.svg`
+        )
+      }
+    }
+  }, [mangoTokens, showForSwap, showForTrade])
 
   useEffect(() => {
-    if (showSwapAnimation) {
+    if (showForSwap) {
       setTimeout(
         () =>
           set((s) => {
-            s.swap.success = false
+            s.successAnimation.swap = false
           }),
         8000
       )
     }
-  }, [showSwapAnimation])
+    if (showForTrade) {
+      setTimeout(
+        () =>
+          set((s) => {
+            s.successAnimation.trade = false
+          }),
+        8000
+      )
+    }
+  }, [showForSwap, showForTrade])
 
-  return animationSettings['swap-success'] && showSwapAnimation && tokenLogo ? (
+  return animationSettings['swap-success'] &&
+    tokenLogo &&
+    (showForSwap || showForTrade) ? (
     <Particles
       id="tsparticles"
       options={{
@@ -103,4 +135,4 @@ const SwapSuccessParticles = () => {
   ) : null
 }
 
-export default SwapSuccessParticles
+export default SuccessParticles

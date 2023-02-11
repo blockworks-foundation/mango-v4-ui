@@ -37,8 +37,9 @@ const useJupiterMints = (): {
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60 * 10,
-      retry: true,
+      retry: 3,
       enabled: !!group,
+      refetchOnWindowFocus: false,
     }
   )
 

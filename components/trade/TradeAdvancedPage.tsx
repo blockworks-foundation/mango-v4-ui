@@ -21,7 +21,7 @@ const TradingChartContainer = dynamic(() => import('./TradingChartContainer'), {
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
 
-const sidebarWidth = 65
+const sidebarWidth = 63
 const totalCols = 24
 const gridBreakpoints = {
   md: breakpoints.md - sidebarWidth,
@@ -74,13 +74,13 @@ const TradeAdvancedPage = () => {
       ],
       xxl: [
         { i: 'market-header', x: 0, y: 0, w: 15, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 15, h: 536 },
+        { i: 'tv-chart', x: 0, y: 1, w: 15, h: 488 },
         {
           i: 'balances',
           x: 0,
           y: 2,
           w: 15,
-          h: getHeight(innerHeight, 0, 536 + marketHeaderHeight),
+          h: getHeight(innerHeight, 0, 488 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
@@ -92,20 +92,20 @@ const TradeAdvancedPage = () => {
         { i: 'trade-form', x: 19, y: 0, w: 5, h: getHeight(innerHeight, 0, 0) },
       ],
       xl: [
-        { i: 'market-header', x: 0, y: 0, w: 14, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 14, h: 488 },
+        { i: 'market-header', x: 0, y: 0, w: 15, h: marketHeaderHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 15, h: 488 },
         {
           i: 'balances',
           x: 0,
           y: 2,
-          w: 14,
+          w: 15,
           h: getHeight(innerHeight, 0, 488 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
-          x: 14,
+          x: 15,
           y: 0,
-          w: 5,
+          w: 4,
           h: getHeight(innerHeight, 0, 0),
         },
         {
@@ -117,26 +117,26 @@ const TradeAdvancedPage = () => {
         },
       ],
       lg: [
-        { i: 'market-header', x: 0, y: 0, w: 12, h: marketHeaderHeight },
-        { i: 'tv-chart', x: 0, y: 1, w: 12, h: 488 },
+        { i: 'market-header', x: 0, y: 0, w: 13, h: marketHeaderHeight },
+        { i: 'tv-chart', x: 0, y: 1, w: 13, h: 456 },
         {
           i: 'balances',
           x: 0,
           y: 2,
-          w: 12,
-          h: getHeight(innerHeight, 0, 488 + marketHeaderHeight),
+          w: 13,
+          h: getHeight(innerHeight, 0, 456 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
-          x: 12,
+          x: 13,
           y: 0,
-          w: 6,
+          w: 5,
           h: getHeight(innerHeight, 0, 0),
         },
         { i: 'trade-form', x: 18, y: 0, w: 6, h: getHeight(innerHeight, 0, 0) },
       ],
       md: [
-        { i: 'market-header', x: 0, y: 0, w: 18, h: marketHeaderHeight },
+        { i: 'market-header', x: 0, y: 0, w: 17, h: marketHeaderHeight },
         { i: 'tv-chart', x: 0, y: 1, w: 17, h: 464 },
         { i: 'balances', x: 0, y: 2, w: 17, h: 428 + marketHeaderHeight },
         { i: 'orderbook', x: 18, y: 2, w: 7, h: 428 + marketHeaderHeight },
@@ -151,6 +151,7 @@ const TradeAdvancedPage = () => {
     <>
       <FavoriteMarketsBar />
       <ResponsiveGridLayout
+        onBreakpointChange={(bp) => console.log('bp: ', bp)}
         // layouts={savedLayouts ? savedLayouts : defaultLayouts}
         layouts={defaultLayouts}
         breakpoints={gridBreakpoints}
@@ -184,7 +185,7 @@ const TradeAdvancedPage = () => {
           <TradeInfoTabs />
         </div>
         <div
-          className="border-l border-b border-th-bkg-3 lg:border-l-0 lg:border-b-0"
+          className="border-l border-b border-th-bkg-3 lg:border-b-0 lg:border-l-0"
           key="trade-form"
         >
           <AdvancedTradeForm />

@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-yarn typecheck && yarn lint
+yarn format && yarn typecheck && yarn lint --quiet

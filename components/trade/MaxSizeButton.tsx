@@ -1,4 +1,4 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import { FadeInFadeOut } from '@components/shared/Transitions'
 import mangoStore from '@store/mangoStore'
@@ -6,38 +6,34 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo } from 'react'
-import { floorToDecimal } from 'utils/numbers'
+import { formatNumericValue } from 'utils/numbers'
+import { useSpotMarketMax } from './SpotSlider'
 
 const MaxSizeButton = ({
   minOrderDecimals,
   tickDecimals,
+  useMargin,
 }: {
   minOrderDecimals: number
   tickDecimals: number
+  useMargin: boolean
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
   const { selectedMarket, price: oraclePrice } = useSelectedMarket()
   const { price, side, tradeType } = mangoStore((s) => s.tradeForm)
+  const spotMax = useSpotMarketMax(
+    mangoAccount,
+    selectedMarket,
+    side,
+    useMargin
+  )
 
-  const leverageMax = useMemo(() => {
+  const perpMax = useMemo(() => {
     const group = mangoStore.getState().group
     if (!mangoAccount || !group || !selectedMarket) return 0
-
-    try {
-      if (selectedMarket instanceof Serum3Market) {
-        if (side === 'buy') {
-          return mangoAccount.getMaxQuoteForSerum3BidUi(
-            group,
-            selectedMarket.serumMarketExternal
-          )
-        } else {
-          return mangoAccount.getMaxBaseForSerum3AskUi(
-            group,
-            selectedMarket.serumMarketExternal
-          )
-        }
-      } else {
+    if (selectedMarket instanceof PerpMarket) {
+      try {
         if (side === 'buy') {
           return mangoAccount.getMaxQuoteForPerpBidUi(
             group,
@@ -49,60 +45,65 @@ const MaxSizeButton = ({
             selectedMarket.perpMarketIndex
           )
         }
+      } catch (e) {
+        console.error('Error calculating max leverage: spot btn group: ', e)
+        return 0
       }
-    } catch (e) {
-      console.error('Error calculating max leverage: spot btn group: ', e)
-      return 0
     }
   }, [mangoAccount, side, selectedMarket])
 
   const handleMax = useCallback(() => {
+    const max = selectedMarket instanceof Serum3Market ? spotMax : perpMax || 0
     const set = mangoStore.getState().set
     set((state) => {
       if (side === 'buy') {
-        state.tradeForm.quoteSize = floorToDecimal(
-          leverageMax,
-          tickDecimals
-        ).toFixed()
+        state.tradeForm.quoteSize = formatNumericValue(max, tickDecimals)
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.baseSize = floorToDecimal(
-            leverageMax / oraclePrice,
+          state.tradeForm.baseSize = formatNumericValue(
+            max / oraclePrice,
             minOrderDecimals
-          ).toFixed()
+          )
         } else {
-          state.tradeForm.baseSize = floorToDecimal(
-            leverageMax / parseFloat(price),
+          state.tradeForm.baseSize = formatNumericValue(
+            max / parseFloat(price),
             minOrderDecimals
-          ).toFixed()
+          )
         }
       } else {
-        state.tradeForm.baseSize = floorToDecimal(
-          leverageMax,
-          tickDecimals
-        ).toFixed()
+        state.tradeForm.baseSize = formatNumericValue(max, minOrderDecimals)
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.quoteSize = floorToDecimal(
-            leverageMax * oraclePrice,
+          state.tradeForm.quoteSize = formatNumericValue(
+            max * oraclePrice,
             minOrderDecimals
-          ).toFixed()
+          )
         } else {
-          state.tradeForm.quoteSize = floorToDecimal(
-            leverageMax * parseFloat(price),
+          state.tradeForm.quoteSize = formatNumericValue(
+            max * parseFloat(price),
             minOrderDecimals
-          ).toFixed()
+          )
         }
       }
     })
-  }, [leverageMax, price, side, tradeType])
+  }, [
+    minOrderDecimals,
+    perpMax,
+    price,
+    selectedMarket,
+    side,
+    spotMax,
+    tickDecimals,
+    tradeType,
+  ])
 
   const maxAmount = useMemo(() => {
+    const max = selectedMarket instanceof Serum3Market ? spotMax : perpMax || 0
     const tradePrice = tradeType === 'Market' ? oraclePrice : Number(price)
     if (side === 'buy') {
-      return floorToDecimal(leverageMax / tradePrice, tickDecimals).toFixed()
+      return max / tradePrice
     } else {
-      return floorToDecimal(leverageMax, minOrderDecimals).toFixed()
+      return max
     }
-  }, [leverageMax, minOrderDecimals, tickDecimals, price, side, tradeType])
+  }, [perpMax, spotMax, selectedMarket, price, side, tradeType])
 
   return (
     <div className="mb-2 mt-3 flex items-center justify-between">
@@ -110,6 +111,7 @@ const MaxSizeButton = ({
       <FadeInFadeOut show={!!price}>
         <MaxAmountButton
           className="text-xs"
+          decimals={minOrderDecimals}
           label={t('max')}
           onClick={handleMax}
           value={maxAmount}

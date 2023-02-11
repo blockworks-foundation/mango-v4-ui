@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   CheckIcon,
   DocumentDuplicateIcon,
   HeartIcon,
   PlusCircleIcon,
-  UsersIcon,
+  UserPlusIcon,
 } from '@heroicons/react/20/solid'
 import {
   HealthType,
@@ -48,6 +48,19 @@ const MangoAccountsListModal = ({
   const { asPath } = useRouter()
   const [submitting, setSubmitting] = useState('')
 
+  const sortedMangoAccounts = useMemo(() => {
+    if (!group) return mangoAccounts
+
+    return [...mangoAccounts].sort((a, b) => {
+      // keeps the current selected mango account at the top of the list
+      // if (b.publicKey.toString() === mangoAccount?.publicKey.toString())
+      //   return 1
+      // if (a.publicKey.toString() === mangoAccount?.publicKey.toString())
+      //   return -1
+      return b.getEquity(group).toNumber() - a.getEquity(group).toNumber()
+    })
+  }, [group, mangoAccounts])
+
   const handleSelectMangoAccount = async (acc: MangoAccount) => {
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
@@ -60,11 +73,10 @@ const MangoAccountsListModal = ({
     try {
       const reloadedMangoAccount = await retryFn(() => acc.reload(client))
       actions.fetchOpenOrders(reloadedMangoAccount)
-      actions.fetchTradeHistory()
-
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
       })
+      actions.fetchTradeHistory()
       setLastAccountViewed(acc.publicKey.toString())
     } catch (e) {
       console.warn('Error selecting account', e)
@@ -95,8 +107,14 @@ const MangoAccountsListModal = ({
             {loading ? (
               <Loading />
             ) : mangoAccounts.length ? (
-              <div className="thin-scroll mt-4 max-h-[280px] space-y-2 overflow-y-auto">
-                {mangoAccounts.map((acc) => {
+              <div className="thin-scroll mt-4 max-h-[320px] space-y-2 overflow-y-auto">
+                {sortedMangoAccounts.map((acc) => {
+                  if (
+                    mangoAccount &&
+                    acc.publicKey.equals(mangoAccount.publicKey)
+                  ) {
+                    acc = mangoAccount
+                  }
                   const accountValue = toUiDecimalsForQuote(
                     Number(acc.getEquity(group!))
                   ).toFixed(2)
@@ -142,7 +160,7 @@ const MangoAccountsListModal = ({
                                         ),
                                       })}
                                     >
-                                      <UsersIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                                      <UserPlusIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
                                     </Tooltip>
                                   ) : null}
                                 </div>
@@ -187,6 +205,7 @@ const MangoAccountsListModal = ({
                               )
                             }
                             hideBg
+                            size="medium"
                           >
                             <DocumentDuplicateIcon className="h-5 w-5" />
                           </IconButton>

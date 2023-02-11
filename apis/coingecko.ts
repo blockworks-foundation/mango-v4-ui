@@ -3,8 +3,6 @@ export const fetchChartData = async (
   quoteTokenId: string | undefined,
   daysToShow: string
 ) => {
-  console.log('fetching chart:', baseTokenId, quoteTokenId)
-
   if (!baseTokenId || !quoteTokenId) return
   try {
     const [inputResponse, outputResponse] = await Promise.all([
@@ -33,12 +31,14 @@ export const fetchChartData = async (
       const found = a.find((price: any) => price.time === c[0])
       if (found) {
         if (['usd-coin', 'tether'].includes(quoteTokenId)) {
-          found.price = found.inputPrice / c[4]
+          found.price = found.p1 / c[4]
+          found.p2 = c[4]
         } else {
-          found.price = c[4] / found.inputPrice
+          found.price = c[4] / found.p1
+          found.p2 = c[4]
         }
       } else {
-        a.push({ time: c[0], inputPrice: c[4] })
+        a.push({ time: c[0], p1: c[4] })
       }
       return a
     }, [])

@@ -1,0 +1,14 @@
+{
+    "mango-account": "Account Address",
+    "mango-account-name": "Account Name",
+    "no-results": "No Results",
+    "no-results-desc": "Try another search. Searches are case-sensitive",
+    "profile-name": "Profile Name",
+    "results": "Results",
+    "search": "Search",
+    "search-accounts": "Search Accounts",
+    "search-by": "Search By",
+    "search-for": "Search For",
+    "search-failed": "Something went wrong. Try again later",
+    "wallet-pk": "Wallet Address"
+}

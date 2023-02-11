@@ -9,6 +9,8 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import Input from '@components/forms/Input'
 import { IconButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
@@ -29,7 +31,7 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { notify } from 'utils/notifications'
-import { formatFixedDecimals, getDecimalCount } from 'utils/numbers'
+import { getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import TableMarketName from './TableMarketName'
 
@@ -45,7 +47,7 @@ const OpenOrders = () => {
   const [modifiedOrderPrice, setModifiedOrderPrice] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
 
   const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
@@ -225,7 +227,7 @@ const OpenOrders = () => {
     setModifiedOrderPrice('')
   }
 
-  return mangoAccount && Object.values(openOrders).flat().length ? (
+  return mangoAccountAddress && Object.values(openOrders).flat().length ? (
     showTableView ? (
       <Table>
         <thead>
@@ -235,7 +237,7 @@ const OpenOrders = () => {
             <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
             <Th className="w-[16.67%] text-right">{t('price')}</Th>
             <Th className="w-[16.67%] text-right">{t('value')}</Th>
-            {connected ? <Th className="w-[16.67%] text-right"></Th> : null}
+            <Th className="w-[16.67%] text-right"></Th>
           </TrHead>
         </thead>
         <tbody>
@@ -301,8 +303,8 @@ const OpenOrders = () => {
                     ) : (
                       <>
                         <Td className="w-[16.67%]">
-                          <Input
-                            className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                          <input
+                            className="default-transition h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
                             type="text"
                             value={modifiedOrderSize}
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -311,9 +313,9 @@ const OpenOrders = () => {
                           />
                         </Td>
                         <Td className="w-[16.67%]">
-                          <Input
+                          <input
                             autoFocus
-                            className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            className="default-transition h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
                             type="text"
                             value={modifiedOrderPrice}
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -324,60 +326,62 @@ const OpenOrders = () => {
                       </>
                     )}
                     <Td className="w-[16.67%] text-right">
-                      {formatFixedDecimals(o.size * o.price, true, true)}
+                      <FormatNumericValue
+                        value={o.size * o.price}
+                        decimals={2}
+                        isUsd
+                      />
                     </Td>
-                    {connected ? (
-                      <Td className="w-[16.67%]">
-                        <div className="flex justify-end space-x-2">
-                          {modifyOrderId !== o.orderId.toString() ? (
-                            <>
+                    <Td className="w-[16.67%]">
+                      <div className="flex justify-end space-x-2">
+                        {modifyOrderId !== o.orderId.toString() ? (
+                          <>
+                            <IconButton
+                              onClick={() => showEditOrderForm(o, tickSize)}
+                              size="small"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </IconButton>
+                            <Tooltip content={t('cancel')}>
                               <IconButton
-                                onClick={() => showEditOrderForm(o, tickSize)}
+                                disabled={cancelId === o.orderId.toString()}
+                                onClick={() =>
+                                  o instanceof PerpOrder
+                                    ? handleCancelPerpOrder(o)
+                                    : handleCancelSerumOrder(o)
+                                }
                                 size="small"
                               >
-                                <PencilIcon className="h-4 w-4" />
-                              </IconButton>
-                              <Tooltip content={t('cancel')}>
-                                <IconButton
-                                  disabled={cancelId === o.orderId.toString()}
-                                  onClick={() =>
-                                    o instanceof PerpOrder
-                                      ? handleCancelPerpOrder(o)
-                                      : handleCancelSerumOrder(o)
-                                  }
-                                  size="small"
-                                >
-                                  {cancelId === o.orderId.toString() ? (
-                                    <Loading className="h-4 w-4" />
-                                  ) : (
-                                    <TrashIcon className="h-4 w-4" />
-                                  )}
-                                </IconButton>
-                              </Tooltip>
-                            </>
-                          ) : (
-                            <>
-                              <IconButton
-                                onClick={() => modifyOrder(o)}
-                                size="small"
-                              >
-                                {loadingModifyOrder ? (
+                                {cancelId === o.orderId.toString() ? (
                                   <Loading className="h-4 w-4" />
                                 ) : (
-                                  <CheckIcon className="h-4 w-4" />
+                                  <TrashIcon className="h-4 w-4" />
                                 )}
                               </IconButton>
-                              <IconButton
-                                onClick={cancelEditOrderForm}
-                                size="small"
-                              >
-                                <XMarkIcon className="h-4 w-4" />
-                              </IconButton>
-                            </>
-                          )}
-                        </div>
-                      </Td>
-                    ) : null}
+                            </Tooltip>
+                          </>
+                        ) : (
+                          <>
+                            <IconButton
+                              onClick={() => modifyOrder(o)}
+                              size="small"
+                            >
+                              {loadingModifyOrder ? (
+                                <Loading className="h-4 w-4" />
+                              ) : (
+                                <CheckIcon className="h-4 w-4" />
+                              )}
+                            </IconButton>
+                            <IconButton
+                              onClick={cancelEditOrderForm}
+                              size="small"
+                            >
+                              <XMarkIcon className="h-4 w-4" />
+                            </IconButton>
+                          </>
+                        )}
+                      </div>
+                    </Td>
                   </TrBody>
                 )
               })
@@ -450,7 +454,7 @@ const OpenOrders = () => {
                       <div>
                         <p className="text-xs">{t('trade:size')}</p>
                         <Input
-                          className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                          className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
                           type="text"
                           value={modifiedOrderSize}
                           onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -462,7 +466,7 @@ const OpenOrders = () => {
                         <p className="text-xs">{t('price')}</p>
                         <Input
                           autoFocus
-                          className="default-transition h-7 w-full rounded-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                          className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
                           type="text"
                           value={modifiedOrderPrice}
                           onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -480,6 +484,7 @@ const OpenOrders = () => {
                         <>
                           <IconButton
                             onClick={() => showEditOrderForm(o, tickSize)}
+                            size="medium"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </IconButton>
@@ -490,6 +495,7 @@ const OpenOrders = () => {
                                 ? handleCancelPerpOrder(o)
                                 : handleCancelSerumOrder(o)
                             }
+                            size="medium"
                           >
                             {cancelId === o.orderId.toString() ? (
                               <Loading className="h-4 w-4" />
@@ -500,14 +506,20 @@ const OpenOrders = () => {
                         </>
                       ) : (
                         <>
-                          <IconButton onClick={() => modifyOrder(o)}>
+                          <IconButton
+                            onClick={() => modifyOrder(o)}
+                            size="medium"
+                          >
                             {loadingModifyOrder ? (
                               <Loading className="h-4 w-4" />
                             ) : (
                               <CheckIcon className="h-4 w-4" />
                             )}
                           </IconButton>
-                          <IconButton onClick={cancelEditOrderForm}>
+                          <IconButton
+                            onClick={cancelEditOrderForm}
+                            size="medium"
+                          >
                             <XMarkIcon className="h-4 w-4" />
                           </IconButton>
                         </>
@@ -521,10 +533,14 @@ const OpenOrders = () => {
         })}
       </div>
     )
-  ) : (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('trade:no-orders')}</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('trade:connect-orders')} />
     </div>
   )
 }

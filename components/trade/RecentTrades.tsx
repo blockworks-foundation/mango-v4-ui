@@ -1,8 +1,7 @@
 import useInterval from '@components/shared/useInterval'
 import mangoStore from '@store/mangoStore'
 import { useEffect, useMemo } from 'react'
-import { floorToDecimal, getDecimalCount } from 'utils/numbers'
-import Decimal from 'decimal.js'
+import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -14,6 +13,7 @@ import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import usePrevious from '@components/shared/usePrevious'
+import dayjs from 'dayjs'
 
 const buySound = new Howl({
   src: ['/sounds/trade-buy.mp3'],
@@ -27,6 +27,7 @@ const sellSound = new Howl({
 const RecentTrades = () => {
   const { t } = useTranslation(['common', 'trade'])
   const fills = mangoStore((s) => s.selectedMarket.fills)
+
   const [soundSettings, setSoundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
@@ -38,7 +39,7 @@ const RecentTrades = () => {
     if (fills.length && previousFills && previousFills.length) {
       const latestFill: ChartTradeType = fills[0]
       const previousFill: ChartTradeType = previousFills[0]
-      if (previousFill.orderId.toString() !== latestFill.orderId.toString()) {
+      if (previousFill.orderId?.toString() !== latestFill.orderId?.toString()) {
         const side =
           latestFill.side || (latestFill.takerSide === 1 ? 'bid' : 'ask')
         if (['buy', 'bid'].includes(side)) {
@@ -50,15 +51,12 @@ const RecentTrades = () => {
     }
   }, [fills, previousFills, soundSettings])
 
-  const { selectedMarket, serumOrPerpMarket: market } = useSelectedMarket()
-
-  const baseSymbol = useMemo(() => {
-    return selectedMarket?.name.split(/-|\//)[0]
-  }, [selectedMarket])
-
-  const quoteSymbol = useMemo(() => {
-    return selectedMarket?.name.split(/-|\//)[1]
-  }, [selectedMarket])
+  const {
+    selectedMarket,
+    serumOrPerpMarket: market,
+    baseSymbol,
+    quoteSymbol,
+  } = useSelectedMarket()
 
   // const fetchRecentTrades = useCallback(async () => {
   //   if (!market) return
@@ -97,9 +95,27 @@ const RecentTrades = () => {
     actions.loadMarketFills()
   }, 5000)
 
+  const [buyRatio, sellRatio] = useMemo(() => {
+    if (!fills.length) return [0, 0]
+
+    const vol = fills.reduce(
+      (a: { buys: number; sells: number }, c: any) => {
+        if (c.side === 'buy' || c.takerSide === 1) {
+          a.buys = a.buys + c.size
+        } else {
+          a.sells = a.sells + c.size
+        }
+        return a
+      },
+      { buys: 0, sells: 0 }
+    )
+    const totalVol = vol.buys + vol.sells
+    return [vol.buys / totalVol, vol.sells / totalVol]
+  }, [fills])
+
   return (
     <div className="thin-scroll h-full overflow-y-scroll">
-      <div className="flex justify-end border-b border-th-bkg-3 px-2 py-1">
+      <div className="flex items-center justify-between border-b border-th-bkg-3 p-1 xl:px-2">
         <Tooltip content={t('trade:trade-sounds-tooltip')} delay={250}>
           <IconButton
             onClick={() =>
@@ -118,8 +134,15 @@ const RecentTrades = () => {
             )}
           </IconButton>
         </Tooltip>
+        <span className="text-xxs text-th-fgd-4 xl:text-xs">
+          {t('trade:buys')}:{' '}
+          <span className="text-th-up">{(buyRatio * 100).toFixed(1)}%</span>
+          <span className="px-2">|</span>
+          {t('trade:sells')}:{' '}
+          <span className="text-th-down">{(sellRatio * 100).toFixed(1)}%</span>
+        </span>
       </div>
-      <div className="px-2">
+      <div className="px-1 xl:px-2">
         <table className="min-w-full">
           <thead>
             <tr className="text-right text-xxs text-th-fgd-4">
@@ -136,27 +159,23 @@ const RecentTrades = () => {
             {!!fills.length &&
               fills.map((trade: ChartTradeType, i: number) => {
                 const side =
-                  trade.side || (trade.takerSide === 1 ? 'bid' : 'ask')
+                  trade.side || (trade.takerSide === 0 ? 'bid' : 'ask')
 
-                // const price =
-                // typeof trade.price === 'number'
-                //   ? trade.price
-                //   : trade.price.toNumber()
-                const formattedPrice = market?.tickSize
-                  ? floorToDecimal(
-                      trade.price,
-                      getDecimalCount(market.tickSize)
-                    )
-                  : new Decimal(trade?.price || 0)
+                const formattedPrice =
+                  market?.tickSize && trade.price
+                    ? formatNumericValue(
+                        trade.price,
+                        getDecimalCount(market.tickSize)
+                      )
+                    : trade?.price || 0
 
-                // const size = trade?.quantity?.toNumber() || trade?.size
                 const formattedSize =
                   market?.minOrderSize && trade.size
-                    ? floorToDecimal(
+                    ? formatNumericValue(
                         trade.size,
                         getDecimalCount(market.minOrderSize)
                       )
-                    : new Decimal(trade.size || 0)
+                    : trade?.size || 0
 
                 return (
                   <tr className="font-mono text-xs" key={i}>
@@ -167,18 +186,18 @@ const RecentTrades = () => {
                           : 'text-th-down'
                       }`}
                     >
-                      {formattedPrice.toFixed()}
+                      {formattedPrice}
                     </td>
-                    <td className="pb-1.5 text-right">
-                      {formattedSize.toFixed()}
+                    <td className="pb-1.5 text-right text-th-fgd-3">
+                      {formattedSize}
                     </td>
                     <td className="pb-1.5 text-right text-th-fgd-4">
                       {trade.time
                         ? new Date(trade.time).toLocaleTimeString()
                         : trade.timestamp
-                        ? new Date(
-                            trade.timestamp.toNumber()
-                          ).toLocaleTimeString()
+                        ? dayjs(trade.timestamp.toNumber() * 1000).format(
+                            'h:mma'
+                          )
                         : '-'}
                     </td>
                   </tr>

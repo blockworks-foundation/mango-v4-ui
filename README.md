@@ -1,5 +1,23 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Dependency Management
+
+When updating dependencies, there are various files that must be kept up-to-date. Newly added, or updated dependencies can introduce unwanted/malicious scripts that can introduce risks for users and/or developers. The `lavamoat allow-scripts` feature allows us to deny by default, but adds some additional steps to the usual workflow.
+
+`yarn.lock`:
+
+- Instead of running `yarn` or `yarn install`, run `yarn setup` to ensure the `yarn.lock` file is in sync and that dependency scripts are run according to the `allowScripts` policy (set in `packages.json`)
+- If `lavamoat` detects new scripts that are not explicitely allowed/denied, it'll throw and error with details (see below)
+- Running `yarn setup` will also dedupe the `yarn.lock` file to reduce the dependency tree. Note CI will fail if there are dupes in `yarn.lock`!
+
+The `allowScripts` configuration in `package.json`:
+
+- There are two ways to configure script policies:
+  1. Update the allow-scripts section manually by adding the missing package in the `allowScripts` section in `package.json`
+  2. Run `yarn allow-scripts auto` to update the `allowScripts` configuration automatically
+- Review each new package to determine whether the install script needs to run or not, testing if necessary.
+- Use `npx can-i-ignore-scripts` to help assessing whether scripts are needed
+
 ## Getting Started
 
 First, run the development server:

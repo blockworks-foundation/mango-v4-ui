@@ -1,8 +1,8 @@
-import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
-import mangoStore from '@store/mangoStore'
+import { PerformanceDataItem } from '@store/mangoStore'
 import dynamic from 'next/dynamic'
+import { formatYAxis } from 'utils/formatting'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -15,48 +15,35 @@ const AccountChart = ({
   yKey,
 }: {
   chartToShow: string
-  data: Array<any>
+  data: PerformanceDataItem[]
   hideChart: () => void
   yKey: string
 }) => {
   const { t } = useTranslation('common')
-  const actions = mangoStore.getState().actions
   const [daysToShow, setDaysToShow] = useState<string>('1')
-  const loading = mangoStore((s) => s.mangoAccount.stats.performance.loading)
 
-  const handleDaysToShow = async (days: string) => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (mangoAccount) {
-      await actions.fetchAccountPerformance(
-        mangoAccount.publicKey.toString(),
-        parseInt(days)
-      )
-      setDaysToShow(days)
+  const chartData: any = useMemo(() => {
+    if (!data.length) return []
+    if (chartToShow === 'cumulative-interest-value') {
+      data.map((d) => ({
+        interest_value:
+          d.borrow_interest_cumulative_usd + d.deposit_interest_cumulative_usd,
+        time: d.time,
+      }))
     }
-  }
-
-  const currentValue = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    const group = mangoStore.getState().group
-    if (group && mangoAccount && chartToShow === 'account-value') {
-      const currentAccountValue = toUiDecimalsForQuote(
-        mangoAccount.getEquity(group).toNumber()
-      )
-      const time = Date.now()
-      return [{ account_equity: currentAccountValue, time: time }]
-    }
-    return []
-  }, [chartToShow])
+    return data
+  }, [data])
 
   return (
     <DetailedAreaChart
-      data={data.concat(currentValue)}
+      data={chartData}
       daysToShow={daysToShow}
+      heightClass="h-[calc(100vh-200px)]"
+      loaderHeightClass="h-[calc(100vh-116px)]"
       hideChart={hideChart}
-      loading={loading}
       prefix="$"
-      setDaysToShow={handleDaysToShow}
-      tickFormat={(x) => `$${x.toFixed(2)}`}
+      setDaysToShow={setDaysToShow}
+      tickFormat={(x) => `$${formatYAxis(x)}`}
       title={t(chartToShow)}
       xKey="time"
       yKey={yKey}

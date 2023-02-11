@@ -12,7 +12,7 @@ import {
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
 import ContentBox from '../shared/ContentBox'
-import { formatFixedDecimals } from '../../utils/numbers'
+import { formatNumericValue } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
@@ -28,9 +28,17 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { useTranslation } from 'next-i18next'
-import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import { ArrowsRightLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 dayjs.extend(relativeTime)
+
+interface ChartDataItem {
+  p1: number
+  p2: number
+  price: number
+  time: number
+}
 
 const CustomizedLabel = ({
   chartData,
@@ -71,7 +79,7 @@ const CustomizedLabel = ({
         textAnchor={x && y && x > width / 3 ? 'end' : 'start'}
         className="font-mono"
       >
-        {formatFixedDecimals(value)}
+        {formatNumericValue(value)}
       </Text>
     )
   } else return <div />
@@ -79,12 +87,14 @@ const CustomizedLabel = ({
 
 const SwapTokenChart = () => {
   const { t } = useTranslation('common')
-  const { inputBank, outputBank } = mangoStore((s) => s.swap)
+  const inputBank = mangoStore((s) => s.swap.inputBank)
+  const outputBank = mangoStore((s) => s.swap.outputBank)
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
   const [mouseData, setMouseData] = useState<any>(null)
   const [daysToShow, setDaysToShow] = useState('1')
+  const [flipPrices, setFlipPrices] = useState(false)
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -98,9 +108,21 @@ const SwapTokenChart = () => {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
       enabled: !!baseTokenId && !!quoteTokenId,
+      refetchOnWindowFocus: false,
     }
   )
-  const chartData = chartDataQuery.data
+
+  const chartData = useMemo(() => {
+    if (!chartDataQuery?.data?.length) return []
+    if (!flipPrices) {
+      return chartDataQuery.data
+    } else {
+      return chartDataQuery.data.map((d: ChartDataItem) => {
+        const price = d.p1 / d.p2 === d.price ? d.p2 / d.p1 : d.p1 / d.p2
+        return { ...d, price: price }
+      })
+    }
+  }, [flipPrices, chartDataQuery])
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -149,6 +171,19 @@ const SwapTokenChart = () => {
     return 0
   }
 
+  const swapMarketName = useMemo(() => {
+    if (!inputBank || !outputBank) return ''
+    const inputSymbol = formatTokenSymbol(inputBank.name?.toUpperCase())
+    const outputSymbol = formatTokenSymbol(outputBank.name?.toUpperCase())
+    return ['usd-coin', 'tether'].includes(inputCoingeckoId || '')
+      ? !flipPrices
+        ? `${outputSymbol}/${inputSymbol}`
+        : `${inputSymbol}/${outputSymbol}`
+      : !flipPrices
+      ? `${inputSymbol}/${outputSymbol}`
+      : `${outputSymbol}/${inputSymbol}`
+  }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
+
   return (
     <ContentBox hideBorder hidePadding className="h-full px-6 py-3">
       {chartDataQuery?.isLoading || chartDataQuery.isFetching ? (
@@ -169,23 +204,13 @@ const SwapTokenChart = () => {
             <div>
               {inputBank && outputBank ? (
                 <div className="mb-0.5 flex items-center">
-                  <p className="text-base text-th-fgd-3">
-                    {['usd-coin', 'tether'].includes(inputCoingeckoId || '')
-                      ? `${formatTokenSymbol(
-                          outputBank?.name?.toUpperCase()
-                        )}/${inputBank?.name?.toUpperCase()}`
-                      : `${formatTokenSymbol(
-                          inputBank?.name?.toUpperCase()
-                        )}/${formatTokenSymbol(
-                          outputBank?.name?.toUpperCase()
-                        )}`}
-                  </p>
-                  {/* <div
+                  <p className="text-base text-th-fgd-3">{swapMarketName}</p>
+                  <div
                     className="px-2 hover:cursor-pointer hover:text-th-active"
-                    onClick={handleFlipChart}
+                    onClick={() => setFlipPrices(!flipPrices)}
                   >
-                    <SwitchHorizontalIcon className="h-4 w-4" />
-                  </div> */}
+                    <ArrowsRightLeftIcon className="h-4 w-4" />
+                  </div>
                 </div>
               ) : null}
               {mouseData ? (
@@ -196,10 +221,10 @@ const SwapTokenChart = () => {
                         height={48}
                         width={35}
                         play
-                        numbers={formatFixedDecimals(mouseData['price'])}
+                        numbers={formatNumericValue(mouseData['price'])}
                       />
                     ) : (
-                      <span>{formatFixedDecimals(mouseData['price'])}</span>
+                      <FormatNumericValue value={mouseData['price']} />
                     )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
@@ -219,16 +244,14 @@ const SwapTokenChart = () => {
                         height={48}
                         width={35}
                         play
-                        numbers={formatFixedDecimals(
+                        numbers={formatNumericValue(
                           chartData[chartData.length - 1]['price']
                         )}
                       />
                     ) : (
-                      <span>
-                        {formatFixedDecimals(
-                          chartData[chartData.length - 1]['price']
-                        )}
-                      </span>
+                      <FormatNumericValue
+                        value={chartData[chartData.length - 1]['price']}
+                      />
                     )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
@@ -245,7 +268,7 @@ const SwapTokenChart = () => {
               )}
             </div>
           </div>
-          <div className="mt-2 h-40 w-auto md:h-80">
+          <div className="mt-2 h-40 w-auto md:h-72">
             <div className="absolute top-[2px] right-0 -mb-2 flex justify-end">
               <ChartRangeButtons
                 activeValue={daysToShow}

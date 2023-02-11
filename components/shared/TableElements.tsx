@@ -27,7 +27,7 @@ export const Th = ({
   id?: string
 }) => (
   <th
-    className={`px-6 py-3 text-xs font-normal text-th-fgd-3 ${className}`}
+    className={`px-2 py-3 text-xs font-normal text-th-fgd-3 first:pl-6 last:pr-6 xl:px-4 ${className}`}
     id={id}
     scope="col"
   >
@@ -44,7 +44,7 @@ export const TrBody = ({
   className?: string
   onClick?: () => void
 }) => (
-  <tr className={`border-y border-th-bkg-3 p-2 ${className}`} onClick={onClick}>
+  <tr className={`border-y border-th-bkg-3 ${className}`} onClick={onClick}>
     {children}
   </tr>
 )
@@ -55,7 +55,11 @@ export const Td = ({
 }: {
   children: ReactNode
   className?: string
-}) => <td className={`px-6 py-3 ${className}`}>{children}</td>
+}) => (
+  <td className={`px-2 py-3 first:pl-6 last:pr-6 xl:px-4 ${className}`}>
+    {children}
+  </td>
+)
 
 export const TableDateDisplay = ({
   date,

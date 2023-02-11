@@ -1,4 +1,4 @@
-import { Bank, HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowLeftIcon,
   ArrowUpLeftIcon,
@@ -21,11 +21,6 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from './../utils/numbers'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
@@ -44,7 +39,10 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
-import AmountWithValue from './shared/AmountWithValue'
+import FormatNumericValue from './shared/FormatNumericValue'
+import { floorToDecimal } from 'utils/numbers'
+import BankAmountWithValue from './shared/BankAmountWithValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -63,8 +61,9 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
-  const { connected } = useWallet()
+  const { connected, publicKey } = useWallet()
   const { handleConnect } = useEnhancedWallet()
+  const banks = useBanksWithBalances('maxBorrow')
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -85,17 +84,12 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     const group = mangoStore.getState().group
     if (!group || !bank || !mangoAccount) return new Decimal(0)
     const amount = getMaxWithdrawForBank(group, bank, mangoAccount, true)
-    return amount && amount.gt(0)
-      ? floorToDecimal(amount, bank.mintDecimals)
-      : new Decimal(0)
+    return amount && amount.gt(0) ? new Decimal(amount) : new Decimal(0)
   }, [mangoAccount, bank])
 
   const tokenBalance = useMemo(() => {
     if (!bank || !mangoAccount) return new Decimal(0)
-    const balance = floorToDecimal(
-      mangoAccount.getTokenBalanceUi(bank),
-      bank.mintDecimals
-    )
+    const balance = new Decimal(mangoAccount.getTokenBalanceUi(bank))
     return balance.gt(0) ? balance : new Decimal(0)
   }, [bank, mangoAccount])
 
@@ -105,17 +99,19 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     (percentage: string) => {
       if (!bank) return
       setSizePercentage(percentage)
-      const amount = (Number(percentage) / 100) * (tokenMax.toNumber() || 0)
-      setInputAmount(floorToDecimal(amount, bank.mintDecimals).toFixed())
+      const amount = floorToDecimal(
+        new Decimal(percentage).div(100).mul(tokenMax),
+        bank.mintDecimals
+      )
+      setInputAmount(amount.toFixed())
     },
     [tokenMax, bank]
   )
 
   const setMax = useCallback(() => {
     if (!bank) return
-    setInputAmount(
-      floorToDecimal(Number(tokenMax), bank.mintDecimals).toFixed()
-    )
+    const max = floorToDecimal(tokenMax, bank.mintDecimals)
+    setInputAmount(max.toFixed())
     handleSizePercentage('100')
   }, [bank, tokenMax, handleSizePercentage])
 
@@ -124,12 +120,12 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     setShowTokenList(false)
   }
 
-  const handleBorrow = async () => {
+  const handleBorrow = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
-    if (!mangoAccount || !group) return
+    if (!mangoAccount || !group || !publicKey) return
     setSubmitting(true)
     try {
       const tx = await client.tokenWithdraw(
@@ -145,6 +141,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
         txid: tx,
       })
       await actions.reloadMangoAccount()
+      actions.fetchWalletTokens(publicKey)
       setSubmitting(false)
       onSuccess()
     } catch (e: any) {
@@ -157,32 +154,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       })
       setSubmitting(false)
     }
-  }
-
-  const banks = useMemo(() => {
-    if (mangoAccount) {
-      return group?.banksMapByName
-        ? Array.from(group?.banksMapByName, ([key, value]) => {
-            const bank: Bank = value[0]
-            const maxAmount = getMaxWithdrawForBank(
-              group,
-              bank,
-              mangoAccount,
-              true
-            )
-            return {
-              key,
-              value,
-              maxAmount: floorToDecimal(
-                maxAmount,
-                bank.mintDecimals
-              ).toNumber(),
-            }
-          })
-        : []
-    }
-    return []
-  }, [mangoAccount, group])
+  }, [bank, inputAmount, onSuccess, publicKey])
 
   const handleInputChange = (e: NumberFormatValues, info: SourceInfo) => {
     if (info.source === 'event') {
@@ -229,8 +201,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
           banks={banks}
           onSelect={handleSelectToken}
           showBorrowRates
-          sortByKey="maxAmount"
-          valueKey="maxAmount"
+          valueKey="maxBorrow"
         />
       </EnterBottomExitBottom>
       <FadeInFadeOut show={!showTokenList}>
@@ -247,19 +218,17 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 />
               </div>
             ) : null}
-            {bank ? <TokenVaultWarnings bank={bank} /> : null}
+            {bank ? <TokenVaultWarnings bank={bank} type="borrow" /> : null}
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('borrow')} ${t('token')}`} />
                 {bank ? (
                   <MaxAmountButton
                     className="mb-2"
+                    decimals={bank.mintDecimals}
                     label={t('max')}
                     onClick={setMax}
-                    value={floorToDecimal(
-                      Number(tokenMax),
-                      bank.mintDecimals
-                    ).toFixed()}
+                    value={tokenMax}
                   />
                 ) : null}
               </div>
@@ -330,48 +299,26 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 <div className="flex justify-between">
                   <p>{t('withdraw-amount')}</p>
                   {isBorrow ? (
-                    <AmountWithValue
-                      amount={formatDecimal(
-                        Number(tokenBalance),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
-                        bank.uiPrice * tokenBalance.toNumber(),
-                        true
-                      )}
-                    />
-                  ) : inputAmount ? (
-                    <AmountWithValue
-                      amount={formatDecimal(
-                        Number(inputAmount),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
-                        bank.uiPrice * parseFloat(inputAmount),
-                        true
-                      )}
-                    />
+                    <BankAmountWithValue amount={tokenBalance} bank={bank} />
                   ) : (
-                    <AmountWithValue amount="0" value="$0.00" />
+                    <BankAmountWithValue
+                      amount={inputAmount}
+                      bank={bank}
+                      fixDecimals={!!inputAmount}
+                    />
                   )}
                 </div>
                 <div className="flex justify-between">
                   <p>{t('borrow-amount')}</p>
-                  {isBorrow ? (
-                    <AmountWithValue
-                      amount={formatDecimal(
-                        Number(inputAmount) - Number(tokenBalance),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
-                        bank.uiPrice *
-                          (parseFloat(inputAmount) - tokenBalance.toNumber()),
-                        true
-                      )}
-                    />
-                  ) : (
-                    <AmountWithValue amount="0" value="$0.00" />
-                  )}
+                  <BankAmountWithValue
+                    amount={
+                      isBorrow
+                        ? Number(inputAmount) - tokenBalance.toNumber()
+                        : 0
+                    }
+                    bank={bank}
+                    fixDecimals={isBorrow}
+                  />
                 </div>
                 <div className="flex justify-between">
                   <Tooltip content={t('loan-origination-fee-tooltip')}>
@@ -382,11 +329,13 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   <p className="font-mono text-th-fgd-2">
                     {isBorrow ? (
                       <>
-                        {formatDecimal(
-                          bank.loanOriginationFeeRate.toNumber() *
-                            (parseFloat(inputAmount) - tokenBalance.toNumber()),
-                          bank.mintDecimals
-                        )}{' '}
+                        <FormatNumericValue
+                          value={
+                            bank.loanOriginationFeeRate.toNumber() *
+                            (parseFloat(inputAmount) - tokenBalance.toNumber())
+                          }
+                          decimals={bank.mintDecimals}
+                        />{' '}
                         <span className="font-body text-th-fgd-4">
                           {bank.name}
                         </span>

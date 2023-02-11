@@ -6,7 +6,7 @@ import {
   DocumentDuplicateIcon,
   PencilIcon,
   TrashIcon,
-  UsersIcon,
+  UserPlusIcon,
   WrenchIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
@@ -21,7 +21,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
-import { Menu, Transition } from '@headlessui/react'
+import { Popover, Transition } from '@headlessui/react'
 import ActionsLinkButton from './ActionsLinkButton'
 
 export const handleCopyAddress = (
@@ -75,10 +75,10 @@ const AccountActions = () => {
             <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
             {t('borrow')}
           </Button>
-          <Menu>
+          <Popover className="relative w-1/3 md:w-auto">
             {({ open }) => (
-              <div className="relative w-1/3 md:w-auto">
-                <Menu.Button
+              <>
+                <Popover.Button
                   className={`default-transition w-full focus:outline-none`}
                   as="div"
                 >
@@ -89,67 +89,59 @@ const AccountActions = () => {
                     <WrenchIcon className="mr-2 h-4 w-4" />
                     {t('actions')}
                   </Button>
-                </Menu.Button>
+                </Popover.Button>
                 <Transition
                   appear={true}
                   show={open}
                   as={Fragment}
-                  enter="transition ease-in duration-200"
-                  enterFrom="opacity-0 scale-75"
+                  enter="transition ease-in duration-75"
+                  enterFrom="opacity-0 nice scale-75"
                   enterTo="opacity-100 scale-100"
-                  leave="transition ease-out duration-200"
+                  leave="transition ease-out duration-100"
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <Menu.Items className="absolute right-0 top-10 mt-1 space-y-1.5 rounded-md bg-th-bkg-2 px-4 py-2.5">
-                    <Menu.Item>
-                      <ActionsLinkButton
-                        mangoAccount={mangoAccount!}
-                        onClick={() =>
-                          handleCopyAddress(
-                            mangoAccount!,
-                            t('copy-address-success', {
-                              pk: abbreviateAddress(mangoAccount!.publicKey),
-                            })
-                          )
-                        }
-                      >
-                        <DocumentDuplicateIcon className="h-4 w-4" />
-                        <span className="ml-2">{t('copy-address')}</span>
-                      </ActionsLinkButton>
-                    </Menu.Item>
-                    <Menu.Item>
-                      <ActionsLinkButton
-                        mangoAccount={mangoAccount!}
-                        onClick={() => setShowEditAccountModal(true)}
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                        <span className="ml-2">{t('edit-account')}</span>
-                      </ActionsLinkButton>
-                    </Menu.Item>
-                    <Menu.Item>
-                      <ActionsLinkButton
-                        mangoAccount={mangoAccount!}
-                        onClick={() => setShowDelegateModal(true)}
-                      >
-                        <UsersIcon className="h-4 w-4" />
-                        <span className="ml-2">{t('delegate-account')}</span>
-                      </ActionsLinkButton>
-                    </Menu.Item>
-                    <Menu.Item>
-                      <ActionsLinkButton
-                        mangoAccount={mangoAccount!}
-                        onClick={() => setShowCloseAccountModal(true)}
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                        <span className="ml-2">{t('close-account')}</span>
-                      </ActionsLinkButton>
-                    </Menu.Item>
-                  </Menu.Items>
+                  <Popover.Panel className="absolute right-0 top-10 mt-1 space-y-2 rounded-md bg-th-bkg-2 px-4 py-2.5">
+                    <ActionsLinkButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() =>
+                        handleCopyAddress(
+                          mangoAccount!,
+                          t('copy-address-success', {
+                            pk: abbreviateAddress(mangoAccount!.publicKey),
+                          })
+                        )
+                      }
+                    >
+                      <DocumentDuplicateIcon className="h-4 w-4" />
+                      <span className="ml-2">{t('copy-address')}</span>
+                    </ActionsLinkButton>
+                    <ActionsLinkButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() => setShowEditAccountModal(true)}
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                      <span className="ml-2">{t('edit-account')}</span>
+                    </ActionsLinkButton>
+                    <ActionsLinkButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() => setShowDelegateModal(true)}
+                    >
+                      <UserPlusIcon className="h-4 w-4" />
+                      <span className="ml-2">{t('delegate-account')}</span>
+                    </ActionsLinkButton>
+                    <ActionsLinkButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() => setShowCloseAccountModal(true)}
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                      <span className="ml-2">{t('close-account')}</span>
+                    </ActionsLinkButton>
+                  </Popover.Panel>
                 </Transition>
-              </div>
+              </>
             )}
-          </Menu>
+          </Popover>
         </div>
       )}
       {showCloseAccountModal ? (

@@ -8,6 +8,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
       ...(await serverSideTranslations(locale, [
         'common',
         'profile',
+        'search',
         'settings',
       ])),
       // Will be passed to the page component as props

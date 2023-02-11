@@ -64,7 +64,7 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setName(e.target.value)
                 }
-                charLimit={30}
+                maxLength={30}
               />
             </div>
             <Button

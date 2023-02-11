@@ -14,6 +14,8 @@ import {
   Cog8ToothIcon,
   BuildingLibraryIcon,
   ArrowTrendingUpIcon,
+  MagnifyingGlassIcon,
+  BanknotesIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 
@@ -28,6 +30,30 @@ const StyledBarItemLabel = ({
   </div>
 )
 
+const BottomBarLink = ({
+  children,
+  isActive,
+  pathName,
+}: {
+  children: ReactNode
+  isActive: boolean
+  pathName: string
+}) => {
+  return (
+    <Link
+      href={{
+        pathname: pathName,
+      }}
+      className={`${
+        isActive ? 'text-th-active' : 'text-th-fgd-2'
+      } col-span-1 flex flex-col items-center justify-center`}
+      shallow={true}
+    >
+      {children}
+    </Link>
+  )
+}
+
 const BottomBar = () => {
   const { t } = useTranslation('common')
   const { asPath } = useRouter()
@@ -35,59 +61,32 @@ const BottomBar = () => {
 
   return (
     <>
-      <div className="grid grid-cols-5 grid-rows-1 bg-th-bkg-2 py-2.5">
-        <Link
-          href={{
-            pathname: '/',
-          }}
-          className={`${
-            asPath === '/' ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
-        >
+      <div className="grid h-12 grid-cols-5 grid-rows-1 bg-th-bkg-3 shadow-bottomBar">
+        <BottomBarLink isActive={asPath === '/'} pathName="/">
           <CurrencyDollarIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('account')}</StyledBarItemLabel>
-        </Link>
-        <Link
-          href={{
-            pathname: '/swap',
-          }}
-          shallow={true}
-          className={`${
-            asPath === '/swap' ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
-        >
+        </BottomBarLink>
+        <BottomBarLink isActive={asPath === '/swap'} pathName="/swap">
           <ArrowsRightLeftIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('swap')}</StyledBarItemLabel>
-        </Link>
-        <Link
-          href="/trade"
-          shallow={true}
-          className={`${
-            asPath === '/trade' ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
-        >
+        </BottomBarLink>
+        <BottomBarLink isActive={asPath === '/trade'} pathName="/trade">
           <ArrowTrendingUpIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
-        </Link>
-        <Link
-          href="/settings"
-          shallow={true}
+        </BottomBarLink>
+        <BottomBarLink isActive={asPath === '/borrow'} pathName="/borrow">
+          <BanknotesIcon className="mb-1 h-4 w-4" />
+          <StyledBarItemLabel>{t('borrow')}</StyledBarItemLabel>
+        </BottomBarLink>
+        <button
           className={`${
-            asPath === '/settings' ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
-        >
-          <Cog8ToothIcon className="mb-1 h-4 w-4" />
-          <StyledBarItemLabel>{t('settings')}</StyledBarItemLabel>
-        </Link>
-        <a
-          className={`${
-            showPanel ? 'text-th-active' : 'text-th-fgd-3'
-          } col-span-1 flex cursor-pointer flex-col items-center`}
+            showPanel ? 'text-th-active' : 'text-th-fgd-2'
+          } col-span-1 flex cursor-pointer flex-col items-center justify-center`}
           onClick={() => setShowPanel(!showPanel)}
         >
           <Bars3Icon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('more')}</StyledBarItemLabel>
-        </a>
+        </button>
       </div>
       <MoreMenuPanel showPanel={showPanel} setShowPanel={setShowPanel} />
     </>
@@ -103,7 +102,7 @@ const MoreMenuPanel = ({
   showPanel: boolean
   setShowPanel: (showPanel: boolean) => void
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'search'])
   return (
     <div
       className={`fixed bottom-0 z-30 h-96 w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
@@ -121,9 +120,19 @@ const MoreMenuPanel = ({
         onClick={() => setShowPanel(false)}
       >
         <MoreMenuItem
+          title={t('settings')}
+          path="/settings"
+          icon={<Cog8ToothIcon className="h-5 w-5" />}
+        />
+        <MoreMenuItem
           title={t('stats')}
           path="/stats"
           icon={<ChartBarIcon className="h-5 w-5" />}
+        />
+        <MoreMenuItem
+          title={t('search:search-accounts')}
+          path="/search"
+          icon={<MagnifyingGlassIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
           title={t('learn')}

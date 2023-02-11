@@ -1,6 +1,7 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { ArrowSmallUpIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -9,7 +10,6 @@ import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { formatFixedDecimals } from 'utils/numbers'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
 })
@@ -95,7 +95,7 @@ const CoingeckoStats = ({
   const coingeckoTokenPrices = useMemo(() => {
     if (daysToShow === '1' && coingeckoPrices.length && bank) {
       const tokenPriceData = coingeckoPrices.find(
-        (asset) => asset.symbol === bank.name
+        (asset) => asset.symbol.toUpperCase() === bank.name.toUpperCase()
       )
 
       if (tokenPriceData) {
@@ -111,32 +111,34 @@ const CoingeckoStats = ({
 
   return (
     <>
-      <div className="border-b border-th-bkg-3 py-4 px-6">
-        <h2 className="mb-1 text-xl">About {bank.name}</h2>
-        <div className="flex items-end">
-          <p
-            className={`${
-              showFullDesc ? 'h-full' : 'h-5'
-            } max-w-[720px] overflow-hidden`}
-            ref={descWidthRef}
-          >
-            {parse(coingeckoData.description.en)}
-          </p>
-          {width === 720 ? (
-            <span
-              className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
-              onClick={() => setShowFullDesc(!showFullDesc)}
+      {coingeckoData?.description?.en?.length ? (
+        <div className="border-b border-th-bkg-3 py-4 px-6">
+          <h2 className="mb-1 text-xl">About {bank.name}</h2>
+          <div className="flex items-end">
+            <p
+              className={`${
+                showFullDesc ? 'h-full' : 'h-5'
+              } max-w-[720px] overflow-hidden`}
+              ref={descWidthRef}
             >
-              {showFullDesc ? 'Less' : 'More'}
-              <ArrowSmallUpIcon
-                className={`h-5 w-5 ${
-                  showFullDesc ? 'rotate-360' : 'rotate-180'
-                } default-transition`}
-              />
-            </span>
-          ) : null}
+              {parse(coingeckoData.description.en)}
+            </p>
+            {width === 720 ? (
+              <span
+                className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
+                onClick={() => setShowFullDesc(!showFullDesc)}
+              >
+                {showFullDesc ? 'Less' : 'More'}
+                <ArrowSmallUpIcon
+                  className={`h-5 w-5 ${
+                    showFullDesc ? 'rotate-360' : 'rotate-180'
+                  } default-transition`}
+                />
+              </span>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
       {!loadingChart ? (
         coingeckoTokenPrices.length ? (
           <>
@@ -172,7 +174,7 @@ const CoingeckoStats = ({
             <p>{t('token:market-cap')}</p>
             <p className="font-mono text-th-fgd-2">
               {market_cap?.usd ? (
-                formatFixedDecimals(market_cap.usd, true)
+                <FormatNumericValue value={market_cap.usd} isUsd />
               ) : (
                 <span className="font-body text-th-fgd-4">
                   {t('unavailable')}
@@ -189,7 +191,7 @@ const CoingeckoStats = ({
             <p>{t('token:volume')}</p>
             <p className="font-mono text-th-fgd-2">
               {total_volume?.usd ? (
-                formatFixedDecimals(total_volume.usd, true)
+                <FormatNumericValue value={total_volume.usd} isUsd />
               ) : (
                 <span className="font-body text-th-fgd-4">
                   {t('unavailable')}
@@ -203,7 +205,7 @@ const CoingeckoStats = ({
               <div className="flex items-center font-mono text-th-fgd-2">
                 <span className="mr-2">
                   {ath?.usd ? (
-                    formatFixedDecimals(ath.usd, true)
+                    <FormatNumericValue value={ath.usd} isUsd />
                   ) : (
                     <span className="font-body text-th-fgd-4">
                       {t('unavailable')}
@@ -226,7 +228,7 @@ const CoingeckoStats = ({
               <div className="flex items-center font-mono text-th-fgd-2">
                 <span className="mr-2">
                   {atl?.usd ? (
-                    formatFixedDecimals(atl.usd, true)
+                    <FormatNumericValue value={atl.usd} isUsd />
                   ) : (
                     <span className="font-body text-th-fgd-4">
                       {t('unavailable')}
@@ -248,7 +250,10 @@ const CoingeckoStats = ({
               <p>{t('token:fdv')}</p>
               <p className="font-mono text-th-fgd-2">
                 {fully_diluted_valuation?.usd ? (
-                  formatFixedDecimals(fully_diluted_valuation.usd, true)
+                  <FormatNumericValue
+                    value={fully_diluted_valuation.usd}
+                    isUsd
+                  />
                 ) : (
                   <span className="font-body text-th-fgd-4">
                     {t('unavailable')}
@@ -267,7 +272,7 @@ const CoingeckoStats = ({
             <p>{t('token:circulating-supply')}</p>
             <p className="font-mono text-th-fgd-2">
               {circulating_supply ? (
-                formatFixedDecimals(circulating_supply)
+                <FormatNumericValue value={circulating_supply} />
               ) : (
                 <span className="font-body text-th-fgd-4">
                   {t('unavailable')}
@@ -283,7 +288,7 @@ const CoingeckoStats = ({
             <p>{t('token:total-supply')}</p>
             <p className="font-mono text-th-fgd-2">
               {total_supply ? (
-                formatFixedDecimals(total_supply)
+                <FormatNumericValue value={total_supply} />
               ) : (
                 <span className="font-body text-th-fgd-4">
                   {t('unavailable')}
@@ -296,7 +301,7 @@ const CoingeckoStats = ({
               <p>{t('token:max-supply')}</p>
               <p className="font-mono text-th-fgd-2">
                 {max_supply ? (
-                  formatFixedDecimals(max_supply)
+                  <FormatNumericValue value={max_supply} />
                 ) : (
                   <span className="font-body text-th-fgd-4">
                     {t('unavailable')}

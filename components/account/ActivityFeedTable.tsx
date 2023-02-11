@@ -1,5 +1,7 @@
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import { IconButton, LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
@@ -9,6 +11,7 @@ import {
   ChevronRightIcon,
   NoSymbolIcon,
 } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -17,24 +20,31 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { Fragment, useCallback, useState } from 'react'
-import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
-import { formatDecimal, formatFixedDecimals } from 'utils/numbers'
+import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
+import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
+
+const formatFee = (value: number) => {
+  return value.toLocaleString(undefined, {
+    minimumSignificantDigits: 1,
+    maximumSignificantDigits: 1,
+  })
+}
 
 const ActivityFeedTable = ({
   activityFeed,
   handleShowActivityDetails,
-  params,
 }: {
   activityFeed: any
   handleShowActivityDetails: (x: LiquidationFeedItem) => void
-  params: string
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const { mangoAccountAddress } = useMangoAccount()
-  const actions = mangoStore.getState().actions
+  const actions = mangoStore((s) => s.actions)
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
+  const queryParams = mangoStore((s) => s.activityFeed.queryParams)
   const [offset, setOffset] = useState(0)
+  const { connected } = useWallet()
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
@@ -48,9 +58,13 @@ const ActivityFeedTable = ({
       s.activityFeed.loading = true
     })
     if (!mangoAccountAddress) return
-    setOffset(offset + 25)
-    actions.fetchActivityFeed(mangoAccountAddress, offset + 25, params)
-  }, [actions, offset, params, mangoAccountAddress])
+    setOffset(offset + PAGINATION_PAGE_LENGTH)
+    actions.fetchActivityFeed(
+      mangoAccountAddress,
+      offset + PAGINATION_PAGE_LENGTH,
+      queryParams
+    )
+  }, [actions, offset, queryParams, mangoAccountAddress])
 
   const getCreditAndDebit = (activity: any) => {
     const { activity_type } = activity
@@ -60,25 +74,28 @@ const ActivityFeedTable = ({
       const { side, liab_amount, liab_symbol, asset_amount, asset_symbol } =
         activity.activity_details
       if (side === 'liqee') {
-        credit = { value: formatDecimal(liab_amount), symbol: liab_symbol }
+        credit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
         debit = {
-          value: formatDecimal(asset_amount),
+          value: formatNumericValue(asset_amount),
           symbol: asset_symbol,
         }
       } else {
-        credit = { value: formatDecimal(asset_amount), symbol: asset_symbol }
-        debit = { value: formatDecimal(liab_amount), symbol: liab_symbol }
+        credit = {
+          value: formatNumericValue(asset_amount),
+          symbol: asset_symbol,
+        }
+        debit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
       }
     }
     if (activity_type === 'deposit') {
       const { symbol, quantity } = activity.activity_details
-      credit = { value: formatDecimal(quantity), symbol }
+      credit = { value: formatNumericValue(quantity), symbol }
       debit = { value: '0', symbol: '' }
     }
     if (activity_type === 'withdraw') {
       const { symbol, quantity } = activity.activity_details
       credit = { value: '0', symbol: '' }
-      debit = { value: formatDecimal(quantity * -1), symbol }
+      debit = { value: formatNumericValue(quantity * -1), symbol }
     }
     if (activity_type === 'swap') {
       const {
@@ -88,30 +105,36 @@ const ActivityFeedTable = ({
         swap_out_symbol,
       } = activity.activity_details
       credit = {
-        value: formatDecimal(swap_out_amount),
+        value: formatNumericValue(swap_out_amount),
         symbol: swap_out_symbol,
       }
       debit = {
-        value: formatDecimal(swap_in_amount * -1),
+        value: formatNumericValue(swap_in_amount * -1),
         symbol: swap_in_symbol,
       }
     }
     if (activity_type === 'perp_trade') {
-      const { perp_market, price, quantity } = activity.activity_details
-      credit = { value: quantity, symbol: perp_market }
-      debit = { value: formatDecimal(quantity * price * -1), symbol: 'USDC' }
+      const { perp_market_name, price, quantity } = activity.activity_details
+      credit = { value: quantity, symbol: perp_market_name }
+      debit = {
+        value: formatNumericValue(quantity * price * -1),
+        symbol: 'USDC',
+      }
     }
     if (activity_type === 'openbook_trade') {
       const { side, price, size, base_symbol, quote_symbol } =
         activity.activity_details
       credit =
         side === 'buy'
-          ? { value: formatDecimal(size), symbol: base_symbol }
-          : { value: formatDecimal(size * price), symbol: quote_symbol }
+          ? { value: formatNumericValue(size), symbol: base_symbol }
+          : { value: formatNumericValue(size * price), symbol: quote_symbol }
       debit =
         side === 'buy'
-          ? { value: formatDecimal(size * price * -1), symbol: quote_symbol }
-          : { value: formatDecimal(size * -1), symbol: base_symbol }
+          ? {
+              value: formatNumericValue(size * price * -1),
+              symbol: quote_symbol,
+            }
+          : { value: formatNumericValue(size * -1), symbol: base_symbol }
     }
     return { credit, debit }
   }
@@ -151,29 +174,20 @@ const ActivityFeedTable = ({
 
   const getFee = (activity: any) => {
     const { activity_type } = activity
-    let fee = '0'
+    let fee = { value: '0', symbol: '' }
     if (activity_type === 'swap') {
       const { loan_origination_fee, swap_in_symbol } = activity.activity_details
       fee = loan_origination_fee
-        ? `${loan_origination_fee.toLocaleString(undefined, {
-            minimumSignificantDigits: 1,
-            maximumSignificantDigits: 1,
-          })} ${swap_in_symbol}`
-        : '0'
+        ? { value: formatFee(loan_origination_fee), symbol: swap_in_symbol }
+        : { value: '0', symbol: '' }
     }
     if (activity_type === 'perp_trade') {
       const { maker_fee, taker_fee } = activity.activity_details
-      fee = `${(maker_fee + taker_fee).toLocaleString(undefined, {
-        minimumSignificantDigits: 1,
-        maximumSignificantDigits: 1,
-      })} USDC`
+      fee = { value: formatFee(maker_fee + taker_fee), symbol: 'USDC' }
     }
     if (activity_type === 'openbook_trade') {
       const { fee_cost, quote_symbol } = activity.activity_details
-      fee = `${fee_cost.toLocaleString(undefined, {
-        minimumSignificantDigits: 1,
-        maximumSignificantDigits: 1,
-      })} ${quote_symbol}`
+      fee = { value: formatFee(fee_cost), symbol: quote_symbol }
     }
     return fee
   }
@@ -182,7 +196,7 @@ const ActivityFeedTable = ({
     <>
       {showTableView ? (
         <Table className="min-w-full">
-          <thead className="sticky top-0 z-10">
+          <thead>
             <TrHead>
               <Th className="bg-th-bkg-1 text-left">{t('date')}</Th>
               <Th className="bg-th-bkg-1 text-right">
@@ -190,15 +204,17 @@ const ActivityFeedTable = ({
               </Th>
               <Th className="bg-th-bkg-1 text-right">{t('activity:credit')}</Th>
               <Th className="bg-th-bkg-1 text-right">{t('activity:debit')}</Th>
-              <Th className="bg-th-bkg-1 text-right">{t('fee')}</Th>
-              <Th className="bg-th-bkg-1 text-right">
-                {t('activity:activity-value')}
+              <Th className="flex justify-end bg-th-bkg-1">
+                <Tooltip content={t('activity:tooltip-fee')} delay={250}>
+                  <span className="tooltip-underline">{t('fee')}</span>
+                </Tooltip>
               </Th>
+              <Th className="bg-th-bkg-1 text-right">{t('value')}</Th>
               <Th className="bg-th-bkg-1 text-right">{t('explorer')}</Th>
             </TrHead>
           </thead>
           <tbody>
-            {activityFeed.map((activity: any) => {
+            {activityFeed.map((activity: any, index: number) => {
               const { activity_type, block_datetime } = activity
               const { signature } = activity.activity_details
               const isLiquidation =
@@ -209,7 +225,7 @@ const ActivityFeedTable = ({
               const fee = getFee(activity)
               return (
                 <TrBody
-                  key={signature}
+                  key={signature + index}
                   className={`default-transition text-sm hover:bg-th-bkg-2 ${
                     isLiquidation ? 'cursor-pointer' : ''
                   }`}
@@ -220,7 +236,7 @@ const ActivityFeedTable = ({
                   }
                 >
                   <Td>
-                    <p className="font-body tracking-wider">
+                    <p className="font-body">
                       {dayjs(block_datetime).format('ddd D MMM')}
                     </p>
                     <p className="text-xs text-th-fgd-3">
@@ -242,7 +258,12 @@ const ActivityFeedTable = ({
                       {amounts.debit.symbol}
                     </span>
                   </Td>
-                  <Td className="text-right font-mono">{fee}</Td>
+                  <Td className="text-right font-mono">
+                    {fee.value}{' '}
+                    <span className="font-body text-th-fgd-3">
+                      {fee.symbol}
+                    </span>
+                  </Td>
                   <Td
                     className={`text-right font-mono ${
                       activity_type === 'swap' ||
@@ -260,7 +281,7 @@ const ActivityFeedTable = ({
                     !isOpenbook
                       ? '+'
                       : ''}
-                    {formatFixedDecimals(value, true)}
+                    <FormatNumericValue value={value} isUsd />
                   </Td>
                   <Td>
                     {activity_type !== 'liquidate_token_with_token' ? (
@@ -300,11 +321,11 @@ const ActivityFeedTable = ({
         </Table>
       ) : (
         <div>
-          {activityFeed.map((activity: any) => (
+          {activityFeed.map((activity: any, index: number) => (
             <MobileActivityFeedItem
               activity={activity}
               getValue={getValue}
-              key={activity.activity_details.signature}
+              key={activity?.activity_details?.signature + index}
             />
           ))}
         </div>
@@ -318,16 +339,21 @@ const ActivityFeedTable = ({
           ))}
         </div>
       ) : null}
-      {activityFeed.length && activityFeed.length % 25 === 0 ? (
-        <div className="flex justify-center pt-6">
+      {activityFeed.length &&
+      activityFeed.length % PAGINATION_PAGE_LENGTH === 0 ? (
+        <div className="flex justify-center py-6">
           <LinkButton onClick={handleShowMore}>Show More</LinkButton>
         </div>
       ) : null}
     </>
-  ) : (
+  ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
       <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
       <p>{t('activity:no-activity')}</p>
+    </div>
+  ) : (
+    <div className="p-8">
+      <ConnectEmptyState text={t('activity:connect-activity')} />
     </div>
   )
 }
@@ -351,8 +377,10 @@ const MobileActivityFeedItem = ({
   const { signature } = activity.activity_details
   const isLiquidation = activity_type === 'liquidate_token_with_token'
   const isSwap = activity_type === 'swap'
+  const isOpenbook = activity_type === 'openbook_trade'
   const isPerp = activity_type === 'perp_trade'
   const value = getValue(activity)
+
   return (
     <div key={signature} className="border-b border-th-bkg-3 p-4">
       <div className="flex items-center justify-between">
@@ -371,24 +399,24 @@ const MobileActivityFeedItem = ({
             </p>
             <p className="text-right font-mono text-sm text-th-fgd-1">
               {isLiquidation ? (
-                formatFixedDecimals(value, true)
+                <FormatNumericValue value={value} isUsd />
               ) : isSwap ? (
                 <>
                   <span className="mr-1">
-                    {activity.activity_details.swap_in_amount.toLocaleString(
-                      undefined,
-                      { maximumFractionDigits: 6 }
-                    )}
+                    <FormatNumericValue
+                      value={activity.activity_details.swap_in_amount}
+                      decimals={6}
+                    />
                   </span>
                   <span className="font-body text-th-fgd-3">
                     {activity.activity_details.swap_in_symbol}
                   </span>
                   <span className="mx-1 font-body text-th-fgd-3">for</span>
                   <span className="mr-1">
-                    {activity.activity_details.swap_out_amount.toLocaleString(
-                      undefined,
-                      { maximumFractionDigits: 6 }
-                    )}
+                    <FormatNumericValue
+                      value={activity.activity_details.swap_out_amount}
+                      decimals={6}
+                    />
                   </span>
                   <span className="font-body text-th-fgd-3">
                     {activity.activity_details.swap_out_symbol}
@@ -411,7 +439,23 @@ const MobileActivityFeedItem = ({
                     {activity.activity_details.quantity}
                   </span>
                   <span className="font-body text-th-fgd-3">
-                    {activity.activity_details.perp_market}
+                    {activity.activity_details.perp_market_name}
+                  </span>
+                </>
+              ) : isOpenbook ? (
+                <>
+                  <span
+                    className={`mr-1 font-body ${
+                      activity.activity_details.side === 'buy'
+                        ? 'text-th-up'
+                        : 'text-th-down'
+                    }`}
+                  >
+                    {activity.activity_details.side === 'buy' ? 'BUY' : 'SELL'}
+                  </span>
+                  <span className="mr-1">{activity.activity_details.size}</span>
+                  <span className="font-body text-th-fgd-3">
+                    {activity.activity_details.base_symbol}
                   </span>
                 </>
               ) : (
@@ -469,37 +513,51 @@ const MobileActivityFeedItem = ({
           <div className="col-span-1">
             <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
-              {formatDecimal(activity.activity_details.asset_amount)}{' '}
-              <span className="font-body tracking-wider">
+              <FormatNumericValue
+                value={activity.activity_details.asset_amount}
+              />{' '}
+              <span className="font-body">
                 {activity.activity_details.asset_symbol}
               </span>
               <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-              {formatFixedDecimals(activity.activity_details.asset_price, true)}
+              <FormatNumericValue
+                value={activity.activity_details.asset_price}
+                isUsd
+              />
             </p>
             <p className="font-mono text-xs text-th-fgd-3">
-              {formatFixedDecimals(
-                activity.activity_details.asset_price *
-                  activity.activity_details.asset_amount,
-                true
-              )}
+              <FormatNumericValue
+                value={
+                  activity.activity_details.asset_price *
+                  activity.activity_details.asset_amount
+                }
+                isUsd
+              />
             </p>
           </div>
           <div className="col-span-1">
             <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
             <p className="font-mono text-sm text-th-fgd-1">
-              {formatDecimal(activity.activity_details.liab_amount)}{' '}
-              <span className="font-body tracking-wider">
+              <FormatNumericValue
+                value={activity.activity_details.liab_amount}
+              />{' '}
+              <span className="font-body">
                 {activity.activity_details.liab_symbol}
               </span>
               <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-              {formatFixedDecimals(activity.activity_details.liab_price, true)}
+              <FormatNumericValue
+                value={activity.activity_details.liab_price}
+                isUsd
+              />
             </p>
             <p className="font-mono text-xs text-th-fgd-3">
-              {formatFixedDecimals(
-                activity.activity_details.liab_price *
-                  activity.activity_details.liab_amount,
-                true
-              )}
+              <FormatNumericValue
+                value={
+                  activity.activity_details.liab_price *
+                  activity.activity_details.liab_amount
+                }
+                isUsd
+              />
             </p>
           </div>
           <div className="col-span-2 flex justify-center pt-3">

@@ -6,7 +6,7 @@ import {
   LibrarySymbolInfo,
   ResolutionString,
   SearchSymbolResultItem,
-} from '@public/charting_library/charting_library'
+} from '@public/charting_library'
 
 export const SUPPORTED_RESOLUTIONS = [
   '1',
@@ -86,6 +86,7 @@ export const queryBars = async (
   if (!data.success || data.data.items.length === 0) {
     return []
   }
+
   let bars: Bar[] = []
   for (const bar of data.data.items) {
     if (bar.unixTime >= from && bar.unixTime < to) {
@@ -109,7 +110,6 @@ export const queryBars = async (
 
 export default {
   onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
-    // console.log('[onReady]: Method call')
     setTimeout(() => callback(configurationData as any))
   },
 
@@ -128,14 +128,6 @@ export default {
     // _onResolveErrorCallback: any,
     // _extension: any
   ) => {
-    // console.log(
-    //   '[resolveSymbol]: Method call',
-    //   symbolAddress,
-    //   onSymbolResolvedCallback
-    // )
-    // const symbols = await getAllSymbols()
-    // let symbolItem = symbols.find((item: any) => item.address === symbolAddress)
-    // console.log('========symbols:', symbolItem, symbols)
     let symbolItem:
       | {
           address: string
@@ -165,6 +157,7 @@ export default {
       pricescale: 100,
       has_intraday: true,
       has_weekly_and_monthly: false,
+      has_empty_bars: true,
       supported_resolutions: configurationData.supported_resolutions as any,
       intraday_multipliers: configurationData.intraday_multipliers,
       volume_precision: 2,
@@ -175,7 +168,6 @@ export default {
       format: 'price',
     }
 
-    // console.log('[resolveSymbol]: Symbol resolved', symbolAddress)
     onSymbolResolvedCallback(symbolInfo)
   },
   getBars: async (
@@ -215,7 +207,6 @@ export default {
           ...bars[bars.length - 1],
         })
       }
-      // console.log(`[getBars]: returned ${bars.length} bar(s)`)
       onHistoryCallback(bars, {
         noData: false,
       })
@@ -232,10 +223,6 @@ export default {
     subscriberUID: string,
     onResetCacheNeededCallback: () => void
   ) => {
-    // console.log(
-    //   '[subscribeBars]: Method call with subscriberUID:',
-    //   subscriberUID
-    // )
     subscribeOnStream(
       symbolInfo,
       resolution,

@@ -15,7 +15,6 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import EditProfileModal from '@components/modals/EditProfileModal'
 import MangoAccountsListModal from '@components/modals/MangoAccountsListModal'
-import { Wallet as AnchorWallet } from '@project-serum/anchor'
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
@@ -33,22 +32,25 @@ const ConnectedMenu = () => {
   const isMobile = width ? width < breakpoints.md : false
 
   const onConnectFetchAccountData = async (wallet: Wallet) => {
-    if (!wallet) return
-    await actions.fetchMangoAccounts(wallet.adapter as unknown as AnchorWallet)
+    if (!wallet.adapter.publicKey) return
+    await actions.fetchMangoAccounts(wallet.adapter.publicKey)
     actions.fetchTourSettings(wallet.adapter.publicKey?.toString() as string)
-    actions.fetchWalletTokens(wallet.adapter as unknown as AnchorWallet)
+    actions.fetchWalletTokens(wallet.adapter.publicKey)
     actions.fetchTradeHistory()
   }
 
   const handleDisconnect = useCallback(() => {
     set((state) => {
       state.activityFeed.feed = []
-      state.activityFeed.initialLoad = false
       state.mangoAccount.current = undefined
       state.mangoAccounts = []
+      state.mangoAccount.initialLoad = true
       state.mangoAccount.openOrders = {}
-      state.mangoAccount.stats.interestTotals = { data: [], loading: false }
-      state.mangoAccount.stats.performance = { data: [], loading: false }
+      state.mangoAccount.interestTotals = { data: [], loading: false }
+      state.mangoAccount.performance = {
+        data: [],
+        loading: true,
+      }
     })
     disconnect()
     wallet?.adapter.disconnect()

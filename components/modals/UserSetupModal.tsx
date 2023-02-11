@@ -7,7 +7,6 @@ import {
   FireIcon,
   PencilIcon,
 } from '@heroicons/react/20/solid'
-import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -26,17 +25,11 @@ import {
 } from 'react'
 import { ALPHA_DEPOSIT_LIMIT } from 'utils/constants'
 import { notify } from 'utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from 'utils/numbers'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import WalletIcon from '../icons/WalletIcon'
-import { walletBalanceForToken } from '../DepositForm'
 import ParticlesBackground from '../ParticlesBackground'
 // import EditNftProfilePic from '../profile/EditNftProfilePic'
 // import EditProfileForm from '../profile/EditProfileForm'
@@ -49,6 +42,8 @@ import { useEnhancedWallet } from '../wallet/EnhancedWalletProvider'
 import Modal from '../shared/Modal'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { withValueLimit } from '@components/swap/SwapForm'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 
 const UserSetupModal = ({
   isOpen,
@@ -59,7 +54,7 @@ const UserSetupModal = ({
 }) => {
   const { t } = useTranslation(['common', 'onboarding', 'swap'])
   const { group } = useMangoGroup()
-  const { connected, select, wallet, wallets } = useWallet()
+  const { connected, select, wallet, wallets, publicKey } = useWallet()
   const { mangoAccount } = useMangoAccount()
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [accountName, setAccountName] = useState('')
@@ -70,9 +65,9 @@ const UserSetupModal = ({
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
-  const walletTokens = mangoStore((s) => s.wallet.tokens)
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
+  const banks = useBanksWithBalances('walletBalance')
 
   useEffect(() => {
     if (connected) {
@@ -84,7 +79,7 @@ const UserSetupModal = ({
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
-    if (!group || !wallet) return
+    if (!group || !publicKey) return
     setLoadingAccount(true)
     try {
       const tx = await client.createMangoAccount(
@@ -96,9 +91,9 @@ const UserSetupModal = ({
         8, // perpCount
         8 // perpOoCount
       )
-      actions.fetchMangoAccounts(wallet!.adapter as unknown as Wallet)
+      actions.fetchMangoAccounts(publicKey)
       if (tx) {
-        actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet) // need to update sol balance after account rent
+        actions.fetchWalletTokens(publicKey) // need to update sol balance after account rent
         setShowSetupStep(3)
         notify({
           title: t('new-account-success'),
@@ -116,7 +111,7 @@ const UserSetupModal = ({
     } finally {
       setLoadingAccount(false)
     }
-  }, [accountName, wallet, t])
+  }, [accountName, publicKey, t])
 
   const handleDeposit = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -162,27 +157,8 @@ const UserSetupModal = ({
     }
   }, [mangoAccount, showSetupStep, onClose])
 
-  const banks = useMemo(() => {
-    const banks = group?.banksMapByName
-      ? Array.from(group?.banksMapByName, ([key, value]) => {
-          const walletBalance = walletBalanceForToken(walletTokens, key)
-          return {
-            key,
-            value,
-            tokenDecimals: walletBalance.maxDecimals,
-            walletBalance: floorToDecimal(
-              walletBalance.maxAmount,
-              walletBalance.maxDecimals
-            ).toNumber(),
-            walletBalanceValue: walletBalance.maxAmount * value?.[0].uiPrice,
-          }
-        })
-      : []
-    return banks
-  }, [group?.banksMapByName, walletTokens])
-
   const depositBank = useMemo(() => {
-    return banks.find((b) => b.key === depositToken)?.value[0]
+    return banks.find((b) => b.bank.name === depositToken)?.bank
   }, [depositToken, banks])
 
   const exceedsAlphaMax = useMemo(() => {
@@ -203,9 +179,9 @@ const UserSetupModal = ({
   }, [depositAmount, depositBank, group])
 
   const tokenMax = useMemo(() => {
-    const bank = banks.find((bank) => bank.key === depositToken)
+    const bank = banks.find((b) => b.bank.name === depositToken)
     if (bank) {
-      return { amount: bank.walletBalance, decimals: bank.tokenDecimals }
+      return { amount: bank.walletBalance, decimals: bank.bank.mintDecimals }
     }
     return { amount: 0, decimals: 0 }
   }, [banks, depositToken])
@@ -214,14 +190,22 @@ const UserSetupModal = ({
     tokenMax.amount < Number(depositAmount) ||
     (depositToken === 'SOL' && maxSolDeposit <= 0)
 
+  const setMax = useCallback(() => {
+    const max = new Decimal(tokenMax.amount).toDecimalPlaces(
+      tokenMax.decimals,
+      Decimal.ROUND_FLOOR
+    )
+    setDepositAmount(max.toString())
+    setSizePercentage('100')
+  }, [tokenMax])
+
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       setSizePercentage(percentage)
-      let amount = new Decimal(tokenMax.amount).mul(percentage).div(100)
-      if (percentage !== '100') {
-        amount = floorToDecimal(amount, tokenMax.decimals)
-      }
-
+      const amount = new Decimal(tokenMax.amount)
+        .mul(percentage)
+        .div(100)
+        .toDecimalPlaces(tokenMax.decimals, Decimal.ROUND_FLOOR)
       setDepositAmount(amount.toString())
     },
     [tokenMax]
@@ -366,7 +350,7 @@ const UserSetupModal = ({
                     onChange={(e: ChangeEvent<HTMLInputElement>) =>
                       setAccountName(e.target.value)
                     }
-                    charLimit={30}
+                    maxLength={30}
                   />
                 </div>
                 <SolBalanceWarnings className="mt-4" />
@@ -423,20 +407,10 @@ const UserSetupModal = ({
                     <Label text={t('amount')} />
                     <MaxAmountButton
                       className="mb-2"
+                      decimals={tokenMax.decimals}
                       label="Max"
-                      onClick={() => {
-                        setDepositAmount(
-                          floorToDecimal(
-                            tokenMax.amount,
-                            tokenMax.decimals
-                          ).toFixed()
-                        )
-                        setSizePercentage('100')
-                      }}
-                      value={floorToDecimal(
-                        tokenMax.amount,
-                        tokenMax.decimals
-                      ).toFixed()}
+                      onClick={setMax}
+                      value={tokenMax.amount}
                     />
                   </div>
                   <div className="mb-6 grid grid-cols-2">
@@ -491,18 +465,25 @@ const UserSetupModal = ({
                       <div className="flex justify-between px-2 py-4">
                         <p>{t('deposit-amount')}</p>
                         <p className="font-mono text-th-fgd-2">
-                          {depositAmount ? (
+                          <BankAmountWithValue
+                            amount={depositAmount}
+                            bank={depositBank}
+                          />
+                          {/* {depositAmount ? (
                             <>
-                              {formatDecimal(
-                                Number(depositAmount),
-                                depositBank.mintDecimals
-                              )}{' '}
+                              <FormatNumericValue
+                                value={depositAmount}
+                                decimals={depositBank.mintDecimals}
+                              />{' '}
                               <span className="text-xs text-th-fgd-3">
                                 (
-                                {formatFixedDecimals(
-                                  depositBank.uiPrice * Number(depositAmount),
-                                  true
-                                )}
+                                <FormatNumericValue
+                                  value={
+                                    depositBank.uiPrice * Number(depositAmount)
+                                  }
+                                  decimals={2}
+                                  isUsd
+                                />
                                 )
                               </span>
                             </>
@@ -513,7 +494,7 @@ const UserSetupModal = ({
                                 ($0.00)
                               </span>
                             </>
-                          )}
+                          )} */}
                         </p>
                       </div>
                     </div>
@@ -573,7 +554,6 @@ const UserSetupModal = ({
                       banks={banks}
                       onSelect={setDepositToken}
                       showDepositRates
-                      sortByKey="walletBalanceValue"
                       valueKey="walletBalance"
                     />
                   </div>

@@ -11,7 +11,8 @@ import { useViewport } from 'hooks/useViewport'
 import { CHART_DATA_FEED, DEFAULT_MARKET_NAME } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
-import Datafeed from 'apis/birdeye/datafeed'
+import SpotDatafeed from 'apis/birdeye/datafeed'
+import PerpDatafeed from 'apis/mngo/datafeed'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -34,6 +35,7 @@ const TradingViewChart = () => {
   const { width } = useViewport()
 
   const [chartReady, setChartReady] = useState(false)
+  const [spotOrPerp, setSpotOrPerp] = useState('spot')
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const isMobile = width ? width < breakpoints.sm : false
 
@@ -92,13 +94,26 @@ const TradingViewChart = () => {
     }
   })
 
+  const selectedMarket = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarketName)
+      return '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+
+    if (!selectedMarketName.toLowerCase().includes('perp')) {
+      return group
+        .getSerum3MarketByName(selectedMarketName)
+        .serumMarketExternal.toString()
+    } else {
+      return group.getPerpMarketByName(selectedMarketName).publicKey.toString()
+    }
+  }, [selectedMarketName])
+
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (tvWidgetRef.current && chartReady && selectedMarketName && group) {
+    if (tvWidgetRef.current && chartReady && selectedMarket && group) {
       try {
-        const market = group.getSerum3MarketByName(selectedMarketName)
         tvWidgetRef.current.setSymbol(
-          market?.serumMarketExternal.toString(),
+          selectedMarket,
           tvWidgetRef.current.activeChart().resolution(),
           () => {
             return
@@ -108,16 +123,30 @@ const TradingViewChart = () => {
         console.warn('Trading View change symbol error: ', e)
       }
     }
-  }, [selectedMarketName, chartReady])
+  }, [selectedMarket, chartReady])
+
+  useEffect(() => {
+    if (
+      selectedMarketName?.toLowerCase().includes('perp') &&
+      spotOrPerp !== 'perp'
+    ) {
+      setSpotOrPerp('perp')
+    } else if (
+      !selectedMarketName?.toLowerCase().includes('perp') &&
+      spotOrPerp !== 'spot'
+    ) {
+      setSpotOrPerp('spot')
+    }
+  }, [selectedMarketName, spotOrPerp])
 
   useEffect(() => {
     if (window) {
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
-        symbol: '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6',
+        symbol: selectedMarket,
         // BEWARE: no trailing slash is expected in feed URL
         // tslint:disable-next-line:no-any
-        datafeed: Datafeed,
+        datafeed: spotOrPerp === 'spot' ? SpotDatafeed : PerpDatafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
@@ -190,7 +219,7 @@ const TradingViewChart = () => {
       })
       //eslint-disable-next-line
     }
-  }, [theme, isMobile, defaultProps])
+  }, [theme, isMobile, defaultProps, spotOrPerp])
 
   return (
     <div id={defaultProps.container as string} className="tradingview-chart" />

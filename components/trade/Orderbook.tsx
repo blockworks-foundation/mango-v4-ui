@@ -6,7 +6,11 @@ import useInterval from '@components/shared/useInterval'
 import isEqual from 'lodash/isEqual'
 import usePrevious from '@components/shared/usePrevious'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatNumericValue,
+  getDecimalCount,
+} from 'utils/numbers'
 import { ANIMATION_SETTINGS_KEY, DATA_PROVIDER_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
@@ -26,7 +30,7 @@ import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
-  const depth = 40
+  const depth = 300
   if (book instanceof SpotOrderBook) {
     return book.getL2(depth).map(([price, size]) => [price, size])
   } else if (book instanceof BookSide) {
@@ -134,7 +138,13 @@ const depth = 40
 
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { selectedMarket, serumOrPerpMarket: market } = useSelectedMarket()
+  const {
+    selectedMarket,
+    serumOrPerpMarket: market,
+    baseSymbol,
+    quoteSymbol,
+  } = useSelectedMarket()
+  const connection = mangoStore((s) => s.connection)
 
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<any | null>(null)
@@ -157,7 +167,7 @@ const Orderbook = () => {
   )
 
   const depthArray = useMemo(() => {
-    const bookDepth = !isMobile ? depth : 7
+    const bookDepth = !isMobile ? depth : 9
     return Array(bookDepth).fill(0)
   }, [isMobile])
 
@@ -388,7 +398,7 @@ const Orderbook = () => {
         console.log('disconnected before unsubscribe')
       }
     }
-  }, [market])
+  }, [market, connection])
 
   useEffect(() => {
     window.addEventListener('resize', verticallyCenterOrderbook)
@@ -456,11 +466,7 @@ const Orderbook = () => {
         </div>
         {market ? (
           <div id="trade-step-four">
-            <Tooltip
-              content={t('trade:grouping')}
-              placement="bottom"
-              delay={250}
-            >
+            <Tooltip content={t('trade:grouping')} placement="left" delay={250}>
               <GroupSize
                 tickSize={market.tickSize}
                 onChange={onGroupSizeChange}
@@ -471,8 +477,12 @@ const Orderbook = () => {
         ) : null}
       </div>
       <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">
-        <div className="col-span-1 text-right">{t('trade:size')}</div>
-        <div className="col-span-1 text-right">{t('price')}</div>
+        <div className="col-span-1 text-right">
+          {t('trade:size')} ({baseSymbol})
+        </div>
+        <div className="col-span-1 text-right">
+          {t('price')} ({quoteSymbol})
+        </div>
       </div>
       <div
         className="hide-scroll relative h-full overflow-y-scroll"
@@ -526,7 +536,10 @@ const Orderbook = () => {
               </div>
             </div>
             <div className="col-span-1 text-right font-mono">
-              {orderbookData?.spread.toFixed(2)}
+              {formatNumericValue(
+                orderbookData?.spread,
+                market ? getDecimalCount(market.tickSize) : undefined
+              )}
             </div>
           </div>
         ) : null}
@@ -583,7 +596,6 @@ const OrderbookRow = ({
   minOrderSize: number
   tickSize: number
 }) => {
-  const tradeForm = mangoStore((s) => s.tradeForm)
   const element = useRef<HTMLDivElement>(null)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -620,29 +632,29 @@ const OrderbookRow = ({
     const set = mangoStore.getState().set
     set((state) => {
       state.tradeForm.price = formattedPrice.toFixed()
-      if (tradeForm.baseSize && tradeForm.tradeType === 'Limit') {
+      if (state.tradeForm.baseSize && state.tradeForm.tradeType === 'Limit') {
         const quoteSize = floorToDecimal(
-          formattedPrice.mul(new Decimal(tradeForm.baseSize)),
+          formattedPrice.mul(new Decimal(state.tradeForm.baseSize)),
           getDecimalCount(tickSize)
         )
         state.tradeForm.quoteSize = quoteSize.toFixed()
       }
     })
-  }, [formattedPrice, tradeForm])
+  }, [formattedPrice, tickSize])
 
   const handleSizeClick = useCallback(() => {
     const set = mangoStore.getState().set
     set((state) => {
       state.tradeForm.baseSize = formattedSize.toString()
-      if (formattedSize && tradeForm.price) {
+      if (formattedSize && state.tradeForm.price) {
         const quoteSize = floorToDecimal(
-          formattedSize.mul(new Decimal(tradeForm.price)),
+          formattedSize.mul(new Decimal(state.tradeForm.price)),
           getDecimalCount(tickSize)
         )
         state.tradeForm.quoteSize = quoteSize.toString()
       }
     })
-  }, [formattedSize, tradeForm])
+  }, [formattedSize, tickSize])
 
   const groupingDecimalCount = useMemo(
     () => getDecimalCount(grouping),

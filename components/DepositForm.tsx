@@ -6,9 +6,7 @@ import {
   ExclamationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
-import { Wallet } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
-import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -20,11 +18,6 @@ import {
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
-import {
-  floorToDecimal,
-  formatDecimal,
-  formatFixedDecimals,
-} from './../utils/numbers'
 import { TokenAccount } from './../utils/tokens'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
@@ -39,10 +32,13 @@ import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useJupiterMints from 'hooks/useJupiterMints'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import useSolBalance from 'hooks/useSolBalance'
-import AmountWithValue from './shared/AmountWithValue'
+import FormatNumericValue from './shared/FormatNumericValue'
+import Decimal from 'decimal.js'
+import { floorToDecimal } from 'utils/numbers'
+import BankAmountWithValue from './shared/BankAmountWithValue'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -93,7 +89,6 @@ export const useAlphaMax = (inputAmount: string, bank: Bank | undefined) => {
 
 function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { t } = useTranslation('common')
-  const { group } = useMangoGroup()
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
@@ -104,6 +99,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { mangoTokens } = useJupiterMints()
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
+  const banks = useBanksWithBalances('walletBalance')
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -121,7 +117,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     return logoURI
   }, [bank?.mint, mangoTokens])
 
-  const { connected, wallet } = useWallet()
+  const { connected, publicKey } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
   const tokenMax = useMemo(() => {
@@ -129,20 +125,19 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [walletTokens, selectedToken])
 
   const setMax = useCallback(() => {
-    setInputAmount(
-      floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals).toFixed()
-    )
+    const max = floorToDecimal(tokenMax.maxAmount, tokenMax.maxDecimals)
+    setInputAmount(max.toFixed())
     setSizePercentage('100')
   }, [tokenMax])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       setSizePercentage(percentage)
-
-      let amount = new Decimal(tokenMax.maxAmount).mul(percentage).div(100)
-      amount = floorToDecimal(amount, tokenMax.maxDecimals)
-
-      setInputAmount(amount.toString())
+      const amount = floorToDecimal(
+        new Decimal(tokenMax.maxAmount).mul(percentage).div(100),
+        tokenMax.maxDecimals
+      )
+      setInputAmount(amount.toFixed())
     },
     [tokenMax]
   )
@@ -158,7 +153,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current
 
-    if (!mangoAccount || !group || !bank) return
+    if (!mangoAccount || !group || !bank || !publicKey) return
 
     setSubmitting(true)
     try {
@@ -175,7 +170,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       })
 
       await actions.reloadMangoAccount()
-      actions.fetchWalletTokens(wallet!.adapter as unknown as Wallet)
+      actions.fetchWalletTokens(publicKey)
       setSubmitting(false)
       onSuccess()
     } catch (e: any) {
@@ -188,26 +183,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       console.error('Error depositing:', e)
       setSubmitting(false)
     }
-  }, [bank, wallet, inputAmount])
-
-  // TODO extract into a shared hook for UserSetup.tsx
-  const banks = useMemo(() => {
-    const banks = group?.banksMapByName
-      ? Array.from(group?.banksMapByName, ([key, value]) => {
-          const walletBalance = walletBalanceForToken(walletTokens, key)
-          return {
-            key,
-            value,
-            walletBalance: floorToDecimal(
-              walletBalance.maxAmount,
-              walletBalance.maxDecimals
-            ).toNumber(),
-            walletBalanceValue: walletBalance.maxAmount * value[0].uiPrice!,
-          }
-        })
-      : []
-    return banks
-  }, [group?.banksMapByName, walletTokens])
+  }, [bank, publicKey, inputAmount])
 
   const showInsufficientBalance =
     tokenMax.maxAmount < Number(inputAmount) ||
@@ -243,7 +219,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           banks={banks}
           onSelect={handleSelectToken}
           showDepositRates
-          sortByKey="walletBalanceValue"
           valueKey="walletBalance"
         />
       </EnterBottomExitBottom>
@@ -269,12 +244,10 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 <Label text={`${t('deposit')} ${t('token')}`} />
                 <MaxAmountButton
                   className="mb-2"
+                  decimals={tokenMax.maxDecimals}
                   label={t('wallet-balance')}
                   onClick={setMax}
-                  value={floorToDecimal(
-                    tokenMax.maxAmount,
-                    tokenMax.maxDecimals
-                  ).toFixed()}
+                  value={tokenMax.maxAmount}
                 />
               </div>
               <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
@@ -337,20 +310,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 />
                 <div className="flex justify-between">
                   <p>{t('deposit-amount')}</p>
-                  {inputAmount ? (
-                    <AmountWithValue
-                      amount={formatDecimal(
-                        Number(inputAmount),
-                        bank.mintDecimals
-                      )}
-                      value={formatFixedDecimals(
-                        bank.uiPrice * Number(inputAmount),
-                        true
-                      )}
-                    />
-                  ) : (
-                    <AmountWithValue amount="0" value="$0.00" />
-                  )}
+                  <BankAmountWithValue amount={inputAmount} bank={bank} />
                 </div>
                 {/* <div className="flex justify-between">
               <div className="flex items-center">
@@ -365,12 +325,14 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                     <p className="tooltip-underline">{t('collateral-value')}</p>
                   </Tooltip>
                   <p className="font-mono text-th-fgd-2">
-                    {formatFixedDecimals(
-                      bank.uiPrice *
+                    <FormatNumericValue
+                      value={
+                        bank.uiPrice *
                         Number(inputAmount) *
-                        Number(bank.initAssetWeight),
-                      true
-                    )}
+                        Number(bank.initAssetWeight)
+                      }
+                      isUsd
+                    />
                   </p>
                 </div>
               </div>

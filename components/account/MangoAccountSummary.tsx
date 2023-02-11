@@ -3,92 +3,78 @@ import {
   HealthType,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
-import { formatFixedDecimals } from '../../utils/numbers'
 import { useTranslation } from 'next-i18next'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useMangoGroup from 'hooks/useMangoGroup'
+import { useMemo } from 'react'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
+
+const SummaryItem = ({
+  label,
+  value,
+  isUsd,
+  suffix,
+}: {
+  label: string
+  value: number
+  isUsd?: boolean
+  suffix?: string
+}) => {
+  return (
+    <div>
+      <p className="text-sm text-th-fgd-3">{label}</p>
+      <p className="font-mono text-sm text-th-fgd-1">
+        <FormatNumericValue value={value} decimals={2} isUsd={isUsd} />
+        {suffix}
+      </p>
+    </div>
+  )
+}
 
 const MangoAccountSummary = () => {
   const { t } = useTranslation('common')
-  const group = mangoStore.getState().group
+  const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
+  const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
 
-  // const leverage = useMemo(() => {
-  //   if (!group || !mangoAccount) return 0
-  //   const liabsValue = mangoAccount
-  //     .getLiabsValue(group, HealthType.init)
-  //     .toNumber()
-  //   const totalCollateral = mangoAccount
-  //     .getAssetsValue(group, HealthType.init)
-  //     .toNumber()
-  //   if (isNaN(liabsValue / totalCollateral)) {
-  //     return 0
-  //   } else return liabsValue / totalCollateral
-  // }, [mangoAccount])
+  const [accountValue, freeCollateral, health] = useMemo(() => {
+    if (!group || !mangoAccount) return [0, 0, 0]
+    const accountValue = toUiDecimalsForQuote(
+      mangoAccount.getEquity(group).toNumber()
+    )
+    const freeCollateral = toUiDecimalsForQuote(
+      mangoAccount.getCollateralValue(group).toNumber()
+    )
+    const health = mangoAccount.getHealthRatioUi(group, HealthType.maint)
+    return [accountValue, freeCollateral, health]
+  }, [group, mangoAccount])
+
+  const leverage = useMemo(() => {
+    if (!group || !mangoAccount) return 0
+    const assetsValue = toUiDecimalsForQuote(
+      mangoAccount.getAssetsValue(group).toNumber()
+    )
+
+    if (isNaN(assetsValue / accountValue)) {
+      return 0
+    } else {
+      return Math.abs(1 - assetsValue / accountValue)
+    }
+  }, [mangoAccount, group, accountValue])
+
+  const pnl = useMemo(() => {
+    if (!performanceData.length) return 0
+    return performanceData[performanceData.length - 1].pnl
+  }, [performanceData])
 
   return (
-    <>
-      <div className="space-y-2">
-        <div>
-          <p className="text-sm text-th-fgd-3">{t('health')}</p>
-          <p className="font-mono text-sm text-th-fgd-1">
-            {group && mangoAccount
-              ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
-              : 0}
-            %
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-th-fgd-3">{t('account-value')}</p>
-          <p className="font-mono text-sm text-th-fgd-1">
-            {group && mangoAccount
-              ? formatFixedDecimals(
-                  toUiDecimalsForQuote(
-                    mangoAccount.getEquity(group).toNumber()
-                  ),
-                  false,
-                  true
-                )
-              : '$0.00'}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-th-fgd-3">{t('free-collateral')}</p>
-          <p className="font-mono text-sm text-th-fgd-1">
-            {group && mangoAccount
-              ? formatFixedDecimals(
-                  toUiDecimalsForQuote(
-                    mangoAccount.getCollateralValue(group).toNumber()
-                  ),
-                  false,
-                  true
-                )
-              : '$0.00'}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-th-fgd-3">{t('total-collateral')}</p>
-          <p className="font-mono text-sm text-th-fgd-1">
-            {group && mangoAccount
-              ? formatFixedDecimals(
-                  toUiDecimalsForQuote(
-                    mangoAccount
-                      .getAssetsValue(group, HealthType.init)
-                      .toNumber()
-                  ),
-                  false,
-                  true
-                )
-              : '$0.00'}
-          </p>
-        </div>
-        {/* <div>
-          <p className="text-sm text-th-fgd-3">{t('leverage')}</p>
-          <p className="font-mono text-sm text-th-fgd-1">
-            {leverage.toFixed(2)}x
-          </p>
-        </div> */}
-      </div>
-    </>
+    <div className="space-y-2">
+      <SummaryItem label={t('account-value')} value={accountValue} isUsd />
+      <SummaryItem label={t('health')} value={health} suffix="%" />
+      <SummaryItem label={t('free-collateral')} value={freeCollateral} isUsd />
+      <SummaryItem label={t('leverage')} value={leverage} suffix="x" />
+      <SummaryItem label={t('pnl')} value={pnl} isUsd />
+    </div>
   )
 }
 

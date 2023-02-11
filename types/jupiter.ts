@@ -1,13 +1,14 @@
-import { AccountMeta } from '@solana/web3.js'
-import { AccountInfo } from '@solana/web3.js'
+import { AccountInfo, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import Decimal from 'decimal.js'
 
 export declare type SideType = typeof Side.Ask | typeof Side.Bid
 export declare const Side: {
   Bid: {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     bid: {}
   }
   Ask: {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     ask: {}
   }
 }
@@ -57,7 +58,7 @@ export interface ExactOutSwapParams extends SwapParams {
 }
 export declare type AccountInfoMap = Map<string, AccountInfo<Buffer> | null>
 
-declare type AmmLabel =
+export declare type AmmLabel =
   | 'Aldrin'
   | 'Crema'
   | 'Cropper'
@@ -127,6 +128,9 @@ export interface RouteInfo {
   priceImpactPct: number
   slippageBps: number
   swapMode: SwapMode
+  instructions?: TransactionInstruction[]
+  mints?: PublicKey[]
+  routerName?: 'Mango'
 }
 
 export type Routes = {

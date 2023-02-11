@@ -10,7 +10,7 @@ export const OUTPUT_TOKEN_DEFAULT = 'SOL'
 export const JUPITER_V4_PROGRAM_ID =
   'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
 
-export const ALPHA_DEPOSIT_LIMIT = 100
+export const ALPHA_DEPOSIT_LIMIT = 200
 
 export const CONNECTION_COMMITMENT = 'processed'
 
@@ -35,7 +35,7 @@ export const GRID_LAYOUT_KEY = 'savedLayouts-0.2'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.2'
 
-export const TRADE_CHART_UI_KEY = 'tradeChart-0.2'
+export const TRADE_CHART_UI_KEY = 'tradeChart-0.3'
 
 export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
@@ -44,6 +44,8 @@ export const THEME_KEY = 'theme-0.1'
 export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
 
 export const DATA_PROVIDER_KEY = 'dataProviderKey-0.1'
+
+export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [
@@ -60,6 +62,10 @@ export const PROFILE_CATEGORIES = [
 
 export const CHART_DATA_FEED = `https://dry-ravine-67635.herokuapp.com/tv`
 
+export const MANGO_ROUTER_API_URL = 'https://api.mngo.cloud/router/v1'
+
+export const MANGO_DATA_API_URL = 'https://api.mngo.cloud/data/v4'
+
 export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
 export const MIN_SOL_BALANCE = 0.001
@@ -67,3 +73,5 @@ export const MIN_SOL_BALANCE = 0.001
 export const ACCOUNT_ACTION_MODAL_HEIGHT = '506px'
 
 export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '444px'
+
+export const PAGINATION_PAGE_LENGTH = 250

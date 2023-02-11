@@ -13,7 +13,7 @@ import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import NumberFormat, {
   NumberFormatValues,
   SourceInfo,
@@ -27,11 +27,10 @@ import Loading from '@components/shared/Loading'
 import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider from './PerpSlider'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { SIZE_INPUT_UI_KEY } from 'utils/constants'
+import { SIZE_INPUT_UI_KEY, SOUND_SETTINGS_KEY } from 'utils/constants'
 import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
-import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
@@ -40,61 +39,40 @@ import ButtonGroup from '@components/forms/ButtonGroup'
 import TradeSummary from './TradeSummary'
 import useMangoAccount from 'hooks/useMangoAccount'
 import MaxSizeButton from './MaxSizeButton'
+import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
+import { Howl } from 'howler'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 
 const set = mangoStore.getState().set
 
+const successSound = new Howl({
+  src: ['/sounds/swap-success.mp3'],
+  volume: 0.5,
+})
+
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
-  const { mangoTokens } = useJupiterMints()
-  const { selectedMarket, price: oraclePrice } = useSelectedMarket()
   const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
-  const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'Slider')
+  const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
+  const [soundSettings] = useLocalStorageState(
+    SOUND_SETTINGS_KEY,
+    INITIAL_SOUND_SETTINGS
+  )
   const { connected } = useWallet()
   const { handleConnect } = useEnhancedWallet()
-
-  const baseSymbol = useMemo(() => {
-    return selectedMarket?.name.split(/-|\//)[0]
-  }, [selectedMarket])
-
-  const baseLogoURI = useMemo(() => {
-    if (!baseSymbol || !mangoTokens.length) return ''
-    const token =
-      mangoTokens.find((t) => t.symbol === baseSymbol) ||
-      mangoTokens.find((t) => t.symbol?.includes(baseSymbol))
-    if (token) {
-      return token.logoURI
-    }
-    return ''
-  }, [baseSymbol, mangoTokens])
-
-  const quoteBank = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
-    const tokenIdx =
-      selectedMarket instanceof Serum3Market
-        ? selectedMarket.quoteTokenIndex
-        : selectedMarket?.settleTokenIndex
-    return group?.getFirstBankByTokenIndex(tokenIdx)
-  }, [selectedMarket])
-
-  const quoteSymbol = useMemo(() => {
-    return quoteBank?.name
-  }, [quoteBank])
-
-  const quoteLogoURI = useMemo(() => {
-    if (!quoteSymbol || !mangoTokens.length) return ''
-    const token = mangoTokens.find((t) => t.symbol === quoteSymbol)
-    if (token) {
-      return token.logoURI
-    }
-    return ''
-  }, [quoteSymbol, mangoTokens])
+  const {
+    selectedMarket,
+    price: oraclePrice,
+    baseLogoURI,
+    baseSymbol,
+    quoteLogoURI,
+    quoteSymbol,
+  } = useSelectedMarket()
 
   const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
     set((s) => {
@@ -175,10 +153,26 @@ const AdvancedTradeForm = () => {
     })
   }, [])
 
+  const handleReduceOnlyChange = useCallback((reduceOnly: boolean) => {
+    set((s) => {
+      s.tradeForm.reduceOnly = reduceOnly
+    })
+  }, [])
+
   const handleSetSide = useCallback((side: 'buy' | 'sell') => {
     set((s) => {
       s.tradeForm.side = side
     })
+  }, [])
+
+  const handleSetMargin = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.checked) {
+      set((s) => {
+        s.tradeForm.quoteSize = ''
+        s.tradeForm.baseSize = ''
+      })
+    }
+    setUseMargin(e.target.checked)
   }, [])
 
   const [tickDecimals, tickSize] = useMemo(() => {
@@ -195,6 +189,22 @@ const AdvancedTradeForm = () => {
     }
     const tickDecimals = getDecimalCount(tickSize)
     return [tickDecimals, tickSize]
+  }, [selectedMarket])
+
+  const [minOrderDecimals, minOrderSize] = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return [1, 0.1]
+    let minOrderSize: number
+    if (selectedMarket instanceof Serum3Market) {
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      minOrderSize = market.minOrderSize
+    } else {
+      minOrderSize = selectedMarket.minOrderSize
+    }
+    const minOrderDecimals = getDecimalCount(minOrderSize)
+    return [minOrderDecimals, minOrderSize]
   }, [selectedMarket])
 
   /*
@@ -278,6 +288,12 @@ const AdvancedTradeForm = () => {
           10
         )
         actions.fetchOpenOrders()
+        set((s) => {
+          s.successAnimation.trade = true
+        })
+        if (soundSettings['swap-success']) {
+          successSound.play()
+        }
         notify({
           type: 'success',
           title: 'Transaction successful',
@@ -302,10 +318,17 @@ const AdvancedTradeForm = () => {
           undefined, // maxQuoteQuantity
           Date.now(),
           perpOrderType,
+          selectedMarket.reduceOnly || tradeForm.reduceOnly,
           undefined,
           undefined
         )
         actions.fetchOpenOrders()
+        set((s) => {
+          s.successAnimation.trade = true
+        })
+        if (soundSettings['swap-success']) {
+          successSound.play()
+        }
         notify({
           type: 'success',
           title: 'Transaction successful',
@@ -325,25 +348,9 @@ const AdvancedTradeForm = () => {
     }
   }, [])
 
-  const [minOrderDecimals, minOrderSize] = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return [1, 0.1]
-    let minOrderSize: number
-    if (selectedMarket instanceof Serum3Market) {
-      const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
-      )
-      minOrderSize = market.minOrderSize
-    } else {
-      minOrderSize = selectedMarket.minOrderSize
-    }
-    const minOrderDecimals = getDecimalCount(minOrderSize)
-    return [minOrderDecimals, minOrderSize]
-  }, [selectedMarket])
-
   return (
     <div>
-      <div className="mt-1.5 px-2 md:mt-0 md:border-t md:border-th-bkg-3 md:px-4 md:pt-5 lg:mt-5 lg:border-t-0 lg:pt-0">
+      <div className="mt-1.5 px-2 md:mt-0 md:px-4 md:pt-5 lg:mt-5 lg:pt-0">
         <TabUnderline
           activeValue={tradeForm.side}
           values={['buy', 'sell']}
@@ -400,6 +407,7 @@ const AdvancedTradeForm = () => {
         <MaxSizeButton
           minOrderDecimals={minOrderDecimals}
           tickDecimals={tickDecimals}
+          useMargin={useMargin}
         />
         <div className="flex flex-col">
           <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
@@ -420,7 +428,7 @@ const AdvancedTradeForm = () => {
               thousandSeparator=","
               allowNegative={false}
               isNumericString={true}
-              decimalScale={6}
+              decimalScale={minOrderDecimals}
               name="amountIn"
               id="amountIn"
               className="ml-2 w-full bg-transparent font-mono focus:outline-none"
@@ -447,7 +455,7 @@ const AdvancedTradeForm = () => {
               thousandSeparator=","
               allowNegative={false}
               isNumericString={true}
-              decimalScale={6}
+              decimalScale={tickDecimals}
               name="amountIn"
               id="amountIn"
               className="ml-2 w-full bg-transparent font-mono focus:outline-none"
@@ -468,11 +476,13 @@ const AdvancedTradeForm = () => {
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
               step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
+              useMargin={useMargin}
             />
           ) : (
             <SpotButtonGroup
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
+              useMargin={useMargin}
             />
           )
         ) : tradeFormSizeUi === 'slider' ? (
@@ -531,15 +541,32 @@ const AdvancedTradeForm = () => {
               placement="left"
               content={t('trade:tooltip-enable-margin')}
             >
-              <Checkbox
-                checked={useMargin}
-                onChange={(e) => setUseMargin(e.target.checked)}
-              >
+              <Checkbox checked={useMargin} onChange={handleSetMargin}>
                 {t('trade:margin')}
               </Checkbox>
             </Tooltip>
           </div>
-        ) : null}
+        ) : (
+          <div className="mr-3 mt-4">
+            <Tooltip
+              className="hidden md:block"
+              delay={250}
+              placement="left"
+              content={
+                'Reduce will only decrease the size of an open position. This is often used for closing a position.'
+              }
+            >
+              <div className="flex items-center text-xs text-th-fgd-3">
+                <Checkbox
+                  checked={tradeForm.reduceOnly}
+                  onChange={(e) => handleReduceOnlyChange(e.target.checked)}
+                >
+                  {t('trade:reduce-only')}
+                </Checkbox>
+              </div>
+            </Tooltip>
+          </div>
+        )}
       </div>
       <div className="mt-6 mb-4 flex px-3 md:px-4">
         {ipAllowed ? (

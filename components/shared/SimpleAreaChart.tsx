@@ -14,10 +14,10 @@ const SimpleAreaChart = ({
   xKey: string
   yKey: string
 }) => {
-  const flipGradientCoords = useMemo(
-    () => data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey],
-    [data]
-  )
+  const flipGradientCoords = useMemo(() => {
+    if (!data.length) return
+    return data[0][yKey] <= 0 && data[data.length - 1][yKey] <= 0
+  }, [data])
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -35,14 +35,28 @@ const SimpleAreaChart = ({
           </linearGradient>
         </defs>
         <Area
-          isAnimationActive={false}
           type="monotone"
           dataKey={yKey}
           stroke={color}
           fill={`url(#gradientArea-${name})`}
         />
         <XAxis dataKey={xKey} hide />
-        <YAxis domain={['dataMin', 'dataMax']} dataKey={yKey} hide />
+        <YAxis
+          domain={([dataMin, dataMax]) => {
+            const difference = Math.abs(dataMax) - Math.abs(dataMin)
+            if (difference < 0.1) {
+              return [dataMin - 0.01, dataMax + 0.01]
+            } else if (difference < 1) {
+              return [dataMin - 0.1, dataMax + 0.11]
+            } else if (difference < 10) {
+              return [dataMin - 1, dataMax + 1]
+            } else {
+              return [dataMin, dataMax]
+            }
+          }}
+          dataKey={yKey}
+          hide
+        />
       </AreaChart>
     </ResponsiveContainer>
   )

@@ -5,6 +5,7 @@ import {
   Serum3Market,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthImpact from '@components/shared/HealthImpact'
 import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
@@ -12,7 +13,6 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
-import { formatFixedDecimals } from 'utils/numbers'
 import Slippage from './Slippage'
 
 const TradeSummary = ({
@@ -76,13 +76,17 @@ const TradeSummary = ({
       <div className="flex justify-between text-xs">
         <p>{t('trade:order-value')}</p>
         <p className="text-th-fgd-2">
-          {tradeForm.price && tradeForm.baseSize
-            ? formatFixedDecimals(
-                parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize),
-                false,
-                true
-              )
-            : '0.00'}
+          {tradeForm.price && tradeForm.baseSize ? (
+            <FormatNumericValue
+              value={
+                parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize)
+              }
+              decimals={2}
+              isUsd
+            />
+          ) : (
+            '0.00'
+          )}
         </p>
       </div>
       <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
@@ -91,15 +95,17 @@ const TradeSummary = ({
           <p className="tooltip-underline">{t('free-collateral')}</p>
         </Tooltip>
         <p className="text-th-fgd-2">
-          {group && mangoAccount
-            ? formatFixedDecimals(
-                toUiDecimalsForQuote(
-                  mangoAccount.getCollateralValue(group).toNumber()
-                ),
-                false,
-                true
-              )
-            : '–'}
+          {group && mangoAccount ? (
+            <FormatNumericValue
+              value={toUiDecimalsForQuote(
+                mangoAccount.getCollateralValue(group)
+              )}
+              decimals={2}
+              isUsd
+            />
+          ) : (
+            '–'
+          )}
         </p>
       </div>
       <Slippage />

@@ -1,14 +1,16 @@
 import { MinusSmallIcon } from '@heroicons/react/20/solid'
-import { formatDecimal } from 'utils/numbers'
 import { DownTriangle, UpTriangle } from './DirectionTriangles'
+import FormatNumericValue from './FormatNumericValue'
 
 const Change = ({
   change,
+  decimals,
   prefix,
   size,
   suffix,
 }: {
   change: number | typeof NaN
+  decimals?: number
   prefix?: string
   size?: 'small'
   suffix?: string
@@ -42,7 +44,10 @@ const Change = ({
         }`}
       >
         {prefix ? prefix : ''}
-        {isNaN(change) ? '0.00' : formatDecimal(Math.abs(change), 2)}
+        <FormatNumericValue
+          value={isNaN(change) ? '0.00' : Math.abs(change)}
+          decimals={decimals ? decimals : 2}
+        />
         {suffix ? suffix : ''}
       </p>
     </div>

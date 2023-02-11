@@ -21,10 +21,11 @@ import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { formatFixedDecimals } from 'utils/numbers'
+import { formatNumericValue } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
 import { useTranslation } from 'next-i18next'
+import FormatNumericValue from './FormatNumericValue'
 
 dayjs.extend(relativeTime)
 
@@ -35,6 +36,7 @@ interface DetailedAreaChartProps {
   heightClass?: string
   hideChange?: boolean
   hideChart?: () => void
+  loaderHeightClass?: string
   loading?: boolean
   prefix?: string
   setDaysToShow?: (x: string) => void
@@ -43,6 +45,7 @@ interface DetailedAreaChartProps {
   tickFormat?: (x: number) => string
   title?: string
   xKey: string
+  yDecimals?: number
   yKey: string
 }
 
@@ -61,6 +64,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   heightClass,
   hideChange,
   hideChart,
+  loaderHeightClass,
   loading,
   prefix = '',
   setDaysToShow,
@@ -69,6 +73,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   tickFormat,
   title,
   xKey,
+  yDecimals,
   yKey,
 }) => {
   const { t } = useTranslation('common')
@@ -89,21 +94,39 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     setMouseData(null)
   }
 
+  const flipGradientCoords = useMemo(() => {
+    if (!data.length) return
+    return data[0][yKey] <= 0 && data[data.length - 1][yKey] <= 0
+  }, [data])
+
+  const filteredData = useMemo(() => {
+    if (!data.length) return []
+    const start = Number(daysToShow) * 86400000
+    const filtered = data.filter((d: any) => {
+      const dataTime = new Date(d[xKey]).getTime()
+      const now = new Date().getTime()
+      const limit = now - start
+      return dataTime >= limit
+    })
+    return filtered
+  }, [data, daysToShow])
+
   const calculateChartChange = () => {
-    if (data.length) {
+    if (filteredData.length) {
       if (mouseData) {
-        const index = data.findIndex((d: any) => d[xKey] === mouseData[xKey])
-        const change = index >= 0 ? data[index][yKey] - data[0][yKey] : 0
+        const index = filteredData.findIndex(
+          (d: any) => d[xKey] === mouseData[xKey]
+        )
+        const change =
+          index >= 0 ? filteredData[index][yKey] - filteredData[0][yKey] : 0
         return isNaN(change) ? 0 : change
-      } else return data[data.length - 1][yKey] - data[0][yKey]
+      } else
+        return (
+          filteredData[filteredData.length - 1][yKey] - filteredData[0][yKey]
+        )
     }
     return 0
   }
-
-  const flipGradientCoords = useMemo(() => {
-    if (!data.length) return
-    return data[0][yKey] <= 0 && data[data.length - 1][yKey] < data[0][yKey]
-  }, [data])
 
   return (
     <FadeInFadeOut show={true}>
@@ -112,16 +135,20 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
           <SheenLoader className="flex flex-1">
             <div
               className={`${
-                heightClass ? heightClass : 'h-96'
+                loaderHeightClass ? loaderHeightClass : 'h-96'
               } w-full rounded-lg bg-th-bkg-2`}
             />
           </SheenLoader>
-        ) : data.length ? (
+        ) : filteredData.length ? (
           <div className="relative">
             <div className="flex items-start justify-between">
               <div className="flex flex-col md:flex-row md:items-start md:space-x-6">
                 {hideChart ? (
-                  <IconButton className="mb-6" onClick={hideChart}>
+                  <IconButton
+                    className="mb-6"
+                    onClick={hideChart}
+                    size="medium"
+                  >
                     <ArrowLeftIcon className="h-5 w-5" />
                   </IconButton>
                 ) : null}
@@ -149,23 +176,27 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             play
                             numbers={`${
                               mouseData[yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
-                              Math.abs(mouseData[yKey])
+                            }${prefix}${formatNumericValue(
+                              Math.abs(mouseData[yKey]),
+                              yDecimals
                             )}${suffix}`}
                           />
                         ) : (
                           <span>
-                            {`${
-                              mouseData[yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
-                              Math.abs(mouseData[yKey])
-                            )}${suffix}`}
+                            {mouseData[yKey] < 0 ? '-' : ''}
+                            {prefix}
+                            <FormatNumericValue
+                              value={Math.abs(mouseData[yKey])}
+                              decimals={yDecimals}
+                            />
+                            {suffix}
                           </span>
                         )}
                         {!hideChange ? (
                           <span className="ml-3">
                             <Change
                               change={calculateChartChange()}
+                              decimals={yDecimals}
                               prefix={prefix}
                               suffix={suffix}
                             />
@@ -195,24 +226,34 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                             width={small ? 17 : 30}
                             play
                             numbers={`${
-                              data[data.length - 1][yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
-                              Math.abs(data[data.length - 1][yKey])
+                              filteredData[filteredData.length - 1][yKey] < 0
+                                ? '-'
+                                : ''
+                            }${prefix}${formatNumericValue(
+                              Math.abs(
+                                filteredData[filteredData.length - 1][yKey]
+                              ),
+                              yDecimals
                             )}${suffix}`}
                           />
                         ) : (
                           <span>
-                            {`${
-                              data[data.length - 1][yKey] < 0 ? '-' : ''
-                            }${prefix}${formatFixedDecimals(
-                              Math.abs(data[data.length - 1][yKey])
-                            )}${suffix}`}
+                            {filteredData[filteredData.length - 1][yKey] < 0
+                              ? '-'
+                              : ''}
+                            {prefix}
+                            <FormatNumericValue
+                              value={Math.abs(data[data.length - 1][yKey])}
+                              decimals={yDecimals}
+                            />
+                            {suffix}
                           </span>
                         )}
                         {!hideChange ? (
                           <span className="ml-3">
                             <Change
                               change={calculateChartChange()}
+                              decimals={yDecimals}
                               prefix={prefix}
                               suffix={suffix}
                             />
@@ -224,9 +265,9 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           small ? 'text-xs' : 'text-sm'
                         } text-th-fgd-4`}
                       >
-                        {dayjs(data[data.length - 1][xKey]).format(
-                          'DD MMM YY, h:mma'
-                        )}
+                        {dayjs(
+                          filteredData[filteredData.length - 1][xKey]
+                        ).format('DD MMM YY, h:mma')}
                       </p>
                     </div>
                   )}
@@ -249,7 +290,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
               <div className="-mx-6 mt-6 h-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
-                    data={data}
+                    data={filteredData}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                   >
@@ -318,7 +359,23 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       dataKey={yKey}
                       minTickGap={20}
                       type="number"
-                      domain={domain ? domain : ['dataMin', 'dataMax']}
+                      domain={
+                        domain
+                          ? domain
+                          : ([dataMin, dataMax]) => {
+                              const difference =
+                                Math.abs(dataMax) - Math.abs(dataMin)
+                              if (difference < 0.1) {
+                                return [dataMin - 0.01, dataMax + 0.01]
+                              } else if (difference < 1) {
+                                return [dataMin - 0.1, dataMax + 0.1]
+                              } else if (difference < 10) {
+                                return [dataMin - 1, dataMax + 1]
+                              } else {
+                                return [dataMin, dataMax]
+                              }
+                            }
+                      }
                       padding={{ top: 20, bottom: 20 }}
                       tick={{
                         fill: 'var(--fgd-4)',
