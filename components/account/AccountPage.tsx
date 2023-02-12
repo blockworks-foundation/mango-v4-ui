@@ -28,7 +28,7 @@ import {
   ANIMATION_SETTINGS_KEY,
   // IS_ONBOARDED_KEY
 } from 'utils/constants'
-// import { useWallet } from '@solana/wallet-adapter-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 // import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
@@ -42,7 +42,7 @@ import HealthBar from './HealthBar'
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
-  // const { connected } = useWallet()
+  const { connected } = useWallet()
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
@@ -69,8 +69,7 @@ const AccountPage = () => {
   )
 
   useEffect(() => {
-    if (mangoAccountAddress) {
-      console.log('fired')
+    if (mangoAccountAddress || (!mangoAccountAddress && connected)) {
       actions.fetchAccountPerformance(mangoAccountAddress, 31)
       actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
