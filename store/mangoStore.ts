@@ -269,7 +269,6 @@ export type MangoStore = {
     performance: {
       data: PerformanceDataItem[]
       loading: boolean
-      initialLoad: boolean
     }
     swapHistory: {
       data: SwapHistoryItem[]
@@ -415,7 +414,7 @@ const mangoStore = create<MangoStore>()(
         perpPositions: [],
         spotBalances: {},
         interestTotals: { data: [], loading: false },
-        performance: { data: [], loading: false, initialLoad: false },
+        performance: { data: [], loading: true },
         swapHistory: { data: [], loading: true },
         tradeHistory: { data: [], loading: true },
       },
@@ -528,9 +527,6 @@ const mangoStore = create<MangoStore>()(
           range: number
         ) => {
           const set = get().set
-          set((state) => {
-            state.mangoAccount.performance.loading = true
-          })
           try {
             const response = await fetch(
               `${MANGO_DATA_API_URL}/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
@@ -554,13 +550,8 @@ const mangoStore = create<MangoStore>()(
           } catch (e) {
             console.error('Failed to load account performance data', e)
           } finally {
-            const hasLoaded =
-              mangoStore.getState().mangoAccount.performance.initialLoad
             set((state) => {
               state.mangoAccount.performance.loading = false
-              if (!hasLoaded) {
-                state.mangoAccount.performance.initialLoad = true
-              }
             })
           }
         },

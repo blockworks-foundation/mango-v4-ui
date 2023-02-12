@@ -87,7 +87,7 @@ const PerpMarketsTable = ({
                 : 0
 
               let fundingRate
-              if (rate.isSuccess && market instanceof PerpMarket) {
+              if (rate.isSuccess) {
                 const marketRate = rate?.data?.find(
                   (r) => r.market_index === market.perpMarketIndex
                 )
@@ -198,6 +198,7 @@ const PerpMarketsTable = ({
               <MobilePerpMarketItem
                 key={market.publicKey.toString()}
                 market={market}
+                setShowPerpDetails={setShowPerpDetails}
               />
             )
           })}
@@ -209,7 +210,13 @@ const PerpMarketsTable = ({
 
 export default PerpMarketsTable
 
-const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
+const MobilePerpMarketItem = ({
+  market,
+  setShowPerpDetails,
+}: {
+  market: PerpMarket
+  setShowPerpDetails: (x: string) => void
+}) => {
   const { t } = useTranslation('common')
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const perpStats = mangoStore((s) => s.perpStats.data)
@@ -252,24 +259,30 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
               <Change change={change} suffix="%" />
             </div>
           </div>
+          {!loadingPerpStats ? (
+            marketStats.length ? (
+              <div className="ml-4 h-10 w-24">
+                <SimpleAreaChart
+                  color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                  data={marketStats}
+                  name={market.name}
+                  xKey="date_hour"
+                  yKey="price"
+                />
+              </div>
+            ) : symbol === 'USDC' || symbol === 'USDT' ? null : (
+              <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
+            )
+          ) : (
+            <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+          )}
         </div>
-        {!loadingPerpStats ? (
-          marketStats.length ? (
-            <div className="h-10 w-24">
-              <SimpleAreaChart
-                color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-                data={marketStats}
-                name={market.name}
-                xKey="date_hour"
-                yKey="price"
-              />
-            </div>
-          ) : symbol === 'USDC' || symbol === 'USDT' ? null : (
-            <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-          )
-        ) : (
-          <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
-        )}
+        <IconButton
+          onClick={() => setShowPerpDetails(market.name)}
+          size="medium"
+        >
+          <ChevronRightIcon className="h-5 w-5" />
+        </IconButton>
       </div>
     </div>
   )

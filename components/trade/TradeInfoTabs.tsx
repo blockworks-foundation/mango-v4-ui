@@ -27,9 +27,9 @@ const TradeInfoTabs = () => {
       unsettledPerpPositions?.length
     return [
       ['balances', 0],
+      ['trade:positions', openPerpPositions.length],
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', unsettledTradeCount],
-      ['trade:positions', openPerpPositions.length],
       ['trade-history', 0],
     ]
   }, [

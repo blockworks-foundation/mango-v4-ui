@@ -92,7 +92,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       bank.mintDecimals,
       Decimal.ROUND_UP
     )
-    setInputAmount(amount.toString())
+    setInputAmount(amount.toFixed())
     setSizePercentage('100')
   }, [bank, borrowAmount])
 
@@ -105,7 +105,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         .div(100)
         .toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
 
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed())
     },
     [bank, borrowAmount]
   )
@@ -127,12 +127,12 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
       if (!mangoAccount || !group || !bank || !publicKey) return
 
-      //we don't want to left negative dust in account if someone wants to repay full amount
+      // we don't want to leave negative dust in the account if someone wants to repay the full amount
       const actualAmount =
         sizePercentage === '100'
-          ? mangoAccount.getTokenBorrowsUi(bank) < parseFloat(amount)
-            ? parseFloat(amount)
-            : mangoAccount.getTokenBorrowsUi(bank)
+          ? borrowAmount.toNumber() > parseFloat(amount)
+            ? borrowAmount.toNumber()
+            : parseFloat(amount)
           : parseFloat(amount)
 
       setSubmitting(true)
@@ -177,6 +177,9 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   const exceedsAlphaMax = useAlphaMax(inputAmount, bank)
 
   const showInsufficientBalance = walletBalance.maxAmount < Number(inputAmount)
+
+  const outstandingAmount = borrowAmount.toNumber() - parseFloat(inputAmount)
+  const isDeposit = parseFloat(inputAmount) > borrowAmount.toNumber()
 
   return banks.length ? (
     <>
@@ -289,15 +292,23 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   <p>{t('repayment-amount')}</p>
                   <BankAmountWithValue amount={inputAmount} bank={bank} />
                 </div>
+                {isDeposit ? (
+                  <div className="flex justify-between">
+                    <p>{t('deposit-amount')}</p>
+                    <BankAmountWithValue
+                      amount={parseFloat(inputAmount) - borrowAmount.toNumber()}
+                      bank={bank}
+                    />
+                  </div>
+                ) : null}
                 <div className="flex justify-between">
                   <div className="flex items-center">
                     <p>{t('outstanding-balance')}</p>
                   </div>
                   <p className="font-mono text-th-fgd-2">
-                    {formatNumericValue(
-                      Number(borrowAmount) - Number(inputAmount),
-                      bank.mintDecimals
-                    )}{' '}
+                    {outstandingAmount > 0
+                      ? formatNumericValue(outstandingAmount, bank.mintDecimals)
+                      : 0}{' '}
                     <span className="font-body text-th-fgd-4">
                       {selectedToken}
                     </span>
@@ -326,7 +337,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
             ) : (
               <div className="flex items-center">
                 <ArrowDownRightIcon className="mr-2 h-5 w-5" />
-                {t('repay')}
+                {isDeposit ? t('repay-deposit') : t('repay')}
               </div>
             )}
           </Button>

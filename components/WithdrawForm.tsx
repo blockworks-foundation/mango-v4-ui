@@ -90,7 +90,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         new Decimal(tokenMax).mul(percentage).div(100),
         bank.mintDecimals
       )
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed())
     },
     [bank, tokenMax]
   )
@@ -98,7 +98,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const setMax = useCallback(() => {
     if (!bank) return
     const max = floorToDecimal(tokenMax, bank.mintDecimals)
-    setInputAmount(max.toString())
+    setInputAmount(max.toFixed())
     setSizePercentage('100')
   }, [bank, tokenMax])
 
