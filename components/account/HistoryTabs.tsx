@@ -7,11 +7,11 @@ import ActivityFilters from './ActivityFilters'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 
-const TABS = ['activity:activity', 'activity:swaps', 'activity:trades']
+const TABS = ['activity:activity-feed', 'activity:swaps', 'activity:trades']
 
 const HistoryTabs = () => {
   const { t } = useTranslation(['common', 'activity'])
-  const [activeTab, setActiveTab] = useState('activity:activity')
+  const [activeTab, setActiveTab] = useState('activity:activity-feed')
   const actions = mangoStore((s) => s.actions)
   const { mangoAccountAddress } = useMangoAccount()
 
@@ -39,7 +39,7 @@ const HistoryTabs = () => {
             </button>
           ))}
         </div>
-        {activeTab === 'activity:activity' ? <ActivityFilters /> : null}
+        {activeTab === 'activity:activity-feed' ? <ActivityFilters /> : null}
       </div>
       <TabContent activeTab={activeTab} />
     </>
@@ -48,7 +48,7 @@ const HistoryTabs = () => {
 
 const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
-    case 'activity:activity':
+    case 'activity:activity-feed':
       return <ActivityFeed />
     case 'activity:swaps':
       return <SwapHistoryTable />

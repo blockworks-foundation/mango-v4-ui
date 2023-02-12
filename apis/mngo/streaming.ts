@@ -1,9 +1,9 @@
-import { parseResolution, getNextBarTime, socketUrl } from './helpers'
+import { parseResolution, getNextBarTime } from './helpers'
 
 let subscriptionItem: any = {}
 
 // Create WebSocket connection.
-const socket = new WebSocket(socketUrl, 'echo-protocol')
+const socket = new WebSocket(`wss://api.mngo.cloud/fills/v1/`)
 
 // Connection opened
 socket.addEventListener('open', (_event) => {
@@ -13,31 +13,34 @@ socket.addEventListener('open', (_event) => {
 // Listen for messages
 socket.addEventListener('message', (msg) => {
   const data = JSON.parse(msg.data)
-  if (data.type !== 'PRICE_DATA') return console.warn(data)
 
-  const currTime = data.data.unixTime * 1000
+  if (!data.event) return console.warn(data)
+  if (data.event.maker) return
+
+  const currTime = new Date(data.event.timestamp).getTime()
   const lastBar = subscriptionItem.lastBar
   const resolution = subscriptionItem.resolution
   const nextBarTime = getNextBarTime(lastBar, resolution)
-
+  const price = data.event.price
+  const size = data.event.quantity
   let bar
 
   if (currTime >= nextBarTime) {
     bar = {
       time: nextBarTime,
-      open: data.data.o,
-      high: data.data.h,
-      low: data.data.l,
-      close: data.data.c,
-      volume: data.data.v,
+      open: price,
+      high: price,
+      low: price,
+      close: price,
+      volume: size,
     }
   } else {
     bar = {
       ...lastBar,
-      high: Math.max(lastBar.high, data.data.h),
-      low: Math.min(lastBar.low, data.data.l),
-      close: data.data.c,
-      volume: data.data.v,
+      high: Math.max(lastBar.high, price),
+      low: Math.min(lastBar.low, price),
+      close: price,
+      volume: lastBar.volume + size,
     }
   }
 
@@ -60,19 +63,17 @@ export function subscribeOnStream(
   }
 
   const msg = {
-    type: 'SUBSCRIBE_PRICE',
-    data: {
-      chartType: parseResolution(resolution),
-      address: symbolInfo.address,
-      currency: symbolInfo.type || 'usd',
-    },
+    command: 'subscribe',
+    marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
   }
+
   socket.send(JSON.stringify(msg))
 }
 
 export function unsubscribeFromStream() {
   const msg = {
-    type: 'UNSUBSCRIBE_PRICE',
+    command: 'unsubscribe',
+    marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
   }
 
   socket.send(JSON.stringify(msg))

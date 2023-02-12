@@ -74,4 +74,6 @@ export const ACCOUNT_ACTION_MODAL_HEIGHT = '506px'
 
 export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '444px'
 
+export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
+
 export const PAGINATION_PAGE_LENGTH = 250

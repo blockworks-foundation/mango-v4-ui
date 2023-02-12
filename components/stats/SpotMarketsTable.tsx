@@ -52,12 +52,12 @@ const SpotMarketsTable = () => {
                   asset.symbol.toUpperCase() === bank?.name.toUpperCase()
               )
 
-              const change = coingeckoData
-                ? ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
-                    coingeckoData.prices[0][1]) /
-                    coingeckoData.prices[0][1]) *
-                  100
-                : 0
+              const change =
+                coingeckoData && oraclePrice
+                  ? ((oraclePrice - coingeckoData.prices[0][1]) /
+                      coingeckoData.prices[0][1]) *
+                    100
+                  : 0
 
               const chartData = coingeckoData ? coingeckoData.prices : undefined
 

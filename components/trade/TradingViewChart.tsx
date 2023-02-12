@@ -16,7 +16,6 @@ import {
 } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
-import Datafeed from 'apis/birdeye/datafeed'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
 import {
@@ -33,6 +32,8 @@ import { PublicKey } from '@solana/web3.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { BN } from '@project-serum/anchor'
+import SpotDatafeed from 'apis/birdeye/datafeed'
+import PerpDatafeed from 'apis/mngo/datafeed'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -129,20 +130,26 @@ const TradingViewChart = () => {
     }
   })
 
+  const selectedMarket = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarketName)
+      return '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+
+    if (!selectedMarketName.toLowerCase().includes('perp')) {
+      return group
+        .getSerum3MarketByName(selectedMarketName)
+        .serumMarketExternal.toString()
+    } else {
+      return group.getPerpMarketByName(selectedMarketName).publicKey.toString()
+    }
+  }, [selectedMarketName])
+
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (tvWidgetRef.current && chartReady && selectedMarketName && group) {
+    if (tvWidgetRef.current && chartReady && selectedMarket && group) {
       try {
-        let symbolName
-        if (!selectedMarketName.toLowerCase().includes('PERP')) {
-          symbolName = group
-            .getSerum3MarketByName(selectedMarketName)
-            .serumMarketExternal.toString()
-        } else {
-          symbolName = selectedMarketName
-        }
         tvWidgetRef.current.setSymbol(
-          symbolName,
+          selectedMarket,
           tvWidgetRef.current.activeChart().resolution(),
           () => {
             return
@@ -152,7 +159,7 @@ const TradingViewChart = () => {
         console.warn('Trading View change symbol error: ', e)
       }
     }
-  }, [selectedMarketName, chartReady, tvWidgetRef])
+  }, [selectedMarket, chartReady])
 
   useEffect(() => {
     if (
@@ -170,22 +177,12 @@ const TradingViewChart = () => {
 
   useEffect(() => {
     if (window) {
-      // const tempBtcDatafeedUrl = 'https://dex-pyth-price-mainnet.zeta.markets/tv/history?symbol=BTC-USDC&resolution=5&from=1674427748&to=1674430748&countback=2'
-      const tempBtcDatafeedUrl =
-        'https://redirect-origin.mangomarkets.workers.dev'
-      const btcDatafeed = new (window as any).Datafeeds.UDFCompatibleDatafeed(
-        tempBtcDatafeedUrl
-      )
-
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
-        symbol:
-          spotOrPerp === 'spot'
-            ? '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
-            : 'BTC-USDC',
+        symbol: selectedMarket,
         // BEWARE: no trailing slash is expected in feed URL
         // tslint:disable-next-line:no-any
-        datafeed: spotOrPerp === 'spot' ? Datafeed : btcDatafeed,
+        datafeed: spotOrPerp === 'spot' ? SpotDatafeed : PerpDatafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:

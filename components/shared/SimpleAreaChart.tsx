@@ -47,9 +47,9 @@ const SimpleAreaChart = ({
             if (difference < 0.1) {
               return [dataMin - 0.01, dataMax + 0.01]
             } else if (difference < 1) {
-              return [dataMin - 1, dataMax + 1]
+              return [dataMin - 0.1, dataMax + 0.11]
             } else if (difference < 10) {
-              return [dataMin - 10, dataMax + 10]
+              return [dataMin - 1, dataMax + 1]
             } else {
               return [dataMin, dataMax]
             }

@@ -13,7 +13,7 @@ const useUnsettledPerpPositions = () => {
     return perpPositions.filter((p) => {
       const market = group?.getPerpMarketByMarketIndex(p.marketIndex)
       if (!market || !group) return false
-      return p.getUnsettledPnlUi(group, market) !== 0
+      return p.getUnsettledPnlUi(market) !== 0
     })
   }, [mangoAccountAddress])
 

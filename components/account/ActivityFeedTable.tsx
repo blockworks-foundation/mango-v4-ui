@@ -209,9 +209,7 @@ const ActivityFeedTable = ({
                   <span className="tooltip-underline">{t('fee')}</span>
                 </Tooltip>
               </Th>
-              <Th className="bg-th-bkg-1 text-right">
-                {t('activity:activity-value')}
-              </Th>
+              <Th className="bg-th-bkg-1 text-right">{t('value')}</Th>
               <Th className="bg-th-bkg-1 text-right">{t('explorer')}</Th>
             </TrHead>
           </thead>
