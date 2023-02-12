@@ -63,7 +63,7 @@ const SwapForm = () => {
   //initial state is undefined null is returned on error
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
-  const [showTokenSelect, setShowTokenSelect] = useState('')
+  const [showTokenSelect, setShowTokenSelect] = useState(undefined)
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const { group } = useMangoGroup()
@@ -193,7 +193,7 @@ const SwapForm = () => {
         s.swap.inputBank = bank
       })
     }
-    setShowTokenSelect('')
+    setShowTokenSelect(undefined)
   }, [])
 
   const handleTokenOutSelect = useCallback((mintAddress: string) => {
@@ -204,7 +204,7 @@ const SwapForm = () => {
         s.swap.outputBank = bank
       })
     }
-    setShowTokenSelect('')
+    setShowTokenSelect(undefined)
   }, [])
 
   const handleSwitchTokens = useCallback(() => {
@@ -299,7 +299,7 @@ const SwapForm = () => {
           show={!!showTokenSelect}
         >
           <SwapFormTokenList
-            onClose={() => setShowTokenSelect('')}
+            onClose={() => setShowTokenSelect(undefined)}
             onTokenSelect={
               showTokenSelect === 'input'
                 ? handleTokenInSelect
@@ -450,6 +450,26 @@ const SwapForm = () => {
           )}
           {group && inputBank ? (
             <TokenVaultWarnings bank={inputBank} type="swap" />
+          ) : null}
+          {inputBank && inputBank.reduceOnly ? (
+            <div className="pb-4">
+              <InlineNotification
+                type="warning"
+                desc={t('swap:input-reduce-only-warning', {
+                  symbol: inputBank.name,
+                })}
+              />
+            </div>
+          ) : null}
+          {outputBank && outputBank.reduceOnly ? (
+            <div className="pb-4">
+              <InlineNotification
+                type="warning"
+                desc={t('swap:output-reduce-only-warning', {
+                  symbol: outputBank.name,
+                })}
+              />
+            </div>
           ) : null}
           <div className="space-y-2">
             <div id="swap-step-four">

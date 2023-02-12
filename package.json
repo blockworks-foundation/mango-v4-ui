@@ -11,7 +11,7 @@
     "build": "next build",
     "start": "next start",
     "format": "prettier --check .",
-    "lint": "next lint",
+    "lint": "next lint --quiet",
     "typecheck": "tsc",
     "prepare": "husky install",
     "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz"

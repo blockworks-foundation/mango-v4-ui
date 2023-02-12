@@ -47,9 +47,16 @@ const TokenItem = ({
   token: Token
   onSubmit: (x: string) => void
   useMargin: boolean
-  type: string
+  type: 'input' | 'output' | undefined
 }) => {
+  const { t } = useTranslation('trade')
   const { address, symbol, logoURI, name } = token
+
+  const bank = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group) return
+    return group.getFirstBankByMint(new PublicKey(address))
+  }, [address])
 
   return (
     <div>
@@ -64,10 +71,18 @@ const TokenItem = ({
             <img src={logoURI} width="24" height="24" alt={symbol} />
           </picture>
           <div className="ml-2.5">
-            <div className="text-left text-th-fgd-2">{symbol || 'unknown'}</div>
-            <div className="text-left text-xs text-th-fgd-4">
+            <p className="text-left text-th-fgd-2">
+              {symbol || 'unknown'}
+              {bank?.reduceOnly ? (
+                <span className="ml-1.5 text-xxs text-th-warning">
+                  {t('reduce-only')}
+                </span>
+              ) : null}
+            </p>
+
+            <p className="text-left text-xs text-th-fgd-4">
               {name || 'unknown'}
-            </div>
+            </p>
           </div>
         </div>
         {type === 'input' &&
@@ -103,7 +118,7 @@ const SwapFormTokenList = ({
 }: {
   onClose: () => void
   onTokenSelect: (x: string) => void
-  type: string
+  type: 'input' | 'output' | undefined
   useMargin: boolean
 }) => {
   const { t } = useTranslation(['common', 'swap'])

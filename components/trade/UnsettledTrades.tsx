@@ -79,7 +79,7 @@ const UnsettledTrades = ({
     try {
       const mangoAccounts = await client.getAllMangoAccounts(group)
       const perpPosition = mangoAccount.getPerpPosition(market.perpMarketIndex)
-      const mangoAccountPnl = perpPosition?.getEquityUi(group, market)
+      const mangoAccountPnl = perpPosition?.getEquityUi(market)
 
       if (mangoAccountPnl === undefined)
         throw new Error('Unable to get account P&L')
@@ -89,9 +89,8 @@ const UnsettledTrades = ({
         .map((m) => ({
           mangoAccount: m,
           pnl:
-            m
-              ?.getPerpPosition(market.perpMarketIndex)
-              ?.getEquityUi(group, market) || 0,
+            m?.getPerpPosition(market.perpMarketIndex)?.getEquityUi(market) ||
+            0,
         }))
         .sort((a, b) => sign * (a.pnl - b.pnl))
 
@@ -199,7 +198,7 @@ const UnsettledTrades = ({
                 </Td>
                 <Td className="text-right font-mono">
                   <FormatNumericValue
-                    value={position.getUnsettledPnlUi(group, market)}
+                    value={position.getUnsettledPnlUi(market)}
                     decimals={market.baseDecimals}
                   />{' '}
                   <span className="font-body text-th-fgd-4">USDC</span>

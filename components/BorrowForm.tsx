@@ -103,7 +103,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
         new Decimal(percentage).div(100).mul(tokenMax),
         bank.mintDecimals
       )
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed())
     },
     [tokenMax, bank]
   )
@@ -111,7 +111,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const setMax = useCallback(() => {
     if (!bank) return
     const max = floorToDecimal(tokenMax, bank.mintDecimals)
-    setInputAmount(max.toString())
+    setInputAmount(max.toFixed())
     handleSizePercentage('100')
   }, [bank, tokenMax, handleSizePercentage])
 

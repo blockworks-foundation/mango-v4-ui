@@ -4,7 +4,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
-import AccountActions, { handleCopyAddress } from './AccountActions'
+import AccountActions from './AccountActions'
 import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
 import { formatCurrencyValue } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
@@ -15,13 +15,8 @@ const SimpleAreaChart = dynamic(
 )
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
-import { IconButton, LinkButton } from '../shared/Button'
-import {
-  ArrowsPointingOutIcon,
-  ChartBarIcon,
-  ClockIcon,
-  DocumentDuplicateIcon,
-} from '@heroicons/react/20/solid'
+import { IconButton } from '../shared/Button'
+import { ArrowsPointingOutIcon, ChartBarIcon } from '@heroicons/react/20/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
 import SheenLoader from '../shared/SheenLoader'
@@ -43,7 +38,6 @@ import { breakpoints } from 'utils/theme'
 import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import { abbreviateAddress } from 'utils/formatting'
 import HealthBar from './HealthBar'
 const AssetsLiabilities = dynamic(() => import('./AssetsLiabilities'), {
   ssr: false,
@@ -55,10 +49,10 @@ const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
   // const { connected } = useWallet()
   const { group } = useMangoGroup()
-  const { mangoAccount, mangoAccountAddress, initialLoad } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
-  const performanceInitialLoad = mangoStore(
-    (s) => s.mangoAccount.performance.initialLoad
+  const performanceLoading = mangoStore(
+    (s) => s.mangoAccount.performance.loading
   )
   const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
   const totalInterestData = mangoStore(
@@ -67,9 +61,6 @@ const AccountPage = () => {
   const [chartToShow, setChartToShow] = useState<
     'account-value' | 'cumulative-interest-value' | 'pnl' | ''
   >('')
-  const [oneDayPerformanceData, setOneDayPerformanceData] = useState<
-    PerformanceDataItem[]
-  >([])
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const [showPnlHistory, setShowPnlHistory] = useState<boolean>(false)
   const { theme } = useTheme()
@@ -87,26 +78,20 @@ const AccountPage = () => {
   )
 
   useEffect(() => {
-    if (mangoAccountAddress || (!initialLoad && !mangoAccountAddress)) {
-      const set = mangoStore.getState().set
-      set((s) => {
-        s.mangoAccount.performance.initialLoad = false
-      })
-      setOneDayPerformanceData([])
-      actions.fetchAccountPerformance(mangoAccountAddress, 1)
+    if (mangoAccountAddress) {
+      actions.fetchAccountPerformance(mangoAccountAddress, 31)
       actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
-  }, [actions, initialLoad, mangoAccountAddress])
+  }, [actions, mangoAccountAddress])
 
-  useEffect(() => {
-    if (
-      performanceData.length &&
-      performanceInitialLoad &&
-      !oneDayPerformanceData.length
-    ) {
-      setOneDayPerformanceData(performanceData)
-    }
-  }, [performanceInitialLoad, oneDayPerformanceData, performanceData])
+  const oneDayPerformanceData: PerformanceDataItem[] | [] = useMemo(() => {
+    if (!performanceData || !performanceData.length) return []
+    const nowDate = new Date()
+    return performanceData.filter((d) => {
+      const dataTime = new Date(d.time).getTime()
+      return dataTime >= nowDate.getTime() - 86400000
+    })
+  }, [performanceData])
 
   const onHoverMenu = (open: boolean, action: string) => {
     if (
@@ -123,10 +108,6 @@ const AccountPage = () => {
   }
 
   const handleHideChart = () => {
-    const set = mangoStore.getState().set
-    set((s) => {
-      s.mangoAccount.performance.data = oneDayPerformanceData
-    })
     setChartToShow('')
   }
 
@@ -187,15 +168,16 @@ const AccountPage = () => {
 
   const oneDayInterestChange = useMemo(() => {
     if (oneDayPerformanceData.length) {
-      const startDayInterest =
-        oneDayPerformanceData[0].borrow_interest_cumulative_usd +
-        oneDayPerformanceData[0].deposit_interest_cumulative_usd
+      const first = oneDayPerformanceData[0]
+      const latest = oneDayPerformanceData[oneDayPerformanceData.length - 1]
 
-      const latest = oneDayPerformanceData.length - 1
+      const startDayInterest =
+        first.borrow_interest_cumulative_usd +
+        first.deposit_interest_cumulative_usd
 
       const endDayInterest =
-        oneDayPerformanceData[latest].borrow_interest_cumulative_usd +
-        oneDayPerformanceData[latest].deposit_interest_cumulative_usd
+        latest.borrow_interest_cumulative_usd +
+        latest.deposit_interest_cumulative_usd
 
       return endDayInterest - startDayInterest
     }
@@ -224,153 +206,139 @@ const AccountPage = () => {
 
   const latestAccountData = useMemo(() => {
     if (!accountValue || !performanceData.length) return []
-    const latestIndex = performanceData.length - 1
+    const latestDataItem = performanceData[performanceData.length - 1]
     return [
       {
         account_equity: accountValue,
         time: dayjs(Date.now()).toISOString(),
         borrow_interest_cumulative_usd:
-          performanceData[latestIndex].borrow_interest_cumulative_usd,
+          latestDataItem.borrow_interest_cumulative_usd,
         deposit_interest_cumulative_usd:
-          performanceData[latestIndex].deposit_interest_cumulative_usd,
-        pnl: performanceData[latestIndex].pnl,
-        spot_value: performanceData[latestIndex].spot_value,
-        transfer_balance: performanceData[latestIndex].transfer_balance,
+          latestDataItem.deposit_interest_cumulative_usd,
+        pnl: latestDataItem.pnl,
+        spot_value: latestDataItem.spot_value,
+        transfer_balance: latestDataItem.transfer_balance,
       },
     ]
   }, [accountValue, performanceData])
 
   return !chartToShow ? (
     <>
-      {mangoAccount ? (
-        <div className="flex items-center justify-between border-b border-th-bkg-3 bg-th-bkg-2 py-2 px-6 sm:py-3.5">
-          <div className="flex divide-x divide-th-bkg-4 pr-4">
-            <div className="flex items-center pr-3">
-              <button className="text-left font-display text-sm text-th-fgd-1">
-                {mangoAccount.name}
+      <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:border-b">
+        <div>
+          <div className="hide-scroll flex justify-center space-x-2 md:justify-start">
+            {TABS.map((tab) => (
+              <button
+                className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium md:hover:text-th-fgd-2 ${
+                  activeTab === tab
+                    ? 'bg-th-bkg-3 text-th-active'
+                    : 'text-th-fgd-3'
+                }`}
+                onClick={() => setActiveTab(tab)}
+                key={tab}
+              >
+                {t(tab)}
               </button>
-            </div>
-            <LinkButton
-              className="space-x-1 pl-3 font-normal text-th-fgd-4 no-underline md:hover:text-th-fgd-3"
-              onClick={() =>
-                handleCopyAddress(
-                  mangoAccount,
-                  t('copy-address-success', {
-                    pk: abbreviateAddress(mangoAccount.publicKey),
-                  })
-                )
-              }
-            >
-              <span className="whitespace-nowrap">
-                {abbreviateAddress(mangoAccount.publicKey)}
-              </span>
-              <DocumentDuplicateIcon className="h-4 w-4" />
-            </LinkButton>
+            ))}
           </div>
-          <AccountActions />
-        </div>
-      ) : null}
-      <div className="border-b-0 border-th-bkg-3 px-6 py-4 lg:flex-row lg:border-b">
-        <div className="hide-scroll flex space-x-2">
-          {TABS.map((tab) => (
-            <button
-              className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium md:hover:text-th-fgd-2 ${
-                activeTab === tab
-                  ? 'bg-th-bkg-3 text-th-active'
-                  : 'text-th-fgd-3'
-              }`}
-              onClick={() => setActiveTab(tab)}
-              key={tab}
-            >
-              {t(tab)}
-            </button>
-          ))}
-        </div>
-        {activeTab === 'account-value' ? (
-          <div className="flex flex-col md:flex-row md:items-end md:space-x-6">
-            <div className="mt-4 ">
-              <div className="mb-2 flex justify-start font-display text-5xl text-th-fgd-1">
-                {animationSettings['number-scroll'] ? (
-                  group && mangoAccount ? (
-                    <FlipNumbers
-                      height={48}
-                      width={36}
-                      play
-                      delay={0.05}
-                      duration={1}
-                      numbers={formatCurrencyValue(accountValue, 2)}
-                    />
-                  ) : (
-                    <FlipNumbers
-                      height={48}
-                      width={36}
-                      play
-                      delay={0.05}
-                      duration={1}
-                      numbers={'$0.00'}
-                    />
-                  )
-                ) : (
-                  <FormatNumericValue value={accountValue} isUsd decimals={2} />
-                )}
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <Change change={accountValueChange} prefix="$" />
-                <p className="text-th-fgd-4">{t('today')}</p>
-              </div>
-            </div>
-            {performanceInitialLoad ? (
-              oneDayPerformanceData.length ? (
-                <div
-                  className="relative flex h-40 items-end md:mt-0 md:h-24 md:w-60"
-                  onMouseEnter={() =>
-                    onHoverMenu(showExpandChart, 'onMouseEnter')
-                  }
-                  onMouseLeave={() =>
-                    onHoverMenu(showExpandChart, 'onMouseLeave')
-                  }
-                >
-                  <SimpleAreaChart
-                    color={
-                      accountValueChange >= 0
-                        ? COLORS.UP[theme]
-                        : COLORS.DOWN[theme]
-                    }
-                    data={oneDayPerformanceData.concat(latestAccountData)}
-                    name="accountValue"
-                    xKey="time"
-                    yKey="account_equity"
-                  />
-                  <Transition
-                    appear={true}
-                    className="absolute right-2 bottom-2"
-                    show={showExpandChart || isMobile}
-                    enter="transition ease-in duration-300"
-                    enterFrom="opacity-0 scale-75"
-                    enterTo="opacity-100 scale-100"
-                    leave="transition ease-out duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-                    <IconButton
-                      className="text-th-fgd-3"
-                      hideBg
-                      onClick={() => handleShowAccountValueChart()}
-                    >
-                      <ArrowsPointingOutIcon className="h-5 w-5" />
-                    </IconButton>
-                  </Transition>
+          <div className="md:h-24">
+            {activeTab === 'account-value' ? (
+              <div className="flex flex-col md:flex-row md:items-end md:space-x-6">
+                <div className="mx-auto mt-4 md:mx-0">
+                  <div className="mb-2 flex justify-start font-display text-5xl text-th-fgd-1">
+                    {animationSettings['number-scroll'] ? (
+                      group && mangoAccount ? (
+                        <FlipNumbers
+                          height={48}
+                          width={35}
+                          play
+                          delay={0.05}
+                          duration={1}
+                          numbers={formatCurrencyValue(accountValue, 2)}
+                        />
+                      ) : (
+                        <FlipNumbers
+                          height={48}
+                          width={36}
+                          play
+                          delay={0.05}
+                          duration={1}
+                          numbers={'$0.00'}
+                        />
+                      )
+                    ) : (
+                      <FormatNumericValue
+                        value={accountValue}
+                        isUsd
+                        decimals={2}
+                      />
+                    )}
+                  </div>
+                  <div className="flex items-center justify-center space-x-1.5 md:justify-start">
+                    <Change change={accountValueChange} prefix="$" />
+                    <p className="text-xs text-th-fgd-4">
+                      {t('rolling-change')}
+                    </p>
+                  </div>
                 </div>
-              ) : null
-            ) : mangoAccountAddress ? (
-              <SheenLoader className="mt-4 flex flex-1">
-                <div className="h-40 w-full rounded-md bg-th-bkg-2 md:h-20 md:w-60" />
-              </SheenLoader>
+                {!performanceLoading ? (
+                  oneDayPerformanceData.length ? (
+                    <div
+                      className="relative mt-4 flex h-40 items-end md:mt-0 md:h-20 md:w-52 lg:w-60"
+                      onMouseEnter={() =>
+                        onHoverMenu(showExpandChart, 'onMouseEnter')
+                      }
+                      onMouseLeave={() =>
+                        onHoverMenu(showExpandChart, 'onMouseLeave')
+                      }
+                    >
+                      <SimpleAreaChart
+                        color={
+                          accountValueChange >= 0
+                            ? COLORS.UP[theme]
+                            : COLORS.DOWN[theme]
+                        }
+                        data={oneDayPerformanceData.concat(latestAccountData)}
+                        name="accountValue"
+                        xKey="time"
+                        yKey="account_equity"
+                      />
+                      <Transition
+                        appear={true}
+                        className="absolute right-2 bottom-2"
+                        show={showExpandChart || isMobile}
+                        enter="transition ease-in duration-300"
+                        enterFrom="opacity-0 scale-75"
+                        enterTo="opacity-100 scale-100"
+                        leave="transition ease-out duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                      >
+                        <IconButton
+                          className="text-th-fgd-3"
+                          hideBg
+                          onClick={() => handleShowAccountValueChart()}
+                        >
+                          <ArrowsPointingOutIcon className="h-5 w-5" />
+                        </IconButton>
+                      </Transition>
+                    </div>
+                  ) : null
+                ) : mangoAccountAddress ? (
+                  <SheenLoader className="mt-4 flex flex-1 md:mt-0">
+                    <div className="h-40 w-full rounded-md bg-th-bkg-2 md:h-20 md:w-52 lg:w-60" />
+                  </SheenLoader>
+                ) : null}
+              </div>
+            ) : null}
+            {activeTab === 'account:assets-liabilities' ? (
+              <AssetsLiabilities isMobile={isMobile} />
             ) : null}
           </div>
-        ) : (
-          <AssetsLiabilities />
-        )}
+        </div>
+        <div className="mt-6 mb-1 lg:mt-0">
+          <AccountActions />
+        </div>
       </div>
       <div className="grid grid-cols-5 border-b border-th-bkg-3">
         <div className="col-span-5 border-t border-th-bkg-3 py-3 px-6 lg:col-span-1 lg:border-t-0">
@@ -512,7 +480,7 @@ const AccountPage = () => {
                       </IconButton>
                     </Tooltip>
                   ) : null}
-                  <Tooltip content={t('account:pnl-history')} delay={250}>
+                  {/* <Tooltip content={t('account:pnl-history')} delay={250}>
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
@@ -520,7 +488,7 @@ const AccountPage = () => {
                     >
                       <ClockIcon className="h-5 w-5" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
                 </div>
               ) : null}
             </div>
@@ -531,9 +499,9 @@ const AccountPage = () => {
                 isUsd={true}
               />
             </p>
-            <div className="flex space-x-1">
+            <div className="flex space-x-1.5">
               <Change change={oneDayPnlChange} prefix="$" size="small" />
-              <p className="text-xs text-th-fgd-4">{t('today')}</p>
+              <p className="text-xs text-th-fgd-4">{t('rolling-change')}</p>
             </div>
           </div>
         </div>
@@ -571,9 +539,9 @@ const AccountPage = () => {
                 isUsd={true}
               />
             </p>
-            <div className="flex space-x-1">
+            <div className="flex space-x-1.5">
               <Change change={oneDayInterestChange} prefix="$" size="small" />
-              <p className="text-xs text-th-fgd-4">{t('today')}</p>
+              <p className="text-xs text-th-fgd-4">{t('rolling-change')}</p>
             </div>
           </div>
         </div>
@@ -595,22 +563,22 @@ const AccountPage = () => {
       {chartToShow === 'account-value' ? (
         <AccountChart
           chartToShow="account-value"
+          data={performanceData.concat(latestAccountData)}
           hideChart={handleHideChart}
-          mangoAccountAddress={mangoAccountAddress}
           yKey="account_equity"
         />
       ) : chartToShow === 'pnl' ? (
         <AccountChart
           chartToShow="pnl"
+          data={performanceData}
           hideChart={handleHideChart}
-          mangoAccountAddress={mangoAccountAddress}
           yKey="pnl"
         />
       ) : (
         <AccountChart
           chartToShow="cumulative-interest-value"
+          data={performanceData}
           hideChart={handleHideChart}
-          mangoAccountAddress={mangoAccountAddress}
           yKey="interest_value"
         />
       )}

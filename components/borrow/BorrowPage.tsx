@@ -7,7 +7,6 @@ import { useTranslation } from 'next-i18next'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import FlipNumbers from 'react-flip-numbers'
 import Button from '@components/shared/Button'
-import mangoStore from '@store/mangoStore'
 import { formatCurrencyValue } from 'utils/numbers'
 import { useEffect, useMemo, useState } from 'react'
 import YourBorrowsTable from './YourBorrowsTable'
@@ -47,17 +46,6 @@ const BorrowPage = () => {
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
   )
-  const actions = mangoStore((s) => s.actions)
-
-  useEffect(() => {
-    if (mangoAccountAddress) {
-      const set = mangoStore.getState().set
-      set((s) => {
-        s.mangoAccount.performance.initialLoad = false
-      })
-      actions.fetchAccountPerformance(mangoAccountAddress, 1)
-    }
-  }, [actions, mangoAccountAddress])
 
   const filteredBanks = useMemo(() => {
     if (banks.length) {

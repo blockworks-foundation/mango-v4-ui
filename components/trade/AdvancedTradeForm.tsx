@@ -561,7 +561,7 @@ const AdvancedTradeForm = () => {
                   checked={tradeForm.reduceOnly}
                   onChange={(e) => handleReduceOnlyChange(e.target.checked)}
                 >
-                  Reduce Only
+                  {t('trade:reduce-only')}
                 </Checkbox>
               </div>
             </Tooltip>

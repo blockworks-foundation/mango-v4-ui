@@ -12,10 +12,10 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 
-const AssetsLiabilities = () => {
+const AssetsLiabilities = ({ isMobile }: { isMobile: boolean }) => {
   const { t } = useTranslation('account')
   const { group } = useMangoGroup()
-  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount } = useMangoAccount()
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -35,22 +35,26 @@ const AssetsLiabilities = () => {
     return [
       { name: 'assets', value: assetsValue },
       { name: 'liabilities', value: liabsValue },
-      //   { name: 'filler', value: assetsValue + liabsValue },
     ]
   }, [assetsValue, liabsValue])
 
+  const pieSizes = isMobile
+    ? { size: 160, outerRadius: 80, innerRadius: 64 }
+    : { size: 80, outerRadius: 40, innerRadius: 30 }
+  const { size, outerRadius, innerRadius } = pieSizes
+
   return (
-    <div className="flex flex-col pt-4 md:flex-row md:items-center md:space-x-4">
-      {mangoAccountAddress ? (
-        <PieChart width={80} height={80}>
+    <div className="flex flex-col items-center pt-4 md:flex-row md:space-x-4">
+      {mangoAccount ? (
+        <PieChart width={size} height={size}>
           <Pie
             cursor="pointer"
             data={chartData}
             dataKey="value"
             cx="50%"
             cy="50%"
-            outerRadius={40}
-            innerRadius={30}
+            outerRadius={outerRadius}
+            innerRadius={innerRadius}
             minAngle={2}
             startAngle={90}
             endAngle={450}
@@ -73,7 +77,7 @@ const AssetsLiabilities = () => {
         <div className="h-20 w-20 rounded-full ring-[8px] ring-inset ring-th-bkg-3" />
       )}
       <div className="mt-3 flex space-x-6 md:mt-0">
-        <div>
+        <div className="flex flex-col items-center md:items-start">
           <p className="text-base">
             {t('assets')}
             <span className="ml-2 rounded border border-th-up px-1 py-0.5 text-xxs text-th-up">
@@ -97,7 +101,7 @@ const AssetsLiabilities = () => {
             </p>
           )}
         </div>
-        <div>
+        <div className="flex flex-col items-center md:items-start">
           <p className="text-base">
             {t('liabilities')}
             <span className="ml-2 rounded border border-th-down px-1 py-0.5 text-xxs text-th-down">

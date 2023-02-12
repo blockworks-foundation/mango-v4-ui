@@ -46,20 +46,20 @@ const ChartTabs = ({ token }: { token: string }) => {
     }, [])
   }, [tokenStats])
 
-  const filterStats = (daysToShow: string) => {
-    if (!statsHistory.length) return []
-    if (daysToShow !== '30') {
-      const seconds = Number(daysToShow) * 86400
-      const data = statsHistory.filter((d) => {
-        const dataTime = new Date(d.date_hour).getTime() / 1000
-        const now = new Date().getTime() / 1000
-        const limit = now - seconds
-        return dataTime >= limit
-      })
-      return data
-    }
-    return statsHistory
-  }
+  // const filterStats = (daysToShow: string) => {
+  //   if (!statsHistory.length) return []
+  //   if (daysToShow !== '30') {
+  //     const seconds = Number(daysToShow) * 86400
+  //     const data = statsHistory.filter((d) => {
+  //       const dataTime = new Date(d.date_hour).getTime() / 1000
+  //       const now = new Date().getTime() / 1000
+  //       const limit = now - seconds
+  //       return dataTime >= limit
+  //     })
+  //     return data
+  //   }
+  //   return statsHistory
+  // }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
@@ -77,7 +77,7 @@ const ChartTabs = ({ token }: { token: string }) => {
           <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeDepositsTab === 'token:deposits' ? (
               <DetailedAreaChart
-                data={filterStats(depositDaysToShow)}
+                data={statsHistory}
                 daysToShow={depositDaysToShow}
                 setDaysToShow={setDepositDaysToShow}
                 heightClass="h-64"
@@ -92,7 +92,7 @@ const ChartTabs = ({ token }: { token: string }) => {
               />
             ) : (
               <DetailedAreaChart
-                data={filterStats(depositRateDaysToShow)}
+                data={statsHistory}
                 daysToShow={depositRateDaysToShow}
                 setDaysToShow={setDepositRateDaysToShow}
                 heightClass="h-64"
@@ -125,7 +125,7 @@ const ChartTabs = ({ token }: { token: string }) => {
           <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeBorrowsTab === 'token:borrows' ? (
               <DetailedAreaChart
-                data={filterStats(borrowDaysToShow)}
+                data={statsHistory}
                 daysToShow={borrowDaysToShow}
                 setDaysToShow={setBorrowDaysToShow}
                 heightClass="h-64"
@@ -140,7 +140,7 @@ const ChartTabs = ({ token }: { token: string }) => {
               />
             ) : (
               <DetailedAreaChart
-                data={filterStats(borrowRateDaysToShow)}
+                data={statsHistory}
                 daysToShow={borrowRateDaysToShow}
                 setDaysToShow={setBorrowRateDaysToShow}
                 heightClass="h-64"
