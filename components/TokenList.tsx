@@ -71,7 +71,7 @@ const TokenList = () => {
 
   return (
     <ContentBox hideBorder hidePadding>
-      <div className="flex w-full items-center justify-end border-b border-th-bkg-3 py-3 px-6 xl:-mt-[36px] xl:mb-4 xl:w-auto xl:border-0 xl:py-0">
+      <div className="flex w-full items-center justify-end border-b border-th-bkg-3 py-3 px-6 lg:-mt-[36px] lg:mb-4 lg:w-auto lg:border-0 lg:py-0">
         <Switch
           checked={showZeroBalances}
           disabled={!mangoAccount}

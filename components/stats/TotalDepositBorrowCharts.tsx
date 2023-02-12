@@ -1,4 +1,4 @@
-import { TokenStatsItem } from '@store/mangoStore'
+import mangoStore, { TokenStatsItem } from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
@@ -16,14 +16,10 @@ interface TotalValueItem {
   depositValue: number
 }
 
-const TotalDepositBorrowCharts = ({
-  tokenStats,
-  loadingStats,
-}: {
-  tokenStats: TokenStatsItem[] | null
-  loadingStats: boolean
-}) => {
+const TotalDepositBorrowCharts = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
+  const tokenStats = mangoStore((s) => s.tokenStats.data)
+  const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
   const banks = useBanksWithBalances()
@@ -52,36 +48,6 @@ const TotalDepositBorrowCharts = ({
     return values.reverse()
   }, [tokenStats])
 
-  const filteredBorrowValues = useMemo(() => {
-    if (!totalDepositBorrowValues) return []
-    if (borrowDaysToShow !== '30') {
-      const seconds = Number(borrowDaysToShow) * 86400
-      const data = totalDepositBorrowValues.filter((d) => {
-        const dataTime = new Date(d.date).getTime() / 1000
-        const now = new Date().getTime() / 1000
-        const limit = now - seconds
-        return dataTime >= limit
-      })
-      return data
-    }
-    return totalDepositBorrowValues
-  }, [totalDepositBorrowValues, borrowDaysToShow])
-
-  const filteredDepositValues = useMemo(() => {
-    if (!totalDepositBorrowValues) return []
-    if (depositDaysToShow !== '30') {
-      const seconds = Number(depositDaysToShow) * 86400
-      const data = totalDepositBorrowValues.filter((d) => {
-        const dataTime = new Date(d.date).getTime() / 1000
-        const now = new Date().getTime() / 1000
-        const limit = now - seconds
-        return dataTime >= limit
-      })
-      return data
-    }
-    return totalDepositBorrowValues
-  }, [totalDepositBorrowValues, depositDaysToShow])
-
   const [currentTotalDepositValue, currentTotalBorrowValue] = useMemo(() => {
     if (banks.length) {
       return [
@@ -96,7 +62,7 @@ const TotalDepositBorrowCharts = ({
     <>
       <div className="col-span-2 h-96 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
         <DetailedAreaChart
-          data={filteredDepositValues.concat([
+          data={totalDepositBorrowValues.concat([
             {
               date: dayjs().toISOString(),
               depositValue: Math.floor(currentTotalDepositValue),
@@ -117,7 +83,7 @@ const TotalDepositBorrowCharts = ({
       </div>
       <div className="col-span-2 h-96 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
         <DetailedAreaChart
-          data={filteredBorrowValues.concat([
+          data={totalDepositBorrowValues.concat([
             {
               date: dayjs().toISOString(),
               borrowValue: Math.floor(currentTotalBorrowValue),

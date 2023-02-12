@@ -194,12 +194,6 @@ const Dashboard: NextPage = () => {
                                   value={bank.collectedFeesNative.toNumber()}
                                 />
                                 <KeyValuePair
-                                  label="Liquidation fee"
-                                  value={`${(
-                                    10000 * bank.liquidationFee.toNumber()
-                                  ).toFixed(2)} bps`}
-                                />
-                                <KeyValuePair
                                   label="Dust"
                                   value={bank.dust.toNumber()}
                                 />
@@ -452,24 +446,6 @@ const Dashboard: NextPage = () => {
                                   4
                                 )}/
                           ${perpMarket.initBaseLiabWeight.toFixed(4)}`}
-                              />
-                              <KeyValuePair
-                                label="Maint PNL Asset weight"
-                                value={`${perpMarket.maintPnlAssetWeight.toFixed(
-                                  4
-                                )}`}
-                              />
-                              <KeyValuePair
-                                label="Init PNL Asset weight"
-                                value={`${perpMarket.initPnlAssetWeight.toFixed(
-                                  4
-                                )}`}
-                              />
-                              <KeyValuePair
-                                label="Liquidation Fee"
-                                value={`${(
-                                  100 * perpMarket.liquidationFee.toNumber()
-                                ).toFixed(4)}%`}
                               />
                               <KeyValuePair
                                 label="Trading Fees"

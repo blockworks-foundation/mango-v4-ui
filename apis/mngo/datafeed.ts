@@ -18,7 +18,6 @@ export const SUPPORTED_RESOLUTIONS = [
   '120',
   '240',
   '1D',
-  '1W',
 ] as const
 
 type BaseBar = {
@@ -47,7 +46,18 @@ const lastBarsCache = new Map()
 
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
-  intraday_multipliers: ['1', '3', '5', '15', '30', '60', '120', '240'],
+  intraday_multipliers: [
+    '1',
+    '3',
+    '5',
+    '15',
+    '30',
+    '45',
+    '60',
+    '120',
+    '240',
+    '1440',
+  ],
   exchanges: [],
 }
 
@@ -70,36 +80,32 @@ export const queryBars = async (
 ): Promise<Bar[]> => {
   const { from, to } = periodParams
   const urlParameters = {
-    address: tokenAddress,
-    type: parseResolution(resolution),
-    time_from: from,
-    time_to: to,
+    'perp-market': tokenAddress,
+    resolution: parseResolution(resolution),
+    start_datetime: new Date(from * 1000).toISOString(),
+    end_datetime: new Date(to * 1000).toISOString(),
   }
   const query = Object.keys(urlParameters)
-    .map(
-      (name: string) =>
-        `${name}=${encodeURIComponent((urlParameters as any)[name])}`
-    )
+    .map((name: string) => `${name}=${(urlParameters as any)[name]}`)
     .join('&')
 
-  const data = await makeApiRequest(`defi/ohlcv/pair?${query}`)
-  if (!data.success || data.data.items.length === 0) {
+  const data = await makeApiRequest(`/stats/candles-perp?${query}`)
+  if (!data || !data.length) {
     return []
   }
-
   let bars: Bar[] = []
-  for (const bar of data.data.items) {
-    if (bar.unixTime >= from && bar.unixTime < to) {
-      const timestamp = bar.unixTime * 1000
+  for (const bar of data) {
+    const timestamp = new Date(bar.candle_start).getTime()
+    if (timestamp >= from * 1000 && timestamp < to * 1000) {
       bars = [
         ...bars,
         {
           time: timestamp,
-          low: bar.l,
-          high: bar.h,
-          open: bar.o,
-          close: bar.c,
-          volume: bar.v,
+          low: bar.low,
+          high: bar.high,
+          open: bar.open,
+          close: bar.close,
+          volume: bar.volume,
           timestamp,
         },
       ]

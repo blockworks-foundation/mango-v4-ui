@@ -167,7 +167,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 health={
                   group && mangoAccount
                     ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
-                    : undefined
+                    : 0
                 }
                 size={32}
               />

@@ -1,6 +1,6 @@
 import useInterval from '@components/shared/useInterval'
 import mangoStore from '@store/mangoStore'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
@@ -8,55 +8,62 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { Howl } from 'howler'
 import { IconButton } from '@components/shared/Button'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { SOUND_SETTINGS_KEY } from 'utils/constants'
-import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/20/solid'
+import { SOUND_SETTINGS_KEY, TRADE_VOLUME_ALERT_KEY } from 'utils/constants'
+import { BellAlertIcon, BellSlashIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
-import usePrevious from '@components/shared/usePrevious'
+import TradeVolumeAlertModal, {
+  DEFAULT_VOLUME_ALERT_SETTINGS,
+} from '@components/modals/TradeVolumeAlertModal'
 import dayjs from 'dayjs'
 
-const buySound = new Howl({
+const volumeAlertSound = new Howl({
   src: ['/sounds/trade-buy.mp3'],
-  volume: 0.5,
-})
-const sellSound = new Howl({
-  src: ['/sounds/trade-sell.mp3'],
-  volume: 0.5,
+  volume: 0.8,
 })
 
 const RecentTrades = () => {
   const { t } = useTranslation(['common', 'trade'])
   const fills = mangoStore((s) => s.selectedMarket.fills)
-
-  const [soundSettings, setSoundSettings] = useLocalStorageState(
+  const [latestFillId, setLatestFillId] = useState('')
+  const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
-  const previousFills = usePrevious(fills)
-
-  useEffect(() => {
-    if (!soundSettings['recent-trades']) return
-    if (fills.length && previousFills && previousFills.length) {
-      const latestFill: ChartTradeType = fills[0]
-      const previousFill: ChartTradeType = previousFills[0]
-      if (previousFill.orderId?.toString() !== latestFill.orderId?.toString()) {
-        const side =
-          latestFill.side || (latestFill.takerSide === 1 ? 'bid' : 'ask')
-        if (['buy', 'bid'].includes(side)) {
-          buySound.play()
-        } else {
-          sellSound.play()
-        }
-      }
-    }
-  }, [fills, previousFills, soundSettings])
+  const [alertSettings] = useLocalStorageState(
+    TRADE_VOLUME_ALERT_KEY,
+    DEFAULT_VOLUME_ALERT_SETTINGS
+  )
+  const [showVolumeAlertModal, setShowVolumeAlertModal] = useState(false)
 
   const {
     selectedMarket,
     serumOrPerpMarket: market,
     baseSymbol,
+    quoteBank,
     quoteSymbol,
   } = useSelectedMarket()
+
+  useEffect(() => {
+    if (!fills.length) return
+    if (!latestFillId) {
+      setLatestFillId(fills[0].orderId.toString())
+    }
+  }, [fills])
+
+  useInterval(() => {
+    if (!soundSettings['recent-trades'] || !quoteBank) return
+    setLatestFillId(fills[0].orderId.toString())
+    const fillsLimitIndex = fills.findIndex(
+      (f) => f.orderId.toString() === latestFillId
+    )
+    const newFillsVolumeValue = fills
+      .slice(0, fillsLimitIndex)
+      .reduce((a, c) => a + c.size * c.price, 0)
+    if (newFillsVolumeValue * quoteBank.uiPrice > Number(alertSettings.value)) {
+      volumeAlertSound.play()
+    }
+  }, alertSettings.seconds * 1000)
 
   // const fetchRecentTrades = useCallback(async () => {
   //   if (!market) return
@@ -114,99 +121,102 @@ const RecentTrades = () => {
   }, [fills])
 
   return (
-    <div className="thin-scroll h-full overflow-y-scroll">
-      <div className="flex items-center justify-between border-b border-th-bkg-3 p-1 xl:px-2">
-        <Tooltip content={t('trade:trade-sounds-tooltip')} delay={250}>
-          <IconButton
-            onClick={() =>
-              setSoundSettings({
-                ...soundSettings,
-                'recent-trades': !soundSettings['recent-trades'],
-              })
-            }
-            size="small"
-            hideBg
-          >
-            {soundSettings['recent-trades'] ? (
-              <SpeakerWaveIcon className="h-4 w-4 text-th-fgd-3" />
-            ) : (
-              <SpeakerXMarkIcon className="h-4 w-4 text-th-fgd-3" />
-            )}
-          </IconButton>
-        </Tooltip>
-        <span className="text-xxs text-th-fgd-4 xl:text-xs">
-          {t('trade:buys')}:{' '}
-          <span className="text-th-up">{(buyRatio * 100).toFixed(1)}%</span>
-          <span className="px-2">|</span>
-          {t('trade:sells')}:{' '}
-          <span className="text-th-down">{(sellRatio * 100).toFixed(1)}%</span>
-        </span>
+    <>
+      <div className="thin-scroll h-full overflow-y-scroll">
+        <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 px-2">
+          <Tooltip content={t('trade:tooltip-volume-alert')} delay={250}>
+            <IconButton
+              onClick={() => setShowVolumeAlertModal(true)}
+              size="small"
+              hideBg
+            >
+              {soundSettings['recent-trades'] ? (
+                <BellAlertIcon className="h-4 w-4 text-th-fgd-3" />
+              ) : (
+                <BellSlashIcon className="h-4 w-4 text-th-fgd-3" />
+              )}
+            </IconButton>
+          </Tooltip>
+          <span className="text-xxs text-th-fgd-4 xl:text-xs">
+            {t('trade:buys')}:{' '}
+            <span className="text-th-up">{(buyRatio * 100).toFixed(1)}%</span>
+            <span className="px-2">|</span>
+            {t('trade:sells')}:{' '}
+            <span className="text-th-down">
+              {(sellRatio * 100).toFixed(1)}%
+            </span>
+          </span>
+        </div>
+        <div className="px-2">
+          <table className="min-w-full">
+            <thead>
+              <tr className="text-right text-xxs text-th-fgd-4">
+                <th className="py-2 font-normal">{`${t(
+                  'price'
+                )} (${quoteSymbol})`}</th>
+                <th className="py-2 font-normal">
+                  {t('trade:size')} ({baseSymbol})
+                </th>
+                <th className="py-2 font-normal">{t('time')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {!!fills.length &&
+                fills.map((trade: ChartTradeType, i: number) => {
+                  const side =
+                    trade.side || (trade.takerSide === 0 ? 'bid' : 'ask')
+
+                  const formattedPrice =
+                    market?.tickSize && trade.price
+                      ? formatNumericValue(
+                          trade.price,
+                          getDecimalCount(market.tickSize)
+                        )
+                      : trade?.price || 0
+
+                  const formattedSize =
+                    market?.minOrderSize && trade.size
+                      ? formatNumericValue(
+                          trade.size,
+                          getDecimalCount(market.minOrderSize)
+                        )
+                      : trade?.size || 0
+
+                  return (
+                    <tr className="font-mono text-xs" key={i}>
+                      <td
+                        className={`pb-1.5 text-right ${
+                          ['buy', 'bid'].includes(side)
+                            ? 'text-th-up'
+                            : 'text-th-down'
+                        }`}
+                      >
+                        {formattedPrice}
+                      </td>
+                      <td className="pb-1.5 text-right">{formattedSize}</td>
+                      <td className="pb-1.5 text-right text-th-fgd-4">
+                        {trade.time
+                          ? new Date(trade.time).toLocaleTimeString()
+                          : trade.timestamp
+                          ? dayjs(trade.timestamp.toNumber() * 1000).format(
+                              'hh:mma'
+                            )
+                          : '-'}
+                      </td>
+                    </tr>
+                  )
+                })}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div className="px-1 xl:px-2">
-        <table className="min-w-full">
-          <thead>
-            <tr className="text-right text-xxs text-th-fgd-4">
-              <th className="py-2 font-normal">{`${t(
-                'price'
-              )} (${quoteSymbol})`}</th>
-              <th className="py-2 font-normal">
-                {t('trade:size')} ({baseSymbol})
-              </th>
-              <th className="py-2 font-normal">{t('time')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!!fills.length &&
-              fills.map((trade: ChartTradeType, i: number) => {
-                const side =
-                  trade.side || (trade.takerSide === 0 ? 'bid' : 'ask')
-
-                const formattedPrice =
-                  market?.tickSize && trade.price
-                    ? formatNumericValue(
-                        trade.price,
-                        getDecimalCount(market.tickSize)
-                      )
-                    : trade?.price || 0
-
-                const formattedSize =
-                  market?.minOrderSize && trade.size
-                    ? formatNumericValue(
-                        trade.size,
-                        getDecimalCount(market.minOrderSize)
-                      )
-                    : trade?.size || 0
-
-                return (
-                  <tr className="font-mono text-xs" key={i}>
-                    <td
-                      className={`pb-1.5 text-right ${
-                        ['buy', 'bid'].includes(side)
-                          ? 'text-th-up'
-                          : 'text-th-down'
-                      }`}
-                    >
-                      {formattedPrice}
-                    </td>
-                    <td className="pb-1.5 text-right text-th-fgd-3">
-                      {formattedSize}
-                    </td>
-                    <td className="pb-1.5 text-right text-th-fgd-4">
-                      {trade.time
-                        ? new Date(trade.time).toLocaleTimeString()
-                        : trade.timestamp
-                        ? dayjs(trade.timestamp.toNumber() * 1000).format(
-                            'h:mma'
-                          )
-                        : '-'}
-                    </td>
-                  </tr>
-                )
-              })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      {showVolumeAlertModal ? (
+        <TradeVolumeAlertModal
+          isOpen={showVolumeAlertModal}
+          onClose={() => setShowVolumeAlertModal(false)}
+        />
+      ) : null}
+    </>
   )
 }
 

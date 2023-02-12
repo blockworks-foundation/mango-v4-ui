@@ -49,8 +49,7 @@ const ConnectedMenu = () => {
       state.mangoAccount.interestTotals = { data: [], loading: false }
       state.mangoAccount.performance = {
         data: [],
-        loading: false,
-        initialLoad: false,
+        loading: true,
       }
     })
     disconnect()
