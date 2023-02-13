@@ -1,4 +1,4 @@
-import { parseResolution, getNextBarTime } from './helpers'
+import { getNextBarTime } from './helpers'
 
 let subscriptionItem: any = {}
 

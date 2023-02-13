@@ -1,12 +1,11 @@
-import { SUPPORTED_RESOLUTIONS } from 'apis/birdeye/datafeed'
-
 export const ONE_HOUR_MINS = 60
 export const ONE_MINUTE_SECONDS = 60
 export const ONE_HOUR_SECONDS = ONE_HOUR_MINS * ONE_MINUTE_SECONDS
 export const ONE_DAY_SECONDS = ONE_HOUR_SECONDS * 24
+
 export type BASE_CHART_QUERY = {
   address: string
-  type: typeof SUPPORTED_RESOLUTIONS[number]
+  type: string
   time_to: number
 }
 export type CHART_QUERY = BASE_CHART_QUERY & {
@@ -16,7 +15,7 @@ export type CHART_QUERY = BASE_CHART_QUERY & {
 //Translate values that api accepts to chart seconds
 export const RES_NAME_TO_RES_VAL: {
   [key: string]: {
-    val: typeof SUPPORTED_RESOLUTIONS[number]
+    val: string
     seconds: number
   }
 } = {

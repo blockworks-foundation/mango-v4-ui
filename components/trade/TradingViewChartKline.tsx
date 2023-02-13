@@ -22,7 +22,8 @@ import { useTheme } from 'next-themes'
 import { COLORS } from 'styles/colors'
 import { IconButton } from '@components/shared/Button'
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/20/solid'
-import { queryBars } from 'apis/birdeye/datafeed'
+import { queryBars as spotQueryBars } from 'apis/birdeye/datafeed'
+import { queryBars as perpQueryBars } from 'apis/mngo/datafeed'
 import {
   getNextBarTime,
   parseResolution,
@@ -261,6 +262,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   }
   const { width } = useViewport()
   const prevWidth = usePrevious(width)
+  const [isPerp, setIsPerp] = useState(false)
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const [socketConnected, setSocketConnected] = useState(false)
   const selectedMarketName = selectedMarket?.name
@@ -289,11 +291,18 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         time_from: from,
         time_to: to ? to : baseQuery.time_to,
       }
-      const response = await queryBars(query.address, query.type, {
-        firstDataRequest: false,
-        from: query.time_from,
-        to: query.time_to,
-      })
+
+      const response = isPerp
+        ? await perpQueryBars(query.address, query.type as any, {
+            firstDataRequest: false,
+            from: query.time_from,
+            to: query.time_to,
+          })
+        : await spotQueryBars(query.address, query.type as any, {
+            firstDataRequest: false,
+            from: query.time_from,
+            to: query.time_to,
+          })
       const dataSize = response.length
       const dataList = []
       for (let i = 0; i < dataSize; i++) {
@@ -380,7 +389,9 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     if (chart) {
       chart.applyNewData(data)
       //after we fetch fresh data start to update data every x seconds
-      setupSocket(chart, baseChartQuery!)
+      if (!isPerp) {
+        setupSocket(chart, baseChartQuery!)
+      }
     }
   }
 
@@ -414,6 +425,9 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
           const unixTime = timestamp / 1000
           const from = unixTime - ONE_DAY_SECONDS * daysToSub
           const data = await fetchData(baseChartQuery!, from, unixTime)
+          if (!data.length) {
+            chart.loadMore(() => null)
+          }
           chart.applyMoreData(data)
         } catch (e) {
           console.error('Error fetching new data')
@@ -424,13 +438,25 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
 
   //change query based on market and resolution
   useEffect(() => {
-    if (selectedMarketName && resolution) {
-      setQuery({
-        type: resolution.val,
-        address: '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6',
-        time_to: Math.floor(Date.now() / 1000),
-      })
+    setIsPerp(false)
+    const group = mangoStore.getState().group
+    let address = '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+
+    if (!selectedMarketName?.toLowerCase().includes('perp') && group) {
+      address = group!
+        .getSerum3MarketByName(selectedMarketName!)
+        .serumMarketExternal.toString()
+    } else if (group) {
+      setIsPerp(true)
+      address = group!
+        .getPerpMarketByName(selectedMarketName!)
+        .publicKey.toString()
     }
+    setQuery({
+      type: resolution.val,
+      address: address,
+      time_to: Math.floor(Date.now() / 1000),
+    })
   }, [selectedMarketName, resolution])
 
   // init default technical indicators after init of chart
