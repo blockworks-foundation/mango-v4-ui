@@ -27,6 +27,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
@@ -49,6 +50,7 @@ const OpenOrders = () => {
   const showTableView = width ? width > breakpoints.md : false
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
+  const isUnownedAccount = useUnownedAccount()
 
   const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
     const openOrders = mangoStore.getState().mangoAccount.openOrders
@@ -237,7 +239,9 @@ const OpenOrders = () => {
             <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
             <Th className="w-[16.67%] text-right">{t('price')}</Th>
             <Th className="w-[16.67%] text-right">{t('value')}</Th>
-            <Th className="w-[16.67%] text-right"></Th>
+            {!isUnownedAccount ? (
+              <Th className="w-[16.67%] text-right" />
+            ) : null}
           </TrHead>
         </thead>
         <tbody>
@@ -332,56 +336,58 @@ const OpenOrders = () => {
                         isUsd
                       />
                     </Td>
-                    <Td className="w-[16.67%]">
-                      <div className="flex justify-end space-x-2">
-                        {modifyOrderId !== o.orderId.toString() ? (
-                          <>
-                            <IconButton
-                              onClick={() => showEditOrderForm(o, tickSize)}
-                              size="small"
-                            >
-                              <PencilIcon className="h-4 w-4" />
-                            </IconButton>
-                            <Tooltip content={t('cancel')}>
+                    {!isUnownedAccount ? (
+                      <Td className="w-[16.67%]">
+                        <div className="flex justify-end space-x-2">
+                          {modifyOrderId !== o.orderId.toString() ? (
+                            <>
                               <IconButton
-                                disabled={cancelId === o.orderId.toString()}
-                                onClick={() =>
-                                  o instanceof PerpOrder
-                                    ? handleCancelPerpOrder(o)
-                                    : handleCancelSerumOrder(o)
-                                }
+                                onClick={() => showEditOrderForm(o, tickSize)}
                                 size="small"
                               >
-                                {cancelId === o.orderId.toString() ? (
+                                <PencilIcon className="h-4 w-4" />
+                              </IconButton>
+                              <Tooltip content={t('cancel')}>
+                                <IconButton
+                                  disabled={cancelId === o.orderId.toString()}
+                                  onClick={() =>
+                                    o instanceof PerpOrder
+                                      ? handleCancelPerpOrder(o)
+                                      : handleCancelSerumOrder(o)
+                                  }
+                                  size="small"
+                                >
+                                  {cancelId === o.orderId.toString() ? (
+                                    <Loading className="h-4 w-4" />
+                                  ) : (
+                                    <TrashIcon className="h-4 w-4" />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <>
+                              <IconButton
+                                onClick={() => modifyOrder(o)}
+                                size="small"
+                              >
+                                {loadingModifyOrder ? (
                                   <Loading className="h-4 w-4" />
                                 ) : (
-                                  <TrashIcon className="h-4 w-4" />
+                                  <CheckIcon className="h-4 w-4" />
                                 )}
                               </IconButton>
-                            </Tooltip>
-                          </>
-                        ) : (
-                          <>
-                            <IconButton
-                              onClick={() => modifyOrder(o)}
-                              size="small"
-                            >
-                              {loadingModifyOrder ? (
-                                <Loading className="h-4 w-4" />
-                              ) : (
-                                <CheckIcon className="h-4 w-4" />
-                              )}
-                            </IconButton>
-                            <IconButton
-                              onClick={cancelEditOrderForm}
-                              size="small"
-                            >
-                              <XMarkIcon className="h-4 w-4" />
-                            </IconButton>
-                          </>
-                        )}
-                      </div>
-                    </Td>
+                              <IconButton
+                                onClick={cancelEditOrderForm}
+                                size="small"
+                              >
+                                <XMarkIcon className="h-4 w-4" />
+                              </IconButton>
+                            </>
+                          )}
+                        </div>
+                      </Td>
+                    ) : null}
                   </TrBody>
                 )
               })
@@ -477,7 +483,7 @@ const OpenOrders = () => {
                     </div>
                   )}
                 </div>
-                {connected ? (
+                {!isUnownedAccount ? (
                   <div className="flex items-center space-x-3 pl-8">
                     <div className="flex items-center space-x-2">
                       {modifyOrderId !== o.orderId.toString() ? (

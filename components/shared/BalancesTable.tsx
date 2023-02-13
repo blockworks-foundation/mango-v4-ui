@@ -26,6 +26,7 @@ import BankAmountWithValue from './BankAmountWithValue'
 import useBanksWithBalances, {
   BankWithBalance,
 } from 'hooks/useBanksWithBalances'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -195,6 +196,7 @@ export default BalancesTable
 const Balance = ({ bank }: { bank: BankWithBalance }) => {
   const { selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
+  const isUnownedAccount = useUnownedAccount()
 
   const tokenBank = bank.bank
 
@@ -293,32 +295,39 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
 
   return (
     <p className="flex justify-end">
-      {asPath.includes('/trade') && isBaseOrQuote ? (
-        <LinkButton
-          className="font-normal underline-offset-4"
-          onClick={() =>
-            handleTradeFormBalanceClick(Math.abs(balance), isBaseOrQuote)
-          }
-        >
+      {!isUnownedAccount ? (
+        asPath.includes('/trade') && isBaseOrQuote ? (
+          <LinkButton
+            className="font-normal underline-offset-4"
+            onClick={() =>
+              handleTradeFormBalanceClick(Math.abs(balance), isBaseOrQuote)
+            }
+          >
+            <FormatNumericValue
+              value={balance}
+              decimals={tokenBank.mintDecimals}
+            />
+          </LinkButton>
+        ) : asPath.includes('/swap') ? (
+          <LinkButton
+            className="font-normal underline-offset-4"
+            onClick={() =>
+              handleSwapFormBalanceClick(
+                Number(formatNumericValue(balance, tokenBank.mintDecimals))
+              )
+            }
+          >
+            <FormatNumericValue
+              value={balance}
+              decimals={tokenBank.mintDecimals}
+            />
+          </LinkButton>
+        ) : (
           <FormatNumericValue
             value={balance}
             decimals={tokenBank.mintDecimals}
           />
-        </LinkButton>
-      ) : asPath.includes('/swap') ? (
-        <LinkButton
-          className="font-normal underline-offset-4"
-          onClick={() =>
-            handleSwapFormBalanceClick(
-              Number(formatNumericValue(balance, tokenBank.mintDecimals))
-            )
-          }
-        >
-          <FormatNumericValue
-            value={balance}
-            decimals={tokenBank.mintDecimals}
-          />
-        </LinkButton>
+        )
       ) : (
         <FormatNumericValue value={balance} decimals={tokenBank.mintDecimals} />
       )}

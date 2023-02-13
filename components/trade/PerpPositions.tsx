@@ -9,6 +9,7 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
@@ -28,6 +29,7 @@ const PerpPositions = () => {
   const { selectedMarket } = useSelectedMarket()
   const { connected } = useWallet()
   const { mangoAccountAddress } = useMangoAccount()
+  const isUnownedAccount = useUnownedAccount()
 
   const handlePositionClick = (positionSize: number, market: PerpMarket) => {
     const tradeForm = mangoStore.getState().tradeForm
@@ -86,7 +88,7 @@ const PerpPositions = () => {
                 'pnl'
               )}`}</Th>
               <Th className="text-right">{t('pnl')}</Th>
-              <Th />
+              {!isUnownedAccount ? <Th /> : null}
             </TrHead>
           </thead>
           <tbody>
@@ -164,16 +166,18 @@ const PerpPositions = () => {
                   >
                     <FormatNumericValue value={cummulativePnl} isUsd />
                   </Td>
-                  <Td className={`text-right`}>
-                    <Button
-                      className="text-xs"
-                      secondary
-                      size="small"
-                      onClick={() => showClosePositionModal(position)}
-                    >
-                      Close
-                    </Button>
-                  </Td>
+                  {!isUnownedAccount ? (
+                    <Td className={`text-right`}>
+                      <Button
+                        className="text-xs"
+                        secondary
+                        size="small"
+                        onClick={() => showClosePositionModal(position)}
+                      >
+                        Close
+                      </Button>
+                    </Td>
+                  ) : null}
                 </TrBody>
               )
             })}

@@ -24,6 +24,7 @@ import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 // import ThemeSwitcher from './ThemeSwitcher'
 
 const TopBar = () => {
@@ -41,6 +42,7 @@ const TopBar = () => {
   const { query } = router
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
+  const isUnownedAccount = useUnownedAccount()
 
   const handleCloseSetup = useCallback(() => {
     setShowUserSetup(false)
@@ -112,7 +114,7 @@ const TopBar = () => {
           {/* <div className="px-3 md:px-4">
             <ThemeSwitcher />
           </div> */}
-          {(mangoAccount && !connected) || (!connected && isMobile) ? null : (
+          {isUnownedAccount || (!connected && isMobile) ? null : (
             <Button
               onClick={() => handleDepositWithdrawModal('deposit')}
               secondary
