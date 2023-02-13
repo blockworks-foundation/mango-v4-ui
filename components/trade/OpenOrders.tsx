@@ -280,18 +280,16 @@ const OpenOrders = () => {
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>
                         <Td className="w-[16.67%] text-right font-mono">
-                          {o.size.toLocaleString(undefined, {
-                            maximumFractionDigits:
-                              getDecimalCount(minOrderSize),
-                          })}
+                          <FormatNumericValue
+                            value={o.size}
+                            decimals={getDecimalCount(minOrderSize)}
+                          />
                         </Td>
-                        <Td className="w-[16.67%] whitespace-nowrap text-right">
-                          <span className="font-mono">
-                            {o.price.toLocaleString(undefined, {
-                              minimumFractionDigits: getDecimalCount(tickSize),
-                              maximumFractionDigits: getDecimalCount(tickSize),
-                            })}
-                          </span>
+                        <Td className="w-[16.67%] whitespace-nowrap text-right font-mono">
+                          <FormatNumericValue
+                            value={o.price}
+                            decimals={getDecimalCount(tickSize)}
+                          />
                         </Td>
                       </>
                     ) : (
@@ -320,11 +318,7 @@ const OpenOrders = () => {
                       </>
                     )}
                     <Td className="w-[16.67%] text-right font-mono">
-                      <FormatNumericValue
-                        value={o.size * o.price}
-                        decimals={2}
-                        isUsd
-                      />
+                      <FormatNumericValue value={o.size * o.price} isUsd />
                     </Td>
                     {!isUnownedAccount ? (
                       <Td className="w-[16.67%]">
@@ -393,17 +387,14 @@ const OpenOrders = () => {
             let market: PerpMarket | Serum3Market
             let tickSize: number
             let minOrderSize: number
-            let baseSymbol: string
             if (o instanceof PerpOrder) {
               market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
-              baseSymbol = market.name.split('-')[0]
               tickSize = market.tickSize
               minOrderSize = market.minOrderSize
             } else {
               market = group.getSerum3MarketByExternalMarket(
                 new PublicKey(marketPk)
               )
-              baseSymbol = market.name.split('/')[0]
               const serumMarket = group.getSerum3ExternalMarket(
                 market.serumMarketExternal
               )
@@ -422,18 +413,17 @@ const OpenOrders = () => {
                       <SideBadge side={o.side} />
                       <p className="text-th-fgd-4">
                         <span className="font-mono text-th-fgd-3">
-                          {o.size.toLocaleString(undefined, {
-                            maximumFractionDigits:
-                              getDecimalCount(minOrderSize),
-                          })}
-                        </span>{' '}
-                        {baseSymbol}
+                          <FormatNumericValue
+                            value={o.size}
+                            decimals={getDecimalCount(minOrderSize)}
+                          />
+                        </span>
                         {' at '}
                         <span className="font-mono text-th-fgd-3">
-                          {o.price.toLocaleString(undefined, {
-                            minimumFractionDigits: getDecimalCount(tickSize),
-                            maximumFractionDigits: getDecimalCount(tickSize),
-                          })}
+                          <FormatNumericValue
+                            value={o.price}
+                            decimals={getDecimalCount(tickSize)}
+                          />
                         </span>
                       </p>
                     </div>
