@@ -75,7 +75,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   }
 
   const fetchTotalAccountSOL = useCallback(async () => {
-    if (!mangoAccount) {
+    if (!mangoAccount?.current) {
       return
     }
     const accountKeys = [
