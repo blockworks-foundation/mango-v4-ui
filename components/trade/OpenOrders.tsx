@@ -252,21 +252,14 @@ const OpenOrders = () => {
                 let market: PerpMarket | Serum3Market
                 let tickSize: number
                 let minOrderSize: number
-                let quoteSymbol
                 if (o instanceof PerpOrder) {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
-                  quoteSymbol = group.getFirstBankByTokenIndex(
-                    market.settleTokenIndex
-                  ).name
                   tickSize = market.tickSize
                   minOrderSize = market.minOrderSize
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
                   )
-                  quoteSymbol = group.getFirstBankByTokenIndex(
-                    market!.quoteTokenIndex
-                  ).name
                   const serumMarket = group.getSerum3ExternalMarket(
                     market.serumMarketExternal
                   )
@@ -297,10 +290,7 @@ const OpenOrders = () => {
                             {o.price.toLocaleString(undefined, {
                               minimumFractionDigits: getDecimalCount(tickSize),
                               maximumFractionDigits: getDecimalCount(tickSize),
-                            })}{' '}
-                            <span className="font-body text-th-fgd-4">
-                              {quoteSymbol}
-                            </span>
+                            })}
                           </span>
                         </Td>
                       </>
@@ -329,7 +319,7 @@ const OpenOrders = () => {
                         </Td>
                       </>
                     )}
-                    <Td className="w-[16.67%] text-right">
+                    <Td className="w-[16.67%] text-right font-mono">
                       <FormatNumericValue
                         value={o.size * o.price}
                         decimals={2}
@@ -403,14 +393,10 @@ const OpenOrders = () => {
             let market: PerpMarket | Serum3Market
             let tickSize: number
             let minOrderSize: number
-            let quoteSymbol: string
             let baseSymbol: string
             if (o instanceof PerpOrder) {
               market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
               baseSymbol = market.name.split('-')[0]
-              quoteSymbol = group.getFirstBankByTokenIndex(
-                market.settleTokenIndex
-              ).name
               tickSize = market.tickSize
               minOrderSize = market.minOrderSize
             } else {
@@ -418,9 +404,6 @@ const OpenOrders = () => {
                 new PublicKey(marketPk)
               )
               baseSymbol = market.name.split('/')[0]
-              quoteSymbol = group.getFirstBankByTokenIndex(
-                market!.quoteTokenIndex
-              ).name
               const serumMarket = group.getSerum3ExternalMarket(
                 market.serumMarketExternal
               )
@@ -445,14 +428,13 @@ const OpenOrders = () => {
                           })}
                         </span>{' '}
                         {baseSymbol}
-                        {' for '}
+                        {' at '}
                         <span className="font-mono text-th-fgd-3">
                           {o.price.toLocaleString(undefined, {
                             minimumFractionDigits: getDecimalCount(tickSize),
                             maximumFractionDigits: getDecimalCount(tickSize),
                           })}
-                        </span>{' '}
-                        {quoteSymbol}
+                        </span>
                       </p>
                     </div>
                   ) : (
