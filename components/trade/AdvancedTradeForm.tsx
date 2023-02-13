@@ -594,7 +594,9 @@ const AdvancedTradeForm = () => {
             ) : (
               <div className="flex items-center space-x-2">
                 <Loading />
-                <span>{t('trade:placing-order')}</span>
+                <span className="hidden sm:block">
+                  {t('trade:placing-order')}
+                </span>
               </div>
             )}
           </Button>
