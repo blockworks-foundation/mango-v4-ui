@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
+import { AnchorProvider, BN, Wallet, web3 } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
@@ -49,6 +49,7 @@ import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
+import { IOrderLineAdapter } from '@public/charting_library/charting_library'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -329,6 +330,9 @@ export type MangoStore = {
     data: TokenStatsItem[] | null
   }
   tradeForm: TradeForm
+  tradingView: {
+    orderLines: Map<string | BN, IOrderLineAdapter>
+  }
   wallet: {
     tokens: TokenAccount[]
     nfts: {
@@ -473,6 +477,9 @@ const mangoStore = create<MangoStore>()(
         data: [],
       },
       tradeForm: DEFAULT_TRADE_FORM,
+      tradingView: {
+        orderLines: new Map(),
+      },
       wallet: {
         tokens: [],
         nfts: {
