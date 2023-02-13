@@ -298,7 +298,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
             from: query.time_from,
             to: query.time_to,
           })
-        : await spotQueryBars(query.address, query.type as any, {
+        : await spotQueryBars(query.address, query.type, {
             firstDataRequest: false,
             from: query.time_from,
             to: query.time_to,
