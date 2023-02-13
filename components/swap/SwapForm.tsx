@@ -48,6 +48,7 @@ import useIpAddress from 'hooks/useIpAddress'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -69,6 +70,7 @@ const SwapForm = () => {
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
+  const isUnownedAccount = useUnownedAccount()
 
   const {
     margin: useMargin,
@@ -327,10 +329,12 @@ const SwapForm = () => {
           </div>
           <div className="mb-2 flex items-end justify-between">
             <p className="text-th-fgd-2 lg:text-base">{t('swap:pay')}</p>
-            <MaxSwapAmount
-              useMargin={useMargin}
-              setAmountIn={(v) => setAmountInFormValue(v, true)}
-            />
+            {!isUnownedAccount ? (
+              <MaxSwapAmount
+                useMargin={useMargin}
+                setAmountIn={(v) => setAmountInFormValue(v, true)}
+              />
+            ) : null}
           </div>
           <div className="mb-3 grid grid-cols-2" id="swap-step-two">
             <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">

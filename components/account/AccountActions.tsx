@@ -23,6 +23,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import { Popover, Transition } from '@headlessui/react'
 import ActionsLinkButton from './ActionsLinkButton'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -37,7 +38,7 @@ export const handleCopyAddress = (
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account'])
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
   const [showBorrowModal, setShowBorrowModal] = useState(false)
@@ -45,9 +46,10 @@ const AccountActions = () => {
   const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const { connected } = useWallet()
+  const isUnownedAccount = useUnownedAccount()
 
   const handleBorrowModal = () => {
-    if (!connected || mangoAccount) {
+    if (mangoAccountAddress || !connected) {
       setShowBorrowModal(true)
     } else {
       setShowCreateAccountModal(true)
@@ -56,11 +58,11 @@ const AccountActions = () => {
 
   return (
     <>
-      {mangoAccount && !connected ? null : (
+      {isUnownedAccount ? null : (
         <div className="flex items-center space-x-2">
           <Button
             className="flex w-1/3 items-center justify-center md:w-auto"
-            disabled={!mangoAccount}
+            disabled={!mangoAccountAddress}
             onClick={() => setShowRepayModal(true)}
             secondary
           >

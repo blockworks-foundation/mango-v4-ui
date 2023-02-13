@@ -34,6 +34,7 @@ import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances, {
   BankWithBalance,
 } from 'hooks/useBanksWithBalances'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -399,7 +400,7 @@ const ActionsMenu = ({
   const router = useRouter()
   const { mangoTokens } = useJupiterMints()
   const spotMarkets = mangoStore((s) => s.serumMarkets)
-  const { connected } = useWallet()
+  const isUnownedAccount = useUnownedAccount()
 
   const spotMarket = useMemo(() => {
     return spotMarkets.find((m) => {
@@ -477,7 +478,7 @@ const ActionsMenu = ({
 
   return (
     <>
-      {mangoAccount && !connected ? null : (
+      {isUnownedAccount ? null : (
         <IconDropMenu
           icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
           postion="leftBottom"
