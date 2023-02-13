@@ -36,18 +36,10 @@ const MobileTradeAdvancedPage = () => {
             fillWidth
           />
         </div>
-        <div
-          className={`h-full ${
-            activeTab === 'trade:book' ? 'visible' : 'hidden'
-          }`}
-        >
+        <div className={activeTab === 'trade:book' ? 'visible' : 'hidden'}>
           <Orderbook />
         </div>
-        <div
-          className={`h-full ${
-            activeTab === 'trade:trades' ? 'visible' : 'hidden'
-          }`}
-        >
+        <div className={activeTab === 'trade:trades' ? 'visible' : 'hidden'}>
           <RecentTrades />
         </div>
       </div>
