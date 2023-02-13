@@ -16,7 +16,11 @@ const SimpleAreaChart = dynamic(
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../shared/Button'
-import { ArrowsPointingOutIcon, ChartBarIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowsPointingOutIcon,
+  CalendarIcon,
+  ChartBarIcon,
+} from '@heroicons/react/20/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
 import SheenLoader from '../shared/SheenLoader'
@@ -451,15 +455,15 @@ const AccountPage = () => {
                       </IconButton>
                     </Tooltip>
                   ) : null}
-                  {/* <Tooltip content={t('account:pnl-history')} delay={250}>
+                  <Tooltip content={t('account:pnl-history')} delay={250}>
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
                       onClick={() => setShowPnlHistory(true)}
                     >
-                      <ClockIcon className="h-5 w-5" />
+                      <CalendarIcon className="h-5 w-5" />
                     </IconButton>
-                  </Tooltip> */}
+                  </Tooltip>
                 </div>
               ) : null}
             </div>
