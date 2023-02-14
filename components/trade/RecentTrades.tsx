@@ -53,7 +53,7 @@ const RecentTrades = () => {
 
   useInterval(() => {
     if (!soundSettings['recent-trades'] || !quoteBank) return
-    setLatestFillId(fills[0].orderId.toString())
+    setLatestFillId(fills[0]?.orderId?.toString())
     const fillsLimitIndex = fills.findIndex(
       (f) => f.orderId.toString() === latestFillId
     )
