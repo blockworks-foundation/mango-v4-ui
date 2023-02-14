@@ -21,11 +21,13 @@ const MarketSelectDropdown = () => {
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
 
   const perpMarkets = useMemo(() => {
-    return allPerpMarkets.filter(
-      (p) =>
-        p.publicKey.toString() !==
-        '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
-    )
+    return allPerpMarkets
+      .filter(
+        (p) =>
+          p.publicKey.toString() !==
+          '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
   }, [allPerpMarkets])
 
   const spotBaseTokens: string[] = useMemo(() => {
@@ -87,6 +89,7 @@ const MarketSelectDropdown = () => {
                         return mkt.name.split('/')[1] === spotBaseFilter
                       }
                     })
+                    .sort((a, b) => a.name.localeCompare(b.name))
                     .map((m) => {
                       return (
                         <div
