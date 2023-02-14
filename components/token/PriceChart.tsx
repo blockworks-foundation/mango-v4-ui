@@ -3,7 +3,7 @@ import { useTheme } from 'next-themes'
 import { useMemo } from 'react'
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { COLORS } from 'styles/colors'
-import { formatYAxis } from 'utils/formatting'
+import { formatCurrencyValue } from 'utils/numbers'
 
 const PriceChart = ({
   prices,
@@ -19,8 +19,8 @@ const PriceChart = ({
   }, [prices])
 
   return (
-    <div className="relative -mt-1 h-96 w-auto">
-      <div className="-mx-6 mt-6 h-full px-10">
+    <div className="relative -mt-1 h-72 w-auto md:h-96">
+      <div className="mt-6 h-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={prices}>
             <defs>
@@ -71,8 +71,9 @@ const PriceChart = ({
                 fill: 'var(--fgd-4)',
                 fontSize: 10,
               }}
-              tickFormatter={(x) => formatYAxis(x)}
+              tickFormatter={(x) => formatCurrencyValue(x)}
               tickLine={false}
+              width={prices[0][1] < 0.00001 ? 100 : 60}
             />
           </AreaChart>
         </ResponsiveContainer>
