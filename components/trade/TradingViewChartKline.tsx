@@ -23,7 +23,9 @@ import { COLORS } from 'styles/colors'
 import { IconButton } from '@components/shared/Button'
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import spotDataFeed from 'apis/birdeye/datafeed'
+import perpDataFeed from 'apis/mngo/datafeed'
 import { sleep } from 'utils'
+import datafeed from 'apis/birdeye/datafeed'
 
 type Props = {
   setIsFullView?: Dispatch<SetStateAction<boolean>>
@@ -254,6 +256,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   const { width } = useViewport()
   const prevWidth = usePrevious(width)
   const [isPerp, setIsPerp] = useState(false)
+  const dataFeed = isPerp ? perpDataFeed : spotDataFeed
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const [socketConnected] = useState(false)
   const selectedMarketName = selectedMarket?.name
@@ -273,7 +276,8 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   const fetchData = async (
     baseQuery: BASE_CHART_QUERY,
     from: number,
-    to?: number
+    to?: number,
+    firstDataRequest?: boolean
   ) => {
     try {
       setIsLoading(true)
@@ -283,14 +287,14 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         time_to: to ? to : baseQuery.time_to,
       }
       let symbolInfo: any
-      spotDataFeed.resolveSymbol(baseQuery.address, (sInfo) => {
+      dataFeed.resolveSymbol(baseQuery.address, (sInfo) => {
         symbolInfo = sInfo
       })
-      const response = await spotDataFeed.getBars(
+      const response = await datafeed.getBars(
         symbolInfo,
         query.type as any,
         {
-          firstDataRequest: true,
+          firstDataRequest: !!firstDataRequest,
           from: query.time_from,
           to: query.time_to,
           countBack: 1000,
@@ -325,83 +329,27 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     baseQuery: BASE_CHART_QUERY
   ) {
     await sleep(1000)
-    spotDataFeed.resolveSymbol(baseQuery.address, (symbolInfo) => {
-      spotDataFeed.subscribeBars(
+    dataFeed.resolveSymbol(baseQuery.address, (symbolInfo) => {
+      dataFeed.subscribeBars(
         symbolInfo,
         baseQuery.type,
         (bar) => {
-          console.log(bar)
           kLineChart.updateData(bar)
         },
-        '123',
+        '',
         () => {
           return null
         }
       )
     })
-
-    // socket.addEventListener('message', (msg) => {
-    //   const data = JSON.parse(msg.data)
-    //   if (data.type === 'WELLCOME') {
-    //     setSocketConnected(true)
-    //     socket.send(JSON.stringify(unsub_msg))
-    //     const msg = {
-    //       type: 'SUBSCRIBE_PRICE',
-    //       data: {
-    //         chartType: parseResolution(baseQuery.type),
-    //         address: baseQuery.address,
-    //         currency: 'pair',
-    //       },
-    //     }
-    //     socket.send(JSON.stringify(msg))
-    //   }
-    //   if (data.type === 'PRICE_DATA') {
-    //     const dataList = kLineChart.getDataList()
-    //     const lastItem = dataList[dataList.length - 1]
-    //     const currTime = data.data.unixTime * 1000
-    //     if (!dataList.length) {
-    //       return
-    //     }
-    //     const lastBar: KLineData & { time: number } = {
-    //       ...lastItem,
-    //       time: lastItem.timestamp,
-    //     }
-    //     const resolution = parseResolution(baseQuery.type)
-    //     const nextBarTime = getNextBarTime(lastBar, resolution)
-    //     let bar: KLineData
-
-    //     if (currTime >= nextBarTime) {
-    //       bar = {
-    //         timestamp: nextBarTime,
-    //         open: data.data.o,
-    //         high: data.data.h,
-    //         low: data.data.l,
-    //         close: data.data.c,
-    //         volume: data.data.v,
-    //       }
-    //     } else {
-    //       bar = {
-    //         ...lastBar,
-    //         high: Math.max(lastBar.high, data.data.h),
-    //         low: Math.min(lastBar.low, data.data.l),
-    //         close: data.data.c,
-    //         volume: data.data.v,
-    //       }
-    //     }
-    //     kLineChart.updateData(bar)
-    //   }
-    // })
   }
   const fetchFreshData = async (daysToSubtractFromToday: number) => {
     const from =
       Math.floor(Date.now() / 1000) - ONE_DAY_SECONDS * daysToSubtractFromToday
-    const data = await fetchData(baseChartQuery!, from)
+    const data = await fetchData(baseChartQuery!, from, undefined, true)
     if (chart) {
       chart.applyNewData(data)
-      //after we fetch fresh data start to update data every x seconds
-      if (!isPerp) {
-        setupSocket(chart, baseChartQuery!)
-      }
+      setupSocket(chart, baseChartQuery!)
     }
   }
 
@@ -503,8 +451,8 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       dispose('update-k-line')
       if (socketConnected) {
         console.log('[socket] kline disconnected')
-        spotDataFeed.unsubscribeBars()
-        spotDataFeed.closeSocket()
+        dataFeed.unsubscribeBars()
+        dataFeed.closeSocket()
       }
     }
   }, [])

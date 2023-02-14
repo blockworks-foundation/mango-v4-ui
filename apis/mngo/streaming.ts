@@ -78,3 +78,7 @@ export function unsubscribeFromStream() {
 
   socket.send(JSON.stringify(msg))
 }
+
+export function closeSocket() {
+  socket.close()
+}

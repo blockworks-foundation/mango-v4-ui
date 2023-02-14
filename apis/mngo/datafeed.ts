@@ -1,5 +1,9 @@
 import { makeApiRequest, parseResolution } from './helpers'
-import { subscribeOnStream, unsubscribeFromStream } from './streaming'
+import {
+  subscribeOnStream,
+  unsubscribeFromStream,
+  closeSocket,
+} from './streaming'
 import mangoStore from '@store/mangoStore'
 import {
   DatafeedConfiguration,
@@ -216,6 +220,7 @@ export default {
       onHistoryCallback(bars, {
         noData: false,
       })
+      return bars
     } catch (error) {
       console.warn('[getBars]: Get error', error)
       onErrorCallback(error)
@@ -243,4 +248,9 @@ export default {
     console.warn('[unsubscribeBars]')
     unsubscribeFromStream()
   },
+  closeSocket: () => {
+    console.warn('[closeSocket]')
+    closeSocket()
+  },
+  isPerp: true,
 }
