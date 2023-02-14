@@ -247,4 +247,5 @@ export default {
     console.warn('[closeSocket]')
     closeSocket()
   },
+  name: 'birdeye',
 }

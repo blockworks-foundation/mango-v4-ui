@@ -252,5 +252,5 @@ export default {
     console.warn('[closeSocket]')
     closeSocket()
   },
-  isPerp: true,
+  name: 'mngo',
 }
