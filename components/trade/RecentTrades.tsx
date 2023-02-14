@@ -47,7 +47,7 @@ const RecentTrades = () => {
   useEffect(() => {
     if (!fills.length) return
     if (!latestFillId) {
-      setLatestFillId(fills[0].orderId.toString())
+      setLatestFillId(fills[0]?.orderId?.toString())
     }
   }, [fills])
 
