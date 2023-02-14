@@ -193,7 +193,11 @@ const MangoAccountsListModal = ({
                         </div>
                       </button>
                       <div className="flex h-full items-center justify-center rounded-md rounded-l-none bg-th-bkg-3">
-                        <Tooltip content={t('copy-address')} delay={250}>
+                        <Tooltip
+                          className="hidden md:block"
+                          content={t('copy-address')}
+                          delay={250}
+                        >
                           <IconButton
                             className="text-th-fgd-3"
                             onClick={() =>

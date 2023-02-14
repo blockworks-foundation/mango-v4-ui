@@ -445,7 +445,11 @@ const AccountPage = () => {
               {mangoAccountAddress ? (
                 <div className="flex items-center space-x-3">
                   {performanceData.length > 4 ? (
-                    <Tooltip content={t('account:pnl-chart')} delay={250}>
+                    <Tooltip
+                      className="hidden md:block"
+                      content={t('account:pnl-chart')}
+                      delay={250}
+                    >
                       <IconButton
                         className="text-th-fgd-3"
                         hideBg
@@ -455,7 +459,11 @@ const AccountPage = () => {
                       </IconButton>
                     </Tooltip>
                   ) : null}
-                  <Tooltip content={t('account:pnl-history')} delay={250}>
+                  <Tooltip
+                    className="hidden md:block"
+                    content={t('account:pnl-history')}
+                    delay={250}
+                  >
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
@@ -494,7 +502,11 @@ const AccountPage = () => {
                 </p>
               </Tooltip>
               {interestTotalValue > 1 || interestTotalValue < -1 ? (
-                <Tooltip content="Cumulative Interest Chart" delay={250}>
+                <Tooltip
+                  className="hidden md:block"
+                  content="Cumulative Interest Chart"
+                  delay={250}
+                >
                   <IconButton
                     className="text-th-fgd-3"
                     hideBg

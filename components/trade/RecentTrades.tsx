@@ -137,7 +137,11 @@ const RecentTrades = () => {
     <>
       <div className="thin-scroll h-full overflow-y-scroll">
         <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 px-2">
-          <Tooltip content={t('trade:tooltip-volume-alert')} delay={250}>
+          <Tooltip
+            className="hidden md:block"
+            content={t('trade:tooltip-volume-alert')}
+            delay={250}
+          >
             <IconButton
               onClick={() => setShowVolumeAlertModal(true)}
               size="small"

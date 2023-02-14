@@ -537,6 +537,7 @@ const AdvancedTradeForm = () => {
         {selectedMarket instanceof Serum3Market ? (
           <div className="mt-4" id="trade-step-eight">
             <Tooltip
+              className="hidden md:block"
               delay={250}
               placement="left"
               content={t('trade:tooltip-enable-margin')}
