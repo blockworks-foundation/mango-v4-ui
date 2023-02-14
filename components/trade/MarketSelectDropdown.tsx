@@ -10,8 +10,7 @@ import { useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import MarketLogos from './MarketLogos'
 
-const isTesting = process.env.NEXT_PUBLIC_SHOW_PERPS === 'true'
-const TAB_VALUES = isTesting ? ['spot', 'perp'] : ['spot']
+const TAB_VALUES = ['spot', 'perp']
 
 const MarketSelectDropdown = () => {
   const { selectedMarket } = useSelectedMarket()
