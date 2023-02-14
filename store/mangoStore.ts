@@ -95,6 +95,8 @@ const initMangoClient = (
   })
 }
 
+let mangoGroupRetryAttempt = 0
+
 export interface TotalInterestDataItem {
   borrow_interest: number
   deposit_interest: number
@@ -603,7 +605,7 @@ const mangoStore = create<MangoStore>()(
               state.activityFeed.feed = combinedFeed
             })
           } catch (e) {
-            console.log('Failed to fetch account activity feed', e)
+            console.error('Failed to fetch account activity feed', e)
           } finally {
             set((state) => {
               state.activityFeed.loading = false
@@ -656,9 +658,15 @@ const mangoStore = create<MangoStore>()(
                 )
               }
             })
+            mangoGroupRetryAttempt = 0
           } catch (e) {
-            notify({ type: 'info', title: 'Unable to refresh data' })
-            console.error('Error fetching group', e)
+            if (mangoGroupRetryAttempt < 2) {
+              // get().actions.fetchGroup()
+              mangoGroupRetryAttempt++
+            } else {
+              notify({ type: 'info', title: 'Unable to refresh data' })
+              console.error('Error fetching group', e)
+            }
           }
         },
         reloadMangoAccount: async () => {
@@ -813,8 +821,10 @@ const mangoStore = create<MangoStore>()(
               mangoAccount.serum3Active().length &&
               Object.keys(openOrders).length
             ) {
-              serumOpenOrderAccounts =
-                await mangoAccount.loadSerum3OpenOrdersAccounts(client)
+              serumOpenOrderAccounts = Array.from(
+                mangoAccount.serum3OosMapByMarketIndex.values()
+              )
+              await mangoAccount.loadSerum3OpenOrdersAccounts(client)
             }
 
             for (const perpOrder of mangoAccount.perpOrdersActive()) {

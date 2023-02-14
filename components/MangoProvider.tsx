@@ -53,26 +53,16 @@ const HydrateStore = () => {
   // watch selected Mango Account for changes
   useEffect(() => {
     const client = mangoStore.getState().client
-
     if (!mangoAccountPk) return
-
     const subscriptionId = connection.onAccountChange(
       mangoAccountPk,
       async (info, context) => {
         if (info?.lamports === 0) return
 
         const lastSeenSlot = mangoStore.getState().mangoAccount.lastSlot
-        // const mangoAccountLastUpdated = new Date(
-        //   mangoStore.getState().mangoAccount.lastUpdatedAt
-        // )
         const mangoAccount = mangoStore.getState().mangoAccount.current
         if (!mangoAccount) return
-        // const newUpdatedAt = new Date()
-        // const timeDiff =
-        //   mangoAccountLastUpdated.getTime() - newUpdatedAt.getTime()
 
-        // only updated mango account if it's been more than 1 second since last update
-        // if (Math.abs(timeDiff) >= 500 && context.slot > lastSeenSlot) {
         if (context.slot > lastSeenSlot) {
           const decodedMangoAccount = client.program.coder.accounts.decode(
             'mangoAccount',
@@ -83,10 +73,8 @@ const HydrateStore = () => {
             decodedMangoAccount
           )
           await newMangoAccount.reloadSerum3OpenOrders(client)
-          actions.fetchOpenOrders()
-          // newMangoAccount.spotOpenOrdersAccounts =
-          //   mangoAccount.spotOpenOrdersAccounts
-          // newMangoAccount.advancedOrders = mangoAccount.advancedOrders
+          actions.fetchOpenOrders(newMangoAccount)
+
           set((s) => {
             s.mangoAccount.current = newMangoAccount
             s.mangoAccount.lastSlot = context.slot
