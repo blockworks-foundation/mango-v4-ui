@@ -133,8 +133,6 @@ const RecentTrades = () => {
     return [vol.buys / totalVol, vol.sells / totalVol]
   }, [fills])
 
-  console.log(fills)
-
   return (
     <>
       <div className="thin-scroll h-full overflow-y-scroll">
