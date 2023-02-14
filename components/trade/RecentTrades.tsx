@@ -16,6 +16,7 @@ import TradeVolumeAlertModal, {
   DEFAULT_VOLUME_ALERT_SETTINGS,
 } from '@components/modals/TradeVolumeAlertModal'
 import dayjs from 'dayjs'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 
 const volumeAlertSound = new Howl({
   src: ['/sounds/trade-buy.mp3'],
@@ -46,17 +47,29 @@ const RecentTrades = () => {
 
   useEffect(() => {
     if (!fills.length) return
+    const latesetFill = fills[0]
     if (!latestFillId) {
-      setLatestFillId(fills[0]?.orderId?.toString())
+      const fillId =
+        selectedMarket instanceof PerpMarket
+          ? latesetFill.takerClientOrderId
+          : latesetFill.orderId
+      setLatestFillId(fillId.toString())
     }
   }, [fills])
 
   useInterval(() => {
-    if (!soundSettings['recent-trades'] || !quoteBank) return
-    setLatestFillId(fills[0]?.orderId?.toString())
-    const fillsLimitIndex = fills.findIndex(
-      (f) => f.orderId.toString() === latestFillId
-    )
+    if (!soundSettings['recent-trades'] || !quoteBank || !fills.length) return
+    const latesetFill = fills[0]
+    const fillId =
+      selectedMarket instanceof PerpMarket
+        ? latesetFill.takerClientOrderId
+        : latesetFill.orderId
+    setLatestFillId(fillId.toString())
+    const fillsLimitIndex = fills.findIndex((f) => {
+      const id =
+        selectedMarket instanceof PerpMarket ? f.takerClientOrderId : f.orderId
+      return id.toString() === fillId.toString()
+    })
     const newFillsVolumeValue = fills
       .slice(0, fillsLimitIndex)
       .reduce((a, c) => a + c.size * c.price, 0)
