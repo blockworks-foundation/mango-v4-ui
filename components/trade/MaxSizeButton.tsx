@@ -4,6 +4,7 @@ import { FadeInFadeOut } from '@components/shared/Transitions'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo } from 'react'
 import { formatNumericValue } from 'utils/numbers'
@@ -28,6 +29,7 @@ const MaxSizeButton = ({
     side,
     useMargin
   )
+  const isUnownedAccount = useUnownedAccount()
 
   const perpMax = useMemo(() => {
     const group = mangoStore.getState().group
@@ -108,7 +110,7 @@ const MaxSizeButton = ({
   return (
     <div className="mb-2 mt-3 flex items-center justify-between">
       <p className="text-xs text-th-fgd-3">{t('trade:size')}</p>
-      <FadeInFadeOut show={!!price}>
+      <FadeInFadeOut show={!!price && !isUnownedAccount}>
         <MaxAmountButton
           className="text-xs"
           decimals={minOrderDecimals}

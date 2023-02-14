@@ -10,8 +10,7 @@ import { useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import MarketLogos from './MarketLogos'
 
-const isTesting = process.env.NEXT_PUBLIC_SHOW_PERPS === 'true'
-const TAB_VALUES = isTesting ? ['spot', 'perp'] : ['spot']
+const TAB_VALUES = ['spot', 'perp']
 
 const MarketSelectDropdown = () => {
   const { selectedMarket } = useSelectedMarket()
@@ -21,11 +20,13 @@ const MarketSelectDropdown = () => {
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
 
   const perpMarkets = useMemo(() => {
-    return allPerpMarkets.filter(
-      (p) =>
-        p.publicKey.toString() !==
-        '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
-    )
+    return allPerpMarkets
+      .filter(
+        (p) =>
+          p.publicKey.toString() !==
+          '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
   }, [allPerpMarkets])
 
   const spotBaseTokens: string[] = useMemo(() => {
@@ -87,6 +88,7 @@ const MarketSelectDropdown = () => {
                         return mkt.name.split('/')[1] === spotBaseFilter
                       }
                     })
+                    .sort((a, b) => a.name.localeCompare(b.name))
                     .map((m) => {
                       return (
                         <div

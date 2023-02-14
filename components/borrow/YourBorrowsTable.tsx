@@ -201,27 +201,23 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                       </p>
                     </div>
                     <div className="flex space-x-2">
-                      <Tooltip content={`${t('repay')} ${bank.name}`}>
-                        <IconButton
-                          onClick={() =>
-                            handleShowActionModals(bank.name, 'repay')
-                          }
-                          size="medium"
-                        >
-                          <ArrowDownRightIcon className="h-5 w-5" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip content={`${t('borrow')} ${bank.name}`}>
-                        <IconButton
-                          disabled={available.eq(0)}
-                          onClick={() =>
-                            handleShowActionModals(bank.name, 'borrow')
-                          }
-                          size="medium"
-                        >
-                          <ArrowUpLeftIcon className="h-5 w-5" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton
+                        onClick={() =>
+                          handleShowActionModals(bank.name, 'repay')
+                        }
+                        size="medium"
+                      >
+                        <ArrowDownRightIcon className="h-5 w-5" />
+                      </IconButton>
+                      <IconButton
+                        disabled={available.eq(0)}
+                        onClick={() =>
+                          handleShowActionModals(bank.name, 'borrow')
+                        }
+                        size="medium"
+                      >
+                        <ArrowUpLeftIcon className="h-5 w-5" />
+                      </IconButton>
                     </div>
                   </div>
                 </div>

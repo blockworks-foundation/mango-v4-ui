@@ -17,6 +17,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -32,6 +33,7 @@ const UnsettledTrades = ({
   const showTableView = width ? width > breakpoints.md : false
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
+  const isUnownedAccount = useUnownedAccount()
 
   const handleSettleSerumFunds = useCallback(async (mktAddress: string) => {
     const client = mangoStore.getState().client
@@ -136,7 +138,9 @@ const UnsettledTrades = ({
           <TrHead>
             <Th className="bg-th-bkg-1 text-left">{t('market')}</Th>
             <Th className="bg-th-bkg-1 text-right">{t('trade:amount')}</Th>
-            <Th className="bg-th-bkg-1 text-right" />
+            {!isUnownedAccount ? (
+              <Th className="bg-th-bkg-1 text-right" />
+            ) : null}
           </TrHead>
         </thead>
         <tbody>
@@ -156,34 +160,40 @@ const UnsettledTrades = ({
                   <div className="flex justify-end">
                     {unsettledSpotBalances[mktAddress].base ? (
                       <div>
-                        {unsettledSpotBalances[mktAddress].base}{' '}
+                        <FormatNumericValue
+                          value={unsettledSpotBalances[mktAddress].base}
+                        />{' '}
                         <span className="font-body text-th-fgd-4">{base}</span>
                       </div>
                     ) : null}
                     {unsettledSpotBalances[mktAddress].quote ? (
                       <div className="ml-4">
-                        {unsettledSpotBalances[mktAddress].quote}{' '}
+                        <FormatNumericValue
+                          value={unsettledSpotBalances[mktAddress].quote}
+                        />{' '}
                         <span className="font-body text-th-fgd-4">{quote}</span>
                       </div>
                     ) : null}
                   </div>
                 </Td>
-                <Td>
-                  <div className="flex justify-end">
-                    <Tooltip content={t('trade:settle-funds')}>
-                      <IconButton
-                        onClick={() => handleSettleSerumFunds(mktAddress)}
-                        size="small"
-                      >
-                        {settleMktAddress === mktAddress ? (
-                          <Loading className="h-4 w-4" />
-                        ) : (
-                          <CheckIcon className="h-4 w-4" />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  </div>
-                </Td>
+                {!isUnownedAccount ? (
+                  <Td>
+                    <div className="flex justify-end">
+                      <Tooltip content={t('trade:settle-funds')}>
+                        <IconButton
+                          onClick={() => handleSettleSerumFunds(mktAddress)}
+                          size="small"
+                        >
+                          {settleMktAddress === mktAddress ? (
+                            <Loading className="h-4 w-4" />
+                          ) : (
+                            <CheckIcon className="h-4 w-4" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </Td>
+                ) : null}
               </TrBody>
             )
           })}
@@ -203,29 +213,64 @@ const UnsettledTrades = ({
                   />{' '}
                   <span className="font-body text-th-fgd-4">USDC</span>
                 </Td>
-                <Td>
-                  <div className="flex justify-end">
-                    <Tooltip content={t('trade:settle-funds')}>
-                      <IconButton
-                        onClick={() => handleSettlePerpFunds(market)}
-                        size="small"
-                      >
-                        {settleMktAddress === market.publicKey.toString() ? (
-                          <Loading className="h-4 w-4" />
-                        ) : (
-                          <CheckIcon className="h-4 w-4" />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  </div>
-                </Td>
+                {!isUnownedAccount ? (
+                  <Td>
+                    <div className="flex justify-end">
+                      <Tooltip content={t('trade:settle-funds')}>
+                        <IconButton
+                          onClick={() => handleSettlePerpFunds(market)}
+                          size="small"
+                        >
+                          {settleMktAddress === market.publicKey.toString() ? (
+                            <Loading className="h-4 w-4" />
+                          ) : (
+                            <CheckIcon className="h-4 w-4" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </Td>
+                ) : null}
               </TrBody>
             )
           })}
         </tbody>
       </Table>
     ) : (
-      <div className="pb-20">
+      <div>
+        {unsettledPerpPositions.map((position) => {
+          const market = group.getPerpMarketByMarketIndex(position.marketIndex)
+
+          return (
+            <div
+              key={position.marketIndex}
+              className="flex items-center justify-between border-b border-th-bkg-3 p-4"
+            >
+              <TableMarketName market={market} />
+              <div className="flex items-center space-x-3">
+                <div>
+                  <FormatNumericValue
+                    value={position.getUnsettledPnlUi(market)}
+                    decimals={market.baseDecimals}
+                  />{' '}
+                  <span className="font-body text-th-fgd-4">USDC</span>
+                </div>
+                {!isUnownedAccount ? (
+                  <IconButton
+                    onClick={() => handleSettlePerpFunds(market)}
+                    size="medium"
+                  >
+                    {settleMktAddress === market.publicKey.toString() ? (
+                      <Loading className="h-4 w-4" />
+                    ) : (
+                      <CheckIcon className="h-4 w-4" />
+                    )}
+                  </IconButton>
+                ) : null}
+              </div>
+            </div>
+          )
+        })}
         {Object.entries(unsettledSpotBalances).map(([mktAddress]) => {
           const market = group.getSerum3MarketByExternalMarket(
             new PublicKey(mktAddress)
@@ -242,26 +287,32 @@ const UnsettledTrades = ({
               <div className="flex items-center space-x-3">
                 {unsettledSpotBalances[mktAddress].base ? (
                   <span className="font-mono text-sm">
-                    {unsettledSpotBalances[mktAddress].base}{' '}
+                    <FormatNumericValue
+                      value={unsettledSpotBalances[mktAddress].base}
+                    />{' '}
                     <span className="font-body text-th-fgd-4">{base}</span>
                   </span>
                 ) : null}
                 {unsettledSpotBalances[mktAddress].quote ? (
                   <span className="font-mono text-sm">
-                    {unsettledSpotBalances[mktAddress].quote}{' '}
+                    <FormatNumericValue
+                      value={unsettledSpotBalances[mktAddress].quote}
+                    />{' '}
                     <span className="font-body text-th-fgd-4">{quote}</span>
                   </span>
                 ) : null}
-                <IconButton
-                  onClick={() => handleSettleSerumFunds(mktAddress)}
-                  size="medium"
-                >
-                  {settleMktAddress === mktAddress ? (
-                    <Loading className="h-4 w-4" />
-                  ) : (
-                    <CheckIcon className="h-4 w-4" />
-                  )}
-                </IconButton>
+                {!isUnownedAccount ? (
+                  <IconButton
+                    onClick={() => handleSettleSerumFunds(mktAddress)}
+                    size="medium"
+                  >
+                    {settleMktAddress === mktAddress ? (
+                      <Loading className="h-4 w-4" />
+                    ) : (
+                      <CheckIcon className="h-4 w-4" />
+                    )}
+                  </IconButton>
+                ) : null}
               </div>
             </div>
           )

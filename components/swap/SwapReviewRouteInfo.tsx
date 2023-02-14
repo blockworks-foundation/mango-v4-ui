@@ -164,8 +164,6 @@ const fetchJupiterTransaction = async (
   const filtered_jup_ixs = ixs
     .filter((ix) => !isSetupIx(ix.programId))
     .filter((ix) => !isDuplicateAta(ix))
-  console.log('ixs: ', ixs)
-  console.log('filtered ixs: ', filtered_jup_ixs)
 
   return [filtered_jup_ixs, alts]
 }

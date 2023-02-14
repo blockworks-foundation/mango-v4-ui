@@ -340,7 +340,7 @@ const TradeHistory = () => {
                       <span className="font-mono text-th-fgd-2">
                         {trade.size}
                       </span>
-                      {' for '}
+                      {' at '}
                       <span className="font-mono text-th-fgd-2">
                         <FormatNumericValue value={trade.price} />
                       </span>

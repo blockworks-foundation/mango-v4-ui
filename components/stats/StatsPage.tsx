@@ -10,10 +10,7 @@ import SpotMarketsTable from './SpotMarketsTable'
 import TokenStats from './TokenStats'
 
 // const TABS = ['tokens', 'perp', 'spot', 'mango']
-const TABS =
-  process.env.NEXT_PUBLIC_SHOW_PERPS === 'true'
-    ? ['tokens', 'perp', 'spot', 'mango']
-    : ['tokens', 'spot', 'mango']
+const TABS = ['tokens', 'perp', 'spot', 'mango']
 
 const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')

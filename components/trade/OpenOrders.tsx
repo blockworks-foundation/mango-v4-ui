@@ -27,6 +27,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
@@ -49,6 +50,7 @@ const OpenOrders = () => {
   const showTableView = width ? width > breakpoints.md : false
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
+  const isUnownedAccount = useUnownedAccount()
 
   const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
     const openOrders = mangoStore.getState().mangoAccount.openOrders
@@ -237,7 +239,9 @@ const OpenOrders = () => {
             <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
             <Th className="w-[16.67%] text-right">{t('price')}</Th>
             <Th className="w-[16.67%] text-right">{t('value')}</Th>
-            <Th className="w-[16.67%] text-right"></Th>
+            {!isUnownedAccount ? (
+              <Th className="w-[16.67%] text-right" />
+            ) : null}
           </TrHead>
         </thead>
         <tbody>
@@ -248,21 +252,14 @@ const OpenOrders = () => {
                 let market: PerpMarket | Serum3Market
                 let tickSize: number
                 let minOrderSize: number
-                let quoteSymbol
                 if (o instanceof PerpOrder) {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
-                  quoteSymbol = group.getFirstBankByTokenIndex(
-                    market.settleTokenIndex
-                  ).name
                   tickSize = market.tickSize
                   minOrderSize = market.minOrderSize
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
                   )
-                  quoteSymbol = group.getFirstBankByTokenIndex(
-                    market!.quoteTokenIndex
-                  ).name
                   const serumMarket = group.getSerum3ExternalMarket(
                     market.serumMarketExternal
                   )
@@ -283,21 +280,16 @@ const OpenOrders = () => {
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>
                         <Td className="w-[16.67%] text-right font-mono">
-                          {o.size.toLocaleString(undefined, {
-                            maximumFractionDigits:
-                              getDecimalCount(minOrderSize),
-                          })}
+                          <FormatNumericValue
+                            value={o.size}
+                            decimals={getDecimalCount(minOrderSize)}
+                          />
                         </Td>
-                        <Td className="w-[16.67%] whitespace-nowrap text-right">
-                          <span className="font-mono">
-                            {o.price.toLocaleString(undefined, {
-                              minimumFractionDigits: getDecimalCount(tickSize),
-                              maximumFractionDigits: getDecimalCount(tickSize),
-                            })}{' '}
-                            <span className="font-body text-th-fgd-4">
-                              {quoteSymbol}
-                            </span>
-                          </span>
+                        <Td className="w-[16.67%] whitespace-nowrap text-right font-mono">
+                          <FormatNumericValue
+                            value={o.price}
+                            decimals={getDecimalCount(tickSize)}
+                          />
                         </Td>
                       </>
                     ) : (
@@ -325,63 +317,61 @@ const OpenOrders = () => {
                         </Td>
                       </>
                     )}
-                    <Td className="w-[16.67%] text-right">
-                      <FormatNumericValue
-                        value={o.size * o.price}
-                        decimals={2}
-                        isUsd
-                      />
+                    <Td className="w-[16.67%] text-right font-mono">
+                      <FormatNumericValue value={o.size * o.price} isUsd />
                     </Td>
-                    <Td className="w-[16.67%]">
-                      <div className="flex justify-end space-x-2">
-                        {modifyOrderId !== o.orderId.toString() ? (
-                          <>
-                            <IconButton
-                              onClick={() => showEditOrderForm(o, tickSize)}
-                              size="small"
-                            >
-                              <PencilIcon className="h-4 w-4" />
-                            </IconButton>
-                            <Tooltip content={t('cancel')}>
+                    {!isUnownedAccount ? (
+                      <Td className="w-[16.67%]">
+                        <div className="flex justify-end space-x-2">
+                          {modifyOrderId !== o.orderId.toString() ? (
+                            <>
                               <IconButton
-                                disabled={cancelId === o.orderId.toString()}
-                                onClick={() =>
-                                  o instanceof PerpOrder
-                                    ? handleCancelPerpOrder(o)
-                                    : handleCancelSerumOrder(o)
-                                }
+                                onClick={() => showEditOrderForm(o, tickSize)}
                                 size="small"
                               >
-                                {cancelId === o.orderId.toString() ? (
+                                <PencilIcon className="h-4 w-4" />
+                              </IconButton>
+                              <Tooltip content={t('cancel')}>
+                                <IconButton
+                                  disabled={cancelId === o.orderId.toString()}
+                                  onClick={() =>
+                                    o instanceof PerpOrder
+                                      ? handleCancelPerpOrder(o)
+                                      : handleCancelSerumOrder(o)
+                                  }
+                                  size="small"
+                                >
+                                  {cancelId === o.orderId.toString() ? (
+                                    <Loading className="h-4 w-4" />
+                                  ) : (
+                                    <TrashIcon className="h-4 w-4" />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <>
+                              <IconButton
+                                onClick={() => modifyOrder(o)}
+                                size="small"
+                              >
+                                {loadingModifyOrder ? (
                                   <Loading className="h-4 w-4" />
                                 ) : (
-                                  <TrashIcon className="h-4 w-4" />
+                                  <CheckIcon className="h-4 w-4" />
                                 )}
                               </IconButton>
-                            </Tooltip>
-                          </>
-                        ) : (
-                          <>
-                            <IconButton
-                              onClick={() => modifyOrder(o)}
-                              size="small"
-                            >
-                              {loadingModifyOrder ? (
-                                <Loading className="h-4 w-4" />
-                              ) : (
-                                <CheckIcon className="h-4 w-4" />
-                              )}
-                            </IconButton>
-                            <IconButton
-                              onClick={cancelEditOrderForm}
-                              size="small"
-                            >
-                              <XMarkIcon className="h-4 w-4" />
-                            </IconButton>
-                          </>
-                        )}
-                      </div>
-                    </Td>
+                              <IconButton
+                                onClick={cancelEditOrderForm}
+                                size="small"
+                              >
+                                <XMarkIcon className="h-4 w-4" />
+                              </IconButton>
+                            </>
+                          )}
+                        </div>
+                      </Td>
+                    ) : null}
                   </TrBody>
                 )
               })
@@ -397,24 +387,14 @@ const OpenOrders = () => {
             let market: PerpMarket | Serum3Market
             let tickSize: number
             let minOrderSize: number
-            let quoteSymbol: string
-            let baseSymbol: string
             if (o instanceof PerpOrder) {
               market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
-              baseSymbol = market.name.split('-')[0]
-              quoteSymbol = group.getFirstBankByTokenIndex(
-                market.settleTokenIndex
-              ).name
               tickSize = market.tickSize
               minOrderSize = market.minOrderSize
             } else {
               market = group.getSerum3MarketByExternalMarket(
                 new PublicKey(marketPk)
               )
-              baseSymbol = market.name.split('/')[0]
-              quoteSymbol = group.getFirstBankByTokenIndex(
-                market!.quoteTokenIndex
-              ).name
               const serumMarket = group.getSerum3ExternalMarket(
                 market.serumMarketExternal
               )
@@ -433,20 +413,18 @@ const OpenOrders = () => {
                       <SideBadge side={o.side} />
                       <p className="text-th-fgd-4">
                         <span className="font-mono text-th-fgd-3">
-                          {o.size.toLocaleString(undefined, {
-                            maximumFractionDigits:
-                              getDecimalCount(minOrderSize),
-                          })}
-                        </span>{' '}
-                        {baseSymbol}
-                        {' for '}
+                          <FormatNumericValue
+                            value={o.size}
+                            decimals={getDecimalCount(minOrderSize)}
+                          />
+                        </span>
+                        {' at '}
                         <span className="font-mono text-th-fgd-3">
-                          {o.price.toLocaleString(undefined, {
-                            minimumFractionDigits: getDecimalCount(tickSize),
-                            maximumFractionDigits: getDecimalCount(tickSize),
-                          })}
-                        </span>{' '}
-                        {quoteSymbol}
+                          <FormatNumericValue
+                            value={o.price}
+                            decimals={getDecimalCount(tickSize)}
+                          />
+                        </span>
                       </p>
                     </div>
                   ) : (
@@ -477,7 +455,7 @@ const OpenOrders = () => {
                     </div>
                   )}
                 </div>
-                {connected ? (
+                {!isUnownedAccount ? (
                   <div className="flex items-center space-x-3 pl-8">
                     <div className="flex items-center space-x-2">
                       {modifyOrderId !== o.orderId.toString() ? (

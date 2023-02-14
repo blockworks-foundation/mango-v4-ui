@@ -16,7 +16,11 @@ const SimpleAreaChart = dynamic(
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../shared/Button'
-import { ArrowsPointingOutIcon, ChartBarIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowsPointingOutIcon,
+  CalendarIcon,
+  ChartBarIcon,
+} from '@heroicons/react/20/solid'
 import { Transition } from '@headlessui/react'
 import AccountTabs from './AccountTabs'
 import SheenLoader from '../shared/SheenLoader'
@@ -28,7 +32,7 @@ import {
   ANIMATION_SETTINGS_KEY,
   // IS_ONBOARDED_KEY
 } from 'utils/constants'
-// import { useWallet } from '@solana/wallet-adapter-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 // import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
@@ -42,7 +46,7 @@ import HealthBar from './HealthBar'
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
-  // const { connected } = useWallet()
+  const { connected } = useWallet()
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore.getState().actions
@@ -69,8 +73,7 @@ const AccountPage = () => {
   )
 
   useEffect(() => {
-    if (mangoAccountAddress) {
-      console.log('fired')
+    if (mangoAccountAddress || (!mangoAccountAddress && connected)) {
       actions.fetchAccountPerformance(mangoAccountAddress, 31)
       actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
@@ -442,7 +445,11 @@ const AccountPage = () => {
               {mangoAccountAddress ? (
                 <div className="flex items-center space-x-3">
                   {performanceData.length > 4 ? (
-                    <Tooltip content={t('account:pnl-chart')} delay={250}>
+                    <Tooltip
+                      className="hidden md:block"
+                      content={t('account:pnl-chart')}
+                      delay={250}
+                    >
                       <IconButton
                         className="text-th-fgd-3"
                         hideBg
@@ -452,15 +459,19 @@ const AccountPage = () => {
                       </IconButton>
                     </Tooltip>
                   ) : null}
-                  {/* <Tooltip content={t('account:pnl-history')} delay={250}>
+                  <Tooltip
+                    className="hidden md:block"
+                    content={t('account:pnl-history')}
+                    delay={250}
+                  >
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
                       onClick={() => setShowPnlHistory(true)}
                     >
-                      <ClockIcon className="h-5 w-5" />
+                      <CalendarIcon className="h-5 w-5" />
                     </IconButton>
-                  </Tooltip> */}
+                  </Tooltip>
                 </div>
               ) : null}
             </div>
@@ -491,7 +502,11 @@ const AccountPage = () => {
                 </p>
               </Tooltip>
               {interestTotalValue > 1 || interestTotalValue < -1 ? (
-                <Tooltip content="Cumulative Interest Chart" delay={250}>
+                <Tooltip
+                  className="hidden md:block"
+                  content="Cumulative Interest Chart"
+                  delay={250}
+                >
                   <IconButton
                     className="text-th-fgd-3"
                     hideBg

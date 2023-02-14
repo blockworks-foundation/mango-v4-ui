@@ -1,14 +1,15 @@
 {
   "advanced-order": "Advanced Order Type",
-  "advanced-order-details": "Advanced order types in the chart window may only be cancelled. If new conditions are required, please cancel this order and use the Advanced Trade Form.",
-  "cancel-order": "Cancel Your Order?",
-  "cancel-order-details": "Would you like to cancel your order for {{orderSize}} {{baseSymbol}} {{orderSide}} at ${{orderPrice}}?",
-  "modify-order": "Modify Your Order?",
-  "modify-order-details": "Would you like to change your order from a {{orderSize}} {{baseSymbol}} {{orderSide}} at ${{currentOrderPrice}} to a {{orderSize}} {{baseSymbol}} LIMIT {{orderSide}} at ${{updatedOrderPrice}}?",
+  "advanced-order-details": "Advanced order types in the chart window may only be cancelled. If new conditions are required, cancel this order and use the trade order form.",
+  "cancel-order": "Cancel Order",
+  "cancel-order-details": "Cancel your order for {{orderSide}} {{orderSize}} {{marketName}} at {{orderPrice}}",
+  "modify-order": "Modify Order",
+  "modify-order-details": "Edit your {{marketName}} order from {{orderSide}} {{orderSize}} at {{currentOrderPrice}} to {{orderSide}} {{orderSize}} at {{updatedOrderPrice}}",
   "order-details": " ({{orderType}} {{orderSide}}) if price is {{triggerCondition}} {{triggerPrice}}",
   "outside-range": "Order Price Outside Range",
-  "slippage-accept": "Please use the trade input form if you wish to accept the potential slippage.",
-  "slippage-warning": "Your order price ({{updatedOrderPrice}}) is greater than 5% {{aboveBelow}} the current market price ({{selectedMarketPrice}}) indicating you might incur significant slippage.",
+  "toggle-stable-price": "Toggle stable price line",
+  "slippage-accept": "Use the trade order form if you wish to accept the potential slippage.",
+  "slippage-warning": "{{updatedOrderPrice}} is greater than 5% {{aboveBelow}} the current market price of {{selectedMarketPrice}}. Executing this trade could incur significant slippage.",
   "toggle-order-line": "Toggle order line visibility",
-  "toggle-stable-price": "Toggle stable price line"
+  "toggle-trade-executions": "Toggle trade execution visibility"
 }

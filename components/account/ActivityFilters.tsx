@@ -124,7 +124,10 @@ const ActivityFilters = () => {
     <Disclosure>
       <div className="flex items-center">
         {hasFilters ? (
-          <Tooltip content={t('activity:reset-filters')}>
+          <Tooltip
+            className="hidden md:block"
+            content={t('activity:reset-filters')}
+          >
             <IconButton
               className={`${loadActivityFeed ? 'animate-spin' : ''}`}
               onClick={() => handleResetFilters()}

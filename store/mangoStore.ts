@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { AnchorProvider, Wallet, web3 } from '@project-serum/anchor'
+import { AnchorProvider, BN, Wallet, web3 } from '@project-serum/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
@@ -49,7 +49,10 @@ import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
-import { EntityId } from '@public/charting_library/charting_library'
+import {
+  EntityId,
+  IOrderLineAdapter,
+} from '@public/charting_library/charting_library'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -94,6 +97,8 @@ const initMangoClient = (
     },
   })
 }
+
+let mangoGroupRetryAttempt = 0
 
 export interface TotalInterestDataItem {
   borrow_interest: number
@@ -332,6 +337,7 @@ export type MangoStore = {
   tradeForm: TradeForm
   tradingView: {
     stablePriceLine: Map<string, EntityId> | undefined
+    orderLines: Map<string | BN, IOrderLineAdapter>
   }
   wallet: {
     tokens: TokenAccount[]
@@ -479,6 +485,7 @@ const mangoStore = create<MangoStore>()(
       tradeForm: DEFAULT_TRADE_FORM,
       tradingView: {
         stablePriceLine: new Map(),
+        orderLines: new Map(),
       },
       wallet: {
         tokens: [],
@@ -603,7 +610,7 @@ const mangoStore = create<MangoStore>()(
               state.activityFeed.feed = combinedFeed
             })
           } catch (e) {
-            console.log('Failed to fetch account activity feed', e)
+            console.error('Failed to fetch account activity feed', e)
           } finally {
             set((state) => {
               state.activityFeed.loading = false
@@ -656,9 +663,15 @@ const mangoStore = create<MangoStore>()(
                 )
               }
             })
+            mangoGroupRetryAttempt = 0
           } catch (e) {
-            notify({ type: 'info', title: 'Unable to refresh data' })
-            console.error('Error fetching group', e)
+            if (mangoGroupRetryAttempt < 2) {
+              // get().actions.fetchGroup()
+              mangoGroupRetryAttempt++
+            } else {
+              notify({ type: 'info', title: 'Unable to refresh data' })
+              console.error('Error fetching group', e)
+            }
           }
         },
         reloadMangoAccount: async () => {
@@ -813,8 +826,10 @@ const mangoStore = create<MangoStore>()(
               mangoAccount.serum3Active().length &&
               Object.keys(openOrders).length
             ) {
-              serumOpenOrderAccounts =
-                await mangoAccount.loadSerum3OpenOrdersAccounts(client)
+              serumOpenOrderAccounts = Array.from(
+                mangoAccount.serum3OosMapByMarketIndex.values()
+              )
+              await mangoAccount.loadSerum3OpenOrdersAccounts(client)
             }
 
             for (const perpOrder of mangoAccount.perpOrdersActive()) {

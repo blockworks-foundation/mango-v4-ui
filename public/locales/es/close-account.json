@@ -14,5 +14,6 @@
     "settle-balances": "Settle all balances",
     "transaction-confirmed": "Transaction Confirmed",
     "withdraw-assets-worth": "Withdraw assets worth {{value}}",
-    "you-must": "Before you can close your account"
+    "you-must": "Before you can close your account",
+    "account-closed": "Account Closed 👋"
 }

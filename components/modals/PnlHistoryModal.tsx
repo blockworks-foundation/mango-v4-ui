@@ -33,7 +33,7 @@ const PnlHistoryModal = ({
 
   useEffect(() => {
     if (mangoAccountAddress) {
-      actions.fetchAccountPerformance(mangoAccountAddress, 30)
+      actions.fetchAccountPerformance(mangoAccountAddress, 31)
     }
   }, [actions, mangoAccountAddress])
 
@@ -41,8 +41,10 @@ const PnlHistoryModal = ({
     if (!performanceData.length) return []
 
     const dailyPnl = performanceData.filter((d: PerformanceDataItem) => {
-      const date = new Date(d.time)
-      return date.getHours() === 0
+      const startTime = new Date().getTime() - 30 * 86400000
+      const dataDate = new Date(d.time)
+      const dataTime = dataDate.getTime()
+      return dataTime >= startTime && dataDate.getHours() === 0
     })
 
     return dailyPnl.length
