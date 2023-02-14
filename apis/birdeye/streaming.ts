@@ -13,6 +13,7 @@ socket.addEventListener('open', (_event) => {
 // Listen for messages
 socket.addEventListener('message', (msg) => {
   const data = JSON.parse(msg.data)
+  console.log(data)
   if (data.type !== 'PRICE_DATA') return console.warn(data)
 
   const currTime = data.data.unixTime * 1000
@@ -76,4 +77,8 @@ export function unsubscribeFromStream() {
   }
 
   socket.send(JSON.stringify(msg))
+}
+
+export function closeSocket() {
+  socket.close()
 }
