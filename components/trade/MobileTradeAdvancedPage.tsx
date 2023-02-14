@@ -7,12 +7,16 @@ import TabButtons from '@components/shared/TabButtons'
 import { TABS } from './OrderbookAndTrades'
 import RecentTrades from './RecentTrades'
 import TradingChartContainer from './TradingChartContainer'
+import FavoriteMarketsBar from './FavoriteMarketsBar'
 
 const MobileTradeAdvancedPage = () => {
   const [activeTab, setActiveTab] = useState('trade:book')
   const [showChart, setShowChart] = useState(false)
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3">
+      <div className="col-span-2 sm:col-span-3">
+        <FavoriteMarketsBar />
+      </div>
       <div className="col-span-2 border-b border-th-bkg-3 sm:col-span-3">
         <AdvancedMarketHeader
           showChart={showChart}
