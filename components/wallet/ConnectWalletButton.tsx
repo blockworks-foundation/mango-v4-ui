@@ -27,7 +27,7 @@ export const ConnectWalletButton: React.FC = () => {
         disabled={!groupLoaded}
         className={` text-white focus:outline-none disabled:cursor-wait disabled:opacity-25`}
       >
-        <div className="relative flex h-16 w-44 bg-th-bkg-2 py-2 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-0 hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100">
+        <div className="relative flex h-16 w-44 bg-th-bkg-3 py-2 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-0 hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100">
           <div className="default-transition relative z-10 flex h-full items-center justify-center space-x-3 px-4">
             {connecting ? (
               <Loading className="h-[28px] w-[28px]" />

@@ -120,7 +120,7 @@ const RecentTrades = () => {
 
     const vol = fills.reduce(
       (a: { buys: number; sells: number }, c: any) => {
-        if (c.side === 'buy' || c.takerSide === 1) {
+        if (c.side === 'buy' || c.takerSide === 0) {
           a.buys = a.buys + c.size
         } else {
           a.sells = a.sells + c.size
@@ -132,6 +132,8 @@ const RecentTrades = () => {
     const totalVol = vol.buys + vol.sells
     return [vol.buys / totalVol, vol.sells / totalVol]
   }, [fills])
+
+  console.log(fills)
 
   return (
     <>
