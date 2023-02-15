@@ -28,6 +28,7 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { PAGINATION_PAGE_LENGTH } from 'utils/constants'
+import { abbreviateAddress } from 'utils/formatting'
 import { breakpoints } from 'utils/theme'
 import TableMarketName from './TableMarketName'
 
@@ -280,7 +281,7 @@ const TradeHistory = () => {
                     </Td>
                     <Td className="text-right">
                       <span className="font-mono">
-                        <FormatNumericValue value={trade.feeCost} />
+                        <FormatNumericValue roundUp value={trade.feeCost} />
                       </span>
                       <p className="font-body text-xs text-th-fgd-4">
                         {trade.liquidity}
@@ -299,7 +300,14 @@ const TradeHistory = () => {
                     <Td className="xl:!pl-0">
                       {trade.market.name.includes('PERP') ? (
                         <div className="flex justify-end">
-                          <Tooltip content="View Counterparty" delay={250}>
+                          <Tooltip
+                            content={`View Counterparty ${abbreviateAddress(
+                              trade.liquidity === 'Taker'
+                                ? new PublicKey(trade.maker)
+                                : new PublicKey(trade.taker)
+                            )}`}
+                            delay={0}
+                          >
                             <a
                               className=""
                               target="_blank"
