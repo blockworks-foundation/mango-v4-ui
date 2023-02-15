@@ -82,7 +82,8 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         () => {
           return null
         },
-        () => {
+        (e) => {
+          console.log(e)
           return null
         }
       )
