@@ -1,6 +1,6 @@
 import {
   Group,
-  I80F48,
+  ParsedFillEvent,
   PerpMarket,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
@@ -27,6 +27,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
+import { SerumEvent, PerpTradeHistory, SpotTradeHistory } from 'types'
 import { PAGINATION_PAGE_LENGTH } from 'utils/constants'
 import { abbreviateAddress } from 'utils/formatting'
 import { breakpoints } from 'utils/theme'
@@ -41,13 +42,13 @@ const byTimestamp = (a: any, b: any) => {
 
 const reverseSide = (side: string) => (side === 'long' ? 'short' : 'long')
 
-const parsePerpEvent = (mangoAccountAddress: string, event: any) => {
+type PerpFillEvent = ParsedFillEvent
+
+const parsePerpEvent = (mangoAccountAddress: string, event: PerpFillEvent) => {
   const maker = event.maker.toString() === mangoAccountAddress
   const orderId = maker ? event.makerOrderId : event.takerOrderId
   const value = event.quantity * event.price
-  const feeRate = maker
-    ? new I80F48(event.makerFee.val)
-    : new I80F48(event.takerFee.val)
+  const feeRate = maker ? event.makerFee : event.takerFee
   const takerSide = event.takerSide === 0 ? 'long' : 'short'
   const side = maker ? reverseSide(takerSide) : takerSide
 
@@ -55,81 +56,108 @@ const parsePerpEvent = (mangoAccountAddress: string, event: any) => {
     ...event,
     key: orderId?.toString(),
     liquidity: maker ? 'Maker' : 'Taker',
-    size: event.size,
+    size: event.quantity,
     price: event.price,
     value,
-    feeCost: (feeRate.toNumber() * value).toFixed(4),
+    feeCost: (feeRate * value).toFixed(4),
     side,
   }
 }
 
-const parseSerumEvent = (event: any) => {
+const parseSerumEvent = (event: SerumEvent) => {
   let liquidity
   if (event.eventFlags) {
     liquidity = event?.eventFlags?.maker ? 'Maker' : 'Taker'
-  } else {
-    liquidity = event.maker ? 'Maker' : 'Taker'
   }
+
   return {
     ...event,
     liquidity,
-    key: `${event.maker}-${event.price}`,
+    key: `${liquidity}-${event.price}`,
     value: event.price * event.size,
     side: event.side,
   }
 }
 
-const parseApiTradeHistory = (mangoAccountAddress: string, trade: any) => {
-  let makerTaker
-  if ('maker' in trade) {
-    makerTaker = trade.maker ? 'Maker' : 'Taker'
-    if (trade.taker && trade.taker.toString() === mangoAccountAddress) {
-      makerTaker = 'Taker'
-    }
-  }
+const isApiSpotTradeHistory = (
+  t: SpotTradeHistory | PerpTradeHistory
+): t is SpotTradeHistory => {
+  if ('open_orders' in t) return true
+  else return false
+}
 
-  let side = trade.side
-  if ('perp_market' in trade) {
+const isSerumFillEvent = (
+  t: PerpFillEvent | SerumEvent | SpotTradeHistory | PerpTradeHistory
+): t is SerumEvent => {
+  if ('eventFlags' in t) return true
+  else return false
+}
+
+const isPerpFillEvent = (
+  t: PerpFillEvent | SerumEvent | SpotTradeHistory | PerpTradeHistory
+): t is PerpFillEvent => {
+  if ('takerSide' in t) return true
+  else return false
+}
+
+const parseApiTradeHistory = (
+  mangoAccountAddress: string,
+  trade: SpotTradeHistory | PerpTradeHistory
+) => {
+  let side
+  let size
+  let feeCost
+  let liquidity
+  if (isApiSpotTradeHistory(trade)) {
+    side = trade.side
+    size = trade.size
+    feeCost = trade.fee_cost
+    liquidity = trade.maker ? 'Maker' : 'Taker'
+  } else {
+    liquidity =
+      trade.taker && trade.taker.toString() === mangoAccountAddress
+        ? 'Taker'
+        : 'Maker'
     const sideObj: any = {}
-    if (makerTaker == 'Taker') {
+    if (liquidity == 'Taker') {
       sideObj[trade.taker_side] = 1
     } else {
       sideObj[trade.taker_side == 'bid' ? 'ask' : 'bid'] = 1
     }
     side = sideObj
-  }
-
-  const size = trade.size || trade.quantity
-  let fee
-  if (trade.fee_cost) {
-    fee = trade.fee_cost
-  } else {
-    fee =
+    size = trade.quantity
+    feeCost =
       trade.maker === mangoAccountAddress ? trade.maker_fee : trade.taker_fee
   }
 
   return {
     ...trade,
-    liquidity: trade.liquidity || makerTaker,
+    liquidity,
     side,
     size,
-    feeCost: fee,
+    feeCost,
   }
 }
+
+type CombinedTradeHistoryTypes =
+  | PerpFillEvent
+  | SerumEvent
+  | SpotTradeHistory
+  | PerpTradeHistory
 
 const formatTradeHistory = (
   group: Group,
   selectedMarket: Serum3Market | PerpMarket | undefined,
   mangoAccountAddress: string,
-  tradeHistory: any[]
+  tradeHistory: Array<CombinedTradeHistoryTypes>
 ) => {
   return tradeHistory
     .flat()
     .map((event) => {
       let trade
-      if (event.eventFlags || event.nativeQuantityPaid) {
+      if (isSerumFillEvent(event)) {
         trade = parseSerumEvent(event)
-      } else if (event.makerFee) {
+      } else if (isPerpFillEvent(event)) {
         trade = parsePerpEvent(mangoAccountAddress, event)
       } else {
         trade = parseApiTradeHistory(mangoAccountAddress, event)
@@ -185,13 +213,13 @@ const TradeHistory = () => {
   }, [mangoAccount, selectedMarket])
 
   const eventQueueFillsForAccount = useMemo(() => {
-    if (!selectedMarket) return []
+    if (!selectedMarket || !openOrderOwner) return []
 
     return fills.filter((fill: any) => {
       if (fill.openOrders) {
         // handles serum event queue for spot trades
         return openOrderOwner ? fill.openOrders.equals(openOrderOwner) : false
-      } else {
+      } else if (fill.taker) {
         // handles mango event queue for perp trades
         return (
           fill.taker.equals(openOrderOwner) || fill.maker.equals(openOrderOwner)

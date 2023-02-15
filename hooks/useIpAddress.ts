@@ -70,7 +70,7 @@ export default function useIpAddress() {
   }, [ipCountryCode])
 
   if (CLUSTER === 'mainnet-beta') {
-    return { ipAllowed, spotAllowed, ipCountry }
+    return { ipAllowed: true, spotAllowed, ipCountry }
   } else {
     return { ipAllowed: true, spotAllowed: true, ipCountry }
   }

@@ -1,5 +1,7 @@
 import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { Modify } from '@blockworks-foundation/mango-v4/dist/types/src/types'
 import { BN } from '@project-serum/anchor'
+import { Event } from '@project-serum/serum/lib/queue'
 
 export interface ChartTradeType {
   market: string
@@ -65,5 +67,15 @@ export interface PerpTradeHistory {
   quantity: number
   seq_num: number
 }
+
+export type SerumEvent = Modify<
+  Event,
+  {
+    price: number
+    size: number
+    side: string
+    feeCost: number
+  }
+>
 
 export type GenericMarket = Serum3Market | PerpMarket

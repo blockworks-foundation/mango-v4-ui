@@ -327,13 +327,13 @@ const TradingViewChart = () => {
         try {
           newStablePrice.set(`${now}${price}`, id)
         } catch (error) {
-          console.log('failed to set stable price line')
+          console.warn('failed to set stable price line')
         }
       } else {
-        console.log('failed to create stable price line')
+        console.warn('failed to create stable price line')
       }
     } catch {
-      console.log('failed to create stable price line')
+      console.warn('failed to create stable price line')
     }
     return newStablePrice
   }
@@ -345,7 +345,7 @@ const TradingViewChart = () => {
       try {
         tvWidgetRef.current.chart().removeEntity(val)
       } catch (error) {
-        console.log('stable price could not be removed')
+        console.warn('stable price could not be removed')
       }
     }
     set((s) => {
@@ -512,10 +512,10 @@ const TradingViewChart = () => {
       typeof order.side === 'string'
         ? t(order.side)
         : 'bid' in order.side
-        ? t('trade:long')
-        : t('trade:short')
-    const isLong = side === 'buy' || side === 'long'
-    const isShort = side === 'sell' || side === 'short'
+        ? t('buy')
+        : t('sell')
+    const isLong = side.toLowerCase() === 'buy'
+    const isShort = side.toLowerCase() === 'sell'
     const [minOrderDecimals, tickSizeDecimals] = getOrderDecimals()
     const orderSizeUi: string = formatNumericValue(order.size, minOrderDecimals)
     if (!tvWidgetRef?.current?.chart()) return
