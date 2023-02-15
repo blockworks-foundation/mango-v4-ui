@@ -108,7 +108,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     kLineChart: klinecharts.Chart,
     baseQuery: BASE_CHART_QUERY
   ) {
-    await sleep(1000)
+    await sleep(1500)
     setSocketConnected(true)
     let symbolInfo: any = undefined
     currentDataFeed.resolveSymbol(baseQuery.address, (symbolInf) => {
