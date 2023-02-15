@@ -7,7 +7,7 @@ const socket = new WebSocket(`wss://api.mngo.cloud/fills/v1/`)
 
 // Connection opened
 socket.addEventListener('open', (_event) => {
-  console.log('[socket] Connected')
+  console.log('[socket] Connected mngo')
 })
 
 // Listen for messages
@@ -69,7 +69,7 @@ export function subscribeOnStream(
     console.warn('Socket Closed')
     return
   }
-  console.warn('[subscribeBars]')
+  console.warn('[subscribeBars mngo]')
   socket.send(JSON.stringify(msg))
 }
 
@@ -82,16 +82,16 @@ export function unsubscribeFromStream() {
     console.warn('Socket Closed')
     return
   }
-  console.warn('[unsubscribeBars]')
+  console.warn('[unsubscribeBars mngo]')
   socket.send(JSON.stringify(msg))
 }
 
 export function closeSocket() {
   if (!isOpen(socket)) {
-    console.warn('Socket Closed')
+    console.warn('Socket Closed mngo')
     return
   }
-  console.warn('[closeSocket]')
+  console.warn('[closeSocket mngo]')
   socket.close()
 }
 

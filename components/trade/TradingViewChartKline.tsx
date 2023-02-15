@@ -115,9 +115,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     currentDataFeed.resolveSymbol(baseQuery.address, (symbolInf) => {
       symbolInfo = symbolInf
     })
-    if (previousDataFeed.name !== currentDataFeed.name) {
-      previousDataFeed.unsubscribeBars()
-    }
+    previousDataFeed.unsubscribeBars()
     currentDataFeed.subscribeBars(
       symbolInfo,
       baseQuery.type,

@@ -7,7 +7,7 @@ const socket = new WebSocket(socketUrl, 'echo-protocol')
 
 // Connection opened
 socket.addEventListener('open', (_event) => {
-  console.log('[socket] Connected')
+  console.log('[socket] Connected birdeye')
 })
 
 // Listen for messages
@@ -70,7 +70,7 @@ export function subscribeOnStream(
     console.warn('Socket Closed')
     return
   }
-  console.warn('[subscribeBars]')
+  console.warn('[subscribeBars birdeye]')
   socket.send(JSON.stringify(msg))
 }
 
@@ -83,16 +83,16 @@ export function unsubscribeFromStream() {
     console.warn('Socket Closed')
     return
   }
-  console.warn('[unsubscribeBars]')
+  console.warn('[unsubscribeBars birdeye]')
   socket.send(JSON.stringify(msg))
 }
 
 export function closeSocket() {
   if (!isOpen(socket)) {
-    console.warn('Socket Closed')
+    console.warn('Socket Closed birdeye')
     return
   }
-  console.warn('[closeSocket]')
+  console.warn('[closeSocket birdeye]')
   socket.close()
 }
 
