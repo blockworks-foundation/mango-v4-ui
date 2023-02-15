@@ -49,7 +49,10 @@ import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
-import { IOrderLineAdapter } from '@public/charting_library/charting_library'
+import {
+  EntityId,
+  IOrderLineAdapter,
+} from '@public/charting_library/charting_library'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -333,6 +336,7 @@ export type MangoStore = {
   }
   tradeForm: TradeForm
   tradingView: {
+    stablePriceLine: Map<string, EntityId> | undefined
     orderLines: Map<string | BN, IOrderLineAdapter>
   }
   wallet: {
@@ -480,6 +484,7 @@ const mangoStore = create<MangoStore>()(
       },
       tradeForm: DEFAULT_TRADE_FORM,
       tradingView: {
+        stablePriceLine: new Map(),
         orderLines: new Map(),
       },
       wallet: {
