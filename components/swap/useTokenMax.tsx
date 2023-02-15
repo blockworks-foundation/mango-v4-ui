@@ -103,7 +103,13 @@ export const getTokenInMax = (
   }
 }
 
-export const useTokenMax = (useMargin = true) => {
+interface TokenMaxResults {
+  amount: Decimal
+  amountWithBorrow: Decimal
+  decimals: number
+}
+
+export const useTokenMax = (useMargin = true): TokenMaxResults => {
   const { mangoAccount } = useMangoAccount()
   const { group } = useMangoGroup()
   const inputBank = mangoStore((s) => s.swap.inputBank)

@@ -20,7 +20,6 @@ import { Table, Td, Th, TrBody, TrHead } from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import ConnectEmptyState from './ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
-import Decimal from 'decimal.js'
 import FormatNumericValue from './FormatNumericValue'
 import BankAmountWithValue from './BankAmountWithValue'
 import useBanksWithBalances, {
@@ -290,7 +289,6 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
     }
   }, [tokenBank, selectedMarket])
 
-  console.log(tokenBank.name, ' balance', new Decimal(balance).toFixed())
   if (!balance) return <p className="flex justify-end">0</p>
 
   return (

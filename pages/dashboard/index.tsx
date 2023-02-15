@@ -232,13 +232,6 @@ const Dashboard: NextPage = () => {
                               ${bank.initLiabWeight.toFixed(2)}`}
                                 />
                                 <KeyValuePair
-                                  label="Scaled Init Asset/Liab Weight"
-                                  value={`${bank
-                                    .scaledInitAssetWeight()
-                                    .toFixed(4)}/
-                              ${bank.scaledInitLiabWeight().toFixed(4)}`}
-                                />
-                                <KeyValuePair
                                   label="Deposit weight scale start quote"
                                   value={bank.depositWeightScaleStartQuote}
                                 />

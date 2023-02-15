@@ -79,7 +79,7 @@ const TopBar = () => {
             </div>
           ) : null}
           <img
-            className="mr-4 ml-2 h-8 w-auto md:hidden"
+            className="mr-4 h-8 w-auto md:hidden"
             src="/logos/logo-mark.svg"
             alt="next"
           />

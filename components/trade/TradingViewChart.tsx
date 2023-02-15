@@ -305,15 +305,16 @@ const TradingViewChart = () => {
                 }
               })
             }
+
             const selectedMarket = mangoStore.getState().selectedMarket.current
             const selectedMarketPk =
               selectedMarket instanceof Serum3Market
                 ? selectedMarket?.serumMarketExternal.toString()
                 : selectedMarket?.publicKey.toString()
 
-            oOrders?.forEach(({ marketPk }) => {
+            oOrders?.forEach(({ marketPk, orders }) => {
               if (marketPk === selectedMarketPk) {
-                openOrdersForMarket += 1
+                openOrdersForMarket = orders.length
               }
             })
 
@@ -321,7 +322,7 @@ const TradingViewChart = () => {
               if (
                 (showOrderLines &&
                   matchingOrderLines !== openOrdersForMarket) ||
-                orderLines?.size != matchingOrderLines
+                orderLines?.size !== matchingOrderLines
               ) {
                 deleteLines()
                 drawLinesForMarket(openOrders)
