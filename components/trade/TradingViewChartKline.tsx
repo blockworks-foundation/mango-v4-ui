@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
-import klinecharts, { init, dispose, KLineData } from 'klinecharts'
+import klinecharts, { init, dispose } from 'klinecharts'
 import { useViewport } from 'hooks/useViewport'
 import usePrevious from '@components/shared/usePrevious'
 import Modal from '@components/shared/Modal'
@@ -18,16 +18,12 @@ import {
 } from 'utils/kLineChart'
 import Loading from '@components/shared/Loading'
 import clsx from 'clsx'
-import { useTheme } from 'next-themes'
-import { COLORS } from 'styles/colors'
 import { IconButton } from '@components/shared/Button'
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/20/solid'
-import { queryBars } from 'apis/birdeye/datafeed'
-import {
-  getNextBarTime,
-  parseResolution,
-  socketUrl,
-} from 'apis/birdeye/helpers'
+import spotDataFeed from 'apis/birdeye/datafeed'
+import perpDataFeed from 'apis/mngo/datafeed'
+import { sleep } from 'utils'
+import { useKlineChart } from 'hooks/useKlineChart'
 
 type Props = {
   setIsFullView?: Dispatch<SetStateAction<boolean>>
@@ -35,233 +31,12 @@ type Props = {
 }
 
 const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
-  const { theme } = useTheme()
-  const styles = {
-    grid: {
-      show: false,
-    },
-    candle: {
-      bar: {
-        upColor: COLORS.UP[theme],
-        downColor: COLORS.DOWN[theme],
-      },
-      tooltip: {
-        labels: ['', 'O:', 'C:', 'H:', 'L:', 'V:'],
-        text: {
-          size: 12,
-          family: 'TT Mono',
-          weight: 'normal',
-          color: COLORS.FGD4[theme],
-          marginLeft: 8,
-          marginTop: 6,
-          marginRight: 8,
-          marginBottom: 0,
-        },
-      },
-      priceMark: {
-        show: true,
-        high: {
-          show: true,
-          color: COLORS.FGD4[theme],
-          textMargin: 5,
-          textSize: 10,
-          textFamily: 'TT Mono',
-          textWeight: 'normal',
-        },
-        low: {
-          show: true,
-          color: COLORS.FGD4[theme],
-          textMargin: 5,
-          textSize: 10,
-          textFamily: 'TT Mono',
-          textWeight: 'normal',
-        },
-        last: {
-          show: true,
-          upColor: COLORS.BKG4[theme],
-          downColor: COLORS.BKG4[theme],
-          noChangeColor: COLORS.BKG4[theme],
-          line: {
-            show: true,
-            // 'solid'|'dash'
-            style: 'dash',
-            dashValue: [4, 4],
-            size: 1,
-          },
-          text: {
-            show: true,
-            size: 10,
-            paddingLeft: 2,
-            paddingTop: 2,
-            paddingRight: 2,
-            paddingBottom: 2,
-            color: '#FFFFFF',
-            family: 'TT Mono',
-            weight: 'normal',
-            borderRadius: 2,
-          },
-        },
-      },
-    },
-    xAxis: {
-      axisLine: {
-        show: true,
-        color: COLORS.BKG4[theme],
-        size: 1,
-      },
-      tickLine: {
-        show: true,
-        size: 1,
-        length: 3,
-        color: COLORS.BKG4[theme],
-      },
-      tickText: {
-        show: true,
-        color: COLORS.FGD4[theme],
-        family: 'TT Mono',
-        weight: 'normal',
-        size: 10,
-      },
-    },
-    yAxis: {
-      axisLine: {
-        show: true,
-        color: COLORS.BKG4[theme],
-        size: 1,
-      },
-      tickLine: {
-        show: true,
-        size: 1,
-        length: 3,
-        color: COLORS.BKG4[theme],
-      },
-      tickText: {
-        show: true,
-        color: COLORS.FGD4[theme],
-        family: 'TT Mono',
-        weight: 'normal',
-        size: 10,
-      },
-    },
-    crosshair: {
-      show: true,
-      horizontal: {
-        show: true,
-        line: {
-          show: true,
-          style: 'dash',
-          dashValue: [4, 2],
-          size: 1,
-          color: COLORS.FGD4[theme],
-        },
-        text: {
-          show: true,
-          color: '#FFFFFF',
-          size: 10,
-          family: 'TT Mono',
-          weight: 'normal',
-          paddingLeft: 2,
-          paddingRight: 2,
-          paddingTop: 2,
-          paddingBottom: 2,
-          borderSize: 1,
-          borderColor: COLORS.FGD4[theme],
-          borderRadius: 2,
-          backgroundColor: COLORS.FGD4[theme],
-        },
-      },
-      vertical: {
-        show: true,
-        line: {
-          show: true,
-          style: 'dash',
-          dashValue: [4, 2],
-          size: 1,
-          color: COLORS.FGD4[theme],
-        },
-        text: {
-          show: true,
-          color: '#FFFFFF',
-          size: 10,
-          family: 'TT Mono',
-          weight: 'normal',
-          paddingLeft: 2,
-          paddingRight: 2,
-          paddingTop: 2,
-          paddingBottom: 2,
-          borderSize: 1,
-          borderColor: COLORS.FGD4[theme],
-          borderRadius: 2,
-          backgroundColor: COLORS.FGD4[theme],
-        },
-      },
-    },
-    technicalIndicator: {
-      margin: {
-        top: 0.2,
-        bottom: 0.1,
-      },
-      bar: {
-        upColor: COLORS.UP[theme],
-        downColor: COLORS.DOWN[theme],
-        noChangeColor: '#888888',
-      },
-      line: {
-        size: 1,
-        colors: ['#FF9600', '#9D65C9', '#2196F3', '#E11D74', '#01C5C4'],
-      },
-      circle: {
-        upColor: '#26A69A',
-        downColor: '#EF5350',
-        noChangeColor: '#888888',
-      },
-      lastValueMark: {
-        show: false,
-        text: {
-          show: false,
-          color: '#ffffff',
-          size: 12,
-          family: 'Helvetica Neue',
-          weight: 'normal',
-          paddingLeft: 3,
-          paddingTop: 2,
-          paddingRight: 3,
-          paddingBottom: 2,
-          borderRadius: 2,
-        },
-      },
-      tooltip: {
-        // 'always' | 'follow_cross' | 'none'
-        showRule: 'always',
-        // 'standard' | 'rect'
-        showType: 'standard',
-        showName: true,
-        showParams: true,
-        defaultValue: 'n/a',
-        text: {
-          size: 12,
-          family: 'TT Mono',
-          weight: 'normal',
-          color: COLORS.FGD4[theme],
-          marginTop: 6,
-          marginRight: 8,
-          marginBottom: 0,
-          marginLeft: 8,
-        },
-      },
-    },
-    separator: {
-      size: 2,
-      color: COLORS.BKG4[theme],
-    },
-  }
-  const socket = new WebSocket(socketUrl, 'echo-protocol')
-  const unsub_msg = {
-    type: 'UNSUBSCRIBE_PRICE',
-  }
+  const { styles } = useKlineChart()
   const { width } = useViewport()
-  const prevWidth = usePrevious(width)
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
+  const prevWidth = usePrevious(width)
+  const [currentDataFeed, setCurrentDataFeed] = useState(spotDataFeed)
+  const previousDataFeed = usePrevious(currentDataFeed)
   const [socketConnected, setSocketConnected] = useState(false)
   const selectedMarketName = selectedMarket?.name
   const [isTechnicalModalOpen, setIsTechnicalModalOpen] = useState(false)
@@ -277,10 +52,12 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   const [chart, setChart] = useState<klinecharts.Chart | null>(null)
   const previousChart = usePrevious(chart)
   const [baseChartQuery, setQuery] = useState<BASE_CHART_QUERY | null>(null)
+
   const fetchData = async (
     baseQuery: BASE_CHART_QUERY,
     from: number,
-    to?: number
+    to?: number,
+    firstDataRequest?: boolean
   ) => {
     try {
       setIsLoading(true)
@@ -289,15 +66,31 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         time_from: from,
         time_to: to ? to : baseQuery.time_to,
       }
-      const response = await queryBars(query.address, query.type, {
-        firstDataRequest: false,
-        from: query.time_from,
-        to: query.time_to,
+      let symbolInfo: any
+      currentDataFeed.resolveSymbol(baseQuery.address, (sInfo) => {
+        symbolInfo = sInfo
       })
-      const dataSize = response.length
+      const response = await currentDataFeed.getBars(
+        symbolInfo,
+        query.type as any,
+        {
+          firstDataRequest: !!firstDataRequest,
+          from: query.time_from,
+          to: query.time_to,
+          countBack: 0,
+        },
+        () => {
+          return null
+        },
+        (e) => {
+          console.log(e)
+          return null
+        }
+      )
+      const dataSize = response?.length || 0
       const dataList = []
       for (let i = 0; i < dataSize; i++) {
-        const row = response[i]
+        const row = response![i]
         const kLineModel = {
           ...row,
         }
@@ -312,74 +105,35 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     }
   }
 
-  //update data every 10 secs
-  function setupSocket(
+  async function setupSocket(
     kLineChart: klinecharts.Chart,
     baseQuery: BASE_CHART_QUERY
   ) {
-    // Connection opened
-    socket.addEventListener('open', (_event) => {
-      console.log('[socket] Kline Connected')
+    await sleep(1500)
+    setSocketConnected(true)
+    let symbolInfo: any = undefined
+    currentDataFeed.resolveSymbol(baseQuery.address, (symbolInf) => {
+      symbolInfo = symbolInf
     })
-    socket.addEventListener('message', (msg) => {
-      const data = JSON.parse(msg.data)
-      if (data.type === 'WELLCOME') {
-        setSocketConnected(true)
-        socket.send(JSON.stringify(unsub_msg))
-        const msg = {
-          type: 'SUBSCRIBE_PRICE',
-          data: {
-            chartType: parseResolution(baseQuery.type),
-            address: baseQuery.address,
-            currency: 'pair',
-          },
-        }
-        socket.send(JSON.stringify(msg))
-      }
-      if (data.type === 'PRICE_DATA') {
-        const dataList = kLineChart.getDataList()
-        const lastItem = dataList[dataList.length - 1]
-        const currTime = data.data.unixTime * 1000
-        if (!dataList.length) {
-          return
-        }
-        const lastBar: KLineData & { time: number } = {
-          ...lastItem,
-          time: lastItem.timestamp,
-        }
-        const resolution = parseResolution(baseQuery.type)
-        const nextBarTime = getNextBarTime(lastBar, resolution)
-        let bar: KLineData
-
-        if (currTime >= nextBarTime) {
-          bar = {
-            timestamp: nextBarTime,
-            open: data.data.o,
-            high: data.data.h,
-            low: data.data.l,
-            close: data.data.c,
-            volume: data.data.v,
-          }
-        } else {
-          bar = {
-            ...lastBar,
-            high: Math.max(lastBar.high, data.data.h),
-            low: Math.min(lastBar.low, data.data.l),
-            close: data.data.c,
-            volume: data.data.v,
-          }
-        }
+    previousDataFeed.unsubscribeBars()
+    currentDataFeed.subscribeBars(
+      symbolInfo,
+      baseQuery.type,
+      (bar) => {
         kLineChart.updateData(bar)
+      },
+      '',
+      () => {
+        return null
       }
-    })
+    )
   }
   const fetchFreshData = async (daysToSubtractFromToday: number) => {
     const from =
       Math.floor(Date.now() / 1000) - ONE_DAY_SECONDS * daysToSubtractFromToday
-    const data = await fetchData(baseChartQuery!, from)
+    const data = await fetchData(baseChartQuery!, from, undefined, true)
     if (chart) {
       chart.applyNewData(data)
-      //after we fetch fresh data start to update data every x seconds
       setupSocket(chart, baseChartQuery!)
     }
   }
@@ -398,7 +152,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   //when base query change we refetch with fresh data
   useEffect(() => {
     if (chart && baseChartQuery) {
-      //becuase bird eye send onlu 1k records at one time
+      //because bird eye send only 1k records at one time
       //we query for lower amounts of days at the start
       const halfDayThreshold = ['1', '3']
       const twoDaysThreshold = ['5', '15', '30']
@@ -414,23 +168,40 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
           const unixTime = timestamp / 1000
           const from = unixTime - ONE_DAY_SECONDS * daysToSub
           const data = await fetchData(baseChartQuery!, from, unixTime)
+          if (!data.length) {
+            chart.loadMore(() => null)
+          }
           chart.applyMoreData(data)
         } catch (e) {
           console.error('Error fetching new data')
         }
       })
     }
-  }, [baseChartQuery])
+  }, [baseChartQuery, currentDataFeed.name])
 
   //change query based on market and resolution
   useEffect(() => {
-    if (selectedMarketName && resolution) {
-      setQuery({
-        type: resolution.val,
-        address: '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6',
-        time_to: Math.floor(Date.now() / 1000),
-      })
+    let dataFeed = spotDataFeed
+    const group = mangoStore.getState().group
+    let address = '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+
+    if (!selectedMarketName?.toLowerCase().includes('perp') && group) {
+      address = group!
+        .getSerum3MarketByName(selectedMarketName!)
+        .serumMarketExternal.toString()
+    } else if (group) {
+      dataFeed = perpDataFeed
+
+      address = group!
+        .getPerpMarketByName(selectedMarketName!)
+        .publicKey.toString()
     }
+    setCurrentDataFeed(dataFeed)
+    setQuery({
+      type: resolution.val,
+      address: address,
+      time_to: Math.floor(Date.now() / 1000),
+    })
   }, [selectedMarketName, resolution])
 
   // init default technical indicators after init of chart
@@ -466,9 +237,8 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     return () => {
       dispose('update-k-line')
       if (socketConnected) {
-        console.log('[socket] kline disconnected')
-        socket.send(JSON.stringify(unsub_msg))
-        socket.close()
+        currentDataFeed.unsubscribeBars()
+        currentDataFeed.closeSocket()
       }
     }
   }, [])

@@ -7,7 +7,7 @@ const socket = new WebSocket(socketUrl, 'echo-protocol')
 
 // Connection opened
 socket.addEventListener('open', (_event) => {
-  console.log('[socket] Connected')
+  console.log('[socket] Connected birdeye')
 })
 
 // Listen for messages
@@ -21,7 +21,6 @@ socket.addEventListener('message', (msg) => {
   const nextBarTime = getNextBarTime(lastBar, resolution)
 
   let bar
-
   if (currTime >= nextBarTime) {
     bar = {
       time: nextBarTime,
@@ -67,6 +66,11 @@ export function subscribeOnStream(
       currency: symbolInfo.type || 'usd',
     },
   }
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[subscribeBars birdeye]')
   socket.send(JSON.stringify(msg))
 }
 
@@ -75,5 +79,24 @@ export function unsubscribeFromStream() {
     type: 'UNSUBSCRIBE_PRICE',
   }
 
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[unsubscribeBars birdeye]')
   socket.send(JSON.stringify(msg))
+}
+
+export function closeSocket() {
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed birdeye')
+    return
+  }
+  console.warn('[closeSocket birdeye]')
+  socket.close()
+}
+
+export function isOpen(ws?: WebSocket) {
+  const sock = ws || socket
+  return sock.readyState === sock.OPEN
 }
