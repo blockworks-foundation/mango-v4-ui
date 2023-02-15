@@ -634,18 +634,17 @@ const mangoStore = create<MangoStore>()(
                 '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
             )
 
-            const defaultMarket =
+            const selectedMarket =
               serumMarkets.find((m) => m.name === selectedMarketName) ||
-              perpMarkets.find((m) => m.name === selectedMarketName)
-            serumMarkets[0]
+              perpMarkets.find((m) => m.name === selectedMarketName) ||
+              serumMarkets[0]
 
             set((state) => {
               state.group = group
               state.groupLoaded = true
               state.serumMarkets = serumMarkets
               state.perpMarkets = perpMarkets
-              state.selectedMarket.current =
-                state.selectedMarket.current || defaultMarket
+              state.selectedMarket.current = selectedMarket
               if (!state.swap.inputBank && !state.swap.outputBank) {
                 state.swap.inputBank = inputBank
                 state.swap.outputBank = outputBank
