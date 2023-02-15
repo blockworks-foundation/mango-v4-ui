@@ -1,6 +1,7 @@
 import { makeApiRequest, parseResolution } from './helpers'
 import {
   closeSocket,
+  isOpen,
   subscribeOnStream,
   unsubscribeFromStream,
 } from './streaming'
@@ -240,12 +241,11 @@ export default {
   },
 
   unsubscribeBars: () => {
-    console.warn('[unsubscribeBars]')
     unsubscribeFromStream()
   },
   closeSocket: () => {
-    console.warn('[closeSocket]')
     closeSocket()
   },
   name: 'birdeye',
+  isSocketOpen: isOpen,
 }

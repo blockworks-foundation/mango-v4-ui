@@ -3,6 +3,7 @@ import {
   subscribeOnStream,
   unsubscribeFromStream,
   closeSocket,
+  isOpen,
 } from './streaming'
 import mangoStore from '@store/mangoStore'
 import {
@@ -245,12 +246,11 @@ export default {
   },
 
   unsubscribeBars: () => {
-    console.warn('[unsubscribeBars]')
     unsubscribeFromStream()
   },
   closeSocket: () => {
-    console.warn('[closeSocket]')
     closeSocket()
   },
   name: 'mngo',
+  isSocketOpen: isOpen,
 }

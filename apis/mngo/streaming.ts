@@ -16,7 +16,6 @@ socket.addEventListener('message', (msg) => {
 
   if (!data.event) return console.warn(data)
   if (data.event.maker) return
-
   const currTime = new Date(data.event.timestamp).getTime()
   const lastBar = subscriptionItem.lastBar
   const resolution = subscriptionItem.resolution
@@ -66,7 +65,11 @@ export function subscribeOnStream(
     command: 'subscribe',
     marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
   }
-
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[subscribeBars]')
   socket.send(JSON.stringify(msg))
 }
 
@@ -75,10 +78,24 @@ export function unsubscribeFromStream() {
     command: 'unsubscribe',
     marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
   }
-
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[unsubscribeBars]')
   socket.send(JSON.stringify(msg))
 }
 
 export function closeSocket() {
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[closeSocket]')
   socket.close()
+}
+
+export function isOpen(ws?: WebSocket) {
+  const sock = ws || socket
+  return sock.readyState === sock.OPEN
 }

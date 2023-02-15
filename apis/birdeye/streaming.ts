@@ -21,7 +21,6 @@ socket.addEventListener('message', (msg) => {
   const nextBarTime = getNextBarTime(lastBar, resolution)
 
   let bar
-
   if (currTime >= nextBarTime) {
     bar = {
       time: nextBarTime,
@@ -67,6 +66,11 @@ export function subscribeOnStream(
       currency: symbolInfo.type || 'usd',
     },
   }
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[subscribeBars]')
   socket.send(JSON.stringify(msg))
 }
 
@@ -75,9 +79,24 @@ export function unsubscribeFromStream() {
     type: 'UNSUBSCRIBE_PRICE',
   }
 
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[unsubscribeBars]')
   socket.send(JSON.stringify(msg))
 }
 
 export function closeSocket() {
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[closeSocket]')
   socket.close()
+}
+
+export function isOpen(ws?: WebSocket) {
+  const sock = ws || socket
+  return sock.readyState === sock.OPEN
 }

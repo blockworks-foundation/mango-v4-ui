@@ -33,11 +33,11 @@ type Props = {
 const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   const { styles } = useKlineChart()
   const { width } = useViewport()
+  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const prevWidth = usePrevious(width)
   const [currentDataFeed, setCurrentDataFeed] = useState(spotDataFeed)
   const previousDataFeed = usePrevious(currentDataFeed)
-  const selectedMarket = mangoStore((s) => s.selectedMarket.current)
-  const [socketConnected] = useState(false)
+  const [socketConnected, setSocketConnected] = useState(false)
   const selectedMarketName = selectedMarket?.name
   const [isTechnicalModalOpen, setIsTechnicalModalOpen] = useState(false)
   const [mainTechnicalIndicators, setMainTechnicalIndicators] = useState<
@@ -109,6 +109,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     baseQuery: BASE_CHART_QUERY
   ) {
     await sleep(1000)
+    setSocketConnected(true)
     let symbolInfo: any = undefined
     currentDataFeed.resolveSymbol(baseQuery.address, (symbolInf) => {
       symbolInfo = symbolInf
@@ -116,7 +117,6 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     if (previousDataFeed.name !== currentDataFeed.name) {
       previousDataFeed.unsubscribeBars()
     }
-
     currentDataFeed.subscribeBars(
       symbolInfo,
       baseQuery.type,
@@ -153,7 +153,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   //when base query change we refetch with fresh data
   useEffect(() => {
     if (chart && baseChartQuery) {
-      //becuase bird eye send onlu 1k records at one time
+      //because bird eye send only 1k records at one time
       //we query for lower amounts of days at the start
       const halfDayThreshold = ['1', '3']
       const twoDaysThreshold = ['5', '15', '30']
