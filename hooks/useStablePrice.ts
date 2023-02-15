@@ -20,10 +20,7 @@ const useStablePrice = () => {
     if (!group || !selectedMarket || !banks.length) return 0
     let stablePrice
     if (selectedMarket instanceof PerpMarket) {
-      const market = perpMarkets.find(
-        (m) => m.perpMarketIndex === selectedMarket.perpMarketIndex
-      )
-      stablePrice = market ? market.stablePriceModel.stablePrice : 0
+      stablePrice = selectedMarket.stablePriceModel.stablePrice || 0
     } else {
       const baseBank = banks.find(
         (b) => b.tokenIndex === selectedMarket.baseTokenIndex
