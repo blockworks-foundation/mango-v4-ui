@@ -161,7 +161,8 @@ const PerpPositions = () => {
                     <Td className={`text-right font-mono`}>
                       <FormatNumericValue
                         value={unsettledPnl}
-                        decimals={market.baseDecimals}
+                        isUsd
+                        decimals={2}
                       />
                     </Td>
                     <Td

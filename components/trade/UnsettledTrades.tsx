@@ -209,7 +209,7 @@ const UnsettledTrades = ({
                 <Td className="text-right font-mono">
                   <FormatNumericValue
                     value={position.getUnsettledPnlUi(market)}
-                    decimals={market.baseDecimals}
+                    decimals={2}
                   />{' '}
                   <span className="font-body text-th-fgd-4">USDC</span>
                 </Td>
