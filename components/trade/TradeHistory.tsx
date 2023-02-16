@@ -59,7 +59,7 @@ const parsePerpEvent = (mangoAccountAddress: string, event: PerpFillEvent) => {
     size: event.quantity,
     price: event.price,
     value,
-    feeCost: (feeRate * value).toFixed(4),
+    feeCost: (feeRate.toNumber() * value).toFixed(4),
     side,
   }
 }

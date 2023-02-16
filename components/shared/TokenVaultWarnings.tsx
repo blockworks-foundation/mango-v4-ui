@@ -32,20 +32,20 @@ const TokenVaultWarnings = ({
     return [maxWithdraw, maxBorrow]
   }, [bank, mangoAccount, group])
 
-  const availableVaultBalance = useMemo(() => {
-    if (!bank || !group) return 0
+  const [availableVaultBalance, vaultBalance] = useMemo(() => {
+    if (!bank || !group) return [0, 0]
     const vaultBalance = group.getTokenVaultBalanceByMintUi(bank.mint)
     const vaultDeposits = bank.uiDeposits()
     const available =
       vaultBalance - vaultDeposits * bank.minVaultToDepositsRatio
-    return available
+    return [available, vaultBalance]
   }, [bank, group])
 
   const showWarning = useMemo(() => {
     if (!bank || !group) return false
     if (
       (type === 'borrow' && maxBorrow > availableVaultBalance) ||
-      (type === 'swap' && swapBorrowMax.toNumber() > availableVaultBalance) ||
+      (type === 'swap' && swapBorrowMax.toNumber() > vaultBalance) ||
       (type === 'withdraw' && maxWithdraw > availableVaultBalance)
     ) {
       return true
