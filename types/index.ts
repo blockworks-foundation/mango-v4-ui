@@ -1,5 +1,5 @@
 import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
-import { Modify } from '@blockworks-foundation/mango-v4/dist/types/src/types'
+import { Modify } from '@blockworks-foundation/mango-v4'
 import { BN } from '@project-serum/anchor'
 import { Event } from '@project-serum/serum/lib/queue'
 
