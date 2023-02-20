@@ -107,40 +107,6 @@ const TradingViewChart = () => {
 
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
 
-  let chartStyleOverrides = {
-    'paneProperties.background': 'rgba(0,0,0,0)',
-    'paneProperties.backgroundType': 'solid',
-    'paneProperties.legendProperties.showBackground': false,
-    'paneProperties.vertGridProperties.color': 'rgba(0,0,0,0)',
-    'paneProperties.horzGridProperties.color': 'rgba(0,0,0,0)',
-    'paneProperties.legendProperties.showStudyTitles': false,
-    'scalesProperties.showStudyLastValue': false,
-    'scalesProperties.fontSize': 11,
-  }
-
-  const mainSeriesProperties = [
-    'candleStyle',
-    'hollowCandleStyle',
-    'haStyle',
-    'barStyle',
-  ]
-
-  mainSeriesProperties.forEach((prop) => {
-    chartStyleOverrides = {
-      ...chartStyleOverrides,
-      [`mainSeriesProperties.${prop}.barColorsOnPrevClose`]: true,
-      [`mainSeriesProperties.${prop}.drawWick`]: true,
-      [`mainSeriesProperties.${prop}.drawBorder`]: true,
-      [`mainSeriesProperties.${prop}.upColor`]: COLORS.UP[theme],
-      [`mainSeriesProperties.${prop}.downColor`]: COLORS.DOWN[theme],
-      [`mainSeriesProperties.${prop}.borderColor`]: COLORS.UP[theme],
-      [`mainSeriesProperties.${prop}.borderUpColor`]: COLORS.UP[theme],
-      [`mainSeriesProperties.${prop}.borderDownColor`]: COLORS.DOWN[theme],
-      [`mainSeriesProperties.${prop}.wickUpColor`]: COLORS.UP[theme],
-      [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
-    }
-  })
-
   const selectedMarket = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarketName)
@@ -188,6 +154,40 @@ const TradingViewChart = () => {
 
   useEffect(() => {
     if (window) {
+      let chartStyleOverrides = {
+        'paneProperties.background': 'rgba(0,0,0,0)',
+        'paneProperties.backgroundType': 'solid',
+        'paneProperties.legendProperties.showBackground': false,
+        'paneProperties.vertGridProperties.color': 'rgba(0,0,0,0)',
+        'paneProperties.horzGridProperties.color': 'rgba(0,0,0,0)',
+        'paneProperties.legendProperties.showStudyTitles': false,
+        'scalesProperties.showStudyLastValue': false,
+        'scalesProperties.fontSize': 11,
+      }
+
+      const mainSeriesProperties = [
+        'candleStyle',
+        'hollowCandleStyle',
+        'haStyle',
+        'barStyle',
+      ]
+
+      mainSeriesProperties.forEach((prop) => {
+        chartStyleOverrides = {
+          ...chartStyleOverrides,
+          [`mainSeriesProperties.${prop}.barColorsOnPrevClose`]: true,
+          [`mainSeriesProperties.${prop}.drawWick`]: true,
+          [`mainSeriesProperties.${prop}.drawBorder`]: true,
+          [`mainSeriesProperties.${prop}.upColor`]: COLORS.UP[theme],
+          [`mainSeriesProperties.${prop}.downColor`]: COLORS.DOWN[theme],
+          [`mainSeriesProperties.${prop}.borderColor`]: COLORS.UP[theme],
+          [`mainSeriesProperties.${prop}.borderUpColor`]: COLORS.UP[theme],
+          [`mainSeriesProperties.${prop}.borderDownColor`]: COLORS.DOWN[theme],
+          [`mainSeriesProperties.${prop}.wickUpColor`]: COLORS.UP[theme],
+          [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
+        }
+      })
+
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
         symbol: selectedMarket,
@@ -234,7 +234,6 @@ const TradingViewChart = () => {
         },
         overrides: {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-
           ...chartStyleOverrides,
         },
       }
