@@ -31,6 +31,129 @@ const formatFee = (value: number) => {
   })
 }
 
+const getFee = (activity: any, mangoAccountAddress: string) => {
+  const { activity_type } = activity
+  let fee = { value: '0', symbol: '' }
+  if (activity_type === 'swap') {
+    const { loan_origination_fee, swap_in_symbol } = activity.activity_details
+    fee = loan_origination_fee
+      ? { value: formatFee(loan_origination_fee), symbol: swap_in_symbol }
+      : { value: '0', symbol: '' }
+  }
+  if (activity_type === 'perp_trade') {
+    const { maker_fee, taker_fee, maker } = activity.activity_details
+    fee = {
+      value: formatFee(mangoAccountAddress === maker ? maker_fee : taker_fee),
+      symbol: 'USDC',
+    }
+  }
+  if (activity_type === 'openbook_trade') {
+    const { fee_cost, quote_symbol } = activity.activity_details
+    fee = { value: formatFee(fee_cost), symbol: quote_symbol }
+  }
+  return fee
+}
+
+const getCreditAndDebit = (activity: any) => {
+  const { activity_type } = activity
+  let credit = { value: '0', symbol: '' }
+  let debit = { value: '0', symbol: '' }
+  if (activity_type === 'liquidate_token_with_token') {
+    const { side, liab_amount, liab_symbol, asset_amount, asset_symbol } =
+      activity.activity_details
+    if (side === 'liqee') {
+      credit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
+      debit = {
+        value: formatNumericValue(asset_amount),
+        symbol: asset_symbol,
+      }
+    } else {
+      credit = {
+        value: formatNumericValue(asset_amount),
+        symbol: asset_symbol,
+      }
+      debit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
+    }
+  }
+  if (activity_type === 'deposit') {
+    const { symbol, quantity } = activity.activity_details
+    credit = { value: formatNumericValue(quantity), symbol }
+    debit = { value: '0', symbol: '' }
+  }
+  if (activity_type === 'withdraw') {
+    const { symbol, quantity } = activity.activity_details
+    credit = { value: '0', symbol: '' }
+    debit = { value: formatNumericValue(quantity * -1), symbol }
+  }
+  if (activity_type === 'swap') {
+    const { swap_in_amount, swap_in_symbol, swap_out_amount, swap_out_symbol } =
+      activity.activity_details
+    credit = {
+      value: formatNumericValue(swap_out_amount),
+      symbol: swap_out_symbol,
+    }
+    debit = {
+      value: formatNumericValue(swap_in_amount * -1),
+      symbol: swap_in_symbol,
+    }
+  }
+  if (activity_type === 'perp_trade') {
+    const { perp_market_name, price, quantity } = activity.activity_details
+    credit = { value: quantity, symbol: perp_market_name }
+    debit = {
+      value: formatNumericValue(quantity * price * -1),
+      symbol: 'USDC',
+    }
+  }
+  if (activity_type === 'openbook_trade') {
+    const { side, price, size, base_symbol, quote_symbol } =
+      activity.activity_details
+    credit =
+      side === 'buy'
+        ? { value: formatNumericValue(size), symbol: base_symbol }
+        : { value: formatNumericValue(size * price), symbol: quote_symbol }
+    debit =
+      side === 'buy'
+        ? {
+            value: formatNumericValue(size * price * -1),
+            symbol: quote_symbol,
+          }
+        : { value: formatNumericValue(size * -1), symbol: base_symbol }
+  }
+  return { credit, debit }
+}
+
+const getValue = (activity: any) => {
+  const { activity_type } = activity
+  let value = 0
+  if (activity_type === 'liquidate_token_with_token') {
+    const { side, liab_amount, liab_price, asset_amount, asset_price } =
+      activity.activity_details
+    if (side === 'liqee') {
+      value = asset_amount * asset_price
+    } else {
+      value = liab_amount * liab_price
+    }
+  }
+  if (activity_type === 'deposit' || activity_type === 'withdraw') {
+    const { usd_equivalent } = activity.activity_details
+    value = activity_type === 'withdraw' ? usd_equivalent * -1 : usd_equivalent
+  }
+  if (activity_type === 'swap') {
+    const { swap_out_amount, swap_out_price_usd } = activity.activity_details
+    value = swap_out_amount * swap_out_price_usd
+  }
+  if (activity_type === 'perp_trade') {
+    const { price, quantity } = activity.activity_details
+    value = quantity * price
+  }
+  if (activity_type === 'openbook_trade') {
+    const { price, size } = activity.activity_details
+    value = price * size
+  }
+  return value
+}
+
 const ActivityFeedTable = ({
   activityFeed,
   handleShowActivityDetails,
@@ -66,132 +189,6 @@ const ActivityFeedTable = ({
     )
   }, [actions, offset, queryParams, mangoAccountAddress])
 
-  const getCreditAndDebit = (activity: any) => {
-    const { activity_type } = activity
-    let credit = { value: '0', symbol: '' }
-    let debit = { value: '0', symbol: '' }
-    if (activity_type === 'liquidate_token_with_token') {
-      const { side, liab_amount, liab_symbol, asset_amount, asset_symbol } =
-        activity.activity_details
-      if (side === 'liqee') {
-        credit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
-        debit = {
-          value: formatNumericValue(asset_amount),
-          symbol: asset_symbol,
-        }
-      } else {
-        credit = {
-          value: formatNumericValue(asset_amount),
-          symbol: asset_symbol,
-        }
-        debit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
-      }
-    }
-    if (activity_type === 'deposit') {
-      const { symbol, quantity } = activity.activity_details
-      credit = { value: formatNumericValue(quantity), symbol }
-      debit = { value: '0', symbol: '' }
-    }
-    if (activity_type === 'withdraw') {
-      const { symbol, quantity } = activity.activity_details
-      credit = { value: '0', symbol: '' }
-      debit = { value: formatNumericValue(quantity * -1), symbol }
-    }
-    if (activity_type === 'swap') {
-      const {
-        swap_in_amount,
-        swap_in_symbol,
-        swap_out_amount,
-        swap_out_symbol,
-      } = activity.activity_details
-      credit = {
-        value: formatNumericValue(swap_out_amount),
-        symbol: swap_out_symbol,
-      }
-      debit = {
-        value: formatNumericValue(swap_in_amount * -1),
-        symbol: swap_in_symbol,
-      }
-    }
-    if (activity_type === 'perp_trade') {
-      const { perp_market_name, price, quantity } = activity.activity_details
-      credit = { value: quantity, symbol: perp_market_name }
-      debit = {
-        value: formatNumericValue(quantity * price * -1),
-        symbol: 'USDC',
-      }
-    }
-    if (activity_type === 'openbook_trade') {
-      const { side, price, size, base_symbol, quote_symbol } =
-        activity.activity_details
-      credit =
-        side === 'buy'
-          ? { value: formatNumericValue(size), symbol: base_symbol }
-          : { value: formatNumericValue(size * price), symbol: quote_symbol }
-      debit =
-        side === 'buy'
-          ? {
-              value: formatNumericValue(size * price * -1),
-              symbol: quote_symbol,
-            }
-          : { value: formatNumericValue(size * -1), symbol: base_symbol }
-    }
-    return { credit, debit }
-  }
-
-  const getValue = (activity: any) => {
-    const { activity_type } = activity
-    let value = 0
-    if (activity_type === 'liquidate_token_with_token') {
-      const { side, liab_amount, liab_price, asset_amount, asset_price } =
-        activity.activity_details
-      if (side === 'liqee') {
-        value = asset_amount * asset_price
-      } else {
-        value = liab_amount * liab_price
-      }
-    }
-    if (activity_type === 'deposit' || activity_type === 'withdraw') {
-      const { usd_equivalent } = activity.activity_details
-      value =
-        activity_type === 'withdraw' ? usd_equivalent * -1 : usd_equivalent
-    }
-    if (activity_type === 'swap') {
-      const { swap_out_amount, swap_out_price_usd } = activity.activity_details
-      value = swap_out_amount * swap_out_price_usd
-    }
-    if (activity_type === 'perp_trade') {
-      const { maker_fee, price, quantity, taker_fee } =
-        activity.activity_details
-      value = quantity * price + maker_fee + taker_fee
-    }
-    if (activity_type === 'openbook_trade') {
-      const { price, size } = activity.activity_details
-      value = price * size
-    }
-    return value
-  }
-
-  const getFee = (activity: any) => {
-    const { activity_type } = activity
-    let fee = { value: '0', symbol: '' }
-    if (activity_type === 'swap') {
-      const { loan_origination_fee, swap_in_symbol } = activity.activity_details
-      fee = loan_origination_fee
-        ? { value: formatFee(loan_origination_fee), symbol: swap_in_symbol }
-        : { value: '0', symbol: '' }
-    }
-    if (activity_type === 'perp_trade') {
-      const { maker_fee, taker_fee } = activity.activity_details
-      fee = { value: formatFee(maker_fee + taker_fee), symbol: 'USDC' }
-    }
-    if (activity_type === 'openbook_trade') {
-      const { fee_cost, quote_symbol } = activity.activity_details
-      fee = { value: formatFee(fee_cost), symbol: quote_symbol }
-    }
-    return fee
-  }
-
   return mangoAccountAddress && (activityFeed.length || loadActivityFeed) ? (
     <>
       {showTableView ? (
@@ -222,7 +219,7 @@ const ActivityFeedTable = ({
               const isOpenbook = activity_type === 'openbook_trade'
               const amounts = getCreditAndDebit(activity)
               const value = getValue(activity)
-              const fee = getFee(activity)
+              const fee = getFee(activity, mangoAccountAddress)
               return (
                 <TrBody
                   key={signature + index}
@@ -259,7 +256,7 @@ const ActivityFeedTable = ({
                     </span>
                   </Td>
                   <Td className="text-right font-mono">
-                    {fee.value}{' '}
+                    {(Number(fee.value) * value).toFixed(5)}{' '}
                     <span className="font-body text-th-fgd-3">
                       {fee.symbol}
                     </span>

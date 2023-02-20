@@ -59,7 +59,7 @@ const parsePerpEvent = (mangoAccountAddress: string, event: PerpFillEvent) => {
     size: event.quantity,
     price: event.price,
     value,
-    feeCost: (feeRate * value).toFixed(4),
+    feeCost: feeRate * value,
     side,
   }
 }
@@ -126,8 +126,9 @@ const parseApiTradeHistory = (
     }
     side = sideObj
     size = trade.quantity
-    feeCost =
+    const feeRate =
       trade.maker === mangoAccountAddress ? trade.maker_fee : trade.taker_fee
+    feeCost = (trade.price * trade.quantity * feeRate).toFixed(5)
   }
 
   return {
