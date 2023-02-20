@@ -4,7 +4,6 @@ import mangoStore from '@store/mangoStore'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
 import isEqual from 'lodash/isEqual'
-import usePrevious from '@components/shared/usePrevious'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
   floorToDecimal,
@@ -169,7 +168,6 @@ type OrderbookData = {
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
   const {
-    selectedMarket,
     serumOrPerpMarket: market,
     baseSymbol,
     quoteSymbol,
@@ -185,7 +183,6 @@ const Orderbook = () => {
 
   const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)
-  const previousGrouping = usePrevious(grouping)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
 
@@ -199,6 +196,20 @@ const Orderbook = () => {
     setGrouping(market.tickSize)
   }, [market])
 
+  const verticallyCenterOrderbook = useCallback(() => {
+    const element = orderbookElRef.current
+    if (element) {
+      if (element.scrollHeight > window.innerHeight) {
+        element.scrollTop =
+          (element.scrollHeight - element.scrollHeight) / 2 +
+          (element.scrollHeight - window.innerHeight) / 2 +
+          94
+      } else {
+        element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
+      }
+    }
+  }, [])
+
   useEffect(
     () =>
       mangoStore.subscribe(
@@ -207,18 +218,14 @@ const Orderbook = () => {
           if (
             newOrderbook &&
             market &&
-            (!isEqual(currentOrderbookData.current, newOrderbook) ||
-              previousGrouping !== grouping)
+            !isEqual(currentOrderbookData.current, newOrderbook)
           ) {
             // check if user has open orders so we can highlight them on orderbook
             const openOrders = mangoStore.getState().mangoAccount.openOrders
-            const marketPk =
-              selectedMarket && selectedMarket instanceof PerpMarket
-                ? selectedMarket.publicKey
-                : selectedMarket?.serumMarketExternal
+            const marketPk = market.publicKey.toString()
             const newUserOpenOrderPrices =
-              marketPk && openOrders[marketPk.toString()]?.length
-                ? openOrders[marketPk.toString()]?.map((order) => order.price)
+              marketPk && openOrders[marketPk]?.length
+                ? openOrders[marketPk]?.map((order) => order.price)
                 : []
 
             if (!isEqual(newUserOpenOrderPrices, userOpenOrderPrices)) {
@@ -286,22 +293,14 @@ const Orderbook = () => {
           }
         }
       ),
-    []
+    [
+      grouping,
+      market,
+      isScrolled,
+      verticallyCenterOrderbook,
+      userOpenOrderPrices,
+    ]
   )
-
-  const verticallyCenterOrderbook = useCallback(() => {
-    const element = orderbookElRef.current
-    if (element) {
-      if (element.scrollHeight > window.innerHeight) {
-        element.scrollTop =
-          (element.scrollHeight - element.scrollHeight) / 2 +
-          (element.scrollHeight - window.innerHeight) / 2 +
-          94
-      } else {
-        element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
-      }
-    }
-  }, [])
 
   useEffect(() => {
     const group = mangoStore.getState().group
