@@ -1,4 +1,9 @@
-import { Bank, toUiDecimals, I80F48 } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  toUiDecimals,
+  I80F48,
+  toUiDecimalsForQuote,
+} from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
 import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
 import mangoStore from '@store/mangoStore'
@@ -92,6 +97,9 @@ const Dashboard: NextPage = () => {
                   .sort((a, b) => a[0].localeCompare(b[0]))
                   .map(([mintAddress, banks]) =>
                     banks.map((bank) => {
+                      const mintInfo = group.mintInfosMapByMint.get(
+                        bank.mint.toString()
+                      )
                       const logoUri = mangoTokens.length
                         ? mangoTokens.find((t) => t.address === mintAddress)
                             ?.logoURI
@@ -233,11 +241,15 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Deposit weight scale start quote"
-                                  value={bank.depositWeightScaleStartQuote}
+                                  value={`${toUiDecimalsForQuote(
+                                    bank.depositWeightScaleStartQuote
+                                  )}$`}
                                 />
                                 <KeyValuePair
                                   label="Borrow weight scale start quote"
-                                  value={bank.borrowWeightScaleStartQuote}
+                                  value={`${toUiDecimalsForQuote(
+                                    bank.borrowWeightScaleStartQuote
+                                  )}$`}
                                 />
                                 <KeyValuePair
                                   label="Rate params"
@@ -311,6 +323,10 @@ const Dashboard: NextPage = () => {
                                   value={`${bank.oracleConfig.maxStalenessSlots} slots`}
                                 />
                                 <KeyValuePair
+                                  label="Group Insurance Fund"
+                                  value={`${mintInfo!.groupInsuranceFund}`}
+                                />
+                                <KeyValuePair
                                   label="Min vault to deposits ratio"
                                   value={`${
                                     bank.minVaultToDepositsRatio * 100
@@ -325,6 +341,12 @@ const Dashboard: NextPage = () => {
                                     bank.netBorrowLimitPerWindowQuote.toNumber(),
                                     6
                                   )}$`}
+                                />
+                                <KeyValuePair
+                                  label="Liquidation fee"
+                                  value={`${
+                                    bank.liquidationFee.toNumber() * 100
+                                  }%`}
                                 />
                               </Disclosure.Panel>
                             </>
