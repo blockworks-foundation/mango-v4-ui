@@ -272,6 +272,12 @@ const Dashboard: NextPage = () => {
                                   }
                                 />
                                 <KeyValuePair
+                                  label="Adjustment factor"
+                                  value={`${(
+                                    bank.adjustmentFactor.toNumber() * 100
+                                  ).toFixed(2)}%`}
+                                />
+                                <KeyValuePair
                                   label="Deposit rate"
                                   value={`${bank.getDepositRateUi()}%`}
                                 />
@@ -344,9 +350,9 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Liquidation fee"
-                                  value={`${
+                                  value={`${(
                                     bank.liquidationFee.toNumber() * 100
-                                  }%`}
+                                  ).toFixed(2)}%`}
                                 />
                               </Disclosure.Panel>
                             </>
