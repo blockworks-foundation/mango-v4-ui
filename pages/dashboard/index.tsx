@@ -311,8 +311,20 @@ const Dashboard: NextPage = () => {
                                   value={`${bank.oracleConfig.maxStalenessSlots} slots`}
                                 />
                                 <KeyValuePair
-                                  label="netBorrowsInWindow / netBorrowLimitPerWindowQuote"
-                                  value={`${bank.netBorrowsInWindow.toNumber()} / ${bank.netBorrowLimitPerWindowQuote.toNumber()}`}
+                                  label="Min vault to deposits ratio"
+                                  value={`${
+                                    bank.minVaultToDepositsRatio * 100
+                                  }%`}
+                                />
+                                <KeyValuePair
+                                  label="Net borrows in window / Net borrow limit per window quote"
+                                  value={`${toUiDecimals(
+                                    bank.netBorrowsInWindow.toNumber(),
+                                    6
+                                  )}$ / ${toUiDecimals(
+                                    bank.netBorrowLimitPerWindowQuote.toNumber(),
+                                    6
+                                  )}$`}
                                 />
                               </Disclosure.Panel>
                             </>
@@ -441,6 +453,13 @@ const Dashboard: NextPage = () => {
                           ${perpMarket.initBaseLiabWeight.toFixed(4)}`}
                               />
                               <KeyValuePair
+                                label="Base liquidation fee"
+                                value={`${
+                                  10000 *
+                                  perpMarket.baseLiquidationFee.toNumber()
+                                } bps`}
+                              />
+                              <KeyValuePair
                                 label="Trading Fees"
                                 value={`${(
                                   10000 * perpMarket.makerFee.toNumber()
@@ -471,6 +490,27 @@ const Dashboard: NextPage = () => {
                                 )}`}
                               />
                               <KeyValuePair
+                                label="Last stable price updated"
+                                value={new Date(
+                                  1000 *
+                                    perpMarket.stablePriceModel.lastUpdateTimestamp.toNumber()
+                                ).toUTCString()}
+                              />
+                              <KeyValuePair
+                                label="Stable Price: delay interval"
+                                value={`${perpMarket.stablePriceModel.delayIntervalSeconds}s`}
+                              />
+                              <KeyValuePair
+                                label="Stable Price: growth limits"
+                                value={`${(
+                                  100 *
+                                  perpMarket.stablePriceModel.delayGrowthLimit
+                                ).toFixed(2)}% delay / ${(
+                                  100 *
+                                  perpMarket.stablePriceModel.stableGrowthLimit
+                                ).toFixed(2)}% stable`}
+                              />
+                              <KeyValuePair
                                 label="Oracle: Conf Filter"
                                 value={`${(
                                   100 *
@@ -485,6 +525,54 @@ const Dashboard: NextPage = () => {
                                 label="Group Insurance Fund"
                                 value={`${perpMarket.groupInsuranceFund}`}
                               />
+                              <KeyValuePair
+                                label="Fee penalty"
+                                value={`${toUiDecimals(
+                                  perpMarket.feePenalty,
+                                  6
+                                )}$`}
+                              />
+                              <KeyValuePair
+                                label="Settle fee flat"
+                                value={`${toUiDecimals(
+                                  perpMarket.settleFeeFlat,
+                                  6
+                                )}$`}
+                              />
+                              <KeyValuePair
+                                label="Settle fee amount threshold"
+                                value={`${toUiDecimals(
+                                  perpMarket.settleFeeAmountThreshold,
+                                  6
+                                )}$`}
+                              />
+                              <KeyValuePair
+                                label="Settle fee fraction low health"
+                                value={`${perpMarket.settleFeeFractionLowHealth.toFixed(
+                                  4
+                                )}`}
+                              />
+                              <KeyValuePair
+                                label="Settle pnl limit factor"
+                                value={`${perpMarket.settlePnlLimitFactor}`}
+                              />
+                              <KeyValuePair
+                                label="Settle pnl limit window size ts"
+                                value={`${perpMarket.settlePnlLimitWindowSizeTs.toNumber()}`}
+                              />
+                              <KeyValuePair
+                                label="Maint overall asset weight"
+                                value={`${perpMarket.maintOverallAssetWeight.toNumber()}`}
+                              />
+                              <KeyValuePair
+                                label="Init overall asset weight"
+                                value={`${perpMarket.initOverallAssetWeight.toNumber()}`}
+                              />
+                              {/* this property will land in client soon */}
+                              {/* <KeyValuePair
+                                label="Positive pnl liquidation fee"
+                                value={`${perpMarket.positivePnlLiquidationFee}`}
+                              /> */}
                             </Disclosure.Panel>
                           </>
                         )}
