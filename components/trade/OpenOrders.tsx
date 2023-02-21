@@ -1,3 +1,4 @@
+import { U64_MAX_BN } from '@blockworks-foundation/mango-v4'
 import {
   PerpMarket,
   PerpOrder,
@@ -257,7 +258,10 @@ const OpenOrders = () => {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
                   tickSize = market.tickSize
                   minOrderSize = market.minOrderSize
-                  expiryTimestamp = Number(o.expiryTimestamp.toString())
+                  expiryTimestamp =
+                    o.expiryTimestamp === U64_MAX_BN
+                      ? 0
+                      : o.expiryTimestamp.toNumber()
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
