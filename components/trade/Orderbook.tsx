@@ -309,8 +309,6 @@ const Orderbook = () => {
 
     if (!market || !group) return
 
-    let previousBidInfo: AccountInfo<Buffer> | undefined = undefined
-    let previousAskInfo: AccountInfo<Buffer> | undefined = undefined
     let bidSubscriptionId: number | undefined = undefined
     let askSubscriptionId: number | undefined = undefined
 
@@ -318,30 +316,32 @@ const Orderbook = () => {
       market instanceof Market ? market['_decoded'].bids : market.bids
     console.log('bidsPk', bidsPk?.toString())
     if (bidsPk) {
-      connection.getAccountInfo(bidsPk).then((info) => {
-        if (!info) return
-        const decodedBook = decodeBook(client, market, info, 'bids')
-        set((state) => {
-          state.selectedMarket.bidsAccount = decodedBook
-          state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+      connection
+        .getAccountInfoAndContext(bidsPk)
+        .then(({ context, value: info }) => {
+          if (!info) return
+          const decodedBook = decodeBook(client, market, info, 'bids')
+          set((state) => {
+            state.selectedMarket.lastSeenSlot.bids = context.slot
+            state.selectedMarket.bidsAccount = decodedBook
+            state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+          })
         })
-      })
       bidSubscriptionId = connection.onAccountChange(
         bidsPk,
-        (info, _context) => {
-          if (
-            !previousBidInfo ||
-            !previousBidInfo.data.equals(info.data) ||
-            previousBidInfo.lamports !== info.lamports
-          ) {
-            previousBidInfo = info
+        (info, context) => {
+          const lastSeenSlot =
+            mangoStore.getState().selectedMarket.lastSeenSlot.bids
+          if (context.slot > lastSeenSlot) {
             const decodedBook = decodeBook(client, market, info, 'bids')
             set((state) => {
               state.selectedMarket.bidsAccount = decodedBook
               state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+              state.selectedMarket.lastSeenSlot.bids = context.slot
             })
           }
-        }
+        },
+        'processed'
       )
     }
 
@@ -349,30 +349,32 @@ const Orderbook = () => {
       market instanceof Market ? market['_decoded'].asks : market.asks
     console.log('asksPk', asksPk?.toString())
     if (asksPk) {
-      connection.getAccountInfo(asksPk).then((info) => {
-        if (!info) return
-        const decodedBook = decodeBook(client, market, info, 'asks')
-        set((state) => {
-          state.selectedMarket.asksAccount = decodedBook
-          state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+      connection
+        .getAccountInfoAndContext(asksPk)
+        .then(({ context, value: info }) => {
+          if (!info) return
+          const decodedBook = decodeBook(client, market, info, 'asks')
+          set((state) => {
+            state.selectedMarket.asksAccount = decodedBook
+            state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+            state.selectedMarket.lastSeenSlot.asks = context.slot
+          })
         })
-      })
       askSubscriptionId = connection.onAccountChange(
         asksPk,
-        (info, _context) => {
-          if (
-            !previousAskInfo ||
-            !previousAskInfo.data.equals(info.data) ||
-            previousAskInfo.lamports !== info.lamports
-          ) {
-            previousAskInfo = info
+        (info, context) => {
+          const lastSeenSlot =
+            mangoStore.getState().selectedMarket.lastSeenSlot.bids
+          if (context.slot > lastSeenSlot) {
             const decodedBook = decodeBook(client, market, info, 'asks')
             set((state) => {
               state.selectedMarket.asksAccount = decodedBook
               state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+              state.selectedMarket.lastSeenSlot.asks = context.slot
             })
           }
-        }
+        },
+        'processed'
       )
     }
     return () => {

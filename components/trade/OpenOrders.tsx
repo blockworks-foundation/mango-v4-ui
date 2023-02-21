@@ -252,10 +252,12 @@ const OpenOrders = () => {
                 let market: PerpMarket | Serum3Market
                 let tickSize: number
                 let minOrderSize: number
+                let expiryTimestamp: number | undefined
                 if (o instanceof PerpOrder) {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
                   tickSize = market.tickSize
                   minOrderSize = market.minOrderSize
+                  expiryTimestamp = o.expiryTimestamp.toNumber()
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
@@ -319,6 +321,11 @@ const OpenOrders = () => {
                     )}
                     <Td className="w-[16.67%] text-right font-mono">
                       <FormatNumericValue value={o.size * o.price} isUsd />
+                      {expiryTimestamp ? (
+                        <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
+                          expiryTimestamp * 1000
+                        ).toLocaleTimeString()}`}</div>
+                      ) : null}
                     </Td>
                     {!isUnownedAccount ? (
                       <Td className="w-[16.67%]">

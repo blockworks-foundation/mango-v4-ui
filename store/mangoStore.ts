@@ -305,6 +305,10 @@ export type MangoStore = {
     asksAccount: BookSide | Orderbook | undefined
     orderbook: OrderbookL2
     markPrice: number
+    lastSeenSlot: {
+      bids: number
+      asks: number
+    }
   }
   serumMarkets: Serum3Market[]
   serumOrders: Order[] | undefined
@@ -443,6 +447,10 @@ const mangoStore = create<MangoStore>()(
         fills: [],
         bidsAccount: undefined,
         asksAccount: undefined,
+        lastSeenSlot: {
+          bids: 0,
+          asks: 0,
+        },
         orderbook: {
           bids: [],
           asks: [],
