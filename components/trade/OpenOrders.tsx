@@ -257,7 +257,7 @@ const OpenOrders = () => {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
                   tickSize = market.tickSize
                   minOrderSize = market.minOrderSize
-                  expiryTimestamp = o.expiryTimestamp.toNumber()
+                  expiryTimestamp = Number(o.expiryTimestamp.toString())
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
