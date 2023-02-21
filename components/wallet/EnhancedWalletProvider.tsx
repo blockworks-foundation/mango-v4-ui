@@ -66,45 +66,13 @@ export default function EnhancedWalletProvider({
   )
 
   const [preselectedWalletName, setPreselectedWalletName] =
-    useLocalStorageStringState(
-      'preselectedWalletName',
-      wallet?.adapter.name || null
-    )
-
-  useEffect(() => {
-    const adapter = wallets.find(
-      ({ adapter }) => adapter.name === preselectedWalletName
-    )?.adapter
-
-    if (adapter) {
-      select(adapter.name)
-    }
-  }, [preselectedWalletName, select, wallets])
+    useLocalStorageStringState('preselectedWalletName', null)
 
   useEffect(() => {
     if (wallet) {
       setPreselectedWalletName(wallet.adapter.name)
-      return
     }
-
-    if (preselectedWalletName) return
-
-    for (const { adapter } of displayedWallets) {
-      if (
-        adapter.readyState === WalletReadyState.Installed ||
-        adapter.readyState === WalletReadyState.Loadable
-      ) {
-        setPreselectedWalletName(adapter.name)
-        return
-      }
-    }
-  }, [
-    wallet,
-    setPreselectedWalletName,
-    select,
-    preselectedWalletName,
-    displayedWallets,
-  ])
+  }, [wallet, setPreselectedWalletName])
 
   const handleSelect = useCallback(
     (name: WalletName | null) => {
@@ -113,20 +81,6 @@ export default function EnhancedWalletProvider({
     },
     [setPreselectedWalletName, select]
   )
-
-  // const handleConnect = useCallback(async () => {
-  //   setConnecting(true)
-  //   const group = mangoStore.getState().group
-  //   try {
-  //     if (wallet && group) {
-  //       await handleWalletConnect(wallet)
-  //     }
-  //   } catch (e) {
-  //     console.error(e)
-  //   } finally {
-  //     setConnecting(false)
-  //   }
-  // }, [wallet])
 
   const handleConnect = useCallback(async () => {
     if (wallet) {
