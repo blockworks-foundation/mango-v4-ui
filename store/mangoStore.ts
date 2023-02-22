@@ -365,7 +365,7 @@ export type MangoStore = {
     reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (ownerPk: PublicKey) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
-    fetchOpenOrders: (ma?: MangoAccount) => Promise<void>
+    fetchOpenOrders: (refetchMangoAccount?: boolean) => Promise<void>
     fetchPerpStats: () => void
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
@@ -762,7 +762,7 @@ const mangoStore = create<MangoStore>()(
                 state.mangoAccount.current = newSelectedMangoAccount
                 state.mangoAccount.initialLoad = false
               })
-              actions.fetchOpenOrders(newSelectedMangoAccount)
+              actions.fetchOpenOrders()
             }
 
             await Promise.all(
@@ -799,15 +799,14 @@ const mangoStore = create<MangoStore>()(
           }
           return []
         },
-        fetchOpenOrders: async (providedMangoAccount) => {
+        fetchOpenOrders: async (refetchMangoAccount = false) => {
           const set = get().set
           const client = get().client
           const group = get().group
-          if (!providedMangoAccount) {
+          if (refetchMangoAccount) {
             await get().actions.reloadMangoAccount()
           }
-          const mangoAccount =
-            providedMangoAccount || get().mangoAccount.current
+          const mangoAccount = get().mangoAccount.current
 
           if (!mangoAccount || !group) return
 

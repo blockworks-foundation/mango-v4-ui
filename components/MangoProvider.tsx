@@ -73,12 +73,11 @@ const HydrateStore = () => {
             decodedMangoAccount
           )
           await newMangoAccount.reloadSerum3OpenOrders(client)
-          actions.fetchOpenOrders(newMangoAccount)
-
           set((s) => {
             s.mangoAccount.current = newMangoAccount
             s.mangoAccount.lastSlot = context.slot
           })
+          actions.fetchOpenOrders()
         }
       }
     )
@@ -109,11 +108,11 @@ const ReadOnlyMangoAccount = () => {
         const pk = new PublicKey(ma)
         const readOnlyMangoAccount = await client.getMangoAccount(pk)
         await readOnlyMangoAccount.reloadSerum3OpenOrders(client)
-        await actions.fetchOpenOrders(readOnlyMangoAccount)
         set((state) => {
           state.mangoAccount.current = readOnlyMangoAccount
           state.mangoAccount.initialLoad = false
         })
+        await actions.fetchOpenOrders()
         actions.fetchTradeHistory()
       } catch (error) {
         console.error('error', error)

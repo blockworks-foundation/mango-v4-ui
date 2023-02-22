@@ -287,7 +287,7 @@ const AdvancedTradeForm = () => {
           Date.now(),
           10
         )
-        actions.fetchOpenOrders()
+        actions.fetchOpenOrders(true)
         set((s) => {
           s.successAnimation.trade = true
         })
@@ -322,7 +322,7 @@ const AdvancedTradeForm = () => {
           undefined,
           undefined
         )
-        actions.fetchOpenOrders()
+        actions.fetchOpenOrders(true)
         set((s) => {
           s.successAnimation.trade = true
         })

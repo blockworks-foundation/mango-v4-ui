@@ -72,10 +72,10 @@ const MangoAccountsListModal = ({
     setSubmitting(acc.publicKey.toString())
     try {
       const reloadedMangoAccount = await retryFn(() => acc.reload(client))
-      actions.fetchOpenOrders(reloadedMangoAccount)
       set((s) => {
         s.mangoAccount.current = reloadedMangoAccount
       })
+      actions.fetchOpenOrders()
       actions.fetchTradeHistory()
       setLastAccountViewed(acc.publicKey.toString())
     } catch (e) {

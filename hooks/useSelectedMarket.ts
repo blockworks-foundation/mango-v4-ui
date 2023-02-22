@@ -9,6 +9,10 @@ export default function useSelectedMarket() {
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const { mangoTokens } = useJupiterMints()
 
+  const marketAddress = useMemo(() => {
+    return selectedMarket?.publicKey.toString()
+  }, [selectedMarket])
+
   const price: number = useMemo(() => {
     if (!group) return 0
     if (selectedMarket instanceof Serum3Market) {
@@ -75,6 +79,7 @@ export default function useSelectedMarket() {
 
   return {
     selectedMarket,
+    selectedMarketAddress: marketAddress,
     price,
     serumOrPerpMarket,
     baseSymbol,
