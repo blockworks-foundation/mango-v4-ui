@@ -29,15 +29,16 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
-"@blockworks-foundation/mango-v4@https://github.com/blockworks-foundation/mango-v4.git#ts-client":
-  version "0.4.3"
-  resolved "https://github.com/blockworks-foundation/mango-v4.git#0b6254a0359852ceda0497665f02fda052040047"
+"@blockworks-foundation/mango-v4@^0.5.22":
+  version "0.5.22"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.5.22.tgz#fb7f39ae1c57d117583e080a150695fb3fcdae8c"
+  integrity sha512-r043k5NHKZ0uAlNqcMny5ZSjBmBhnrBf2lRqBuruwFZ0nJ0WXLXO9EZB5L3Ymb2fY81ldUcxBSznU5QljQqEPQ==
   dependencies:
-    "@project-serum/anchor" "^0.25.0"
-    "@project-serum/serum" "^0.13.65"
+    "@coral-xyz/anchor" "^0.26.0"
+    "@project-serum/serum" "0.13.65"
     "@pythnetwork/client" "~2.14.0"
     "@solana/spl-token" "0.3.7"
-    "@solana/web3.js" "^1.63.1"
+    "@solana/web3.js" "^1.73.2"
     "@switchboard-xyz/sbv2-lite" "^0.1.6"
     big.js "^6.1.1"
     binance-api-node "^0.12.0"
@@ -484,7 +485,7 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.5.tgz#db5a11bf66bdab39569719555b0f76e138d7bd64"
   integrity sha512-9X2obfABZuDVLCgPK9aX0a/x4jaOEweTTWE2+9sr0Qqqevj2Uv5XorvusThmc9XGYpS9yI+fhh8RTafBtGposw==
 
-"@project-serum/anchor@0.25.0", "@project-serum/anchor@^0.25.0":
+"@project-serum/anchor@0.25.0":
   version "0.25.0"
   resolved "https://registry.yarnpkg.com/@project-serum/anchor/-/anchor-0.25.0.tgz#88ee4843336005cf5a64c80636ce626f0996f503"
   integrity sha512-E6A5Y/ijqpfMJ5psJvbw0kVTzLZFUcOFgs6eSM2M2iWE1lVRF18T6hWZVNl6zqZsoz98jgnNHtVGJMs+ds9A7A==
@@ -553,7 +554,7 @@
     bn.js "^5.1.2"
     buffer-layout "^1.2.0"
 
-"@project-serum/serum@^0.13.65":
+"@project-serum/serum@0.13.65":
   version "0.13.65"
   resolved "https://registry.yarnpkg.com/@project-serum/serum/-/serum-0.13.65.tgz#6d3cf07912f13985765237f053cca716fe84b0b0"
   integrity sha512-BHRqsTqPSfFB5p+MgI2pjvMBAQtO8ibTK2fYY96boIFkCI3TTwXDt2gUmspeChKO2pqHr5aKevmexzAcXxrSRA==
@@ -1116,7 +1117,7 @@
     "@wallet-standard/app" "^1.0.0"
     "@wallet-standard/base" "^1.0.0"
 
-"@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.31.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.44.3", "@solana/web3.js@^1.63.1", "@solana/web3.js@^1.68.0":
+"@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.31.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.44.3", "@solana/web3.js@^1.68.0", "@solana/web3.js@^1.73.2":
   version "1.73.2"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.73.2.tgz#4b30cd402b35733dae3a7d0b638be26a7742b395"
   integrity sha512-9WACF8W4Nstj7xiDw3Oom22QmrhBh0VyZyZ7JvvG3gOxLWLlX3hvm5nPVJOGcCE/9fFavBbCUb5A6CIuvMGdoA==
