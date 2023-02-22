@@ -1,10 +1,12 @@
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import TabUnderline from '@components/shared/TabUnderline'
 import DepositForm from '@components/DepositForm'
 import WithdrawForm from '@components/WithdrawForm'
 import { ACCOUNT_ACTION_MODAL_HEIGHT } from 'utils/constants'
+import mangoStore from '@store/mangoStore'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 interface DepositWithdrawModalProps {
   action: 'deposit' | 'withdraw'
@@ -20,6 +22,13 @@ const DepositWithdrawModal = ({
   token,
 }: ModalCombinedProps) => {
   const [activeTab, setActiveTab] = useState(action)
+  const { publicKey: walletPk } = useWallet()
+
+  useEffect(() => {
+    if (walletPk) {
+      mangoStore.getState().actions.fetchWalletTokens(walletPk)
+    }
+  }, [walletPk])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

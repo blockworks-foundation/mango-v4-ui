@@ -970,14 +970,21 @@ const mangoStore = create<MangoStore>()(
           const connection = get().connection
 
           if (walletPk) {
-            const token = await getTokenAccountsByOwnerWithWrappedSol(
-              connection,
-              walletPk
-            )
+            try {
+              const token = await getTokenAccountsByOwnerWithWrappedSol(
+                connection,
+                walletPk
+              )
 
-            set((state) => {
-              state.wallet.tokens = token
-            })
+              set((state) => {
+                state.wallet.tokens = token
+              })
+            } catch (e) {
+              notify({
+                title: 'Failed to refresh wallet balances.',
+                type: 'info',
+              })
+            }
           } else {
             set((state) => {
               state.wallet.tokens = []
