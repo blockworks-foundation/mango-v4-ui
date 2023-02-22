@@ -186,6 +186,7 @@ const Orderbook = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const [grouping, setGrouping] = useState(0.01)
+  const [tickSize, setTickSize] = useState(0)
   const [showBuys, setShowBuys] = useState(true)
   const [showSells, setShowSells] = useState(true)
 
@@ -200,9 +201,11 @@ const Orderbook = () => {
   }, [isMobile])
 
   useEffect(() => {
-    if (!market) return
-    setGrouping(market.tickSize)
-  }, [market])
+    if (market && market.tickSize !== tickSize) {
+      setTickSize(market.tickSize)
+      setGrouping(market.tickSize)
+    }
+  }, [market, tickSize])
 
   const verticallyCenterOrderbook = useCallback(() => {
     const element = orderbookElRef.current
