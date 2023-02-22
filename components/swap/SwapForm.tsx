@@ -566,11 +566,11 @@ const SwapFormSubmitButton = ({
           </div>
         )}
       </Button>
-      {selectedRoute === null && (
+      {selectedRoute === null && amountIn.gt(0) ? (
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />
         </div>
-      )}
+      ) : null}
     </>
   )
 }
