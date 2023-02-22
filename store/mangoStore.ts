@@ -815,20 +815,25 @@ const mangoStore = create<MangoStore>()(
             const openOrders: Record<string, Order[] | PerpOrder[]> = {}
             let serumOpenOrderAccounts: OpenOrders[] = []
 
-            for (const serum3Orders of mangoAccount.serum3Active()) {
-              if (serum3Orders.marketIndex === 65535) continue
-              const market = group.getSerum3MarketByMarketIndex(
-                serum3Orders.marketIndex
-              )
-              if (market) {
-                const orders = await mangoAccount.loadSerum3OpenOrdersForMarket(
-                  client,
-                  group,
-                  market.serumMarketExternal
-                )
-                openOrders[market.serumMarketExternal.toString()] = orders
-              }
-            }
+            const activeSerumMarketIndices = [
+              ...new Set(mangoAccount.serum3Active().map((s) => s.marketIndex)),
+            ]
+
+            await Promise.all(
+              activeSerumMarketIndices.map(async (serum3Orders) => {
+                const market = group.getSerum3MarketByMarketIndex(serum3Orders)
+                if (market) {
+                  const orders =
+                    await mangoAccount.loadSerum3OpenOrdersForMarket(
+                      client,
+                      group,
+                      market.serumMarketExternal
+                    )
+                  openOrders[market.serumMarketExternal.toString()] = orders
+                }
+              })
+            )
+
             if (
               mangoAccount.serum3Active().length &&
               Object.keys(openOrders).length
@@ -839,17 +844,22 @@ const mangoStore = create<MangoStore>()(
               await mangoAccount.loadSerum3OpenOrdersAccounts(client)
             }
 
-            for (const perpOrder of mangoAccount.perpOrdersActive()) {
-              const market = group.getPerpMarketByMarketIndex(
-                perpOrder.orderMarket
-              )
-              const orders = await mangoAccount.loadPerpOpenOrdersForMarket(
-                client,
-                group,
-                perpOrder.orderMarket
-              )
-              openOrders[market.publicKey.toString()] = orders
-            }
+            const activePerpMarketIndices = [
+              ...new Set(
+                mangoAccount.perpOrdersActive().map((p) => p.orderMarket)
+              ),
+            ]
+            await Promise.all(
+              activePerpMarketIndices.map(async (perpMktIndex) => {
+                const market = group.getPerpMarketByMarketIndex(perpMktIndex)
+                const orders = await mangoAccount.loadPerpOpenOrdersForMarket(
+                  client,
+                  group,
+                  perpMktIndex
+                )
+                openOrders[market.publicKey.toString()] = orders
+              })
+            )
 
             set((s) => {
               s.mangoAccount.openOrders = openOrders

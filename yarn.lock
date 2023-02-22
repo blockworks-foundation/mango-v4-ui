@@ -31,7 +31,7 @@
 
 "@blockworks-foundation/mango-v4@https://github.com/blockworks-foundation/mango-v4.git#ts-client":
   version "0.4.3"
-  resolved "https://github.com/blockworks-foundation/mango-v4.git#dbf7fce21ac31ef789dd3d3197f090aa87d18b10"
+  resolved "https://github.com/blockworks-foundation/mango-v4.git#0b6254a0359852ceda0497665f02fda052040047"
   dependencies:
     "@project-serum/anchor" "^0.25.0"
     "@project-serum/serum" "^0.13.65"

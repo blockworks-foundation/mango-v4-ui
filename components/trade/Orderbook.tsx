@@ -153,8 +153,12 @@ const hasOpenOrderForPriceGroup = (
   grouping: number
 ) => {
   return !!openOrderPrices.find((ooPrice) => {
-    return ooPrice >= price && ooPrice < price + grouping
+    return ooPrice >= price && ooPrice <= price + grouping
   })
+}
+
+const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
+  book.perpMarket[`_${side}`] = book
 }
 
 const depth = 40
@@ -227,10 +231,7 @@ const Orderbook = () => {
               marketPk && openOrders[marketPk]?.length
                 ? openOrders[marketPk]?.map((order) => order.price)
                 : []
-
-            if (!isEqual(newUserOpenOrderPrices, userOpenOrderPrices)) {
-              setUserOpenOrderPrices(newUserOpenOrderPrices)
-            }
+            setUserOpenOrderPrices(newUserOpenOrderPrices)
 
             // updated orderbook data
             const bids =
@@ -303,11 +304,10 @@ const Orderbook = () => {
   )
 
   useEffect(() => {
-    const group = mangoStore.getState().group
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
 
-    if (!market || !group) return
+    if (!market) return
 
     let bidSubscriptionId: number | undefined = undefined
     let askSubscriptionId: number | undefined = undefined
@@ -334,6 +334,9 @@ const Orderbook = () => {
             mangoStore.getState().selectedMarket.lastSeenSlot.bids
           if (context.slot > lastSeenSlot) {
             const decodedBook = decodeBook(client, market, info, 'bids')
+            if (decodedBook instanceof BookSide) {
+              updatePerpMarketOnGroup(decodedBook, 'bids')
+            }
             set((state) => {
               state.selectedMarket.bidsAccount = decodedBook
               state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
@@ -364,9 +367,12 @@ const Orderbook = () => {
         asksPk,
         (info, context) => {
           const lastSeenSlot =
-            mangoStore.getState().selectedMarket.lastSeenSlot.bids
+            mangoStore.getState().selectedMarket.lastSeenSlot.asks
           if (context.slot > lastSeenSlot) {
             const decodedBook = decodeBook(client, market, info, 'asks')
+            if (decodedBook instanceof BookSide) {
+              updatePerpMarketOnGroup(decodedBook, 'asks')
+            }
             set((state) => {
               state.selectedMarket.asksAccount = decodedBook
               state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
