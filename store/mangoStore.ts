@@ -512,21 +512,26 @@ const mangoStore = create<MangoStore>()(
             const response = await fetch(
               `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`
             )
-            const parsedResponse = await response.json()
-            const entries: any = Object.entries(parsedResponse).sort((a, b) =>
-              b[0].localeCompare(a[0])
-            )
+            const parsedResponse:
+              | Omit<TotalInterestDataItem, 'symbol'>[]
+              | null = await response.json()
+            if (parsedResponse) {
+              const entries: [string, Omit<TotalInterestDataItem, 'symbol'>][] =
+                Object.entries(parsedResponse).sort((a, b) =>
+                  b[0].localeCompare(a[0])
+                )
 
-            const stats = entries
-              .map(([key, value]: Array<{ key: string; value: number }>) => {
-                return { ...value, symbol: key }
+              const stats: TotalInterestDataItem[] = entries
+                .map(([key, value]) => {
+                  return { ...value, symbol: key }
+                })
+                .filter((x) => x)
+
+              set((state) => {
+                state.mangoAccount.interestTotals.data = stats
+                state.mangoAccount.interestTotals.loading = false
               })
-              .filter((x: string) => x)
-
-            set((state) => {
-              state.mangoAccount.interestTotals.data = stats
-              state.mangoAccount.interestTotals.loading = false
-            })
+            }
           } catch {
             set((state) => {
               state.mangoAccount.interestTotals.loading = false
