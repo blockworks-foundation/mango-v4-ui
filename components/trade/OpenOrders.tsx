@@ -254,6 +254,7 @@ const OpenOrders = () => {
                 let tickSize: number
                 let minOrderSize: number
                 let expiryTimestamp: number | undefined
+                let side: string
                 if (o instanceof PerpOrder) {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
                   tickSize = market.tickSize
@@ -262,6 +263,7 @@ const OpenOrders = () => {
                     o.expiryTimestamp === U64_MAX_BN
                       ? 0
                       : o.expiryTimestamp.toNumber()
+                  side = 'bid' in o.side ? 'buy' : 'sell'
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
@@ -271,6 +273,7 @@ const OpenOrders = () => {
                   )
                   tickSize = serumMarket.tickSize
                   minOrderSize = serumMarket.minOrderSize
+                  side = o.side
                 }
                 return (
                   <TrBody
@@ -281,7 +284,7 @@ const OpenOrders = () => {
                       <TableMarketName market={market} />
                     </Td>
                     <Td className="w-[16.67%] text-right">
-                      <SideBadge side={o.side} />
+                      <SideBadge side={side} />
                     </Td>
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>
@@ -398,10 +401,12 @@ const OpenOrders = () => {
             let market: PerpMarket | Serum3Market
             let tickSize: number
             let minOrderSize: number
+            let side: string
             if (o instanceof PerpOrder) {
               market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
               tickSize = market.tickSize
               minOrderSize = market.minOrderSize
+              side = 'bid' in o.side ? 'buy' : 'sell'
             } else {
               market = group.getSerum3MarketByExternalMarket(
                 new PublicKey(marketPk)
@@ -411,6 +416,7 @@ const OpenOrders = () => {
               )
               tickSize = serumMarket.tickSize
               minOrderSize = serumMarket.minOrderSize
+              side = o.side
             }
             return (
               <div
@@ -421,7 +427,7 @@ const OpenOrders = () => {
                   <TableMarketName market={market} />
                   {modifyOrderId !== o.orderId.toString() ? (
                     <div className="mt-1 flex items-center space-x-1">
-                      <SideBadge side={o.side} />
+                      <SideBadge side={side} />
                       <p className="text-th-fgd-4">
                         <span className="font-mono text-th-fgd-3">
                           <FormatNumericValue

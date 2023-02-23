@@ -17,7 +17,7 @@ import {
   PerpOrder,
   PerpPosition,
   BookSide,
-  FillEvent,
+  ParsedFillEvent,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -42,6 +42,7 @@ import {
 import {
   OrderbookL2,
   PerpTradeHistory,
+  SerumEvent,
   SpotBalances,
   SpotTradeHistory,
 } from 'types'
@@ -300,7 +301,7 @@ export type MangoStore = {
   selectedMarket: {
     name: string
     current: Serum3Market | PerpMarket | undefined
-    fills: (FillEvent | any)[]
+    fills: (ParsedFillEvent | SerumEvent)[]
     bidsAccount: BookSide | Orderbook | undefined
     asksAccount: BookSide | Orderbook | undefined
     orderbook: OrderbookL2
@@ -1087,13 +1088,18 @@ const mangoStore = create<MangoStore>()(
               perpMarket = selectedMarket
             }
 
-            let loadedFills: any[] = []
+            let loadedFills: (ParsedFillEvent | SerumEvent)[] = []
             if (serumMarket) {
-              loadedFills = await serumMarket.loadFills(connection, 10000)
-              loadedFills = loadedFills.filter((f) => !f?.eventFlags?.maker)
+              const serumFills = (await serumMarket.loadFills(
+                connection,
+                10000
+              )) as SerumEvent[]
+              loadedFills = serumFills.filter((f) => !f?.eventFlags?.maker)
             } else if (perpMarket) {
-              loadedFills = await perpMarket.loadFills(client)
-              loadedFills = loadedFills.reverse()
+              const perpFills = (await perpMarket.loadFills(
+                client
+              )) as unknown as ParsedFillEvent[]
+              loadedFills = perpFills.reverse()
             }
             set((state) => {
               state.selectedMarket.fills = loadedFills

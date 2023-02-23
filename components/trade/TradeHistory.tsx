@@ -33,15 +33,6 @@ import { abbreviateAddress } from 'utils/formatting'
 import { breakpoints } from 'utils/theme'
 import TableMarketName from './TableMarketName'
 
-const byTimestamp = (a: any, b: any) => {
-  return (
-    new Date(b.loadTimestamp || b.timestamp * 1000).getTime() -
-    new Date(a.loadTimestamp || a.timestamp * 1000).getTime()
-  )
-}
-
-const reverseSide = (side: string) => (side === 'long' ? 'short' : 'long')
-
 type PerpFillEvent = ParsedFillEvent
 
 const parsePerpEvent = (mangoAccountAddress: string, event: PerpFillEvent) => {
@@ -49,8 +40,8 @@ const parsePerpEvent = (mangoAccountAddress: string, event: PerpFillEvent) => {
   const orderId = maker ? event.makerOrderId : event.takerOrderId
   const value = event.quantity * event.price
   const feeRate = maker ? event.makerFee : event.takerFee
-  const takerSide = event.takerSide === 0 ? 'long' : 'short'
-  const side = maker ? reverseSide(takerSide) : takerSide
+  const takerSide = event.takerSide === 0 ? 'buy' : 'sell'
+  const side = maker ? (takerSide === 'buy' ? 'sell' : 'buy') : takerSide
 
   return {
     ...event,
@@ -86,15 +77,21 @@ const isApiSpotTradeHistory = (
   else return false
 }
 
-const isSerumFillEvent = (
-  t: PerpFillEvent | SerumEvent | SpotTradeHistory | PerpTradeHistory
+type CombinedTradeHistoryTypes =
+  | SpotTradeHistory
+  | PerpTradeHistory
+  | PerpFillEvent
+  | SerumEvent
+
+export const isSerumFillEvent = (
+  t: CombinedTradeHistoryTypes
 ): t is SerumEvent => {
   if ('eventFlags' in t) return true
   else return false
 }
 
-const isPerpFillEvent = (
-  t: PerpFillEvent | SerumEvent | SpotTradeHistory | PerpTradeHistory
+export const isPerpFillEvent = (
+  t: CombinedTradeHistoryTypes
 ): t is PerpFillEvent => {
   if ('takerSide' in t) return true
   else return false
@@ -104,7 +101,7 @@ const parseApiTradeHistory = (
   mangoAccountAddress: string,
   trade: SpotTradeHistory | PerpTradeHistory
 ) => {
-  let side
+  let side: 'buy' | 'sell'
   let size
   let feeCost
   let liquidity
@@ -115,16 +112,12 @@ const parseApiTradeHistory = (
     liquidity = trade.maker ? 'Maker' : 'Taker'
   } else {
     liquidity =
-      trade.taker && trade.taker.toString() === mangoAccountAddress
-        ? 'Taker'
-        : 'Maker'
-    const sideObj: any = {}
+      trade.taker && trade.taker === mangoAccountAddress ? 'Taker' : 'Maker'
     if (liquidity == 'Taker') {
-      sideObj[trade.taker_side] = 1
+      side = trade.taker_side == 'bid' ? 'buy' : 'sell'
     } else {
-      sideObj[trade.taker_side == 'bid' ? 'ask' : 'bid'] = 1
+      side = trade.taker_side == 'bid' ? 'sell' : 'buy'
     }
-    side = sideObj
     size = trade.quantity
     const feeRate =
       trade.maker === mangoAccountAddress ? trade.maker_fee : trade.taker_fee
@@ -140,44 +133,40 @@ const parseApiTradeHistory = (
   }
 }
 
-type CombinedTradeHistoryTypes =
-  | PerpFillEvent
-  | SerumEvent
-  | SpotTradeHistory
-  | PerpTradeHistory
-
 const formatTradeHistory = (
   group: Group,
-  selectedMarket: Serum3Market | PerpMarket | undefined,
+  selectedMarket: Serum3Market | PerpMarket,
   mangoAccountAddress: string,
   tradeHistory: Array<CombinedTradeHistoryTypes>
 ) => {
-  return tradeHistory
-    .flat()
-    .map((event) => {
-      let trade
-      if (isSerumFillEvent(event)) {
-        trade = parseSerumEvent(event)
-      } else if (isPerpFillEvent(event)) {
-        trade = parsePerpEvent(mangoAccountAddress, event)
-      } else {
-        trade = parseApiTradeHistory(mangoAccountAddress, event)
-      }
-
-      let market
+  return tradeHistory.flat().map((event) => {
+    let trade
+    let market = selectedMarket
+    let time = 'Recent'
+    if (isSerumFillEvent(event)) {
+      trade = parseSerumEvent(event)
+    } else if (isPerpFillEvent(event)) {
+      trade = parsePerpEvent(mangoAccountAddress, event)
+      market = selectedMarket
+      time = trade.timestamp.toString()
+    } else {
+      trade = parseApiTradeHistory(mangoAccountAddress, event)
+      time = trade.block_datetime
       if ('market' in trade) {
         market = group.getSerum3MarketByExternalMarket(
           new PublicKey(trade.market)
         )
       } else if ('perp_market' in trade) {
         market = group.getPerpMarketByMarketIndex(trade.market_index)
-      } else {
-        market = selectedMarket
       }
+    }
 
-      return { ...trade, market }
-    })
-    .sort(byTimestamp)
+    return {
+      ...trade,
+      market,
+      time,
+    }
+  })
 }
 
 const TradeHistory = () => {
@@ -187,7 +176,9 @@ const TradeHistory = () => {
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
   const fills = mangoStore((s) => s.selectedMarket.fills)
-  const tradeHistory = mangoStore((s) => s.mangoAccount.tradeHistory.data)
+  const tradeHistoryFromApi = mangoStore(
+    (s) => s.mangoAccount.tradeHistory.data
+  )
   const loadingTradeHistory = mangoStore(
     (s) => s.mangoAccount.tradeHistory.loading
   )
@@ -213,14 +204,14 @@ const TradeHistory = () => {
     }
   }, [mangoAccount, selectedMarket])
 
-  const eventQueueFillsForAccount = useMemo(() => {
+  const eventQueueFillsForOwner = useMemo(() => {
     if (!selectedMarket || !openOrderOwner) return []
 
-    return fills.filter((fill: any) => {
-      if (fill.openOrders) {
+    return fills.filter((fill) => {
+      if (isSerumFillEvent(fill)) {
         // handles serum event queue for spot trades
         return openOrderOwner ? fill.openOrders.equals(openOrderOwner) : false
-      } else if (fill.taker) {
+      } else if (isPerpFillEvent(fill)) {
         // handles mango event queue for perp trades
         return (
           fill.taker.equals(openOrderOwner) || fill.maker.equals(openOrderOwner)
@@ -231,27 +222,27 @@ const TradeHistory = () => {
 
   const combinedTradeHistory = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group) return []
-    let newFills = []
-    if (eventQueueFillsForAccount?.length) {
-      newFills = eventQueueFillsForAccount.filter((fill) => {
-        return !tradeHistory.find((t) => {
-          if ('order_id' in t) {
-            return t.order_id === fill.orderId?.toString()
-          } else {
-            return t.seq_num === fill.seqNum?.toNumber()
+    if (!group || !selectedMarket) return []
+    let newFills: (SerumEvent | PerpFillEvent)[] = []
+    if (eventQueueFillsForOwner?.length) {
+      newFills = eventQueueFillsForOwner.filter((fill) => {
+        return !tradeHistoryFromApi.find((t) => {
+          if ('order_id' in t && isSerumFillEvent(fill)) {
+            return t.order_id === fill.orderId.toString()
+          } else if ('seq_num' in t && isPerpFillEvent(fill)) {
+            return t.seq_num === fill.seqNum.toNumber()
           }
         })
       })
     }
     return formatTradeHistory(group, selectedMarket, mangoAccountAddress, [
       ...newFills,
-      ...tradeHistory,
+      ...tradeHistoryFromApi,
     ])
   }, [
-    eventQueueFillsForAccount,
+    eventQueueFillsForOwner,
     mangoAccountAddress,
-    tradeHistory,
+    tradeHistoryFromApi,
     selectedMarket,
   ])
 
@@ -285,10 +276,10 @@ const TradeHistory = () => {
               </TrHead>
             </thead>
             <tbody>
-              {combinedTradeHistory.map((trade: any, index: number) => {
+              {combinedTradeHistory.map((trade, index: number) => {
                 return (
                   <TrBody
-                    key={`${trade.signature || trade.marketIndex}${index}`}
+                    key={`${trade.side}${trade.size}${trade.price}${trade.time}${index}`}
                     className="my-1 p-2"
                   >
                     <Td className="">
@@ -317,17 +308,14 @@ const TradeHistory = () => {
                       </p>
                     </Td>
                     <Td className="whitespace-nowrap text-right">
-                      {trade.block_datetime ? (
-                        <TableDateDisplay
-                          date={trade.block_datetime}
-                          showSeconds
-                        />
+                      {trade.time ? (
+                        <TableDateDisplay date={trade.time} showSeconds />
                       ) : (
                         'Recent'
                       )}
                     </Td>
                     <Td className="xl:!pl-0">
-                      {trade.market.name.includes('PERP') ? (
+                      {'taker' in trade ? (
                         <div className="flex justify-end">
                           <Tooltip
                             content={`View Counterparty ${abbreviateAddress(
@@ -363,11 +351,11 @@ const TradeHistory = () => {
         </div>
       ) : (
         <div>
-          {combinedTradeHistory.map((trade: any, index: number) => {
+          {combinedTradeHistory.map((trade, index: number) => {
             return (
               <div
                 className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-                key={`${trade.marketIndex}${index}`}
+                key={`${trade.price}${trade.size}${trade.side}${trade.time}${index}`}
               >
                 <div>
                   <TableMarketName market={selectedMarket} />
@@ -387,11 +375,8 @@ const TradeHistory = () => {
                 <div className="flex items-center space-x-2.5">
                   <div className="flex flex-col items-end">
                     <span className="mb-0.5 flex items-center space-x-1.5">
-                      {trade.block_datetime ? (
-                        <TableDateDisplay
-                          date={trade.block_datetime}
-                          showSeconds
-                        />
+                      {trade.time ? (
+                        <TableDateDisplay date={trade.time} showSeconds />
                       ) : (
                         'Recent'
                       )}
@@ -404,7 +389,7 @@ const TradeHistory = () => {
                       />
                     </p>
                   </div>
-                  {trade.market.name.includes('PERP') ? (
+                  {'taker' in trade ? (
                     <a
                       className=""
                       target="_blank"

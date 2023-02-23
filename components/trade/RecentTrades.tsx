@@ -2,7 +2,6 @@ import useInterval from '@components/shared/useInterval'
 import mangoStore from '@store/mangoStore'
 import { useEffect, useMemo, useState } from 'react'
 import { formatNumericValue, getDecimalCount } from 'utils/numbers'
-import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { Howl } from 'howler'
@@ -16,12 +15,15 @@ import TradeVolumeAlertModal, {
   DEFAULT_VOLUME_ALERT_SETTINGS,
 } from '@components/modals/TradeVolumeAlertModal'
 import dayjs from 'dayjs'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { isPerpFillEvent } from './TradeHistory'
+import ErrorBoundary from '@components/ErrorBoundary'
 
 const volumeAlertSound = new Howl({
   src: ['/sounds/trade-buy.mp3'],
   volume: 0.8,
 })
+
+type Test = { buys: number; sells: number }
 
 const RecentTrades = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -49,55 +51,34 @@ const RecentTrades = () => {
     if (!fills.length) return
     const latesetFill = fills[0]
     if (!latestFillId) {
-      const fillId =
-        selectedMarket instanceof PerpMarket
-          ? latesetFill.takerClientOrderId
-          : latesetFill.orderId
+      const fillId = isPerpFillEvent(latesetFill)
+        ? latesetFill.takerClientOrderId
+        : latesetFill.orderId
       setLatestFillId(fillId.toString())
     }
   }, [fills])
 
   useInterval(() => {
-    if (!soundSettings['recent-trades'] || !quoteBank || !fills.length) return
     const latesetFill = fills[0]
-    const fillId =
-      selectedMarket instanceof PerpMarket
-        ? latesetFill.takerClientOrderId
-        : latesetFill.orderId
+    if (!soundSettings['recent-trades'] || !quoteBank || !latesetFill) return
+    const fillId = isPerpFillEvent(latesetFill)
+      ? latesetFill.takerClientOrderId
+      : latesetFill.orderId
     setLatestFillId(fillId.toString())
     const fillsLimitIndex = fills.findIndex((f) => {
-      const id =
-        selectedMarket instanceof PerpMarket ? f.takerClientOrderId : f.orderId
+      const id = isPerpFillEvent(f) ? f.takerClientOrderId : f.orderId
       return id.toString() === fillId.toString()
     })
     const newFillsVolumeValue = fills
       .slice(0, fillsLimitIndex)
-      .reduce((a, c) => a + c.size * c.price, 0)
+      .reduce((a, c) => {
+        const size = isPerpFillEvent(c) ? c.quantity : c.size
+        return a + size * c.price
+      }, 0)
     if (newFillsVolumeValue * quoteBank.uiPrice > Number(alertSettings.value)) {
       volumeAlertSound.play()
     }
   }, alertSettings.seconds * 1000)
-
-  // const fetchRecentTrades = useCallback(async () => {
-  //   if (!market) return
-
-  //   try {
-  //     const response = await fetch(
-  //       `https://event-history-api-candles.herokuapp.com/trades/address/${market.publicKey}`
-  //     )
-  //     const parsedResp = await response.json()
-  //     const newTrades = parsedResp.data
-  //     if (!newTrades) return null
-
-  //     if (newTrades.length && trades.length === 0) {
-  //       setTrades(newTrades)
-  //     } else if (newTrades?.length && !isEqual(newTrades[0], trades[0])) {
-  //       setTrades(newTrades)
-  //     }
-  //   } catch (e) {
-  //     console.error('Unable to fetch recent trades', e)
-  //   }
-  // }, [market, trades])
 
   useEffect(() => {
     // if (CLUSTER === 'mainnet-beta') {
@@ -113,19 +94,28 @@ const RecentTrades = () => {
     // }
     const actions = mangoStore.getState().actions
     actions.loadMarketFills()
-  }, 5000)
+  }, 6000)
 
   const [buyRatio, sellRatio] = useMemo(() => {
     if (!fills.length) return [0, 0]
 
     const vol = fills.reduce(
-      (a: { buys: number; sells: number }, c: any) => {
-        if (c.side === 'buy' || c.takerSide === 0) {
-          a.buys = a.buys + c.size
+      (acc: Test, fill) => {
+        let side
+        let size
+        if (isPerpFillEvent(fill)) {
+          side = fill.takerSide === 0 ? 'buy' : 'sell'
+          size = fill.quantity
         } else {
-          a.sells = a.sells + c.size
+          side = fill.side
+          size = fill.size
         }
-        return a
+        if (side === 'buy') {
+          acc.buys = acc.buys + size
+        } else {
+          acc.sells = acc.sells + size
+        }
+        return acc
       },
       { buys: 0, sells: 0 }
     )
@@ -134,7 +124,7 @@ const RecentTrades = () => {
   }, [fills])
 
   return (
-    <>
+    <ErrorBoundary>
       <div className="thin-scroll h-full overflow-y-scroll">
         <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 px-2">
           <Tooltip
@@ -179,9 +169,19 @@ const RecentTrades = () => {
             </thead>
             <tbody>
               {!!fills.length &&
-                fills.map((trade: ChartTradeType, i: number) => {
-                  const side =
-                    trade.side || (trade.takerSide === 0 ? 'bid' : 'ask')
+                fills.map((trade, i: number) => {
+                  let side
+                  let size
+                  let time
+                  if (isPerpFillEvent(trade)) {
+                    side = trade.takerSide === 0 ? 'bid' : 'ask'
+                    size = trade.quantity
+                    time = trade.timestamp.toString()
+                  } else {
+                    side = trade.side
+                    size = trade.size
+                    time = ''
+                  }
 
                   const formattedPrice =
                     market?.tickSize && trade.price
@@ -192,12 +192,12 @@ const RecentTrades = () => {
                       : trade?.price || 0
 
                   const formattedSize =
-                    market?.minOrderSize && trade.size
+                    market?.minOrderSize && size
                       ? formatNumericValue(
-                          trade.size,
+                          size,
                           getDecimalCount(market.minOrderSize)
                         )
-                      : trade?.size || 0
+                      : size || 0
 
                   return (
                     <tr className="font-mono text-xs" key={i}>
@@ -212,12 +212,8 @@ const RecentTrades = () => {
                       </td>
                       <td className="pb-1.5 text-right">{formattedSize}</td>
                       <td className="pb-1.5 text-right text-th-fgd-4">
-                        {trade.time
-                          ? new Date(trade.time).toLocaleTimeString()
-                          : trade.timestamp
-                          ? dayjs(trade.timestamp.toNumber() * 1000).format(
-                              'hh:mma'
-                            )
+                        {time
+                          ? dayjs(Number(time) * 1000).format('hh:mma')
                           : '-'}
                       </td>
                     </tr>
@@ -233,7 +229,7 @@ const RecentTrades = () => {
           onClose={() => setShowVolumeAlertModal(false)}
         />
       ) : null}
-    </>
+    </ErrorBoundary>
   )
 }
 

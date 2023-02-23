@@ -42,7 +42,7 @@ export interface SpotTradeHistory {
   instruction_num: number
   size: number
   price: number
-  side: string
+  side: 'buy' | 'sell'
   fee_cost: number
   open_orders_owner: string
   base_symbol: string
@@ -60,7 +60,7 @@ export interface PerpTradeHistory {
   taker_order_id: string
   taker_client_order_id: string
   taker_fee: number
-  taker_side: string
+  taker_side: 'bid' | 'ask'
   perp_market: string
   market_index: number
   price: number
