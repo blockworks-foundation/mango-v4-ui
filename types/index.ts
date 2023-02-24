@@ -2,7 +2,7 @@ import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
 import { Event } from '@project-serum/serum/lib/queue'
 
-export type EmptyObject<T> = { [K in keyof T]?: never }
+export type EmptyObject = { [K in keyof never]?: never }
 export interface OrderbookL2 {
   bids: number[][]
   asks: number[][]

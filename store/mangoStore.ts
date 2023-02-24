@@ -428,10 +428,10 @@ const mangoStore = create<MangoStore>()(
             )
             const parsedResponse:
               | null
-              | EmptyObject<never>
+              | EmptyObject
               | AccountPerformanceData[] = await response.json()
 
-            if (parsedResponse?.length) {
+            if (parsedResponse && Object.keys(parsedResponse)?.length) {
               const entries = Object.entries(parsedResponse).sort((a, b) =>
                 b[0].localeCompare(a[0])
               )
@@ -466,12 +466,10 @@ const mangoStore = create<MangoStore>()(
                 params ? params : ''
               }`
             )
-            const parsedResponse:
-              | null
-              | EmptyObject<never>
-              | Array<ActivityFeed> = await response.json()
+            const parsedResponse: null | EmptyObject | Array<ActivityFeed> =
+              await response.json()
 
-            if (parsedResponse?.length) {
+            if (Array.isArray(parsedResponse)) {
               const entries = Object.entries(parsedResponse).sort((a, b) =>
                 b[0].localeCompare(a[0])
               )
@@ -991,9 +989,9 @@ const mangoStore = create<MangoStore>()(
             )
             const jsonResponse:
               | null
-              | EmptyObject<never>
+              | EmptyObject
               | TradeHistoryApiResponseType = await response.json()
-            if (jsonResponse?.length) {
+            if (Array.isArray(jsonResponse)) {
               const newHistory = jsonResponse.map((h) => h.activity_details)
               const history =
                 offset !== 0 ? loadedHistory.concat(newHistory) : newHistory

@@ -55,6 +55,8 @@ const AccountPage = () => {
     (s) => s.mangoAccount.performance.loading
   )
   const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
+  console.log(performanceData)
+
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
   )
@@ -74,6 +76,8 @@ const AccountPage = () => {
   )
 
   useEffect(() => {
+    console.log('mangoAccountAddress', mangoAccountAddress)
+
     if (mangoAccountAddress || (!mangoAccountAddress && connected)) {
       actions.fetchAccountPerformance(mangoAccountAddress, 31)
       actions.fetchAccountInterestTotals(mangoAccountAddress)
