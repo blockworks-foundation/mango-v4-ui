@@ -1,6 +1,6 @@
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
-import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo } from 'react'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -8,6 +8,7 @@ import dayjs from 'dayjs'
 import Change from '@components/shared/Change'
 import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import { PerformanceDataItem } from 'types'
 
 interface PnlChange {
   time: string

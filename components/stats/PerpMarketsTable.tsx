@@ -2,7 +2,7 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 import { useViewport } from '../../hooks/useViewport'
-import mangoStore, { PerpStatsItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
 import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
@@ -16,6 +16,7 @@ import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { getDecimalCount } from 'utils/numbers'
 import Tooltip from '@components/shared/Tooltip'
+import { PerpStatsItem } from 'types'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }

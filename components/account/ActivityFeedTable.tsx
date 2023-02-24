@@ -12,7 +12,7 @@ import {
   NoSymbolIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
-import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -20,6 +20,7 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { Fragment, useCallback, useState } from 'react'
+import { ActivityFeed, isLiquidationFeedItem, LiquidationActivity } from 'types'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
@@ -158,8 +159,8 @@ const ActivityFeedTable = ({
   activityFeed,
   handleShowActivityDetails,
 }: {
-  activityFeed: any
-  handleShowActivityDetails: (x: LiquidationFeedItem) => void
+  activityFeed: ActivityFeed[]
+  handleShowActivityDetails: (x: LiquidationActivity) => void
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const { mangoAccountAddress } = useMangoAccount()
@@ -211,7 +212,7 @@ const ActivityFeedTable = ({
             </TrHead>
           </thead>
           <tbody>
-            {activityFeed.map((activity: any, index: number) => {
+            {activityFeed.map((activity, index: number) => {
               const { activity_type, block_datetime } = activity
               const { signature } = activity.activity_details
               const isLiquidation =
@@ -227,7 +228,7 @@ const ActivityFeedTable = ({
                     isLiquidation ? 'cursor-pointer' : ''
                   }`}
                   onClick={
-                    isLiquidation
+                    isLiquidationFeedItem(activity)
                       ? () => handleShowActivityDetails(activity)
                       : undefined
                   }

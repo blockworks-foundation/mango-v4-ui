@@ -40,11 +40,24 @@ import {
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
 import {
+  AccountPerformanceData,
+  ActivityFeed,
+  EmptyObject,
   OrderbookL2,
+  PerformanceDataItem,
+  PerpStatsItem,
   PerpTradeHistory,
   SerumEvent,
   SpotBalances,
   SpotTradeHistory,
+  SwapHistoryItem,
+  TotalInterestDataItem,
+  TradeForm,
+  TradeHistoryApiResponseType,
+  TokenStatsItem,
+  NFT,
+  TourSettings,
+  ProfileDetails,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -100,147 +113,6 @@ const initMangoClient = (
 }
 
 let mangoGroupRetryAttempt = 0
-
-export interface TotalInterestDataItem {
-  borrow_interest: number
-  deposit_interest: number
-  borrow_interest_usd: number
-  deposit_interest_usd: number
-  symbol: string
-}
-
-export interface PerformanceDataItem {
-  account_equity: number
-  borrow_interest_cumulative_usd: number
-  deposit_interest_cumulative_usd: number
-  pnl: number
-  spot_value: number
-  time: string
-  transfer_balance: number
-}
-
-export interface DepositWithdrawFeedItem {
-  activity_details: {
-    block_datetime: string
-    mango_account: string
-    quantity: number
-    signature: string
-    symbol: string
-    usd_equivalent: number
-    wallet_pk: string
-  }
-  activity_type: string
-  block_datetime: string
-  symbol: string
-}
-
-export interface LiquidationFeedItem {
-  activity_details: {
-    asset_amount: number
-    asset_price: number
-    asset_symbol: string
-    block_datetime: string
-    liab_amount: number
-    liab_price: number
-    liab_symbol: string
-    mango_account: string
-    mango_group: string
-    side: string
-    signature: string
-  }
-  activity_type: string
-  block_datetime: string
-  symbol: string
-}
-
-export interface SwapHistoryItem {
-  block_datetime: string
-  mango_account: string
-  signature: string
-  swap_in_amount: number
-  swap_in_loan: number
-  swap_in_loan_origination_fee: number
-  swap_in_price_usd: number
-  swap_in_symbol: string
-  swap_out_amount: number
-  loan: number
-  loan_origination_fee: number
-  swap_out_price_usd: number
-  swap_out_symbol: string
-}
-
-interface NFT {
-  address: string
-  image: string
-}
-
-export interface PerpStatsItem {
-  date_hour: string
-  fees_accrued: number
-  funding_rate_hourly: number
-  instantaneous_funding_rate: number
-  mango_group: string
-  market_index: number
-  open_interest: number
-  perp_market: string
-  price: number
-  stable_price: number
-}
-
-interface ProfileDetails {
-  profile_image_url?: string
-  profile_name: string
-  trader_category: string
-  wallet_pk: string
-}
-
-interface TourSettings {
-  account_tour_seen: boolean
-  swap_tour_seen: boolean
-  trade_tour_seen: boolean
-  wallet_pk: string
-}
-
-export interface TokenStatsItem {
-  borrow_apr: number
-  borrow_rate: number
-  collected_fees: number
-  date_hour: string
-  deposit_apr: number
-  deposit_rate: number
-  mango_group: string
-  price: number
-  symbol: string
-  token_index: number
-  total_borrows: number
-  total_deposits: number
-}
-
-// const defaultUserSettings = {
-//   account_tour_seen: false,
-//   default_language: 'English',
-//   default_market: 'SOL-Perp',
-//   orderbook_animation: false,
-//   rpc_endpoint: 'Triton (RPC Pool)',
-//   rpc_node_url: null,
-//   spot_margin: false,
-//   swap_tour_seen: false,
-//   theme: 'Mango',
-//   trade_tour_seen: false,
-//   wallet_pk: '',
-// }
-
-interface TradeForm {
-  side: 'buy' | 'sell'
-  price: string | undefined
-  baseSize: string
-  quoteSize: string
-  tradeType: 'Market' | 'Limit'
-  postOnly: boolean
-  ioc: boolean
-  reduceOnly: boolean
-}
-
 export const DEFAULT_TRADE_FORM: TradeForm = {
   side: 'buy',
   price: undefined,
@@ -254,7 +126,7 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
 
 export type MangoStore = {
   activityFeed: {
-    feed: Array<DepositWithdrawFeedItem | LiquidationFeedItem>
+    feed: Array<ActivityFeed>
     loading: boolean
     queryParams: string
   }
@@ -554,20 +426,24 @@ const mangoStore = create<MangoStore>()(
                 .subtract(range, 'day')
                 .format('YYYY-MM-DD')}`
             )
-            const parsedResponse = await response.json()
-            const entries: any = Object.entries(parsedResponse).sort((a, b) =>
-              b[0].localeCompare(a[0])
-            )
+            const parsedResponse:
+              | null
+              | EmptyObject<never>
+              | AccountPerformanceData[] = await response.json()
 
-            const stats = entries
-              .map(([key, value]: Array<{ key: string; value: number }>) => {
-                return { ...value, time: key }
+            if (parsedResponse?.length) {
+              const entries = Object.entries(parsedResponse).sort((a, b) =>
+                b[0].localeCompare(a[0])
+              )
+
+              const stats = entries.map(([key, value]) => {
+                return { ...value, time: key } as PerformanceDataItem
               })
-              .filter((x: string) => x)
 
-            set((state) => {
-              state.mangoAccount.performance.data = stats.reverse()
-            })
+              set((state) => {
+                state.mangoAccount.performance.data = stats.reverse()
+              })
+            }
           } catch (e) {
             console.error('Failed to load account performance data', e)
           } finally {
@@ -583,9 +459,6 @@ const mangoStore = create<MangoStore>()(
         ) => {
           const set = get().set
           const loadedFeed = mangoStore.getState().activityFeed.feed
-          const connectedMangoAccountPk = mangoStore
-            .getState()
-            .mangoAccount.current?.publicKey.toString()
 
           try {
             const response = await fetch(
@@ -593,36 +466,34 @@ const mangoStore = create<MangoStore>()(
                 params ? params : ''
               }`
             )
-            const parsedResponse = await response.json()
-            const entries: any = Object.entries(parsedResponse).sort((a, b) =>
-              b[0].localeCompare(a[0])
-            )
+            const parsedResponse:
+              | null
+              | EmptyObject<never>
+              | Array<ActivityFeed> = await response.json()
 
-            const latestFeed = entries
-              .map(([key, value]: Array<{ key: string; value: number }>) => {
-                return { ...value, symbol: key }
-              })
-              .filter((x: string) => x)
-              .sort(
-                (
-                  a: DepositWithdrawFeedItem | LiquidationFeedItem,
-                  b: DepositWithdrawFeedItem | LiquidationFeedItem
-                ) =>
-                  dayjs(b.block_datetime).unix() -
-                  dayjs(a.block_datetime).unix()
+            if (parsedResponse?.length) {
+              const entries = Object.entries(parsedResponse).sort((a, b) =>
+                b[0].localeCompare(a[0])
               )
 
-            // only add to current feed if data request is offset and the mango account hasn't changed
-            const combinedFeed =
-              offset !== 0 &&
-              connectedMangoAccountPk ===
-                loadedFeed[0]?.activity_details?.mango_account
-                ? loadedFeed.concat(latestFeed)
-                : latestFeed
+              const latestFeed = entries
+                .map(([key, value]) => {
+                  return { ...value, symbol: key }
+                })
+                .sort(
+                  (a, b) =>
+                    dayjs(b.block_datetime).unix() -
+                    dayjs(a.block_datetime).unix()
+                )
 
-            set((state) => {
-              state.activityFeed.feed = combinedFeed
-            })
+              // only add to current feed if data request is offset and the mango account hasn't changed
+              const combinedFeed =
+                offset !== 0 ? loadedFeed.concat(latestFeed) : latestFeed
+
+              set((state) => {
+                state.activityFeed.feed = combinedFeed
+              })
+            }
           } catch (e) {
             console.error('Failed to fetch account activity feed', e)
           } finally {
@@ -1015,8 +886,8 @@ const mangoStore = create<MangoStore>()(
             set((s) => {
               s.client = client
             })
-          } catch (e: any) {
-            if (e.name.includes('WalletLoadError')) {
+          } catch (e) {
+            if (e instanceof Error && e.name.includes('WalletLoadError')) {
               notify({
                 title: `${wallet.adapter.name} Error`,
                 type: 'error',
@@ -1118,17 +989,16 @@ const mangoStore = create<MangoStore>()(
             const response = await fetch(
               `${MANGO_DATA_API_URL}/stats/trade-history?mango-account=${mangoAccountPk}&limit=${PAGINATION_PAGE_LENGTH}&offset=${offset}`
             )
-            const jsonResponse = await response.json()
+            const jsonResponse:
+              | null
+              | EmptyObject<never>
+              | TradeHistoryApiResponseType = await response.json()
             if (jsonResponse?.length) {
-              const newHistory = jsonResponse.map(
-                (h: any) => h.activity_details
-              )
+              const newHistory = jsonResponse.map((h) => h.activity_details)
               const history =
                 offset !== 0 ? loadedHistory.concat(newHistory) : newHistory
               set((s) => {
-                s.mangoAccount.tradeHistory.data = history?.sort(
-                  (x: any) => x.block_datetime
-                )
+                s.mangoAccount.tradeHistory.data = history
               })
             } else {
               set((s) => {

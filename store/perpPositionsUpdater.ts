@@ -1,10 +1,4 @@
-import {
-  Group,
-  MangoAccount,
-  PerpMarket,
-  PerpPosition,
-  toUiI80F48,
-} from '@blockworks-foundation/mango-v4'
+import { PerpPosition } from '@blockworks-foundation/mango-v4'
 import mangoStore from './mangoStore'
 
 const perpPositionsUpdater = (_newState: any, _prevState: any) => {

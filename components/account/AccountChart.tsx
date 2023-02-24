@@ -1,8 +1,8 @@
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
-import { PerformanceDataItem } from '@store/mangoStore'
 import dynamic from 'next/dynamic'
 import { formatYAxis } from 'utils/formatting'
+import { PerformanceDataItem } from 'types'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }

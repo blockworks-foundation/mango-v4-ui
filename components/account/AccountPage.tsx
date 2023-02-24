@@ -5,7 +5,7 @@ import {
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
-import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { formatCurrencyValue } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import dynamic from 'next/dynamic'
@@ -43,6 +43,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthBar from './HealthBar'
+import { PerformanceDataItem } from 'types'
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
