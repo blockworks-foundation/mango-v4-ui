@@ -1,4 +1,4 @@
-import { AccountInfo } from '@solana/web3.js'
+import { AccountInfo, PublicKey } from '@solana/web3.js'
 import Big from 'big.js'
 import mangoStore from '@store/mangoStore'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -323,18 +323,35 @@ const Orderbook = () => {
     [grouping, market, isScrolled, verticallyCenterOrderbook]
   )
 
+  const bidAccountAddress = useMemo(() => {
+    if (!market) return ''
+    const bidsPk =
+      market instanceof Market ? market['_decoded'].bids : market.bids
+    return bidsPk.toString()
+  }, [market])
+
+  const askAccountAddress = useMemo(() => {
+    if (!market) return ''
+    const asksPk =
+      market instanceof Market ? market['_decoded'].asks : market.asks
+    return asksPk.toString()
+  }, [market])
+
   useEffect(() => {
+    console.log('setting up orderbook websockets')
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
-
-    if (!market) return
+    const selectedMarket = mangoStore.getState().selectedMarket.current
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return
 
     let bidSubscriptionId: number | undefined = undefined
     let askSubscriptionId: number | undefined = undefined
-
-    const bidsPk =
-      market instanceof Market ? market['_decoded'].bids : market.bids
-    console.log('bidsPk', bidsPk?.toString())
+    const market =
+      selectedMarket instanceof PerpMarket
+        ? selectedMarket
+        : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+    const bidsPk = new PublicKey(bidAccountAddress)
     if (bidsPk) {
       connection
         .getAccountInfoAndContext(bidsPk)
@@ -368,9 +385,7 @@ const Orderbook = () => {
       )
     }
 
-    const asksPk =
-      market instanceof Market ? market['_decoded'].asks : market.asks
-    console.log('asksPk', asksPk?.toString())
+    const asksPk = new PublicKey(askAccountAddress)
     if (asksPk) {
       connection
         .getAccountInfoAndContext(asksPk)
@@ -411,12 +426,10 @@ const Orderbook = () => {
         connection.removeAccountChangeListener(askSubscriptionId)
       }
     }
-  }, [market, connection])
+  }, [bidAccountAddress, askAccountAddress, connection])
 
   useEffect(() => {
     window.addEventListener('resize', verticallyCenterOrderbook)
-    // const id = setTimeout(verticallyCenterOrderbook, 400)
-    // return () => clearTimeout(id)
   }, [verticallyCenterOrderbook])
 
   const resetOrderbook = useCallback(async () => {
@@ -424,7 +437,7 @@ const Orderbook = () => {
     setShowSells(true)
     await sleep(300)
     verticallyCenterOrderbook()
-  }, [])
+  }, [verticallyCenterOrderbook])
 
   const onGroupSizeChange = useCallback((groupSize: number) => {
     setGrouping(groupSize)
