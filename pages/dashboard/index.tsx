@@ -183,6 +183,26 @@ const Dashboard: NextPage = () => {
                                     bank.mintDecimals
                                   )}`}
                                 />
+                                <KeyValuePair
+                                  label="Last stable price updated"
+                                  value={new Date(
+                                    1000 *
+                                      bank.stablePriceModel.lastUpdateTimestamp.toNumber()
+                                  ).toUTCString()}
+                                />
+                                <KeyValuePair
+                                  label="Stable Price: delay interval"
+                                  value={`${bank.stablePriceModel.delayIntervalSeconds}s`}
+                                />
+                                <KeyValuePair
+                                  label="Stable Price: growth limits"
+                                  value={`${(
+                                    100 * bank.stablePriceModel.delayGrowthLimit
+                                  ).toFixed(2)}% delay / ${(
+                                    100 *
+                                    bank.stablePriceModel.stableGrowthLimit
+                                  ).toFixed(2)}% stable`}
+                                />
                                 <VaultData bank={bank} />
                                 <KeyValuePair
                                   label="Loan Fee Rate"
@@ -241,15 +261,15 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Deposit weight scale start quote"
-                                  value={`${toUiDecimalsForQuote(
+                                  value={`$${toUiDecimalsForQuote(
                                     bank.depositWeightScaleStartQuote
-                                  )}$`}
+                                  )}`}
                                 />
                                 <KeyValuePair
                                   label="Borrow weight scale start quote"
-                                  value={`${toUiDecimalsForQuote(
+                                  value={`$${toUiDecimalsForQuote(
                                     bank.borrowWeightScaleStartQuote
-                                  )}$`}
+                                  )}`}
                                 />
                                 <KeyValuePair
                                   label="Rate params"
@@ -298,26 +318,6 @@ const Dashboard: NextPage = () => {
                                   ).toUTCString()}
                                 />
                                 <KeyValuePair
-                                  label="Last stable price updated"
-                                  value={new Date(
-                                    1000 *
-                                      bank.stablePriceModel.lastUpdateTimestamp.toNumber()
-                                  ).toUTCString()}
-                                />
-                                <KeyValuePair
-                                  label="Stable Price: delay interval"
-                                  value={`${bank.stablePriceModel.delayIntervalSeconds}s`}
-                                />
-                                <KeyValuePair
-                                  label="Stable Price: growth limits"
-                                  value={`${(
-                                    100 * bank.stablePriceModel.delayGrowthLimit
-                                  ).toFixed(2)}% delay / ${(
-                                    100 *
-                                    bank.stablePriceModel.stableGrowthLimit
-                                  ).toFixed(2)}% stable`}
-                                />
-                                <KeyValuePair
                                   label="Oracle: Conf Filter"
                                   value={`${(
                                     100 *
@@ -340,13 +340,13 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Net borrows in window / Net borrow limit per window quote"
-                                  value={`${toUiDecimals(
+                                  value={`$${toUiDecimals(
                                     bank.netBorrowsInWindow.toNumber(),
                                     6
-                                  )}$ / ${toUiDecimals(
+                                  )} / $${toUiDecimals(
                                     bank.netBorrowLimitPerWindowQuote.toNumber(),
                                     6
-                                  )}$`}
+                                  )}`}
                                 />
                                 <KeyValuePair
                                   label="Liquidation fee"
@@ -458,6 +458,27 @@ const Dashboard: NextPage = () => {
                                 )}`}
                               />
                               <KeyValuePair
+                                label="Last stable price updated"
+                                value={new Date(
+                                  1000 *
+                                    perpMarket.stablePriceModel.lastUpdateTimestamp.toNumber()
+                                ).toUTCString()}
+                              />
+                              <KeyValuePair
+                                label="Stable Price: delay interval"
+                                value={`${perpMarket.stablePriceModel.delayIntervalSeconds}s`}
+                              />
+                              <KeyValuePair
+                                label="Stable Price: growth limits"
+                                value={`${(
+                                  100 *
+                                  perpMarket.stablePriceModel.delayGrowthLimit
+                                ).toFixed(2)}% delay / ${(
+                                  100 *
+                                  perpMarket.stablePriceModel.stableGrowthLimit
+                                ).toFixed(2)}% stable`}
+                              />
+                              <KeyValuePair
                                 label="Open Interest"
                                 value={`${perpMarket.openInterest} lots`}
                               />
@@ -518,27 +539,6 @@ const Dashboard: NextPage = () => {
                                 )}`}
                               />
                               <KeyValuePair
-                                label="Last stable price updated"
-                                value={new Date(
-                                  1000 *
-                                    perpMarket.stablePriceModel.lastUpdateTimestamp.toNumber()
-                                ).toUTCString()}
-                              />
-                              <KeyValuePair
-                                label="Stable Price: delay interval"
-                                value={`${perpMarket.stablePriceModel.delayIntervalSeconds}s`}
-                              />
-                              <KeyValuePair
-                                label="Stable Price: growth limits"
-                                value={`${(
-                                  100 *
-                                  perpMarket.stablePriceModel.delayGrowthLimit
-                                ).toFixed(2)}% delay / ${(
-                                  100 *
-                                  perpMarket.stablePriceModel.stableGrowthLimit
-                                ).toFixed(2)}% stable`}
-                              />
-                              <KeyValuePair
                                 label="Oracle: Conf Filter"
                                 value={`${(
                                   100 *
@@ -555,24 +555,24 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Fee penalty"
-                                value={`${toUiDecimals(
+                                value={`$${toUiDecimals(
                                   perpMarket.feePenalty,
                                   6
-                                )}$`}
+                                )}`}
                               />
                               <KeyValuePair
                                 label="Settle fee flat"
-                                value={`${toUiDecimals(
+                                value={`$${toUiDecimals(
                                   perpMarket.settleFeeFlat,
                                   6
-                                )}$`}
+                                )}`}
                               />
                               <KeyValuePair
                                 label="Settle fee amount threshold"
-                                value={`${toUiDecimals(
+                                value={`$${toUiDecimals(
                                   perpMarket.settleFeeAmountThreshold,
                                   6
-                                )}$`}
+                                )}`}
                               />
                               <KeyValuePair
                                 label="Settle fee fraction low health"
