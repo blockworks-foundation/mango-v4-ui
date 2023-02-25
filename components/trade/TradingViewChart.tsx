@@ -152,6 +152,496 @@ const TradingViewChart = () => {
     }
   }, [selectedMarketName, spotOrPerp])
 
+  const createStablePriceButton = useCallback(() => {
+    const toggleStablePrice = (button: HTMLElement) => {
+      toggleShowStablePrice((prevState: boolean) => !prevState)
+      if (button.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
+        button.style.color = COLORS.FGD4[theme]
+      } else {
+        button.style.color = COLORS.ACTIVE[theme]
+      }
+    }
+
+    const button = tvWidgetRef?.current?.createButton()
+    if (!button) {
+      return
+    }
+    button.textContent = 'SP'
+    if (showStablePriceLocalStorage) {
+      button.style.color = COLORS.ACTIVE[theme]
+    } else {
+      button.style.color = COLORS.FGD4[theme]
+    }
+    button.setAttribute('title', t('tv-chart:toggle-stable-price'))
+    button.addEventListener('click', () => toggleStablePrice(button))
+  }, [showStablePriceLocalStorage, theme, t])
+
+  useEffect(() => {
+    if (showStablePrice !== showStablePriceLocalStorage) {
+      toggleShowStablePriceLocalStorage(showStablePrice)
+    }
+  }, [
+    showStablePrice,
+    showStablePriceLocalStorage,
+    toggleShowStablePriceLocalStorage,
+  ])
+
+  const drawStablePriceLine = useCallback(
+    (price: number) => {
+      if (!tvWidgetRef?.current?.chart()) return
+      const now = Date.now() / 1000
+      try {
+        const id = tvWidgetRef.current.chart().createShape(
+          { time: now, price: price },
+          {
+            shape: 'horizontal_line',
+            overrides: {
+              linecolor: COLORS.FGD4[theme],
+              linestyle: 1,
+              linewidth: 1,
+            },
+          }
+        )
+
+        if (id) {
+          return id
+        } else {
+          console.warn('failed to create stable price line')
+        }
+      } catch {
+        console.warn('failed to create stable price line')
+      }
+    },
+    [theme]
+  )
+
+  const removeStablePrice = useCallback((id: EntityId) => {
+    if (!tvWidgetRef?.current?.chart()) return
+    const set = mangoStore.getState().set
+
+    try {
+      tvWidgetRef.current.chart().removeEntity(id)
+    } catch (error) {
+      console.warn('stable price could not be removed')
+    }
+
+    set((s) => {
+      s.tradingView.stablePriceLine = undefined
+    })
+  }, [])
+
+  // remove stable price line when toggling off
+  useEffect(() => {
+    if (tvWidgetRef.current && chartReady) {
+      if (!showStablePrice && stablePriceLine) {
+        removeStablePrice(stablePriceLine)
+      }
+    }
+  }, [showStablePrice, chartReady, removeStablePrice, stablePriceLine])
+
+  // update stable price line when toggled on
+  useEffect(() => {
+    if (tvWidgetRef.current && chartReady) {
+      if (showStablePrice && stablePrice) {
+        const set = mangoStore.getState().set
+        set((s) => {
+          s.tradingView.stablePriceLine = drawStablePriceLine(stablePrice)
+        })
+      }
+    }
+  }, [stablePrice, chartReady, showStablePrice, drawStablePriceLine])
+
+  useEffect(() => {
+    if (showOrderLines !== showOrderLinesLocalStorage) {
+      toggleShowOrderLinesLocalStorage(showOrderLines)
+    }
+  }, [
+    showOrderLines,
+    showOrderLinesLocalStorage,
+    toggleShowOrderLinesLocalStorage,
+  ])
+
+  const deleteLines = useCallback(() => {
+    const set = mangoStore.getState().set
+    const orderLines = mangoStore.getState().tradingView.orderLines
+    if (orderLines.size > 0) {
+      orderLines?.forEach((value: IOrderLineAdapter, key: string | BN) => {
+        orderLines.get(key)?.remove()
+      })
+
+      set((state) => {
+        state.tradingView.orderLines = new Map()
+      })
+    }
+  }, [])
+
+  const getOrderDecimals = useCallback(() => {
+    const selectedMarket = mangoStore.getState().selectedMarket.current
+    let minOrderDecimals = 4
+    let tickSizeDecimals = 2
+    if (!selectedMarket) return [minOrderDecimals, tickSizeDecimals]
+    if (selectedMarket instanceof PerpMarket) {
+      minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
+      tickSizeDecimals = getDecimalCount(selectedMarket.tickSize)
+    } else {
+      const group = mangoStore.getState().group
+      const market = group?.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
+      if (market) {
+        minOrderDecimals = getDecimalCount(market.minOrderSize)
+        tickSizeDecimals = getDecimalCount(market.tickSize)
+      }
+    }
+    return [minOrderDecimals, tickSizeDecimals]
+  }, [])
+
+  const findSerum3MarketPkInOpenOrders = useCallback(
+    (o: Order): string | undefined => {
+      const openOrders = mangoStore.getState().mangoAccount.openOrders
+      let foundedMarketPk: string | undefined = undefined
+      for (const [marketPk, orders] of Object.entries(openOrders)) {
+        for (const order of orders) {
+          if (order.orderId.eq(o.orderId)) {
+            foundedMarketPk = marketPk
+            break
+          }
+        }
+        if (foundedMarketPk) {
+          break
+        }
+      }
+      return foundedMarketPk
+    },
+    []
+  )
+
+  const modifyOrder = useCallback(
+    async (o: PerpOrder | Order, price: number) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const actions = mangoStore.getState().actions
+      const baseSize = o.size
+      if (!group || !mangoAccount) return
+      try {
+        let tx = ''
+        if (o instanceof PerpOrder) {
+          tx = await client.modifyPerpOrder(
+            group,
+            mangoAccount,
+            o.perpMarketIndex,
+            o.orderId,
+            o.side,
+            price,
+            Math.abs(baseSize),
+            undefined, // maxQuoteQuantity
+            Date.now(),
+            PerpOrderType.limit,
+            undefined,
+            undefined
+          )
+        } else {
+          const marketPk = findSerum3MarketPkInOpenOrders(o)
+          if (!marketPk) return
+          const market = group.getSerum3MarketByExternalMarket(
+            new PublicKey(marketPk)
+          )
+          tx = await client.modifySerum3Order(
+            group,
+            o.orderId,
+            mangoAccount,
+            market.serumMarketExternal,
+            o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+            price,
+            baseSize,
+            Serum3SelfTradeBehavior.decrementTake,
+            Serum3OrderType.limit,
+            Date.now(),
+            10
+          )
+        }
+        actions.fetchOpenOrders()
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      } catch (e: any) {
+        console.error('Error canceling', e)
+        notify({
+          title: 'Unable to modify order',
+          description: e.message,
+          txid: e.txid,
+          type: 'error',
+        })
+      }
+    },
+    [findSerum3MarketPkInOpenOrders]
+  )
+
+  const cancelSpotOrder = useCallback(
+    async (o: Order) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const actions = mangoStore.getState().actions
+      if (!group || !mangoAccount) return
+      const marketPk = findSerum3MarketPkInOpenOrders(o)
+      if (!marketPk) return
+      const market = group.getSerum3MarketByExternalMarket(
+        new PublicKey(marketPk)
+      )
+      try {
+        const tx = await client.serum3CancelOrder(
+          group,
+          mangoAccount,
+          market!.serumMarketExternal,
+          o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+          o.orderId
+        )
+
+        actions.fetchOpenOrders()
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      } catch (e: any) {
+        console.error('Error canceling', e)
+        notify({
+          title: t('trade:cancel-order-error'),
+          description: e.message,
+          txid: e.txid,
+          type: 'error',
+        })
+      }
+    },
+    [t, findSerum3MarketPkInOpenOrders]
+  )
+
+  const cancelPerpOrder = useCallback(
+    async (o: PerpOrder) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const actions = mangoStore.getState().actions
+      if (!group || !mangoAccount) return
+      try {
+        const tx = await client.perpCancelOrder(
+          group,
+          mangoAccount,
+          o.perpMarketIndex,
+          o.orderId
+        )
+        actions.fetchOpenOrders()
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      } catch (e: any) {
+        console.error('Error canceling', e)
+        notify({
+          title: t('trade:cancel-order-error'),
+          description: e.message,
+          txid: e.txid,
+          type: 'error',
+        })
+      }
+    },
+    [t]
+  )
+
+  const drawLine = useCallback(
+    (order: Order | PerpOrder) => {
+      const side =
+        typeof order.side === 'string'
+          ? t(order.side)
+          : 'bid' in order.side
+          ? t('buy')
+          : t('sell')
+      const isLong = side.toLowerCase() === 'buy'
+      const isShort = side.toLowerCase() === 'sell'
+      const [minOrderDecimals, tickSizeDecimals] = getOrderDecimals()
+      const orderSizeUi: string = formatNumericValue(
+        order.size,
+        minOrderDecimals
+      )
+      if (!tvWidgetRef?.current?.chart()) return
+      return (
+        tvWidgetRef.current
+          .chart()
+          .createOrderLine({ disableUndo: false })
+          .onMove(function (this: IOrderLineAdapter) {
+            const currentOrderPrice = order.price
+            const updatedOrderPrice = this.getPrice()
+            const selectedMarketPrice =
+              mangoStore.getState().selectedMarket.markPrice
+            if (
+              (isLong && updatedOrderPrice > 1.05 * selectedMarketPrice) ||
+              (isShort && updatedOrderPrice < 0.95 * selectedMarketPrice)
+            ) {
+              tvWidgetRef.current?.showNoticeDialog({
+                title: t('tv-chart:outside-range'),
+                body:
+                  t('tv-chart:slippage-warning', {
+                    updatedOrderPrice: updatedOrderPrice,
+                    aboveBelow:
+                      side == 'buy' || side === 'long'
+                        ? t('above')
+                        : t('below'),
+                    selectedMarketPrice: selectedMarketPrice,
+                  }) +
+                  '<p><p>' +
+                  t('tv-chart:slippage-accept'),
+                callback: () => {
+                  this.setPrice(currentOrderPrice)
+                },
+              })
+            } else {
+              tvWidgetRef.current?.showConfirmDialog({
+                title: t('tv-chart:modify-order'),
+                body: t('tv-chart:modify-order-details', {
+                  marketName: selectedMarketName,
+                  orderSize: orderSizeUi,
+                  orderSide: side.toUpperCase(),
+                  currentOrderPrice: formatNumericValue(
+                    currentOrderPrice,
+                    tickSizeDecimals
+                  ),
+                  updatedOrderPrice: formatNumericValue(
+                    updatedOrderPrice,
+                    tickSizeDecimals
+                  ),
+                }),
+                callback: (res) => {
+                  if (res) {
+                    modifyOrder(order, updatedOrderPrice)
+                  } else {
+                    this.setPrice(currentOrderPrice)
+                  }
+                },
+              })
+            }
+          })
+          .onCancel(function () {
+            tvWidgetRef.current?.showConfirmDialog({
+              title: t('tv-chart:cancel-order'),
+              body: t('tv-chart:cancel-order-details', {
+                marketName: selectedMarketName,
+                orderSize: orderSizeUi,
+                orderSide: side.toUpperCase(),
+                orderPrice: formatNumericValue(order.price, tickSizeDecimals),
+              }),
+              callback: (res) => {
+                if (res) {
+                  if (order instanceof PerpOrder) {
+                    cancelPerpOrder(order)
+                  } else {
+                    cancelSpotOrder(order)
+                  }
+                }
+              },
+            })
+          })
+          .setPrice(order.price)
+          .setQuantity(orderSizeUi)
+          .setText(side.toUpperCase())
+          // .setTooltip(
+          //   order.perpTrigger?.clientOrderId
+          //     ? `${order.orderType} Order #: ${order.orderId}`
+          //     : `Order #: ${order.orderId}`
+          // )
+          .setBodyTextColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
+          .setQuantityTextColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
+          .setCancelButtonIconColor(COLORS.FGD4[theme])
+          .setBodyBorderColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
+          .setQuantityBorderColor(
+            isLong ? COLORS.UP[theme] : COLORS.DOWN[theme]
+          )
+          .setCancelButtonBorderColor(
+            isLong ? COLORS.UP[theme] : COLORS.DOWN[theme]
+          )
+          .setBodyBackgroundColor(COLORS.BKG1[theme])
+          .setQuantityBackgroundColor(COLORS.BKG1[theme])
+          .setCancelButtonBackgroundColor(COLORS.BKG1[theme])
+          .setLineColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
+          .setLineLength(3)
+          .setLineWidth(1)
+          .setLineStyle(1)
+      )
+    },
+    [
+      cancelPerpOrder,
+      cancelSpotOrder,
+      modifyOrder,
+      selectedMarketName,
+      t,
+      theme,
+      getOrderDecimals,
+    ]
+  )
+
+  const drawLinesForMarket = useCallback(
+    (openOrders: Record<string, Order[] | PerpOrder[]>) => {
+      const set = mangoStore.getState().set
+      const newOrderLines = new Map()
+      const oOrders = Object.entries(openOrders).map(([marketPk, orders]) => ({
+        orders,
+        marketPk,
+      }))
+      if (oOrders?.length) {
+        const selectedMarket = mangoStore.getState().selectedMarket.current
+        const selectedMarketPk =
+          selectedMarket instanceof Serum3Market
+            ? selectedMarket?.serumMarketExternal.toString()
+            : selectedMarket?.publicKey.toString()
+        for (const { orders, marketPk } of oOrders) {
+          if (marketPk === selectedMarketPk) {
+            for (const order of orders) {
+              newOrderLines.set(order.orderId.toString(), drawLine(order))
+            }
+          }
+        }
+      }
+      set((state) => {
+        state.tradingView.orderLines = newOrderLines
+      })
+    },
+    [drawLine]
+  )
+
+  const toggleOrderLines = useCallback(
+    (el: HTMLElement) => {
+      toggleShowOrderLines((prevState: boolean) => !prevState)
+      if (el.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
+        deleteLines()
+        el.style.color = COLORS.FGD4[theme]
+      } else {
+        const openOrders = mangoStore.getState().mangoAccount.openOrders
+        drawLinesForMarket(openOrders)
+        el.style.color = COLORS.ACTIVE[theme]
+      }
+    },
+    [drawLinesForMarket, deleteLines, theme]
+  )
+
+  const createOLButton = useCallback(() => {
+    const button = tvWidgetRef?.current?.createButton()
+    if (!button) {
+      return
+    }
+    button.textContent = 'OL'
+    if (showOrderLinesLocalStorage) {
+      button.style.color = COLORS.ACTIVE[theme]
+    } else {
+      button.style.color = COLORS.FGD4[theme]
+    }
+    button.setAttribute('title', t('tv-chart:toggle-order-line'))
+    button.addEventListener('click', () => toggleOrderLines(button))
+  }, [t, theme, toggleOrderLines, showOrderLinesLocalStorage])
+
   useEffect(() => {
     if (window) {
       let chartStyleOverrides = {
@@ -251,139 +741,31 @@ const TradingViewChart = () => {
         }
         if (showStablePrice && stablePrice) {
           const set = mangoStore.getState().set
+          const elementId = drawStablePriceLine(stablePrice)
           set((s) => {
-            s.tradingView.stablePriceLine = drawStablePriceLine(stablePrice)
+            s.tradingView.stablePriceLine = elementId
           })
         }
         setChartReady(true)
       })
       //eslint-disable-next-line
     }
-  }, [theme, isMobile, defaultProps, spotOrPerp])
-
-  const createStablePriceButton = () => {
-    const button = tvWidgetRef?.current?.createButton()
-    if (!button) {
-      return
-    }
-    button.textContent = 'SP'
-    if (showStablePriceLocalStorage) {
-      button.style.color = COLORS.ACTIVE[theme]
-    } else {
-      button.style.color = COLORS.FGD4[theme]
-    }
-    button.setAttribute('title', t('tv-chart:toggle-stable-price'))
-    button.addEventListener('click', toggleStablePrice)
-  }
-
-  function toggleStablePrice(this: HTMLElement) {
-    toggleShowStablePrice((prevState: boolean) => !prevState)
-    if (this.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
-      this.style.color = COLORS.FGD4[theme]
-    } else {
-      this.style.color = COLORS.ACTIVE[theme]
-    }
-  }
-
-  useEffect(() => {
-    if (showStablePrice !== showStablePriceLocalStorage) {
-      toggleShowStablePriceLocalStorage(showStablePrice)
-    }
-  }, [showStablePrice])
-
-  useEffect(() => {
-    if (tvWidgetRef.current && chartReady) {
-      if (stablePriceLine) {
-        removeStablePrice(stablePriceLine)
-      }
-      if (showStablePrice && stablePrice) {
-        const set = mangoStore.getState().set
-        set((s) => {
-          s.tradingView.stablePriceLine = drawStablePriceLine(stablePrice)
-        })
-      }
-    }
-  }, [stablePrice, showStablePrice, chartReady, tvWidgetRef])
-
-  function drawStablePriceLine(price: number) {
-    if (!tvWidgetRef?.current?.chart()) return
-    const newStablePrice: Map<string, EntityId> = new Map()
-    const now = Date.now() / 1000
-    try {
-      const id = tvWidgetRef.current.chart().createShape(
-        { time: now, price: price },
-        {
-          shape: 'horizontal_line',
-          overrides: {
-            linecolor: COLORS.FGD4[theme],
-            linestyle: 1,
-            linewidth: 1,
-          },
-        }
-      )
-
-      if (id) {
-        try {
-          newStablePrice.set(`${now}${price}`, id)
-        } catch (error) {
-          console.warn('failed to set stable price line')
-        }
-      } else {
-        console.warn('failed to create stable price line')
-      }
-    } catch {
-      console.warn('failed to create stable price line')
-    }
-    return newStablePrice
-  }
-
-  const removeStablePrice = (stablePrice: Map<string, EntityId>) => {
-    if (!tvWidgetRef?.current?.chart()) return
-    const set = mangoStore.getState().set
-    for (const val of stablePrice.values()) {
-      try {
-        tvWidgetRef.current.chart().removeEntity(val)
-      } catch (error) {
-        console.warn('stable price could not be removed')
-      }
-    }
-    set((s) => {
-      s.tradingView.stablePriceLine = new Map()
-    })
-  }
-
-  const createOLButton = () => {
-    const button = tvWidgetRef?.current?.createButton()
-    if (!button) {
-      return
-    }
-    button.textContent = 'OL'
-    if (showOrderLinesLocalStorage) {
-      button.style.color = COLORS.ACTIVE[theme]
-    } else {
-      button.style.color = COLORS.FGD4[theme]
-    }
-    button.setAttribute('title', t('tv-chart:toggle-order-line'))
-    button.addEventListener('click', toggleOrderLines)
-  }
-
-  function toggleOrderLines(this: HTMLElement) {
-    toggleShowOrderLines((prevState: boolean) => !prevState)
-    if (this.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
-      deleteLines()
-      this.style.color = COLORS.FGD4[theme]
-    } else {
-      const openOrders = mangoStore.getState().mangoAccount.openOrders
-      drawLinesForMarket(openOrders)
-      this.style.color = COLORS.ACTIVE[theme]
-    }
-  }
-
-  useEffect(() => {
-    if (showOrderLines !== showOrderLinesLocalStorage) {
-      toggleShowOrderLinesLocalStorage(showOrderLines)
-    }
-  }, [showOrderLines])
+  }, [
+    createOLButton,
+    createStablePriceButton,
+    selectedMarket,
+    theme,
+    spotOrPerp,
+    defaultProps,
+    deleteLines,
+    drawLinesForMarket,
+    showOrderLines,
+    showStablePrice,
+    stablePrice,
+    drawStablePriceLine,
+    setChartReady,
+    isMobile,
+  ])
 
   // update order lines if a user's open orders change
   useEffect(() => {
@@ -441,336 +823,7 @@ const TradingViewChart = () => {
       )
     }
     return subscription
-  }, [chartReady, showOrderLines])
-
-  const drawLinesForMarket = (
-    openOrders: Record<string, Order[] | PerpOrder[]>
-  ) => {
-    const set = mangoStore.getState().set
-    const newOrderLines = new Map()
-    const oOrders = Object.entries(openOrders).map(([marketPk, orders]) => ({
-      orders,
-      marketPk,
-    }))
-    if (oOrders?.length) {
-      const selectedMarket = mangoStore.getState().selectedMarket.current
-      const selectedMarketPk =
-        selectedMarket instanceof Serum3Market
-          ? selectedMarket?.serumMarketExternal.toString()
-          : selectedMarket?.publicKey.toString()
-      for (const { orders, marketPk } of oOrders) {
-        if (marketPk === selectedMarketPk) {
-          for (const order of orders) {
-            newOrderLines.set(order.orderId.toString(), drawLine(order))
-          }
-        }
-      }
-    }
-    set((state) => {
-      state.tradingView.orderLines = newOrderLines
-    })
-  }
-
-  const deleteLines = () => {
-    const set = mangoStore.getState().set
-    const orderLines = mangoStore.getState().tradingView.orderLines
-    if (orderLines.size > 0) {
-      orderLines?.forEach((value: IOrderLineAdapter, key: string | BN) => {
-        orderLines.get(key)?.remove()
-      })
-
-      set((state) => {
-        state.tradingView.orderLines = new Map()
-      })
-    }
-  }
-
-  function getOrderDecimals() {
-    const selectedMarket = mangoStore.getState().selectedMarket.current
-    let minOrderDecimals = 4
-    let tickSizeDecimals = 2
-    if (!selectedMarket) return [minOrderDecimals, tickSizeDecimals]
-    if (selectedMarket instanceof PerpMarket) {
-      minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
-      tickSizeDecimals = getDecimalCount(selectedMarket.tickSize)
-    } else {
-      const group = mangoStore.getState().group
-      const market = group?.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
-      )
-      if (market) {
-        minOrderDecimals = getDecimalCount(market.minOrderSize)
-        tickSizeDecimals = getDecimalCount(market.tickSize)
-      }
-    }
-    return [minOrderDecimals, tickSizeDecimals]
-  }
-
-  function drawLine(order: Order | PerpOrder) {
-    const side =
-      typeof order.side === 'string'
-        ? t(order.side)
-        : 'bid' in order.side
-        ? t('buy')
-        : t('sell')
-    const isLong = side.toLowerCase() === 'buy'
-    const isShort = side.toLowerCase() === 'sell'
-    const [minOrderDecimals, tickSizeDecimals] = getOrderDecimals()
-    const orderSizeUi: string = formatNumericValue(order.size, minOrderDecimals)
-    if (!tvWidgetRef?.current?.chart()) return
-    return (
-      tvWidgetRef.current
-        .chart()
-        .createOrderLine({ disableUndo: false })
-        .onMove(function (this: IOrderLineAdapter) {
-          const currentOrderPrice = order.price
-          const updatedOrderPrice = this.getPrice()
-          const selectedMarketPrice =
-            mangoStore.getState().selectedMarket.markPrice
-          if (
-            (isLong && updatedOrderPrice > 1.05 * selectedMarketPrice) ||
-            (isShort && updatedOrderPrice < 0.95 * selectedMarketPrice)
-          ) {
-            tvWidgetRef.current?.showNoticeDialog({
-              title: t('tv-chart:outside-range'),
-              body:
-                t('tv-chart:slippage-warning', {
-                  updatedOrderPrice: updatedOrderPrice,
-                  aboveBelow:
-                    side == 'buy' || side === 'long' ? t('above') : t('below'),
-                  selectedMarketPrice: selectedMarketPrice,
-                }) +
-                '<p><p>' +
-                t('tv-chart:slippage-accept'),
-              callback: () => {
-                this.setPrice(currentOrderPrice)
-              },
-            })
-          } else {
-            tvWidgetRef.current?.showConfirmDialog({
-              title: t('tv-chart:modify-order'),
-              body: t('tv-chart:modify-order-details', {
-                marketName: selectedMarketName,
-                orderSize: orderSizeUi,
-                orderSide: side.toUpperCase(),
-                currentOrderPrice: formatNumericValue(
-                  currentOrderPrice,
-                  tickSizeDecimals
-                ),
-                updatedOrderPrice: formatNumericValue(
-                  updatedOrderPrice,
-                  tickSizeDecimals
-                ),
-              }),
-              callback: (res) => {
-                if (res) {
-                  modifyOrder(order, updatedOrderPrice)
-                } else {
-                  this.setPrice(currentOrderPrice)
-                }
-              },
-            })
-          }
-        })
-        .onCancel(function () {
-          tvWidgetRef.current?.showConfirmDialog({
-            title: t('tv-chart:cancel-order'),
-            body: t('tv-chart:cancel-order-details', {
-              marketName: selectedMarketName,
-              orderSize: orderSizeUi,
-              orderSide: side.toUpperCase(),
-              orderPrice: formatNumericValue(order.price, tickSizeDecimals),
-            }),
-            callback: (res) => {
-              if (res) {
-                if (order instanceof PerpOrder) {
-                  cancelPerpOrder(order)
-                } else {
-                  cancelSpotOrder(order)
-                }
-              }
-            },
-          })
-        })
-        .setPrice(order.price)
-        .setQuantity(orderSizeUi)
-        .setText(side.toUpperCase())
-        // .setTooltip(
-        //   order.perpTrigger?.clientOrderId
-        //     ? `${order.orderType} Order #: ${order.orderId}`
-        //     : `Order #: ${order.orderId}`
-        // )
-        .setBodyTextColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
-        .setQuantityTextColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
-        .setCancelButtonIconColor(COLORS.FGD4[theme])
-        .setBodyBorderColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
-        .setQuantityBorderColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
-        .setCancelButtonBorderColor(
-          isLong ? COLORS.UP[theme] : COLORS.DOWN[theme]
-        )
-        .setBodyBackgroundColor(COLORS.BKG1[theme])
-        .setQuantityBackgroundColor(COLORS.BKG1[theme])
-        .setCancelButtonBackgroundColor(COLORS.BKG1[theme])
-        .setLineColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
-        .setLineLength(3)
-        .setLineWidth(1)
-        .setLineStyle(1)
-    )
-  }
-
-  const modifyOrder = useCallback(
-    async (o: PerpOrder | Order, price: number) => {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const actions = mangoStore.getState().actions
-      const baseSize = o.size
-      if (!group || !mangoAccount) return
-      try {
-        let tx = ''
-        if (o instanceof PerpOrder) {
-          tx = await client.modifyPerpOrder(
-            group,
-            mangoAccount,
-            o.perpMarketIndex,
-            o.orderId,
-            o.side,
-            price,
-            Math.abs(baseSize),
-            undefined, // maxQuoteQuantity
-            Date.now(),
-            PerpOrderType.limit,
-            undefined,
-            undefined
-          )
-        } else {
-          const marketPk = findSerum3MarketPkInOpenOrders(o)
-          if (!marketPk) return
-          const market = group.getSerum3MarketByExternalMarket(
-            new PublicKey(marketPk)
-          )
-          tx = await client.modifySerum3Order(
-            group,
-            o.orderId,
-            mangoAccount,
-            market.serumMarketExternal,
-            o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-            price,
-            baseSize,
-            Serum3SelfTradeBehavior.decrementTake,
-            Serum3OrderType.limit,
-            Date.now(),
-            10
-          )
-        }
-        actions.fetchOpenOrders()
-        notify({
-          type: 'success',
-          title: 'Transaction successful',
-          txid: tx,
-        })
-      } catch (e: any) {
-        console.error('Error canceling', e)
-        notify({
-          title: 'Unable to modify order',
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
-      }
-    },
-    [t]
-  )
-
-  const cancelSpotOrder = useCallback(
-    async (o: Order) => {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const actions = mangoStore.getState().actions
-      if (!group || !mangoAccount) return
-      const marketPk = findSerum3MarketPkInOpenOrders(o)
-      if (!marketPk) return
-      const market = group.getSerum3MarketByExternalMarket(
-        new PublicKey(marketPk)
-      )
-      try {
-        const tx = await client.serum3CancelOrder(
-          group,
-          mangoAccount,
-          market!.serumMarketExternal,
-          o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-          o.orderId
-        )
-
-        actions.fetchOpenOrders()
-        notify({
-          type: 'success',
-          title: 'Transaction successful',
-          txid: tx,
-        })
-      } catch (e: any) {
-        console.error('Error canceling', e)
-        notify({
-          title: t('trade:cancel-order-error'),
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
-      }
-    },
-    [t]
-  )
-
-  const cancelPerpOrder = useCallback(
-    async (o: PerpOrder) => {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const actions = mangoStore.getState().actions
-      if (!group || !mangoAccount) return
-      try {
-        const tx = await client.perpCancelOrder(
-          group,
-          mangoAccount,
-          o.perpMarketIndex,
-          o.orderId
-        )
-        actions.fetchOpenOrders()
-        notify({
-          type: 'success',
-          title: 'Transaction successful',
-          txid: tx,
-        })
-      } catch (e: any) {
-        console.error('Error canceling', e)
-        notify({
-          title: t('trade:cancel-order-error'),
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
-      }
-    },
-    [t]
-  )
-
-  const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
-    const openOrders = mangoStore.getState().mangoAccount.openOrders
-    let foundedMarketPk: string | undefined = undefined
-    for (const [marketPk, orders] of Object.entries(openOrders)) {
-      for (const order of orders) {
-        if (order.orderId.eq(o.orderId)) {
-          foundedMarketPk = marketPk
-          break
-        }
-      }
-      if (foundedMarketPk) {
-        break
-      }
-    }
-    return foundedMarketPk
-  }
+  }, [chartReady, showOrderLines, deleteLines, drawLinesForMarket])
 
   return (
     <div id={defaultProps.container as string} className="tradingview-chart" />

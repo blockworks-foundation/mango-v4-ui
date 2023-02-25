@@ -33,10 +33,6 @@ export function useLocalStorageStringState(
       if (!localStorageListeners[key]) {
         localStorageListeners[key] = []
       }
-      const changed = state !== newState
-      if (!changed) {
-        return
-      }
 
       if (newState === null) {
         localStorage.removeItem(key)
@@ -47,7 +43,7 @@ export function useLocalStorageStringState(
         listener(key + '\n' + newState)
       )
     },
-    [state, key]
+    [key]
   )
 
   return [state, setState]
@@ -64,8 +60,15 @@ export default function useLocalStorageState(
     JSON.stringify(defaultState)
   )
 
+  const setState = useCallback(
+    (newState: string | number | object) => {
+      setStringState(JSON.stringify(newState))
+    },
+    [setStringState]
+  )
+
   return [
     useMemo(() => stringState && JSON.parse(stringState), [stringState]),
-    (newState) => setStringState(JSON.stringify(newState)),
+    setState,
   ]
 }
