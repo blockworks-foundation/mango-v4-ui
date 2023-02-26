@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getNextBarTime } from './helpers'
 
 let subscriptionItem: any = {}

@@ -17,6 +17,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { DateChangeCallBack } from 'react-nice-dates'
 
 interface AdvancedFilters {
   symbol: string[]
@@ -198,8 +199,8 @@ const FiltersForm = ({
 }: FiltersFormProps) => {
   const { t } = useTranslation(['common', 'activity'])
   const { group } = useMangoGroup()
-  const [dateFrom, setDateFrom] = useState<Date | null>(null)
-  const [dateTo, setDateTo] = useState<Date | null>(null)
+  const [dateFrom, setDateFrom] = useState<Date>()
+  const [dateTo, setDateTo] = useState<Date>()
   const [valueFrom, setValueFrom] = useState(advancedFilters['usd-lower'] || '')
   const [valueTo, setValueTo] = useState(advancedFilters['usd-upper'] || '')
 
@@ -298,9 +299,9 @@ const FiltersForm = ({
       <div className="my-4 w-full">
         <MangoDateRangePicker
           startDate={dateFrom}
-          setStartDate={setDateFrom}
+          setStartDate={setDateFrom as DateChangeCallBack}
           endDate={dateTo}
-          setEndDate={setDateTo}
+          setEndDate={setDateTo as DateChangeCallBack}
         />
       </div>
       <div className="flex items-end pb-6">

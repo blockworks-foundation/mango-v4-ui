@@ -2,7 +2,7 @@ import { ChangeEvent, forwardRef } from 'react'
 
 interface InputProps {
   type: string
-  value: any
+  value: string
   onChange: (e: ChangeEvent<HTMLInputElement>) => void
   maxLength?: number
   className?: string

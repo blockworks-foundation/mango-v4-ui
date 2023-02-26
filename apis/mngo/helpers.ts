@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MANGO_DATA_API_URL } from 'utils/constants'
 
 // Make requests to mngo.cloud API

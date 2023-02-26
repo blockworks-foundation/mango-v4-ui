@@ -44,7 +44,7 @@ const TokenItem = ({
   useMargin,
   type,
 }: {
-  token: Token
+  token: TokenInfoWithAmounts
   onSubmit: (x: string) => void
   useMargin: boolean
   type: 'input' | 'output' | undefined
@@ -110,6 +110,11 @@ const TokenItem = ({
 
 // const popularTokenSymbols = ['USDC', 'SOL', 'USDT', 'MNGO', 'BTC']
 
+interface TokenInfoWithAmounts extends Token {
+  amount?: Decimal
+  amountWithBorrow?: Decimal
+}
+
 const SwapFormTokenList = ({
   onClose,
   onTokenSelect,
@@ -147,7 +152,7 @@ const SwapFormTokenList = ({
     return () => window.removeEventListener('keydown', onEscape)
   }, [onClose])
 
-  const tokenInfos = useMemo(() => {
+  const tokenInfos: TokenInfoWithAmounts[] = useMemo(() => {
     if (
       mangoTokens?.length &&
       group &&

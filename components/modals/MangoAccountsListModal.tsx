@@ -13,7 +13,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { IconButton, LinkButton } from '../shared/Button'
-import { useLocalStorageStringState } from '../../hooks/useLocalStorageState'
+import useLocalStorageState from '../../hooks/useLocalStorageState'
 import { LAST_ACCOUNT_KEY } from '../../utils/constants'
 import { useTranslation } from 'next-i18next'
 import { retryFn } from '../../utils'
@@ -43,7 +43,7 @@ const MangoAccountsListModal = ({
   const actions = mangoStore.getState().actions
   const { group } = useMangoGroup()
   const [showNewAccountForm, setShowNewAccountForm] = useState(false)
-  const [, setLastAccountViewed] = useLocalStorageStringState(LAST_ACCOUNT_KEY)
+  const [, setLastAccountViewed] = useLocalStorageState(LAST_ACCOUNT_KEY)
   const router = useRouter()
   const { asPath } = useRouter()
   const [submitting, setSubmitting] = useState('')

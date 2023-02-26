@@ -106,7 +106,7 @@ const PnlHistoryModal = ({
             <>
               <div className="thin-scroll overflow-auto pr-1">
                 <div className="border-b border-th-bkg-3">
-                  {dailyValues.map((v: any) => (
+                  {dailyValues.map((v) => (
                     <div
                       className="flex items-center justify-between border-t border-th-bkg-3 p-3"
                       key={v.time + v.pnlChange}

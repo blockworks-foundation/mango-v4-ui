@@ -13,7 +13,7 @@ import React, {
 } from 'react'
 import mangoStore from '@store/mangoStore'
 import { notify } from 'utils/notifications'
-import { useLocalStorageStringState } from 'hooks/useLocalStorageState'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 
 interface EnhancedWalletContextState {
   displayedWallets: Wallet[]
@@ -66,7 +66,7 @@ export default function EnhancedWalletProvider({
   )
 
   const [preselectedWalletName, setPreselectedWalletName] =
-    useLocalStorageStringState('preselectedWalletName', null)
+    useLocalStorageState('preselectedWalletName', null)
 
   useEffect(() => {
     if (wallet) {

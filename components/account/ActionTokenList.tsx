@@ -37,7 +37,7 @@ const ActionTokenList = ({
         {banks?.length ? (
           banks
             .filter((b: BankParams) => !!b)
-            .map((b: any) => {
+            .map((b) => {
               return (
                 <ActionTokenItem
                   bank={b.bank}

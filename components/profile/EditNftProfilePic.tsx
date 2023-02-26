@@ -8,7 +8,7 @@ import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { notify } from 'utils/notifications'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 
-const ImgWithLoader = (props: any) => {
+const ImgWithLoader = (props: { className: string; src: string }) => {
   const [isLoading, setIsLoading] = useState(true)
   return (
     <div className="relative">

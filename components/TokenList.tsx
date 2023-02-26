@@ -430,14 +430,12 @@ const ActionsMenu = ({
 
   const handleSwap = useCallback(() => {
     const tokenInfo = mangoTokens.find(
-      (t: any) => t.address === bank.mint.toString()
+      (t) => t.address === bank.mint.toString()
     )
     const group = mangoStore.getState().group
     if (balance && balance > 0) {
       if (tokenInfo?.symbol === 'SOL') {
-        const usdcTokenInfo = mangoTokens.find(
-          (t: any) => t.address === USDC_MINT
-        )
+        const usdcTokenInfo = mangoTokens.find((t) => t.address === USDC_MINT)
         const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
         set((s) => {
           s.swap.inputBank = usdcBank
@@ -451,7 +449,7 @@ const ActionsMenu = ({
     } else {
       if (tokenInfo?.symbol === 'USDC') {
         const solTokenInfo = mangoTokens.find(
-          (t: any) => t.address === WRAPPED_SOL_MINT.toString()
+          (t) => t.address === WRAPPED_SOL_MINT.toString()
         )
         const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
         set((s) => {

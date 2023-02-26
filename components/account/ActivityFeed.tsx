@@ -14,9 +14,10 @@ import { LiquidationActivity } from 'types'
 
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
-  const [showActivityDetail, setShowActivityDetail] = useState(null)
+  const [showActivityDetail, setShowActivityDetail] =
+    useState<LiquidationActivity>()
 
-  const handleShowActivityDetails = (activity: any) => {
+  const handleShowActivityDetails = (activity: LiquidationActivity) => {
     setShowActivityDetail(activity)
   }
 
@@ -40,7 +41,7 @@ const ActivityDetails = ({
   setShowActivityDetail,
 }: {
   activity: LiquidationActivity
-  setShowActivityDetail: (x: any) => void
+  setShowActivityDetail: (x: LiquidationActivity | undefined) => void
 }) => {
   const { t } = useTranslation(['common', 'activity', 'settings'])
   const [preferredExplorer] = useLocalStorageState(
@@ -62,7 +63,7 @@ const ActivityDetails = ({
       <div className="flex items-center p-6">
         <IconButton
           className="mr-4"
-          onClick={() => setShowActivityDetail(null)}
+          onClick={() => setShowActivityDetail(undefined)}
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>

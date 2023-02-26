@@ -1,5 +1,4 @@
 import { AccountInfo, PublicKey, TransactionInstruction } from '@solana/web3.js'
-import Decimal from 'decimal.js'
 
 export declare type SideType = typeof Side.Ask | typeof Side.Bid
 export declare const Side: {
@@ -138,17 +137,15 @@ export type Routes = {
   cached: boolean
 }
 
-export interface Token {
-  chainId: number // 101,
-  address: string // 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-  symbol: string // e.g. 'USDC',
-  name: string // 'Wrapped USDC',
-  decimals: number // 6,
-  logoURI: string // 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/BXXkv6z8ykpG1yuvUDPgh732wzVHB69RnB9YgSYh3itW/logo.png',
-  tags: string[] // [ 'stablecoin' ]
-  extensions?: {
-    coingeckoId: string
+export type Token = {
+  address: string
+  chainId: number
+  decimals: number
+  name: string
+  symbol: string
+  logoURI: string
+  extensions: {
+    coingeckoId?: string
   }
-  amount?: Decimal
-  amountWithBorrow?: Decimal
+  tags: string[]
 }

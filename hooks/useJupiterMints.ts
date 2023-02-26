@@ -9,14 +9,14 @@ const fetchJupiterTokens = async (group: Group) => {
   const url =
     CLUSTER === 'devnet'
       ? 'https://api.jup.ag/api/tokens/devnet'
-      : 'https://cache.jup.ag/tokens'
+      : 'https://token.jup.ag/strict'
   const response = await fetch(url)
-  const data = await response.json()
+  const data: Token[] = await response.json()
 
-  const bankMints = Array.from(group!.banksMapByName.values()).map((b) =>
+  const bankMints = Array.from(group.banksMapByName.values()).map((b) =>
     b[0].mint.toString()
   )
-  const mangoTokens = data.filter((t: any) => bankMints.includes(t.address))
+  const mangoTokens = data.filter((t) => bankMints.includes(t.address))
 
   return {
     mangoTokens,
@@ -31,7 +31,7 @@ const useJupiterMints = (): {
 } => {
   const { group } = useMangoGroup()
 
-  const res = useQuery<{ mangoTokens: Token[]; jupiterTokens: Token[] }, Error>(
+  const res = useQuery(
     ['jupiter-mango-tokens'],
     () => fetchJupiterTokens(group!),
     {
