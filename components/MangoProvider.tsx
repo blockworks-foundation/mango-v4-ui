@@ -45,6 +45,12 @@ const HydrateStore = () => {
     }
   }, [mangoAccountAddress])
 
+  // reload and parse market fills from the event queue
+  useInterval(async () => {
+    const actions = mangoStore.getState().actions
+    actions.loadMarketFills()
+  }, 6000)
+
   // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
   // is empty after opening its first time, preventing subsequent subscriptions from receiving responses.
   // This is a hack to prevent the list from every getting empty

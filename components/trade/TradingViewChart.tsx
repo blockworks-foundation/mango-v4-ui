@@ -11,7 +11,6 @@ import {
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
 import {
-  CHART_DATA_FEED,
   DEFAULT_MARKET_NAME,
   SHOW_ORDER_LINES_KEY,
   SHOW_STABLE_PRICE_KEY,
@@ -92,7 +91,6 @@ const TradingViewChart = () => {
       interval: '60' as ResolutionString,
       theme: 'Dark',
       container: 'tv_chart_container',
-      datafeedUrl: CHART_DATA_FEED,
       libraryPath: '/charting_library/',
       fullscreen: false,
       autosize: true,
