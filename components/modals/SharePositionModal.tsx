@@ -16,10 +16,12 @@ interface SharePositionModalProps {
 
 type ModalCombinedProps = SharePositionModalProps & ModalProps
 
-async function copyToClipboard(image: any) {
+async function copyToClipboard(image: HTMLCanvasElement) {
   try {
-    image.toBlob((blob: any) => {
-      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+    image.toBlob((blob: Blob | null) => {
+      if (blob) {
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+      }
     }, 'image/png')
   } catch (error) {
     console.error(error)

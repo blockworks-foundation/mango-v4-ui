@@ -68,7 +68,7 @@ const useScreenshot: () => [
  * @param {string} extension
  * @param  {string[]} parts of file name
  */
-const createFileName = (extension = '', ...names: any) => {
+const createFileName = (extension = '', ...names: string[]) => {
   if (!extension) {
     return ''
   }
