@@ -83,62 +83,58 @@ const SharePositionModal = ({
       <div className="fixed inset-0 flex flex-col items-center justify-center text-center">
         <Dialog.Panel className="relative flex flex-col items-center">
           <div
-            className="relative flex h-[338px] w-[600px] items-center overflow-hidden border border-slate-700 bg-gradient-to-b from-slate-900 to-black pt-6"
+            className="relative h-[338px] w-[600px] overflow-hidden border border-slate-700 bg-gradient-to-b from-slate-900 to-black pt-6"
             ref={ref}
           >
-            <div className="absolute top-6 left-6 flex items-center">
-              <img
-                className="h-7 w-auto flex-shrink-0"
-                src="/logos/logo-with-text.svg"
-                alt="Mango"
-              />
-            </div>
-            <div className="flex w-full items-center justify-between">
-              <div className="text-left">
-                <div className="px-8">
-                  <div className="mb-4 flex items-center">
-                    <p
-                      className={`font-display text-base uppercase text-th-fgd-1 ${
-                        side === 'long' ? 'text-th-up' : 'text-th-down'
-                      }`}
-                    >
-                      {side}
-                    </p>
-                    <span className="mx-2 text-base text-th-fgd-4">|</span>
-                    <p className="font-display text-base text-white">
-                      {market.name}
-                    </p>
-                  </div>
-                  <div
-                    className={`mb-4 font-display text-5xl ${
-                      roi >= 0 ? 'text-th-up' : 'text-th-down'
+            <div className="w-1/2 text-left">
+              <div className="px-8">
+                <img
+                  className="mb-8 h-7 w-auto flex-shrink-0"
+                  src="/logos/logo-with-text.svg"
+                  alt="Mango"
+                />
+                <div className="mb-4 flex items-center">
+                  <p
+                    className={`font-display text-base uppercase text-th-fgd-1 ${
+                      side === 'long' ? 'text-th-up' : 'text-th-down'
                     }`}
                   >
-                    {roi >= 0 ? '+' : ''}
-                    {roi.toFixed(2)}%
-                  </div>
-                  <div className="flex justify-between">
-                    <p className="mb-2 text-base text-gray-500">
-                      {t('entry-price')}
-                    </p>
-                    <p className="ml-2 font-mono text-base text-white">
-                      {formatNumericValue(
-                        entryPrice,
-                        getDecimalCount(market.tickSize)
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex justify-between">
-                    <p className="text-base text-gray-500">
-                      {t('current-price')}
-                    </p>
-                    <p className="ml-2 font-mono text-base text-white">
-                      {formatNumericValue(
-                        market.uiPrice,
-                        getDecimalCount(market.tickSize)
-                      )}
-                    </p>
-                  </div>
+                    {side}
+                  </p>
+                  <span className="mx-2 text-base text-th-fgd-4">|</span>
+                  <p className="font-display text-base text-white">
+                    {market.name}
+                  </p>
+                </div>
+                <div
+                  className={`mb-4 font-display text-5xl ${
+                    roi >= 0 ? 'text-th-up' : 'text-th-down'
+                  }`}
+                >
+                  {roi >= 0 ? '+' : ''}
+                  {roi.toFixed(2)}%
+                </div>
+                <div className="flex justify-between">
+                  <p className="mb-2 text-base text-gray-500">
+                    {t('entry-price')}
+                  </p>
+                  <p className="ml-2 font-mono text-base text-white">
+                    {formatNumericValue(
+                      entryPrice,
+                      getDecimalCount(market.tickSize)
+                    )}
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-base text-gray-500">
+                    {t('current-price')}
+                  </p>
+                  <p className="ml-2 font-mono text-base text-white">
+                    {formatNumericValue(
+                      market.uiPrice,
+                      getDecimalCount(market.tickSize)
+                    )}
+                  </p>
                 </div>
               </div>
             </div>

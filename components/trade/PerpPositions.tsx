@@ -106,7 +106,7 @@ const PerpPositions = () => {
                       'pnl'
                     )}`}</Th>
                     <Th className="text-right">{t('pnl')}</Th>
-                    {isUnownedAccount ? <Th /> : null}
+                    {!isUnownedAccount ? <Th /> : null}
                   </TrHead>
                 </thead>
                 <tbody>
@@ -192,7 +192,7 @@ const PerpPositions = () => {
                         >
                           <FormatNumericValue value={cummulativePnl} isUsd />
                         </Td>
-                        {isUnownedAccount ? (
+                        {!isUnownedAccount ? (
                           <Td>
                             <div className="flex items-center justify-end space-x-2">
                               <Button
