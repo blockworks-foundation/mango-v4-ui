@@ -93,11 +93,6 @@ const RecentTrades = () => {
     }
   )
 
-  console.log(
-    'selectedMarket instanceof PerpMarket',
-    selectedMarket instanceof PerpMarket
-  )
-
   useEffect(() => {
     const actions = mangoStore.getState().actions
     if (selectedMarket) {

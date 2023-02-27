@@ -189,6 +189,10 @@ const TradingViewChart = () => {
       if (!tvWidgetRef?.current?.chart()) return
       const now = Date.now() / 1000
       try {
+        const oldId = mangoStore.getState().tradingView.stablePriceLine
+        if (oldId) {
+          tvWidgetRef.current.chart().removeEntity(oldId)
+        }
         const id = tvWidgetRef.current.chart().createShape(
           { time: now, price: price },
           {
@@ -726,24 +730,26 @@ const TradingViewChart = () => {
         },
       }
 
+      console.log('creating new chart')
+
       const tvWidget = new widget(widgetOptions)
       tvWidgetRef.current = tvWidget
 
       tvWidgetRef.current.onChartReady(function () {
         createOLButton()
         createStablePriceButton()
-        if (showOrderLines) {
-          const openOrders = mangoStore.getState().mangoAccount.openOrders
-          deleteLines()
-          drawLinesForMarket(openOrders)
-        }
-        if (showStablePrice && stablePrice) {
-          const set = mangoStore.getState().set
-          const elementId = drawStablePriceLine(stablePrice)
-          set((s) => {
-            s.tradingView.stablePriceLine = elementId
-          })
-        }
+        // if (showOrderLines) {
+        //   const openOrders = mangoStore.getState().mangoAccount.openOrders
+        //   deleteLines()
+        //   drawLinesForMarket(openOrders)
+        // }
+        // if (showStablePrice && stablePrice) {
+        //   const set = mangoStore.getState().set
+        //   const elementId = drawStablePriceLine(stablePrice)
+        //   set((s) => {
+        //     s.tradingView.stablePriceLine = elementId
+        //   })
+        // }
         setChartReady(true)
       })
       //eslint-disable-next-line
@@ -759,7 +765,7 @@ const TradingViewChart = () => {
     drawLinesForMarket,
     showOrderLines,
     showStablePrice,
-    stablePrice,
+    // stablePrice,
     drawStablePriceLine,
     setChartReady,
     isMobile,
