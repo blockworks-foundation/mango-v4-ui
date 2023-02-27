@@ -4,7 +4,7 @@ const PerpSideBadge = ({ basePosition }: { basePosition: number }) => {
   return (
     <>
       {basePosition !== 0 ? (
-        <SideBadge side={basePosition > 0 ? 'buy' : 'sell'} />
+        <SideBadge side={basePosition > 0 ? 'buy' : 'sell'} isPerp />
       ) : (
         '--'
       )}

@@ -11,6 +11,8 @@
     "connect-positions": "Connect to view your perp positions",
     "connect-trade-history": "Connect to view your trade history",
     "connect-unsettled": "Connect to view your unsettled funds",
+    "copy-and-share": "Copy Image to Clipboard",
+    "current-price": "Current Price",
     "entry-price": "Entry Price",
     "est-slippage": "Est. Slippage",
     "funding-rate": "Funding Rate",
@@ -62,6 +64,7 @@
     "tooltip-stable-price": "Stable price is used in a safety mechanism that limits a user's ability to enter risky positions when the oracle price is changing rapidly",
     "trade-sounds-tooltip": "Play a sound alert for every new trade",
     "trades": "Trades",
+    "tweet-position": "Share to Twitter",
     "unsettled": "Unsettled",
     "volume-alert": "Volume Alert",
     "volume-alert-desc": "Play a sound whenever volume exceeds your alert threshold"

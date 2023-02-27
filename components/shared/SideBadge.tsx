@@ -1,12 +1,13 @@
 import React, { FunctionComponent } from 'react'
 
 type SideBadgeProps = {
+  isPerp?: boolean
   side: string
 }
 
-const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
+const SideBadge: FunctionComponent<SideBadgeProps> = ({ side, isPerp }) => {
   if (side !== 'buy' && side !== 'sell') {
-    return <div>Unknown</div>
+    return <div className="text-th-fgd-3">Unknown</div>
   }
 
   const isBid = side === 'buy'
@@ -20,7 +21,7 @@ const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
       }
        uppercase md:-my-0.5 md:px-1.5 md:py-0.5 md:text-xs`}
     >
-      {isBid ? 'Buy' : 'Sell'}
+      {isPerp ? (isBid ? 'long' : 'short') : side}
     </div>
   )
 }

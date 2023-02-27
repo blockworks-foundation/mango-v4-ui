@@ -1,5 +1,7 @@
 import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
-import Button, { LinkButton } from '@components/shared/Button'
+import { TwitterIcon } from '@components/icons/TwitterIcon'
+import SharePositionModal from '@components/modals/SharePositionModal'
+import Button, { IconButton, LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
@@ -25,6 +27,10 @@ const PerpPositions = () => {
   const { group } = useMangoGroup()
   const [showMarketCloseModal, setShowMarketCloseModal] = useState(false)
   const [positionToClose, setPositionToClose] = useState<PerpPosition | null>(
+    null
+  )
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [positionToShare, setPositionToShare] = useState<PerpPosition | null>(
     null
   )
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
@@ -71,222 +77,260 @@ const PerpPositions = () => {
     setPositionToClose(null)
   }, [])
 
+  const handleShowShare = (position: PerpPosition) => {
+    setPositionToShare(position)
+    setShowShareModal(true)
+  }
+
   if (!group) return null
 
   const openPerpPositions = Object.values(perpPositions).filter((p) =>
     p.basePositionLots.toNumber()
   )
 
-  return mangoAccountAddress && openPerpPositions.length ? (
-    showTableView ? (
-      <>
-        <div className="thin-scroll overflow-x-auto">
-          <Table>
-            <thead>
-              <TrHead>
-                <Th className="text-left">{t('market')}</Th>
-                <Th className="text-right">{t('trade:side')}</Th>
-                <Th className="text-right">{t('trade:size')}</Th>
-                <Th className="text-right">{t('trade:notional')}</Th>
-                <Th className="text-right">{t('trade:entry-price')}</Th>
-                <Th className="text-right">{`${t('trade:unsettled')} ${t(
-                  'pnl'
-                )}`}</Th>
-                <Th className="text-right">{t('pnl')}</Th>
-                {!isUnownedAccount ? <Th /> : null}
-              </TrHead>
-            </thead>
-            <tbody>
-              {openPerpPositions.map((position) => {
-                const market = group.getPerpMarketByMarketIndex(
-                  position.marketIndex
-                )
-                const basePosition = position.getBasePositionUi(market)
-                const floorBasePosition = floorToDecimal(
-                  basePosition,
-                  getDecimalCount(market.minOrderSize)
-                ).toNumber()
-                const isSelectedMarket =
-                  selectedMarket instanceof PerpMarket &&
-                  selectedMarket.perpMarketIndex === position.marketIndex
+  return (
+    <>
+      {mangoAccountAddress && openPerpPositions.length ? (
+        showTableView ? (
+          <>
+            <div className="thin-scroll overflow-x-auto">
+              <Table>
+                <thead>
+                  <TrHead>
+                    <Th className="text-left">{t('market')}</Th>
+                    <Th className="text-right">{t('trade:side')}</Th>
+                    <Th className="text-right">{t('trade:size')}</Th>
+                    <Th className="text-right">{t('trade:notional')}</Th>
+                    <Th className="text-right">{t('trade:entry-price')}</Th>
+                    <Th className="text-right">{`${t('trade:unsettled')} ${t(
+                      'pnl'
+                    )}`}</Th>
+                    <Th className="text-right">{t('pnl')}</Th>
+                    {isUnownedAccount ? <Th /> : null}
+                  </TrHead>
+                </thead>
+                <tbody>
+                  {openPerpPositions.map((position, index) => {
+                    const market = group.getPerpMarketByMarketIndex(
+                      position.marketIndex
+                    )
+                    const basePosition = position.getBasePositionUi(market)
+                    const floorBasePosition = floorToDecimal(
+                      basePosition,
+                      getDecimalCount(market.minOrderSize)
+                    ).toNumber()
+                    const isSelectedMarket =
+                      selectedMarket instanceof PerpMarket &&
+                      selectedMarket.perpMarketIndex === position.marketIndex
 
-                if (!basePosition) return null
+                    if (!basePosition) return null
 
-                const unsettledPnl = position.getUnsettledPnlUi(market)
-                const cummulativePnl =
-                  position.cumulativePnlOverPositionLifetimeUi(market)
+                    const unsettledPnl = position.getUnsettledPnlUi(market)
+                    const cummulativePnl =
+                      position.cumulativePnlOverPositionLifetimeUi(market)
 
-                return (
-                  <TrBody key={`${position.marketIndex}`} className="my-1 p-2">
-                    <Td>
-                      <TableMarketName market={market} />
-                    </Td>
-                    <Td className="text-right">
-                      <PerpSideBadge basePosition={basePosition} />
-                    </Td>
-                    <Td className="text-right font-mono">
-                      <p className="flex justify-end">
-                        {isSelectedMarket ? (
-                          <LinkButton
-                            onClick={() =>
-                              handlePositionClick(floorBasePosition, market)
+                    return (
+                      <TrBody
+                        key={`${position.marketIndex}`}
+                        className="my-1 p-2"
+                      >
+                        <Td>
+                          <TableMarketName market={market} />
+                        </Td>
+                        <Td className="text-right">
+                          <PerpSideBadge basePosition={basePosition} />
+                        </Td>
+                        <Td className="text-right font-mono">
+                          <p className="flex justify-end">
+                            {isSelectedMarket ? (
+                              <LinkButton
+                                onClick={() =>
+                                  handlePositionClick(floorBasePosition, market)
+                                }
+                              >
+                                <FormatNumericValue
+                                  value={Math.abs(basePosition)}
+                                  decimals={getDecimalCount(
+                                    market.minOrderSize
+                                  )}
+                                />
+                              </LinkButton>
+                            ) : (
+                              <FormatNumericValue
+                                value={Math.abs(basePosition)}
+                                decimals={getDecimalCount(market.minOrderSize)}
+                              />
+                            )}
+                          </p>
+                        </Td>
+                        <Td className="text-right font-mono">
+                          <FormatNumericValue
+                            value={
+                              Math.abs(floorBasePosition) * market._uiPrice
                             }
-                          >
+                            isUsd
+                          />
+                        </Td>
+                        <Td className="text-right font-mono">
+                          <FormatNumericValue
+                            value={position.getAverageEntryPriceUi(market)}
+                            decimals={getDecimalCount(market.tickSize)}
+                            isUsd
+                          />
+                        </Td>
+                        <Td className={`text-right font-mono`}>
+                          <FormatNumericValue
+                            value={unsettledPnl}
+                            isUsd
+                            decimals={2}
+                          />
+                        </Td>
+                        <Td
+                          className={`text-right font-mono ${
+                            cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
+                          }`}
+                        >
+                          <FormatNumericValue value={cummulativePnl} isUsd />
+                        </Td>
+                        {isUnownedAccount ? (
+                          <Td>
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button
+                                className="text-xs"
+                                secondary
+                                size="small"
+                                onClick={() => showClosePositionModal(position)}
+                              >
+                                Close
+                              </Button>
+                              <IconButton
+                                hideBg
+                                size="medium"
+                                onClick={() =>
+                                  handleShowShare(openPerpPositions[index])
+                                }
+                                disabled={!group || !basePosition}
+                              >
+                                <TwitterIcon className="h-4 w-4" />
+                              </IconButton>
+                            </div>
+                          </Td>
+                        ) : null}
+                      </TrBody>
+                    )
+                  })}
+                </tbody>
+              </Table>
+            </div>
+            {showMarketCloseModal && positionToClose ? (
+              <MarketCloseModal
+                isOpen={showMarketCloseModal}
+                onClose={hideClosePositionModal}
+                position={positionToClose}
+              />
+            ) : null}
+          </>
+        ) : (
+          <>
+            {openPerpPositions.map((position) => {
+              const market = group.getPerpMarketByMarketIndex(
+                position.marketIndex
+              )
+              const basePosition = position.getBasePositionUi(market)
+              const floorBasePosition = floorToDecimal(
+                basePosition,
+                getDecimalCount(market.minOrderSize)
+              ).toNumber()
+              const isSelectedMarket =
+                selectedMarket instanceof PerpMarket &&
+                selectedMarket.perpMarketIndex === position.marketIndex
+
+              if (!basePosition) return null
+              const cummulativePnl =
+                position.cumulativePnlOverPositionLifetimeUi(market)
+              return (
+                <div
+                  className="flex items-center justify-between border-b border-th-bkg-3 p-4"
+                  key={`${position.marketIndex}`}
+                >
+                  <div>
+                    <TableMarketName market={market} />
+                    <div className="mt-1 flex items-center space-x-1">
+                      <PerpSideBadge basePosition={basePosition} />
+                      <p className="text-th-fgd-4">
+                        <span className="font-mono text-th-fgd-3">
+                          {isSelectedMarket ? (
+                            <LinkButton
+                              onClick={() =>
+                                handlePositionClick(floorBasePosition, market)
+                              }
+                            >
+                              <FormatNumericValue
+                                value={Math.abs(basePosition)}
+                                decimals={getDecimalCount(market.minOrderSize)}
+                              />
+                            </LinkButton>
+                          ) : (
                             <FormatNumericValue
                               value={Math.abs(basePosition)}
                               decimals={getDecimalCount(market.minOrderSize)}
                             />
-                          </LinkButton>
-                        ) : (
+                          )}
+                        </span>
+                        {' at '}
+                        <span className="font-mono text-th-fgd-3">
                           <FormatNumericValue
-                            value={Math.abs(basePosition)}
-                            decimals={getDecimalCount(market.minOrderSize)}
+                            value={position.getAverageEntryPriceUi(market)}
+                            decimals={getDecimalCount(market.tickSize)}
+                            isUsd
                           />
-                        )}
+                        </span>
                       </p>
-                    </Td>
-                    <Td className="text-right font-mono">
-                      <FormatNumericValue
-                        value={Math.abs(floorBasePosition) * market._uiPrice}
-                        isUsd
-                      />
-                    </Td>
-                    <Td className="text-right font-mono">
-                      <FormatNumericValue
-                        value={position.getAverageEntryPriceUi(market)}
-                        decimals={getDecimalCount(market.tickSize)}
-                        isUsd
-                      />
-                    </Td>
-                    <Td className={`text-right font-mono`}>
-                      <FormatNumericValue
-                        value={unsettledPnl}
-                        isUsd
-                        decimals={2}
-                      />
-                    </Td>
-                    <Td
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div
                       className={`text-right font-mono ${
                         cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
                       }`}
                     >
                       <FormatNumericValue value={cummulativePnl} isUsd />
-                    </Td>
+                    </div>
                     {!isUnownedAccount ? (
-                      <Td className={`text-right`}>
-                        <Button
-                          className="text-xs"
-                          secondary
-                          size="small"
-                          onClick={() => showClosePositionModal(position)}
-                        >
-                          Close
-                        </Button>
-                      </Td>
+                      <Button
+                        className="text-xs"
+                        secondary
+                        size="small"
+                        onClick={() => showClosePositionModal(position)}
+                      >
+                        Close
+                      </Button>
                     ) : null}
-                  </TrBody>
-                )
-              })}
-            </tbody>
-          </Table>
+                  </div>
+                </div>
+              )
+            })}
+          </>
+        )
+      ) : mangoAccountAddress || connected ? (
+        <div className="flex flex-col items-center p-8">
+          <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+          <p>{t('trade:no-positions')}</p>
         </div>
-        {showMarketCloseModal && positionToClose ? (
-          <MarketCloseModal
-            isOpen={showMarketCloseModal}
-            onClose={hideClosePositionModal}
-            position={positionToClose}
-          />
-        ) : null}
-      </>
-    ) : (
-      <>
-        {openPerpPositions.map((position) => {
-          const market = group.getPerpMarketByMarketIndex(position.marketIndex)
-          const basePosition = position.getBasePositionUi(market)
-          const floorBasePosition = floorToDecimal(
-            basePosition,
-            getDecimalCount(market.minOrderSize)
-          ).toNumber()
-          const isSelectedMarket =
-            selectedMarket instanceof PerpMarket &&
-            selectedMarket.perpMarketIndex === position.marketIndex
-
-          if (!basePosition) return null
-          const cummulativePnl =
-            position.cumulativePnlOverPositionLifetimeUi(market)
-          return (
-            <div
-              className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-              key={`${position.marketIndex}`}
-            >
-              <div>
-                <TableMarketName market={market} />
-                <div className="mt-1 flex items-center space-x-1">
-                  <PerpSideBadge basePosition={basePosition} />
-                  <p className="text-th-fgd-4">
-                    <span className="font-mono text-th-fgd-3">
-                      {isSelectedMarket ? (
-                        <LinkButton
-                          onClick={() =>
-                            handlePositionClick(floorBasePosition, market)
-                          }
-                        >
-                          <FormatNumericValue
-                            value={Math.abs(basePosition)}
-                            decimals={getDecimalCount(market.minOrderSize)}
-                          />
-                        </LinkButton>
-                      ) : (
-                        <FormatNumericValue
-                          value={Math.abs(basePosition)}
-                          decimals={getDecimalCount(market.minOrderSize)}
-                        />
-                      )}
-                    </span>
-                    {' at '}
-                    <span className="font-mono text-th-fgd-3">
-                      <FormatNumericValue
-                        value={position.getAverageEntryPriceUi(market)}
-                        decimals={getDecimalCount(market.tickSize)}
-                        isUsd
-                      />
-                    </span>
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div
-                  className={`text-right font-mono ${
-                    cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
-                  }`}
-                >
-                  <FormatNumericValue value={cummulativePnl} isUsd />
-                </div>
-                {!isUnownedAccount ? (
-                  <Button
-                    className="text-xs"
-                    secondary
-                    size="small"
-                    onClick={() => showClosePositionModal(position)}
-                  >
-                    Close
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          )
-        })}
-      </>
-    )
-  ) : mangoAccountAddress || connected ? (
-    <div className="flex flex-col items-center p-8">
-      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('trade:no-positions')}</p>
-    </div>
-  ) : (
-    <div className="p-8">
-      <ConnectEmptyState text={t('trade:connect-positions')} />
-    </div>
+      ) : (
+        <div className="p-8">
+          <ConnectEmptyState text={t('trade:connect-positions')} />
+        </div>
+      )}
+      {showShareModal ? (
+        <SharePositionModal
+          group={group}
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          position={positionToShare!}
+        />
+      ) : null}
+    </>
   )
 }
 
