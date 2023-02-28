@@ -162,8 +162,8 @@ const RecentTrades = () => {
 
   return (
     <ErrorBoundary>
-      <div className="thin-scroll h-full overflow-y-scroll">
-        <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 px-2">
+      <div className="hide-scroll h-full overflow-y-scroll">
+        <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 pr-2 pl-0">
           <Tooltip
             className="hidden md:block"
             content={t('trade:tooltip-volume-alert')}
@@ -191,7 +191,7 @@ const RecentTrades = () => {
             </span>
           </span>
         </div>
-        <div className="px-2">
+        <div className="pl-0 pr-2">
           <table className="min-w-full">
             <thead>
               <tr className="text-right text-xxs text-th-fgd-4">
@@ -211,7 +211,7 @@ const RecentTrades = () => {
                     return (
                       <tr className="font-mono text-xs" key={`${t.seq_num}`}>
                         <td
-                          className={`pb-1.5 text-right ${
+                          className={`pb-1.5 text-right tracking-tight ${
                             ['buy', 'bid'].includes(t.taker_side)
                               ? 'text-th-up'
                               : 'text-th-down'
@@ -219,10 +219,10 @@ const RecentTrades = () => {
                         >
                           {formatPrice(market, t.price)}
                         </td>
-                        <td className="pb-1.5 text-right">
+                        <td className="pb-1.5 text-right tracking-normal text-th-fgd-3">
                           {formatSize(market, t.quantity)}
                         </td>
-                        <td className="pb-1.5 text-right text-th-fgd-4">
+                        <td className="pb-1.5 text-right tracking-tight text-th-fgd-4">
                           {t.block_datetime ? (
                             <Tooltip
                               placement="right"
@@ -261,7 +261,7 @@ const RecentTrades = () => {
                     return (
                       <tr className="font-mono text-xs" key={i}>
                         <td
-                          className={`pb-1.5 text-right ${
+                          className={`pb-1.5 text-right tracking-tight ${
                             ['buy', 'bid'].includes(side)
                               ? 'text-th-up'
                               : 'text-th-down'
@@ -269,8 +269,10 @@ const RecentTrades = () => {
                         >
                           {formattedPrice}
                         </td>
-                        <td className="pb-1.5 text-right">{formattedSize}</td>
-                        <td className="pb-1.5 text-right text-th-fgd-4">
+                        <td className="pb-1.5 text-right tracking-normal text-th-fgd-3">
+                          {formattedSize}
+                        </td>
+                        <td className="pb-1.5 text-right tracking-tight text-th-fgd-4">
                           {time
                             ? dayjs(Number(time) * 1000).format('hh:mma')
                             : '-'}
