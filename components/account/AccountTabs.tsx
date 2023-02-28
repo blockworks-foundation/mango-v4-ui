@@ -33,7 +33,12 @@ const AccountTabs = () => {
       ['trade:unsettled', unsettledTradeCount],
       ['history', 0],
     ]
-  }, [openPerpPositions, unsettledPerpPositions, unsettledSpotBalances])
+  }, [
+    openPerpPositions,
+    unsettledPerpPositions,
+    unsettledSpotBalances,
+    openOrders,
+  ])
 
   return (
     <>

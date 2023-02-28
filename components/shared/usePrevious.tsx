@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function usePrevious(value: any): any {
   // The ref object is a generic container whose current property is mutable ...
   // ... and can hold any value, similar to an instance property on a class

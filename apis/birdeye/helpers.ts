@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const NEXT_PUBLIC_BIRDEYE_API_KEY =
   process.env.NEXT_PUBLIC_BIRDEYE_API_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NzM0NTE4MDF9.KTEqB1hrmZTMzk19rZNx9aesh2bIHj98Cb8sg5Ikz-Y'
@@ -8,16 +9,12 @@ export const socketUrl = `wss://public-api.birdeye.so/socket?x-api-key=${NEXT_PU
 
 // Make requests to CryptoCompare API
 export async function makeApiRequest(path: string) {
-  try {
-    const response = await fetch(`${API_URL}${path}`, {
-      headers: {
-        'X-API-KEY': NEXT_PUBLIC_BIRDEYE_API_KEY,
-      },
-    })
-    return response.json()
-  } catch (error: any) {
-    throw new Error(`CryptoCompare request error: ${error.status}`)
-  }
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: {
+      'X-API-KEY': NEXT_PUBLIC_BIRDEYE_API_KEY,
+    },
+  })
+  return response.json()
 }
 
 const RESOLUTION_MAPPING: Record<string, string> = {

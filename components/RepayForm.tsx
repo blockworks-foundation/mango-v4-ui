@@ -23,7 +23,7 @@ import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
 import { withValueLimit } from './swap/SwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
-import { useAlphaMax, walletBalanceForToken } from './DepositForm'
+import { walletBalanceForToken } from './DepositForm'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from 'hooks/useJupiterMints'
@@ -34,6 +34,7 @@ import {
 import ConnectEmptyState from './shared/ConnectEmptyState'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { isMangoError } from 'types'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -154,15 +155,16 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         actions.fetchWalletTokens(publicKey)
         setSubmitting(false)
         onSuccess()
-      } catch (e: any) {
+      } catch (e) {
+        console.error('Error repaying:', e)
+        setSubmitting(false)
+        if (!isMangoError(e)) return
         notify({
           title: 'Transaction failed',
           description: e.message,
           txid: e?.txid,
           type: 'error',
         })
-        console.error('Error repaying:', e)
-        setSubmitting(false)
       }
     },
     [bank, publicKey?.toBase58(), sizePercentage]
@@ -173,8 +175,6 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       setSelectedToken(banks[0].bank.name)
     }
   }, [token, banks, selectedToken])
-
-  const exceedsAlphaMax = useAlphaMax(inputAmount, bank)
 
   const showInsufficientBalance = walletBalance.maxAmount < Number(inputAmount)
 
@@ -320,9 +320,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
           <Button
             onClick={() => handleDeposit(inputAmount)}
             className="flex w-full items-center justify-center"
-            disabled={
-              !inputAmount || showInsufficientBalance || exceedsAlphaMax
-            }
+            disabled={!inputAmount || showInsufficientBalance}
             size="large"
           >
             {submitting ? (

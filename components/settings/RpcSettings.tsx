@@ -73,9 +73,11 @@ const RpcSettings = () => {
   const handlePriorityFee = useCallback(
     (label: string) => {
       const fee = PRIORITY_FEES.find((fee) => fee.label === label)
-      setStoredPriorityFee(fee?.value)
-      if (wallet) {
-        actions.connectMangoClientWithWallet(wallet)
+      if (fee) {
+        setStoredPriorityFee(fee?.value)
+        if (wallet) {
+          actions.connectMangoClientWithWallet(wallet)
+        }
       }
     },
     [setStoredPriorityFee, actions, wallet]

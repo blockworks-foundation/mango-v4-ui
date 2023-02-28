@@ -17,6 +17,7 @@ import mangoStore from '@store/mangoStore'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { getAvailableToBorrow } from './YourBorrowsTable'
 
 const AssetsBorrowsTable = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -28,7 +29,7 @@ const AssetsBorrowsTable = () => {
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const banks = useBanksWithBalances('maxBorrow')
+  const banks = useBanksWithBalances()
 
   const handleShowBorrowModal = useCallback((token: string) => {
     setSelectedToken(token)
@@ -74,6 +75,8 @@ const AssetsBorrowsTable = () => {
               }
               const borrows = bank.uiBorrows()
 
+              const available = group ? getAvailableToBorrow(b, group) : 0
+
               return (
                 <TrBody key={bank.name}>
                   <Td>
@@ -101,8 +104,9 @@ const AssetsBorrowsTable = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <BankAmountWithValue
-                        amount={b.maxBorrow}
+                        amount={available}
                         bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </div>
@@ -141,6 +145,8 @@ const AssetsBorrowsTable = () => {
               )?.logoURI
             }
 
+            const available = group ? getAvailableToBorrow(b, group) : 0
+
             return (
               <div
                 key={bank.name}
@@ -162,7 +168,11 @@ const AssetsBorrowsTable = () => {
                       <p className="mb-0.5 text-right text-xs">
                         {t('available')}
                       </p>
-                      <BankAmountWithValue amount={b.maxBorrow} bank={bank} />
+                      <BankAmountWithValue
+                        amount={available}
+                        fixDecimals={false}
+                        bank={bank}
+                      />
                     </div>
                     <div>
                       <p className="mb-0.5 text-right text-xs">{t('rate')}</p>

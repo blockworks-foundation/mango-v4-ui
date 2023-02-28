@@ -64,7 +64,7 @@ const SwapForm = () => {
   //initial state is undefined null is returned on error
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
-  const [showTokenSelect, setShowTokenSelect] = useState(undefined)
+  const [showTokenSelect, setShowTokenSelect] = useState<'input' | 'output'>()
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const { group } = useMangoGroup()
@@ -566,11 +566,11 @@ const SwapFormSubmitButton = ({
           </div>
         )}
       </Button>
-      {selectedRoute === null && (
+      {selectedRoute === null && amountIn.gt(0) ? (
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />
         </div>
-      )}
+      ) : null}
     </>
   )
 }

@@ -10,7 +10,16 @@ export class TokenAccount {
   decimals!: number
   uiAmount: number
 
-  constructor(publicKey: PublicKey, decoded: any) {
+  constructor(
+    publicKey: PublicKey,
+    decoded: {
+      mint: PublicKey
+      owner: PublicKey
+      amount: number
+      decimals: number
+      uiAmount: number
+    }
+  ) {
     this.publicKey = publicKey
     this.uiAmount = 0
     Object.assign(this, decoded)
@@ -20,7 +29,7 @@ export class TokenAccount {
 export async function getTokenAccountsByOwnerWithWrappedSol(
   connection: Connection,
   owner: PublicKey
-): Promise<any> {
+): Promise<TokenAccount[]> {
   const solReq = connection.getAccountInfo(owner)
   const tokenReq = connection.getParsedTokenAccountsByOwner(owner, {
     programId: TokenInstructions.TOKEN_PROGRAM_ID,

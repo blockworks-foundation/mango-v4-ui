@@ -11,6 +11,7 @@ import InlineNotification from '../shared/InlineNotification'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import useSolBalance from 'hooks/useSolBalance'
+import { isMangoError } from 'types'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -84,14 +85,15 @@ const CreateAccountForm = ({
           customClose()
         }
       }
-    } catch (e: any) {
+    } catch (e) {
+      console.error(e)
       setLoading(false)
+      if (!isMangoError(e)) return
       notify({
         title: t('new-account-failed'),
         txid: e?.txid,
         type: 'error',
       })
-      console.error(e)
     }
   }
 

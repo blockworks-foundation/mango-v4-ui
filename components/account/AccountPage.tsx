@@ -5,7 +5,7 @@ import {
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
-import mangoStore, { PerformanceDataItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { formatCurrencyValue } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
 import dynamic from 'next/dynamic'
@@ -48,6 +48,7 @@ const AssetsLiabilities = dynamic(() => import('./AssetsLiabilities'), {
 })
 
 const TABS = ['account-value', 'account:assets-liabilities']
+import { PerformanceDataItem } from 'types'
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
@@ -59,6 +60,7 @@ const AccountPage = () => {
     (s) => s.mangoAccount.performance.loading
   )
   const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
+
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
   )
@@ -86,7 +88,7 @@ const AccountPage = () => {
       actions.fetchAccountPerformance(mangoAccountAddress, 31)
       actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
-  }, [actions, mangoAccountAddress])
+  }, [actions, mangoAccountAddress, connected])
 
   const oneDayPerformanceData: PerformanceDataItem[] | [] = useMemo(() => {
     if (!performanceData || !performanceData.length) return []
@@ -474,7 +476,11 @@ const AccountPage = () => {
               {mangoAccountAddress ? (
                 <div className="flex items-center space-x-3">
                   {performanceData.length > 4 ? (
-                    <Tooltip content={t('account:pnl-chart')} delay={250}>
+                    <Tooltip
+                      className="hidden md:block"
+                      content={t('account:pnl-chart')}
+                      delay={250}
+                    >
                       <IconButton
                         className="text-th-fgd-3"
                         hideBg
@@ -484,7 +490,11 @@ const AccountPage = () => {
                       </IconButton>
                     </Tooltip>
                   ) : null}
-                  <Tooltip content={t('account:pnl-history')} delay={250}>
+                  <Tooltip
+                    className="hidden md:block"
+                    content={t('account:pnl-history')}
+                    delay={250}
+                  >
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
@@ -523,7 +533,11 @@ const AccountPage = () => {
                 </p>
               </Tooltip>
               {interestTotalValue > 1 || interestTotalValue < -1 ? (
-                <Tooltip content="Cumulative Interest Chart" delay={250}>
+                <Tooltip
+                  className="hidden md:block"
+                  content="Cumulative Interest Chart"
+                  delay={250}
+                >
                   <IconButton
                     className="text-th-fgd-3"
                     hideBg

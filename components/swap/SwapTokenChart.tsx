@@ -21,7 +21,7 @@ import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
 import { formatTokenSymbol } from 'utils/tokens'
 import { useQuery } from '@tanstack/react-query'
-import { fetchChartData } from 'apis/coingecko'
+import { ChartDataItem, fetchChartData } from 'apis/coingecko'
 import mangoStore from '@store/mangoStore'
 import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -30,15 +30,9 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import { useTranslation } from 'next-i18next'
 import { ArrowsRightLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalChart'
 
 dayjs.extend(relativeTime)
-
-interface ChartDataItem {
-  p1: number
-  p2: number
-  price: number
-  time: number
-}
 
 const CustomizedLabel = ({
   chartData,
@@ -47,7 +41,7 @@ const CustomizedLabel = ({
   value,
   index,
 }: {
-  chartData: any[]
+  chartData: ChartDataItem[]
   x?: number
   y?: string | number
   value?: number
@@ -56,7 +50,7 @@ const CustomizedLabel = ({
   const { width } = useViewport()
   const [min, max] = useMemo(() => {
     if (chartData.length) {
-      const prices = chartData.map((d: any) => d.price)
+      const prices = chartData.map((d) => d.price)
       return [Math.min(...prices), Math.max(...prices)]
     }
     return ['', '']
@@ -92,7 +86,7 @@ const SwapTokenChart = () => {
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
-  const [mouseData, setMouseData] = useState<any>(null)
+  const [mouseData, setMouseData] = useState<ChartDataItem>()
   const [daysToShow, setDaysToShow] = useState('1')
   const [flipPrices, setFlipPrices] = useState(false)
   const { theme } = useTheme()
@@ -118,20 +112,23 @@ const SwapTokenChart = () => {
       return chartDataQuery.data
     } else {
       return chartDataQuery.data.map((d: ChartDataItem) => {
-        const price = d.p1 / d.p2 === d.price ? d.p2 / d.p1 : d.p1 / d.p2
+        const price =
+          d.inputTokenPrice / d.outputTokenPrice === d.price
+            ? d.outputTokenPrice / d.inputTokenPrice
+            : d.inputTokenPrice / d.outputTokenPrice
         return { ...d, price: price }
       })
     }
   }, [flipPrices, chartDataQuery])
 
-  const handleMouseMove = (coords: any) => {
+  const handleMouseMove: CategoricalChartFunc = (coords) => {
     if (coords.activePayload) {
       setMouseData(coords.activePayload[0].payload)
     }
   }
 
   const handleMouseLeave = () => {
-    setMouseData(null)
+    setMouseData(undefined)
   }
 
   useEffect(() => {
@@ -146,16 +143,10 @@ const SwapTokenChart = () => {
     }
   }, [inputCoingeckoId, outputCoingeckoId])
 
-  // const handleFlipChart = useCallback(() => {
-  //   if (!baseTokenId || !quoteTokenId) return
-  //   setBaseTokenId(quoteTokenId)
-  //   setQuoteTokenId(baseTokenId)
-  // }, [baseTokenId, quoteTokenId])
-
   const calculateChartChange = () => {
-    if (chartData.length) {
+    if (chartData?.length) {
       if (mouseData) {
-        const index = chartData.findIndex((d: any) => d.time === mouseData.time)
+        const index = chartData.findIndex((d) => d.time === mouseData.time)
         return (
           ((chartData[index]['price'] - chartData[0]['price']) /
             chartData[0]['price']) *
@@ -221,10 +212,10 @@ const SwapTokenChart = () => {
                         height={48}
                         width={35}
                         play
-                        numbers={formatNumericValue(mouseData['price'])}
+                        numbers={formatNumericValue(mouseData.price)}
                       />
                     ) : (
-                      <FormatNumericValue value={mouseData['price']} />
+                      <FormatNumericValue value={mouseData.price} />
                     )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
@@ -233,7 +224,7 @@ const SwapTokenChart = () => {
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
-                    {dayjs(mouseData['time']).format('DD MMM YY, h:mma')}
+                    {dayjs(mouseData.time).format('DD MMM YY, h:mma')}
                   </p>
                 </>
               ) : (
@@ -245,12 +236,12 @@ const SwapTokenChart = () => {
                         width={35}
                         play
                         numbers={formatNumericValue(
-                          chartData[chartData.length - 1]['price']
+                          chartData[chartData.length - 1].price
                         )}
                       />
                     ) : (
                       <FormatNumericValue
-                        value={chartData[chartData.length - 1]['price']}
+                        value={chartData[chartData.length - 1].price}
                       />
                     )}
                     <span
@@ -260,7 +251,7 @@ const SwapTokenChart = () => {
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
-                    {dayjs(chartData[chartData.length - 1]['time']).format(
+                    {dayjs(chartData[chartData.length - 1].time).format(
                       'DD MMM YY, h:mma'
                     )}
                   </p>

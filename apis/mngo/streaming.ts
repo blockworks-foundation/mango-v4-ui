@@ -1,4 +1,5 @@
-import { parseResolution, getNextBarTime } from './helpers'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { getNextBarTime } from './helpers'
 
 let subscriptionItem: any = {}
 
@@ -7,7 +8,7 @@ const socket = new WebSocket(`wss://api.mngo.cloud/fills/v1/`)
 
 // Connection opened
 socket.addEventListener('open', (_event) => {
-  console.log('[socket] Connected')
+  console.log('[socket] Connected mngo')
 })
 
 // Listen for messages
@@ -16,7 +17,6 @@ socket.addEventListener('message', (msg) => {
 
   if (!data.event) return console.warn(data)
   if (data.event.maker) return
-
   const currTime = new Date(data.event.timestamp).getTime()
   const lastBar = subscriptionItem.lastBar
   const resolution = subscriptionItem.resolution
@@ -66,7 +66,11 @@ export function subscribeOnStream(
     command: 'subscribe',
     marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
   }
-
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[subscribeBars mngo]')
   socket.send(JSON.stringify(msg))
 }
 
@@ -75,6 +79,24 @@ export function unsubscribeFromStream() {
     command: 'unsubscribe',
     marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
   }
-
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed')
+    return
+  }
+  console.warn('[unsubscribeBars mngo]')
   socket.send(JSON.stringify(msg))
+}
+
+export function closeSocket() {
+  if (!isOpen(socket)) {
+    console.warn('Socket Closed mngo')
+    return
+  }
+  console.warn('[closeSocket mngo]')
+  socket.close()
+}
+
+export function isOpen(ws?: WebSocket) {
+  const sock = ws || socket
+  return sock.readyState === sock.OPEN
 }

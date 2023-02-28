@@ -3,24 +3,20 @@ import { StarIcon } from '@heroicons/react/20/solid'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { useViewport } from 'hooks/useViewport'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FAVORITE_MARKETS_KEY } from 'utils/constants'
-import { breakpoints } from 'utils/theme'
 import MarketLogos from './MarketLogos'
 
 const FavoriteMarketsBar = () => {
   const [favoriteMarkets] = useLocalStorageState(FAVORITE_MARKETS_KEY, [])
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.sm : false
   const { asPath } = useRouter()
   const { selectedMarket } = useSelectedMarket()
   const { group } = useMangoGroup()
 
-  return !isMobile ? (
+  return (
     <Transition
-      className="flex items-center space-x-4 overflow-hidden border-b border-th-bkg-3 py-1 px-6"
+      className="hide-scroll flex items-center space-x-2 overflow-x-auto border-b border-th-bkg-3 bg-th-bkg-2 py-1 px-4 md:space-x-4 md:px-6"
       show={!!favoriteMarkets.length}
       enter="transition-all ease-in duration-200"
       enterFrom="opacity-0 h-0"
@@ -29,7 +25,7 @@ const FavoriteMarketsBar = () => {
       leaveFrom="opacity-100 h-8"
       leaveTo="opacity-0 h-0"
     >
-      <StarIcon className="h-4 w-4 text-th-fgd-4" />
+      <StarIcon className="h-4 w-4 flex-shrink-0 text-th-fgd-4" />
       {favoriteMarkets.map((mkt: string) => {
         // const change24h = marketsInfo?.find((m) => m.name === mkt)?.change24h
         const isPerp = mkt.includes('PERP')
@@ -71,7 +67,7 @@ const FavoriteMarketsBar = () => {
         )
       })}
     </Transition>
-  ) : null
+  )
 }
 
 export default FavoriteMarketsBar

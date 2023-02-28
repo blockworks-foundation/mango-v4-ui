@@ -9,13 +9,13 @@ const FavoriteMarketButton = ({
 }: {
   market: PerpMarket | Serum3Market
 }) => {
-  const [favoriteMarkets, setFavoriteMarkets] = useLocalStorageState(
+  const [favoriteMarkets, setFavoriteMarkets] = useLocalStorageState<string[]>(
     FAVORITE_MARKETS_KEY,
     []
   )
 
   const addToFavorites = (marketName: string) => {
-    const newFavorites: any = [...favoriteMarkets, marketName]
+    const newFavorites = [...favoriteMarkets, marketName]
     setFavoriteMarkets(newFavorites)
   }
 

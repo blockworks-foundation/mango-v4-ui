@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react'
 
 export default function useInterval(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callback: (...args: any[]) => any,
   delay: number
 ) {

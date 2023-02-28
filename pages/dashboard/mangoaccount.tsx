@@ -1,13 +1,15 @@
 import ExplorerLink from '@components/shared/ExplorerLink'
 import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
-import { ReactNode } from 'react'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import useMangoAccount from 'hooks/useMangoAccount'
 import {
   toUiDecimalsForQuote,
   HealthType,
+  PerpOrder,
 } from '@blockworks-foundation/mango-v4'
+import mangoStore from '@store/mangoStore'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -22,6 +24,29 @@ const Dashboard: NextPage = () => {
   // const { mangoTokens } = useJupiterMints()
   // const client = mangoStore(s => s.client)
   const { mangoAccount } = useMangoAccount()
+  const client = mangoStore((s) => s.client)
+  const [openOrders, setOpenOrders] = useState<Record<string, PerpOrder[]>>()
+
+  useEffect(() => {
+    if (mangoAccount) {
+      loadOpenOrders()
+    }
+  }, [mangoAccount])
+
+  const loadOpenOrders = useCallback(async () => {
+    if (!mangoAccount || !group) return
+    const openOrders: Record<string, PerpOrder[]> = {}
+    for (const perpOrder of mangoAccount.perpOrdersActive()) {
+      const market = group.getPerpMarketByMarketIndex(perpOrder.orderMarket)
+      const orders = await mangoAccount.loadPerpOpenOrdersForMarket(
+        client,
+        group,
+        perpOrder.orderMarket
+      )
+      openOrders[market.publicKey.toString()] = orders
+    }
+    setOpenOrders(openOrders)
+  }, [mangoAccount, client, group])
 
   return (
     <div className="grid grid-cols-12">
@@ -222,6 +247,49 @@ const Dashboard: NextPage = () => {
                   </div>
                 )
               })}
+
+              <h3 className="mt-4">Perp Open Orders</h3>
+              {openOrders
+                ? Object.entries(openOrders).map(
+                    ([marketAddress, openOrders]) => {
+                      return (
+                        <div key={marketAddress} className="mt-4">
+                          <KeyValuePair
+                            label="Market Address"
+                            value={<ExplorerLink address={marketAddress} />}
+                          />
+                          {openOrders.map((openOrder) => {
+                            return (
+                              <div
+                                key={`${openOrder.orderId}${openOrder.side}${openOrder.seqNum}`}
+                                className="mt-4 rounded border border-th-bkg-3 px-2"
+                              >
+                                <KeyValuePair
+                                  label="Side"
+                                  value={
+                                    openOrder.side
+                                      ? 'bid' in openOrder.side
+                                        ? 'Bid'
+                                        : 'Ask'
+                                      : null
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Price"
+                                  value={openOrder.price}
+                                />
+                                <KeyValuePair
+                                  label="Size"
+                                  value={openOrder.size}
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )
+                    }
+                  )
+                : null}
             </div>
           ) : (
             'Loading'

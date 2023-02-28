@@ -10,8 +10,6 @@ export const OUTPUT_TOKEN_DEFAULT = 'SOL'
 export const JUPITER_V4_PROGRAM_ID =
   'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
 
-export const ALPHA_DEPOSIT_LIMIT = 200
-
 export const CONNECTION_COMMITMENT = 'processed'
 
 // Local storage keys for settings
@@ -45,6 +43,10 @@ export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
+export const SHOW_STABLE_PRICE_KEY = 'showStablePriceKey-0.1'
+
+export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
@@ -57,8 +59,6 @@ export const PROFILE_CATEGORIES = [
   'trader',
   'yolo',
 ]
-
-export const CHART_DATA_FEED = `https://dry-ravine-67635.herokuapp.com/tv`
 
 export const MANGO_ROUTER_API_URL = 'https://api.mngo.cloud/router/v1'
 

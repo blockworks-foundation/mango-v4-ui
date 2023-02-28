@@ -43,6 +43,7 @@ import FormatNumericValue from './shared/FormatNumericValue'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { isMangoError } from 'types'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -144,15 +145,16 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       actions.fetchWalletTokens(publicKey)
       setSubmitting(false)
       onSuccess()
-    } catch (e: any) {
+    } catch (e) {
       console.error(e)
+      setSubmitting(false)
+      if (!isMangoError(e)) return
       notify({
         title: 'Transaction failed',
         description: e.message,
-        txid: e?.txid,
+        txid: e.txid,
         type: 'error',
       })
-      setSubmitting(false)
     }
   }, [bank, inputAmount, onSuccess, publicKey])
 

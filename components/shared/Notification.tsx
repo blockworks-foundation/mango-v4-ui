@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   CheckCircleIcon,
   ArrowTopRightOnSquareIcon,
@@ -70,31 +70,31 @@ const NotificationList = () => {
 
   const reversedNotifications = [...notifications].reverse()
 
-  const position: string = useMemo(() => {
-    switch (notificationPosition) {
-      case 'bottom-left':
-        return 'bottom-0 left-0'
-      case 'bottom-right':
-        return 'bottom-0 right-0'
-      case 'top-left':
-        return 'top-0 left-0'
-      case 'top-right':
-        return 'top-0 right-0'
+  const getPosition = (position: string) => {
+    const sharedClasses =
+      'pointer-events-none fixed z-50 flex items-end p-4 text-th-fgd-1 md:p-6'
+    switch (position) {
+      case 'Bottom-Left':
+        return 'flex-col bottom-0 left-0 ' + sharedClasses
+      case 'Bottom-Right':
+        return 'flex-col w-full bottom-0 right-0 ' + sharedClasses
+      case 'Top-Left':
+        return 'flex-col-reverse top-0 left-0 ' + sharedClasses
+      case 'Top-Right':
+        return 'flex-col-reverse w-full top-0 right-0 ' + sharedClasses
       default:
-        return 'bottom-0 left-0'
+        return 'flex-col bottom-0 left-0 ' + sharedClasses
     }
-  }, [notificationPosition])
+  }
 
   useEffect(() => setMounted(true), [])
   if (!mounted) return null
 
   return (
-    <div
-      className={`pointer-events-none fixed z-50 flex w-full flex-col items-end space-y-2 p-4 text-th-fgd-1 md:w-auto md:p-6 ${position}`}
-    >
+    <div className={`${getPosition(notificationPosition)}`}>
       {notifications.filter((n) => n.show).length > 1 ? (
         <button
-          className="default-transition pointer-events-auto flex items-center rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
+          className="default-transition pointer-events-auto my-1 flex items-center rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
           onClick={clearAll}
         >
           <XMarkIcon className="mr-1 h-3.5 w-3.5" />
@@ -111,7 +111,7 @@ const NotificationList = () => {
 const Notification = ({ notification }: { notification: Notification }) => {
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
-    'bottom-left'
+    'Bottom-Left'
   )
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
@@ -179,17 +179,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
     }
   })
 
-  const {
-    enterFromClass,
-    enterToClass,
-    leaveFromClass,
-    leaveToClass,
-  }: {
-    enterFromClass: string
-    enterToClass: string
-    leaveFromClass: string
-    leaveToClass: string
-  } = useMemo(() => {
+  const getTransformClasses = (position: string) => {
     const fromLeft = {
       enterFromClass: 'md:-translate-x-48',
       enterToClass: 'md:translate-x-100',
@@ -202,31 +192,39 @@ const Notification = ({ notification }: { notification: Notification }) => {
       leaveFromClass: 'md:translate-x-0',
       leaveToClass: 'md:translate-x-48',
     }
-    switch (notificationPosition) {
-      case 'bottom-left':
+    switch (position) {
+      case 'Bottom-Left':
         return fromLeft
-      case 'bottom-right':
+      case 'Bottom-Right':
         return fromRight
-      case 'top-left':
+      case 'Top-Left':
         return fromLeft
-      case 'top-right':
+      case 'Top-Right':
         return fromRight
       default:
         return fromLeft
     }
-  }, [notificationPosition])
+  }
 
   return (
     <Transition
+      className="my-1 w-full md:w-auto"
       show={show}
-      as={Fragment}
       appear={true}
       enter="ease-out duration-500 transition"
-      enterFrom={`-translate-y-2 opacity-0 md:translate-y-0 ${enterFromClass}`}
-      enterTo={`translate-y-0 opacity-100 ${enterToClass}`}
+      enterFrom={`-translate-y-2 opacity-0 md:translate-y-0 ${
+        getTransformClasses(notificationPosition).enterFromClass
+      }`}
+      enterTo={`translate-y-0 opacity-100 ${
+        getTransformClasses(notificationPosition).enterToClass
+      }`}
       leave="ease-in duration-200 transition"
-      leaveFrom={`translate-y-0 ${leaveFromClass}`}
-      leaveTo={`-translate-y-2 md:translate-y-0 ${leaveToClass}`}
+      leaveFrom={`translate-y-0 ${
+        getTransformClasses(notificationPosition).leaveFromClass
+      }`}
+      leaveTo={`-translate-y-2 md:translate-y-0 ${
+        getTransformClasses(notificationPosition).leaveToClass
+      }`}
     >
       <div
         className={`pointer-events-auto w-full rounded-md border bg-th-bkg-2 shadow-lg md:w-auto ${

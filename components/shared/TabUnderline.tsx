@@ -1,21 +1,25 @@
 import { useTranslation } from 'next-i18next'
 
-const TabUnderline = ({
+type Values = string | number
+
+interface TabUnderlineProps<T extends Values> {
+  activeValue: string
+  onChange: (x: T) => void
+  values: T[]
+  small?: boolean
+}
+
+const TabUnderline = <T extends Values>({
   activeValue,
   values,
   onChange,
   small,
-}: {
-  activeValue: string
-  onChange: (x: any) => void
-  values: string[]
-  small?: boolean
-}) => {
+}: TabUnderlineProps<T>) => {
   const { t } = useTranslation('common')
   return (
     <div
       className={`relative mb-3 border-b border-th-bkg-3 ${
-        values.includes('buy') || values.includes('sell')
+        values.includes('buy' as T) || values.includes('sell' as T)
           ? 'pb-1 font-display md:pb-2.5'
           : 'pb-1 font-bold'
       } md:-mt-2.5`}
@@ -54,9 +58,9 @@ const TabUnderline = ({
                 : 'text-th-fgd-4 hover:text-th-fgd-3'
             }
           `}
-            key={value + i}
+            key={`${value}` + i}
           >
-            {t(value)}
+            {t(`${value}`)}
           </button>
         ))}
       </nav>

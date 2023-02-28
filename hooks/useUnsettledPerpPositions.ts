@@ -15,7 +15,7 @@ const useUnsettledPerpPositions = () => {
       if (!market || !group) return false
       return p.getUnsettledPnlUi(market) !== 0
     })
-  }, [mangoAccountAddress])
+  }, [mangoAccountAddress, perpPositions, group])
 
   return positions
 }

@@ -2,13 +2,16 @@ import useInterval from '@components/shared/useInterval'
 import mangoStore from '@store/mangoStore'
 import { useEffect, useMemo, useState } from 'react'
 import { formatNumericValue, getDecimalCount } from 'utils/numbers'
-import { ChartTradeType } from 'types'
 import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { Howl } from 'howler'
-import { IconButton } from '@components/shared/Button'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { SOUND_SETTINGS_KEY, TRADE_VOLUME_ALERT_KEY } from 'utils/constants'
+import {
+  MANGO_DATA_API_URL,
+  SOUND_SETTINGS_KEY,
+  TRADE_VOLUME_ALERT_KEY,
+} from 'utils/constants'
+import { IconButton } from '@components/shared/Button'
 import { BellAlertIcon, BellSlashIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
@@ -16,11 +19,44 @@ import TradeVolumeAlertModal, {
   DEFAULT_VOLUME_ALERT_SETTINGS,
 } from '@components/modals/TradeVolumeAlertModal'
 import dayjs from 'dayjs'
+import { isPerpFillEvent } from './TradeHistory'
+import ErrorBoundary from '@components/ErrorBoundary'
+import { useQuery } from '@tanstack/react-query'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpTradeHistory } from 'types'
+import { Market } from '@project-serum/serum'
 
 const volumeAlertSound = new Howl({
   src: ['/sounds/trade-buy.mp3'],
   volume: 0.8,
 })
+
+type Test = { buys: number; sells: number }
+
+const formatPrice = (
+  market: Market | PerpMarket | undefined,
+  price: number | string
+) => {
+  return market?.tickSize
+    ? formatNumericValue(price, getDecimalCount(market.tickSize))
+    : 0
+}
+
+const formatSize = (
+  market: Market | PerpMarket | undefined,
+  size: number | string
+) => {
+  return market?.minOrderSize
+    ? formatNumericValue(size, getDecimalCount(market.minOrderSize))
+    : 0
+}
+
+const fetchMarketTradeHistory = async (marketAddress: string) => {
+  const response = await fetch(
+    `${MANGO_DATA_API_URL}/stats/perp-market-history?perp-market=${marketAddress}`
+  )
+  return response.json()
+}
 
 const RecentTrades = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -42,77 +78,81 @@ const RecentTrades = () => {
     baseSymbol,
     quoteBank,
     quoteSymbol,
+    selectedMarketAddress,
   } = useSelectedMarket()
+
+  const perpMarketQuery = useQuery<PerpTradeHistory[]>(
+    ['market-trade-history', selectedMarketAddress],
+    () => fetchMarketTradeHistory(selectedMarketAddress!),
+    {
+      cacheTime: 1000 * 60 * 15,
+      staleTime: 0,
+      enabled: !!selectedMarketAddress,
+      refetchOnWindowFocus: true,
+      refetchInterval: 1000 * 10,
+    }
+  )
+
+  useEffect(() => {
+    const actions = mangoStore.getState().actions
+    if (selectedMarket) {
+      actions.loadMarketFills()
+    }
+  }, [selectedMarket])
 
   useEffect(() => {
     if (!fills.length) return
+    const latesetFill = fills[0]
     if (!latestFillId) {
-      setLatestFillId(fills[0].orderId.toString())
+      const fillId = isPerpFillEvent(latesetFill)
+        ? latesetFill.takerClientOrderId
+        : latesetFill.orderId
+      setLatestFillId(fillId.toString())
     }
   }, [fills])
 
   useInterval(() => {
-    if (!soundSettings['recent-trades'] || !quoteBank) return
-    setLatestFillId(fills[0].orderId.toString())
-    const fillsLimitIndex = fills.findIndex(
-      (f) => f.orderId.toString() === latestFillId
-    )
+    const latesetFill = fills[0]
+    if (!soundSettings['recent-trades'] || !quoteBank || !latesetFill) return
+    const fillId = isPerpFillEvent(latesetFill)
+      ? latesetFill.takerClientOrderId
+      : latesetFill.orderId
+    setLatestFillId(fillId.toString())
+    const fillsLimitIndex = fills.findIndex((f) => {
+      const id = isPerpFillEvent(f) ? f.takerClientOrderId : f.orderId
+      return id.toString() === fillId.toString()
+    })
     const newFillsVolumeValue = fills
       .slice(0, fillsLimitIndex)
-      .reduce((a, c) => a + c.size * c.price, 0)
+      .reduce((a, c) => {
+        const size = isPerpFillEvent(c) ? c.quantity : c.size
+        return a + size * c.price
+      }, 0)
     if (newFillsVolumeValue * quoteBank.uiPrice > Number(alertSettings.value)) {
       volumeAlertSound.play()
     }
   }, alertSettings.seconds * 1000)
 
-  // const fetchRecentTrades = useCallback(async () => {
-  //   if (!market) return
-
-  //   try {
-  //     const response = await fetch(
-  //       `https://event-history-api-candles.herokuapp.com/trades/address/${market.publicKey}`
-  //     )
-  //     const parsedResp = await response.json()
-  //     const newTrades = parsedResp.data
-  //     if (!newTrades) return null
-
-  //     if (newTrades.length && trades.length === 0) {
-  //       setTrades(newTrades)
-  //     } else if (newTrades?.length && !isEqual(newTrades[0], trades[0])) {
-  //       setTrades(newTrades)
-  //     }
-  //   } catch (e) {
-  //     console.error('Unable to fetch recent trades', e)
-  //   }
-  // }, [market, trades])
-
-  useEffect(() => {
-    // if (CLUSTER === 'mainnet-beta') {
-    //   fetchRecentTrades()
-    // }
-    const actions = mangoStore.getState().actions
-    actions.loadMarketFills()
-  }, [selectedMarket])
-
-  useInterval(async () => {
-    // if (CLUSTER === 'mainnet-beta') {
-    //   fetchRecentTrades()
-    // }
-    const actions = mangoStore.getState().actions
-    actions.loadMarketFills()
-  }, 5000)
-
   const [buyRatio, sellRatio] = useMemo(() => {
     if (!fills.length) return [0, 0]
 
     const vol = fills.reduce(
-      (a: { buys: number; sells: number }, c: any) => {
-        if (c.side === 'buy' || c.takerSide === 1) {
-          a.buys = a.buys + c.size
+      (acc: Test, fill) => {
+        let side
+        let size
+        if (isPerpFillEvent(fill)) {
+          side = fill.takerSide === 0 ? 'buy' : 'sell'
+          size = fill.quantity
         } else {
-          a.sells = a.sells + c.size
+          side = fill.side
+          size = fill.size
         }
-        return a
+        if (side === 'buy') {
+          acc.buys = acc.buys + size
+        } else {
+          acc.sells = acc.sells + size
+        }
+        return acc
       },
       { buys: 0, sells: 0 }
     )
@@ -121,10 +161,14 @@ const RecentTrades = () => {
   }, [fills])
 
   return (
-    <>
-      <div className="thin-scroll h-full overflow-y-scroll">
-        <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 px-2">
-          <Tooltip content={t('trade:tooltip-volume-alert')} delay={250}>
+    <ErrorBoundary>
+      <div className="hide-scroll h-full overflow-y-scroll">
+        <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 pr-2 pl-0">
+          <Tooltip
+            className="hidden md:block"
+            content={t('trade:tooltip-volume-alert')}
+            delay={250}
+          >
             <IconButton
               onClick={() => setShowVolumeAlertModal(true)}
               size="small"
@@ -147,7 +191,7 @@ const RecentTrades = () => {
             </span>
           </span>
         </div>
-        <div className="px-2">
+        <div className="pl-0 pr-2">
           <table className="min-w-full">
             <thead>
               <tr className="text-right text-xxs text-th-fgd-4">
@@ -161,51 +205,81 @@ const RecentTrades = () => {
               </tr>
             </thead>
             <tbody>
-              {!!fills.length &&
-                fills.map((trade: ChartTradeType, i: number) => {
-                  const side =
-                    trade.side || (trade.takerSide === 0 ? 'bid' : 'ask')
+              {selectedMarket instanceof PerpMarket
+                ? perpMarketQuery?.data &&
+                  perpMarketQuery?.data.map((t) => {
+                    return (
+                      <tr className="font-mono text-xs" key={`${t.seq_num}`}>
+                        <td
+                          className={`pb-1.5 text-right tracking-tight ${
+                            ['buy', 'bid'].includes(t.taker_side)
+                              ? 'text-th-up'
+                              : 'text-th-down'
+                          }`}
+                        >
+                          {formatPrice(market, t.price)}
+                        </td>
+                        <td className="pb-1.5 text-right tracking-normal text-th-fgd-3">
+                          {formatSize(market, t.quantity)}
+                        </td>
+                        <td className="pb-1.5 text-right tracking-tight text-th-fgd-4">
+                          {t.block_datetime ? (
+                            <Tooltip
+                              placement="right"
+                              content={new Date(
+                                t.block_datetime
+                              ).toLocaleDateString()}
+                            >
+                              {new Date(t.block_datetime).toLocaleTimeString()}
+                            </Tooltip>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
+                : !!fills.length &&
+                  fills.map((trade, i: number) => {
+                    let side
+                    let size
+                    let time
+                    if (isPerpFillEvent(trade)) {
+                      side = trade.takerSide === 0 ? 'bid' : 'ask'
+                      size = trade.quantity
+                      time = trade.timestamp.toString()
+                    } else {
+                      side = trade.side
+                      size = trade.size
+                      time = ''
+                    }
 
-                  const formattedPrice =
-                    market?.tickSize && trade.price
-                      ? formatNumericValue(
-                          trade.price,
-                          getDecimalCount(market.tickSize)
-                        )
-                      : trade?.price || 0
+                    const formattedPrice = formatPrice(market, trade.price)
 
-                  const formattedSize =
-                    market?.minOrderSize && trade.size
-                      ? formatNumericValue(
-                          trade.size,
-                          getDecimalCount(market.minOrderSize)
-                        )
-                      : trade?.size || 0
+                    const formattedSize = formatSize(market, size)
 
-                  return (
-                    <tr className="font-mono text-xs" key={i}>
-                      <td
-                        className={`pb-1.5 text-right ${
-                          ['buy', 'bid'].includes(side)
-                            ? 'text-th-up'
-                            : 'text-th-down'
-                        }`}
-                      >
-                        {formattedPrice}
-                      </td>
-                      <td className="pb-1.5 text-right">{formattedSize}</td>
-                      <td className="pb-1.5 text-right text-th-fgd-4">
-                        {trade.time
-                          ? new Date(trade.time).toLocaleTimeString()
-                          : trade.timestamp
-                          ? dayjs(trade.timestamp.toNumber() * 1000).format(
-                              'hh:mma'
-                            )
-                          : '-'}
-                      </td>
-                    </tr>
-                  )
-                })}
+                    return (
+                      <tr className="font-mono text-xs" key={i}>
+                        <td
+                          className={`pb-1.5 text-right tracking-tight ${
+                            ['buy', 'bid'].includes(side)
+                              ? 'text-th-up'
+                              : 'text-th-down'
+                          }`}
+                        >
+                          {formattedPrice}
+                        </td>
+                        <td className="pb-1.5 text-right tracking-normal text-th-fgd-3">
+                          {formattedSize}
+                        </td>
+                        <td className="pb-1.5 text-right tracking-tight text-th-fgd-4">
+                          {time
+                            ? dayjs(Number(time) * 1000).format('hh:mma')
+                            : '-'}
+                        </td>
+                      </tr>
+                    )
+                  })}
             </tbody>
           </table>
         </div>
@@ -216,7 +290,7 @@ const RecentTrades = () => {
           onClose={() => setShowVolumeAlertModal(false)}
         />
       ) : null}
-    </>
+    </ErrorBoundary>
   )
 }
 

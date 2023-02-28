@@ -9,7 +9,7 @@ import { useCoingecko } from 'hooks/useCoingecko'
 import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
   ssr: false,
 })
@@ -39,23 +39,18 @@ const CoingeckoStats = ({
   coingeckoId,
 }: {
   bank: Bank
+  // TODO: Add Coingecko api types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   coingeckoData: any
   coingeckoId: string
 }) => {
   const { t } = useTranslation(['common', 'token'])
   const [showFullDesc, setShowFullDesc] = useState(false)
   const [daysToShow, setDaysToShow] = useState<string>('1')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
   const [loadChartData, setLoadChartData] = useState(true)
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
-  const descWidthRef = useRef<any>(null)
-
-  const [width, setWidth] = useState<number>(0)
-
-  useLayoutEffect(() => {
-    if (!descWidthRef.current) return
-    setWidth(descWidthRef.current.clientWidth)
-  }, [])
 
   const handleDaysToShow = async (days: string) => {
     if (days !== '1') {
@@ -109,21 +104,26 @@ const CoingeckoStats = ({
     return []
   }, [coingeckoPrices, bank, daysToShow, chartData, loadingChart])
 
+  const truncateDescription = (desc: string) =>
+    desc.substring(0, (desc + ' ').lastIndexOf(' ', 144))
+
+  const description = useMemo(() => {
+    const desc = coingeckoData?.description?.en
+    if (!desc) return ''
+    return showFullDesc
+      ? coingeckoData.description.en
+      : truncateDescription(coingeckoData.description.en)
+  }, [coingeckoData, showFullDesc])
+
   return (
     <>
-      {coingeckoData?.description?.en?.length ? (
+      {description ? (
         <div className="border-b border-th-bkg-3 py-4 px-6">
           <h2 className="mb-1 text-xl">About {bank.name}</h2>
           <div className="flex items-end">
-            <p
-              className={`${
-                showFullDesc ? 'h-full' : 'h-5'
-              } max-w-[720px] overflow-hidden`}
-              ref={descWidthRef}
-            >
-              {parse(coingeckoData.description.en)}
-            </p>
-            {width === 720 ? (
+            <p className="max-w-[720px]">{parse(description)}</p>
+            {coingeckoData.description.en.length > description.length ||
+            showFullDesc ? (
               <span
                 className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
                 onClick={() => setShowFullDesc(!showFullDesc)}

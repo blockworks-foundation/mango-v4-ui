@@ -1,29 +1,29 @@
 import { useTranslation } from 'next-i18next'
-import { FunctionComponent } from 'react'
 
-interface TabButtonsProps {
-  activeValue: string
-  onChange: (x: any) => void
-  values: [string, number][]
+type Values = string
+interface TabButtonsProps<T extends Values> {
+  activeValue: T
+  onChange: (x: T) => void
+  values: [T, number][]
   showBorders?: boolean
   rounded?: boolean
   fillWidth?: boolean
 }
 
-const TabButtons: FunctionComponent<TabButtonsProps> = ({
+const TabButtons = <T extends Values>({
   activeValue,
   values,
   onChange,
   showBorders = false,
   rounded = false,
   fillWidth = false,
-}) => {
+}: TabButtonsProps<T>) => {
   const { t } = useTranslation(['common', 'swap', 'token', 'trade', 'borrow'])
 
   return (
     <div className="flex w-full bg-th-bkg-1 text-th-fgd-4">
       {values.map(([label, count], i) => (
-        <div className={fillWidth ? 'flex-1' : ''} key={label + i}>
+        <div className={fillWidth ? 'flex-1' : ''} key={`${label}` + i}>
           <button
             className={`default-transition flex h-12 w-full items-center justify-center px-4 font-normal md:px-6 ${
               rounded ? 'rounded-md' : 'rounded-none'

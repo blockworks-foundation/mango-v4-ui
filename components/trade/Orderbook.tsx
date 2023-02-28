@@ -1,11 +1,9 @@
-import { AccountInfo } from '@solana/web3.js'
+import { AccountInfo, PublicKey } from '@solana/web3.js'
 import Big from 'big.js'
 import mangoStore from '@store/mangoStore'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
-import useInterval from '@components/shared/useInterval'
 import isEqual from 'lodash/isEqual'
-import usePrevious from '@components/shared/usePrevious'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
   floorToDecimal,
@@ -15,6 +13,7 @@ import {
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
+import { OrderbookL2 } from 'types'
 import OrderbookIcon from '@components/icons/OrderbookIcon'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
@@ -65,28 +64,6 @@ function decodeBook(
   }
 }
 
-// export function decodeBook(
-//   market: Market,
-//   accInfo: AccountInfo<Buffer>
-// ): SpotOrderBook | undefined {
-//   if (market && accInfo?.data) {
-//     if (market instanceof Market) {
-//       return SpotOrderBook.decode(market, accInfo.data)
-//     }
-//     else if (market instanceof PerpMarket) {
-//       // FIXME: Review the null being passed here
-//       return new BookSide(
-//         // @ts-ignore
-//         null,
-//         market,
-//         BookSideLayout.decode(accInfo.data),
-//         undefined,
-//         100000
-//       )
-//     }
-//   }
-// }
-
 type cumOrderbookSide = {
   price: number
   size: number
@@ -94,30 +71,34 @@ type cumOrderbookSide = {
   sizePercent: number
   maxSizePercent: number
   cumulativeSizePercent: number
+  isUsersOrder: boolean
 }
 
 const getCumulativeOrderbookSide = (
-  orders: any[],
+  orders: number[][],
   totalSize: number,
   maxSize: number,
-  depth: number
+  depth: number,
+  usersOpenOrderPrices: number[],
+  grouping: number
 ): cumOrderbookSide[] => {
-  const cumulative = orders
-    .slice(0, depth)
-    .reduce((cumulative, [price, size], i) => {
-      const cumulativeSize = (cumulative[i - 1]?.cumulativeSize || 0) + size
-      cumulative.push({
+  let cumulativeSize = 0
+  return orders.slice(0, depth).map(([price, size]) => {
+    cumulativeSize += size
+    return {
+      price: Number(price),
+      size,
+      cumulativeSize,
+      sizePercent: Math.round((cumulativeSize / (totalSize || 1)) * 100),
+      cumulativeSizePercent: Math.round((size / (cumulativeSize || 1)) * 100),
+      maxSizePercent: Math.round((size / (maxSize || 1)) * 100),
+      isUsersOrder: hasOpenOrderForPriceGroup(
+        usersOpenOrderPrices,
         price,
-        size,
-        cumulativeSize,
-        sizePercent: Math.round((cumulativeSize / (totalSize || 1)) * 100),
-        cumulativeSizePercent: Math.round((size / (cumulativeSize || 1)) * 100),
-        maxSizePercent: Math.round((size / (maxSize || 1)) * 100),
-      })
-      return cumulative
-    }, [])
-
-  return cumulative
+        grouping
+      ),
+    }
+  })
 }
 
 const groupBy = (
@@ -172,22 +153,30 @@ const groupBy = (
 
 const hasOpenOrderForPriceGroup = (
   openOrderPrices: number[],
-  price: string,
+  price: number,
   grouping: number
 ) => {
   return !!openOrderPrices.find((ooPrice) => {
-    return (
-      ooPrice >= parseFloat(price) && ooPrice < parseFloat(price) + grouping
-    )
+    return ooPrice >= price - grouping && ooPrice <= price + grouping
   })
 }
 
+const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
+  book.perpMarket[`_${side}`] = book
+  mangoStore.getState().actions.fetchOpenOrders()
+}
+
 const depth = 40
+type OrderbookData = {
+  bids: cumOrderbookSide[]
+  asks: cumOrderbookSide[]
+  spread: number
+  spreadPercentage: number
+}
 
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
   const {
-    selectedMarket,
     serumOrPerpMarket: market,
     baseSymbol,
     quoteSymbol,
@@ -195,16 +184,14 @@ const Orderbook = () => {
   const connection = mangoStore((s) => s.connection)
 
   const [isScrolled, setIsScrolled] = useState(false)
-  const [orderbookData, setOrderbookData] = useState<any | null>(null)
+  const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const [grouping, setGrouping] = useState(0.01)
+  const [tickSize, setTickSize] = useState(0)
   const [showBuys, setShowBuys] = useState(true)
   const [showSells, setShowSells] = useState(true)
-  const [userOpenOrderPrices, setUserOpenOrderPrices] = useState<number[]>([])
 
-  const currentOrderbookData = useRef<any>(null)
-  const nextOrderbookData = useRef<any>(null)
+  const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)
-  const previousGrouping = usePrevious(grouping)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
 
@@ -214,18 +201,11 @@ const Orderbook = () => {
   }, [isMobile])
 
   useEffect(() => {
-    if (!market) return
-    setGrouping(market.tickSize)
-  }, [market])
-
-  useEffect(
-    () =>
-      mangoStore.subscribe(
-        (state) => [state.selectedMarket.orderbook],
-        (orderbook) => (nextOrderbookData.current = orderbook)
-      ),
-    []
-  )
+    if (market && market.tickSize !== tickSize) {
+      setTickSize(market.tickSize)
+      setGrouping(market.tickSize)
+    }
+  }, [market, tickSize])
 
   const verticallyCenterOrderbook = useCallback(() => {
     const element = orderbookElRef.current
@@ -241,164 +221,201 @@ const Orderbook = () => {
     }
   }, [])
 
-  useInterval(() => {
-    const orderbook = mangoStore.getState().selectedMarket.orderbook
-    const group = mangoStore.getState().group
-    if (!market || !group) return
+  useEffect(
+    () =>
+      mangoStore.subscribe(
+        (state) => state.selectedMarket.orderbook,
+        (newOrderbook) => {
+          if (
+            newOrderbook &&
+            market &&
+            !isEqual(currentOrderbookData.current, newOrderbook)
+          ) {
+            // check if user has open orders so we can highlight them on orderbook
+            const openOrders = mangoStore.getState().mangoAccount.openOrders
+            const marketPk = market.publicKey.toString()
+            const bids2 = mangoStore.getState().selectedMarket.bidsAccount
+            const asks2 = mangoStore.getState().selectedMarket.asksAccount
+            const mangoAccount = mangoStore.getState().mangoAccount.current
+            let usersOpenOrderPrices: number[] = []
+            if (
+              mangoAccount &&
+              bids2 &&
+              asks2 &&
+              bids2 instanceof BookSide &&
+              asks2 instanceof BookSide
+            ) {
+              usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
+                .filter((order) => order.owner.equals(mangoAccount.publicKey))
+                .map((order) => order.price)
+            } else {
+              usersOpenOrderPrices =
+                marketPk && openOrders[marketPk]?.length
+                  ? openOrders[marketPk]?.map((order) => order.price)
+                  : []
+            }
 
-    if (
-      nextOrderbookData?.current &&
-      (!isEqual(currentOrderbookData.current, nextOrderbookData.current) ||
-        previousGrouping !== grouping)
-    ) {
-      // check if user has open orders so we can highlight them on orderbook
-      const openOrders = mangoStore.getState().mangoAccount.openOrders
-      const marketPk =
-        selectedMarket && selectedMarket instanceof PerpMarket
-          ? selectedMarket.publicKey
-          : selectedMarket?.serumMarketExternal
-      const newUserOpenOrderPrices =
-        marketPk && openOrders[marketPk.toString()]?.length
-          ? openOrders[marketPk.toString()]?.map((order) => order.price)
-          : []
+            // updated orderbook data
+            const bids =
+              groupBy(newOrderbook?.bids, market, grouping, true) || []
+            const asks =
+              groupBy(newOrderbook?.asks, market, grouping, false) || []
 
-      if (!isEqual(newUserOpenOrderPrices, userOpenOrderPrices)) {
-        setUserOpenOrderPrices(newUserOpenOrderPrices)
-      }
+            const sum = (total: number, [, size]: number[], index: number) =>
+              index < depth ? total + size : total
+            const totalSize = bids.reduce(sum, 0) + asks.reduce(sum, 0)
 
-      // updated orderbook data
-      const bids = groupBy(orderbook?.bids, market, grouping, true) || []
-      const asks = groupBy(orderbook?.asks, market, grouping, false) || []
+            const maxSize =
+              Math.max(
+                ...bids.map((b: number[]) => {
+                  return b[1]
+                })
+              ) +
+              Math.max(
+                ...asks.map((a: number[]) => {
+                  return a[1]
+                })
+              )
 
-      const sum = (total: number, [, size]: number[], index: number) =>
-        index < depth ? total + size : total
-      const totalSize = bids.reduce(sum, 0) + asks.reduce(sum, 0)
+            const bidsToDisplay = getCumulativeOrderbookSide(
+              bids,
+              totalSize,
+              maxSize,
+              depth,
+              usersOpenOrderPrices,
+              grouping
+            )
+            const asksToDisplay = getCumulativeOrderbookSide(
+              asks,
+              totalSize,
+              maxSize,
+              depth,
+              usersOpenOrderPrices,
+              grouping
+            )
 
-      const maxSize =
-        Math.max(
-          ...bids.map((b: number[]) => {
-            return b[1]
-          })
-        ) +
-        Math.max(
-          ...asks.map((a: number[]) => {
-            return a[1]
-          })
-        )
+            currentOrderbookData.current = newOrderbook
+            if (bidsToDisplay[0] || asksToDisplay[0]) {
+              const bid = bidsToDisplay[0]?.price
+              const ask = asksToDisplay[0]?.price
+              let spread = 0,
+                spreadPercentage = 0
+              if (bid && ask) {
+                spread = ask - bid
+                spreadPercentage = (spread / ask) * 100
+              }
 
-      const bidsToDisplay = getCumulativeOrderbookSide(
-        bids,
-        totalSize,
-        maxSize,
-        depth
-      )
-      const asksToDisplay = getCumulativeOrderbookSide(
-        asks,
-        totalSize,
-        maxSize,
-        depth
-      )
-
-      currentOrderbookData.current = {
-        bids: orderbook?.bids,
-        asks: orderbook?.asks,
-      }
-      if (bidsToDisplay[0] || asksToDisplay[0]) {
-        const bid = bidsToDisplay[0]?.price
-        const ask = asksToDisplay[0]?.price
-        let spread = 0,
-          spreadPercentage = 0
-        if (bid && ask) {
-          spread = ask - bid
-          spreadPercentage = (spread / ask) * 100
+              setOrderbookData({
+                bids: bidsToDisplay,
+                asks: asksToDisplay.reverse(),
+                spread,
+                spreadPercentage,
+              })
+              if (!isScrolled) {
+                verticallyCenterOrderbook()
+              }
+            } else {
+              setOrderbookData(null)
+            }
+          }
         }
+      ),
+    [grouping, market, isScrolled, verticallyCenterOrderbook]
+  )
 
-        setOrderbookData({
-          bids: bidsToDisplay,
-          asks: asksToDisplay.reverse(),
-          spread,
-          spreadPercentage,
-        })
-        if (!isScrolled) {
-          verticallyCenterOrderbook()
-        }
-      } else {
-        setOrderbookData(null)
-      }
-    }
-  }, 400)
-
-  useEffect(() => {
-    const group = mangoStore.getState().group
-    const set = mangoStore.getState().set
-    const client = mangoStore.getState().client
-
-    if (!market || !group) return
-
-    let previousBidInfo: AccountInfo<Buffer> | undefined = undefined
-    let previousAskInfo: AccountInfo<Buffer> | undefined = undefined
-    let bidSubscriptionId: number | undefined = undefined
-    let askSubscriptionId: number | undefined = undefined
-
+  const bidAccountAddress = useMemo(() => {
+    if (!market) return ''
     const bidsPk =
       market instanceof Market ? market['_decoded'].bids : market.bids
-    console.log('bidsPk', bidsPk?.toString())
+    return bidsPk.toString()
+  }, [market])
+
+  const askAccountAddress = useMemo(() => {
+    if (!market) return ''
+    const asksPk =
+      market instanceof Market ? market['_decoded'].asks : market.asks
+    return asksPk.toString()
+  }, [market])
+
+  useEffect(() => {
+    console.log('setting up orderbook websockets')
+    const set = mangoStore.getState().set
+    const client = mangoStore.getState().client
+    const selectedMarket = mangoStore.getState().selectedMarket.current
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return
+
+    let bidSubscriptionId: number | undefined = undefined
+    let askSubscriptionId: number | undefined = undefined
+    const market =
+      selectedMarket instanceof PerpMarket
+        ? selectedMarket
+        : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+    const bidsPk = new PublicKey(bidAccountAddress)
     if (bidsPk) {
-      connection.getAccountInfo(bidsPk).then((info) => {
-        if (!info) return
-        const decodedBook = decodeBook(client, market, info, 'bids')
-        set((state) => {
-          state.selectedMarket.bidsAccount = decodedBook
-          state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+      connection
+        .getAccountInfoAndContext(bidsPk)
+        .then(({ context, value: info }) => {
+          if (!info) return
+          const decodedBook = decodeBook(client, market, info, 'bids')
+          set((state) => {
+            state.selectedMarket.lastSeenSlot.bids = context.slot
+            state.selectedMarket.bidsAccount = decodedBook
+            state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+          })
         })
-      })
       bidSubscriptionId = connection.onAccountChange(
         bidsPk,
-        (info, _context) => {
-          if (
-            !previousBidInfo ||
-            !previousBidInfo.data.equals(info.data) ||
-            previousBidInfo.lamports !== info.lamports
-          ) {
-            previousBidInfo = info
+        (info, context) => {
+          const lastSeenSlot =
+            mangoStore.getState().selectedMarket.lastSeenSlot.bids
+          if (context.slot > lastSeenSlot) {
             const decodedBook = decodeBook(client, market, info, 'bids')
+            if (decodedBook instanceof BookSide) {
+              updatePerpMarketOnGroup(decodedBook, 'bids')
+            }
             set((state) => {
               state.selectedMarket.bidsAccount = decodedBook
               state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+              state.selectedMarket.lastSeenSlot.bids = context.slot
             })
           }
-        }
+        },
+        'processed'
       )
     }
 
-    const asksPk =
-      market instanceof Market ? market['_decoded'].asks : market.asks
-    console.log('asksPk', asksPk?.toString())
+    const asksPk = new PublicKey(askAccountAddress)
     if (asksPk) {
-      connection.getAccountInfo(asksPk).then((info) => {
-        if (!info) return
-        const decodedBook = decodeBook(client, market, info, 'asks')
-        set((state) => {
-          state.selectedMarket.asksAccount = decodedBook
-          state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+      connection
+        .getAccountInfoAndContext(asksPk)
+        .then(({ context, value: info }) => {
+          if (!info) return
+          const decodedBook = decodeBook(client, market, info, 'asks')
+          set((state) => {
+            state.selectedMarket.asksAccount = decodedBook
+            state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+            state.selectedMarket.lastSeenSlot.asks = context.slot
+          })
         })
-      })
       askSubscriptionId = connection.onAccountChange(
         asksPk,
-        (info, _context) => {
-          if (
-            !previousAskInfo ||
-            !previousAskInfo.data.equals(info.data) ||
-            previousAskInfo.lamports !== info.lamports
-          ) {
-            previousAskInfo = info
+        (info, context) => {
+          const lastSeenSlot =
+            mangoStore.getState().selectedMarket.lastSeenSlot.asks
+          if (context.slot > lastSeenSlot) {
             const decodedBook = decodeBook(client, market, info, 'asks')
+            if (decodedBook instanceof BookSide) {
+              updatePerpMarketOnGroup(decodedBook, 'asks')
+            }
             set((state) => {
               state.selectedMarket.asksAccount = decodedBook
               state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+              state.selectedMarket.lastSeenSlot.asks = context.slot
             })
           }
-        }
+        },
+        'processed'
       )
     }
     return () => {
@@ -409,12 +426,10 @@ const Orderbook = () => {
         connection.removeAccountChangeListener(askSubscriptionId)
       }
     }
-  }, [market, connection])
+  }, [bidAccountAddress, askAccountAddress, connection])
 
   useEffect(() => {
     window.addEventListener('resize', verticallyCenterOrderbook)
-    // const id = setTimeout(verticallyCenterOrderbook, 400)
-    // return () => clearTimeout(id)
   }, [verticallyCenterOrderbook])
 
   const resetOrderbook = useCallback(async () => {
@@ -422,7 +437,7 @@ const Orderbook = () => {
     setShowSells(true)
     await sleep(300)
     verticallyCenterOrderbook()
-  }, [])
+  }, [verticallyCenterOrderbook])
 
   const onGroupSizeChange = useCallback((groupSize: number) => {
     setGrouping(groupSize)
@@ -437,6 +452,7 @@ const Orderbook = () => {
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
         <div id="trade-step-three" className="flex items-center space-x-1.5">
           <Tooltip
+            className="hidden md:block"
             content={showBuys ? t('trade:hide-bids') : t('trade:show-bids')}
             placement="bottom"
           >
@@ -451,6 +467,7 @@ const Orderbook = () => {
             </button>
           </Tooltip>
           <Tooltip
+            className="hidden md:block"
             content={showSells ? t('trade:hide-asks') : t('trade:show-asks')}
             placement="bottom"
           >
@@ -464,7 +481,11 @@ const Orderbook = () => {
               <OrderbookIcon className="h-4 w-4" side="sell" />
             </button>
           </Tooltip>
-          <Tooltip content={'Reset and center orderbook'} placement="bottom">
+          <Tooltip
+            className="hidden md:block"
+            content={'Reset and center orderbook'}
+            placement="bottom"
+          >
             <button
               className={`rounded ${
                 showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
@@ -477,7 +498,12 @@ const Orderbook = () => {
         </div>
         {market ? (
           <div id="trade-step-four">
-            <Tooltip content={t('trade:grouping')} placement="left" delay={250}>
+            <Tooltip
+              className="hidden md:block"
+              content={t('trade:grouping')}
+              placement="left"
+              delay={250}
+            >
               <GroupSize
                 tickSize={market.tickSize}
                 onChange={onGroupSizeChange}
@@ -515,11 +541,7 @@ const Orderbook = () => {
                     <MemoizedOrderbookRow
                       minOrderSize={market.minOrderSize}
                       tickSize={market.tickSize}
-                      hasOpenOrder={hasOpenOrderForPriceGroup(
-                        userOpenOrderPrices,
-                        orderbookData?.asks[index].price,
-                        grouping
-                      )}
+                      hasOpenOrder={orderbookData?.asks[index].isUsersOrder}
                       key={orderbookData?.asks[index].price}
                       price={orderbookData?.asks[index].price}
                       size={orderbookData?.asks[index].size}
@@ -547,10 +569,12 @@ const Orderbook = () => {
               </div>
             </div>
             <div className="col-span-1 text-right font-mono">
-              {formatNumericValue(
-                orderbookData?.spread,
-                market ? getDecimalCount(market.tickSize) : undefined
-              )}
+              {orderbookData?.spread
+                ? formatNumericValue(
+                    orderbookData.spread,
+                    market ? getDecimalCount(market.tickSize) : undefined
+                  )
+                : null}
             </div>
           </div>
         ) : null}
@@ -561,11 +585,7 @@ const Orderbook = () => {
                   <MemoizedOrderbookRow
                     minOrderSize={market.minOrderSize}
                     tickSize={market.tickSize}
-                    hasOpenOrder={hasOpenOrderForPriceGroup(
-                      userOpenOrderPrices,
-                      orderbookData?.bids[index].price,
-                      grouping
-                    )}
+                    hasOpenOrder={orderbookData?.bids[index].isUsersOrder}
                     price={orderbookData?.bids[index].price}
                     size={orderbookData?.bids[index].size}
                     side="buy"

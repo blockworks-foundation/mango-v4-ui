@@ -1,50 +1,49 @@
-import ChartRangeButtons from '@components/shared/ChartRangeButtons'
+// import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
-import TabUnderline from '@components/shared/TabUnderline'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useSelectedMarket from 'hooks/useSelectedMarket'
+import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import MarketLogos from './MarketLogos'
 
-const isTesting = process.env.NEXT_PUBLIC_SHOW_PERPS === 'true'
-const TAB_VALUES = isTesting ? ['spot', 'perp'] : ['spot']
-
 const MarketSelectDropdown = () => {
+  const { t } = useTranslation('common')
   const { selectedMarket } = useSelectedMarket()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const allPerpMarkets = mangoStore((s) => s.perpMarkets)
-  const [activeTab, setActiveTab] = useState('spot')
-  const [spotBaseFilter, setSpotBaseFilter] = useState('All')
+  // const [spotBaseFilter, setSpotBaseFilter] = useState('All')
 
   const perpMarkets = useMemo(() => {
-    return allPerpMarkets.filter(
-      (p) =>
-        p.publicKey.toString() !==
-        '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
-    )
+    return allPerpMarkets
+      .filter(
+        (p) =>
+          p.publicKey.toString() !==
+          '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
   }, [allPerpMarkets])
 
-  const spotBaseTokens: string[] = useMemo(() => {
-    if (serumMarkets.length) {
-      const baseTokens: string[] = []
-      serumMarkets.map((m) => {
-        const base = m.name.split('/')[1]
-        if (!baseTokens.includes(base)) {
-          baseTokens.push(base)
-        }
-      })
-      return baseTokens
-    }
-    return []
-  }, [serumMarkets])
+  // const spotBaseTokens: string[] = useMemo(() => {
+  //   if (serumMarkets.length) {
+  //     const baseTokens: string[] = []
+  //     serumMarkets.map((m) => {
+  //       const base = m.name.split('/')[1]
+  //       if (!baseTokens.includes(base)) {
+  //         baseTokens.push(base)
+  //       }
+  //     })
+  //     return baseTokens
+  //   }
+  //   return []
+  // }, [serumMarkets])
 
   return (
     <Popover>
-      {({ open }) => (
+      {({ open, close }) => (
         <div
           className="relative flex flex-col overflow-visible"
           id="trade-step-one"
@@ -62,67 +61,50 @@ const MarketSelectDropdown = () => {
               } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute -left-5 top-12 z-40 mr-4 w-screen bg-th-bkg-2 pb-2 pt-4 md:w-72">
-            <TabUnderline
-              activeValue={activeTab}
-              onChange={(v) => setActiveTab(v)}
-              small
-              values={TAB_VALUES}
-            />
-            {activeTab === 'spot' ? (
-              serumMarkets?.length ? (
-                <>
-                  <div className="mb-2 w-56 px-4">
-                    <ChartRangeButtons
-                      activeValue={spotBaseFilter}
-                      values={['All', ...spotBaseTokens]}
-                      onChange={(v) => setSpotBaseFilter(v)}
-                    />
-                  </div>
-                  {serumMarkets
-                    .filter((mkt) => {
-                      if (spotBaseFilter === 'All') {
-                        return mkt
-                      } else {
-                        return mkt.name.split('/')[1] === spotBaseFilter
-                      }
-                    })
-                    .map((m) => {
-                      return (
-                        <div
-                          className="flex items-center justify-between py-2 px-4"
-                          key={m.publicKey.toString()}
-                        >
-                          <Link
-                            href={{
-                              pathname: '/trade',
-                              query: { name: m.name },
-                            }}
-                            shallow={true}
+          <Popover.Panel className="absolute -left-5 top-12 z-40 mr-4 w-screen bg-th-bkg-2 pb-4 pt-2 md:w-72">
+            <p className="my-2 ml-4 text-xs">{t('perp')}</p>
+            {perpMarkets?.length
+              ? perpMarkets.map((m) => {
+                  return (
+                    <div
+                      className="flex items-center justify-between py-2 px-4"
+                      key={m.publicKey.toString()}
+                      onClick={() => {
+                        close()
+                      }}
+                    >
+                      <Link
+                        href={{
+                          pathname: '/trade',
+                          query: { name: m.name },
+                        }}
+                        shallow={true}
+                      >
+                        <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-active">
+                          <MarketLogos market={m} />
+                          <span
+                            className={
+                              m.name === selectedMarket?.name
+                                ? 'text-th-active'
+                                : ''
+                            }
                           >
-                            <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-active">
-                              <MarketLogos market={m} />
-                              <span
-                                className={
-                                  m.name === selectedMarket?.name
-                                    ? 'text-th-active'
-                                    : ''
-                                }
-                              >
-                                {m.name}
-                              </span>
-                            </div>
-                          </Link>
-                          <FavoriteMarketButton market={m} />
+                            {m.name}
+                          </span>
                         </div>
-                      )
-                    })}
-                </>
-              ) : null
-            ) : null}
-            {activeTab === 'perp'
-              ? perpMarkets?.length
-                ? perpMarkets.map((m) => {
+                      </Link>
+                      <FavoriteMarketButton market={m} />
+                    </div>
+                  )
+                })
+              : null}
+            <p className="my-2 ml-4 text-xs">{t('spot')}</p>
+            {serumMarkets?.length ? (
+              <>
+                {serumMarkets
+                  .map((x) => x)
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((m) => {
                     return (
                       <div
                         className="flex items-center justify-between py-2 px-4"
@@ -135,7 +117,7 @@ const MarketSelectDropdown = () => {
                           }}
                           shallow={true}
                         >
-                          <div className="default-transition flex items-center hover:cursor-pointer hover:bg-th-bkg-2">
+                          <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-active">
                             <MarketLogos market={m} />
                             <span
                               className={
@@ -151,9 +133,9 @@ const MarketSelectDropdown = () => {
                         <FavoriteMarketButton market={m} />
                       </div>
                     )
-                  })
-                : null
-              : null}
+                  })}
+              </>
+            ) : null}
           </Popover.Panel>
         </div>
       )}

@@ -27,10 +27,10 @@ const DEFAULT_COINGECKO_VALUES = {
   atl_change_percentage: 0,
   ath_date: 0,
   atl_date: 0,
-  high_24h: 0,
+  high_24h: { usd: 0 },
   circulating_supply: 0,
   fully_diluted_valuation: 0,
-  low_24h: 0,
+  low_24h: { usd: 0 },
   market_cap: 0,
   max_supply: 0,
   price_change_percentage_24h: 0,
@@ -38,10 +38,21 @@ const DEFAULT_COINGECKO_VALUES = {
   total_volume: 0,
 }
 
+type CryptoStatsResponse = {
+  high_24h: Record<string, number>
+  low_24h: Record<string, number>
+  price_change_percentage_24h: number
+}
+
+export type CoingeckoDataType = {
+  market_data: CryptoStatsResponse
+  name: string
+}
+
 const fetchTokenInfo = async (tokenId: string | undefined) => {
   if (!tokenId) return
   const response = await fetch(
-    `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=false&developer_data=false&sparkline=false
+    `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=false&developer_data=false&sparkline=false&community_data=false
     `
   )
   const data = await response.json()
@@ -85,16 +96,17 @@ const TokenPage = () => {
     }
   }, [bank, mangoTokens])
 
-  const coingeckoTokenInfo = useQuery<
-    { market_data: any; name: string },
-    Error
-  >(['ip-address', coingeckoId], () => fetchTokenInfo(coingeckoId), {
-    cacheTime: 1000 * 60 * 15,
-    staleTime: 1000 * 60 * 5,
-    retry: 3,
-    refetchOnWindowFocus: false,
-    enabled: !!coingeckoId,
-  })
+  const coingeckoTokenInfo = useQuery<CoingeckoDataType, Error>(
+    ['coingecko-token-info', coingeckoId],
+    () => fetchTokenInfo(coingeckoId),
+    {
+      cacheTime: 1000 * 60 * 15,
+      staleTime: 1000 * 60 * 5,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!coingeckoId,
+    }
+  )
 
   const { high_24h, low_24h, price_change_percentage_24h } =
     coingeckoTokenInfo.data

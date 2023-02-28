@@ -15,6 +15,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
+import { isMangoError } from 'types'
 
 interface MarketCloseModalProps {
   onClose: () => void
@@ -96,13 +97,15 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         title: 'Transaction successful',
         txid: tx,
       })
-    } catch (e: any) {
-      notify({
-        title: 'There was an issue.',
-        description: e.message,
-        txid: e?.txid,
-        type: 'error',
-      })
+    } catch (e) {
+      if (isMangoError(e)) {
+        notify({
+          title: 'There was an issue.',
+          description: e.message,
+          txid: e?.txid,
+          type: 'error',
+        })
+      }
       console.error('Place trade error:', e)
     } finally {
       setSubmitting(false)

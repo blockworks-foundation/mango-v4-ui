@@ -1,4 +1,3 @@
-import { Bank, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -14,7 +13,6 @@ import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
-  ALPHA_DEPOSIT_LIMIT,
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
@@ -23,7 +21,6 @@ import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
 import Button from './shared/Button'
-import InlineNotification from './shared/InlineNotification'
 import Loading from './shared/Loading'
 import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
 import { withValueLimit } from './swap/SwapForm'
@@ -39,6 +36,7 @@ import Decimal from 'decimal.js'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { isMangoError } from 'types'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -66,27 +64,6 @@ export const walletBalanceForToken = (
   }
 }
 
-export const useAlphaMax = (inputAmount: string, bank: Bank | undefined) => {
-  const exceedsAlphaMax = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    const group = mangoStore.getState().group
-    if (!group || !mangoAccount) return
-    if (
-      mangoAccount.owner.toString() ===
-      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
-    )
-      return false
-    const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group).toNumber()
-    )
-    return (
-      parseFloat(inputAmount) * (bank?.uiPrice || 1) + accountValue >
-        ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
-    )
-  }, [inputAmount, bank])
-  return exceedsAlphaMax
-}
-
 function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { t } = useTranslation('common')
   const [inputAmount, setInputAmount] = useState('')
@@ -105,7 +82,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
-  const exceedsAlphaMax = useAlphaMax(inputAmount, bank)
 
   const logoUri = useMemo(() => {
     let logoURI
@@ -173,15 +149,16 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       actions.fetchWalletTokens(publicKey)
       setSubmitting(false)
       onSuccess()
-    } catch (e: any) {
+    } catch (e) {
+      console.error('Error depositing:', e)
+      setSubmitting(false)
+      if (!isMangoError(e)) return
       notify({
         title: 'Transaction failed',
         description: e.message,
         txid: e?.txid,
         type: 'error',
       })
-      console.error('Error depositing:', e)
-      setSubmitting(false)
     }
   }, [bank, publicKey, inputAmount])
 
@@ -228,11 +205,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
         >
           <div>
-            <InlineNotification
-              type="info"
-              desc={`There is a $${ALPHA_DEPOSIT_LIMIT} account value limit during alpha
-            testing.`}
-            />
             <SolBalanceWarnings
               amount={inputAmount}
               className="mt-2"
@@ -341,10 +313,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           <Button
             onClick={connected ? handleDeposit : handleConnect}
             className="flex w-full items-center justify-center"
-            disabled={
-              connected &&
-              (!inputAmount || exceedsAlphaMax || showInsufficientBalance)
-            }
+            disabled={connected && (!inputAmount || showInsufficientBalance)}
             size="large"
           >
             {!connected ? (

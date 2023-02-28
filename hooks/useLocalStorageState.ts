@@ -1,11 +1,23 @@
-import { useMemo, useState, useEffect, useCallback } from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+  SetStateAction,
+  Dispatch,
+} from 'react'
 
-const localStorageListeners: any = {}
+interface LocalStorageListenersType {
+  [key: string]: Array<Dispatch<SetStateAction<string>>>
+}
 
-export function useLocalStorageStringState(
+const localStorageListeners: LocalStorageListenersType = {}
+
+function useLocalStorageStringState(
   key: string,
-  defaultState: string | null = null
-): [string | null, (newState: string | null) => void] {
+  defaultState: string
+): [string | undefined, (newState: string) => void] {
   const state =
     typeof window !== 'undefined'
       ? localStorage.getItem(key) || defaultState
@@ -20,7 +32,7 @@ export function useLocalStorageStringState(
     localStorageListeners[key].push(notify)
     return () => {
       localStorageListeners[key] = localStorageListeners[key].filter(
-        (listener: any) => listener !== notify
+        (listener) => listener !== notify
       )
       if (localStorageListeners[key].length === 0) {
         delete localStorageListeners[key]
@@ -33,39 +45,47 @@ export function useLocalStorageStringState(
       if (!localStorageListeners[key]) {
         localStorageListeners[key] = []
       }
-      const changed = state !== newState
-      if (!changed) {
-        return
-      }
 
       if (newState === null) {
         localStorage.removeItem(key)
       } else {
         localStorage.setItem(key, newState)
       }
-      localStorageListeners[key].forEach((listener: any) =>
+      localStorageListeners[key].forEach((listener) =>
         listener(key + '\n' + newState)
       )
     },
-    [state, key]
+    [key]
   )
 
   return [state, setState]
 }
 
-type LocalStoreState = any[] | any
-
-export default function useLocalStorageState(
+export default function useLocalStorageState<T = any>(
   key: string,
-  defaultState: LocalStoreState | null = null
-): [LocalStoreState, (newState: LocalStoreState) => void] {
+  defaultState?: string | number | object | undefined | null | boolean
+): [T, (newState: string | number | object | null | boolean) => void] {
   const [stringState, setStringState] = useLocalStorageStringState(
     key,
     JSON.stringify(defaultState)
   )
 
-  return [
-    useMemo(() => stringState && JSON.parse(stringState), [stringState]),
-    (newState) => setStringState(JSON.stringify(newState)),
-  ]
+  const setState = useCallback(
+    (newState: string | number | object | null | boolean) => {
+      setStringState(JSON.stringify(newState))
+    },
+    [setStringState]
+  )
+
+  const state: T = useMemo(() => {
+    if (stringState) {
+      try {
+        return JSON.parse(stringState)
+      } catch (e) {
+        return stringState
+      }
+    }
+  }, [stringState])
+
+  return [state, setState]
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from '@tanstack/react-query'
 import { Token } from 'types/jupiter'
 import useJupiterMints from './useJupiterMints'
@@ -30,7 +31,6 @@ const fetchCoingecko = async (
 
 export const useCoingecko = () => {
   const { mangoTokens } = useJupiterMints()
-
   const res = useQuery<any[], Error>(
     ['coingecko-tokens'],
     () => fetchCoingecko(mangoTokens),

@@ -44,6 +44,7 @@ import RoutesModal from './RoutesModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { isMangoError } from 'types'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -164,8 +165,6 @@ const fetchJupiterTransaction = async (
   const filtered_jup_ixs = ixs
     .filter((ix) => !isSetupIx(ix.programId))
     .filter((ix) => !isDuplicateAta(ix))
-  console.log('ixs: ', ixs)
-  console.log('filtered ixs: ', filtered_jup_ixs)
 
   return [filtered_jup_ixs, alts]
 }
@@ -300,14 +299,16 @@ const SwapReviewRouteInfo = ({
         actions.fetchGroup()
         actions.fetchSwapHistory(mangoAccount.publicKey.toString(), 30000)
         await actions.reloadMangoAccount()
-      } catch (e: any) {
+      } catch (e) {
         console.error('onSwap error: ', e)
-        notify({
-          title: 'Transaction failed',
-          description: e.message,
-          txid: e?.txid,
-          type: 'error',
-        })
+        if (isMangoError(e)) {
+          notify({
+            title: 'Transaction failed',
+            description: e.message,
+            txid: e?.txid,
+            type: 'error',
+          })
+        }
       } finally {
         setSubmitting(false)
       }

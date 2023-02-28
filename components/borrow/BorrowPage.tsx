@@ -4,7 +4,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY, USDC_MINT } from 'utils/constants'
 import FlipNumbers from 'react-flip-numbers'
 import Button from '@components/shared/Button'
 import { formatCurrencyValue } from 'utils/numbers'
@@ -15,12 +15,13 @@ import { ArrowDownRightIcon, ArrowUpLeftIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
-import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import TabButtons from '@components/shared/TabButtons'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { PublicKey } from '@solana/web3.js'
+import { getMaxWithdrawForBank } from '@components/swap/useTokenMax'
 
 const BorrowPage = () => {
   const { t } = useTranslation(['common', 'borrow'])
@@ -33,7 +34,7 @@ const BorrowPage = () => {
   const { connected } = useWallet()
   const { width } = useViewport()
   const fullWidthTabs = width ? width < breakpoints.sm : false
-  const banks = useBanksWithBalances('borrowedAmount')
+  const banks = useBanksWithBalances()
 
   const handleBorrowModal = () => {
     if (!connected || mangoAccount) {
@@ -70,9 +71,14 @@ const BorrowPage = () => {
 
   const [collateralRemaining, collateralRemainingRatio] = useMemo(() => {
     if (mangoAccount && group) {
-      const remaining = toUiDecimalsForQuote(
-        mangoAccount.getCollateralValue(group).toNumber()
-      )
+      const usdcBank = group.getFirstBankByMint(new PublicKey(USDC_MINT))
+      const remaining = getMaxWithdrawForBank(
+        group,
+        usdcBank,
+        mangoAccount,
+        true
+      ).toNumber()
+
       if (borrowValue) {
         const total = borrowValue + remaining
         const ratio = (remaining / total) * 100

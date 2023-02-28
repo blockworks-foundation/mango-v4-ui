@@ -21,6 +21,7 @@ import mangoStore from '@store/mangoStore'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import Decimal from 'decimal.js'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -48,7 +49,7 @@ const TokenStats = () => {
     router.push(`/token/${bank.name}`, undefined, { shallow: true })
   }
 
-  return (
+  return group ? (
     <ContentBox hideBorder hidePadding>
       {showTableView ? (
         <Table>
@@ -102,8 +103,13 @@ const TokenStats = () => {
               }
               const deposits = bank.uiDeposits()
               const borrows = bank.uiBorrows()
-              const available =
-                deposits - deposits * bank.minVaultToDepositsRatio - borrows
+              const availableVaultBalance =
+                group.getTokenVaultBalanceByMintUi(bank.mint) -
+                deposits * bank.minVaultToDepositsRatio
+              const available = Decimal.max(
+                0,
+                availableVaultBalance.toFixed(bank.mintDecimals)
+              )
 
               return (
                 <TrBody key={bank.name}>
@@ -215,9 +221,14 @@ const TokenStats = () => {
             }
             const deposits = bank.uiDeposits()
             const borrows = bank.uiBorrows()
+            const availableVaultBalance =
+              group.getTokenVaultBalanceByMintUi(bank.mint) -
+              deposits * bank.minVaultToDepositsRatio
+            const available = Decimal.max(
+              0,
+              availableVaultBalance.toFixed(bank.mintDecimals)
+            )
             const price = bank.uiPrice
-            const available =
-              deposits - deposits * bank.minVaultToDepositsRatio - borrows
             return (
               <div
                 key={bank.name}
@@ -330,7 +341,7 @@ const TokenStats = () => {
                         />{' '}
                         <span className="text-th-fgd-4">
                           <FormatNumericValue
-                            value={(available * price).toFixed(2)}
+                            value={(available.toNumber() * price).toFixed(2)}
                             isUsd
                           />
                         </span>
@@ -369,7 +380,7 @@ const TokenStats = () => {
         </div>
       )}
     </ContentBox>
-  )
+  ) : null
 }
 
 export default TokenStats

@@ -9,12 +9,12 @@ const ChatForm = ({
   setLatestMessages,
 }: {
   messages: MessageProps[]
-  setLatestMessages: (x: any) => void
+  setLatestMessages: (x: MessageProps[]) => void
 }) => {
   const [messageText, setMessageText] = useState('')
   const { publicKey } = useWallet()
 
-  const validateMessageText = async (text: string) => {
+  const validateMessageText = useCallback(async (text: string) => {
     try {
       const response = await fetch(
         `https://www.purgomalum.com/service/json?text=${text}&fill_char=*`
@@ -25,24 +25,28 @@ const ChatForm = ({
         return profanityCheck.result
       }
     } catch {
-      return
+      console.error('Error validating message text')
     }
-  }
+  }, [])
 
-  const onSubmitMessage = async (e: FormEvent) => {
-    e.preventDefault()
-    const filteredMessageText = await validateMessageText(messageText)
+  const onSubmitMessage = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault()
+      if (!publicKey) return
+      const filteredMessageText: string = await validateMessageText(messageText)
 
-    const message = {
-      text: filteredMessageText ? filteredMessageText : messageText,
-      timestamp: new Date().getTime(),
-      user: 'Profile Name',
-      walletPk: publicKey?.toString(),
-    }
-    const newMessages = [...messages, message]
-    setLatestMessages(newMessages)
-    setMessageText('')
-  }
+      const message: MessageProps = {
+        text: filteredMessageText ? filteredMessageText : messageText,
+        timestamp: new Date().getTime(),
+        user: 'Profile Name',
+        walletPk: publicKey.toString(),
+      }
+      const newMessages = [...messages, message]
+      setLatestMessages(newMessages)
+      setMessageText('')
+    },
+    [messageText, messages, publicKey, validateMessageText, setLatestMessages]
+  )
 
   const callbackRef = useCallback((inputElement: HTMLInputElement) => {
     if (inputElement) {

@@ -43,6 +43,7 @@ import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
+import { isMangoError } from 'types'
 
 const set = mangoStore.getState().set
 
@@ -287,7 +288,7 @@ const AdvancedTradeForm = () => {
           Date.now(),
           10
         )
-        actions.fetchOpenOrders()
+        actions.fetchOpenOrders(true)
         set((s) => {
           s.successAnimation.trade = true
         })
@@ -322,7 +323,7 @@ const AdvancedTradeForm = () => {
           undefined,
           undefined
         )
-        actions.fetchOpenOrders()
+        actions.fetchOpenOrders(true)
         set((s) => {
           s.successAnimation.trade = true
         })
@@ -335,14 +336,15 @@ const AdvancedTradeForm = () => {
           txid: tx,
         })
       }
-    } catch (e: any) {
+    } catch (e) {
+      console.error('Place trade error:', e)
+      if (!isMangoError(e)) return
       notify({
         title: 'There was an issue.',
         description: e.message,
         txid: e?.txid,
         type: 'error',
       })
-      console.error('Place trade error:', e)
     } finally {
       setPlacingOrder(false)
     }
@@ -354,7 +356,7 @@ const AdvancedTradeForm = () => {
         <TabUnderline
           activeValue={tradeForm.side}
           values={['buy', 'sell']}
-          onChange={(v) => handleSetSide(v)}
+          onChange={(v) => handleSetSide(v as 'buy' | 'sell')}
           small
         />
       </div>
@@ -537,6 +539,7 @@ const AdvancedTradeForm = () => {
         {selectedMarket instanceof Serum3Market ? (
           <div className="mt-4" id="trade-step-eight">
             <Tooltip
+              className="hidden md:block"
               delay={250}
               placement="left"
               content={t('trade:tooltip-enable-margin')}
@@ -594,7 +597,9 @@ const AdvancedTradeForm = () => {
             ) : (
               <div className="flex items-center space-x-2">
                 <Loading />
-                <span>{t('trade:placing-order')}</span>
+                <span className="hidden sm:block">
+                  {t('trade:placing-order')}
+                </span>
               </div>
             )}
           </Button>

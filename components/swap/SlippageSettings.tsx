@@ -53,7 +53,7 @@ const SlippageSettings = ({ onClose }: { onClose: () => void }) => {
               type="text"
               placeholder="0.00"
               value={inputValue}
-              onChange={(e: any) => setInputValue(e.target.value)}
+              onChange={(e) => setInputValue(e.target.value)}
               suffix="%"
             />
             <Button

@@ -17,16 +17,15 @@ const fetchFundingRate = async (groupPk: string | undefined) => {
 export const usePerpFundingRate = () => {
   const { group } = useMangoGroup()
 
-  const res = useQuery<any[], Error>(
-    ['funding-rate'],
-    () => fetchFundingRate(group?.publicKey?.toString()),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      enabled: !!group,
-    }
-  )
+  const res = useQuery<
+    { market_index: number; funding_rate_hourly: number }[],
+    Error
+  >(['funding-rate'], () => fetchFundingRate(group?.publicKey?.toString()), {
+    cacheTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60,
+    retry: 3,
+    enabled: !!group,
+  })
 
   return Array.isArray(res?.data) ? res : { isSuccess: false, data: null }
 }

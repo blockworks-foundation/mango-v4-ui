@@ -1,7 +1,7 @@
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import { enUS } from 'date-fns/locale'
-import { DateRangePicker } from 'react-nice-dates'
+import { DateChangeCallBack, DateRangePicker } from 'react-nice-dates'
 import Label from './Label'
 
 const MangoDateRangePicker = ({
@@ -10,10 +10,10 @@ const MangoDateRangePicker = ({
   endDate,
   setEndDate,
 }: {
-  startDate: Date | null
-  setStartDate: any
-  endDate: Date | null
-  setEndDate: any
+  startDate: Date | undefined
+  setStartDate: DateChangeCallBack | undefined
+  endDate: Date | undefined
+  setEndDate: DateChangeCallBack | undefined
 }) => {
   const { t } = useTranslation('common')
 

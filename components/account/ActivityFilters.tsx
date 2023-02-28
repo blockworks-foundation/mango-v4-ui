@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import MangoDateRangePicker from '@components/forms/DateRangePicker'
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
@@ -17,6 +18,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { DateChangeCallBack } from 'react-nice-dates'
 
 interface AdvancedFilters {
   symbol: string[]
@@ -124,7 +126,10 @@ const ActivityFilters = () => {
     <Disclosure>
       <div className="flex items-center">
         {hasFilters ? (
-          <Tooltip content={t('activity:reset-filters')}>
+          <Tooltip
+            className="hidden md:block"
+            content={t('activity:reset-filters')}
+          >
             <IconButton
               className={`${loadActivityFeed ? 'animate-spin' : ''}`}
               onClick={() => handleResetFilters()}
@@ -195,8 +200,8 @@ const FiltersForm = ({
 }: FiltersFormProps) => {
   const { t } = useTranslation(['common', 'activity'])
   const { group } = useMangoGroup()
-  const [dateFrom, setDateFrom] = useState<Date | null>(null)
-  const [dateTo, setDateTo] = useState<Date | null>(null)
+  const [dateFrom, setDateFrom] = useState<Date>()
+  const [dateTo, setDateTo] = useState<Date>()
   const [valueFrom, setValueFrom] = useState(advancedFilters['usd-lower'] || '')
   const [valueTo, setValueTo] = useState(advancedFilters['usd-upper'] || '')
 
@@ -295,9 +300,9 @@ const FiltersForm = ({
       <div className="my-4 w-full">
         <MangoDateRangePicker
           startDate={dateFrom}
-          setStartDate={setDateFrom}
+          setStartDate={setDateFrom as DateChangeCallBack}
           endDate={dateTo}
-          setEndDate={setDateTo}
+          setEndDate={setDateTo as DateChangeCallBack}
         />
       </div>
       <div className="flex items-end pb-6">

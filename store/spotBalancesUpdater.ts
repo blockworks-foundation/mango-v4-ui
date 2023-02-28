@@ -2,7 +2,7 @@ import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { SpotBalances } from 'types'
 import mangoStore from './mangoStore'
 
-const spotBalancesUpdater = (_newState: any, _prevState: any) => {
+const spotBalancesUpdater = () => {
   const mangoAccount = mangoStore.getState().mangoAccount.current
   const group = mangoStore.getState().group
   const openOrdersAccounts =
@@ -31,8 +31,8 @@ const spotBalancesUpdater = (_newState: any, _prevState: any) => {
       )
       quoteTokenUnsettled = toUiDecimals(
         openOrdersAccForMkt.quoteTokenFree
-          // @ts-ignore
-          .add(openOrdersAccForMkt['referrerRebatesAccrued'])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .add((openOrdersAccForMkt as any)['referrerRebatesAccrued'])
           .toNumber(),
         group.getFirstBankByTokenIndex(serumMarket.quoteTokenIndex).mintDecimals
       )

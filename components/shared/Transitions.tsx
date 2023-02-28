@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react'
-import { CSSProperties, ReactNode } from 'react'
+import { CSSProperties, ElementType, ReactNode } from 'react'
 
 const transitionEnterStyle = 'transition-all ease-out duration-300'
 const transitionExitStyle = 'transition-all ease-in duration-300'
@@ -84,7 +84,7 @@ export const FadeInList = ({
   children,
   index,
 }: {
-  as?: any
+  as?: ElementType
   children: ReactNode
   index: number
 }) => (

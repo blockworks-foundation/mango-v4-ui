@@ -42,7 +42,10 @@ const TradeVolumeAlertModal = ({ isOpen, onClose }: ModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <h2 className="mb-2">{t('trade:volume-alert')}</h2>
-      <p className="mb-2">{t('trade:volume-alert-desc')}</p>
+      <p className="mb-2">
+        {t('trade:volume-alert-desc')}.{' '}
+        <i>Warning: this is an experimental feature.</i>
+      </p>
       <LinkButton
         className="mb-4 flex w-full items-center justify-center"
         onClick={() => volumeAlertSound.play()}

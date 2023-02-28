@@ -1,9 +1,10 @@
 import TabButtons from '@components/shared/TabButtons'
-import mangoStore, { TokenStatsItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useState } from 'react'
+import { TokenStatsItem } from 'types'
 import { formatYAxis } from 'utils/formatting'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),

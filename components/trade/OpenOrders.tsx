@@ -1,3 +1,4 @@
+import { U64_MAX_BN } from '@blockworks-foundation/mango-v4'
 import {
   PerpMarket,
   PerpOrder,
@@ -31,6 +32,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
+import { isMangoError } from 'types'
 import { notify } from 'utils/notifications'
 import { getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
@@ -98,14 +100,16 @@ const OpenOrders = () => {
           title: 'Transaction successful',
           txid: tx,
         })
-      } catch (e: any) {
+      } catch (e) {
         console.error('Error canceling', e)
-        notify({
-          title: t('trade:cancel-order-error'),
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
+        if (isMangoError(e)) {
+          notify({
+            title: t('trade:cancel-order-error'),
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
       } finally {
         setCancelId('')
       }
@@ -166,14 +170,16 @@ const OpenOrders = () => {
           title: 'Transaction successful',
           txid: tx,
         })
-      } catch (e: any) {
+      } catch (e) {
         console.error('Error canceling', e)
-        notify({
-          title: 'Unable to modify order',
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
+        if (isMangoError(e)) {
+          notify({
+            title: 'Unable to modify order',
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
       } finally {
         cancelEditOrderForm()
       }
@@ -202,14 +208,16 @@ const OpenOrders = () => {
           title: 'Transaction successful',
           txid: tx,
         })
-      } catch (e: any) {
+      } catch (e) {
         console.error('Error canceling', e)
-        notify({
-          title: t('trade:cancel-order-error'),
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
+        if (isMangoError(e)) {
+          notify({
+            title: t('trade:cancel-order-error'),
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
       } finally {
         setCancelId('')
       }
@@ -252,26 +260,27 @@ const OpenOrders = () => {
                 let market: PerpMarket | Serum3Market
                 let tickSize: number
                 let minOrderSize: number
-                let quoteSymbol
+                let expiryTimestamp: number | undefined
+                let side: string
                 if (o instanceof PerpOrder) {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
-                  quoteSymbol = group.getFirstBankByTokenIndex(
-                    market.settleTokenIndex
-                  ).name
                   tickSize = market.tickSize
                   minOrderSize = market.minOrderSize
+                  expiryTimestamp =
+                    o.expiryTimestamp === U64_MAX_BN
+                      ? 0
+                      : o.expiryTimestamp.toNumber()
+                  side = 'bid' in o.side ? 'buy' : 'sell'
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
                   )
-                  quoteSymbol = group.getFirstBankByTokenIndex(
-                    market!.quoteTokenIndex
-                  ).name
                   const serumMarket = group.getSerum3ExternalMarket(
                     market.serumMarketExternal
                   )
                   tickSize = serumMarket.tickSize
                   minOrderSize = serumMarket.minOrderSize
+                  side = o.side
                 }
                 return (
                   <TrBody
@@ -282,26 +291,21 @@ const OpenOrders = () => {
                       <TableMarketName market={market} />
                     </Td>
                     <Td className="w-[16.67%] text-right">
-                      <SideBadge side={o.side} />
+                      <SideBadge side={side} />
                     </Td>
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>
                         <Td className="w-[16.67%] text-right font-mono">
-                          {o.size.toLocaleString(undefined, {
-                            maximumFractionDigits:
-                              getDecimalCount(minOrderSize),
-                          })}
+                          <FormatNumericValue
+                            value={o.size}
+                            decimals={getDecimalCount(minOrderSize)}
+                          />
                         </Td>
-                        <Td className="w-[16.67%] whitespace-nowrap text-right">
-                          <span className="font-mono">
-                            {o.price.toLocaleString(undefined, {
-                              minimumFractionDigits: getDecimalCount(tickSize),
-                              maximumFractionDigits: getDecimalCount(tickSize),
-                            })}{' '}
-                            <span className="font-body text-th-fgd-4">
-                              {quoteSymbol}
-                            </span>
-                          </span>
+                        <Td className="w-[16.67%] whitespace-nowrap text-right font-mono">
+                          <FormatNumericValue
+                            value={o.price}
+                            decimals={getDecimalCount(tickSize)}
+                          />
                         </Td>
                       </>
                     ) : (
@@ -329,12 +333,13 @@ const OpenOrders = () => {
                         </Td>
                       </>
                     )}
-                    <Td className="w-[16.67%] text-right">
-                      <FormatNumericValue
-                        value={o.size * o.price}
-                        decimals={2}
-                        isUsd
-                      />
+                    <Td className="w-[16.67%] text-right font-mono">
+                      <FormatNumericValue value={o.size * o.price} isUsd />
+                      {expiryTimestamp ? (
+                        <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
+                          expiryTimestamp * 1000
+                        ).toLocaleTimeString()}`}</div>
+                      ) : null}
                     </Td>
                     {!isUnownedAccount ? (
                       <Td className="w-[16.67%]">
@@ -403,29 +408,22 @@ const OpenOrders = () => {
             let market: PerpMarket | Serum3Market
             let tickSize: number
             let minOrderSize: number
-            let quoteSymbol: string
-            let baseSymbol: string
+            let side: string
             if (o instanceof PerpOrder) {
               market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
-              baseSymbol = market.name.split('-')[0]
-              quoteSymbol = group.getFirstBankByTokenIndex(
-                market.settleTokenIndex
-              ).name
               tickSize = market.tickSize
               minOrderSize = market.minOrderSize
+              side = 'bid' in o.side ? 'buy' : 'sell'
             } else {
               market = group.getSerum3MarketByExternalMarket(
                 new PublicKey(marketPk)
               )
-              baseSymbol = market.name.split('/')[0]
-              quoteSymbol = group.getFirstBankByTokenIndex(
-                market!.quoteTokenIndex
-              ).name
               const serumMarket = group.getSerum3ExternalMarket(
                 market.serumMarketExternal
               )
               tickSize = serumMarket.tickSize
               minOrderSize = serumMarket.minOrderSize
+              side = o.side
             }
             return (
               <div
@@ -436,23 +434,21 @@ const OpenOrders = () => {
                   <TableMarketName market={market} />
                   {modifyOrderId !== o.orderId.toString() ? (
                     <div className="mt-1 flex items-center space-x-1">
-                      <SideBadge side={o.side} />
+                      <SideBadge side={side} />
                       <p className="text-th-fgd-4">
                         <span className="font-mono text-th-fgd-3">
-                          {o.size.toLocaleString(undefined, {
-                            maximumFractionDigits:
-                              getDecimalCount(minOrderSize),
-                          })}
-                        </span>{' '}
-                        {baseSymbol}
-                        {' for '}
+                          <FormatNumericValue
+                            value={o.size}
+                            decimals={getDecimalCount(minOrderSize)}
+                          />
+                        </span>
+                        {' at '}
                         <span className="font-mono text-th-fgd-3">
-                          {o.price.toLocaleString(undefined, {
-                            minimumFractionDigits: getDecimalCount(tickSize),
-                            maximumFractionDigits: getDecimalCount(tickSize),
-                          })}
-                        </span>{' '}
-                        {quoteSymbol}
+                          <FormatNumericValue
+                            value={o.price}
+                            decimals={getDecimalCount(tickSize)}
+                          />
+                        </span>
                       </p>
                     </div>
                   ) : (

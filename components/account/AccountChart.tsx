@@ -1,8 +1,8 @@
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
-import { PerformanceDataItem } from '@store/mangoStore'
 import dynamic from 'next/dynamic'
 import { formatYAxis } from 'utils/formatting'
+import { PerformanceDataItem } from 'types'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -22,7 +22,7 @@ const AccountChart = ({
   const { t } = useTranslation('common')
   const [daysToShow, setDaysToShow] = useState<string>('1')
 
-  const chartData: any = useMemo(() => {
+  const chartData = useMemo(() => {
     if (!data.length) return []
     if (chartToShow === 'cumulative-interest-value') {
       data.map((d) => ({
@@ -32,7 +32,7 @@ const AccountChart = ({
       }))
     }
     return data
-  }, [data])
+  }, [data, chartToShow])
 
   return (
     <DetailedAreaChart

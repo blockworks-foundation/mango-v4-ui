@@ -2,7 +2,7 @@ import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import { IconButton } from '@components/shared/Button'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
-import mangoStore, { LiquidationFeedItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
@@ -10,12 +10,14 @@ import Image from 'next/legacy/image'
 import { useState } from 'react'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import ActivityFeedTable from './ActivityFeedTable'
+import { LiquidationActivity } from 'types'
 
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
-  const [showActivityDetail, setShowActivityDetail] = useState(null)
+  const [showActivityDetail, setShowActivityDetail] =
+    useState<LiquidationActivity>()
 
-  const handleShowActivityDetails = (activity: any) => {
+  const handleShowActivityDetails = (activity: LiquidationActivity) => {
     setShowActivityDetail(activity)
   }
 
@@ -38,8 +40,8 @@ const ActivityDetails = ({
   activity,
   setShowActivityDetail,
 }: {
-  activity: LiquidationFeedItem
-  setShowActivityDetail: (x: any) => void
+  activity: LiquidationActivity
+  setShowActivityDetail: (x: LiquidationActivity | undefined) => void
 }) => {
   const { t } = useTranslation(['common', 'activity', 'settings'])
   const [preferredExplorer] = useLocalStorageState(
@@ -61,7 +63,7 @@ const ActivityDetails = ({
       <div className="flex items-center p-6">
         <IconButton
           className="mr-4"
-          onClick={() => setShowActivityDetail(null)}
+          onClick={() => setShowActivityDetail(undefined)}
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>

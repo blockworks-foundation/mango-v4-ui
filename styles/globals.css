@@ -567,7 +567,7 @@ table p {
 /* slider */
 
 input[type='range'] {
-  @apply h-1.5 appearance-none rounded bg-th-bkg-2 bg-gradient-to-r from-th-active to-th-active bg-no-repeat;
+  @apply h-1.5 appearance-none rounded bg-th-bkg-3 bg-gradient-to-r from-th-active to-th-active bg-no-repeat;
 }
 
 input[type='range']::-webkit-slider-thumb {

@@ -1,17 +1,17 @@
-import { FunctionComponent } from 'react'
+type Values = string | number
 
-interface ButtonGroupProps {
-  activeValue: string
+interface ButtonGroupProps<T extends Values> {
+  activeValue: T
   className?: string
   disabled?: boolean
-  onChange: (x: any) => void
+  onChange: (x: T) => void
   unit?: string
-  values: Array<any>
+  values: T[]
   names?: Array<string>
   large?: boolean
 }
 
-const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
+const ButtonGroup = <T extends Values>({
   activeValue,
   className,
   disabled,
@@ -20,7 +20,7 @@ const ButtonGroup: FunctionComponent<ButtonGroupProps> = ({
   onChange,
   names,
   large,
-}) => {
+}: ButtonGroupProps<T>) => {
   return (
     <div className={`rounded-md bg-th-bkg-2 ${disabled ? 'opacity-50' : ''}`}>
       <div className="relative flex">

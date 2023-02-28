@@ -1,10 +1,11 @@
-import mangoStore, { TokenStatsItem } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { formatYAxis } from 'utils/formatting'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { TokenStatsItem } from 'types'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }

@@ -1,4 +1,4 @@
-import { Bank } from '@blockworks-foundation/mango-v4'
+import { Bank, Group } from '@blockworks-foundation/mango-v4'
 import useJupiterMints from 'hooks/useJupiterMints'
 import {
   ArrowDownRightIcon,
@@ -17,13 +17,33 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import ConnectEmptyState from '../shared/ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
-import { getMaxWithdrawForBank } from '@components/swap/useTokenMax'
 import { IconButton } from '@components/shared/Button'
 import { useCallback, useState } from 'react'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import Tooltip from '@components/shared/Tooltip'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithBalance } from 'hooks/useBanksWithBalances'
+
+export const getAvailableToBorrow = (
+  bankWithBal: BankWithBalance,
+  group: Group
+) => {
+  const { balance, bank, maxBorrow } = bankWithBal
+  const { mint, mintDecimals, minVaultToDepositsRatio } = bankWithBal.bank
+  const deposits = bank.uiDeposits()
+
+  const availableVaultBalance =
+    group.getTokenVaultBalanceByMintUi(mint) -
+    deposits * minVaultToDepositsRatio
+
+  const availableAccountBorrow = balance > 0 ? maxBorrow - balance : maxBorrow
+
+  const available = Decimal.min(
+    availableAccountBorrow.toFixed(bank.mintDecimals),
+    Decimal.max(0, availableVaultBalance.toFixed(mintDecimals))
+  )
+  return available
+}
 
 const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
   const { t } = useTranslation(['common', 'trade'])
@@ -78,7 +98,9 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                   )?.logoURI
                 }
 
-                const available = b.maxBorrow
+                const available = group
+                  ? getAvailableToBorrow(b, group)
+                  : new Decimal(0)
 
                 const borrowedAmount = b.borrowedAmount
 
@@ -112,6 +134,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                       <BankAmountWithValue
                         amount={available}
                         bank={bank}
+                        fixDecimals={false}
                         stacked
                       />
                     </Td>
@@ -132,7 +155,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                         </Tooltip>
                         <Tooltip content={`${t('borrow')} ${bank.name}`}>
                           <IconButton
-                            disabled={available === 0}
+                            disabled={available.eq(0)}
                             onClick={() =>
                               handleShowActionModals(bank.name, 'borrow')
                             }
@@ -159,10 +182,9 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
               )?.logoURI
             }
 
-            const available =
-              group && mangoAccount
-                ? getMaxWithdrawForBank(group, bank, mangoAccount, true)
-                : new Decimal(0)
+            const available = group
+              ? getAvailableToBorrow(b, group)
+              : new Decimal(0)
 
             const borrowedAmount = mangoAccount
               ? Math.abs(mangoAccount.getTokenBalanceUi(bank))
@@ -201,27 +223,23 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                       </p>
                     </div>
                     <div className="flex space-x-2">
-                      <Tooltip content={`${t('repay')} ${bank.name}`}>
-                        <IconButton
-                          onClick={() =>
-                            handleShowActionModals(bank.name, 'repay')
-                          }
-                          size="medium"
-                        >
-                          <ArrowDownRightIcon className="h-5 w-5" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip content={`${t('borrow')} ${bank.name}`}>
-                        <IconButton
-                          disabled={available.eq(0)}
-                          onClick={() =>
-                            handleShowActionModals(bank.name, 'borrow')
-                          }
-                          size="medium"
-                        >
-                          <ArrowUpLeftIcon className="h-5 w-5" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton
+                        onClick={() =>
+                          handleShowActionModals(bank.name, 'repay')
+                        }
+                        size="medium"
+                      >
+                        <ArrowDownRightIcon className="h-5 w-5" />
+                      </IconButton>
+                      <IconButton
+                        disabled={available.eq(0)}
+                        onClick={() =>
+                          handleShowActionModals(bank.name, 'borrow')
+                        }
+                        size="medium"
+                      >
+                        <ArrowUpLeftIcon className="h-5 w-5" />
+                      </IconButton>
                     </div>
                   </div>
                 </div>

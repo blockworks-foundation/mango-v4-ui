@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
@@ -18,6 +19,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import { isMangoError } from 'types'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -56,13 +58,15 @@ const UnsettledTrades = ({
         title: 'Successfully settled funds',
         txid,
       })
-    } catch (e: any) {
-      notify({
-        type: 'error',
-        title: t('trade:settle-funds-error'),
-        description: e?.message,
-        txid: e?.txid,
-      })
+    } catch (e) {
+      if (isMangoError(e)) {
+        notify({
+          type: 'error',
+          title: t('trade:settle-funds-error'),
+          description: e?.message,
+          txid: e?.txid,
+        })
+      }
       console.error('Settle funds error:', e)
     } finally {
       setSettleMktAddress('')
@@ -114,13 +118,15 @@ const UnsettledTrades = ({
         title: 'Successfully settled P&L',
         txid,
       })
-    } catch (e: any) {
-      notify({
-        type: 'error',
-        title: 'Settle P&L error',
-        description: e?.message,
-        txid: e?.txid,
-      })
+    } catch (e) {
+      if (isMangoError(e)) {
+        notify({
+          type: 'error',
+          title: 'Settle P&L error',
+          description: e?.message,
+          txid: e?.txid,
+        })
+      }
       console.error('Settle P&L error:', e)
     } finally {
       setSettleMktAddress('')
@@ -160,13 +166,17 @@ const UnsettledTrades = ({
                   <div className="flex justify-end">
                     {unsettledSpotBalances[mktAddress].base ? (
                       <div>
-                        {unsettledSpotBalances[mktAddress].base}{' '}
+                        <FormatNumericValue
+                          value={unsettledSpotBalances[mktAddress].base}
+                        />{' '}
                         <span className="font-body text-th-fgd-4">{base}</span>
                       </div>
                     ) : null}
                     {unsettledSpotBalances[mktAddress].quote ? (
                       <div className="ml-4">
-                        {unsettledSpotBalances[mktAddress].quote}{' '}
+                        <FormatNumericValue
+                          value={unsettledSpotBalances[mktAddress].quote}
+                        />{' '}
                         <span className="font-body text-th-fgd-4">{quote}</span>
                       </div>
                     ) : null}
@@ -205,7 +215,7 @@ const UnsettledTrades = ({
                 <Td className="text-right font-mono">
                   <FormatNumericValue
                     value={position.getUnsettledPnlUi(market)}
-                    decimals={market.baseDecimals}
+                    decimals={2}
                   />{' '}
                   <span className="font-body text-th-fgd-4">USDC</span>
                 </Td>
@@ -233,7 +243,40 @@ const UnsettledTrades = ({
         </tbody>
       </Table>
     ) : (
-      <div className="pb-20">
+      <div>
+        {unsettledPerpPositions.map((position) => {
+          const market = group.getPerpMarketByMarketIndex(position.marketIndex)
+
+          return (
+            <div
+              key={position.marketIndex}
+              className="flex items-center justify-between border-b border-th-bkg-3 p-4"
+            >
+              <TableMarketName market={market} />
+              <div className="flex items-center space-x-3">
+                <div>
+                  <FormatNumericValue
+                    value={position.getUnsettledPnlUi(market)}
+                    decimals={market.baseDecimals}
+                  />{' '}
+                  <span className="font-body text-th-fgd-4">USDC</span>
+                </div>
+                {!isUnownedAccount ? (
+                  <IconButton
+                    onClick={() => handleSettlePerpFunds(market)}
+                    size="medium"
+                  >
+                    {settleMktAddress === market.publicKey.toString() ? (
+                      <Loading className="h-4 w-4" />
+                    ) : (
+                      <CheckIcon className="h-4 w-4" />
+                    )}
+                  </IconButton>
+                ) : null}
+              </div>
+            </div>
+          )
+        })}
         {Object.entries(unsettledSpotBalances).map(([mktAddress]) => {
           const market = group.getSerum3MarketByExternalMarket(
             new PublicKey(mktAddress)
@@ -250,13 +293,17 @@ const UnsettledTrades = ({
               <div className="flex items-center space-x-3">
                 {unsettledSpotBalances[mktAddress].base ? (
                   <span className="font-mono text-sm">
-                    {unsettledSpotBalances[mktAddress].base}{' '}
+                    <FormatNumericValue
+                      value={unsettledSpotBalances[mktAddress].base}
+                    />{' '}
                     <span className="font-body text-th-fgd-4">{base}</span>
                   </span>
                 ) : null}
                 {unsettledSpotBalances[mktAddress].quote ? (
                   <span className="font-mono text-sm">
-                    {unsettledSpotBalances[mktAddress].quote}{' '}
+                    <FormatNumericValue
+                      value={unsettledSpotBalances[mktAddress].quote}
+                    />{' '}
                     <span className="font-body text-th-fgd-4">{quote}</span>
                   </span>
                 ) : null}

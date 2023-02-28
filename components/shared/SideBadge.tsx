@@ -1,16 +1,15 @@
 import React, { FunctionComponent } from 'react'
-import { useTranslation } from 'next-i18next'
-import { PerpOrderSide } from '@blockworks-foundation/mango-v4'
 
 type SideBadgeProps = {
-  side: string | PerpOrderSide
+  side: string
 }
 
 const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
-  const { t } = useTranslation('common')
+  if (side !== 'buy' && side !== 'sell') {
+    return <div>Unknown</div>
+  }
 
-  const isBid =
-    typeof side === 'string' ? ['buy', 'long'].includes(side) : 'bid' in side
+  const isBid = side === 'buy'
 
   return (
     <div
@@ -21,7 +20,7 @@ const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
       }
        uppercase md:-my-0.5 md:px-1.5 md:py-0.5 md:text-xs`}
     >
-      {typeof side === 'string' ? t(side) : 'bid' in side ? 'Long' : 'Short'}
+      {isBid ? 'Buy' : 'Sell'}
     </div>
   )
 }

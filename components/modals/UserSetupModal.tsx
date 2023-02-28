@@ -1,4 +1,3 @@
-import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import {
   ArrowDownTrayIcon,
@@ -11,7 +10,6 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useMangoGroup from 'hooks/useMangoGroup'
 import useSolBalance from 'hooks/useSolBalance'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -23,7 +21,6 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { ALPHA_DEPOSIT_LIMIT } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
@@ -44,6 +41,7 @@ import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { withValueLimit } from '@components/swap/SwapForm'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
+import { isMangoError } from 'types'
 
 const UserSetupModal = ({
   isOpen,
@@ -53,7 +51,6 @@ const UserSetupModal = ({
   onClose: () => void
 }) => {
   const { t } = useTranslation(['common', 'onboarding', 'swap'])
-  const { group } = useMangoGroup()
   const { connected, select, wallet, wallets, publicKey } = useWallet()
   const { mangoAccount } = useMangoAccount()
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
@@ -101,12 +98,14 @@ const UserSetupModal = ({
           txid: tx,
         })
       }
-    } catch (e: any) {
-      notify({
-        title: t('new-account-failed'),
-        txid: e?.txid,
-        type: 'error',
-      })
+    } catch (e) {
+      if (isMangoError(e)) {
+        notify({
+          title: t('new-account-failed'),
+          txid: e?.txid,
+          type: 'error',
+        })
+      }
       console.error(e)
     } finally {
       setLoadingAccount(false)
@@ -118,9 +117,9 @@ const UserSetupModal = ({
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const bank = group?.banksMapByName.get(depositToken)?.[0]
 
-    if (!mangoAccount || !group) return
-    const bank = group.banksMapByName.get(depositToken)![0]
+    if (!mangoAccount || !group || !bank) return
     try {
       setSubmitDeposit(true)
       const tx = await client.tokenDeposit(
@@ -139,17 +138,18 @@ const UserSetupModal = ({
       setSubmitDeposit(false)
       onClose()
       // setShowSetupStep(4)
-    } catch (e: any) {
+    } catch (e) {
+      setSubmitDeposit(false)
+      console.error(e)
+      if (!isMangoError(e)) return
       notify({
         title: 'Transaction failed',
         description: e.message,
         txid: e?.txid,
         type: 'error',
       })
-      setSubmitDeposit(false)
-      console.error(e)
     }
-  }, [depositAmount, depositToken])
+  }, [depositAmount, depositToken, onClose])
 
   useEffect(() => {
     if (mangoAccount && showSetupStep === 2) {
@@ -160,23 +160,6 @@ const UserSetupModal = ({
   const depositBank = useMemo(() => {
     return banks.find((b) => b.bank.name === depositToken)?.bank
   }, [depositToken, banks])
-
-  const exceedsAlphaMax = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!group || !mangoAccount) return
-    if (
-      mangoAccount.owner.toString() ===
-      '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt'
-    )
-      return false
-    const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group)!.toNumber()
-    )
-    return (
-      parseFloat(depositAmount) * (depositBank?.uiPrice || 1) >
-        ALPHA_DEPOSIT_LIMIT || accountValue > ALPHA_DEPOSIT_LIMIT
-    )
-  }, [depositAmount, depositBank, group])
 
   const tokenMax = useMemo(() => {
     const bank = banks.find((b) => b.bank.name === depositToken)
@@ -392,10 +375,6 @@ const UserSetupModal = ({
                 </h2>
                 <UserSetupTransition show={depositToken.length > 0}>
                   <div className="mb-4">
-                    <InlineNotification
-                      type="info"
-                      desc={`There is a $${ALPHA_DEPOSIT_LIMIT} account value limit during alpha testing.`}
-                    />
                     <SolBalanceWarnings
                       amount={depositAmount}
                       className="mt-4"
@@ -502,10 +481,7 @@ const UserSetupModal = ({
                   <Button
                     className="mb-6 mt-10 flex items-center justify-center"
                     disabled={
-                      !depositAmount ||
-                      !depositToken ||
-                      exceedsAlphaMax ||
-                      showInsufficientBalance
+                      !depositAmount || !depositToken || showInsufficientBalance
                     }
                     onClick={handleDeposit}
                     size="large"
