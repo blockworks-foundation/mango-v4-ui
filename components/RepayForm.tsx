@@ -34,6 +34,7 @@ import {
 import ConnectEmptyState from './shared/ConnectEmptyState'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { isMangoError } from 'types'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -154,15 +155,16 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         actions.fetchWalletTokens(publicKey)
         setSubmitting(false)
         onSuccess()
-      } catch (e: any) {
+      } catch (e) {
+        console.error('Error repaying:', e)
+        setSubmitting(false)
+        if (!isMangoError(e)) return
         notify({
           title: 'Transaction failed',
           description: e.message,
           txid: e?.txid,
           type: 'error',
         })
-        console.error('Error repaying:', e)
-        setSubmitting(false)
       }
     },
     [bank, publicKey?.toBase58(), sizePercentage]

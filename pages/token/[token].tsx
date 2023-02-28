@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import TokenPage from '@components/token/TokenPage'
 import { CLUSTER } from '@store/mangoStore'
 import type { NextPage } from 'next'

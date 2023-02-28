@@ -8,7 +8,7 @@ const LeverageSlider = ({
 }: {
   amount: number
   leverageMax: number
-  onChange: (x: string) => any
+  onChange: (x: string) => void
   step: number
 }) => {
   const [value, setValue] = useState(0)
@@ -62,25 +62,5 @@ const LeverageSlider = ({
     </>
   )
 }
-
-// export const BorrowLeverageSlider = ({
-//   amount,
-//   tokenMax,
-//   onChange,
-// }: {
-//   amount: number
-//   tokenMax: number
-//   onChange: (x: string) => any
-// }) => {
-//   return (
-//     <>
-//       <LeverageSlider
-//         amount={amount}
-//         leverageMax={tokenMax}
-//         onChange={onChange}
-//       />
-//     </>
-//   )
-// }
 
 export default LeverageSlider

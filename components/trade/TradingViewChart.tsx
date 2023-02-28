@@ -36,6 +36,7 @@ import { BN } from '@project-serum/anchor'
 import SpotDatafeed from 'apis/birdeye/datafeed'
 import PerpDatafeed from 'apis/mngo/datafeed'
 import useStablePrice from 'hooks/useStablePrice'
+import { isMangoError } from 'types'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -369,8 +370,9 @@ const TradingViewChart = () => {
           title: 'Transaction successful',
           txid: tx,
         })
-      } catch (e: any) {
+      } catch (e) {
         console.error('Error canceling', e)
+        if (!isMangoError(e)) return
         notify({
           title: 'Unable to modify order',
           description: e.message,
@@ -409,8 +411,9 @@ const TradingViewChart = () => {
           title: 'Transaction successful',
           txid: tx,
         })
-      } catch (e: any) {
+      } catch (e) {
         console.error('Error canceling', e)
+        if (!isMangoError(e)) return
         notify({
           title: t('trade:cancel-order-error'),
           description: e.message,
@@ -442,8 +445,9 @@ const TradingViewChart = () => {
           title: 'Transaction successful',
           txid: tx,
         })
-      } catch (e: any) {
+      } catch (e) {
         console.error('Error canceling', e)
+        if (!isMangoError(e)) return
         notify({
           title: t('trade:cancel-order-error'),
           description: e.message,
@@ -683,8 +687,6 @@ const TradingViewChart = () => {
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
         symbol: selectedMarket,
-        // BEWARE: no trailing slash is expected in feed URL
-        // tslint:disable-next-line:no-any
         datafeed: spotOrPerp === 'spot' ? SpotDatafeed : PerpDatafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],

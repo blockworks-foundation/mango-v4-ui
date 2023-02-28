@@ -39,12 +39,15 @@ const CoingeckoStats = ({
   coingeckoId,
 }: {
   bank: Bank
+  // TODO: Add Coingecko api types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   coingeckoData: any
   coingeckoId: string
 }) => {
   const { t } = useTranslation(['common', 'token'])
   const [showFullDesc, setShowFullDesc] = useState(false)
   const [daysToShow, setDaysToShow] = useState<string>('1')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
   const [loadChartData, setLoadChartData] = useState(true)
   const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()

@@ -143,7 +143,7 @@ const SwapFormTokenList = ({
   // }, [tokens])
 
   useEffect(() => {
-    function onEscape(e: any) {
+    function onEscape(e: KeyboardEvent) {
       if (e.keyCode === 27) {
         onClose()
       }

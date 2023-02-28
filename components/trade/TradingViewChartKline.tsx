@@ -20,10 +20,11 @@ import Loading from '@components/shared/Loading'
 import clsx from 'clsx'
 import { IconButton } from '@components/shared/Button'
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/20/solid'
-import spotDataFeed from 'apis/birdeye/datafeed'
+import spotDataFeed, { SymbolInfo } from 'apis/birdeye/datafeed'
 import perpDataFeed from 'apis/mngo/datafeed'
 import { sleep } from 'utils'
 import { useKlineChart } from 'hooks/useKlineChart'
+import { ResolutionString } from '@public/charting_library/charting_library'
 
 type Props = {
   setIsFullView?: Dispatch<SetStateAction<boolean>>
@@ -66,13 +67,14 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         time_from: from,
         time_to: to ? to : baseQuery.time_to,
       }
-      let symbolInfo: any
+      let symbolInfo: SymbolInfo | undefined
       currentDataFeed.resolveSymbol(baseQuery.address, (sInfo) => {
         symbolInfo = sInfo
       })
+      if (!symbolInfo) return []
       const response = await currentDataFeed.getBars(
         symbolInfo,
-        query.type as any,
+        query.type as ResolutionString,
         {
           firstDataRequest: !!firstDataRequest,
           from: query.time_from,
@@ -111,11 +113,12 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   ) {
     await sleep(1500)
     setSocketConnected(true)
-    let symbolInfo: any = undefined
+    let symbolInfo: SymbolInfo | undefined
     currentDataFeed.resolveSymbol(baseQuery.address, (symbolInf) => {
       symbolInfo = symbolInf
     })
     previousDataFeed.unsubscribeBars()
+    if (!symbolInfo) return
     currentDataFeed.subscribeBars(
       symbolInfo,
       baseQuery.type,

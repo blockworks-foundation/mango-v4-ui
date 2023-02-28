@@ -17,7 +17,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 
 interface EnhancedWalletContextState {
   displayedWallets: Wallet[]
-  preselectedWalletName: string | null
+  preselectedWalletName: string
   handleSelect: (name: WalletName | null) => void
   handleConnect: () => Promise<void>
   handleDisconnect: () => Promise<void>
@@ -66,7 +66,7 @@ export default function EnhancedWalletProvider({
   )
 
   const [preselectedWalletName, setPreselectedWalletName] =
-    useLocalStorageState('preselectedWalletName', null)
+    useLocalStorageState<string>('preselectedWalletName', '')
 
   useEffect(() => {
     if (wallet) {

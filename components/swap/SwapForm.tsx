@@ -64,7 +64,7 @@ const SwapForm = () => {
   //initial state is undefined null is returned on error
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
-  const [showTokenSelect, setShowTokenSelect] = useState(undefined)
+  const [showTokenSelect, setShowTokenSelect] = useState<'input' | 'output'>()
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const { group } = useMangoGroup()

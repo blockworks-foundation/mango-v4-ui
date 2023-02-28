@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const retryFn = async (
   fn: (...x: any) => Promise<any>,
   opts = { maxRetries: 3 }

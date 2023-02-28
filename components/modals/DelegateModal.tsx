@@ -11,6 +11,7 @@ import { PublicKey } from '@solana/web3.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { abbreviateAddress } from 'utils/formatting'
 import InlineNotification from '@components/shared/InlineNotification'
+import { isMangoError } from 'types'
 
 export const DEFAULT_DELEGATE = '11111111111111111111111111111111'
 
@@ -57,13 +58,14 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
         txid: tx,
       })
       await actions.reloadMangoAccount()
-    } catch (e: any) {
+    } catch (e) {
+      console.error(e)
+      if (!isMangoError(e)) return
       notify({
         title: t('account-update-failed'),
         txid: e?.txid,
         type: 'error',
       })
-      console.error(e)
     }
   }
 

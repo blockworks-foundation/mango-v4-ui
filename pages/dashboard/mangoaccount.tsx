@@ -35,7 +35,7 @@ const Dashboard: NextPage = () => {
 
   const loadOpenOrders = useCallback(async () => {
     if (!mangoAccount || !group) return
-    const openOrders: Record<string, any> = {}
+    const openOrders: Record<string, PerpOrder[]> = {}
     for (const perpOrder of mangoAccount.perpOrdersActive()) {
       const market = group.getPerpMarketByMarketIndex(perpOrder.orderMarket)
       const orders = await mangoAccount.loadPerpOpenOrdersForMarket(

@@ -20,6 +20,7 @@ import {
 import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
 import Button from '@components/shared/Button'
+import BN from 'bn.js'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -634,8 +635,12 @@ const KeyValuePair = ({
   )
 }
 
+type Vault = {
+  amount: BN
+}
+
 const VaultData = ({ bank }: { bank: Bank }) => {
-  const [vault, setVault] = useState<any>()
+  const [vault, setVault] = useState<Vault>()
   const client = mangoStore((s) => s.client)
 
   const getVaultData = useCallback(async () => {

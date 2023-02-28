@@ -45,7 +45,7 @@ type TradingViewBar = BaseBar & {
 
 type Bar = KlineBar & TradingViewBar
 
-type SymbolInfo = LibrarySymbolInfo & {
+export type SymbolInfo = LibrarySymbolInfo & {
   address: string
 }
 

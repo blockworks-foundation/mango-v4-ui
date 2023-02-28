@@ -1,7 +1,7 @@
 import { PerpPosition } from '@blockworks-foundation/mango-v4'
 import mangoStore from './mangoStore'
 
-const perpPositionsUpdater = (_newState: any, _prevState: any) => {
+const perpPositionsUpdater = () => {
   const mangoAccount = mangoStore.getState().mangoAccount.current
   const group = mangoStore.getState().group
   const set = mangoStore.getState().set

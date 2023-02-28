@@ -32,7 +32,7 @@ function useLocalStorageStringState(
     localStorageListeners[key].push(notify)
     return () => {
       localStorageListeners[key] = localStorageListeners[key].filter(
-        (listener: any) => listener !== notify
+        (listener) => listener !== notify
       )
       if (localStorageListeners[key].length === 0) {
         delete localStorageListeners[key]
@@ -51,7 +51,7 @@ function useLocalStorageStringState(
       } else {
         localStorage.setItem(key, newState)
       }
-      localStorageListeners[key].forEach((listener: any) =>
+      localStorageListeners[key].forEach((listener) =>
         listener(key + '\n' + newState)
       )
     },

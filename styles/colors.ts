@@ -1,4 +1,4 @@
-export const COLORS: any = {
+export const COLORS: Record<string, Record<string, string>> = {
   BKG1: {
     'Mango Classic': '#18181C',
     Dark: '#111113',

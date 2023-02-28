@@ -32,6 +32,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
+import { isMangoError } from 'types'
 import { notify } from 'utils/notifications'
 import { getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
@@ -99,14 +100,16 @@ const OpenOrders = () => {
           title: 'Transaction successful',
           txid: tx,
         })
-      } catch (e: any) {
+      } catch (e) {
         console.error('Error canceling', e)
-        notify({
-          title: t('trade:cancel-order-error'),
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
+        if (isMangoError(e)) {
+          notify({
+            title: t('trade:cancel-order-error'),
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
       } finally {
         setCancelId('')
       }
@@ -167,14 +170,16 @@ const OpenOrders = () => {
           title: 'Transaction successful',
           txid: tx,
         })
-      } catch (e: any) {
+      } catch (e) {
         console.error('Error canceling', e)
-        notify({
-          title: 'Unable to modify order',
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
+        if (isMangoError(e)) {
+          notify({
+            title: 'Unable to modify order',
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
       } finally {
         cancelEditOrderForm()
       }
@@ -203,14 +208,16 @@ const OpenOrders = () => {
           title: 'Transaction successful',
           txid: tx,
         })
-      } catch (e: any) {
+      } catch (e) {
         console.error('Error canceling', e)
-        notify({
-          title: t('trade:cancel-order-error'),
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
+        if (isMangoError(e)) {
+          notify({
+            title: t('trade:cancel-order-error'),
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
       } finally {
         setCancelId('')
       }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo } from 'react'
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 

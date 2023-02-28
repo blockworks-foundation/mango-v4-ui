@@ -36,6 +36,7 @@ import Decimal from 'decimal.js'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { isMangoError } from 'types'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -148,15 +149,16 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       actions.fetchWalletTokens(publicKey)
       setSubmitting(false)
       onSuccess()
-    } catch (e: any) {
+    } catch (e) {
+      console.error('Error depositing:', e)
+      setSubmitting(false)
+      if (!isMangoError(e)) return
       notify({
         title: 'Transaction failed',
         description: e.message,
         txid: e?.txid,
         type: 'error',
       })
-      console.error('Error depositing:', e)
-      setSubmitting(false)
     }
   }, [bank, publicKey, inputAmount])
 

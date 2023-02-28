@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
@@ -18,6 +19,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import { isMangoError } from 'types'
 
 const UnsettledTrades = ({
   unsettledSpotBalances,
@@ -56,13 +58,15 @@ const UnsettledTrades = ({
         title: 'Successfully settled funds',
         txid,
       })
-    } catch (e: any) {
-      notify({
-        type: 'error',
-        title: t('trade:settle-funds-error'),
-        description: e?.message,
-        txid: e?.txid,
-      })
+    } catch (e) {
+      if (isMangoError(e)) {
+        notify({
+          type: 'error',
+          title: t('trade:settle-funds-error'),
+          description: e?.message,
+          txid: e?.txid,
+        })
+      }
       console.error('Settle funds error:', e)
     } finally {
       setSettleMktAddress('')
@@ -114,13 +118,15 @@ const UnsettledTrades = ({
         title: 'Successfully settled P&L',
         txid,
       })
-    } catch (e: any) {
-      notify({
-        type: 'error',
-        title: 'Settle P&L error',
-        description: e?.message,
-        txid: e?.txid,
-      })
+    } catch (e) {
+      if (isMangoError(e)) {
+        notify({
+          type: 'error',
+          title: 'Settle P&L error',
+          description: e?.message,
+          txid: e?.txid,
+        })
+      }
       console.error('Settle P&L error:', e)
     } finally {
       setSettleMktAddress('')

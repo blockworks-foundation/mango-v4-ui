@@ -1,6 +1,7 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
+import { BN } from 'bn.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
@@ -20,7 +21,7 @@ const PerpSlider = ({
 
   const step = useMemo(() => {
     if (selectedMarket instanceof PerpMarket) {
-      return selectedMarket.baseLotsToUi(BigInt(1) as any)
+      return selectedMarket.baseLotsToUi(new BN(1))
     }
     return 0.01
   }, [selectedMarket])

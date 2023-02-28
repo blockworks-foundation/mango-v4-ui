@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'

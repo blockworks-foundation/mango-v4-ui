@@ -44,6 +44,11 @@ type CryptoStatsResponse = {
   price_change_percentage_24h: number
 }
 
+export type CoingeckoDataType = {
+  market_data: CryptoStatsResponse
+  name: string
+}
+
 const fetchTokenInfo = async (tokenId: string | undefined) => {
   if (!tokenId) return
   const response = await fetch(
@@ -91,16 +96,17 @@ const TokenPage = () => {
     }
   }, [bank, mangoTokens])
 
-  const coingeckoTokenInfo = useQuery<
-    { market_data: CryptoStatsResponse; name: string },
-    Error
-  >(['coingecko-token-info', coingeckoId], () => fetchTokenInfo(coingeckoId), {
-    cacheTime: 1000 * 60 * 15,
-    staleTime: 1000 * 60 * 5,
-    retry: 3,
-    refetchOnWindowFocus: false,
-    enabled: !!coingeckoId,
-  })
+  const coingeckoTokenInfo = useQuery<CoingeckoDataType, Error>(
+    ['coingecko-token-info', coingeckoId],
+    () => fetchTokenInfo(coingeckoId),
+    {
+      cacheTime: 1000 * 60 * 15,
+      staleTime: 1000 * 60 * 5,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!coingeckoId,
+    }
+  )
 
   const { high_24h, low_24h, price_change_percentage_24h } =
     coingeckoTokenInfo.data

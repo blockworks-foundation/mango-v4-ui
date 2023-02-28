@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
 import { Event } from '@project-serum/serum/lib/queue'
@@ -226,4 +227,18 @@ export interface TradeForm {
   postOnly: boolean
   ioc: boolean
   reduceOnly: boolean
+}
+
+export interface MangoError extends Error {
+  txid: string
+}
+
+export function isMangoError(error: unknown): error is MangoError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    'txid' in error &&
+    typeof (error as Record<string, unknown>).message === 'string'
+  )
 }

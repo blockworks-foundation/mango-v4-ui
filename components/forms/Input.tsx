@@ -1,19 +1,18 @@
-import { ChangeEvent, forwardRef } from 'react'
+import { ChangeEvent, forwardRef, InputHTMLAttributes } from 'react'
 
-interface InputProps {
-  type: string
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   value: string
   onChange: (e: ChangeEvent<HTMLInputElement>) => void
+  type?: string
   maxLength?: number
   className?: string
   disabled?: boolean
   prefixClassname?: string
   wrapperClassName?: string
   error?: boolean
-  prefix: string
-  prefixClassName: string
-  suffix: string
-  [x: string]: any
+  prefix?: string
+  prefixClassName?: string
+  suffix?: string
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {

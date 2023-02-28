@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { HTMLAttributes, ReactNode } from 'react'
 import Tippy, { TippyProps } from '@tippyjs/react'
 import 'tippy.js/animations/scale.css'
 
@@ -54,8 +54,7 @@ const Content = ({
   children,
 }: {
   className?: string
-  children: any
-}) => {
+} & HTMLAttributes<HTMLDivElement>) => {
   return (
     <div
       className={`default-transition inline-block cursor-help border-b border-dashed border-th-fgd-3 border-opacity-20 hover:border-th-bkg-2 ${className}`}

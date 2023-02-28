@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'

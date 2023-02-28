@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import MangoDateRangePicker from '@components/forms/DateRangePicker'
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'

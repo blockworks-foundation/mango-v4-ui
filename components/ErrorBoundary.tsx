@@ -5,7 +5,7 @@ interface Props {
 }
 
 interface State {
-  error: any
+  error: Error | null | undefined
   hasError: boolean
 }
 

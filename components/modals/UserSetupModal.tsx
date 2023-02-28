@@ -41,6 +41,7 @@ import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { withValueLimit } from '@components/swap/SwapForm'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
+import { isMangoError } from 'types'
 
 const UserSetupModal = ({
   isOpen,
@@ -97,12 +98,14 @@ const UserSetupModal = ({
           txid: tx,
         })
       }
-    } catch (e: any) {
-      notify({
-        title: t('new-account-failed'),
-        txid: e?.txid,
-        type: 'error',
-      })
+    } catch (e) {
+      if (isMangoError(e)) {
+        notify({
+          title: t('new-account-failed'),
+          txid: e?.txid,
+          type: 'error',
+        })
+      }
       console.error(e)
     } finally {
       setLoadingAccount(false)
@@ -114,9 +117,9 @@ const UserSetupModal = ({
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const bank = group?.banksMapByName.get(depositToken)?.[0]
 
-    if (!mangoAccount || !group) return
-    const bank = group.banksMapByName.get(depositToken)![0]
+    if (!mangoAccount || !group || !bank) return
     try {
       setSubmitDeposit(true)
       const tx = await client.tokenDeposit(
@@ -135,17 +138,18 @@ const UserSetupModal = ({
       setSubmitDeposit(false)
       onClose()
       // setShowSetupStep(4)
-    } catch (e: any) {
+    } catch (e) {
+      setSubmitDeposit(false)
+      console.error(e)
+      if (!isMangoError(e)) return
       notify({
         title: 'Transaction failed',
         description: e.message,
         txid: e?.txid,
         type: 'error',
       })
-      setSubmitDeposit(false)
-      console.error(e)
     }
-  }, [depositAmount, depositToken])
+  }, [depositAmount, depositToken, onClose])
 
   useEffect(() => {
     if (mangoAccount && showSetupStep === 2) {

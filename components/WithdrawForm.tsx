@@ -38,6 +38,7 @@ import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { isMangoError } from 'types'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -125,15 +126,16 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
       await actions.reloadMangoAccount()
       setSubmitting(false)
       onSuccess()
-    } catch (e: any) {
+    } catch (e) {
       console.error(e)
+      setSubmitting(false)
+      if (!isMangoError(e)) return
       notify({
         title: 'Transaction failed',
         description: e.message,
         txid: e?.txid,
         type: 'error',
       })
-      setSubmitting(false)
     }
   }, [bank, inputAmount])
 

@@ -4,11 +4,12 @@ import mangoStore from '@store/mangoStore'
 import { notify } from '../../utils/notifications'
 import Button from '../shared/Button'
 import { useTranslation } from 'next-i18next'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { isMangoError } from 'types'
 
 const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation('common')
@@ -16,7 +17,7 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState(mangoAccount?.name || '')
 
-  const handleUpdateccountName = async () => {
+  const handleUpdateccountName = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
@@ -33,16 +34,17 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
         txid: tx,
       })
       await actions.reloadMangoAccount()
-    } catch (e: any) {
+    } catch (e) {
+      console.error(e)
       setLoading(false)
+      if (!isMangoError(e)) return
       notify({
         title: t('account-update-failed'),
         txid: e?.txid,
         type: 'error',
       })
-      console.error(e)
     }
-  }
+  }, [mangoAccount, name, t, onClose])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
