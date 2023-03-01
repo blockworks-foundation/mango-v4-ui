@@ -1,4 +1,7 @@
 {
+    "assets": "Assets",
+    "assets-liabilities": "Assets & Liabilities",
+    "liabilities": "Liabilities",
     "no-pnl-history": "No PnL History",
     "pnl-chart": "PnL Chart",
     "pnl-history": "PnL History",
