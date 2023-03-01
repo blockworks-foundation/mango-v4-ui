@@ -207,11 +207,11 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           <div>
             <SolBalanceWarnings
               amount={inputAmount}
-              className="mt-2"
+              className="mb-4"
               setAmount={setInputAmount}
               selectedToken={selectedToken}
             />
-            <div className="mt-4 grid grid-cols-2">
+            <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('deposit')} ${t('token')}`} />
                 <MaxAmountButton
