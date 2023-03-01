@@ -2,7 +2,6 @@ import { SolanaMobileWalletAdapter } from '@solana-mobile/wallet-adapter-mobile'
 import { WalletName, WalletReadyState } from '@solana/wallet-adapter-base'
 import { useWallet, Wallet } from '@solana/wallet-adapter-react'
 import { StandardWalletAdapter } from '@solana/wallet-standard-wallet-adapter-base'
-import { useTranslation } from 'next-i18next'
 import React, {
   createContext,
   ReactNode,
@@ -11,7 +10,6 @@ import React, {
   useEffect,
   useMemo,
 } from 'react'
-import mangoStore from '@store/mangoStore'
 import { notify } from 'utils/notifications'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 
@@ -20,7 +18,6 @@ interface EnhancedWalletContextState {
   preselectedWalletName: string
   handleSelect: (name: WalletName | null) => void
   handleConnect: () => Promise<void>
-  handleDisconnect: () => Promise<void>
 }
 
 const EnhancedWalletContext = createContext<EnhancedWalletContextState>(
@@ -36,9 +33,7 @@ export default function EnhancedWalletProvider({
 }: {
   children: ReactNode
 }) {
-  const { wallets, select, wallet, connect, disconnect } = useWallet()
-  const { t } = useTranslation(['common', 'profile'])
-  const set = mangoStore((s) => s.set)
+  const { wallets, select, wallet, connect } = useWallet()
 
   const displayedWallets = useMemo(
     () =>
@@ -74,6 +69,17 @@ export default function EnhancedWalletProvider({
     }
   }, [wallet, setPreselectedWalletName])
 
+  useEffect(() => {
+    if (!wallet && preselectedWalletName) {
+      const wallet = wallets.find(
+        (w) => w.adapter.name === preselectedWalletName
+      )
+      if (wallet) {
+        select(wallet.adapter.name)
+      }
+    }
+  }, [wallet, preselectedWalletName, wallets, select])
+
   const handleSelect = useCallback(
     (name: WalletName | null) => {
       setPreselectedWalletName(name)
@@ -105,7 +111,7 @@ export default function EnhancedWalletProvider({
         adapter.readyState === WalletReadyState.Installed ||
         adapter.readyState === WalletReadyState.Loadable
       ) {
-        select(adapter.name)
+        await select(adapter.name)
       } else {
         notify({
           title: `${adapter.name} Error`,
@@ -126,18 +132,6 @@ export default function EnhancedWalletProvider({
     setPreselectedWalletName,
   ])
 
-  const handleDisconnect = useCallback(async () => {
-    set((state) => {
-      state.mangoAccounts = []
-      state.mangoAccount.current = undefined
-    })
-    notify({
-      type: 'info',
-      title: t('wallet-disconnected'),
-    })
-    await disconnect()
-  }, [set, t, disconnect])
-
   return (
     <EnhancedWalletContext.Provider
       value={{
@@ -145,7 +139,6 @@ export default function EnhancedWalletProvider({
         preselectedWalletName,
         handleSelect,
         handleConnect,
-        handleDisconnect,
       }}
     >
       {children}

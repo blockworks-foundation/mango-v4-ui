@@ -53,7 +53,6 @@ const ConnectedMenu = () => {
       }
     })
     disconnect()
-    wallet?.adapter.disconnect()
     notify({
       type: 'info',
       title: t('wallet-disconnected'),
