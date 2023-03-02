@@ -599,7 +599,9 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Positive pnl liquidation fee"
-                                value={`${perpMarket.positivePnlLiquidationFee}`}
+                                value={`${perpMarket.positivePnlLiquidationFee
+                                  .toNumber()
+                                  .toFixed(4)}`}
                               />
                             </Disclosure.Panel>
                           </>
