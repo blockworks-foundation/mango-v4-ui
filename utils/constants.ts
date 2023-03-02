@@ -47,6 +47,8 @@ export const SHOW_STABLE_PRICE_KEY = 'showStablePriceKey-0.1'
 
 export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
 
+export const SHOW_SWAP_INTRO_MODAL = 'showSwapModal-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',

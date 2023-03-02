@@ -8,6 +8,7 @@ type ModalProps = {
   isOpen: boolean
   onClose: () => void
   hideClose?: boolean
+  backdropBrightness?: number
 }
 
 function Modal({
@@ -17,6 +18,7 @@ function Modal({
   isOpen,
   onClose,
   hideClose,
+  backdropBrightness = 0.5,
 }: ModalProps) {
   const handleClose = () => {
     if (disableOutsideClose) return
@@ -30,13 +32,13 @@ function Modal({
       className="relative z-40 overflow-y-auto"
     >
       <div
-        className={`fixed inset-0 backdrop-brightness-[0.3] ${
+        className={`fixed inset-0 backdrop-brightness-[${backdropBrightness}] ${
           disableOutsideClose ? 'pointer-events-none' : ''
         }`}
         aria-hidden="true"
       />
       <div
-        className={`fixed inset-0 flex items-center text-center sm:justify-center ${
+        className={`fixed inset-0 flex items-center sm:justify-center ${
           fullScreen ? '' : 'sm:px-4'
         }`}
       >
