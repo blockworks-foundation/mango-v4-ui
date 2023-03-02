@@ -5,7 +5,7 @@
     "connect-borrows": "Connect to see your borrows",
     "current-borrow-value": "Current Borrow Value",
     "liability-weight-desc": "Liability weight adds to the value of the liability in your account health calculation.",
-    "no-borrows": "No Borrows",
+    "no-borrows": "無借貨",
     "tooltip-available": "The max amount you can borrow",
-    "your-borrows": "Your Borrows"
+    "your-borrows": "你的借貨"
 }
