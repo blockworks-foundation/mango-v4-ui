@@ -2,13 +2,13 @@
     "assets": "Assets",
     "assets-liabilities": "Assets & Liabilities",
     "liabilities": "Liabilities",
-    "no-pnl-history": "No PnL History",
-    "pnl-chart": "PnL Chart",
-    "pnl-history": "PnL History",
-    "tooltip-free-collateral": "The amount of capital you have to use for trades and loans. When your free collateral reaches $0 you won't be able to trade, borrow or withdraw",
-    "tooltip-leverage": "Total assets value divided by account equity value",
-    "tooltip-pnl": "The amount your account has profited or lost",
-    "tooltip-total-collateral": "Total value of collateral for trading and borrowing (including unsettled PnL)",
-    "tooltip-total-interest": "The value of interest earned (deposits) minus interest paid (borrows)",
-    "week-starting": "Week starting {{week}}"
+    "no-pnl-history": "無盈虧歷史",
+    "pnl-chart": "盈虧圖表",
+    "pnl-history": "盈虧歷史",
+    "tooltip-free-collateral": "你可用於交易和借貨的餘額。當你可用的質押品達到0元時，你將不能交易、借貨或取款",
+    "tooltip-leverage": "總資價值除以賬戶餘額",
+    "tooltip-pnl": "你帳戶的盈虧",
+    "tooltip-total-collateral": "可用於交易和借貨的質押品（包括未結清的盈虧）",
+    "tooltip-total-interest": "你獲取的利息（存款）減你付出的利息（借貨）",
+    "week-starting": "從{{week}}來算的一周"
 }
