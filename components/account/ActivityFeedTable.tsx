@@ -51,7 +51,7 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
   }
   if (activity_type === 'openbook_trade') {
     const { fee_cost, quote_symbol } = activity.activity_details
-    fee = { value: formatFee(fee_cost), symbol: quote_symbol }
+    fee = { value: fee_cost, symbol: quote_symbol }
   }
   return fee
 }
@@ -258,7 +258,9 @@ const ActivityFeedTable = ({
                     </span>
                   </Td>
                   <Td className="text-right font-mono">
-                    {(Number(fee.value) * value).toFixed(5)}{' '}
+                    {activity_type === 'perp'
+                      ? (Number(fee.value) * value).toFixed(5)
+                      : fee.value}{' '}
                     <span className="font-body text-th-fgd-3">
                       {fee.symbol}
                     </span>
