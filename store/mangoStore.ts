@@ -622,11 +622,15 @@ const mangoStore = create<MangoStore>()(
             if (!selectedMangoAccount || !selectedAccountIsNotInAccountsList) {
               const lastAccount = localStorage.getItem(LAST_ACCOUNT_KEY)
               newSelectedMangoAccount = mangoAccounts[0]
-
+              let lastViewedAccount
               if (typeof lastAccount === 'string') {
-                const lastViewedAccount = mangoAccounts.find(
-                  (m) => m.publicKey.toString() === lastAccount
-                )
+                try {
+                  lastViewedAccount = mangoAccounts.find(
+                    (m) => m.publicKey.toString() === JSON.parse(lastAccount)
+                  )
+                } catch (e) {
+                  console.error('Error parsing last account', e)
+                }
                 newSelectedMangoAccount = lastViewedAccount || mangoAccounts[0]
               }
             }

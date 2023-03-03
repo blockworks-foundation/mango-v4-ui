@@ -1,4 +1,4 @@
-export const LAST_ACCOUNT_KEY = 'mangoAccount-0.2'
+export const LAST_ACCOUNT_KEY = 'mangoAccount-0.3'
 
 export const CLIENT_TX_TIMEOUT = 90000
 
