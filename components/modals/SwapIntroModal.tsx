@@ -5,7 +5,7 @@ import Modal from '../shared/Modal'
 const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
   // const { t } = useTranslation('common')
   return (
-    <Modal isOpen={isOpen} onClose={onClose} backdropBrightness={0.5}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <div className="flex items-center justify-center">
         {/* <img
           className={`h-8 w-8 flex-shrink-0`}
