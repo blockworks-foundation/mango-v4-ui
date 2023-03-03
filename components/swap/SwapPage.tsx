@@ -4,11 +4,18 @@ import SwapForm from './SwapForm'
 // import { useWallet } from '@solana/wallet-adapter-react'
 import SwapInfoTabs from './SwapInfoTabs'
 import dynamic from 'next/dynamic'
+import SwapIntroModal from '@components/modals/SwapIntroModal'
+import { useLocalStorage } from '@solana/wallet-adapter-react'
+import { SHOW_SWAP_INTRO_MODAL } from 'utils/constants'
 // import useLocalStorageState from 'hooks/useLocalStorageState'
 // import { IS_ONBOARDED_KEY } from 'utils/constants'
 const SwapTokenChart = dynamic(() => import('./SwapTokenChart'), { ssr: false })
 
 const SwapPage = () => {
+  const [showSwapIntro, setShowSwapIntro] = useLocalStorage(
+    SHOW_SWAP_INTRO_MODAL,
+    true
+  )
   // const { connected } = useWallet()
   // const tourSettings = mangoStore((s) => s.settings.tours)
   // const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
@@ -26,9 +33,12 @@ const SwapPage = () => {
           <SwapInfoTabs />
         </div>
       </div>
-      {/* {!tourSettings?.swap_tour_seen && isOnboarded && connected ? (
-        <SwapOnboardingTour />
-      ) : null} */}
+      {showSwapIntro ? (
+        <SwapIntroModal
+          isOpen={showSwapIntro}
+          onClose={() => setShowSwapIntro(false)}
+        />
+      ) : null}
     </>
   )
 }

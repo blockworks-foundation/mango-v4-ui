@@ -82,6 +82,7 @@ export default function useLocalStorageState<T = any>(
       try {
         return JSON.parse(stringState)
       } catch (e) {
+        console.log('Error parsing JSON from localStorage', e)
         return stringState
       }
     }

@@ -43,6 +43,11 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthBar from './HealthBar'
+const AssetsLiabilities = dynamic(() => import('./AssetsLiabilities'), {
+  ssr: false,
+})
+
+const TABS = ['account-value', 'account:assets-liabilities']
 import { PerformanceDataItem } from 'types'
 
 const AccountPage = () => {
@@ -72,6 +77,10 @@ const AccountPage = () => {
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
+  )
+  const [activeTab, setActiveTab] = useLocalStorageState(
+    'accountHeroKey-0.1',
+    'account-value'
   )
 
   useEffect(() => {
@@ -221,99 +230,119 @@ const AccountPage = () => {
 
   return !chartToShow ? (
     <>
-      <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-3 lg:flex-row lg:items-center lg:justify-between lg:border-b">
-        <div className="flex flex-col md:flex-row md:items-center md:space-x-6">
-          <div id="account-step-three">
-            <Tooltip
-              maxWidth="20rem"
-              placement="bottom-start"
-              content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
-              delay={250}
-            >
-              <p className="tooltip-underline mb-2 text-base">
-                {t('account-value')}
-              </p>
-            </Tooltip>
-            <div className="mb-2 flex items-center font-display text-5xl text-th-fgd-1">
-              {animationSettings['number-scroll'] ? (
-                group && mangoAccount ? (
-                  <FlipNumbers
-                    height={48}
-                    width={35}
-                    play
-                    delay={0.05}
-                    duration={1}
-                    numbers={formatCurrencyValue(accountValue, 2)}
-                  />
-                ) : (
-                  <FlipNumbers
-                    height={48}
-                    width={36}
-                    play
-                    delay={0.05}
-                    duration={1}
-                    numbers={'$0.00'}
-                  />
-                )
-              ) : (
-                <FormatNumericValue value={accountValue} isUsd decimals={2} />
-              )}
-            </div>
-            <div className="flex items-center space-x-1.5">
-              <Change change={accountValueChange} prefix="$" />
-              <p className="text-xs text-th-fgd-4">{t('rolling-change')}</p>
-            </div>
-          </div>
-          {!performanceLoading ? (
-            oneDayPerformanceData.length ? (
-              <div
-                className="relative mt-4 flex h-40 items-end md:mt-0 md:h-24 md:w-48"
-                onMouseEnter={() =>
-                  onHoverMenu(showExpandChart, 'onMouseEnter')
-                }
-                onMouseLeave={() =>
-                  onHoverMenu(showExpandChart, 'onMouseLeave')
-                }
+      <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:border-b">
+        <div>
+          <div className="hide-scroll flex justify-center space-x-2 md:justify-start">
+            {TABS.map((tab) => (
+              <button
+                className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium md:hover:text-th-fgd-2 ${
+                  activeTab === tab
+                    ? 'bg-th-bkg-3 text-th-active'
+                    : 'text-th-fgd-3'
+                }`}
+                onClick={() => setActiveTab(tab)}
+                key={tab}
               >
-                <SimpleAreaChart
-                  color={
-                    accountValueChange >= 0
-                      ? COLORS.UP[theme]
-                      : COLORS.DOWN[theme]
-                  }
-                  data={oneDayPerformanceData.concat(latestAccountData)}
-                  name="accountValue"
-                  xKey="time"
-                  yKey="account_equity"
-                />
-                <Transition
-                  appear={true}
-                  className="absolute right-2 bottom-2"
-                  show={showExpandChart || isMobile}
-                  enter="transition ease-in duration-300"
-                  enterFrom="opacity-0 scale-75"
-                  enterTo="opacity-100 scale-100"
-                  leave="transition ease-out duration-200"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <IconButton
-                    className="text-th-fgd-3"
-                    hideBg
-                    onClick={() => handleShowAccountValueChart()}
-                  >
-                    <ArrowsPointingOutIcon className="h-5 w-5" />
-                  </IconButton>
-                </Transition>
+                {t(tab)}
+              </button>
+            ))}
+          </div>
+          <div className="md:h-24">
+            {activeTab === 'account-value' ? (
+              <div className="flex flex-col md:flex-row md:items-end md:space-x-6">
+                <div className="mx-auto mt-4 md:mx-0">
+                  <div className="mb-2 flex justify-start font-display text-5xl text-th-fgd-1">
+                    {animationSettings['number-scroll'] ? (
+                      group && mangoAccount ? (
+                        <FlipNumbers
+                          height={48}
+                          width={35}
+                          play
+                          delay={0.05}
+                          duration={1}
+                          numbers={formatCurrencyValue(accountValue, 2)}
+                        />
+                      ) : (
+                        <FlipNumbers
+                          height={48}
+                          width={36}
+                          play
+                          delay={0.05}
+                          duration={1}
+                          numbers={'$0.00'}
+                        />
+                      )
+                    ) : (
+                      <FormatNumericValue
+                        value={accountValue}
+                        isUsd
+                        decimals={2}
+                      />
+                    )}
+                  </div>
+                  <div className="flex items-center justify-center space-x-1.5 md:justify-start">
+                    <Change change={accountValueChange} prefix="$" />
+                    <p className="text-xs text-th-fgd-4">
+                      {t('rolling-change')}
+                    </p>
+                  </div>
+                </div>
+                {!performanceLoading ? (
+                  oneDayPerformanceData.length ? (
+                    <div
+                      className="relative mt-4 flex h-40 items-end md:mt-0 md:h-20 md:w-52 lg:w-60"
+                      onMouseEnter={() =>
+                        onHoverMenu(showExpandChart, 'onMouseEnter')
+                      }
+                      onMouseLeave={() =>
+                        onHoverMenu(showExpandChart, 'onMouseLeave')
+                      }
+                    >
+                      <SimpleAreaChart
+                        color={
+                          accountValueChange >= 0
+                            ? COLORS.UP[theme]
+                            : COLORS.DOWN[theme]
+                        }
+                        data={oneDayPerformanceData.concat(latestAccountData)}
+                        name="accountValue"
+                        xKey="time"
+                        yKey="account_equity"
+                      />
+                      <Transition
+                        appear={true}
+                        className="absolute right-2 bottom-2"
+                        show={showExpandChart || isMobile}
+                        enter="transition ease-in duration-300"
+                        enterFrom="opacity-0 scale-75"
+                        enterTo="opacity-100 scale-100"
+                        leave="transition ease-out duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                      >
+                        <IconButton
+                          className="text-th-fgd-3"
+                          hideBg
+                          onClick={() => handleShowAccountValueChart()}
+                        >
+                          <ArrowsPointingOutIcon className="h-5 w-5" />
+                        </IconButton>
+                      </Transition>
+                    </div>
+                  ) : null
+                ) : mangoAccountAddress ? (
+                  <SheenLoader className="mt-4 flex flex-1 md:mt-0">
+                    <div className="h-40 w-full rounded-md bg-th-bkg-2 md:h-20 md:w-52 lg:w-60" />
+                  </SheenLoader>
+                ) : null}
               </div>
-            ) : null
-          ) : mangoAccountAddress ? (
-            <SheenLoader className="mt-4 flex flex-1 md:mt-0">
-              <div className="h-40 w-full rounded-md bg-th-bkg-2 md:h-24 md:w-48" />
-            </SheenLoader>
-          ) : null}
+            ) : null}
+            {activeTab === 'account:assets-liabilities' ? (
+              <AssetsLiabilities isMobile={isMobile} />
+            ) : null}
+          </div>
         </div>
-        <div className="mt-6 mb-1 lg:mt-0 lg:mb-0">
+        <div className="mt-6 mb-1 lg:mt-0">
           <AccountActions />
         </div>
       </div>

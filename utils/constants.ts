@@ -1,4 +1,4 @@
-export const LAST_ACCOUNT_KEY = 'mangoAccount-0.2'
+export const LAST_ACCOUNT_KEY = 'mangoAccount-0.3'
 
 export const CLIENT_TX_TIMEOUT = 90000
 
@@ -47,6 +47,8 @@ export const SHOW_STABLE_PRICE_KEY = 'showStablePriceKey-0.1'
 
 export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
 
+export const SHOW_SWAP_INTRO_MODAL = 'showSwapModal-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
@@ -68,9 +70,9 @@ export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
 export const MIN_SOL_BALANCE = 0.001
 
-export const ACCOUNT_ACTION_MODAL_HEIGHT = '506px'
+export const ACCOUNT_ACTION_MODAL_HEIGHT = '462px'
 
-export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '444px'
+export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '400px'
 
 export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 

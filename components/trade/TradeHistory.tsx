@@ -142,7 +142,7 @@ const formatTradeHistory = (
   return tradeHistory.flat().map((event) => {
     let trade
     let market = selectedMarket
-    let time = 'Recent'
+    let time = ''
     if (isSerumFillEvent(event)) {
       trade = parseSerumEvent(event)
     } else if (isPerpFillEvent(event)) {

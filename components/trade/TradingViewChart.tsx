@@ -104,7 +104,9 @@ const TradingViewChart = () => {
     [theme]
   )
 
-  const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
+  const tvWidgetRef = useRef<IChartingLibraryWidget>()
+  const stablePriceButtonRef = useRef<HTMLElement>()
+  const orderLinesButtonRef = useRef<HTMLElement>()
 
   const selectedMarket = useMemo(() => {
     const group = mangoStore.getState().group
@@ -151,30 +153,6 @@ const TradingViewChart = () => {
     }
   }, [selectedMarketName, spotOrPerp])
 
-  const createStablePriceButton = useCallback(() => {
-    const toggleStablePrice = (button: HTMLElement) => {
-      toggleShowStablePrice((prevState: boolean) => !prevState)
-      if (button.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
-        button.style.color = COLORS.FGD4[theme]
-      } else {
-        button.style.color = COLORS.ACTIVE[theme]
-      }
-    }
-
-    const button = tvWidgetRef?.current?.createButton()
-    if (!button) {
-      return
-    }
-    button.textContent = 'SP'
-    if (showStablePriceLocalStorage) {
-      button.style.color = COLORS.ACTIVE[theme]
-    } else {
-      button.style.color = COLORS.FGD4[theme]
-    }
-    button.setAttribute('title', t('tv-chart:toggle-stable-price'))
-    button.addEventListener('click', () => toggleStablePrice(button))
-  }, [showStablePriceLocalStorage, theme, t])
-
   useEffect(() => {
     if (showStablePrice !== showStablePriceLocalStorage) {
       toggleShowStablePriceLocalStorage(showStablePrice)
@@ -183,6 +161,7 @@ const TradingViewChart = () => {
     showStablePrice,
     showStablePriceLocalStorage,
     toggleShowStablePriceLocalStorage,
+    theme,
   ])
 
   const drawStablePriceLine = useCallback(
@@ -262,6 +241,7 @@ const TradingViewChart = () => {
     showOrderLines,
     showOrderLinesLocalStorage,
     toggleShowOrderLinesLocalStorage,
+    theme,
   ])
 
   const deleteLines = useCallback(() => {
@@ -633,20 +613,46 @@ const TradingViewChart = () => {
     [drawLinesForMarket, deleteLines, theme]
   )
 
+  const createStablePriceButton = useCallback(() => {
+    const toggleStablePrice = (button: HTMLElement) => {
+      toggleShowStablePrice((prevState: boolean) => !prevState)
+      if (button.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
+        button.style.color = COLORS.FGD4[theme]
+      } else {
+        button.style.color = COLORS.ACTIVE[theme]
+      }
+    }
+
+    const button = tvWidgetRef?.current?.createButton()
+    if (!button) {
+      return
+    }
+    button.textContent = 'SP'
+    button.setAttribute('title', t('tv-chart:toggle-stable-price'))
+    button.addEventListener('click', () => toggleStablePrice(button))
+    if (showStablePriceLocalStorage) {
+      button.style.color = COLORS.ACTIVE[theme]
+    } else {
+      button.style.color = COLORS.FGD4[theme]
+    }
+    stablePriceButtonRef.current = button
+  }, [theme, t, showStablePriceLocalStorage])
+
   const createOLButton = useCallback(() => {
     const button = tvWidgetRef?.current?.createButton()
     if (!button) {
       return
     }
     button.textContent = 'OL'
+    button.setAttribute('title', t('tv-chart:toggle-order-line'))
+    button.addEventListener('click', () => toggleOrderLines(button))
     if (showOrderLinesLocalStorage) {
       button.style.color = COLORS.ACTIVE[theme]
     } else {
       button.style.color = COLORS.FGD4[theme]
     }
-    button.setAttribute('title', t('tv-chart:toggle-order-line'))
-    button.addEventListener('click', () => toggleOrderLines(button))
-  }, [t, theme, toggleOrderLines, showOrderLinesLocalStorage])
+    orderLinesButtonRef.current = button
+  }, [t, toggleOrderLines, showOrderLinesLocalStorage, theme])
 
   useEffect(() => {
     if (window) {
@@ -733,45 +739,25 @@ const TradingViewChart = () => {
       }
 
       console.log('creating new chart')
-
       const tvWidget = new widget(widgetOptions)
       tvWidgetRef.current = tvWidget
-
-      tvWidgetRef.current.onChartReady(function () {
-        createOLButton()
-        createStablePriceButton()
-        // if (showOrderLines) {
-        //   const openOrders = mangoStore.getState().mangoAccount.openOrders
-        //   deleteLines()
-        //   drawLinesForMarket(openOrders)
-        // }
-        // if (showStablePrice && stablePrice) {
-        //   const set = mangoStore.getState().set
-        //   const elementId = drawStablePriceLine(stablePrice)
-        //   set((s) => {
-        //     s.tradingView.stablePriceLine = elementId
-        //   })
-        // }
+      tvWidgetRef.current.onChartReady(() => {
         setChartReady(true)
       })
-      //eslint-disable-next-line
     }
-  }, [
-    createOLButton,
-    createStablePriceButton,
-    selectedMarket,
-    theme,
-    spotOrPerp,
-    defaultProps,
-    deleteLines,
-    drawLinesForMarket,
-    showOrderLines,
-    showStablePrice,
-    // stablePrice,
-    drawStablePriceLine,
-    setChartReady,
-    isMobile,
-  ])
+  }, [selectedMarket, theme, spotOrPerp, defaultProps, isMobile])
+
+  // draw custom buttons when chart is ready
+  useEffect(() => {
+    if (
+      chartReady &&
+      !orderLinesButtonRef.current &&
+      !stablePriceButtonRef.current
+    ) {
+      createOLButton()
+      createStablePriceButton()
+    }
+  }, [createOLButton, chartReady, createStablePriceButton])
 
   // update order lines if a user's open orders change
   useEffect(() => {
@@ -780,51 +766,53 @@ const TradingViewChart = () => {
       subscription = mangoStore.subscribe(
         (state) => state.mangoAccount.openOrders,
         (openOrders) => {
-          const orderLines = mangoStore.getState().tradingView.orderLines
-          tvWidgetRef.current?.onChartReady(() => {
-            let matchingOrderLines = 0
-            let openOrdersForMarket = 0
+          if (showOrderLines) {
+            const orderLines = mangoStore.getState().tradingView.orderLines
+            tvWidgetRef.current?.onChartReady(() => {
+              let matchingOrderLines = 0
+              let openOrdersForMarket = 0
 
-            const oOrders = Object.entries(openOrders).map(
-              ([marketPk, orders]) => ({
-                orders,
-                marketPk,
-              })
-            )
+              const oOrders = Object.entries(openOrders).map(
+                ([marketPk, orders]) => ({
+                  orders,
+                  marketPk,
+                })
+              )
 
-            for (const [key] of orderLines) {
-              oOrders?.forEach(({ orders }) => {
-                for (const order of orders) {
-                  if (order.orderId == key) {
-                    matchingOrderLines += 1
+              for (const [key] of orderLines) {
+                oOrders?.forEach(({ orders }) => {
+                  for (const order of orders) {
+                    if (order.orderId == key) {
+                      matchingOrderLines += 1
+                    }
                   }
+                })
+              }
+
+              const selectedMarket =
+                mangoStore.getState().selectedMarket.current
+              const selectedMarketPk =
+                selectedMarket instanceof Serum3Market
+                  ? selectedMarket?.serumMarketExternal.toString()
+                  : selectedMarket?.publicKey.toString()
+
+              oOrders?.forEach(({ marketPk, orders }) => {
+                if (marketPk === selectedMarketPk) {
+                  openOrdersForMarket = orders.length
                 }
               })
-            }
 
-            const selectedMarket = mangoStore.getState().selectedMarket.current
-            const selectedMarketPk =
-              selectedMarket instanceof Serum3Market
-                ? selectedMarket?.serumMarketExternal.toString()
-                : selectedMarket?.publicKey.toString()
-
-            oOrders?.forEach(({ marketPk, orders }) => {
-              if (marketPk === selectedMarketPk) {
-                openOrdersForMarket = orders.length
-              }
+              tvWidgetRef.current?.activeChart().dataReady(() => {
+                if (
+                  matchingOrderLines !== openOrdersForMarket ||
+                  orderLines?.size !== matchingOrderLines
+                ) {
+                  deleteLines()
+                  drawLinesForMarket(openOrders)
+                }
+              })
             })
-
-            tvWidgetRef.current?.activeChart().dataReady(() => {
-              if (
-                (showOrderLines &&
-                  matchingOrderLines !== openOrdersForMarket) ||
-                orderLines?.size !== matchingOrderLines
-              ) {
-                deleteLines()
-                drawLinesForMarket(openOrders)
-              }
-            })
-          })
+          }
         }
       )
     }

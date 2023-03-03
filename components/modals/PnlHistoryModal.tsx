@@ -93,7 +93,7 @@ const PnlHistoryModal = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="h-96">
         <div className="flex h-full flex-col">
-          <h2 className="mb-4">{t('pnl-history')}</h2>
+          <h2 className="mb-4 w-full text-center">{t('pnl-history')}</h2>
           {loading ? (
             <div className="space-y-1.5">
               {[...Array(4)].map((x, i) => (
