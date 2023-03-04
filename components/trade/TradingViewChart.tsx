@@ -741,7 +741,7 @@ const TradingViewChart = () => {
       console.log('creating new chart')
       const tvWidget = new widget(widgetOptions)
       tvWidgetRef.current = tvWidget
-      tvWidgetRef.current.onChartReady(() => {
+      tvWidgetRef.current.headerReady().then(() => {
         setChartReady(true)
       })
     }
