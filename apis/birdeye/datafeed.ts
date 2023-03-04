@@ -253,7 +253,10 @@ export default {
     try {
       const { firstDataRequest } = periodParams
       let bars
-      if (symbolInfo.description?.includes('PERP')) {
+      if (
+        symbolInfo.description?.includes('PERP') &&
+        symbolInfo.address !== '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+      ) {
         marketType = 'perp'
         bars = await queryPerpBars(
           symbolInfo.address,
