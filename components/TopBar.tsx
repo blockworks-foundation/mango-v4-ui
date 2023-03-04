@@ -42,7 +42,7 @@ const TopBar = () => {
   const { query } = router
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const handleCloseSetup = useCallback(() => {
     setShowUserSetup(false)

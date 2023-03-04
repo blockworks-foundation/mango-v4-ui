@@ -29,7 +29,7 @@ const MaxSizeButton = ({
     side,
     useMargin
   )
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const perpMax = useMemo(() => {
     const group = mangoStore.getState().group

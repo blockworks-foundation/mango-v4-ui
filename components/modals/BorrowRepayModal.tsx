@@ -7,7 +7,7 @@ import RepayForm from '@components/RepayForm'
 import { ACCOUNT_ACTION_MODAL_HEIGHT } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
-import useMangoAccount from 'hooks/useMangoAccount'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 interface BorrowRepayModalProps {
   action: 'borrow' | 'repay'
@@ -24,7 +24,7 @@ const BorrowRepayModal = ({
 }: ModalCombinedProps) => {
   const [activeTab, setActiveTab] = useState(action)
   const { publicKey: walletPk } = useWallet()
-  const { isDelegatedAccount } = useMangoAccount()
+  const { isDelegatedAccount } = useUnownedAccount()
 
   useEffect(() => {
     if (walletPk) {

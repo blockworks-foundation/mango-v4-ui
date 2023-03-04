@@ -400,7 +400,7 @@ const ActionsMenu = ({
   const router = useRouter()
   const { mangoTokens } = useJupiterMints()
   const spotMarkets = mangoStore((s) => s.serumMarkets)
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const spotMarket = useMemo(() => {
     return spotMarkets.find((m) => {

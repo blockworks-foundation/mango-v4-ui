@@ -46,7 +46,7 @@ const AccountActions = () => {
   const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const { connected } = useWallet()
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const handleBorrowModal = () => {
     if (mangoAccountAddress || !connected) {

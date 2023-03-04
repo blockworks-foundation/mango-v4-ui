@@ -35,7 +35,7 @@ const UnsettledTrades = ({
   const showTableView = width ? width > breakpoints.md : false
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const handleSettleSerumFunds = useCallback(async (mktAddress: string) => {
     const client = mangoStore.getState().client

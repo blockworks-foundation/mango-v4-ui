@@ -31,7 +31,7 @@ const PerpPositions = () => {
   const { selectedMarket } = useSelectedMarket()
   const { connected } = useWallet()
   const { mangoAccountAddress } = useMangoAccount()
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 

@@ -52,7 +52,7 @@ const OpenOrders = () => {
   const showTableView = width ? width > breakpoints.md : false
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
     const openOrders = mangoStore.getState().mangoAccount.openOrders

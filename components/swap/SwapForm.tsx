@@ -70,7 +70,7 @@ const SwapForm = () => {
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const {
     margin: useMargin,
@@ -83,7 +83,8 @@ const SwapForm = () => {
   } = mangoStore((s) => s.swap)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
-  const { mangoAccount, isDelegatedAccount } = useMangoAccount()
+  const { mangoAccount } = useMangoAccount()
+  const { isDelegatedAccount } = useUnownedAccount()
   const { connected, publicKey } = useWallet()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {

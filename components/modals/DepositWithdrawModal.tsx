@@ -7,7 +7,7 @@ import WithdrawForm from '@components/WithdrawForm'
 import { ACCOUNT_ACTION_MODAL_HEIGHT } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
-import useMangoAccount from 'hooks/useMangoAccount'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 interface DepositWithdrawModalProps {
   action: 'deposit' | 'withdraw'
@@ -24,7 +24,7 @@ const DepositWithdrawModal = ({
 }: ModalCombinedProps) => {
   const [activeTab, setActiveTab] = useState(action)
   const { publicKey: walletPk } = useWallet()
-  const { isDelegatedAccount } = useMangoAccount()
+  const { isDelegatedAccount } = useUnownedAccount()
 
   useEffect(() => {
     if (walletPk) {
