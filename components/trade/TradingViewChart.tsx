@@ -741,7 +741,7 @@ const TradingViewChart = () => {
       console.log('creating new chart')
       const tvWidget = new widget(widgetOptions)
       tvWidgetRef.current = tvWidget
-      tvWidgetRef.current.headerReady().then(() => {
+      tvWidgetRef.current.onChartReady(() => {
         setChartReady(true)
       })
     }
@@ -751,11 +751,14 @@ const TradingViewChart = () => {
   useEffect(() => {
     if (
       chartReady &&
+      tvWidgetRef.current &&
       !orderLinesButtonRef.current &&
       !stablePriceButtonRef.current
     ) {
-      createOLButton()
-      createStablePriceButton()
+      tvWidgetRef.current.headerReady().then(() => {
+        createOLButton()
+        createStablePriceButton()
+      })
     }
   }, [createOLButton, chartReady, createStablePriceButton])
 
