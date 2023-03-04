@@ -601,10 +601,11 @@ const mangoStore = create<MangoStore>()(
             if (!group) throw new Error('Group not loaded')
             if (!client) throw new Error('Client not loaded')
 
-            const mangoAccounts = await client.getMangoAccountsForOwner(
-              group,
-              ownerPk
-            )
+            const [ownerMangoAccounts, delegateAccounts] = await Promise.all([
+              client.getMangoAccountsForOwner(group, ownerPk),
+              client.getMangoAccountsForDelegate(group, ownerPk),
+            ])
+            const mangoAccounts = [...ownerMangoAccounts, ...delegateAccounts]
             const selectedAccountIsNotInAccountsList = mangoAccounts.find(
               (x) =>
                 x.publicKey.toBase58() ===
