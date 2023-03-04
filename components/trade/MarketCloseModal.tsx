@@ -115,7 +115,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
 
   return (
     <Modal onClose={onClose} isOpen={isOpen}>
-      <h3 className="mb-2">
+      <h3 className="mb-2 text-center">
         {t('trade:close-confirm', { config_name: perpMarket?.name })}
       </h3>
       <div className="pb-6 text-th-fgd-3">{t('trade:price-expect')}</div>
@@ -127,7 +127,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         {submitting ? <Loading /> : <span>{t('trade:close-position')}</span>}
       </Button>
       <LinkButton
-        className="inline-flex items-center text-th-fgd-1"
+        className="inline-flex w-full items-center justify-center text-th-fgd-1"
         onClick={onClose}
       >
         {t('cancel')}
