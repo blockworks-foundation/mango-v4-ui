@@ -597,11 +597,12 @@ const Dashboard: NextPage = () => {
                                 label="Init overall asset weight"
                                 value={`${perpMarket.initOverallAssetWeight.toNumber()}`}
                               />
-                              {/* this property will land in client soon */}
-                              {/* <KeyValuePair
+                              <KeyValuePair
                                 label="Positive pnl liquidation fee"
-                                value={`${perpMarket.positivePnlLiquidationFee}`}
-                              /> */}
+                                value={`${perpMarket.positivePnlLiquidationFee
+                                  .toNumber()
+                                  .toFixed(4)}`}
+                              />
                             </Disclosure.Panel>
                           </>
                         )}
