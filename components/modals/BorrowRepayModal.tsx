@@ -7,6 +7,7 @@ import RepayForm from '@components/RepayForm'
 import { ACCOUNT_ACTION_MODAL_HEIGHT } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 interface BorrowRepayModalProps {
   action: 'borrow' | 'repay'
@@ -23,6 +24,7 @@ const BorrowRepayModal = ({
 }: ModalCombinedProps) => {
   const [activeTab, setActiveTab] = useState(action)
   const { publicKey: walletPk } = useWallet()
+  const { isDelegatedAccount } = useMangoAccount()
 
   useEffect(() => {
     if (walletPk) {
@@ -33,19 +35,29 @@ const BorrowRepayModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div style={{ height: ACCOUNT_ACTION_MODAL_HEIGHT }}>
-        <div className="pb-2">
-          <TabUnderline
-            activeValue={activeTab}
-            values={['borrow', 'repay']}
-            onChange={(v) => setActiveTab(v)}
-          />
-        </div>
-        {activeTab === 'borrow' ? (
-          <BorrowForm onSuccess={onClose} token={token} />
-        ) : null}
-        {activeTab === 'repay' ? (
-          <RepayForm onSuccess={onClose} token={token} />
-        ) : null}
+        {!isDelegatedAccount ? (
+          <>
+            <div className="pb-2">
+              <TabUnderline
+                activeValue={activeTab}
+                values={['borrow', 'repay']}
+                onChange={(v) => setActiveTab(v)}
+              />
+            </div>
+            {activeTab === 'borrow' ? (
+              <BorrowForm onSuccess={onClose} token={token} />
+            ) : null}
+            {activeTab === 'repay' ? (
+              <RepayForm onSuccess={onClose} token={token} />
+            ) : null}{' '}
+          </>
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <div className="text-th-fgd-4">
+              Unavailable for delegate accounts
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   )
