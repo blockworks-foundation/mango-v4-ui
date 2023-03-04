@@ -34,7 +34,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { BN } from '@project-serum/anchor'
 import SpotDatafeed from 'apis/birdeye/datafeed'
-import PerpDatafeed from 'apis/mngo/datafeed'
+// import PerpDatafeed from 'apis/mngo/datafeed'
 import useStablePrice from 'hooks/useStablePrice'
 import { isMangoError } from 'types'
 
@@ -113,7 +113,7 @@ const TradingViewChart = () => {
     if (!group || !selectedMarketName)
       return '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
 
-    if (!selectedMarketName.toLowerCase().includes('perp')) {
+    if (!selectedMarketName?.toLowerCase().includes('perp')) {
       return group
         .getSerum3MarketByName(selectedMarketName)
         .serumMarketExternal.toString()
@@ -689,11 +689,13 @@ const TradingViewChart = () => {
           [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
         }
       })
-
+      const marketAddress =
+        mangoStore.getState().selectedMarket.current?.publicKey.toString() ||
+        '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
-        symbol: selectedMarket,
-        datafeed: spotOrPerp === 'spot' ? SpotDatafeed : PerpDatafeed,
+        symbol: marketAddress,
+        datafeed: SpotDatafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
@@ -745,20 +747,17 @@ const TradingViewChart = () => {
         setChartReady(true)
       })
     }
-  }, [selectedMarket, theme, spotOrPerp, defaultProps, isMobile])
+  }, [theme, defaultProps, isMobile])
 
   // draw custom buttons when chart is ready
   useEffect(() => {
     if (
       chartReady &&
-      tvWidgetRef.current &&
       !orderLinesButtonRef.current &&
       !stablePriceButtonRef.current
     ) {
-      tvWidgetRef.current.headerReady().then(() => {
-        createOLButton()
-        createStablePriceButton()
-      })
+      createOLButton()
+      createStablePriceButton()
     }
   }, [createOLButton, chartReady, createStablePriceButton])
 

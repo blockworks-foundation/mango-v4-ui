@@ -52,18 +52,7 @@ const lastBarsCache = new Map()
 
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
-  intraday_multipliers: [
-    '1',
-    '3',
-    '5',
-    '15',
-    '30',
-    '45',
-    '60',
-    '120',
-    '240',
-    '1440',
-  ],
+  intraday_multipliers: ['1', '3', '5', '15', '30', '45', '60', '120', '240'],
   exchanges: [],
 }
 
