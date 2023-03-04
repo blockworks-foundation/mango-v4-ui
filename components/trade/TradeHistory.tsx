@@ -142,13 +142,14 @@ const formatTradeHistory = (
   return tradeHistory.flat().map((event) => {
     let trade
     let market = selectedMarket
-    let time = ''
+    let time: string | number = ''
     if (isSerumFillEvent(event)) {
       trade = parseSerumEvent(event)
     } else if (isPerpFillEvent(event)) {
       trade = parsePerpEvent(mangoAccountAddress, event)
       market = selectedMarket
-      time = trade.timestamp.toString()
+
+      time = trade.timestamp.toNumber() * 1000
     } else {
       trade = parseApiTradeHistory(mangoAccountAddress, event)
       time = trade.block_datetime
