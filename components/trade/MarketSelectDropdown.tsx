@@ -109,6 +109,9 @@ const MarketSelectDropdown = () => {
                       <div
                         className="flex items-center justify-between py-2 px-4"
                         key={m.publicKey.toString()}
+                        onClick={() => {
+                          close()
+                        }}
                       >
                         <Link
                           href={{
