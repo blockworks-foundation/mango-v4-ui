@@ -26,8 +26,7 @@ const TradeSummary = ({
   const { selectedMarket } = useSelectedMarket()
 
   const maintProjectedHealth = useMemo(() => {
-    if (!mangoAccount || !group || !Number.isFinite(Number(tradeForm.baseSize)))
-      return 100
+    if (!mangoAccount || !group) return 100
 
     let simulatedHealthRatio = 0
     try {
@@ -76,11 +75,9 @@ const TradeSummary = ({
       <div className="flex justify-between text-xs">
         <p>{t('trade:order-value')}</p>
         <p className="text-th-fgd-2">
-          {tradeForm.price && tradeForm.baseSize ? (
+          {Number(tradeForm.price) && Number(tradeForm.baseSize) ? (
             <FormatNumericValue
-              value={
-                parseFloat(tradeForm.price) * parseFloat(tradeForm.baseSize)
-              }
+              value={Number(tradeForm.price) * Number(tradeForm.baseSize)}
               decimals={2}
               isUsd
             />
