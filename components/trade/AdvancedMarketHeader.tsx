@@ -3,14 +3,39 @@ import { IconButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
 import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
 import { ChartBarIcon } from '@heroicons/react/20/solid'
+import { Market } from '@project-serum/serum'
 import mangoStore from '@store/mangoStore'
-import { useCoingecko } from 'hooks/useCoingecko'
+import { useQuery } from '@tanstack/react-query'
+import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo } from 'react'
+import { Token } from 'types/jupiter'
 import { getDecimalCount } from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
+
+type ResponseType = {
+  prices: [number, number][]
+  market_caps: [number, number][]
+  total_volumes: [number, number][]
+}
+
+const fetchTokenChange = async (
+  mangoTokens: Token[],
+  baseSymbol: string
+): Promise<ResponseType> => {
+  const coingeckoId =
+    mangoTokens.find((t) => t.symbol === baseSymbol)?.extensions?.coingeckoId ||
+    'btc'
+  console.log('coingeckoId', coingeckoId)
+
+  const response = await fetch(
+    `https://api.coingecko.com/api/v3/coins/${coingeckoId}/market_chart?vs_currency=usd&days=1`
+  )
+  const data = await response.json()
+  return data
+}
 
 const AdvancedMarketHeader = ({
   showChart,
@@ -23,7 +48,7 @@ const AdvancedMarketHeader = ({
   const perpStats = mangoStore((s) => s.perpStats.data)
   const { serumOrPerpMarket, baseSymbol, price } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
-  const { data: tokenPrices } = useCoingecko()
+  const { mangoTokens } = useJupiterMints()
 
   useEffect(() => {
     if (serumOrPerpMarket instanceof PerpMarket) {
@@ -32,26 +57,35 @@ const AdvancedMarketHeader = ({
     }
   }, [serumOrPerpMarket])
 
-  const changeData = useMemo(() => {
-    if (serumOrPerpMarket instanceof PerpMarket) {
-      return getOneDayPerpStats(perpStats, selectedMarketName)
-    } else {
-      return tokenPrices.find(
-        (asset) => asset.symbol.toUpperCase() === baseSymbol?.toUpperCase()
-      )
+  const changeResponse = useQuery(
+    ['coingecko-tokens', baseSymbol],
+    () => fetchTokenChange(mangoTokens, baseSymbol!),
+    {
+      cacheTime: 1000 * 60 * 15,
+      staleTime: 1000 * 60 * 10,
+      retry: 3,
+      enabled: !!baseSymbol && serumOrPerpMarket instanceof Market,
+      refetchOnWindowFocus: false,
     }
-  }, [baseSymbol, perpStats, serumOrPerpMarket, tokenPrices])
+  )
 
   const change = useMemo(() => {
-    if (!changeData || !price || !serumOrPerpMarket) return 0
+    if (!price || !serumOrPerpMarket) return 0
     if (serumOrPerpMarket instanceof PerpMarket) {
+      const changeData = getOneDayPerpStats(perpStats, selectedMarketName)
+
       return changeData.length
         ? ((price - changeData[0].price) / changeData[0].price) * 100
         : 0
     } else {
-      return ((price - changeData.prices[0][1]) / changeData.prices[0][1]) * 100
+      if (!changeResponse.data) return 0
+      return (
+        ((price - changeResponse.data.prices[0][1]) /
+          changeResponse.data.prices[0][1]) *
+        100
+      )
     }
-  }, [changeData, price, serumOrPerpMarket])
+  }, [changeResponse, price, serumOrPerpMarket, perpStats, selectedMarketName])
 
   return (
     <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
