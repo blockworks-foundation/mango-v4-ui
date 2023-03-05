@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { makeApiRequest, parseResolution } from './helpers'
+import { makeApiRequest, parseResolution } from './birdeye/helpers'
 import {
   makeApiRequest as makePerpApiRequest,
   parseResolution as parsePerpResolution,
-} from '../mngo/helpers'
+} from './mngo/helpers'
 import {
   closeSocket,
   // isOpen,
   subscribeOnStream as subscribeOnSpotStream,
   unsubscribeFromStream,
-} from './streaming'
+} from './birdeye/streaming'
 import {
   closeSocket as closePerpSocket,
   // isOpen as isPerpOpen,
   subscribeOnStream as subscribeOnPerpStream,
   unsubscribeFromStream as unsubscribeFromPerpStream,
-} from '../mngo/streaming'
+} from './mngo/streaming'
 import mangoStore from '@store/mangoStore'
 import {
   DatafeedConfiguration,
@@ -207,6 +207,7 @@ export default {
       }
     }
     const ticker = mangoStore.getState().selectedMarket.name
+    console.log('ticker', ticker, mangoStore.getState().group)
 
     const symbolInfo: SymbolInfo = {
       address: symbolItem.address,
