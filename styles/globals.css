@@ -396,6 +396,8 @@ th {
 
 body {
   @apply font-body text-sm tracking-wider;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button {
