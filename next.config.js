@@ -1,4 +1,5 @@
 const { i18n } = require('./next-i18next.config')
+const webpack = require('webpack')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -14,6 +15,14 @@ const nextConfig = {
         fs: false,
       }
     }
+
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env': {
+          BUILD_ID: JSON.stringify(opts.buildId),
+        },
+      })
+    )
 
     return config
   },

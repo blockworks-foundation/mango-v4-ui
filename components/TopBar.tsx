@@ -25,7 +25,29 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
-// import ThemeSwitcher from './ThemeSwitcher'
+import useInterval from './shared/useInterval'
+
+export function DeployRefreshManager(): JSX.Element | null {
+  const [newBuildAvailable, setNewBuildAvailable] = useState(false)
+  useInterval(async () => {
+    const response = await fetch('/api/build-id')
+    const { buildId } = await response.json()
+
+    if (buildId && process.env.BUILD_ID && buildId !== process.env.BUILD_ID) {
+      // There's a new version deployed that we need to load
+      setNewBuildAvailable(true)
+    }
+  }, 30000)
+
+  return newBuildAvailable ? (
+    <div className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full border border-th-bkg-3 bg-th-bkg-1 py-2 px-4">
+      <ExclamationTriangleIcon className="h-5 w-5 text-th-fgd-1" />
+      <p className="ml-2 text-th-fgd-1">
+        Refresh for the latest version of the app
+      </p>
+    </div>
+  ) : null
+}
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -110,6 +132,7 @@ const TopBar = () => {
             </p>
           </div>
         ) : null}
+        <DeployRefreshManager />
         <div className="flex items-center">
           {/* <div className="px-3 md:px-4">
             <ThemeSwitcher />
