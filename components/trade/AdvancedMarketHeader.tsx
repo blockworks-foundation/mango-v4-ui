@@ -27,8 +27,7 @@ const fetchTokenChange = async (
 ): Promise<ResponseType> => {
   const coingeckoId =
     mangoTokens.find((t) => t.symbol === baseSymbol)?.extensions?.coingeckoId ||
-    'btc'
-  console.log('coingeckoId', coingeckoId)
+    'mango-markets'
 
   const response = await fetch(
     `https://api.coingecko.com/api/v3/coins/${coingeckoId}/market_chart?vs_currency=usd&days=1`
@@ -64,7 +63,10 @@ const AdvancedMarketHeader = ({
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 10,
       retry: 3,
-      enabled: !!baseSymbol && serumOrPerpMarket instanceof Market,
+      enabled:
+        !!baseSymbol &&
+        serumOrPerpMarket instanceof Market &&
+        mangoTokens.length > 0,
       refetchOnWindowFocus: false,
     }
   )
@@ -80,8 +82,8 @@ const AdvancedMarketHeader = ({
     } else {
       if (!changeResponse.data) return 0
       return (
-        ((price - changeResponse.data.prices[0][1]) /
-          changeResponse.data.prices[0][1]) *
+        ((price - changeResponse.data.prices?.[0][1]) /
+          changeResponse.data.prices?.[0][1]) *
         100
       )
     }
