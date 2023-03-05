@@ -273,7 +273,7 @@ const AdvancedTradeForm = () => {
       if (selectedMarket instanceof Serum3Market) {
         const spotOrderType = tradeForm.ioc
           ? Serum3OrderType.immediateOrCancel
-          : tradeForm.postOnly
+          : tradeForm.postOnly && tradeForm.tradeType !== 'Market'
           ? Serum3OrderType.postOnly
           : Serum3OrderType.limit
         const tx = await client.serum3PlaceOrder(
