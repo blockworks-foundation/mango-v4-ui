@@ -102,6 +102,7 @@ export const queryPerpBars = async (
     return []
   }
   let bars: Bar[] = []
+  let previousBar: Bar | undefined = undefined
   for (const bar of data) {
     const timestamp = new Date(bar.candle_start).getTime()
     if (timestamp >= from * 1000 && timestamp < to * 1000) {
@@ -111,12 +112,13 @@ export const queryPerpBars = async (
           time: timestamp,
           low: bar.low,
           high: bar.high,
-          open: bar.open,
+          open: previousBar ? previousBar.close : bar.open,
           close: bar.close,
           volume: bar.volume,
           timestamp,
         },
       ]
+      previousBar = bar
     }
   }
   return bars
