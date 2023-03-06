@@ -164,7 +164,7 @@ const PerpMarketsTable = ({
                           decimals={getDecimalCount(market.minOrderSize)}
                         />
                       </p>
-                      <p className="text-xs text-th-fgd-4">
+                      <p className="text-th-fgd-4">
                         <FormatNumericValue
                           value={openInterest * market.uiPrice}
                           isUsd
