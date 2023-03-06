@@ -114,6 +114,22 @@ const Dashboard: NextPage = () => {
                 label="Health Region Begin Init Health"
                 value={mangoAccount.healthRegionBeginInitHealth.toNumber()}
               />
+              <KeyValuePair
+                label="Perp OO Count"
+                value={mangoAccount.perpOpenOrders.length}
+              />
+              <KeyValuePair
+                label="Perp Active OO Count"
+                value={mangoAccount.perpOrdersActive().length}
+              />
+              <KeyValuePair
+                label="Perp Position Count"
+                value={mangoAccount.perps.length}
+              />
+              <KeyValuePair
+                label="Active Perp Position Count"
+                value={mangoAccount.perpActive().length}
+              />
 
               <h3 className="mt-4">Token Active Positions</h3>
               {mangoAccount.tokensActive().map((token) => {
