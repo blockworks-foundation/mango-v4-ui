@@ -1,28 +1,21 @@
+import Button from '@components/shared/Button'
+import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
-// import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next'
 
 const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
-  // const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'swap'])
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex items-center justify-center">
-        {/* <img
-          className={`h-8 w-8 flex-shrink-0`}
-          src="/logos/logo-mark.svg"
-          alt="next"
-        /> */}
-        <div className="ml-2 font-display text-3xl text-th-fgd-2">
-          Margin Swap
-        </div>
-      </div>
+      <h2 className="text-center">{t('swap:margin-swap')}</h2>
 
-      <div className="mt-6 flex items-center justify-center">
-        <div className="text-black-50 dark:text-white-25 mr-auto flex min-w-0 flex-1 flex-wrap items-center justify-center space-x-1 px-6 text-sm lg:px-6 [&>svg]:h-3.5 [&>svg]:w-3.5">
+      <div className="mt-3 flex items-center justify-center">
+        <div className="text-black-50 dark:text-white-25 mr-auto flex min-w-0 flex-1 flex-wrap items-center justify-center space-x-1 px-6 text-sm">
           <svg
             width="24"
             height="24"
-            viewBox="0 0 28 28"
+            viewBox="0 0 26 26"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className="!ml-0"
@@ -99,31 +92,6 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
             </defs>
           </svg>
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            fill="none"
-            viewBox="0 0 18 18"
-          >
-            <g clipPath="url(#clip0_750_11804)">
-              <path
-                fill="#6966FB"
-                fillRule="evenodd"
-                d="M17.498 1.264a.854.854 0 00-.855-.855H3.795c-.561 0-1.052.081-1.473.244a3.124 3.124 0 00-1.053.696 2.9 2.9 0 00-.65 1.014c-.14.389-.21.79-.21 1.203v1.97c0 .943.765 1.709 1.71 1.709H12.37L7.245 3.827h9.398a.854.854 0 00.855-.855V1.264zM.409 16.643c0 .471.383.854.855.854h12.848c.561 0 1.052-.082 1.473-.245a3.124 3.124 0 001.053-.695c.292-.3.509-.639.65-1.015.14-.388.21-.789.21-1.202v-1.97c0-.944-.765-1.709-1.709-1.709H5.536l5.126 3.418H1.264a.854.854 0 00-.855.854v1.71z"
-                clipRule="evenodd"
-              ></path>
-            </g>
-            <defs>
-              <clipPath id="clip0_750_11804">
-                <path
-                  fill="#fff"
-                  d="M0 0H17.182V18H0z"
-                  transform="translate(.41)"
-                ></path>
-              </clipPath>
-            </defs>
-          </svg>
-          <svg
             width="20"
             height="20"
             viewBox="0 0 439 439"
@@ -156,6 +124,31 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
             ></path>
           </svg>
           <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            fill="none"
+            viewBox="0 0 18 18"
+          >
+            <g clipPath="url(#clip0_750_11804)">
+              <path
+                fill="#6966FB"
+                fillRule="evenodd"
+                d="M17.498 1.264a.854.854 0 00-.855-.855H3.795c-.561 0-1.052.081-1.473.244a3.124 3.124 0 00-1.053.696 2.9 2.9 0 00-.65 1.014c-.14.389-.21.79-.21 1.203v1.97c0 .943.765 1.709 1.71 1.709H12.37L7.245 3.827h9.398a.854.854 0 00.855-.855V1.264zM.409 16.643c0 .471.383.854.855.854h12.848c.561 0 1.052-.082 1.473-.245a3.124 3.124 0 001.053-.695c.292-.3.509-.639.65-1.015.14-.388.21-.789.21-1.202v-1.97c0-.944-.765-1.709-1.709-1.709H5.536l5.126 3.418H1.264a.854.854 0 00-.855.854v1.71z"
+                clipRule="evenodd"
+              ></path>
+            </g>
+            <defs>
+              <clipPath id="clip0_750_11804">
+                <path
+                  fill="#fff"
+                  d="M0 0H17.182V18H0z"
+                  transform="translate(.41)"
+                ></path>
+              </clipPath>
+            </defs>
+          </svg>
+          {/* <svg
             width="24"
             height="24"
             viewBox="0 0 28 29"
@@ -178,8 +171,8 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
               d="M17.0556 23.9546L22.7212 20.6482C23.1841 20.3781 23.5955 19.9898 23.9282 19.5087C24.2609 19.0275 24.5073 18.4646 24.6513 17.8571C24.6881 17.7018 24.7254 17.5444 24.7632 17.385L24.7238 17.4074V17.4093L16.7455 22.0644C16.6093 22.1439 16.4578 22.1751 16.3081 22.1545C16.1584 22.1339 16.0162 22.0622 15.8974 21.9476C15.7786 21.833 15.6879 21.6798 15.6352 21.5052C15.5826 21.3306 15.5701 21.1413 15.5993 20.9584C15.7073 20.2801 15.9421 19.6425 16.2847 19.0964C16.6273 18.5504 17.0684 18.1109 17.5727 17.8133L24.3386 13.8194C24.7939 13.5504 25.1989 13.1668 25.5275 12.6932C25.8561 12.2195 26.1013 11.6662 26.2472 11.0686C26.2946 10.8748 26.3382 10.6943 26.3737 10.5439L26.3435 10.5608L17.2554 15.9259C16.4343 16.4106 15.7162 17.1261 15.1582 18.0151C14.6003 18.9042 14.2181 19.9422 14.042 21.0465C13.9653 21.5273 13.9979 22.025 14.1363 22.4842C14.2746 22.9435 14.5133 23.3462 14.8256 23.6476C15.138 23.949 15.5118 24.1373 15.9055 24.1915C16.2992 24.2457 16.6974 24.1637 17.0556 23.9546Z"
               fill="#23C1AA"
             ></path>
-          </svg>
-          <svg
+          </svg> */}
+          {/* <svg
             width="22"
             height="22"
             viewBox="0 0 20 20"
@@ -195,10 +188,10 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
               d="M12.8063 10.8231H12.0833C11.9929 10.8231 11.9195 10.9058 11.9195 11.0074V11.5677C11.9195 11.6698 11.8834 11.7678 11.8192 11.8401L11.7731 11.8918C11.7089 11.964 11.6217 12.0044 11.5309 12.0044H8.4687C8.37792 12.0044 8.2907 11.964 8.22644 11.8918L8.18043 11.8401C8.11617 11.7678 8.08009 11.6698 8.08009 11.5677V11.0074C8.08009 10.9058 8.00672 10.8231 7.91611 10.8231H7.19327C7.10284 10.8231 7.0293 10.9058 7.0293 11.0074V11.8201C7.0293 11.922 7.10284 12.0044 7.19327 12.0044H7.73763C7.82841 12.0044 7.91559 12.045 7.97989 12.1172C8.04418 12.1895 8.08009 12.2875 8.08009 12.3896V12.9841C8.08009 13.095 8.16076 13.1857 8.25944 13.1857H8.25992H11.7397H11.74C11.8388 13.1857 11.9195 13.095 11.9195 12.9841V12.3896C11.9195 12.2875 11.9554 12.1895 12.0197 12.1172C12.084 12.045 12.1712 12.0044 12.262 12.0044H12.8063C12.8967 12.0044 12.9703 11.922 12.9703 11.8201V11.0074C12.9703 10.9058 12.8967 10.8231 12.8063 10.8231Z"
               fill="inherit"
             ></path>
-          </svg>
+          </svg> */}
           <svg
-            width="22"
-            height="22"
+            width="24"
+            height="24"
             viewBox="0 0 20 20"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -538,7 +531,7 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
               </g>
             </g>
           </svg>
-          <svg
+          {/* <svg
             width="22"
             height="22"
             viewBox="0 0 64 64"
@@ -564,7 +557,7 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
                 ></rect>
               </clipPath>
             </defs>
-          </svg>
+          </svg> */}
           <svg
             width="20"
             height="20"
@@ -628,7 +621,7 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
             </defs>
           </svg>
           {/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 293.7 310" style="enable-background:new 0 0 293.7 310" xml:space="preserve"><linearGradient id="a" gradientUnits="userSpaceOnUse" x1="169.269" y1="67.822" x2="293.709" y2="67.822" gradientTransform="matrix(1 0 0 -1 0 311.956)"><stop offset="0" style="stopColor:#92ffc0"></stop><stop offset="1" style="stopColor:#4ca0a2"></stop></linearGradient><path d="M276.1 190.5c21.1 18.1 23.6 49.9 5.5 71.1-1.7 2-3.6 3.9-5.5 5.5l-2.8 2.4c-13.6 11.5-28.9 20.8-45.1 27.5-16.2 6.7-33.3 10.9-50.5 12.3-2.8.2-5.6.4-8.3.5 22.9-20.9 37.3-51 37.3-84.4 0-9.5-1.1-18.7-3.3-27.4.6-.6 1.2-1.3 1.7-1.9 18-21.2 49.8-23.7 71-5.6z" style="fill:url(#a)"></path><linearGradient id="b" gradientUnits="userSpaceOnUse" x1="107.508" y1="268.256" x2="270.327" y2="268.256" gradientTransform="matrix(1 0 0 -1 0 311.956)"><stop offset="0" style="stopColor:#4ca0a2"></stop><stop offset="1" style="stopColor:#92ffc0"></stop></linearGradient><path d="M269.2 72.5c2.6 4.9.7 11.1-4.2 13.7-4.5 2.4-10.1 1-13-3.1l-.1-.1c-13.5-19-32.6-33.2-53.7-40.5-13.1-4.6-26.9-6.4-40.4-5.7-13.9-14.1-31-25-50.2-31.3 6-1.7 12.1-3 18.2-4 14.5-2.2 29.3-2.1 43.6.1 7.1 1.2 14.2 2.8 21 5 6.8 2.2 13.5 5 19.8 8.2 25.5 12.8 46.2 33.5 59 57.7z" style="fill:url(#b)"></path><linearGradient id="c" gradientUnits="userSpaceOnUse" x1="31.879" y1="57.992" x2="206.609" y2="57.992" gradientTransform="matrix(1 0 0 -1 0 311.956)"><stop offset="0" style="stopColor:#00becf"></stop><stop offset="1" style="stopColor:#92ffc0"></stop></linearGradient><path d="M203.3 198c2.2 8.8 3.3 18 3.3 27.4 0 33.5-14.4 63.6-37.3 84.4-14.4.5-28.8-.8-42.8-3.9-16.6-3.7-32.6-10.1-47.1-18.5-3.7-2.1-7.1-4.4-10.6-6.8-3.4-2.5-6.8-4.9-10-7.6-3.3-2.6-6.3-5.4-9.4-8.2-3-2.9-5.9-5.9-8.6-9-3.1-3.5-6.1-7.1-8.9-10.8 11.5 3.5 23.6 5.3 36.2 5.3 30.1 0 57.8-10.6 79.4-28.3 6.1 0 12.1-.8 17.9-2.2 15-3.5 28.2-11.3 37.9-21.8z" style="fill:url(#c)"></path><linearGradient id="d" gradientUnits="userSpaceOnUse" x1="-8.672" y1="162.579" x2="130.772" y2="302.023" gradientTransform="matrix(1 0 0 -1 0 311.956)"><stop offset="0" style="stopColor:#f252ed"></stop><stop offset="1" style="stopColor:#4ca0a2"></stop></linearGradient><path d="M107.5 5.6c19.2 6.3 36.4 17.2 50.2 31.3-8.1.4-16.1 1.8-23.7 4.1-20.5 6-38.6 18.1-51.1 34-9.4 11.8-15.8 25.6-18.7 39.9-26.1 6.7-48.6 22.3-64 43.4-.7-12.4.1-24.9 2.4-37.1 5.8-31.1 21.5-59.6 43.6-80.6C63.8 23.9 85 12 107.5 5.6z" style="fill:url(#d)"></path><linearGradient id="e" gradientUnits="userSpaceOnUse" x1="0.239" y1="129.308" x2="147.559" y2="129.308" gradientTransform="matrix(1 0 0 -1 0 311.956)"><stop offset="0" style="stopColor:#511280"></stop><stop offset="1" style="stopColor:#81ffef"></stop></linearGradient><path d="M116.4 216.3c10.1 4 20.7 5.9 31.1 5.8-21.6 17.7-49.3 28.3-79.4 28.3-12.6 0-24.8-1.9-36.2-5.3-7.1-9.4-13-19.6-17.8-30.2C6 196.9 1.3 177.6.3 158.3c15.4-21.1 37.9-36.8 64-43.4-1 4.8-1.6 9.6-1.8 14.4-.9 19.1 4.3 38.1 14.1 53.6 9.8 15.4 23.9 27 39.8 33.4z" style="fill:url(#e)"></path></svg> */}
-          <svg
+          {/* <svg
             width="12"
             height="12"
             viewBox="0 0 12 12"
@@ -681,8 +674,8 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
                 <rect width="12" height="12" fill="white"></rect>
               </clipPath>
             </defs>
-          </svg>
-          <svg
+          </svg> */}
+          {/* <svg
             width="15"
             height="15"
             viewBox="0 0 15 16"
@@ -721,10 +714,10 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
                 <stop offset="0.859375" stopColor="#4B73FF"></stop>
               </linearGradient>
             </defs>
-          </svg>
+          </svg> */}
           <svg
-            width="20"
-            height="20"
+            width="32"
+            height="32"
             viewBox="0 0 20 20"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -749,24 +742,27 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
           </svg>
         </div>
       </div>
-
-      <div className="mt-6 mb-4">
-        <ul className="ml-4 list-disc">
-          <li className="mt-4 text-th-fgd-3">
-            Swap your Mango assets through dozens of Solana DEXs including Orca,
-            Lifinity, and more.
-          </li>
-          <li className="mt-4 text-th-fgd-3">
-            Adjust your settings to control slippage or turn off margin
-          </li>
-          <li className="mt-4 text-th-fgd-3">
-            Utilize the slider to adjust leverage and borrow against your
-            collateral
-          </li>
+      <div className="mt-6">
+        <ul>
+          <ListItem desc={t('swap:swap-into-1')} />
+          <ListItem desc={t('swap:swap-into-2')} />
+          <ListItem desc={t('swap:swap-into-3')} />
         </ul>
+        <Button className="mt-6 w-full" onClick={onClose}>
+          {t('get-started')}
+        </Button>
       </div>
     </Modal>
   )
 }
 
 export default SwapIntroModal
+
+const ListItem = ({ desc }: { desc: string }) => {
+  return (
+    <li className="mt-3 flex items-start">
+      <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-up " />
+      {desc}
+    </li>
+  )
+}
