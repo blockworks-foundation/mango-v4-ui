@@ -10,8 +10,8 @@ const SwapIntroModal = ({ isOpen, onClose }: ModalProps) => {
     <Modal isOpen={isOpen} onClose={onClose}>
       <h2 className="text-center">{t('swap:margin-swap')}</h2>
 
-      <div className="mt-4 flex items-center justify-center">
-        <div className="text-black-50 dark:text-white-25 mr-auto flex min-w-0 flex-1 flex-wrap items-center justify-center space-x-1 px-6 text-sm lg:px-6">
+      <div className="mt-3 flex items-center justify-center">
+        <div className="text-black-50 dark:text-white-25 mr-auto flex min-w-0 flex-1 flex-wrap items-center justify-center space-x-1 px-6 text-sm">
           <svg
             width="24"
             height="24"
@@ -760,7 +760,7 @@ export default SwapIntroModal
 
 const ListItem = ({ desc }: { desc: string }) => {
   return (
-    <li className="mt-4 flex items-start">
+    <li className="mt-3 flex items-start">
       <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-up " />
       {desc}
     </li>
