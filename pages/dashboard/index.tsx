@@ -172,6 +172,10 @@ const Dashboard: NextPage = () => {
                                   value={bank.tokenIndex}
                                 />
                                 <KeyValuePair
+                                  label="Mint Decimals"
+                                  value={bank.mintDecimals}
+                                />
+                                <KeyValuePair
                                   label="Oracle Price"
                                   value={`$${bank.uiPrice}`}
                                 />
@@ -440,6 +444,10 @@ const Dashboard: NextPage = () => {
                               <KeyValuePair
                                 label="Perp Market Index"
                                 value={perpMarket.perpMarketIndex}
+                              />
+                              <KeyValuePair
+                                label="Base Decimals"
+                                value={perpMarket.baseDecimals}
                               />
                               <KeyValuePair
                                 label="Reduce Only"
