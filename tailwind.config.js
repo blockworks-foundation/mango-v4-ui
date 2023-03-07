@@ -31,8 +31,8 @@ module.exports = {
             dark: 'hsl(45, 86%, 57%)',
           },
           button: {
-            DEFAULT: 'hsl(269, 23%, 48%)',
-            hover: 'hsl(269, 23%, 43%)',
+            DEFAULT: 'hsl(269, 38%, 48%)',
+            hover: 'hsl(269, 38%, 43%)',
           },
           input: {
             bkg: 'hsl(256, 18%, 10%)',

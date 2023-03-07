@@ -224,27 +224,17 @@ const UserSetupModal = ({
         </div>
         <div className="col-span-1 flex flex-col items-center justify-center p-6 pt-24">
           <UserSetupTransition show={showSetupStep === 0}>
-            <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
+            <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:max-w-[400px] lg:text-6xl">
               {t('onboarding:intro-heading')}
             </h2>
-            <p className="text-base sm:mb-4">{t('onboarding:intro-desc')}</p>
+            <p className="text-base sm:mb-4 lg:text-lg">
+              {t('onboarding:intro-desc')}
+            </p>
             <div className="mb-6 space-y-2 py-3">
-              <div className="flex items-center space-x-2">
-                <CheckCircleIcon className="h-5 w-5 text-th-success" />
-                <p className="text-base">{t('onboarding:bullet-1')}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircleIcon className="h-5 w-5 text-th-success" />
-                <p className="text-base">{t('onboarding:bullet-2')}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircleIcon className="h-5 w-5 text-th-success" />
-                <p className="text-base">{t('onboarding:bullet-3')}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircleIcon className="h-5 w-5 text-th-success" />
-                <p className="text-base">{t('onboarding:bullet-4')}</p>
-              </div>
+              <CheckBullet text={t('onboarding:bullet-1')} />
+              <CheckBullet text={t('onboarding:bullet-2')} />
+              <CheckBullet text={t('onboarding:bullet-3')} />
+              <CheckBullet text={t('onboarding:bullet-4')} />
             </div>
             <Button
               className="mb-12 w-44"
@@ -581,6 +571,15 @@ const UserSetupModal = ({
 }
 
 export default UserSetupModal
+
+const CheckBullet = ({ text }: { text: string }) => {
+  return (
+    <div className="flex items-center space-x-2">
+      <CheckCircleIcon className="h-5 w-5 text-th-active" />
+      <p className="text-base text-th-fgd-2">{text}</p>
+    </div>
+  )
+}
 
 const UserSetupTransition = ({
   show,
