@@ -44,7 +44,7 @@ export const getOneDayPerpStats = (
 const PerpMarketsTable = ({
   setShowPerpDetails,
 }: {
-  setShowPerpDetails: (x: string) => void
+  setShowPerpDetails: (x: PerpMarket) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const perpMarkets = mangoStore((s) => s.perpMarkets)
@@ -79,7 +79,7 @@ const PerpMarketsTable = ({
             </TrHead>
           </thead>
           <tbody>
-            {perpMarkets.map((market) => {
+            {perpMarkets.map((market, index) => {
               const symbol = market.name.split('-')[0]
               const marketStats = getOneDayPerpStats(perpStats, market.name)
 
@@ -191,7 +191,7 @@ const PerpMarketsTable = ({
                   <Td>
                     <div className="flex justify-end">
                       <IconButton
-                        onClick={() => setShowPerpDetails(market.name)}
+                        onClick={() => setShowPerpDetails(perpMarkets[index])}
                         size="small"
                       >
                         <ChevronRightIcon className="h-5 w-5" />
@@ -227,7 +227,7 @@ const MobilePerpMarketItem = ({
   setShowPerpDetails,
 }: {
   market: PerpMarket
-  setShowPerpDetails: (x: string) => void
+  setShowPerpDetails: (x: PerpMarket) => void
 }) => {
   const { t } = useTranslation('common')
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
@@ -289,10 +289,7 @@ const MobilePerpMarketItem = ({
             <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
           )}
         </div>
-        <IconButton
-          onClick={() => setShowPerpDetails(market.name)}
-          size="medium"
-        >
+        <IconButton onClick={() => setShowPerpDetails(market)} size="medium">
           <ChevronRightIcon className="h-5 w-5" />
         </IconButton>
       </div>

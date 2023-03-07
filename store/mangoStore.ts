@@ -514,13 +514,13 @@ const mangoStore = create<MangoStore>()(
             const serumMarkets = Array.from(
               group.serum3MarketsMapByExternal.values()
             )
-            const perpMarkets = Array.from(
-              group.perpMarketsMapByName.values()
-            ).filter(
-              (p) =>
-                p.publicKey.toString() !==
-                '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
-            )
+            const perpMarkets = Array.from(group.perpMarketsMapByName.values())
+              .filter(
+                (p) =>
+                  p.publicKey.toString() !==
+                  '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+              )
+              .sort((a, b) => a.name.localeCompare(b.name))
 
             const selectedMarket =
               serumMarkets.find((m) => m.name === selectedMarketName) ||

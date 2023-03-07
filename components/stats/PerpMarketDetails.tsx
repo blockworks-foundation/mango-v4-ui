@@ -9,20 +9,21 @@ import { formatYAxis } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
 import { PerpStatsItem } from 'types'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
 )
 
 const PerpMarketDetails = ({
-  perpMarketName,
+  perpMarket,
   setShowPerpDetails,
 }: {
-  perpMarketName: string
-  setShowPerpDetails: (x: string) => void
+  perpMarket: PerpMarket
+  setShowPerpDetails: (x: PerpMarket | null) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const perpMarkets = mangoStore((s) => s.perpMarkets)
+  // const perpMarkets = mangoStore((s) => s.perpMarkets)
   const perpStats = mangoStore((s) => s.perpStats.data)
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const [priceDaysToShow, setPriceDaysToShow] = useState('30')
@@ -31,17 +32,17 @@ const PerpMarketDetails = ({
   const [instantFundingDaysToShow, setInstantFundingDaysToShow] = useState('30')
   const rate = usePerpFundingRate()
 
-  const perpMarket = useMemo(() => {
-    return perpMarkets.find((m) => (m.name = perpMarketName))
-  }, [perpMarkets, perpMarketName])
+  // const perpMarket = useMemo(() => {
+  //   return perpMarkets.find((m) => (m.name = perpMarketName))
+  // }, [perpMarkets, perpMarketName])
 
   const [marketStats, lastStat] = useMemo(() => {
     if (!perpStats) return [undefined, undefined]
     const stats = perpStats
-      .filter((stat) => stat.perp_market === perpMarketName)
+      .filter((stat) => stat.perp_market === perpMarket.name)
       .reverse()
     return [stats, stats[stats.length - 1]]
-  }, [perpStats])
+  }, [perpStats, perpMarket])
 
   const fundingRate = useMemo(() => {
     if (!lastStat) return 0
@@ -82,12 +83,12 @@ const PerpMarketDetails = ({
       <div className="col-span-2 flex items-center border-b border-th-bkg-3 px-6 py-3">
         <IconButton
           className="mr-4"
-          onClick={() => setShowPerpDetails('')}
+          onClick={() => setShowPerpDetails(null)}
           size="small"
         >
           <ChevronLeftIcon className="h-5 w-5" />
         </IconButton>
-        <h2 className="text-lg">{`${perpMarketName} ${t('stats')}`}</h2>
+        <h2 className="text-lg">{`${perpMarket.name} ${t('stats')}`}</h2>
       </div>
       {marketStats?.length && lastStat ? (
         <>
