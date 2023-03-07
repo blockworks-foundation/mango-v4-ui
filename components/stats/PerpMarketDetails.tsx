@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react'
 import { formatYAxis } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
+import { PerpStatsItem } from 'types'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -35,7 +36,7 @@ const PerpMarketDetails = ({
   }, [perpMarkets, perpMarketName])
 
   const [marketStats, lastStat] = useMemo(() => {
-    if (!perpStats) return [[], undefined]
+    if (!perpStats) return [undefined, undefined]
     const stats = perpStats
       .filter((stat) => stat.perp_market === perpMarketName)
       .reverse()
@@ -53,6 +54,29 @@ const PerpMarketDetails = ({
     return lastStat.instantaneous_funding_rate
   }, [rate, lastStat])
 
+  const perpHourlyStats = useMemo(() => {
+    const latestStat = { ...lastStat } as PerpStatsItem
+    latestStat.instantaneous_funding_rate = fundingRate ? fundingRate : 0
+    latestStat.date_hour = dayjs().toISOString()
+    if (marketStats) {
+      const perpHourly = marketStats.concat([latestStat])
+      return perpHourly.map((stat) => ({
+        ...stat,
+        funding_rate_hourly: stat.funding_rate_hourly * 100,
+      }))
+    }
+  }, [marketStats, fundingRate])
+
+  const instantFundingRateStats = useMemo(() => {
+    if (marketStats) {
+      return marketStats.map((stat) => ({
+        ...stat,
+        instantaneous_funding_rate: stat.instantaneous_funding_rate * 100,
+      }))
+    }
+    return []
+  }, [marketStats])
+
   return (
     <div className="grid grid-cols-2">
       <div className="col-span-2 flex items-center border-b border-th-bkg-3 px-6 py-3">
@@ -65,7 +89,7 @@ const PerpMarketDetails = ({
         </IconButton>
         <h2 className="text-lg">{`${perpMarketName} ${t('stats')}`}</h2>
       </div>
-      {marketStats.length && lastStat ? (
+      {marketStats?.length && lastStat ? (
         <>
           <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
             <DetailedAreaChart
@@ -112,7 +136,7 @@ const PerpMarketDetails = ({
           </div>
           <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
             <DetailedAreaChart
-              data={marketStats}
+              data={perpHourlyStats ? perpHourlyStats : []}
               daysToShow={hourlyFundingeDaysToShow}
               setDaysToShow={setHourlyFundingDaysToShow}
               heightClass="h-64"
@@ -128,15 +152,7 @@ const PerpMarketDetails = ({
           </div>
           <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
             <DetailedAreaChart
-              data={marketStats.concat([
-                {
-                  ...lastStat,
-                  date_hour: dayjs().toISOString(),
-                  instantaneous_funding_rate: fundingRate
-                    ? fundingRate * 100
-                    : 0,
-                },
-              ])}
+              data={instantFundingRateStats}
               daysToShow={instantFundingDaysToShow}
               setDaysToShow={setInstantFundingDaysToShow}
               heightClass="h-64"
