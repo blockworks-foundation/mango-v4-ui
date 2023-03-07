@@ -23,9 +23,9 @@
     regenerator-runtime "^0.13.11"
 
 "@blockworks-foundation/mango-v4@^0.5.25":
-  version "0.5.26"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.5.26.tgz#c5ebe602089ac9b854c0d590206f77aeefeb6785"
-  integrity sha512-nBlyVxeoo2sgR7Dnvdx88kfwFZoFYJJ4R12uc7eEKqSsTqwSbfz+DFzFHlsWuFyuirOPPFI3SmGQksptYw73Ig==
+  version "0.5.27"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.5.27.tgz#acef96097c1e7813bf8f515fb049dc6d41f2b52b"
+  integrity sha512-Au/gCF4W/+yaufGqqLh+qJmTV1F76KBsbnHdLaDb+vGavDPATbNKs1mS3Jh+hmf8Rw+FiSGWhKVyKn6Jr/2HHg==
   dependencies:
     "@coral-xyz/anchor" "^0.26.0"
     "@project-serum/serum" "0.13.65"
