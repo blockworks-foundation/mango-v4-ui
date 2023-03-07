@@ -241,24 +241,49 @@ const Dashboard: NextPage = () => {
                       ).toFixed(6)}`}
                     />
                     <KeyValuePair
-                      label="Taker Quote Lots"
-                      value={perp.takerQuoteLots.toNumber()}
+                      label="Cumulative Funding"
+                      value={`$${toUiDecimalsForQuote(
+                        -perp.cumulativeLongFunding
+                      ).toFixed(6)} long / $${toUiDecimalsForQuote(
+                        perp.cumulativeShortFunding
+                      ).toFixed(6)} short / $${toUiDecimalsForQuote(
+                        -perp.cumulativeLongFunding +
+                          perp.cumulativeShortFunding
+                      ).toFixed(6)} total`}
                     />
                     <KeyValuePair
-                      label="Taker Base Lots"
-                      value={perp.takerBaseLots.toNumber()}
+                      label="Taker Lots"
+                      value={`${perp.takerQuoteLots.toNumber()} quote / ${perp.takerBaseLots.toNumber()} base`}
+                    />
+                    <KeyValuePair
+                      label="Open Orders Lots"
+                      value={`${perp.bidsBaseLots.toNumber()} bids / ${perp.asksBaseLots.toNumber()} asks`}
                     />
                     <KeyValuePair
                       label="Has open orders"
                       value={perp.hasOpenOrders().toString()}
                     />
                     <KeyValuePair
-                      label="Bids Base Lots"
-                      value={perp.bidsBaseLots.toNumber()}
+                      label="Volume"
+                      value={`$${toUiDecimalsForQuote(perp.makerVolume).toFixed(
+                        6
+                      )} maker / $${toUiDecimalsForQuote(
+                        perp.takerVolume
+                      ).toFixed(6)} taker`}
                     />
                     <KeyValuePair
-                      label="Asks Base Lots"
-                      value={perp.asksBaseLots.toNumber()}
+                      label="Perp-Spot Transfers"
+                      value={`$${toUiDecimalsForQuote(
+                        perp.perpSpotTransfers
+                      ).toFixed(6)}`}
+                    />
+                    <KeyValuePair
+                      label="Position Lifetime PnL"
+                      value={`$${toUiDecimalsForQuote(
+                        perp.realizedPnlForPositionNative
+                      ).toFixed(6)} realized / $${toUiDecimalsForQuote(
+                        perp.cumulativePnlOverPositionLifetimeUi(market)
+                      ).toFixed(6)} total`}
                     />
                   </div>
                 )
