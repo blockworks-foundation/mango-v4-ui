@@ -1,4 +1,4 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 import { useViewport } from '../../hooks/useViewport'
@@ -17,6 +17,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { getDecimalCount } from 'utils/numbers'
 import Tooltip from '@components/shared/Tooltip'
 import { PerpStatsItem } from 'types'
+import useMangoGroup from 'hooks/useMangoGroup'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -53,6 +54,7 @@ const PerpMarketsTable = ({
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
+  const { group } = useMangoGroup()
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -144,10 +146,19 @@ const PerpMarketsTable = ({
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>
-                        <FormatNumericValue
-                          value={market.stablePriceModel.stablePrice}
-                          isUsd
-                        />
+                        {group ? (
+                          <FormatNumericValue
+                            value={group.toUiPrice(
+                              I80F48.fromNumber(
+                                market.stablePriceModel.stablePrice
+                              ),
+                              market.baseDecimals
+                            )}
+                            isUsd
+                          />
+                        ) : (
+                          'N/A'
+                        )}
                       </p>
                     </div>
                   </Td>
