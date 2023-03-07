@@ -44,6 +44,7 @@ import { Howl } from 'howler'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { isMangoError } from 'types'
+import InlineNotification from '@components/shared/InlineNotification'
 
 const set = mangoStore.getState().set
 
@@ -611,6 +612,14 @@ const AdvancedTradeForm = () => {
           </Button>
         )}
       </div>
+      {tradeForm.tradeType === 'Market' ? (
+        <div className="m-4">
+          <InlineNotification
+            type="warning"
+            desc="Use caution with Market orders. Liquidity may be low."
+          />
+        </div>
+      ) : null}
       <TradeSummary mangoAccount={mangoAccount} />
     </div>
   )

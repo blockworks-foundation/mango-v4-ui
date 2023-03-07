@@ -30,6 +30,12 @@ export const usePerpFundingRate = () => {
   return Array.isArray(res?.data) ? res : { isSuccess: false, data: null }
 }
 
+const formatFunding = Intl.NumberFormat('en', {
+  minimumSignificantDigits: 1,
+  maximumSignificantDigits: 2,
+  style: 'percent',
+})
+
 const PerpFundingRate = () => {
   const { selectedMarket } = useSelectedMarket()
   const rate = usePerpFundingRate()
@@ -43,7 +49,7 @@ const PerpFundingRate = () => {
         (r) => r.market_index === selectedMarket.perpMarketIndex
       )
       const funding = marketRate?.funding_rate_hourly
-      return funding ? funding * 100 : undefined
+      return funding ? funding : undefined
     }
   }, [rate, selectedMarket])
 
@@ -51,7 +57,7 @@ const PerpFundingRate = () => {
     <>
       <div className="font-mono text-xs text-th-fgd-2">
         {selectedMarket instanceof PerpMarket && fundingRate ? (
-          `${fundingRate.toFixed(4)}%`
+          `${formatFunding.format(fundingRate)}`
         ) : (
           <span className="text-th-fgd-4">-</span>
         )}
