@@ -23,7 +23,6 @@ const PerpMarketDetails = ({
   setShowPerpDetails: (x: PerpMarket | null) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  // const perpMarkets = mangoStore((s) => s.perpMarkets)
   const perpStats = mangoStore((s) => s.perpStats.data)
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const [priceDaysToShow, setPriceDaysToShow] = useState('30')
@@ -31,10 +30,6 @@ const PerpMarketDetails = ({
   const [hourlyFundingeDaysToShow, setHourlyFundingDaysToShow] = useState('30')
   const [instantFundingDaysToShow, setInstantFundingDaysToShow] = useState('30')
   const rate = usePerpFundingRate()
-
-  // const perpMarket = useMemo(() => {
-  //   return perpMarkets.find((m) => (m.name = perpMarketName))
-  // }, [perpMarkets, perpMarketName])
 
   const [marketStats, lastStat] = useMemo(() => {
     if (!perpStats) return [undefined, undefined]
