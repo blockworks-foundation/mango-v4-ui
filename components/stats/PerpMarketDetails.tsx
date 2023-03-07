@@ -132,7 +132,9 @@ const PerpMarketDetails = ({
                 {
                   ...lastStat,
                   date_hour: dayjs().toISOString(),
-                  instantaneous_funding_rate: fundingRate ?? 0,
+                  instantaneous_funding_rate: fundingRate
+                    ? fundingRate * 100
+                    : 0,
                 },
               ])}
               daysToShow={instantFundingDaysToShow}

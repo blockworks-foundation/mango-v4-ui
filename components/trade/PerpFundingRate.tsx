@@ -42,7 +42,8 @@ const PerpFundingRate = () => {
       const marketRate = rate?.data?.find(
         (r) => r.market_index === selectedMarket.perpMarketIndex
       )
-      return marketRate?.funding_rate_hourly
+      const funding = marketRate?.funding_rate_hourly
+      return funding ? funding * 100 : undefined
     }
   }, [rate, selectedMarket])
 
