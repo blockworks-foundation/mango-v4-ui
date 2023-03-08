@@ -627,7 +627,7 @@ const mangoStore = create<MangoStore>()(
               if (typeof lastAccount === 'string') {
                 try {
                   lastViewedAccount = mangoAccounts.find(
-                    (m) => m.publicKey.toString() === JSON.parse(lastAccount)
+                    (m) => m.publicKey.toString() === lastAccount
                   )
                 } catch (e) {
                   console.error('Error parsing last account', e)
