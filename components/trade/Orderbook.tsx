@@ -187,15 +187,15 @@ const Orderbook = () => {
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const [grouping, setGrouping] = useState(0.01)
   const [tickSize, setTickSize] = useState(0)
-  const [showBuys, setShowBuys] = useState(true)
-  const [showSells, setShowSells] = useState(true)
+  const [showBids, setShowBids] = useState(true)
+  const [showAsks, setShowAsks] = useState(true)
 
   const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
 
-  const depthArray = useMemo(() => {
+  const depthArray: number[] = useMemo(() => {
     const bookDepth = !isMobile ? depth : 9
     return Array(bookDepth).fill(0)
   }, [isMobile])
@@ -433,8 +433,8 @@ const Orderbook = () => {
   }, [verticallyCenterOrderbook])
 
   const resetOrderbook = useCallback(async () => {
-    setShowBuys(true)
-    setShowSells(true)
+    setShowBids(true)
+    setShowAsks(true)
     await sleep(300)
     verticallyCenterOrderbook()
   }, [verticallyCenterOrderbook])
@@ -449,11 +449,11 @@ const Orderbook = () => {
 
   const toggleSides = (side: string) => {
     if (side === 'bids') {
-      setShowBuys(true)
-      setShowSells(false)
+      setShowBids(true)
+      setShowAsks(false)
     } else {
-      setShowBuys(false)
-      setShowSells(true)
+      setShowBids(false)
+      setShowAsks(true)
     }
   }
 
@@ -462,13 +462,13 @@ const Orderbook = () => {
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
         <div id="trade-step-three" className="flex items-center space-x-1.5">
           <Tooltip
-            className={`hidden md:block ${!showSells ? 'md:hidden' : ''}`}
+            className={`hidden md:block ${!showAsks ? 'md:hidden' : ''}`}
             content={t('trade:show-bids')}
             placement="bottom"
           >
             <button
               className={`rounded ${
-                showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+                showAsks ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
               } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
               onClick={() => toggleSides('bids')}
             >
@@ -476,13 +476,13 @@ const Orderbook = () => {
             </button>
           </Tooltip>
           <Tooltip
-            className={`hidden md:block ${!showBuys ? 'md:hidden' : ''}`}
+            className={`hidden md:block ${!showBids ? 'md:hidden' : ''}`}
             content={t('trade:show-asks')}
             placement="bottom"
           >
             <button
               className={`rounded ${
-                showBuys ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+                showBids ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
               } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
               onClick={() => toggleSides('asks')}
             >
@@ -532,10 +532,11 @@ const Orderbook = () => {
         ref={orderbookElRef}
         onScroll={handleScroll}
       >
-        {showSells
+        {showAsks
           ? depthArray.map((_x, idx) => {
               let index = idx
-              if (orderbookData?.asks) {
+              const reverse = showAsks && !showBids
+              if (orderbookData?.asks && !reverse) {
                 const lengthDiff = depthArray.length - orderbookData.asks.length
                 if (lengthDiff > 0) {
                   index = index < lengthDiff ? -1 : Math.abs(lengthDiff - index)
@@ -563,7 +564,7 @@ const Orderbook = () => {
               )
             })
           : null}
-        {showBuys && showSells ? (
+        {showBids && showAsks ? (
           <div
             className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4"
             id="trade-step-nine"
@@ -584,7 +585,7 @@ const Orderbook = () => {
             </div>
           </div>
         ) : null}
-        {showBuys
+        {showBids
           ? depthArray.map((_x, index) => (
               <div className="h-[24px]" key={index}>
                 {!!orderbookData?.bids[index] && market ? (
