@@ -41,7 +41,6 @@ import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure } from '@headlessui/react'
 import RoutesModal from './RoutesModal'
-import useMangoAccount from 'hooks/useMangoAccount'
 import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
@@ -187,7 +186,6 @@ const SwapReviewRouteInfo = ({
   setSelectedRoute,
 }: JupiterRouteInfoProps) => {
   const { t } = useTranslation(['common', 'trade'])
-  const { mangoAccount } = useMangoAccount()
   const slippage = mangoStore((s) => s.swap.slippage)
   const [showRoutesModal, setShowRoutesModal] = useState<boolean>(false)
   const [swapRate, setSwapRate] = useState<boolean>(false)
@@ -490,7 +488,27 @@ const SwapReviewRouteInfo = ({
             </div>
           ) : null}
           <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">{t('swap:price-impact')}</p>
+            <p className="text-sm text-th-fgd-3">
+              <Tooltip
+                content={
+                  <div>
+                    <p>
+                      The price impact is the difference observed between the
+                      total value of the entry tokens swapped and the
+                      destination tokens obtained.
+                    </p>
+                    <p className="mt-1">
+                      The bigger the trade is, the bigger the price impact can
+                      be.
+                    </p>
+                  </div>
+                }
+              >
+                <span className="tooltip-underline">
+                  {t('swap:price-impact')}
+                </span>
+              </Tooltip>
+            </p>
             <p className="text-right font-mono text-sm text-th-fgd-2">
               {selectedRoute?.priceImpactPct * 100 < 0.1
                 ? '<0.1%'
@@ -530,36 +548,6 @@ const SwapReviewRouteInfo = ({
                 ~<FormatNumericValue value={borrowAmount} />{' '}
                 <span className="font-body">{inputTokenInfo?.symbol}</span>
               </p>
-            </div>
-          ) : null}
-          {mangoAccount &&
-          mangoAccount.owner.toString() ===
-            '8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt' ? (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-th-fgd-3">{t('swap:swap-route')}</p>
-              <div
-                className="flex items-center text-th-fgd-2 md:hover:cursor-pointer md:hover:text-th-fgd-3"
-                role="button"
-                onClick={() => setShowRoutesModal(true)}
-              >
-                <span className="overflow-ellipsis whitespace-nowrap">
-                  {selectedRoute?.marketInfos.map((info, index) => {
-                    let includeSeparator = false
-                    if (
-                      selectedRoute?.marketInfos.length > 1 &&
-                      index !== selectedRoute?.marketInfos.length - 1
-                    ) {
-                      includeSeparator = true
-                    }
-                    return (
-                      <span key={index}>{`${info?.label} ${
-                        includeSeparator ? 'x ' : ''
-                      }`}</span>
-                    )
-                  })}
-                </span>
-                <PencilIcon className="ml-2 h-4 w-4 hover:text-th-active" />
-              </div>
             </div>
           ) : null}
         </div>
@@ -616,11 +604,40 @@ const SwapReviewRouteInfo = ({
                           value={
                             inputBank!.loanOriginationFeeRate.toNumber() * 100
                           }
+                          decimals={3}
                         />
                         %)
                       </p>
                     </div>
                   ) : null}
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-th-fgd-3">
+                      {t('swap:swap-route')}
+                    </p>
+                    <div
+                      className="flex items-center text-th-fgd-2 md:hover:cursor-pointer md:hover:text-th-fgd-3"
+                      role="button"
+                      onClick={() => setShowRoutesModal(true)}
+                    >
+                      <span className="overflow-ellipsis whitespace-nowrap">
+                        {selectedRoute?.marketInfos.map((info, index) => {
+                          let includeSeparator = false
+                          if (
+                            selectedRoute?.marketInfos.length > 1 &&
+                            index !== selectedRoute?.marketInfos.length - 1
+                          ) {
+                            includeSeparator = true
+                          }
+                          return (
+                            <span key={index}>{`${info?.label} ${
+                              includeSeparator ? 'x ' : ''
+                            }`}</span>
+                          )
+                        })}
+                      </span>
+                      <PencilIcon className="ml-2 h-4 w-4 hover:text-th-active" />
+                    </div>
+                  </div>
                   {typeof feeValue === 'number' ? (
                     <div className="flex justify-between">
                       <p className="text-sm text-th-fgd-3">{t('fee')}</p>
@@ -655,7 +672,7 @@ const SwapReviewRouteInfo = ({
                               {(info.lpFee?.pct * 100).toLocaleString(
                                 undefined,
                                 {
-                                  maximumFractionDigits: 4,
+                                  maximumSignificantDigits: 2,
                                 }
                               )}
                               %)
