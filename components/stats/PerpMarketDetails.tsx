@@ -28,7 +28,6 @@ const PerpMarketDetails = ({
   const [priceDaysToShow, setPriceDaysToShow] = useState('30')
   const [oiDaysToShow, setOiDaysToShow] = useState('30')
   const [hourlyFundingeDaysToShow, setHourlyFundingDaysToShow] = useState('30')
-  const [instantFundingDaysToShow, setInstantFundingDaysToShow] = useState('30')
   const rate = usePerpFundingRate()
 
   const [marketStats, lastStat] = useMemo(() => {
@@ -62,16 +61,6 @@ const PerpMarketDetails = ({
       }))
     }
   }, [marketStats, fundingRate])
-
-  const instantFundingRateStats = useMemo(() => {
-    if (marketStats) {
-      return marketStats.map((stat) => ({
-        ...stat,
-        instantaneous_funding_rate: stat.instantaneous_funding_rate * 100,
-      }))
-    }
-    return []
-  }, [marketStats])
 
   return (
     <div className="grid grid-cols-2">
@@ -130,7 +119,7 @@ const PerpMarketDetails = ({
               yKey={'open_interest'}
             />
           </div>
-          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
+          <div className="col-span-2 border-b border-r border-th-bkg-3 py-4 px-6 md:col-span-1">
             <DetailedAreaChart
               data={perpHourlyStats ? perpHourlyStats : []}
               daysToShow={hourlyFundingeDaysToShow}
@@ -143,22 +132,6 @@ const PerpMarketDetails = ({
               title={t('trade:hourly-funding')}
               xKey="date_hour"
               yKey={'funding_rate_hourly'}
-              yDecimals={5}
-            />
-          </div>
-          <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
-            <DetailedAreaChart
-              data={instantFundingRateStats}
-              daysToShow={instantFundingDaysToShow}
-              setDaysToShow={setInstantFundingDaysToShow}
-              heightClass="h-64"
-              loading={loadingPerpStats}
-              loaderHeightClass="h-[350px]"
-              suffix="%"
-              tickFormat={(x) => formatNumericValue(x, 4)}
-              title={t('trade:instantaneous-funding')}
-              xKey="date_hour"
-              yKey={'instantaneous_funding_rate'}
               yDecimals={5}
             />
           </div>
