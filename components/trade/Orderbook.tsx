@@ -447,36 +447,44 @@ const Orderbook = () => {
     setIsScrolled(true)
   }, [])
 
+  const toggleSides = (side: string) => {
+    if (side === 'bids') {
+      setShowBuys(true)
+      setShowSells(false)
+    } else {
+      setShowBuys(false)
+      setShowSells(true)
+    }
+  }
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
         <div id="trade-step-three" className="flex items-center space-x-1.5">
           <Tooltip
-            className="hidden md:block"
-            content={showBuys ? t('trade:hide-bids') : t('trade:show-bids')}
-            placement="bottom"
-          >
-            <button
-              className={`rounded ${
-                showBuys ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
-              onClick={() => setShowBuys(!showBuys)}
-              disabled={!showSells}
-            >
-              <OrderbookIcon className="h-4 w-4" side="buy" />
-            </button>
-          </Tooltip>
-          <Tooltip
-            className="hidden md:block"
-            content={showSells ? t('trade:hide-asks') : t('trade:show-asks')}
+            className={`hidden md:block ${!showSells ? 'md:hidden' : ''}`}
+            content={t('trade:show-bids')}
             placement="bottom"
           >
             <button
               className={`rounded ${
                 showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
               } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
-              onClick={() => setShowSells(!showSells)}
-              disabled={!showBuys}
+              onClick={() => toggleSides('bids')}
+            >
+              <OrderbookIcon className="h-4 w-4" side="buy" />
+            </button>
+          </Tooltip>
+          <Tooltip
+            className={`hidden md:block ${!showBuys ? 'md:hidden' : ''}`}
+            content={t('trade:show-asks')}
+            placement="bottom"
+          >
+            <button
+              className={`rounded ${
+                showBuys ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              onClick={() => toggleSides('asks')}
             >
               <OrderbookIcon className="h-4 w-4" side="sell" />
             </button>
@@ -487,9 +495,7 @@ const Orderbook = () => {
             placement="bottom"
           >
             <button
-              className={`rounded ${
-                showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              className="default-transition flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed"
               onClick={resetOrderbook}
             >
               <ArrowPathIcon className="h-4 w-4" />
