@@ -42,6 +42,7 @@ import { withValueLimit } from '@components/swap/SwapForm'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { isMangoError } from 'types'
+import ColorBlur from '@components/ColorBlur'
 
 const UserSetupModal = ({
   isOpen,
@@ -200,19 +201,26 @@ const UserSetupModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} fullScreen disableOutsideClose>
-      <div className="radial-gradient-bg grid h-screen overflow-auto text-left lg:grid-cols-2">
+      <div className="grid h-screen overflow-auto bg-th-bkg-1 text-left lg:grid-cols-2">
         <img
-          className="absolute -bottom-6 right-0 hidden h-auto w-[53%] lg:block xl:w-[57%]"
-          src="/images/trade@0.75x.png"
-          srcSet="/images/trade@0.75x.png 1157w, /images/trade@1x.png 1542w,
-          /images/trade@2x.png 3084w"
-          sizes="(max-width: 1600px) 1157px, (max-width: 2500px) 1542px, 3084px"
+          className={`absolute -bottom-20 left-1/2 mt-8 h-auto w-[90%] -translate-x-1/2 sm:w-[60%] md:w-[470px] lg:left-auto lg:-right-10 lg:w-[55%] lg:-translate-x-0 xl:-bottom-40 ${
+            showSetupStep !== 0 ? 'hidden lg:block' : ''
+          }`}
+          src="/images/swap-trade@0.75x.png"
+          srcSet="/images/swap-trade@0.75x.png 1098x, /images/swap-trade@1x.png 1463w,
+          /images/swap-trade@2x.png 2926w"
+          sizes="(max-width: 1600px) 1098px, (max-width: 2500px) 1463px, 2926px"
           alt="next"
         />
         <img
           className={`absolute top-6 left-6 h-10 w-10 flex-shrink-0`}
           src="/logos/logo-mark.svg"
           alt="next"
+        />
+        <ColorBlur
+          width="66%"
+          height="300px"
+          className="-top-20 left-0 opacity-20 brightness-125"
         />
         <div className="absolute top-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
@@ -227,7 +235,7 @@ const UserSetupModal = ({
             <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:max-w-[400px] lg:text-6xl">
               {t('onboarding:intro-heading')}
             </h2>
-            <p className="text-base sm:mb-4 lg:text-lg">
+            <p className="text-base sm:mb-2 lg:text-lg">
               {t('onboarding:intro-desc')}
             </p>
             <div className="mb-6 space-y-2 py-3">
@@ -500,7 +508,7 @@ const UserSetupModal = ({
                 </UserSetupTransition>
                 <UserSetupTransition show={depositToken.length === 0}>
                   <div
-                    className="thin-scroll absolute top-36 w-full overflow-auto"
+                    className="thin-scroll absolute top-[62px] w-full overflow-auto md:top-[74px] lg:top-36"
                     style={{ height: 'calc(100vh - 380px)' }}
                   >
                     <div className="flex items-center px-4 pb-2">
@@ -593,7 +601,7 @@ const UserSetupTransition = ({
   return (
     <Transition
       appear
-      className="h-full w-full max-w-lg"
+      className="h-full w-full max-w-md"
       show={show}
       enter={`transition ease-in duration-300 ${delay ? 'delay-300' : ''}`}
       enterFrom="opacity-0"
