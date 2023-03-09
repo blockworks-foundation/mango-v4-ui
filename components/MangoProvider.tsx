@@ -85,7 +85,9 @@ const HydrateStore = () => {
             mangoAccount.publicKey,
             decodedMangoAccount
           )
-          await newMangoAccount.reloadSerum3OpenOrders(client)
+          if (newMangoAccount.serum3Active().length > 0) {
+            await newMangoAccount.reloadSerum3OpenOrders(client)
+          }
           set((s) => {
             s.mangoAccount.current = newMangoAccount
             s.mangoAccount.lastSlot = context.slot

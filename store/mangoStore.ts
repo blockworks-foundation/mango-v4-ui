@@ -687,7 +687,6 @@ const mangoStore = create<MangoStore>()(
             await get().actions.reloadMangoAccount()
           }
           const mangoAccount = get().mangoAccount.current
-
           if (!mangoAccount || !group) return
 
           try {
@@ -697,21 +696,23 @@ const mangoStore = create<MangoStore>()(
             const activeSerumMarketIndices = [
               ...new Set(mangoAccount.serum3Active().map((s) => s.marketIndex)),
             ]
-
-            await Promise.all(
-              activeSerumMarketIndices.map(async (serum3Orders) => {
-                const market = group.getSerum3MarketByMarketIndex(serum3Orders)
-                if (market) {
-                  const orders =
-                    await mangoAccount.loadSerum3OpenOrdersForMarket(
-                      client,
-                      group,
-                      market.serumMarketExternal
-                    )
-                  openOrders[market.serumMarketExternal.toString()] = orders
-                }
-              })
-            )
+            if (activeSerumMarketIndices.length) {
+              await Promise.all(
+                activeSerumMarketIndices.map(async (serum3Orders) => {
+                  const market =
+                    group.getSerum3MarketByMarketIndex(serum3Orders)
+                  if (market) {
+                    const orders =
+                      await mangoAccount.loadSerum3OpenOrdersForMarket(
+                        client,
+                        group,
+                        market.serumMarketExternal
+                      )
+                    openOrders[market.serumMarketExternal.toString()] = orders
+                  }
+                })
+              )
+            }
 
             if (
               mangoAccount.serum3Active().length &&
@@ -734,7 +735,8 @@ const mangoStore = create<MangoStore>()(
                 const orders = await mangoAccount.loadPerpOpenOrdersForMarket(
                   client,
                   group,
-                  perpMktIndex
+                  perpMktIndex,
+                  market._bids ? false : true
                 )
                 openOrders[market.publicKey.toString()] = orders
               })

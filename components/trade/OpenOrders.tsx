@@ -38,6 +38,23 @@ import { getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import TableMarketName from './TableMarketName'
 
+const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
+  const openOrders = mangoStore.getState().mangoAccount.openOrders
+  let foundedMarketPk: string | undefined = undefined
+  for (const [marketPk, orders] of Object.entries(openOrders)) {
+    for (const order of orders) {
+      if (order.orderId.eq(o.orderId)) {
+        foundedMarketPk = marketPk
+        break
+      }
+    }
+    if (foundedMarketPk) {
+      break
+    }
+  }
+  return foundedMarketPk
+}
+
 const OpenOrders = () => {
   const { t } = useTranslation(['common', 'trade'])
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
@@ -53,23 +70,6 @@ const OpenOrders = () => {
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
   const { isUnownedAccount } = useUnownedAccount()
-
-  const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
-    const openOrders = mangoStore.getState().mangoAccount.openOrders
-    let foundedMarketPk: string | undefined = undefined
-    for (const [marketPk, orders] of Object.entries(openOrders)) {
-      for (const order of orders) {
-        if (order.orderId.eq(o.orderId)) {
-          foundedMarketPk = marketPk
-          break
-        }
-      }
-      if (foundedMarketPk) {
-        break
-      }
-    }
-    return foundedMarketPk
-  }
 
   const handleCancelSerumOrder = useCallback(
     async (o: Order) => {
@@ -114,7 +114,7 @@ const OpenOrders = () => {
         setCancelId('')
       }
     },
-    [t, openOrders]
+    [t]
   )
 
   const modifyOrder = useCallback(
@@ -254,6 +254,7 @@ const OpenOrders = () => {
         </thead>
         <tbody>
           {Object.entries(openOrders)
+            .sort()
             .map(([marketPk, orders]) => {
               return orders.map((o) => {
                 const group = mangoStore.getState().group!
@@ -284,7 +285,7 @@ const OpenOrders = () => {
                 }
                 return (
                   <TrBody
-                    key={`${o.side}${o.size}${o.price}`}
+                    key={`${o.side}${o.size}${o.price}${o.orderId.toString()}`}
                     className="my-1 p-2"
                   >
                     <Td className="w-[16.67%]">

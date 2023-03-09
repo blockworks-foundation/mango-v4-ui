@@ -41,7 +41,8 @@ const Dashboard: NextPage = () => {
       const orders = await mangoAccount.loadPerpOpenOrdersForMarket(
         client,
         group,
-        perpOrder.orderMarket
+        perpOrder.orderMarket,
+        true
       )
       openOrders[market.publicKey.toString()] = orders
     }

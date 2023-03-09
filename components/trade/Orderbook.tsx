@@ -162,8 +162,14 @@ const hasOpenOrderForPriceGroup = (
 }
 
 const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
-  book.perpMarket[`_${side}`] = book
-  mangoStore.getState().actions.fetchOpenOrders()
+  const group = mangoStore.getState().group
+  const perpMarket = group?.getPerpMarketByMarketIndex(
+    book.perpMarket.perpMarketIndex
+  )
+  if (perpMarket) {
+    perpMarket[`_${side}`] = book
+    // mangoStore.getState().actions.fetchOpenOrders()
+  }
 }
 
 const depth = 40
