@@ -1,4 +1,4 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { IconButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
 import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
@@ -23,11 +23,14 @@ type ResponseType = {
 
 const fetchTokenChange = async (
   mangoTokens: Token[],
-  baseSymbol: string
+  baseAddress: string
 ): Promise<ResponseType> => {
-  const coingeckoId =
-    mangoTokens.find((t) => t.symbol === baseSymbol)?.extensions?.coingeckoId ||
-    'mango-markets'
+  let coingeckoId = mangoTokens.find((t) => t.address === baseAddress)
+    ?.extensions?.coingeckoId
+
+  if (baseAddress === '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh') {
+    coingeckoId = 'bitcoin'
+  }
 
   const response = await fetch(
     `https://api.coingecko.com/api/v3/coins/${coingeckoId}/market_chart?vs_currency=usd&days=1`
@@ -45,7 +48,7 @@ const AdvancedMarketHeader = ({
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const perpStats = mangoStore((s) => s.perpStats.data)
-  const { serumOrPerpMarket, baseSymbol, price } = useSelectedMarket()
+  const { serumOrPerpMarket, price, selectedMarket } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
   const { mangoTokens } = useJupiterMints()
 
@@ -56,15 +59,24 @@ const AdvancedMarketHeader = ({
     }
   }, [serumOrPerpMarket])
 
-  const changeResponse = useQuery(
-    ['coingecko-tokens', baseSymbol],
-    () => fetchTokenChange(mangoTokens, baseSymbol!),
+  const spotBaseAddress = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (group && selectedMarket && selectedMarket instanceof Serum3Market) {
+      return group
+        .getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+        .mint.toString()
+    }
+  }, [selectedMarket])
+
+  const spotChangeResponse = useQuery(
+    ['coingecko-tokens', spotBaseAddress],
+    () => fetchTokenChange(mangoTokens, spotBaseAddress!),
     {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 10,
       retry: 3,
       enabled:
-        !!baseSymbol &&
+        !!spotBaseAddress &&
         serumOrPerpMarket instanceof Market &&
         mangoTokens.length > 0,
       refetchOnWindowFocus: false,
@@ -80,14 +92,20 @@ const AdvancedMarketHeader = ({
         ? ((price - changeData[0].price) / changeData[0].price) * 100
         : 0
     } else {
-      if (!changeResponse.data) return 0
+      if (!spotChangeResponse.data) return 0
       return (
-        ((price - changeResponse.data.prices?.[0][1]) /
-          changeResponse.data.prices?.[0][1]) *
+        ((price - spotChangeResponse.data.prices?.[0][1]) /
+          spotChangeResponse.data.prices?.[0][1]) *
         100
       )
     }
-  }, [changeResponse, price, serumOrPerpMarket, perpStats, selectedMarketName])
+  }, [
+    spotChangeResponse,
+    price,
+    serumOrPerpMarket,
+    perpStats,
+    selectedMarketName,
+  ])
 
   return (
     <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
