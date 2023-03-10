@@ -506,7 +506,7 @@ const AdvancedTradeForm = () => {
             <div className="mr-3 mt-4" id="trade-step-six">
               <Tooltip
                 className="hidden md:block"
-                delay={250}
+                delay={100}
                 placement="left"
                 content={t('trade:tooltip-post')}
               >
@@ -521,7 +521,7 @@ const AdvancedTradeForm = () => {
             <div className="mr-3 mt-4" id="trade-step-seven">
               <Tooltip
                 className="hidden md:block"
-                delay={250}
+                delay={100}
                 placement="left"
                 content={t('trade:tooltip-ioc')}
               >
@@ -541,7 +541,7 @@ const AdvancedTradeForm = () => {
           <div className="mt-4" id="trade-step-eight">
             <Tooltip
               className="hidden md:block"
-              delay={250}
+              delay={100}
               placement="left"
               content={t('trade:tooltip-enable-margin')}
             >
@@ -554,7 +554,7 @@ const AdvancedTradeForm = () => {
           <div className="mr-3 mt-4">
             <Tooltip
               className="hidden md:block"
-              delay={250}
+              delay={100}
               placement="left"
               content={
                 'Reduce will only decrease the size of an open position. This is often used for closing a position.'

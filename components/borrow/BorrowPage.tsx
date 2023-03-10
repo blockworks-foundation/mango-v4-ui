@@ -98,7 +98,7 @@ const BorrowPage = () => {
               maxWidth="20rem"
               placement="bottom-start"
               content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
-              delay={250}
+              delay={100}
             >
               <p className="mb-0.5 text-base">
                 {t('borrow:current-borrow-value')}

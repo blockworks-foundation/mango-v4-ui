@@ -538,7 +538,7 @@ const SwapReviewRouteInfo = ({
                         ),
                       })
                 }
-                delay={250}
+                delay={100}
               >
                 <p className="tooltip-underline text-sm text-th-fgd-3">
                   {t('borrow-amount')}
@@ -586,7 +586,7 @@ const SwapReviewRouteInfo = ({
                     <div className="flex justify-between">
                       <Tooltip
                         content={t('loan-origination-fee-tooltip')}
-                        delay={250}
+                        delay={100}
                       >
                         <p className="tooltip-underline text-sm text-th-fgd-3">
                           {t('loan-origination-fee')}

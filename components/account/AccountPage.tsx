@@ -352,7 +352,7 @@ const AccountPage = () => {
             <Tooltip
               maxWidth="20rem"
               placement="bottom-start"
-              delay={250}
+              delay={100}
               content={
                 <div className="flex-col space-y-2 text-sm">
                   <p className="text-xs">
@@ -400,7 +400,7 @@ const AccountPage = () => {
               content={t('account:tooltip-free-collateral')}
               maxWidth="20rem"
               placement="bottom"
-              delay={250}
+              delay={100}
             >
               <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                 {t('free-collateral')}
@@ -424,7 +424,7 @@ const AccountPage = () => {
                 content={t('account:tooltip-total-collateral')}
                 maxWidth="20rem"
                 placement="bottom"
-                delay={250}
+                delay={100}
               >
                 <span className="tooltip-underline">{t('total')}</span>:
                 <span className="ml-1 font-mono text-th-fgd-2">
@@ -450,7 +450,7 @@ const AccountPage = () => {
               content={t('account:tooltip-leverage')}
               maxWidth="20rem"
               placement="bottom"
-              delay={250}
+              delay={100}
             >
               <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                 {t('leverage')}
@@ -467,7 +467,7 @@ const AccountPage = () => {
               <Tooltip
                 content={t('account:tooltip-pnl')}
                 placement="bottom"
-                delay={250}
+                delay={100}
               >
                 <p className="tooltip-underline inline text-sm text-th-fgd-3 xl:text-base">
                   {t('pnl')}
@@ -479,7 +479,7 @@ const AccountPage = () => {
                     <Tooltip
                       className="hidden md:block"
                       content={t('account:pnl-chart')}
-                      delay={250}
+                      delay={100}
                     >
                       <IconButton
                         className="text-th-fgd-3"
@@ -493,7 +493,7 @@ const AccountPage = () => {
                   <Tooltip
                     className="hidden md:block"
                     content={t('account:pnl-history')}
-                    delay={250}
+                    delay={100}
                   >
                     <IconButton
                       className="text-th-fgd-3"
@@ -526,7 +526,7 @@ const AccountPage = () => {
                 content={t('account:tooltip-total-interest')}
                 maxWidth="20rem"
                 placement="bottom-end"
-                delay={250}
+                delay={100}
               >
                 <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                   {t('total-interest-earned')}
@@ -536,7 +536,7 @@ const AccountPage = () => {
                 <Tooltip
                   className="hidden md:block"
                   content="Cumulative Interest Chart"
-                  delay={250}
+                  delay={100}
                 >
                   <IconButton
                     className="text-th-fgd-3"

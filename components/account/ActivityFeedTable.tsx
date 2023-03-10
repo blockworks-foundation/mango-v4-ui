@@ -204,7 +204,7 @@ const ActivityFeedTable = ({
               <Th className="bg-th-bkg-1 text-right">{t('activity:credit')}</Th>
               <Th className="bg-th-bkg-1 text-right">{t('activity:debit')}</Th>
               <Th className="flex justify-end bg-th-bkg-1">
-                <Tooltip content={t('activity:tooltip-fee')} delay={250}>
+                <Tooltip content={t('activity:tooltip-fee')} delay={100}>
                   <span className="tooltip-underline">{t('fee')}</span>
                 </Tooltip>
               </Th>

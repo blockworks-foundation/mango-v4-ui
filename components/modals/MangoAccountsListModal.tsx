@@ -195,7 +195,7 @@ const MangoAccountsListModal = ({
                         <Tooltip
                           className="hidden md:block"
                           content={t('copy-address')}
-                          delay={250}
+                          delay={100}
                         >
                           <IconButton
                             className="text-th-fgd-3"

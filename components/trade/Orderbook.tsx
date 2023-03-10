@@ -514,7 +514,7 @@ const Orderbook = () => {
               className="hidden md:block"
               content={t('trade:grouping')}
               placement="left"
-              delay={250}
+              delay={100}
             >
               <GroupSize
                 tickSize={market.tickSize}
