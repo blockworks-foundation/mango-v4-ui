@@ -240,7 +240,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     return () => {
       dispose('update-k-line')
       if (socketConnected) {
-        currentDataFeed.unsubscribeBars()
+        currentDataFeed.unsubscribeBars('')
         currentDataFeed.closeSocket()
       }
     }

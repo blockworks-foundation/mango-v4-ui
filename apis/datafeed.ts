@@ -60,6 +60,8 @@ export type SymbolInfo = LibrarySymbolInfo & {
 
 const lastBarsCache = new Map()
 
+const subscriptionIds = new Map()
+
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
   intraday_multipliers: ['1', '3', '5', '15', '30', '60', '120', '240'],
@@ -304,6 +306,7 @@ export default {
     subscriberUID: string,
     onResetCacheNeededCallback: () => void
   ) => {
+    subscriptionIds.set(subscriberUID, symbolInfo.address)
     if (symbolInfo.description?.includes('PERP')) {
       subscribeOnPerpStream(
         symbolInfo,
@@ -325,9 +328,10 @@ export default {
     }
   },
 
-  unsubscribeBars: () => {
+  unsubscribeBars: (subscriberUID: string) => {
     if (marketType === 'perp') {
-      unsubscribeFromPerpStream()
+      const marketId = subscriptionIds.get(subscriberUID)
+      unsubscribeFromPerpStream(marketId)
     } else {
       unsubscribeFromStream()
     }
