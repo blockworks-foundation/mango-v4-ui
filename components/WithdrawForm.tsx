@@ -116,7 +116,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         mangoAccount,
         bank.mint,
         parseFloat(inputAmount),
-        false
+        true /* Workaround, revert once program issue is noticed */
       )
       notify({
         title: 'Transaction confirmed',
