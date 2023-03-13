@@ -151,6 +151,15 @@ const Dashboard: NextPage = () => {
                                   }
                                 />
                                 <KeyValuePair
+                                  label="MintInfo"
+                                  value={
+                                    <ExplorerLink
+                                      address={mintInfo!.toString()}
+                                      anchorData
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
                                   label="Vault"
                                   value={
                                     <ExplorerLink
