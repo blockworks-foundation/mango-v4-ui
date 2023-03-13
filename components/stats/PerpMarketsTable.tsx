@@ -104,7 +104,11 @@ const PerpMarketsTable = ({
               const openInterest = market.baseLotsToUi(market.openInterest)
 
               return (
-                <TrBody key={market.publicKey.toString()}>
+                <TrBody
+                  className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                  key={market.publicKey.toString()}
+                  onClick={() => setShowPerpDetails(perpMarkets[index])}
+                >
                   <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market} />
@@ -190,12 +194,7 @@ const PerpMarketsTable = ({
                   </Td>
                   <Td>
                     <div className="flex justify-end">
-                      <IconButton
-                        onClick={() => setShowPerpDetails(perpMarkets[index])}
-                        size="small"
-                      >
-                        <ChevronRightIcon className="h-5 w-5" />
-                      </IconButton>
+                      <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
                     </div>
                   </Td>
                 </TrBody>

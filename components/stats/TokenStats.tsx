@@ -112,7 +112,11 @@ const TokenStats = () => {
               )
 
               return (
-                <TrBody key={bank.name}>
+                <TrBody
+                  className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                  key={bank.name}
+                  onClick={() => goToTokenPage(bank)}
+                >
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -196,12 +200,7 @@ const TokenStats = () => {
                   </Td>
                   <Td>
                     <div className="flex justify-end">
-                      <IconButton
-                        onClick={() => goToTokenPage(bank)}
-                        size="small"
-                      >
-                        <ChevronRightIcon className="h-5 w-5" />
-                      </IconButton>
+                      <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
                     </div>
                   </Td>
                 </TrBody>
