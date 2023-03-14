@@ -93,8 +93,8 @@ const TokenList = () => {
                   </Tooltip>
                 </div>
               </Th>
-              <Th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</Th>
-              <Th className="bg-th-bkg-1 text-right">{t('trade:unsettled')}</Th>
+              <Th className="text-right">{t('trade:in-orders')}</Th>
+              <Th className="text-right">{t('trade:unsettled')}</Th>
               <Th className="flex justify-end" id="account-step-nine">
                 <Tooltip content="The sum of interest earned and interest paid for each token">
                   <span className="tooltip-underline">
@@ -109,7 +109,9 @@ const TokenList = () => {
                   </Tooltip>
                 </div>
               </Th>
-              <Th />
+              <Th className="text-right">
+                <span className="pr-9">{t('actions')}</span>
+              </Th>
             </TrHead>
           </thead>
           <tbody>
@@ -145,7 +147,11 @@ const TokenList = () => {
                 spotBalances[bank.mint.toString()]?.unsettled || 0
 
               return (
-                <TrBody className="last:border-y-0" key={bank.name}>
+                <TrBody
+                  className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                  key={bank.name}
+                  onClick={() => goToTokenPage(bank.name)}
+                >
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -210,14 +216,9 @@ const TokenList = () => {
                     </div>
                   </Td>
                   <Td>
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex items-center justify-end">
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
-                      <IconButton
-                        onClick={() => goToTokenPage(bank.name)}
-                        size="small"
-                      >
-                        <ChevronRightIcon className="h-5 w-5" />
-                      </IconButton>
+                      <ChevronRightIcon className="ml-4 h-5 w-5 text-th-fgd-3" />
                     </div>
                   </Td>
                 </TrBody>
@@ -479,6 +480,7 @@ const ActionsMenu = ({
       {isUnownedAccount ? null : (
         <IconDropMenu
           icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
+          panelClassName="w-40 shadow-md"
           postion="leftBottom"
         >
           <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
