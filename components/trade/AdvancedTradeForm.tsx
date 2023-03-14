@@ -351,12 +351,19 @@ const AdvancedTradeForm = () => {
     }
   }, [])
 
+  const sideNames = useMemo(() => {
+    return selectedMarket instanceof PerpMarket
+      ? [t('trade:long'), t('trade:short')]
+      : [t('buy'), t('sell')]
+  }, [selectedMarket])
+
   return (
     <div>
       <div className="mt-1.5 px-2 md:mt-0 md:px-4 md:pt-5 lg:mt-5 lg:pt-0">
         <TabUnderline
           activeValue={tradeForm.side}
           values={['buy', 'sell']}
+          names={sideNames}
           onChange={(v) => handleSetSide(v as 'buy' | 'sell')}
           small
         />
@@ -592,8 +599,10 @@ const AdvancedTradeForm = () => {
                 {t('connect')}
               </div>
             ) : !placingOrder ? (
-              <span className="capitalize">
-                {t('trade:place-order', { side: tradeForm.side })}
+              <span>
+                {t('trade:place-order', {
+                  side: tradeForm.side === 'buy' ? sideNames[0] : sideNames[1],
+                })}
               </span>
             ) : (
               <div className="flex items-center space-x-2">
