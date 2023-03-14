@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getNextBarTime } from './helpers'
+import mangoStore from '@store/mangoStore'
 
 let subscriptionItem: any = {}
 
@@ -17,6 +18,7 @@ socket.addEventListener('message', (msg) => {
 
   if (!data.event) return console.warn(data)
   if (data.event.maker) return
+  if (data.event.marketId != mangoStore.getState().selectedMarket) return
   const currTime = new Date(data.event.timestamp).getTime()
   const lastBar = subscriptionItem.lastBar
   const resolution = subscriptionItem.resolution
@@ -64,26 +66,26 @@ export function subscribeOnStream(
 
   const msg = {
     command: 'subscribe',
-    marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
+    marketId: symbolInfo.address,
   }
   if (!isOpen(socket)) {
     console.warn('Socket Closed')
     return
   }
-  console.warn('[subscribeBars mngo]')
+  console.warn('[subscribeOnStream mngo]', subscriberUID)
   socket.send(JSON.stringify(msg))
 }
 
-export function unsubscribeFromStream() {
+export function unsubscribeFromStream(uid: string) {
   const msg = {
     command: 'unsubscribe',
-    marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
+    marketId: uid.split('_')[0],
   }
   if (!isOpen(socket)) {
     console.warn('Socket Closed')
     return
   }
-  console.warn('[unsubscribeBars mngo]')
+  console.warn('[unsubscribeFromStream mngo]', uid)
   socket.send(JSON.stringify(msg))
 }
 
