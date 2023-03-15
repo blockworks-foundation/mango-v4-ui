@@ -15,7 +15,7 @@ import { useViewport } from '../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
-import { IconButton, LinkButton } from './shared/Button'
+import { LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
 import Tooltip from './shared/Tooltip'
@@ -283,10 +283,14 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   }
 
   return (
-    <div key={symbol} className="border-b border-th-bkg-3 px-6 py-4">
+    <button
+      key={symbol}
+      className="w-full border-b border-th-bkg-3 px-6 py-4 text-left focus:outline-none"
+      onClick={() => setShowTokenDetails((prev) => !prev)}
+    >
       <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <div className="mr-2.5 flex flex-shrink-0 items-center">
+        <div className="flex items-start">
+          <div className="mr-2.5 mt-0.5 flex flex-shrink-0 items-center">
             {logoURI ? (
               <Image alt="" width="24" height="24" src={logoURI} />
             ) : (
@@ -294,30 +298,29 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
             )}
           </div>
           <div>
-            <p className="text-th-fgd-1">{symbol}</p>
-            <p className="font-mono text-sm text-th-fgd-1">
-              <span className="mr-1 font-body text-th-fgd-4">
-                {t('balance')}:
-              </span>
+            <p className="mb-0.5 leading-none text-th-fgd-1">{symbol}</p>
+            <p className="font-mono text-sm text-th-fgd-2">
               <FormatNumericValue
                 value={tokenBalance}
                 decimals={tokenBank.mintDecimals}
               />
+              <p className="mt-0.5 text-sm leading-none text-th-fgd-4">
+                <FormatNumericValue
+                  value={mangoAccount ? tokenBalance * tokenBank.uiPrice : 0}
+                  decimals={2}
+                  isUsd
+                />
+              </p>
             </p>
           </div>
         </div>
         <div className="flex items-center space-x-3">
           <ActionsMenu bank={tokenBank} mangoAccount={mangoAccount} />
-          <IconButton
-            onClick={() => setShowTokenDetails((prev) => !prev)}
-            size="small"
-          >
-            <ChevronDownIcon
-              className={`${
-                showTokenDetails ? 'rotate-180' : 'rotate-360'
-              } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
-            />
-          </IconButton>
+          <ChevronDownIcon
+            className={`${
+              showTokenDetails ? 'rotate-180' : 'rotate-360'
+            } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
+          />
         </div>
       </div>
       <Transition
@@ -380,7 +383,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
           </div>
         </div>
       </Transition>
-    </div>
+    </button>
   )
 }
 
