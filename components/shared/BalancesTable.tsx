@@ -98,7 +98,7 @@ const BalancesTable = () => {
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
                       {logoURI ? (
-                        <Image alt="" width="20" height="20" src={logoURI} />
+                        <Image alt="" width="24" height="24" src={logoURI} />
                       ) : (
                         <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
                       )}
