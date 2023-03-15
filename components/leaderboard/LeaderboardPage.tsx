@@ -42,7 +42,7 @@ const fetchLeaderboard = async (period: string) => {
 }
 
 const LeaderboardPage = () => {
-  const { t } = useTranslation('leaderboard')
+  const { t } = useTranslation(['common', 'leaderboard'])
   const [daysToShow, setDaysToShow] = useState('ALLTIME')
 
   const { data, isLoading, refetch, isFetching } = useQuery(
@@ -64,11 +64,16 @@ const LeaderboardPage = () => {
   }, [daysToShow])
 
   return (
-    <div className="p-8 pb-20 md:pb-16 lg:p-10">
+    <div className="p-4 md:p-10 lg:px-0">
       <div className="grid grid-cols-12">
         <div className="col-span-12 lg:col-span-8 lg:col-start-3">
           <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-            <h1 className="mb-4 md:mb-0">{t('pnl-leaderboard')}</h1>
+            <div>
+              <h1 className="mb-2">{t('leaderboard')}</h1>
+              <p className="mb-4 md:mb-0">
+                {t('leaderboard:leaderboard-desc')}
+              </p>
+            </div>
             <div className="w-full md:w-48">
               <ButtonGroup
                 activeValue={daysToShow}

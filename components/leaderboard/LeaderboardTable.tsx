@@ -3,7 +3,6 @@ import ProfileImage from '@components/profile/ProfileImage'
 import SheenLoader from '@components/shared/SheenLoader'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
-// import { useTranslation } from 'next-i18next'
 import { formatCurrencyValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { LeaderboardItem } from './LeaderboardPage'
@@ -15,7 +14,6 @@ const LeaderboardTable = ({
   data: LeaderboardItem[]
   loading: boolean
 }) => {
-  // const { t } = useTranslation('leaderboard')
   return (
     <>
       {/* <div className="grid grid-cols-12 px-4 pb-2">
@@ -54,7 +52,8 @@ const LeaderboardRow = ({
   loading: boolean
   rank: number
 }) => {
-  const { profile_name, profile_image_url, mango_account, pnl } = item
+  const { profile_name, profile_image_url, mango_account, pnl, wallet_pk } =
+    item
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
 
@@ -66,7 +65,7 @@ const LeaderboardRow = ({
       target="_blank"
     >
       <div className="flex items-center space-x-3">
-        <div className="relative flex h-6 w-6 items-center justify-center rounded-full bg-th-bkg-3 md:mr-2">
+        <div className="relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-th-bkg-3 md:mr-2">
           <p
             className={`relative z-10 font-bold ${
               rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-3'
@@ -85,10 +84,10 @@ const LeaderboardRow = ({
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">
-            {profile_name || 'nameless'}
+            {profile_name || 'wallet ' + wallet_pk.slice(0, 4) + '...'}
           </p>
           <p className="text-xs text-th-fgd-4">
-            {mango_account.slice(0, 4) + '...' + mango_account.slice(-4)}
+            Acc: {mango_account.slice(0, 4) + '...' + mango_account.slice(-4)}
           </p>
         </div>
       </div>

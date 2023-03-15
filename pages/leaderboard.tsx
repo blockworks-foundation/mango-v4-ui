@@ -9,6 +9,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'common',
         'leaderboard',
         'profile',
+        'search',
       ])),
     },
   }
