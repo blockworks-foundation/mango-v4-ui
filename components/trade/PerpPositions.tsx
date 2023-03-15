@@ -89,6 +89,7 @@ const PerpPositions = () => {
                 <Th className="text-right">{t('trade:size')}</Th>
                 <Th className="text-right">{t('trade:notional')}</Th>
                 <Th className="text-right">{t('trade:entry-price')}</Th>
+                <Th className="text-right">{t('trade:oracle-price')}</Th>
                 <Th className="text-right">{`${t('trade:unsettled')} ${t(
                   'pnl'
                 )}`}</Th>
@@ -158,6 +159,13 @@ const PerpPositions = () => {
                         isUsd
                       />
                     </Td>
+                    <Td className="text-right font-mono">
+                      <FormatNumericValue
+                        value={market.uiPrice}
+                        decimals={getDecimalCount(market.tickSize)}
+                        isUsd
+                      />
+                    </Td>
                     <Td className={`text-right font-mono`}>
                       <FormatNumericValue
                         value={unsettledPnl}
@@ -223,7 +231,7 @@ const PerpPositions = () => {
                 <TableMarketName market={market} />
                 <div className="mt-1 flex items-center space-x-1">
                   <PerpSideBadge basePosition={basePosition} />
-                  <p className="text-th-fgd-4">
+                  <p className="flex text-th-fgd-4">
                     <span className="font-mono text-th-fgd-3">
                       {isSelectedMarket ? (
                         <LinkButton
@@ -243,7 +251,7 @@ const PerpPositions = () => {
                         />
                       )}
                     </span>
-                    {' at '}
+                    <span className="mx-1">at</span>
                     <span className="font-mono text-th-fgd-3">
                       <FormatNumericValue
                         value={position.getAverageEntryPriceUi(market)}
@@ -254,12 +262,13 @@ const PerpPositions = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-4">
                 <div
                   className={`text-right font-mono ${
                     cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
                   }`}
                 >
+                  <p className="mb-1 text-th-fgd-4">PnL</p>
                   <FormatNumericValue value={cummulativePnl} isUsd />
                 </div>
                 {!isUnownedAccount ? (
