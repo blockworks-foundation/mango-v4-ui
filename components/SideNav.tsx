@@ -183,7 +183,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               />
             }
             isOpen
-            panelTitle={`${mangoAccount?.name || ''} ${t('account')}`}
+            panelTitle={mangoAccount?.name ? mangoAccount.name : t('account')}
             title={
               <div className="w-24 text-left">
                 <p className="mb-0.5 whitespace-nowrap text-xs">

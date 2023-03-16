@@ -42,7 +42,7 @@ const FavoriteMarketsBar = () => {
                   : 'text-th-fgd-1 opacity-60'
               }`}
             >
-              {market ? <MarketLogos market={market} small /> : null}
+              {market ? <MarketLogos market={market} size="small" /> : null}
               <span className="mb-0 mr-1.5 text-xs">{mkt}</span>
               {/* {change24h ? (
                 <div
