@@ -241,7 +241,7 @@ const PerpPositions = () => {
                       <span className="whitespace-nowrap">{market.name}</span>
                     ) : (
                       <Link href={`/trade?name=${market.name}`}>
-                        <div className="default-transition flex items-center underline md:hover:text-th-fgd-3 md:hover:no-underline">
+                        <div className="default-transition flex items-center underline underline-offset-2 md:hover:text-th-fgd-3 md:hover:no-underline">
                           <span className="whitespace-nowrap">
                             {market.name}
                           </span>
