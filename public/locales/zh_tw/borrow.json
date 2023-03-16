@@ -4,7 +4,7 @@
     "borrowed-amount": "借貸數量",
     "connect-borrows": "連接而查看你的借貸",
     "current-borrow-value": "借貸價值",
-    "liability-weight-desc": "Liability weight adds to the value of the liability in your account health calculation.",
+    "liability-weight-desc": "計算帳戶健康時債務權重會增加債務價值。",
     "no-borrows": "無借貸",
     "tooltip-available": "你可借的最多資產",
     "your-borrows": "你的借貸"

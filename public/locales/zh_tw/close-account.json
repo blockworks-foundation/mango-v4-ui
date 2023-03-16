@@ -5,15 +5,15 @@
     "closing-account": "正在關閉帳戶...",
     "close-all-borrows": "歸還借貸",
     "close-open-orders": "取消訂單",
-    "close-perp-positions": "Close and settle all perp positons",
+    "close-perp-positions": "取消及結清所有合約持倉",
     "closing-account-will": "關閉Mango帳戶將會：",
     "delete-your-account": "刪除您的Mango帳戶",
     "error-deleting-account": "刪除Mango帳戶出錯",
     "goodbye": "下次見👋",
-    "recover-x-sol": "Recover {{amount}} SOL (rent for your account)",
+    "recover-x-sol": "恢復{{amount}} SOL (帳戶押金)",
     "settle-balances": "結清餘額",
     "transaction-confirmed": "交易成功",
-    "withdraw-assets-worth": "Withdraw assets worth {{value}}",
+    "withdraw-assets-worth": "提取價值{{value}}的資產",
     "you-must": "關戶之前",
     "account-closed": "帳戶關閉了👋"
 }
