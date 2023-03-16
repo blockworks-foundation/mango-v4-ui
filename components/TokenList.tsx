@@ -2,7 +2,6 @@ import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
-  ChevronRightIcon,
   EllipsisHorizontalIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
@@ -15,7 +14,6 @@ import { useViewport } from '../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
-import { LinkButton } from './shared/Button'
 import ContentBox from './shared/ContentBox'
 import IconDropMenu from './shared/IconDropMenu'
 import Tooltip from './shared/Tooltip'
@@ -48,7 +46,6 @@ const TokenList = () => {
   )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const router = useRouter()
   const banks = useBanksWithBalances('balance')
 
   const filteredBanks = useMemo(() => {
@@ -65,10 +62,6 @@ const TokenList = () => {
       setShowZeroBalances(true)
     }
   }, [connected])
-
-  const goToTokenPage = (symbol: string) => {
-    router.push(`/token/${symbol}`, undefined, { shallow: true })
-  }
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -110,7 +103,7 @@ const TokenList = () => {
                 </div>
               </Th>
               <Th className="text-right">
-                <span className="pr-9">{t('actions')}</span>
+                <span>{t('actions')}</span>
               </Th>
             </TrHead>
           </thead>
@@ -147,11 +140,7 @@ const TokenList = () => {
                 spotBalances[bank.mint.toString()]?.unsettled || 0
 
               return (
-                <TrBody
-                  className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
-                  key={bank.name}
-                  onClick={() => goToTokenPage(bank.name)}
-                >
+                <TrBody key={bank.name}>
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -218,7 +207,6 @@ const TokenList = () => {
                   <Td>
                     <div className="flex items-center justify-end">
                       <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
-                      <ChevronRightIcon className="ml-4 h-5 w-5 text-th-fgd-3" />
                     </div>
                   </Td>
                 </TrBody>
@@ -251,7 +239,6 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const tokenBank = bank.bank
   const mint = tokenBank.mint
   const symbol = tokenBank.name
-  const router = useRouter()
 
   let logoURI
   if (mangoTokens?.length) {
@@ -277,10 +264,6 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const inOrders = spotBalances[mint.toString()]?.inOrders || 0
 
   const unsettled = spotBalances[mint.toString()]?.unsettled || 0
-
-  const goToTokenPage = (symbol: string) => {
-    router.push(`/token/${symbol}`, undefined, { shallow: true })
-  }
 
   return (
     <button
@@ -371,15 +354,6 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                 %
               </span>
             </p>
-          </div>
-          <div className="col-span-1">
-            <LinkButton
-              className="flex items-center"
-              onClick={() => goToTokenPage(symbol)}
-            >
-              {t('token:token-details')}
-              <ChevronRightIcon className="ml-1.5 h-5 w-5" />
-            </LinkButton>
           </div>
         </div>
       </Transition>
