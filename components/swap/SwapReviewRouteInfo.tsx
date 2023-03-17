@@ -488,27 +488,24 @@ const SwapReviewRouteInfo = ({
             </div>
           ) : null}
           <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">
-              <Tooltip
-                content={
-                  <div>
-                    <p>
-                      The price impact is the difference observed between the
-                      total value of the entry tokens swapped and the
-                      destination tokens obtained.
-                    </p>
-                    <p className="mt-1">
-                      The bigger the trade is, the bigger the price impact can
-                      be.
-                    </p>
-                  </div>
-                }
-              >
-                <span className="tooltip-underline">
-                  {t('swap:price-impact')}
-                </span>
-              </Tooltip>
-            </p>
+            <Tooltip
+              content={
+                <>
+                  <p>
+                    The price impact is the difference observed between the
+                    total value of the entry tokens swapped and the destination
+                    tokens obtained.
+                  </p>
+                  <p className="mt-1">
+                    The bigger the trade is, the bigger the price impact can be.
+                  </p>
+                </>
+              }
+            >
+              <span className="tooltip-underline">
+                {t('swap:price-impact')}
+              </span>
+            </Tooltip>
             <p className="text-right font-mono text-sm text-th-fgd-2">
               {selectedRoute?.priceImpactPct * 100 < 0.1
                 ? '<0.1%'
@@ -595,9 +592,10 @@ const SwapReviewRouteInfo = ({
                       <p className="text-right font-mono text-sm text-th-fgd-2">
                         ~
                         <FormatNumericValue
-                          value={amountIn.mul(
+                          value={
+                            borrowAmount *
                             inputBank!.loanOriginationFeeRate.toNumber()
-                          )}
+                          }
                         />{' '}
                         <span className="font-body">{inputBank!.name}</span> (
                         <FormatNumericValue
