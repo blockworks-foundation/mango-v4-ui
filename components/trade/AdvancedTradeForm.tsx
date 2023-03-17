@@ -401,8 +401,8 @@ const AdvancedTradeForm = () => {
                 allowNegative={false}
                 isNumericString={true}
                 decimalScale={6}
-                name="amountIn"
-                id="amountIn"
+                name="price"
+                id="price"
                 className="ml-2 w-full bg-transparent font-mono focus:outline-none"
                 placeholder="0.00"
                 value={tradeForm.price}
@@ -439,8 +439,8 @@ const AdvancedTradeForm = () => {
               allowNegative={false}
               isNumericString={true}
               decimalScale={minOrderDecimals}
-              name="amountIn"
-              id="amountIn"
+              name="base"
+              id="base"
               className="ml-2 w-full bg-transparent font-mono focus:outline-none"
               placeholder="0.00"
               value={tradeForm.baseSize}
@@ -466,8 +466,8 @@ const AdvancedTradeForm = () => {
               allowNegative={false}
               isNumericString={true}
               decimalScale={tickDecimals}
-              name="amountIn"
-              id="amountIn"
+              name="quote"
+              id="quote"
               className="ml-2 w-full bg-transparent font-mono focus:outline-none"
               placeholder="0.00"
               value={tradeForm.quoteSize}
@@ -629,7 +629,7 @@ const AdvancedTradeForm = () => {
           />
         </div>
       ) : null}
-      <TradeSummary mangoAccount={mangoAccount} />
+      <TradeSummary mangoAccount={mangoAccount} useMargin={useMargin} />
     </div>
   )
 }

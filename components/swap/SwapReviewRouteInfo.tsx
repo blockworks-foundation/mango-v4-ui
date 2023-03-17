@@ -582,29 +582,29 @@ const SwapReviewRouteInfo = ({
                   {borrowAmount ? (
                     <div className="flex justify-between">
                       <Tooltip
-                        content={t('loan-origination-fee-tooltip')}
+                        content={t('loan-origination-fee-tooltip', {
+                          fee: `${(
+                            inputBank!.loanOriginationFeeRate.toNumber() * 100
+                          ).toFixed(3)}%`,
+                        })}
                         delay={100}
                       >
-                        <p className="tooltip-underline text-sm text-th-fgd-3">
+                        <p className="tooltip-underline">
                           {t('loan-origination-fee')}
                         </p>
                       </Tooltip>
-                      <p className="text-right font-mono text-sm text-th-fgd-2">
+                      <p className="text-right font-mono text-th-fgd-2">
                         ~
                         <FormatNumericValue
                           value={
                             borrowAmount *
                             inputBank!.loanOriginationFeeRate.toNumber()
                           }
+                          decimals={inputBank!.mintDecimals}
                         />{' '}
-                        <span className="font-body">{inputBank!.name}</span> (
-                        <FormatNumericValue
-                          value={
-                            inputBank!.loanOriginationFeeRate.toNumber() * 100
-                          }
-                          decimals={3}
-                        />
-                        %)
+                        <span className="font-body text-th-fgd-4">
+                          {inputBank!.name}
+                        </span>
                       </p>
                     </div>
                   ) : null}
