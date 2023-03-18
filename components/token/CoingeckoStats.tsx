@@ -2,6 +2,7 @@ import { Bank } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import SheenLoader from '@components/shared/SheenLoader'
 import { ArrowSmallUpIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -163,7 +164,11 @@ const CoingeckoStats = ({
           </div>
         )
       ) : (
-        <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+        <div className="p-6">
+          <SheenLoader className="flex flex-1">
+            <div className="h-72 w-full rounded-md bg-th-bkg-2" />
+          </SheenLoader>
+        </div>
       )}
       <div className="grid grid-cols-1 border-b border-th-bkg-3 md:grid-cols-2">
         <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 md:col-span-2">
