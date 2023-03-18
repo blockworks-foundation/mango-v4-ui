@@ -11,7 +11,7 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
-import { Fragment, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   floorToDecimal,
   formatNumericValue,
@@ -30,11 +30,10 @@ import useBanksWithBalances, {
   BankWithBalance,
 } from 'hooks/useBanksWithBalances'
 import useUnownedAccount from 'hooks/useUnownedAccount'
-import { Transition } from '@headlessui/react'
+import { Disclosure, Transition } from '@headlessui/react'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const [showTokenDetails, setShowTokenDetails] = useState('')
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoTokens } = useJupiterMints()
@@ -56,14 +55,6 @@ const BalancesTable = () => {
     }
     return []
   }, [banks])
-
-  const toggleTokenDetails = (token: string) => {
-    if (showTokenDetails === token) {
-      setShowTokenDetails('')
-    } else {
-      setShowTokenDetails(token)
-    }
-  }
 
   return filteredBanks.length ? (
     showTableView ? (
@@ -127,11 +118,11 @@ const BalancesTable = () => {
         </tbody>
       </Table>
     ) : (
-      <>
+      <div className="border-b border-th-bkg-3">
         {filteredBanks.map((b, i) => {
           const bank = b.bank
 
-          let logoURI
+          let logoURI: string | undefined
           if (mangoTokens.length) {
             logoURI = mangoTokens.find(
               (t) => t.address === bank.mint.toString()
@@ -142,69 +133,78 @@ const BalancesTable = () => {
           const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
 
           return (
-            <button
-              className="w-full border-b border-th-bkg-3 px-6 py-4 text-left focus:outline-none"
-              key={bank.name}
-              onClick={() => toggleTokenDetails(bank.name)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-start">
-                  <div className="mr-2.5 mt-0.5 flex flex-shrink-0 items-center">
-                    {logoURI ? (
-                      <Image alt="" width="24" height="24" src={logoURI} />
-                    ) : (
-                      <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="mb-0.5 leading-none text-th-fgd-1">
-                      {bank.name}
-                    </p>
-                    <Balance bank={b} />
-                    <p className="mt-0.5 text-sm leading-none text-th-fgd-4">
-                      <FormatNumericValue
-                        value={mangoAccount ? b.balance * bank.uiPrice : 0}
-                        isUsd
+            <Disclosure key={bank.name}>
+              {({ open }) => (
+                <>
+                  <Disclosure.Button
+                    className={`w-full border-t border-th-bkg-3 px-6 py-4 text-left focus:outline-none ${
+                      i === 0 ? 'border-t-0' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-start">
+                        <div className="mr-2.5 mt-0.5 flex flex-shrink-0 items-center">
+                          {logoURI ? (
+                            <Image
+                              alt=""
+                              width="24"
+                              height="24"
+                              src={logoURI}
+                            />
+                          ) : (
+                            <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="mb-0.5 leading-none text-th-fgd-1">
+                            {bank.name}
+                          </p>
+                          <Balance bank={b} />
+                          <p className="mt-0.5 text-sm leading-none text-th-fgd-4">
+                            <FormatNumericValue
+                              value={
+                                mangoAccount ? b.balance * bank.uiPrice : 0
+                              }
+                              isUsd
+                            />
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDownIcon
+                        className={`${
+                          open ? 'rotate-180' : 'rotate-360'
+                        } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
                       />
-                    </p>
-                  </div>
-                </div>
-                <ChevronDownIcon
-                  className={`${
-                    showTokenDetails === bank.name ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
-                />
-              </div>
-              <Transition
-                appear={true}
-                show={showTokenDetails === filteredBanks[i].bank.name}
-                as={Fragment}
-                enter="transition ease-in duration-200"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="transition ease-out"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
-                  <div className="col-span-1">
-                    <p className="text-xs text-th-fgd-3">
-                      {t('trade:in-orders')}
-                    </p>
-                    <BankAmountWithValue amount={inOrders} bank={bank} />
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs text-th-fgd-3">
-                      {t('trade:unsettled')}
-                    </p>
-                    <BankAmountWithValue amount={unsettled} bank={bank} />
-                  </div>
-                </div>
-              </Transition>
-            </button>
+                    </div>
+                  </Disclosure.Button>
+                  <Transition
+                    enter="transition ease-in duration-200"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                  >
+                    <Disclosure.Panel>
+                      <div className="mx-6 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                        <div className="col-span-1">
+                          <p className="text-xs text-th-fgd-3">
+                            {t('trade:in-orders')}
+                          </p>
+                          <BankAmountWithValue amount={inOrders} bank={bank} />
+                        </div>
+                        <div className="col-span-1">
+                          <p className="text-xs text-th-fgd-3">
+                            {t('trade:unsettled')}
+                          </p>
+                          <BankAmountWithValue amount={unsettled} bank={bank} />
+                        </div>
+                      </div>
+                    </Disclosure.Panel>
+                  </Transition>
+                </>
+              )}
+            </Disclosure>
           )
         })}
-      </>
+      </div>
     )
   ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">

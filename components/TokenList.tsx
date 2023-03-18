@@ -1,5 +1,5 @@
 import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
-import { Transition } from '@headlessui/react'
+import { Disclosure, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
   EllipsisHorizontalIcon,
@@ -9,7 +9,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { breakpoints } from '../utils/theme'
@@ -215,7 +215,7 @@ const TokenList = () => {
           </tbody>
         </Table>
       ) : (
-        <div>
+        <div className="border-b border-th-bkg-3">
           {filteredBanks.map((b) => {
             return <MobileTokenListItem key={b.bank.name} bank={b} />
           })}
@@ -229,7 +229,6 @@ export default TokenList
 
 const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const { t } = useTranslation(['common', 'token'])
-  const [showTokenDetails, setShowTokenDetails] = useState(false)
   const { mangoTokens } = useJupiterMints()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoAccount } = useMangoAccount()
@@ -240,7 +239,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const mint = tokenBank.mint
   const symbol = tokenBank.name
 
-  let logoURI
+  let logoURI: string | undefined
   if (mangoTokens?.length) {
     logoURI = mangoTokens.find(
       (t) => t.address === tokenBank.mint.toString()
@@ -266,98 +265,106 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const unsettled = spotBalances[mint.toString()]?.unsettled || 0
 
   return (
-    <button
-      key={symbol}
-      className="w-full border-b border-th-bkg-3 px-6 py-4 text-left focus:outline-none"
-      onClick={() => setShowTokenDetails((prev) => !prev)}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-start">
-          <div className="mr-2.5 mt-0.5 flex flex-shrink-0 items-center">
-            {logoURI ? (
-              <Image alt="" width="24" height="24" src={logoURI} />
-            ) : (
-              <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-            )}
-          </div>
-          <div>
-            <p className="mb-0.5 leading-none text-th-fgd-1">{symbol}</p>
-            <p className="font-mono text-sm text-th-fgd-2">
-              <FormatNumericValue
-                value={tokenBalance}
-                decimals={tokenBank.mintDecimals}
-              />
-              <p className="mt-0.5 text-sm leading-none text-th-fgd-4">
-                <FormatNumericValue
-                  value={mangoAccount ? tokenBalance * tokenBank.uiPrice : 0}
-                  decimals={2}
-                  isUsd
+    <Disclosure>
+      {({ open }) => (
+        <>
+          <Disclosure.Button
+            className={`w-full border-t border-th-bkg-3 px-6 py-4 text-left first:border-t-0 focus:outline-none`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-start">
+                <div className="mr-2.5 mt-0.5 flex flex-shrink-0 items-center">
+                  {logoURI ? (
+                    <Image alt="" width="24" height="24" src={logoURI} />
+                  ) : (
+                    <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                  )}
+                </div>
+                <div>
+                  <p className="mb-0.5 leading-none text-th-fgd-1">{symbol}</p>
+                  <p className="font-mono text-sm text-th-fgd-2">
+                    <FormatNumericValue
+                      value={tokenBalance}
+                      decimals={tokenBank.mintDecimals}
+                    />
+                    <span className="mt-0.5 block text-sm leading-none text-th-fgd-4">
+                      <FormatNumericValue
+                        value={
+                          mangoAccount ? tokenBalance * tokenBank.uiPrice : 0
+                        }
+                        decimals={2}
+                        isUsd
+                      />
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <ActionsMenu bank={tokenBank} mangoAccount={mangoAccount} />
+                <ChevronDownIcon
+                  className={`${
+                    open ? 'rotate-180' : 'rotate-360'
+                  } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
                 />
-              </p>
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          <ActionsMenu bank={tokenBank} mangoAccount={mangoAccount} />
-          <ChevronDownIcon
-            className={`${
-              showTokenDetails ? 'rotate-180' : 'rotate-360'
-            } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
-          />
-        </div>
-      </div>
-      <Transition
-        appear={true}
-        show={showTokenDetails}
-        as={Fragment}
-        enter="transition ease-in duration-200"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leave="transition ease-out"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
-      >
-        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
-          <div className="col-span-1">
-            <p className="text-xs text-th-fgd-3">{t('trade:in-orders')}</p>
-            <BankAmountWithValue amount={inOrders} bank={tokenBank} />
-          </div>
-          <div className="col-span-1">
-            <p className="text-xs text-th-fgd-3">{t('trade:unsettled')}</p>
-            <BankAmountWithValue amount={unsettled} bank={tokenBank} />
-          </div>
-          <div className="col-span-1">
-            <p className="text-xs text-th-fgd-3">{t('interest-earned-paid')}</p>
-            <BankAmountWithValue
-              amount={interestAmount}
-              bank={tokenBank}
-              value={interestValue}
-            />
-          </div>
-          <div className="col-span-1">
-            <p className="text-xs text-th-fgd-3">{t('rates')}</p>
-            <p className="space-x-2 font-mono">
-              <span className="text-th-up">
-                <FormatNumericValue
-                  value={tokenBank.getDepositRateUi()}
-                  decimals={2}
-                />
-                %
-              </span>
-              <span className="font-normal text-th-fgd-4">|</span>
-              <span className="text-th-down">
-                <FormatNumericValue
-                  value={tokenBank.getBorrowRateUi()}
-                  decimals={2}
-                  roundUp
-                />
-                %
-              </span>
-            </p>
-          </div>
-        </div>
-      </Transition>
-    </button>
+              </div>
+            </div>
+          </Disclosure.Button>
+          <Transition
+            enter="transition ease-in duration-200"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+          >
+            <Disclosure.Panel>
+              <div className="mx-6 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                <div className="col-span-1">
+                  <p className="text-xs text-th-fgd-3">
+                    {t('trade:in-orders')}
+                  </p>
+                  <BankAmountWithValue amount={inOrders} bank={tokenBank} />
+                </div>
+                <div className="col-span-1">
+                  <p className="text-xs text-th-fgd-3">
+                    {t('trade:unsettled')}
+                  </p>
+                  <BankAmountWithValue amount={unsettled} bank={tokenBank} />
+                </div>
+                <div className="col-span-1">
+                  <p className="text-xs text-th-fgd-3">
+                    {t('interest-earned-paid')}
+                  </p>
+                  <BankAmountWithValue
+                    amount={interestAmount}
+                    bank={tokenBank}
+                    value={interestValue}
+                  />
+                </div>
+                <div className="col-span-1">
+                  <p className="text-xs text-th-fgd-3">{t('rates')}</p>
+                  <p className="space-x-2 font-mono">
+                    <span className="text-th-up">
+                      <FormatNumericValue
+                        value={tokenBank.getDepositRateUi()}
+                        decimals={2}
+                      />
+                      %
+                    </span>
+                    <span className="font-normal text-th-fgd-4">|</span>
+                    <span className="text-th-down">
+                      <FormatNumericValue
+                        value={tokenBank.getBorrowRateUi()}
+                        decimals={2}
+                        roundUp
+                      />
+                      %
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </Disclosure.Panel>
+          </Transition>
+        </>
+      )}
+    </Disclosure>
   )
 }
 
