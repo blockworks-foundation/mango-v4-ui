@@ -139,6 +139,14 @@ const Dashboard: NextPage = () => {
                   <div key={token.tokenIndex} className="mt-6">
                     <KeyValuePair label="Token's Bank Name" value={bank.name} />
                     <KeyValuePair
+                      label="Deposits Native"
+                      value={token.deposits(bank).toString()}
+                    />
+                    <KeyValuePair
+                      label="Borrow Native"
+                      value={token.borrows(bank).toString()}
+                    />
+                    <KeyValuePair
                       label="Balance UI"
                       value={token.balanceUi(bank)}
                     />
