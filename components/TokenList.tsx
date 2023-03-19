@@ -269,7 +269,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
       {({ open }) => (
         <>
           <Disclosure.Button
-            className={`w-full border-t border-th-bkg-3 px-6 py-4 text-left first:border-t-0 focus:outline-none`}
+            className={`w-full border-t border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-start">
@@ -304,7 +304,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                 <ChevronDownIcon
                   className={`${
                     open ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
+                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
                 />
               </div>
             </div>
@@ -315,7 +315,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
             enterTo="opacity-100"
           >
             <Disclosure.Panel>
-              <div className="mx-6 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+              <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:in-orders')}

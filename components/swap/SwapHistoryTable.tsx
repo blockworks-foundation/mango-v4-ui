@@ -1,16 +1,12 @@
-import { Fragment, useCallback, useEffect, useState } from 'react'
-import {
-  ArrowRightIcon,
-  ChevronDownIcon,
-  NoSymbolIcon,
-} from '@heroicons/react/20/solid'
+import { useCallback, useEffect, useState } from 'react'
+import { ChevronDownIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { breakpoints } from '../../utils/theme'
 import { useViewport } from '../../hooks/useViewport'
-import { IconButton, LinkButton } from '../shared/Button'
-import { Transition } from '@headlessui/react'
+import { LinkButton } from '../shared/Button'
+import { Disclosure, Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
 import mangoStore from '@store/mangoStore'
 import { countLeadingZeros, floorToDecimal } from '../../utils/numbers'
@@ -31,7 +27,6 @@ const SwapHistoryTable = () => {
   const swapHistory = mangoStore((s) => s.mangoAccount.swapHistory.data)
   const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
   const { mangoTokens } = useJupiterMints()
-  const [showSwapDetails, setSwapDetails] = useState('')
   const [offset, setOffset] = useState(0)
   const actions = mangoStore.getState().actions
   const { mangoAccountAddress } = useMangoAccount()
@@ -63,10 +58,6 @@ const SwapHistoryTable = () => {
       offset + PAGINATION_PAGE_LENGTH
     )
   }, [actions, offset, mangoAccountAddress])
-
-  const handleShowSwapDetails = (signature: string) => {
-    showSwapDetails ? setSwapDetails('') : setSwapDetails(signature)
-  }
 
   return mangoAccountAddress && (swapHistory.length || loadSwapHistory) ? (
     <>
@@ -256,7 +247,7 @@ const SwapHistoryTable = () => {
         </Table>
       ) : (
         <div>
-          {swapHistory.map((h) => {
+          {swapHistory.map((h, i) => {
             const {
               block_datetime,
               signature,
@@ -282,158 +273,150 @@ const SwapHistoryTable = () => {
                 ? loan_origination_fee.toFixed(4)
                 : 0
 
-            let baseLogoURI
-            let quoteLogoURI
-
             const inSymbol = formatTokenSymbol(swap_in_symbol)
             const outSymbol = formatTokenSymbol(swap_out_symbol)
-
-            if (mangoTokens.length) {
-              baseLogoURI = mangoTokens.find(
-                (t) => t.symbol.toUpperCase() === inSymbol.toUpperCase()
-              )?.logoURI
-              quoteLogoURI = mangoTokens.find(
-                (t) => t.symbol.toUpperCase() === outSymbol.toUpperCase()
-              )?.logoURI
-            }
 
             const inDecimals = countLeadingZeros(swap_in_amount) + 2
             const outDecimals = countLeadingZeros(swap_out_amount) + 2
 
             return (
-              <div key={signature} className="border-b border-th-bkg-3 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="mr-2 flex flex-shrink-0 items-center">
-                        <Image
-                          alt=""
-                          width="24"
-                          height="24"
-                          src={baseLogoURI || ''}
-                        />
-                      </div>
-                      <div>
-                        <p className="whitespace-nowrap font-mono text-th-fgd-1">
-                          <FormatNumericValue
-                            value={swap_in_amount}
-                            decimals={inDecimals}
-                          />{' '}
-                          <span className="font-body text-th-fgd-3">
-                            {inSymbol}
-                          </span>
-                        </p>
-                        <p className="font-mono text-xs text-th-fgd-3">
-                          <span className="font-body text-th-fgd-4">
-                            {t('price')}:
-                          </span>{' '}
-                          <FormatNumericValue value={swap_in_price_usd} isUsd />
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowRightIcon className="mx-4 h-4 w-4 flex-shrink-0 text-th-fgd-4" />
-                    <div className="flex items-center">
-                      <div className="mr-2 flex flex-shrink-0 items-center">
-                        <Image
-                          alt=""
-                          width="24"
-                          height="24"
-                          src={quoteLogoURI || ''}
-                        />
-                      </div>
-                      <div>
-                        <p className="whitespace-nowrap font-mono text-th-fgd-1">
-                          <FormatNumericValue
-                            value={swap_out_amount}
-                            decimals={outDecimals}
-                          />{' '}
-                          <span className="font-body text-th-fgd-3">
-                            {outSymbol}
-                          </span>
-                        </p>
-                        <p className="font-mono text-xs text-th-fgd-3">
-                          <span className="font-body text-th-fgd-4">
-                            {t('price')}:
-                          </span>{' '}
-                          <FormatNumericValue
-                            value={swap_out_price_usd}
-                            isUsd
+              <Disclosure key={signature}>
+                {({ open }) => (
+                  <>
+                    <Disclosure.Button
+                      className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none ${
+                        i === 0 ? 'border-t-0' : ''
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="whitespace-nowrap text-sm text-th-fgd-1">
+                            {dayjs(block_datetime).format('ddd D MMM')}
+                          </p>
+                          <p className="text-xs text-th-fgd-3">
+                            {dayjs(block_datetime).format('h:mma')}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-end pl-4">
+                          <div className="mr-3 flex items-center">
+                            <p className="text-right font-mono text-th-fgd-1">
+                              <FormatNumericValue
+                                value={swap_in_amount}
+                                decimals={inDecimals}
+                              />{' '}
+                              <span className="font-body text-th-fgd-2">
+                                {inSymbol}
+                              </span>{' '}
+                              <span className="font-body text-th-fgd-4">
+                                to
+                              </span>{' '}
+                              <FormatNumericValue
+                                value={swap_out_amount}
+                                decimals={outDecimals}
+                              />{' '}
+                              <span className="font-body text-th-fgd-2">
+                                {outSymbol}
+                              </span>
+                            </p>
+                          </div>
+                          <ChevronDownIcon
+                            className={`${
+                              open ? 'rotate-180' : 'rotate-360'
+                            } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
                           />
-                        </p>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <IconButton
-                    onClick={() => handleShowSwapDetails(signature)}
-                    size="medium"
-                  >
-                    <ChevronDownIcon
-                      className={`${
-                        showSwapDetails === signature
-                          ? 'rotate-180'
-                          : 'rotate-360'
-                      } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
-                    />
-                  </IconButton>
-                </div>
-                <Transition
-                  appear={true}
-                  show={showSwapDetails === signature}
-                  as={Fragment}
-                  enter="transition ease-in duration-200"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="transition ease-out"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
-                    <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">{t('date')}</p>
-                      <p className="text-th-fgd-1">
-                        {dayjs(block_datetime).format('ddd D MMM')}
-                      </p>
-                      <p className="text-xs text-th-fgd-3">
-                        {dayjs(block_datetime).format('h:mma')}
-                      </p>
-                    </div>
-                    <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">{t('borrow')}</p>
-                      <p className="font-mono text-th-fgd-1">
-                        {borrowAmount}{' '}
-                        <span className="font-body text-th-fgd-3">
-                          {inSymbol}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="col-span-1">
-                      <p className="text-xs text-th-fgd-3">{t('borrow-fee')}</p>
-                      <p className="font-mono text-th-fgd-1">${borrowFee}</p>
-                    </div>
-                    <div className="col-span-1">
-                      <p className="mb-0.5 text-xs text-th-fgd-3">
-                        {t('transaction')}
-                      </p>
-                      <a
-                        className="default-transition flex items-center text-th-fgd-1 hover:text-th-fgd-3"
-                        href={`${preferredExplorer.url}${signature}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Image
-                          alt=""
-                          width="20"
-                          height="20"
-                          src={`/explorer-logos/${preferredExplorer.name}.png`}
-                        />
-                        <span className="ml-1.5">{`View on ${t(
-                          `settings:${preferredExplorer.name}`
-                        )}`}</span>
-                      </a>
-                    </div>
-                  </div>
-                </Transition>
-              </div>
+                    </Disclosure.Button>
+                    <Transition
+                      enter="transition ease-in duration-200"
+                      enterFrom="opacity-0"
+                      enterTo="opacity-100"
+                    >
+                      <Disclosure.Panel>
+                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                          <div className="col-span-1">
+                            <p className="text-xs text-th-fgd-3">
+                              {t('value')}
+                            </p>
+                            <p className="font-mono text-th-fgd-1">
+                              <FormatNumericValue
+                                value={swap_out_price_usd * swap_out_amount}
+                                isUsd
+                              />
+                            </p>
+                          </div>
+                          <div className="col-span-1">
+                            <p className="text-xs text-th-fgd-3">
+                              {`${swap_in_symbol} ${t('price')}`}
+                            </p>
+                            <p className="font-mono text-th-fgd-1">
+                              <FormatNumericValue
+                                value={swap_in_price_usd}
+                                isUsd
+                              />
+                            </p>
+                          </div>
+                          <div className="col-span-1">
+                            <p className="text-xs text-th-fgd-3">
+                              {`${swap_out_symbol} ${t('price')}`}
+                            </p>
+                            <p className="font-mono text-th-fgd-1">
+                              <FormatNumericValue
+                                value={swap_out_price_usd}
+                                isUsd
+                              />
+                            </p>
+                          </div>
+                          {borrowAmount ? (
+                            <>
+                              <div className="col-span-1">
+                                <p className="text-xs text-th-fgd-3">
+                                  {t('borrow')}
+                                </p>
+                                <p className="font-mono text-th-fgd-1">
+                                  {borrowAmount}{' '}
+                                  <span className="font-body text-th-fgd-3">
+                                    {inSymbol}
+                                  </span>
+                                </p>
+                              </div>
+                              <div className="col-span-1">
+                                <p className="text-xs text-th-fgd-3">
+                                  {t('borrow-fee')}
+                                </p>
+                                <p className="font-mono text-th-fgd-1">
+                                  ${borrowFee}
+                                </p>
+                              </div>
+                            </>
+                          ) : null}
+                          <div className="col-span-1">
+                            <p className="mb-0.5 text-xs text-th-fgd-3">
+                              {t('transaction')}
+                            </p>
+                            <a
+                              className="default-transition flex items-center text-th-fgd-1 hover:text-th-fgd-3"
+                              href={`${preferredExplorer.url}${signature}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Image
+                                alt=""
+                                width="16"
+                                height="16"
+                                src={`/explorer-logos/${preferredExplorer.name}.png`}
+                              />
+                              <span className="ml-1.5">
+                                {t(`settings:${preferredExplorer.name}`)}
+                              </span>
+                            </a>
+                          </div>
+                        </div>
+                      </Disclosure.Panel>
+                    </Transition>
+                  </>
+                )}
+              </Disclosure>
             )
           })}
         </div>

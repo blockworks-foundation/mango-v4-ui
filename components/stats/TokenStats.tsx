@@ -263,7 +263,7 @@ const TokenStats = () => {
                 {({ open }) => (
                   <>
                     <Disclosure.Button
-                      className={`w-full border-t border-th-bkg-3 px-6 py-4 text-left focus:outline-none ${
+                      className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none ${
                         i === 0 ? 'border-t-0' : ''
                       }`}
                     >
@@ -296,7 +296,7 @@ const TokenStats = () => {
                       enterTo="opacity-100"
                     >
                       <Disclosure.Panel>
-                        <div className="mx-6 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
                           <div className="col-span-1">
                             <p className="mb-0.5 text-xs">
                               {t('total-deposits')}
