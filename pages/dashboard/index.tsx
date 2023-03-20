@@ -154,7 +154,7 @@ const Dashboard: NextPage = () => {
                                   label="MintInfo"
                                   value={
                                     <ExplorerLink
-                                      address={mintInfo!.toString()}
+                                      address={mintInfo!.publicKey.toString()}
                                       anchorData
                                     />
                                   }
