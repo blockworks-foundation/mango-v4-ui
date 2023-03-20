@@ -41,7 +41,9 @@ const TokenStats = () => {
   }, [group])
 
   const goToTokenPage = (bank: Bank) => {
-    router.push(`/token/${bank.name}`, undefined, { shallow: true })
+    router.push(`/token/${bank.name.split(' ')[0].toUpperCase()}`, undefined, {
+      shallow: true,
+    })
   }
 
   return group ? (

@@ -303,7 +303,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                     />
                     <defs>
                       <linearGradient
-                        id={`gradientArea-${title?.replace(/\s/g, '')}`}
+                        id={`gradientArea-${title?.replace(/[^a-zA-Z]/g, '')}`}
                         x1="0"
                         y1={flipGradientCoords ? '1' : '0'}
                         x2="0"
@@ -339,7 +339,10 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           : COLORS.DOWN[theme]
                       }
                       strokeWidth={1.5}
-                      fill={`url(#gradientArea-${title?.replace(/\s/g, '')})`}
+                      fill={`url(#gradientArea-${title?.replace(
+                        /[^a-zA-Z]/g,
+                        ''
+                      )})`}
                     />
                     <XAxis
                       axisLine={false}
