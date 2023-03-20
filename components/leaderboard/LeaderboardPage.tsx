@@ -1,7 +1,9 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
+import { LinkButton } from '@components/shared/Button'
+import SheenLoader from '@components/shared/SheenLoader'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import LeaderboardTable from './LeaderboardTable'
 
@@ -16,52 +18,61 @@ export interface LeaderboardItem {
   trader_category?: string
 }
 
-const fetchLeaderboard = async (period: string) => {
-  try {
-    const leaderboardData = await fetch(
-      `${MANGO_DATA_API_URL}/leaderboard-pnl?over_period=${period}`
-    )
-    const leaderboardRes = await leaderboardData.json()
-    const profileData = await Promise.all(
-      leaderboardRes.map((r: LeaderboardItem) =>
-        fetch(
-          `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
-        )
-      )
-    )
-    const profileRes = await Promise.all(profileData.map((d) => d.json()))
-    return leaderboardRes
-      .map((r: LeaderboardItem, i: number) => ({
-        ...r,
-        ...profileRes[i],
-      }))
-      .slice(0, 20)
-  } catch (e) {
-    console.log('Failed to fetch leaderboard', e)
-  }
-}
-
 const LeaderboardPage = () => {
   const { t } = useTranslation(['common', 'leaderboard'])
   const [daysToShow, setDaysToShow] = useState('ALLTIME')
+  const [offset, setOffset] = useState(0)
+  const [leaderboardData, setLeaderboardData] = useState([])
 
-  const { data, isLoading, refetch, isFetching } = useQuery(
-    ['leaderboard'],
-    () => fetchLeaderboard(daysToShow),
+  const fetchLeaderboard = async () => {
+    try {
+      const data = await fetch(
+        `${MANGO_DATA_API_URL}/leaderboard-pnl?over_period=${daysToShow}&offset=${offset}`
+      )
+      const leaderboardRes = await data.json()
+      const profileData = await Promise.all(
+        leaderboardRes.map((r: LeaderboardItem) =>
+          fetch(
+            `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
+          )
+        )
+      )
+      const profileRes = await Promise.all(profileData.map((d) => d.json()))
+      const combinedRes = leaderboardRes.map(
+        (r: LeaderboardItem, i: number) => ({
+          ...r,
+          ...profileRes[i],
+        })
+      )
+      setLeaderboardData(leaderboardData.concat(combinedRes))
+      return combinedRes
+    } catch (e) {
+      console.log('Failed to fetch leaderboard', e)
+    }
+  }
+
+  const { isLoading, isFetching } = useQuery(
+    ['leaderboard', daysToShow, offset],
+    () => fetchLeaderboard(),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
       retry: 3,
+      refetchOnWindowFocus: false,
     }
   )
 
   const handleDaysToShow = (days: string) => {
+    setLeaderboardData([])
+    setOffset(0)
     setDaysToShow(days)
   }
 
-  useEffect(() => {
-    refetch()
-  }, [daysToShow])
+  const handleShowMore = () => {
+    setOffset(offset + 20)
+  }
+
+  const loading = isLoading || isFetching
 
   return (
     <div className="p-4 md:p-10 lg:px-0">
@@ -84,8 +95,21 @@ const LeaderboardPage = () => {
               />
             </div>
           </div>
-          {data?.length ? (
-            <LeaderboardTable data={data} loading={isLoading || isFetching} />
+          {leaderboardData.length ? (
+            <LeaderboardTable data={leaderboardData} loading={loading} />
+          ) : loading ? (
+            <div className="space-y-2">
+              {[...Array(20)].map((x, i) => (
+                <SheenLoader className="flex flex-1" key={i}>
+                  <div className="h-16 w-full rounded-md bg-th-bkg-2" />
+                </SheenLoader>
+              ))}
+            </div>
+          ) : null}
+          {offset < 100 ? (
+            <LinkButton className="mx-auto mt-6" onClick={handleShowMore}>
+              {t('show-more')}
+            </LinkButton>
           ) : null}
         </div>
       </div>
