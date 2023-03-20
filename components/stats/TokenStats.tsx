@@ -67,7 +67,7 @@ const TokenStats = () => {
                 </Th>
                 <Th>
                   <div className="flex justify-end">
-                    <Tooltip content="Fees collected for loan originations">
+                    <Tooltip content={t('token:fees-tooltip')}>
                       <span className="tooltip-underline">{t('fees')}</span>
                     </Tooltip>
                   </div>
@@ -332,7 +332,7 @@ const TokenStats = () => {
                             />
                           </div>
                           <div className="col-span-1">
-                            <Tooltip content="Fees collected for loan originations">
+                            <Tooltip content={t('token:fees-tooltip')}>
                               <p className="tooltip-underline text-xs">
                                 {t('fees')}
                               </p>
