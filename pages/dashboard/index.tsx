@@ -522,7 +522,16 @@ const Dashboard: NextPage = () => {
                                 value={`${perpMarket.maintBaseAssetWeight.toFixed(
                                   4
                                 )}/
-                          ${perpMarket.maintBaseLiabWeight.toFixed(4)}`}
+                          ${perpMarket.maintBaseLiabWeight.toFixed(
+                            4
+                          )} (maint leverage: ${
+                                  1 /
+                                  (perpMarket.maintBaseLiabWeight.toNumber() -
+                                    1)
+                                }x, init leverage: ${
+                                  1 / perpMarket.initBaseLiabWeight.toNumber() -
+                                  1
+                                })`}
                               />
                               <KeyValuePair
                                 label="Init Asset/Liab Weight"
