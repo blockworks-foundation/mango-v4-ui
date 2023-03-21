@@ -526,8 +526,8 @@ const Dashboard: NextPage = () => {
                             4
                           )} (maint leverage: ${(
                                   1 /
-                                    perpMarket.maintBaseLiabWeight.toNumber() -
-                                  1
+                                  (perpMarket.maintBaseLiabWeight.toNumber() -
+                                    1)
                                 ).toFixed(2)}x, init leverage: ${(
                                   1 /
                                   (perpMarket.initBaseLiabWeight.toNumber() - 1)
