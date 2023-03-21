@@ -51,7 +51,9 @@ const AssetsLiabilities = dynamic(() => import('./AssetsLiabilities'), {
 const TABS = ['account-value', 'account:assets-liabilities']
 import { PerformanceDataItem, TotalAccountFundingItem } from 'types'
 import { useQuery } from '@tanstack/react-query'
-import FundingDetails from './FundingDetails'
+const FundingDetails = dynamic(() => import('./FundingDetails'), {
+  ssr: false,
+})
 
 const fetchFundingTotals = async (mangoAccountPk: string) => {
   try {

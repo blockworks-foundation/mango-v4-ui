@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   HourlyFundingChartData,
   HourlyFundingData,
@@ -10,8 +10,28 @@ import {
 } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import { formatCurrencyValue } from 'utils/numbers'
-import AccountChart from './AccountChart'
 import { TooltipProps } from 'recharts/types/component/Tooltip'
+import {
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  BarChart,
+  Bar,
+  ReferenceLine,
+  ResponsiveContainer,
+} from 'recharts'
+import { useTheme } from 'next-themes'
+import { COLORS } from 'styles/colors'
+import { formatDateAxis } from '@components/shared/DetailedAreaChart'
+import { formatYAxis } from 'utils/formatting'
+import ChartRangeButtons from '@components/shared/ChartRangeButtons'
+import { useTranslation } from 'next-i18next'
+import { IconButton } from '@components/shared/Button'
+import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import { FadeInFadeOut } from '@components/shared/Transitions'
+import ContentBox from '@components/shared/ContentBox'
+import SheenLoader from '@components/shared/SheenLoader'
 
 const fetchHourlyFunding = async (mangoAccountPk: string) => {
   try {
@@ -38,7 +58,10 @@ const fetchHourlyFunding = async (mangoAccountPk: string) => {
 }
 
 const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
+  const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
+  const [daysToShow, setDaysToShow] = useState('1')
+  const { theme } = useTheme()
   const {
     data: fundingData,
     isLoading: loadingFunding,
@@ -94,7 +117,8 @@ const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
     label,
   }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
-      const data: [string, any][] = Object.entries(payload[0].payload).filter(
+      const load = payload[0].payload
+      const data: [string, any][] = Object.entries(load).filter(
         (p) => p[0] !== 'time' && p[0] !== 'total'
       )
       return (
@@ -112,6 +136,12 @@ const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
               </div>
             ))}
           </div>
+          <div className="mt-3 flex justify-between border-t border-th-bkg-4 pt-3">
+            <p>Total</p>
+            <p className="pl-4 font-mono text-th-fgd-2">
+              {formatCurrencyValue(load['total'])}
+            </p>
+          </div>
         </div>
       )
     }
@@ -119,16 +149,142 @@ const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
     return null
   }
 
+  const filteredData = useMemo(() => {
+    if (!chartData.length) return []
+    const start = Number(daysToShow) * 86400000
+    const filtered = chartData.filter((d: any) => {
+      const dataTime = new Date(d['time']).getTime()
+      const now = new Date().getTime()
+      const limit = now - start
+      return dataTime >= limit
+    })
+    return filtered
+  }, [chartData, daysToShow])
+
   return (
-    <AccountChart
-      chartToShow="hourly-funding"
-      customTooltip={<CustomTooltip />}
-      data={chartData}
-      hideChart={hideChart}
-      loading={loadingFunding || fetchingFunding}
-      yDecimals={4}
-      yKey="total"
-    />
+    <FadeInFadeOut show={true}>
+      <ContentBox hideBorder hidePadding>
+        {loadingFunding || fetchingFunding ? (
+          <SheenLoader className="flex flex-1">
+            <div
+              className={`h-[calc(100vh-116px)] w-full rounded-lg bg-th-bkg-2`}
+            />
+          </SheenLoader>
+        ) : filteredData.length ? (
+          <div>
+            <div className="flex items-end justify-between sm:items-center">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 md:space-x-6">
+                <IconButton onClick={hideChart} size="medium">
+                  <ArrowLeftIcon className="h-5 w-5" />
+                </IconButton>
+                <h2 className="mt-3 text-lg sm:mt-0">{t('hourly-funding')}</h2>
+              </div>
+              <ChartRangeButtons
+                activeValue={daysToShow}
+                names={['24H', '7D', '30D']}
+                values={['1', '7', '30']}
+                onChange={(v) => setDaysToShow(v)}
+              />
+            </div>
+            <div className="-mx-6 mt-6 h-[calc(100vh-170px)]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={filteredData}>
+                  <Tooltip
+                    cursor={{
+                      fill: 'var(--bkg-2)',
+                      opacity: 0.5,
+                    }}
+                    content={<CustomTooltip />}
+                  />
+                  <defs>
+                    <linearGradient
+                      id="greenGradientBar"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={COLORS.UP[theme]}
+                        stopOpacity={1}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={COLORS.UP[theme]}
+                        stopOpacity={0.7}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="redGradientBar"
+                      x1="0"
+                      y1="1"
+                      x2="0"
+                      y2="0"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={COLORS.DOWN[theme]}
+                        stopOpacity={1}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={COLORS.DOWN[theme]}
+                        stopOpacity={0.7}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <Bar dataKey="total">
+                    {filteredData.map((entry, index) => {
+                      return (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            entry['total'] > 0
+                              ? 'url(#greenGradientBar)'
+                              : 'url(#redGradientBar)'
+                          }
+                        />
+                      )
+                    })}
+                  </Bar>
+                  <XAxis
+                    dataKey="time"
+                    axisLine={false}
+                    dy={10}
+                    minTickGap={20}
+                    padding={{ left: 20, right: 20 }}
+                    tick={{
+                      fill: 'var(--fgd-4)',
+                      fontSize: 10,
+                    }}
+                    tickLine={false}
+                    tickFormatter={(v) =>
+                      formatDateAxis(v, parseInt(daysToShow))
+                    }
+                  />
+                  <YAxis
+                    dataKey="total"
+                    interval="preserveStartEnd"
+                    axisLine={false}
+                    dx={-10}
+                    padding={{ top: 20, bottom: 20 }}
+                    tick={{
+                      fill: 'var(--fgd-4)',
+                      fontSize: 10,
+                    }}
+                    tickLine={false}
+                    tickFormatter={(v) => formatYAxis(v)}
+                    type="number"
+                  />
+                  <ReferenceLine y={0} stroke={COLORS.BKG4[theme]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ) : null}
+      </ContentBox>
+    </FadeInFadeOut>
   )
 }
 
