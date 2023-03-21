@@ -385,8 +385,9 @@ const Dashboard: NextPage = () => {
                 Perp Markets
               </h3>
               <div className="border-b border-th-bkg-3">
-                {Array.from(group.perpMarketsMapByOracle).map(
-                  ([oracle, perpMarket]) => {
+                {Array.from(group.perpMarketsMapByOracle)
+                  .filter(([_, perpMarket]) => !perpMarket.name.includes('OLD'))
+                  .map(([oracle, perpMarket]) => {
                     return (
                       <Disclosure key={oracle.toString()}>
                         {({ open }) => (
@@ -507,7 +508,14 @@ const Dashboard: NextPage = () => {
                               <KeyValuePair
                                 label="Lot Sizes"
                                 value={`${perpMarket.baseLotSize} base /
-                          ${perpMarket.quoteLotSize} quote`}
+                          ${
+                            perpMarket.quoteLotSize
+                          } quote (tick size: $${perpMarket.priceLotsToUi(
+                                  new BN(1)
+                                )}, 1 base lot: $${(
+                                  perpMarket.baseLotsToUi(new BN(1)) *
+                                  perpMarket.uiPrice
+                                ).toFixed(3)})`}
                               />
                               <KeyValuePair
                                 label="Maint Asset/Liab Weight"
@@ -545,6 +553,14 @@ const Dashboard: NextPage = () => {
                                 ).toFixed(2)}% to ${(
                                   100 * perpMarket.maxFunding.toNumber()
                                 ).toFixed(2)}%`}
+                              />
+                              <KeyValuePair
+                                label="Funding impacty quantity"
+                                value={`${perpMarket.impactQuantity.toNumber()} ($${
+                                  perpMarket.baseLotsToUi(
+                                    perpMarket.impactQuantity
+                                  ) * perpMarket.uiPrice
+                                })`}
                               />
                               <KeyValuePair
                                 label="Fees Accrued"
@@ -629,8 +645,7 @@ const Dashboard: NextPage = () => {
                         )}
                       </Disclosure>
                     )
-                  }
-                )}
+                  })}
               </div>
             </div>
           ) : (
