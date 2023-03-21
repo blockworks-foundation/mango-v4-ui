@@ -96,7 +96,6 @@ const AssetsBorrowsTable = () => {
                       <BankAmountWithValue
                         amount={borrows}
                         bank={bank}
-                        fixDecimals={false}
                         stacked
                       />
                     </div>
@@ -104,9 +103,8 @@ const AssetsBorrowsTable = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <BankAmountWithValue
-                        amount={available}
+                        amount={available > 0 ? available : 0}
                         bank={bank}
-                        fixDecimals={false}
                         stacked
                       />
                     </div>
@@ -169,8 +167,7 @@ const AssetsBorrowsTable = () => {
                         {t('available')}
                       </p>
                       <BankAmountWithValue
-                        amount={available}
-                        fixDecimals={false}
+                        amount={available > 0 ? available : 0}
                         bank={bank}
                       />
                     </div>

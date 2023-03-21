@@ -134,7 +134,6 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                       <BankAmountWithValue
                         amount={available}
                         bank={bank}
-                        fixDecimals={false}
                         stacked
                       />
                     </Td>
