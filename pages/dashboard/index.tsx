@@ -503,7 +503,11 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Open Interest"
-                                value={`${perpMarket.openInterest} lots`}
+                                value={`${perpMarket.openInterest} lots ($${
+                                  perpMarket.baseLotsToUi(
+                                    perpMarket.openInterest
+                                  ) * perpMarket.uiPrice
+                                })`}
                               />
                               <KeyValuePair
                                 label="Lot Sizes"
