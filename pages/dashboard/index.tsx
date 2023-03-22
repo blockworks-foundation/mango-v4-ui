@@ -636,8 +636,8 @@ const Dashboard: NextPage = () => {
                                 value={`${perpMarket.settlePnlLimitFactor}`}
                               />
                               <KeyValuePair
-                                label="Settle pnl limit window size ts"
-                                value={`${perpMarket.settlePnlLimitWindowSizeTs.toNumber()}`}
+                                label="Settle pnl limit window size"
+                                value={`${perpMarket.settlePnlLimitWindowSizeTs.toNumber()} secs`}
                               />
                               <KeyValuePair
                                 label="Maint overall asset weight"
