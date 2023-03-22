@@ -124,7 +124,9 @@ const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
       return (
         <div className="rounded-md bg-th-bkg-2 p-4">
           <h3 className="mb-3 text-sm">
-            {dayjs(label).format('DD MMM YY, h:mma')}
+            {daysToShow === '30'
+              ? dayjs(label).format('DD MMM YY')
+              : dayjs(label).format('DD MMM YY, h:mma')}
           </h3>
           <div className="space-y-1">
             {data.map((d) => (
@@ -137,7 +139,7 @@ const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
             ))}
           </div>
           <div className="mt-3 flex justify-between border-t border-th-bkg-4 pt-3">
-            <p>Total</p>
+            <p>{t('total')}</p>
             <p className="pl-4 font-mono text-th-fgd-2">
               {formatCurrencyValue(load['total'])}
             </p>
@@ -149,15 +151,55 @@ const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
     return null
   }
 
-  const filteredData = useMemo(() => {
+  const scaleDataTime = (data: HourlyFundingChartData[]) => {
+    const scaledData = data.reduce((a: HourlyFundingChartData[], c) => {
+      const found = a.find((item) => {
+        // const threshold = daysToShow === '7' ? 14400000 : 86400000
+        // const currentDataTime = new Date(c.time).getTime()
+        // const date = new Date(item.time)
+        // const maxTime = date.getTime() + threshold
+        // return currentDataTime <= maxTime
+
+        const currentDataDate = new Date(c.time)
+        const itemDate = new Date(item.time)
+        return (
+          itemDate.getDate() === currentDataDate.getDate() &&
+          itemDate.getMonth() === currentDataDate.getMonth() &&
+          itemDate.getFullYear() === currentDataDate.getFullYear()
+        )
+      })
+      if (found) {
+        for (const key in found) {
+          if (key !== 'time') {
+            found[key] = found[key] + c[key]
+          }
+        }
+      } else {
+        a.push({ ...c })
+      }
+      return a
+    }, [])
+    return scaledData
+  }
+
+  const filteredData: HourlyFundingChartData[] = useMemo(() => {
     if (!chartData.length) return []
     const start = Number(daysToShow) * 86400000
     const filtered = chartData.filter((d: any) => {
-      const dataTime = new Date(d['time']).getTime()
-      const now = new Date().getTime()
+      const date = new Date()
+      if (daysToShow === '30') {
+        date.setHours(0, 0, 0, 0)
+      } else {
+        date.setMinutes(0, 0, 0)
+      }
+      const dataTime = new Date(d.time).getTime()
+      const now = date.getTime()
       const limit = now - start
       return dataTime >= limit
     })
+    if (daysToShow === '30') {
+      return scaleDataTime(filtered)
+    }
     return filtered
   }, [chartData, daysToShow])
 
@@ -177,7 +219,7 @@ const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
                 <IconButton onClick={hideChart} size="medium">
                   <ArrowLeftIcon className="h-5 w-5" />
                 </IconButton>
-                <h2 className="mt-3 text-lg sm:mt-0">{t('hourly-funding')}</h2>
+                <h2 className="mt-3 text-lg sm:mt-0">{t('funding')}</h2>
               </div>
               <ChartRangeButtons
                 activeValue={daysToShow}

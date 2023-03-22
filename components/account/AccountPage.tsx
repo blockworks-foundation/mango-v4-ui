@@ -589,7 +589,7 @@ const AccountPage = () => {
                   {t('total-interest-earned')}
                 </p>
               </Tooltip>
-              {interestTotalValue > 1 || interestTotalValue < -1 ? (
+              {Math.abs(interestTotalValue) > 1 && mangoAccountAddress ? (
                 <Tooltip
                   className="hidden md:block"
                   content="Cumulative Interest Chart"
@@ -635,7 +635,7 @@ const AccountPage = () => {
             {Math.abs(fundingTotalValue) > 1 && mangoAccountAddress ? (
               <Tooltip
                 className="hidden md:block"
-                content="Hourly Funding Chart"
+                content="Funding Chart"
                 delay={100}
               >
                 <IconButton
