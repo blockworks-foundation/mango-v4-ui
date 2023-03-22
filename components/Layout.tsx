@@ -8,7 +8,7 @@ import BottomBar from './mobile/BottomBar'
 import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
-import { SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
+import { ACCEPT_TERMS_KEY, SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import SuccessParticles from './shared/SuccessParticles'
 import { tsParticles } from 'tsparticles-engine'
@@ -16,8 +16,10 @@ import { loadFull } from 'tsparticles'
 import useInterval from './shared/useInterval'
 import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
+import TermsOfUseModal from './modals/TermsOfUseModal'
 
 const sideBarAnimationDuration = 500
+const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const { connected } = useWallet()
@@ -25,6 +27,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
     false
+  )
+  const [acceptTerms, setAcceptTerms] = useLocalStorageState(
+    ACCEPT_TERMS_KEY,
+    ''
   )
   const { width } = useViewport()
 
@@ -55,6 +61,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     particlesInit()
   }, [])
+
+  const showTermsOfUse =
+    (!acceptTerms || acceptTerms < termsLastUpdated) && connected
 
   return (
     <>
@@ -103,6 +112,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
         </div>
         <DeployRefreshManager />
       </div>
+      {showTermsOfUse ? (
+        <TermsOfUseModal
+          isOpen={showTermsOfUse}
+          onClose={() => setAcceptTerms(Date.now())}
+        />
+      ) : null}
     </>
   )
 }
