@@ -542,10 +542,10 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Base liquidation fee"
-                                value={`${
+                                value={`${(
                                   10000 *
                                   perpMarket.baseLiquidationFee.toNumber()
-                                } bps`}
+                                ).toFixed(2)} bps`}
                               />
                               <KeyValuePair
                                 label="Trading Fees"
@@ -565,18 +565,18 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Funding impacty quantity"
-                                value={`${perpMarket.impactQuantity.toNumber()} ($${
+                                value={`${perpMarket.impactQuantity.toNumber()} ($${(
                                   perpMarket.baseLotsToUi(
                                     perpMarket.impactQuantity
                                   ) * perpMarket.uiPrice
-                                })`}
+                                ).toFixed(2)})`}
                               />
                               <KeyValuePair
                                 label="Fees Accrued"
                                 value={`$${toUiDecimals(
                                   perpMarket.feesAccrued,
                                   6
-                                )}`}
+                                ).toFixed(2)}`}
                               />
                               <KeyValuePair
                                 label="Fees Settled"
@@ -645,9 +645,15 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Positive pnl liquidation fee"
-                                value={`${perpMarket.positivePnlLiquidationFee
+                                value={`${(
+                                  10000 *
+                                  perpMarket.positivePnlLiquidationFee.toNumber()
+                                ).toFixed(
+                                  2
+                                )} bps (${perpMarket.positivePnlLiquidationFee
+                                  .div(perpMarket.baseLiquidationFee)
                                   .toNumber()
-                                  .toFixed(4)}`}
+                                  .toFixed(2)}x of Base liquidation fee)`}
                               />
                             </Disclosure.Panel>
                           </>
