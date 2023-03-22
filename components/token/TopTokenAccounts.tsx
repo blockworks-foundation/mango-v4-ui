@@ -189,7 +189,8 @@ const LeaderboardRow = ({
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">
-            {profile_name || 'wallet ' + wallet_pk.slice(0, 4) + '...'}
+            {profile_name ||
+              wallet_pk.slice(0, 4) + '...' + wallet_pk.slice(-4)}
           </p>
           <p className="text-xs text-th-fgd-4">
             Acc: {mango_account.slice(0, 4) + '...' + mango_account.slice(-4)}
