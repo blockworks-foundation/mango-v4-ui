@@ -6,6 +6,7 @@
     "asset-liquidated": "Asset Liquidated",
     "asset-returned": "Asset Returned",
     "connect-activity": "Connect to view your account activity",
+    "counterparty": "Counterparty",
     "credit": "Credit",
     "debit": "Debit",
     "deposit": "Deposit",
@@ -34,6 +35,7 @@
     "update": "Update",
     "value-from": "Value From",
     "value-to": "Value To",
+    "view-account": "View Account",
     "withdraw": "Withdraw",
     "withdrawals": "Withdrawals"
 }

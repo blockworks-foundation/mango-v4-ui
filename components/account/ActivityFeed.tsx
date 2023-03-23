@@ -47,7 +47,6 @@ const LiquidationDetails = ({
   activity: LiquidationActivity
   setShowActivityDetail: (x: LiquidationActivity | undefined) => void
 }) => {
-  console.log(activity)
   const { t } = useTranslation(['common', 'activity', 'settings'])
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
@@ -135,15 +134,8 @@ const LiquidationDetails = ({
     ]
   }, [activity])
 
-  console.log(
-    assetLiquidated,
-    assetReturned,
-    assetLiquidatedSymbol,
-    assetReturnedSymbol
-  )
-
   return (
-    <div>
+    <div className="md:pb-10">
       <div className="flex items-center p-6">
         <IconButton
           className="mr-4"
@@ -154,7 +146,7 @@ const LiquidationDetails = ({
         </IconButton>
         <h2 className="text-lg">{t('activity:liquidation-details')}</h2>
       </div>
-      <div className="grid grid-cols-1 gap-4 px-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 px-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {isPerpLiquidation(activity.activity_details) ? (
           <>
             <div className="col-span-1">
@@ -189,6 +181,17 @@ const LiquidationDetails = ({
               <p className="font-mono text-xs text-th-fgd-3">
                 <FormatNumericValue value={returnedValue} isUsd />
               </p>
+            </div>
+            <div className="col-span-1">
+              <p className="mb-0.5 text-sm">{t('activity:counterparty')}</p>
+              <a
+                className="text-sm"
+                href={`/?address=${activity.activity_details.counterparty}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('activity:view-account')}
+              </a>
             </div>
           </>
         ) : (
@@ -236,35 +239,35 @@ const LiquidationDetails = ({
                 <FormatNumericValue value={returnedValue} isUsd />
               </p>
             </div>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('activity:liquidation-side')}</p>
-              <p className="text-th-fgd-1">
-                {activity.activity_details.side === 'liqor'
-                  ? t('activity:liquidator')
-                  : t('activity:liquidated')}
-              </p>
-            </div>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('transaction')}</p>
-              <a
-                className="default-transition flex items-center text-th-fgd-2 hover:text-th-fgd-3"
-                href={`${preferredExplorer.url}${activity.activity_details.signature}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Image
-                  alt=""
-                  width="20"
-                  height="20"
-                  src={`/explorer-logos/${preferredExplorer.name}.png`}
-                />
-                <span className="ml-2 text-sm">
-                  {t(`settings:${preferredExplorer.name}`)}
-                </span>
-              </a>
-            </div>
           </>
         )}
+        <div className="col-span-1">
+          <p className="mb-0.5 text-sm">{t('activity:liquidation-side')}</p>
+          <p className="text-th-fgd-1">
+            {activity.activity_details.side === 'liqor'
+              ? t('activity:liquidator')
+              : t('activity:liquidated')}
+          </p>
+        </div>
+        <div className="col-span-1">
+          <p className="mb-0.5 text-sm">{t('transaction')}</p>
+          <a
+            className="default-transition flex items-center text-th-fgd-2 hover:text-th-fgd-3"
+            href={`${preferredExplorer.url}${activity.activity_details.signature}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              alt=""
+              width="20"
+              height="20"
+              src={`/explorer-logos/${preferredExplorer.name}.png`}
+            />
+            <span className="ml-2 text-sm">
+              {t(`settings:${preferredExplorer.name}`)}
+            </span>
+          </a>
+        </div>
       </div>
     </div>
   )
