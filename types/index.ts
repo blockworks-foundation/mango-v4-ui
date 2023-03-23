@@ -133,6 +133,7 @@ export interface PerpLiquidationFeedItem {
   counterparty: string
   mango_account: string
   mango_group: string
+  perp_market_name: string
   pnl_settle_limit_transfer: number
   pnl_transfer: number
   price: number

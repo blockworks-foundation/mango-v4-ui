@@ -62,23 +62,21 @@ const LiquidationDetails = ({
     if (isPerpLiquidation(details)) {
       const {
         base_transfer,
-        pnl_settle_limit_transfer,
-        pnl_transfer,
+        // pnl_settle_limit_transfer,
+        // pnl_transfer,
         price,
         quote_transfer,
-        side,
+        // side,
       } = details
-      if (side === 'liqee') {
-        const returnedAmount =
-          pnl_settle_limit_transfer + pnl_transfer + quote_transfer
+      if (base_transfer > 0) {
         const liquidatedAmount = base_transfer * price
+        const returnedAmount = quote_transfer
         assets.liquidated.amount = liquidatedAmount
         assets.liquidated.value = liquidatedAmount
         assets.returned.amount = returnedAmount
         assets.returned.value = returnedAmount
       } else {
-        const liquidatedAmount =
-          pnl_settle_limit_transfer + pnl_transfer + quote_transfer
+        const liquidatedAmount = quote_transfer
         const returnedAmount = base_transfer * price
         assets.liquidated.amount = liquidatedAmount
         assets.liquidated.value = liquidatedAmount
@@ -87,7 +85,6 @@ const LiquidationDetails = ({
       }
     } else {
       const {
-        side,
         liab_amount,
         liab_price,
         liab_symbol,
@@ -95,21 +92,12 @@ const LiquidationDetails = ({
         asset_price,
         asset_symbol,
       } = details
-      if (side === 'liqee') {
-        assets.liquidated.amount = asset_amount
-        assets.liquidated.symbol = asset_symbol
-        assets.liquidated.value = asset_amount * asset_price
-        assets.returned.amount = liab_amount
-        assets.returned.symbol = liab_symbol
-        assets.returned.value = liab_amount * liab_price
-      } else {
-        assets.liquidated.amount = liab_amount
-        assets.liquidated.symbol = liab_symbol
-        assets.liquidated.value = liab_amount * liab_price
-        assets.returned.amount = asset_amount
-        assets.returned.symbol = asset_symbol
-        assets.returned.value = asset_amount * asset_price
-      }
+      assets.liquidated.amount = asset_amount
+      assets.liquidated.symbol = asset_symbol
+      assets.liquidated.value = asset_amount * asset_price
+      assets.returned.amount = liab_amount
+      assets.returned.symbol = liab_symbol
+      assets.returned.value = liab_amount * liab_price
     }
     return assets
   }

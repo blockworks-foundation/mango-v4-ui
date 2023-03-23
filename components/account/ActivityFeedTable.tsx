@@ -80,26 +80,25 @@ const getCreditAndDebit = (activity: any) => {
   if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
     const {
       base_transfer,
-      pnl_settle_limit_transfer,
-      pnl_transfer,
+      // perp_market_name,
+      // pnl_settle_limit_transfer,
+      // pnl_transfer,
       price,
       quote_transfer,
-      side,
+      // side,
     } = activity.activity_details
-    const rawCredit = pnl_settle_limit_transfer + pnl_transfer + quote_transfer
-    const rawDebit = base_transfer * price
-    if (side === 'liqee') {
-      credit = { value: formatNumericValue(rawCredit), symbol: '' }
-      debit = {
-        value: formatNumericValue(rawDebit),
-        symbol: '',
-      }
-    } else {
+    if (base_transfer > 0) {
       credit = {
-        value: formatNumericValue(rawDebit),
-        symbol: '',
+        value: formatNumericValue(base_transfer * price),
+        symbol: 'USDC',
       }
-      debit = { value: formatNumericValue(rawCredit), symbol: '' }
+      debit = { value: formatNumericValue(quote_transfer), symbol: 'USDC' }
+    } else {
+      credit = { value: formatNumericValue(quote_transfer), symbol: 'USDC' }
+      debit = {
+        value: formatNumericValue(base_transfer * price),
+        symbol: 'USDC',
+      }
     }
   }
   if (activity_type === 'deposit') {
@@ -154,33 +153,36 @@ const getValue = (activity: any) => {
   const { activity_type } = activity
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
-    const { side, liab_amount, liab_price, asset_amount, asset_price } =
-      activity.activity_details
-    if (side === 'liqee') {
-      value =
-        Math.abs(liab_amount) * liab_price -
-        Math.abs(asset_amount) * asset_price
-    } else {
-      value =
-        Math.abs(asset_amount) * asset_price -
-        Math.abs(liab_amount) * liab_price
-    }
+    const {
+      // side,
+      // liab_amount,
+      // liab_price,
+      asset_amount,
+      asset_price,
+    } = activity.activity_details
+    value = asset_amount * asset_price
   }
   if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
     const {
       base_transfer,
-      pnl_settle_limit_transfer,
-      pnl_transfer,
+      // pnl_settle_limit_transfer,
+      // pnl_transfer,
       price,
       quote_transfer,
       side,
     } = activity.activity_details
-    const rawCredit = pnl_settle_limit_transfer + pnl_transfer + quote_transfer
-    const rawDebit = base_transfer * price
-    if (side === 'liqee') {
-      value = Math.abs(rawCredit) - Math.abs(rawDebit)
+    if (base_transfer > 0) {
+      if (side === 'liqee') {
+        value = quote_transfer
+      } else {
+        value = base_transfer * price
+      }
     } else {
-      value = Math.abs(rawDebit) - Math.abs(rawCredit)
+      if (side === 'liqee') {
+        value = base_transfer * price
+      } else {
+        value = quote_transfer
+      }
     }
   }
   if (activity_type === 'deposit' || activity_type === 'withdraw') {
@@ -313,7 +315,8 @@ const ActivityFeedTable = ({
                     className={`text-right font-mono ${
                       activity_type === 'swap' ||
                       activity_type === 'perp_trade' ||
-                      isOpenbook
+                      isOpenbook ||
+                      isLiquidationFeedItem(activity)
                         ? 'text-th-fgd-2'
                         : value >= 0
                         ? 'text-th-up'
@@ -323,7 +326,8 @@ const ActivityFeedTable = ({
                     {value > 0 &&
                     activity_type !== 'swap' &&
                     activity_type !== 'perp_trade' &&
-                    !isOpenbook
+                    !isOpenbook &&
+                    !isLiquidationFeedItem(activity)
                       ? '+'
                       : ''}
                     <FormatNumericValue value={value} isUsd />
