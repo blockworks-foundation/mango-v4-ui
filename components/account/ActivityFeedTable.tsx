@@ -77,6 +77,31 @@ const getCreditAndDebit = (activity: any) => {
       debit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
     }
   }
+  if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
+    const {
+      base_transfer,
+      pnl_settle_limit_transfer,
+      pnl_transfer,
+      price,
+      quote_transfer,
+      side,
+    } = activity.activity_details
+    const rawCredit = pnl_settle_limit_transfer + pnl_transfer + quote_transfer
+    const rawDebit = base_transfer * price
+    if (side === 'liqee') {
+      credit = { value: formatNumericValue(rawCredit), symbol: '' }
+      debit = {
+        value: formatNumericValue(rawDebit),
+        symbol: '',
+      }
+    } else {
+      credit = {
+        value: formatNumericValue(rawDebit),
+        symbol: '',
+      }
+      debit = { value: formatNumericValue(rawCredit), symbol: '' }
+    }
+  }
   if (activity_type === 'deposit') {
     const { symbol, quantity } = activity.activity_details
     credit = { value: formatNumericValue(quantity), symbol }
@@ -132,9 +157,30 @@ const getValue = (activity: any) => {
     const { side, liab_amount, liab_price, asset_amount, asset_price } =
       activity.activity_details
     if (side === 'liqee') {
-      value = asset_amount * asset_price
+      value =
+        Math.abs(liab_amount) * liab_price -
+        Math.abs(asset_amount) * asset_price
     } else {
-      value = liab_amount * liab_price
+      value =
+        Math.abs(asset_amount) * asset_price -
+        Math.abs(liab_amount) * liab_price
+    }
+  }
+  if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
+    const {
+      base_transfer,
+      pnl_settle_limit_transfer,
+      pnl_transfer,
+      price,
+      quote_transfer,
+      side,
+    } = activity.activity_details
+    const rawCredit = pnl_settle_limit_transfer + pnl_transfer + quote_transfer
+    const rawDebit = base_transfer * price
+    if (side === 'liqee') {
+      value = Math.abs(rawCredit) - Math.abs(rawDebit)
+    } else {
+      value = Math.abs(rawDebit) - Math.abs(rawCredit)
     }
   }
   if (activity_type === 'deposit' || activity_type === 'withdraw') {
@@ -216,8 +262,6 @@ const ActivityFeedTable = ({
             {activityFeed.map((activity, index: number) => {
               const { activity_type, block_datetime } = activity
               const { signature } = activity.activity_details
-              const isLiquidation =
-                activity_type === 'liquidate_token_with_token'
               const isOpenbook = activity_type === 'openbook_trade'
               const amounts = getCreditAndDebit(activity)
               const value = getValue(activity)
@@ -226,7 +270,7 @@ const ActivityFeedTable = ({
                 <TrBody
                   key={signature + index}
                   className={`default-transition text-sm hover:bg-th-bkg-2 ${
-                    isLiquidation ? 'cursor-pointer' : ''
+                    isLiquidationFeedItem(activity) ? 'cursor-pointer' : ''
                   }`}
                   onClick={
                     isLiquidationFeedItem(activity)
@@ -285,7 +329,7 @@ const ActivityFeedTable = ({
                     <FormatNumericValue value={value} isUsd />
                   </Td>
                   <Td>
-                    {activity_type !== 'liquidate_token_with_token' ? (
+                    {!isLiquidationFeedItem(activity) ? (
                       <div className="flex items-center justify-end">
                         <Tooltip
                           content={`View on ${t(
@@ -376,7 +420,6 @@ const MobileActivityFeedItem = ({
   )
   const { activity_type, block_datetime } = activity
   const { signature } = activity.activity_details
-  const isLiquidation = activity_type === 'liquidate_token_with_token'
   const isSwap = activity_type === 'swap'
   const isOpenbook = activity_type === 'openbook_trade'
   const isPerp = activity_type === 'perp_trade'
@@ -399,7 +442,7 @@ const MobileActivityFeedItem = ({
               {t(`activity:${activity_type}`)}
             </p>
             <p className="text-right font-mono text-sm text-th-fgd-1">
-              {isLiquidation ? (
+              {isLiquidationFeedItem(activity) ? (
                 <FormatNumericValue value={value} isUsd />
               ) : isSwap ? (
                 <>
@@ -471,7 +514,7 @@ const MobileActivityFeedItem = ({
               )}
             </p>
           </div>
-          {isLiquidation ? (
+          {isLiquidationFeedItem(activity) ? (
             <IconButton
               onClick={() => setExpandActivityDetails((prev) => !prev)}
             >
