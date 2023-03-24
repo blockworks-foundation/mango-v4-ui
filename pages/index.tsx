@@ -18,6 +18,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'token',
         'trade',
         'close-account',
+        'governance',
       ])),
     },
   }

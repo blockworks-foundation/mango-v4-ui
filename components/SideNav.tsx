@@ -14,6 +14,7 @@ import {
   MagnifyingGlassIcon,
   BanknotesIcon,
   NewspaperIcon,
+  HandRaisedIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -30,7 +31,7 @@ import { useTheme } from 'next-themes'
 import { IconButton } from './shared/Button'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
-  const { t } = useTranslation(['common', 'search'])
+  const { t } = useTranslation(['common', 'search', 'governance'])
   const { connected } = useWallet()
   const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
@@ -136,6 +137,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 icon={<MagnifyingGlassIcon className="h-5 w-5" />}
                 title={t('search:search-accounts')}
                 pagePath="/search"
+                hideIconBg
+                showTooltip={false}
+              />
+              <MenuItem
+                active={pathname === '/governance'}
+                collapsed={false}
+                icon={<HandRaisedIcon className="h-5 w-5" />}
+                title={t('governance:list-token')}
+                pagePath="/governance"
                 hideIconBg
                 showTooltip={false}
               />

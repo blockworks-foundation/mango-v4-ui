@@ -14,6 +14,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'settings',
         'token',
         'trade',
+        'governance',
       ])),
     },
   }

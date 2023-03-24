@@ -1,4 +1,4 @@
-import SearchPage from '@components/search/SearchPage'
+import GovernancePage from '@components/governance/GovernancePage'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 
@@ -6,17 +6,16 @@ export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
       ...(await serverSideTranslations(locale, [
-        'common',
-        'profile',
-        'search',
         'governance',
+        'search',
+        'common',
       ])),
     },
   }
 }
 
-const Search: NextPage = () => {
-  return <SearchPage />
+const Governance: NextPage = () => {
+  return <GovernancePage />
 }
 
-export default Search
+export default Governance

@@ -24,6 +24,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'trade',
         'close-account',
         'tv-chart',
+        'governance',
       ])),
     },
   }

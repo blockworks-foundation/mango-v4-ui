@@ -16,6 +16,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'profile',
         'search',
         'settings',
+        'governance',
       ])),
     },
   }
