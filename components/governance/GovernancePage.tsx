@@ -1,4 +1,10 @@
+import OnBoarding from './OnBoarding'
+
 const GovernancePage = () => {
-  return <div>elo</div>
+  return (
+    <div className="px-6 py-4">
+      <OnBoarding>Hello</OnBoarding>
+    </div>
+  )
 }
 export default GovernancePage
