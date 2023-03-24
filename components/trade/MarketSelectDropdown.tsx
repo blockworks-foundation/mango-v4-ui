@@ -45,10 +45,10 @@ const MarketSelectDropdown = () => {
     <Popover>
       {({ open, close }) => (
         <div
-          className="relative flex flex-col overflow-visible"
+          className="relative -ml-2 flex flex-col overflow-visible"
           id="trade-step-one"
         >
-          <Popover.Button className="default-transition flex h-12 items-center justify-between hover:text-th-active">
+          <Popover.Button className="default-transition flex h-12 items-center justify-between px-2 hover:text-th-active">
             <div className="flex items-center">
               {selectedMarket ? <MarketLogos market={selectedMarket} /> : null}
               <div className="whitespace-nowrap text-xl font-bold text-th-fgd-1 md:text-base">
@@ -74,24 +74,15 @@ const MarketSelectDropdown = () => {
                       }}
                     >
                       <Link
+                        className="default-transition flex items-center hover:cursor-pointer focus:text-th-active focus:outline-none md:hover:text-th-fgd-3"
                         href={{
                           pathname: '/trade',
                           query: { name: m.name },
                         }}
                         shallow={true}
                       >
-                        <div className="default-transition flex items-center hover:cursor-pointer md:hover:text-th-fgd-3">
-                          <MarketLogos market={m} />
-                          <span
-                            className={
-                              m.name === selectedMarket?.name
-                                ? 'text-th-active'
-                                : ''
-                            }
-                          >
-                            {m.name}
-                          </span>
-                        </div>
+                        <MarketLogos market={m} />
+                        <span>{m.name}</span>
                       </Link>
                       <FavoriteMarketButton market={m} />
                     </div>
@@ -114,24 +105,15 @@ const MarketSelectDropdown = () => {
                         }}
                       >
                         <Link
+                          className="default-transition flex items-center hover:cursor-pointer focus:text-th-active focus:outline-none md:hover:text-th-fgd-3"
                           href={{
                             pathname: '/trade',
                             query: { name: m.name },
                           }}
                           shallow={true}
                         >
-                          <div className="default-transition flex items-center hover:cursor-pointer md:hover:text-th-fgd-3">
-                            <MarketLogos market={m} />
-                            <span
-                              className={
-                                m.name === selectedMarket?.name
-                                  ? 'text-th-active'
-                                  : ''
-                              }
-                            >
-                              {m.name}
-                            </span>
-                          </div>
+                          <MarketLogos market={m} />
+                          <span>{m.name}</span>
                         </Link>
                         <FavoriteMarketButton market={m} />
                       </div>

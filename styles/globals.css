@@ -401,7 +401,7 @@ body {
 }
 
 button {
-  @apply tracking-wider focus:outline-none;
+  @apply tracking-wider focus:outline-none focus:ring-1 focus:ring-inset focus:ring-th-fgd-4;
 }
 
 svg {

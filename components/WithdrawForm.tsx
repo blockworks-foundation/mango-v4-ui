@@ -2,13 +2,11 @@ import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowLeftIcon,
   ArrowUpTrayIcon,
-  ChevronDownIcon,
   ExclamationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
 import { useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 
@@ -39,6 +37,7 @@ import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { isMangoError } from 'types'
+import TokenListButton from './shared/TokenListButton'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -211,26 +210,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   />
                 ) : null}
               </div>
-              <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
-                <button
-                  onClick={() => setShowTokenList(true)}
-                  className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1"
-                >
-                  <div className="mr-2.5 flex min-w-[24px] items-center">
-                    <Image
-                      alt=""
-                      width="24"
-                      height="24"
-                      src={
-                        logoUri || `/icons/${selectedToken.toLowerCase()}.svg`
-                      }
-                    />
-                  </div>
-                  <div className="flex w-full items-center justify-between">
-                    <div className="text-xl font-bold">{selectedToken}</div>
-                    <ChevronDownIcon className="h-6 w-6" />
-                  </div>
-                </button>
+              <div className="col-span-1">
+                <TokenListButton
+                  token={selectedToken}
+                  logoUri={logoUri}
+                  setShowList={setShowTokenList}
+                />
               </div>
               <div className="col-span-1">
                 <NumberFormat
@@ -241,7 +226,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   allowNegative={false}
                   isNumericString={true}
                   decimalScale={bank?.mintDecimals || 6}
-                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover"
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) =>

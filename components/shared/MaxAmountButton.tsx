@@ -24,7 +24,7 @@ const MaxAmountButton = ({
       onClick={onClick}
     >
       <p className="mr-1 text-th-fgd-4">{label}:</p>
-      <span className="font-mono text-th-fgd-2 underline">
+      <span className="font-mono">
         <FormatNumericValue value={value} decimals={decimals} />
       </span>
     </LinkButton>

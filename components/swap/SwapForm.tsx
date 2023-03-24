@@ -24,7 +24,6 @@ import Button, { IconButton } from '../shared/Button'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useQuoteRoutes from './useQuoteRoutes'
-import SheenLoader from '../shared/SheenLoader'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   INPUT_TOKEN_DEFAULT,
@@ -56,6 +55,9 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
     ? values.floatValue.toFixed(0).length <= MAX_DIGITS
     : true
 }
+
+const NUMBER_FORMAT_CLASSNAMES =
+  'w-full rounded-l-none rounded-r-lg border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none lg:text-lg xl:text-xl'
 
 const set = mangoStore.getState().set
 
@@ -338,7 +340,7 @@ const SwapForm = () => {
             ) : null}
           </div>
           <div className="mb-3 grid grid-cols-2" id="swap-step-two">
-            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
+            <div className="col-span-1">
               <TokenSelect
                 bank={
                   inputBank ||
@@ -357,7 +359,7 @@ const SwapForm = () => {
                 decimalScale={inputBank?.mintDecimals || 6}
                 name="amountIn"
                 id="amountIn"
-                className="w-full rounded-l-none rounded-r-lg border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+                className={NUMBER_FORMAT_CLASSNAMES}
                 placeholder="0.00"
                 value={amountInFormValue}
                 onValueChange={handleAmountInChange}
@@ -382,7 +384,7 @@ const SwapForm = () => {
           </div>
           <p className="mb-2 text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
           <div id="swap-step-three" className="mb-3 grid grid-cols-2">
-            <div className="col-span-1 rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg">
+            <div className="col-span-1">
               <TokenSelect
                 bank={
                   outputBank ||
@@ -392,12 +394,10 @@ const SwapForm = () => {
                 type="output"
               />
             </div>
-            <div className="flex h-[54px] w-full items-center justify-end rounded-r-lg border border-th-input-border text-right text-lg font-bold text-th-fgd-3 xl:text-xl">
+            <div className="col-span-1 flex h-[54px]">
               {loadingSwapDetails ? (
-                <div className="w-full">
-                  <SheenLoader className="flex flex-1 rounded-l-none">
-                    <div className="h-[52px] w-full rounded-r-lg bg-th-bkg-4" />
-                  </SheenLoader>
+                <div className="flex w-full items-center justify-center rounded-l-none rounded-r-lg border border-th-input-border bg-th-bkg-2">
+                  <Loading />
                 </div>
               ) : (
                 <NumberFormat
@@ -408,7 +408,7 @@ const SwapForm = () => {
                   decimalScale={outputBank?.mintDecimals || 6}
                   name="amountOut"
                   id="amountOut"
-                  className="w-full rounded-l-none rounded-r-lg bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:outline-none lg:text-lg xl:text-xl"
+                  className={NUMBER_FORMAT_CLASSNAMES}
                   placeholder="0.00"
                   value={amountOutFormValue}
                   onValueChange={handleAmountOutChange}

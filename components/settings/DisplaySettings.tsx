@@ -88,9 +88,7 @@ const DisplaySettings = () => {
           >
             {THEMES.map((theme) => (
               <Select.Option key={theme} value={t(`settings:${theme}`)}>
-                <div className="flex w-full items-center justify-between">
-                  {t(`settings:${theme}`)}
-                </div>
+                {t(`settings:${theme}`)}
               </Select.Option>
             ))}
           </Select>
@@ -117,9 +115,7 @@ const DisplaySettings = () => {
           >
             {NOTIFICATION_POSITIONS.map((val) => (
               <Select.Option key={val} value={t(`settings:${val}`)}>
-                <div className="flex w-full items-center justify-between">
-                  {t(`settings:${val}`)}
-                </div>
+                {t(`settings:${val}`)}
               </Select.Option>
             ))}
           </Select>
