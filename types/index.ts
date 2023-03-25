@@ -85,6 +85,25 @@ export type AccountPerformanceData = {
   }
 }
 
+export type TotalAccountFundingItem = {
+  long_funding: number
+  short_funding: number
+}
+
+export type HourlyFundingData = [
+  string,
+  { [key: string]: { long_funding: number; short_funding: number } }
+]
+
+export type HourlyFundingStatsData = {
+  marketFunding: { long_funding: number; short_funding: number; time: string }[]
+  market: string
+}
+
+export interface HourlyFundingChartData extends Record<string, any> {
+  time: string
+}
+
 export interface TotalInterestDataItem {
   borrow_interest: number
   deposit_interest: number
