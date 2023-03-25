@@ -49,11 +49,15 @@ const AdvancedMarketHeader = ({
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const perpStats = mangoStore((s) => s.perpStats.data)
-  const { serumOrPerpMarket, selectedMarket } = useSelectedMarket()
+  const {
+    serumOrPerpMarket,
+    price: stalePrice,
+    selectedMarket,
+  } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
   const { mangoTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
-  const [price, setPrice] = useState(0)
+  const [price, setPrice] = useState(stalePrice)
 
   //subscribe to the market oracle account
   useEffect(() => {
@@ -77,7 +81,6 @@ const AdvancedMarketHeader = ({
     const subId = connection.onAccountChange(
       marketOrBank.oracle,
       async (info, _context) => {
-        console.log('oracle account changed')
         // selectedMarket = mangoStore.getState().selectedMarket.current
         // if (!(selectedMarket instanceof PerpMarket)) return
         const { price, uiPrice, lastUpdatedSlot } =

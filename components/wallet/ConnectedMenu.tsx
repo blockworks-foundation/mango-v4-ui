@@ -36,7 +36,6 @@ const ConnectedMenu = () => {
     await actions.fetchMangoAccounts(wallet.adapter.publicKey)
     actions.fetchTourSettings(wallet.adapter.publicKey?.toString() as string)
     actions.fetchWalletTokens(wallet.adapter.publicKey)
-    actions.fetchTradeHistory()
   }
 
   const handleDisconnect = useCallback(() => {

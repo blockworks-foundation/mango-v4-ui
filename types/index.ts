@@ -67,11 +67,11 @@ export type SerumEvent = Modify<
 
 export type GenericMarket = Serum3Market | PerpMarket
 
-export type TradeHistoryApiResponseType = Array<{
+export type TradeHistoryApiResponseType = {
   trade_type: string
   block_datetime: string
   activity_details: PerpTradeHistory | SpotTradeHistory
-}>
+}
 
 export type AccountPerformanceData = {
   [date: string]: {

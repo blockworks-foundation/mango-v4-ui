@@ -326,7 +326,9 @@ const Orderbook = () => {
               let spread = 0,
                 spreadPercentage = 0
               if (bid && ask) {
-                spread = ask - bid
+                spread = parseFloat(
+                  (ask - bid).toFixed(getDecimalCount(market.tickSize))
+                )
                 spreadPercentage = (spread / ask) * 100
               }
 
