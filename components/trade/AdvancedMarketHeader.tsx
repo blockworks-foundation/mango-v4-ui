@@ -1,4 +1,4 @@
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { Bank, PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { IconButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
 import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
@@ -9,11 +9,12 @@ import { useQuery } from '@tanstack/react-query'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Token } from 'types/jupiter'
 import { getDecimalCount } from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
+import { BorshAccountsCoder } from '@coral-xyz/anchor'
 
 type ResponseType = {
   prices: [number, number][]
@@ -48,9 +49,58 @@ const AdvancedMarketHeader = ({
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const perpStats = mangoStore((s) => s.perpStats.data)
-  const { serumOrPerpMarket, price, selectedMarket } = useSelectedMarket()
+  const { serumOrPerpMarket, selectedMarket } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
   const { mangoTokens } = useJupiterMints()
+  const connection = mangoStore((s) => s.connection)
+  const [price, setPrice] = useState(0)
+
+  //subscribe to the market oracle account
+  useEffect(() => {
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket) return
+    let marketOrBank: PerpMarket | Bank
+    let decimals: number
+    if (selectedMarket instanceof PerpMarket) {
+      marketOrBank = selectedMarket
+      decimals = selectedMarket.baseDecimals
+    } else {
+      const baseBank = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex
+      )
+      marketOrBank = baseBank
+      decimals = group.getMintDecimals(baseBank.mint)
+    }
+
+    const coder = new BorshAccountsCoder(client.program.idl)
+    const subId = connection.onAccountChange(
+      marketOrBank.oracle,
+      async (info, _context) => {
+        console.log('oracle account changed')
+        // selectedMarket = mangoStore.getState().selectedMarket.current
+        // if (!(selectedMarket instanceof PerpMarket)) return
+        const { price, uiPrice, lastUpdatedSlot } =
+          await group.decodePriceFromOracleAi(
+            coder,
+            marketOrBank.oracle,
+            info,
+            decimals,
+            client
+          )
+        marketOrBank._price = price
+        marketOrBank._uiPrice = uiPrice
+        setPrice(uiPrice)
+        marketOrBank._oracleLastUpdatedSlot = lastUpdatedSlot
+      },
+      'processed'
+    )
+    return () => {
+      if (typeof subId !== 'undefined') {
+        connection.removeAccountChangeListener(subId)
+      }
+    }
+  }, [connection, selectedMarket])
 
   useEffect(() => {
     if (serumOrPerpMarket instanceof PerpMarket) {
@@ -122,7 +172,7 @@ const AdvancedMarketHeader = ({
               <div className="font-mono text-xs text-th-fgd-2">
                 {price ? (
                   `$${price.toFixed(
-                    getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
+                    getDecimalCount(serumOrPerpMarket?.tickSize || 0.01) + 1
                   )}`
                 ) : (
                   <span className="text-th-fgd-4">–</span>

@@ -80,7 +80,8 @@ const getCumulativeOrderbookSide = (
   maxSize: number,
   depth: number,
   usersOpenOrderPrices: number[],
-  grouping: number
+  grouping: number,
+  isGrouped: boolean
 ): cumOrderbookSide[] => {
   let cumulativeSize = 0
   return orders.slice(0, depth).map(([price, size]) => {
@@ -95,7 +96,8 @@ const getCumulativeOrderbookSide = (
       isUsersOrder: hasOpenOrderForPriceGroup(
         usersOpenOrderPrices,
         price,
-        grouping
+        grouping,
+        isGrouped
       ),
     }
   })
@@ -154,8 +156,14 @@ const groupBy = (
 const hasOpenOrderForPriceGroup = (
   openOrderPrices: number[],
   price: number,
-  grouping: number
+  grouping: number,
+  isGrouped: boolean
 ) => {
+  if (!isGrouped) {
+    return !!openOrderPrices.find((ooPrice) => {
+      return ooPrice === price
+    })
+  }
   return !!openOrderPrices.find((ooPrice) => {
     return ooPrice >= price - grouping && ooPrice <= price + grouping
   })
@@ -282,14 +290,15 @@ const Orderbook = () => {
                   return a[1]
                 })
               )
-
+            const isGrouped = grouping !== market.tickSize
             const bidsToDisplay = getCumulativeOrderbookSide(
               bids,
               totalSize,
               maxSize,
               depth,
               usersOpenOrderPrices,
-              grouping
+              grouping,
+              isGrouped
             )
             const asksToDisplay = getCumulativeOrderbookSide(
               asks,
@@ -297,7 +306,8 @@ const Orderbook = () => {
               maxSize,
               depth,
               usersOpenOrderPrices,
-              grouping
+              grouping,
+              isGrouped
             )
 
             currentOrderbookData.current = newOrderbook
@@ -343,6 +353,7 @@ const Orderbook = () => {
     return asksPk.toString()
   }, [market])
 
+  // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
     console.log('setting up orderbook websockets')
     const set = mangoStore.getState().set

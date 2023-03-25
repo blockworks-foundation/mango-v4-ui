@@ -22,10 +22,10 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
-"@blockworks-foundation/mango-v4@^0.5.25":
-  version "0.5.27"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.5.27.tgz#acef96097c1e7813bf8f515fb049dc6d41f2b52b"
-  integrity sha512-Au/gCF4W/+yaufGqqLh+qJmTV1F76KBsbnHdLaDb+vGavDPATbNKs1mS3Jh+hmf8Rw+FiSGWhKVyKn6Jr/2HHg==
+"@blockworks-foundation/mango-v4@^0.9.9":
+  version "0.9.9"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.9.9.tgz#70e48e2558549e8cd3fd9b710037f0b7dec201dd"
+  integrity sha512-bkZS3bCjN8ZlFcvTvz7Zbb8YckyMrz+4vxzhHQKnnvl8UOGkP4WxI1t8aqeRIyGoxnUaNYrNj8ih9fkbafIIew==
   dependencies:
     "@coral-xyz/anchor" "^0.26.0"
     "@project-serum/serum" "0.13.65"
@@ -401,9 +401,9 @@
   integrity sha512-iR8GBkDt0Q3GyaVcIu7mSsVIqnFbkbRzGLWlvhwunacoLwt4J3swfKhfaM6rN6WY+TBGoYT1GtT1mIh2/jGbRQ==
 
 "@noble/hashes@^1.1.2":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.2.0.tgz#a3150eeb09cc7ab207ebf6d7b9ad311a9bdbed12"
-  integrity sha512-FZfhjEDbT5GRswV3C6uvLPHMiVD6lQBmpoX5+eSiPaMTXte/IKqI5dykDxzZB/WBeK/CDuQRBWarPdi3FNY2zQ==
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.3.0.tgz#085fd70f6d7d9d109671090ccae1d3bec62554a1"
+  integrity sha512-ilHEACi9DwqJB0pw7kv+Apvh50jiiSyR/cQ3y4W7lOR5mhvn/50FLUfsnfJz0BDZtl/RR16kXvptiv6q1msYZg==
 
 "@noble/secp256k1@^1.6.3":
   version "1.7.1"
@@ -1110,7 +1110,29 @@
     "@wallet-standard/app" "^1.0.0"
     "@wallet-standard/base" "^1.0.0"
 
-"@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.31.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.44.3", "@solana/web3.js@^1.68.0", "@solana/web3.js@^1.73.2":
+"@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.68.0", "@solana/web3.js@^1.73.2":
+  version "1.74.0"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.74.0.tgz#dbcbeabb830dd7cbbcf5e31404ca79c9785cbf2d"
+  integrity sha512-RKZyPqizPCxmpMGfpu4fuplNZEWCrhRBjjVstv5QnAJvgln1jgOfgui+rjl1ExnqDnWKg9uaZ5jtGROH/cwabg==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+    "@noble/ed25519" "^1.7.0"
+    "@noble/hashes" "^1.1.2"
+    "@noble/secp256k1" "^1.6.3"
+    "@solana/buffer-layout" "^4.0.0"
+    agentkeepalive "^4.2.1"
+    bigint-buffer "^1.1.5"
+    bn.js "^5.0.0"
+    borsh "^0.7.0"
+    bs58 "^4.0.1"
+    buffer "6.0.1"
+    fast-stable-stringify "^1.0.0"
+    jayson "^3.4.4"
+    node-fetch "^2.6.7"
+    rpc-websockets "^7.5.1"
+    superstruct "^0.14.2"
+
+"@solana/web3.js@^1.31.0", "@solana/web3.js@^1.44.3":
   version "1.73.3"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.73.3.tgz#60e6bd68f6f364d4be360b1e0a03a0a68468a029"
   integrity sha512-vHRMo589XEIpoujpE2sZZ1aMZvfA1ImKfNxobzEFyMb+H5j6mRRUXfdgWD0qJ0sm11e5BcBC7HPeRXJB+7f3Lg==
@@ -1540,9 +1562,9 @@
   integrity sha512-evMDG1bC4rgQg4ku9tKpuMh5iBNEwNa3tf9zRHdP1qlv+1WUg44xat4IxCE14gIpZRGUUWAx2VhItCZc25NfMA==
 
 "@types/node@*":
-  version "18.14.6"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.14.6.tgz#ae1973dd2b1eeb1825695bb11ebfb746d27e3e93"
-  integrity sha512-93+VvleD3mXwlLI/xASjw0FzKcwzl3OdTCzm1LaRfqgS21gfFtK3zDXM5Op9TeeMsJVOaJ2VRDpT9q4Y3d0AvA==
+  version "18.15.9"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.15.9.tgz#a9b529d2a16ae73122b3875969e7db18c9f3e790"
+  integrity sha512-dUxhiNzBLr6IqlZXz6e/rN2YQXlFgOei/Dxy+e3cyXTJ4txSUbGT2/fmnD6zd/75jDMeW5bDee+YXxlFKHoV0A==
 
 "@types/node@17.0.23":
   version "17.0.23"
@@ -2344,9 +2366,9 @@ bin-links@4.0.1:
     write-file-atomic "^5.0.0"
 
 binance-api-node@^0.12.0:
-  version "0.12.3"
-  resolved "https://registry.yarnpkg.com/binance-api-node/-/binance-api-node-0.12.3.tgz#1703282ce7ef1b52a893d7de046fd305806808f7"
-  integrity sha512-JMBOmcva/nlM9k0SDG3nBm2i/kSNva74jDU55j/mpoXMbb4AYP9luG1JuI5dgPvmkaKiR2A05MPI5aQiLhWTDw==
+  version "0.12.4"
+  resolved "https://registry.yarnpkg.com/binance-api-node/-/binance-api-node-0.12.4.tgz#5eee75e0cd1cb1c0a7051ae8979e40fa87ad4ee4"
+  integrity sha512-QeOBhPPSukvpzjRdrQudOUcz2HIh+1jEMCEG5Xby/07e2/4DQ22HBuYf7W7Qj7q7cmefqsflP6l/e4pLFfSfwQ==
   dependencies:
     https-proxy-agent "^5.0.0"
     isomorphic-fetch "^3.0.0"
@@ -7071,9 +7093,9 @@ ws@^7.2.0, ws@^7.4.0, ws@^7.4.5, ws@^7.5.1:
   integrity sha512-F+P9Jil7UiSKSkppIiD94dN07AwvFixvLIj1Og1Rl9GGMuNipJnV9JzjD6XuqmAeiswGvUmNLjr5cFuXwNS77Q==
 
 ws@^8.5.0:
-  version "8.12.1"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.12.1.tgz#c51e583d79140b5e42e39be48c934131942d4a8f"
-  integrity sha512-1qo+M9Ba+xNhPB+YTWUlK6M17brTut5EXbcBaMRN5pH5dFrXz7lzz1ChFSUq3bOUl8yEvSenhHmYUNJxFzdJew==
+  version "8.13.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.13.0.tgz#9a9fb92f93cf41512a0735c8f4dd09b8a1211cd0"
+  integrity sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==
 
 ws@~8.2.3:
   version "8.2.3"

@@ -26,7 +26,7 @@ const HydrateStore = () => {
 
   useInterval(() => {
     actions.fetchGroup()
-  }, 15000)
+  }, 25000)
 
   // refetches open orders every 30 seconds
   // only the selected market's open orders are updated via websocket
