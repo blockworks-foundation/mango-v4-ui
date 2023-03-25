@@ -362,7 +362,7 @@ const AdvancedTradeForm = () => {
     return selectedMarket instanceof PerpMarket
       ? [t('trade:long'), t('trade:short')]
       : [t('buy'), t('sell')]
-  }, [selectedMarket])
+  }, [selectedMarket, t])
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()

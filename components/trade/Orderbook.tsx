@@ -30,6 +30,15 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 
+const getMarket = () => {
+  const group = mangoStore.getState().group
+  const selectedMarket = mangoStore.getState().selectedMarket.current
+  if (!group || !selectedMarket) return
+  return selectedMarket instanceof PerpMarket
+    ? selectedMarket
+    : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+}
+
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
   const depth = 300
   if (book instanceof SpotOrderBook) {
@@ -358,16 +367,12 @@ const Orderbook = () => {
     console.log('setting up orderbook websockets')
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
-    const selectedMarket = mangoStore.getState().selectedMarket.current
     const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
+    const market = getMarket()
+    if (!group || !market) return
 
     let bidSubscriptionId: number | undefined = undefined
     let askSubscriptionId: number | undefined = undefined
-    const market =
-      selectedMarket instanceof PerpMarket
-        ? selectedMarket
-        : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
     const bidsPk = new PublicKey(bidAccountAddress)
     if (bidsPk) {
       connection
@@ -387,6 +392,8 @@ const Orderbook = () => {
           const lastSeenSlot =
             mangoStore.getState().selectedMarket.lastSeenSlot.bids
           if (context.slot > lastSeenSlot) {
+            const market = getMarket()
+            if (!market) return
             const decodedBook = decodeBook(client, market, info, 'bids')
             if (decodedBook instanceof BookSide) {
               updatePerpMarketOnGroup(decodedBook, 'bids')
@@ -421,6 +428,8 @@ const Orderbook = () => {
           const lastSeenSlot =
             mangoStore.getState().selectedMarket.lastSeenSlot.asks
           if (context.slot > lastSeenSlot) {
+            const market = getMarket()
+            if (!market) return
             const decodedBook = decodeBook(client, market, info, 'asks')
             if (decodedBook instanceof BookSide) {
               updatePerpMarketOnGroup(decodedBook, 'asks')
