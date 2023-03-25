@@ -60,7 +60,7 @@ const fetchHourlyFunding = async (mangoAccountPk: string) => {
 const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
   const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
-  const [daysToShow, setDaysToShow] = useState('1')
+  const [daysToShow, setDaysToShow] = useState('30')
   const { theme } = useTheme()
   const {
     data: fundingData,
