@@ -1,78 +1,89 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
 import { LinkButton } from '@components/shared/Button'
 import SheenLoader from '@components/shared/SheenLoader'
-import { useQuery } from '@tanstack/react-query'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { isArray } from 'lodash'
 import { useTranslation } from 'next-i18next'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { EmptyObject, ProfileDetails } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import LeaderboardTable from './LeaderboardTable'
 
-export interface LeaderboardItem {
+interface LeaderboardRes {
   date_hour: string
   mango_account: string
   pnl: number
   start_date_hour: string
   wallet_pk: string
-  profile_image_url?: string
-  profile_name?: string
-  trader_category?: string
 }
 
-const LeaderboardPage = () => {
-  const { t } = useTranslation(['common', 'leaderboard'])
-  const [daysToShow, setDaysToShow] = useState('ALLTIME')
-  const [offset, setOffset] = useState(0)
-  const [leaderboardData, setLeaderboardData] = useState([])
+export type LeaderboardItem = LeaderboardRes & ProfileDetails
 
-  const fetchLeaderboard = async () => {
-    try {
-      const data = await fetch(
-        `${MANGO_DATA_API_URL}/leaderboard-pnl?over_period=${daysToShow}&offset=${offset}`
-      )
-      const leaderboardRes = await data.json()
-      const profileData = await Promise.all(
-        leaderboardRes.map((r: LeaderboardItem) =>
-          fetch(
-            `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
-          )
+type DaysToShow = '1DAY' | '1WEEK' | 'ALLTIME'
+
+const fetchLeaderboard = async (
+  daysToShow: DaysToShow,
+  offset = 0
+): Promise<Array<LeaderboardItem>> => {
+  const data = await fetch(
+    `${MANGO_DATA_API_URL}/leaderboard-pnl?over_period=${daysToShow}&offset=${offset}`
+  )
+  const leaderboardRes: null | EmptyObject | LeaderboardRes[] =
+    await data.json()
+  if (leaderboardRes && isArray(leaderboardRes)) {
+    const profileData = await Promise.all(
+      leaderboardRes.map((r: LeaderboardRes) =>
+        fetch(
+          `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
         )
       )
-      const profileRes = await Promise.all(profileData.map((d) => d.json()))
+    )
+    const profileRes: null | EmptyObject | ProfileDetails[] = await Promise.all(
+      profileData.map((d) => d.json())
+    )
+    if (profileRes && isArray(profileRes)) {
       const combinedRes = leaderboardRes.map(
-        (r: LeaderboardItem, i: number) => ({
+        (r: LeaderboardRes, i: number) => ({
           ...r,
           ...profileRes[i],
         })
       )
-      setLeaderboardData(leaderboardData.concat(combinedRes))
       return combinedRes
-    } catch (e) {
-      console.log('Failed to fetch leaderboard', e)
     }
   }
+  return []
+}
 
-  const { isLoading, isFetching } = useQuery(
-    ['leaderboard', daysToShow, offset],
-    () => fetchLeaderboard(),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
+const LeaderboardPage = () => {
+  const { t } = useTranslation(['common', 'leaderboard'])
+  const [daysToShow, setDaysToShow] = useState<DaysToShow>('ALLTIME')
+
+  const { data, isLoading, isFetching, isFetchingNextPage, fetchNextPage } =
+    useInfiniteQuery(
+      ['leaderboard', daysToShow],
+      ({ pageParam }) => fetchLeaderboard(daysToShow, pageParam),
+      {
+        cacheTime: 1000 * 60 * 10,
+        staleTime: 1000 * 60,
+        retry: 3,
+        refetchOnWindowFocus: false,
+        keepPreviousData: true,
+        refetchInterval: 1000 * 60 * 5,
+        getNextPageParam: (_lastPage, pages) => pages.length * 20,
+      }
+    )
+
+  const leaderboardData = useMemo(() => {
+    if (data?.pages.length) {
+      return data.pages.flat()
     }
-  )
+    return []
+  }, [data, daysToShow])
 
-  const handleDaysToShow = (days: string) => {
-    setLeaderboardData([])
-    setOffset(0)
+  const handleDaysToShow = (days: DaysToShow) => {
     setDaysToShow(days)
   }
-
-  const handleShowMore = () => {
-    setOffset(offset + 20)
-  }
-
-  const loading = isLoading || isFetching
 
   return (
     <div className="p-4 md:p-10 lg:px-0">
@@ -96,9 +107,18 @@ const LeaderboardPage = () => {
             </div>
           </div>
           {leaderboardData.length ? (
-            <LeaderboardTable data={leaderboardData} loading={loading} />
-          ) : loading ? (
-            <div className="space-y-2">
+            <LeaderboardTable
+              data={leaderboardData}
+              loading={isFetching && !isFetchingNextPage}
+            />
+          ) : !isFetching && !isLoading ? (
+            <div className="flex flex-col items-center rounded-md border border-th-bkg-3 p-4">
+              <NoSymbolIcon className="mb-1 h-7 w-7 text-th-fgd-4" />
+              <p>{t('leaderboard:leaderboard-unavailable')}</p>
+            </div>
+          ) : null}
+          {isLoading || isFetchingNextPage ? (
+            <div className="mt-2 space-y-2">
               {[...Array(20)].map((x, i) => (
                 <SheenLoader className="flex flex-1" key={i}>
                   <div className="h-16 w-full rounded-md bg-th-bkg-2" />
@@ -106,8 +126,11 @@ const LeaderboardPage = () => {
               ))}
             </div>
           ) : null}
-          {offset < 100 ? (
-            <LinkButton className="mx-auto mt-6" onClick={handleShowMore}>
+          {leaderboardData.length && leaderboardData.length < 100 ? (
+            <LinkButton
+              className="mx-auto mt-6"
+              onClick={() => fetchNextPage()}
+            >
               {t('show-more')}
             </LinkButton>
           ) : null}

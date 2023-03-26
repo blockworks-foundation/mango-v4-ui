@@ -31,9 +31,9 @@ const LeaderboardTable = ({
         {data.map((d, i) => (
           <LeaderboardRow
             item={d}
-            rank={i + 1}
-            key={d.mango_account + d.pnl}
             loading={loading}
+            rank={i + 1}
+            key={d.mango_account + d.pnl + i}
           />
         ))}
       </div>
@@ -49,7 +49,7 @@ const LeaderboardRow = ({
   rank,
 }: {
   item: LeaderboardItem
-  loading: boolean
+  loading?: boolean
   rank: number
 }) => {
   const { profile_name, profile_image_url, mango_account, pnl, wallet_pk } =
