@@ -207,6 +207,7 @@ const RecentTrades = () => {
             <tbody>
               {selectedMarket instanceof PerpMarket
                 ? perpMarketQuery?.data &&
+                  perpMarketQuery?.data.map &&
                   perpMarketQuery?.data.map((t) => {
                     return (
                       <tr className="font-mono text-xs" key={`${t.seq_num}`}>
