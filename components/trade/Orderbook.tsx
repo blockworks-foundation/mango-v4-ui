@@ -30,6 +30,15 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 
+const getMarket = () => {
+  const group = mangoStore.getState().group
+  const selectedMarket = mangoStore.getState().selectedMarket.current
+  if (!group || !selectedMarket) return
+  return selectedMarket instanceof PerpMarket
+    ? selectedMarket
+    : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+}
+
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
   const depth = 300
   if (book instanceof SpotOrderBook) {
@@ -80,7 +89,8 @@ const getCumulativeOrderbookSide = (
   maxSize: number,
   depth: number,
   usersOpenOrderPrices: number[],
-  grouping: number
+  grouping: number,
+  isGrouped: boolean
 ): cumOrderbookSide[] => {
   let cumulativeSize = 0
   return orders.slice(0, depth).map(([price, size]) => {
@@ -95,7 +105,8 @@ const getCumulativeOrderbookSide = (
       isUsersOrder: hasOpenOrderForPriceGroup(
         usersOpenOrderPrices,
         price,
-        grouping
+        grouping,
+        isGrouped
       ),
     }
   })
@@ -154,8 +165,14 @@ const groupBy = (
 const hasOpenOrderForPriceGroup = (
   openOrderPrices: number[],
   price: number,
-  grouping: number
+  grouping: number,
+  isGrouped: boolean
 ) => {
+  if (!isGrouped) {
+    return !!openOrderPrices.find((ooPrice) => {
+      return ooPrice === price
+    })
+  }
   return !!openOrderPrices.find((ooPrice) => {
     return ooPrice >= price - grouping && ooPrice <= price + grouping
   })
@@ -282,14 +299,15 @@ const Orderbook = () => {
                   return a[1]
                 })
               )
-
+            const isGrouped = grouping !== market.tickSize
             const bidsToDisplay = getCumulativeOrderbookSide(
               bids,
               totalSize,
               maxSize,
               depth,
               usersOpenOrderPrices,
-              grouping
+              grouping,
+              isGrouped
             )
             const asksToDisplay = getCumulativeOrderbookSide(
               asks,
@@ -297,7 +315,8 @@ const Orderbook = () => {
               maxSize,
               depth,
               usersOpenOrderPrices,
-              grouping
+              grouping,
+              isGrouped
             )
 
             currentOrderbookData.current = newOrderbook
@@ -307,7 +326,9 @@ const Orderbook = () => {
               let spread = 0,
                 spreadPercentage = 0
               if (bid && ask) {
-                spread = ask - bid
+                spread = parseFloat(
+                  (ask - bid).toFixed(getDecimalCount(market.tickSize))
+                )
                 spreadPercentage = (spread / ask) * 100
               }
 
@@ -343,20 +364,17 @@ const Orderbook = () => {
     return asksPk.toString()
   }, [market])
 
+  // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
     console.log('setting up orderbook websockets')
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
-    const selectedMarket = mangoStore.getState().selectedMarket.current
     const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
+    const market = getMarket()
+    if (!group || !market) return
 
     let bidSubscriptionId: number | undefined = undefined
     let askSubscriptionId: number | undefined = undefined
-    const market =
-      selectedMarket instanceof PerpMarket
-        ? selectedMarket
-        : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
     const bidsPk = new PublicKey(bidAccountAddress)
     if (bidsPk) {
       connection
@@ -376,6 +394,8 @@ const Orderbook = () => {
           const lastSeenSlot =
             mangoStore.getState().selectedMarket.lastSeenSlot.bids
           if (context.slot > lastSeenSlot) {
+            const market = getMarket()
+            if (!market) return
             const decodedBook = decodeBook(client, market, info, 'bids')
             if (decodedBook instanceof BookSide) {
               updatePerpMarketOnGroup(decodedBook, 'bids')
@@ -410,6 +430,8 @@ const Orderbook = () => {
           const lastSeenSlot =
             mangoStore.getState().selectedMarket.lastSeenSlot.asks
           if (context.slot > lastSeenSlot) {
+            const market = getMarket()
+            if (!market) return
             const decodedBook = decodeBook(client, market, info, 'asks')
             if (decodedBook instanceof BookSide) {
               updatePerpMarketOnGroup(decodedBook, 'asks')

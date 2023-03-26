@@ -12,6 +12,7 @@ import {
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useState } from 'react'
+import { MANGO_DATA_API_URL } from 'utils/constants'
 import { abbreviateAddress } from 'utils/formatting'
 import { notify } from 'utils/notifications'
 
@@ -40,7 +41,7 @@ const SearchPage = () => {
     try {
       setLoading(true)
       const response = await fetch(
-        `https://mango-transaction-log.herokuapp.com/v4/user-data/profile-search?search-string=${searchString}&search-method=${searchType}`
+        `${MANGO_DATA_API_URL}/user-data/profile-search?search-string=${searchString}&search-method=${searchType}`
       )
       const data = await response.json()
       setSearchResults(data)

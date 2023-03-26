@@ -25,9 +25,10 @@ import mangoStore from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
+import useTradeHistory from 'hooks/useTradeHistory'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { SerumEvent, PerpTradeHistory, SpotTradeHistory } from 'types'
 import { PAGINATION_PAGE_LENGTH } from 'utils/constants'
 import { abbreviateAddress } from 'utils/formatting'
@@ -178,15 +179,12 @@ const TradeHistory = () => {
   const group = mangoStore.getState().group
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
-  const actions = mangoStore((s) => s.actions)
   const fills = mangoStore((s) => s.selectedMarket.fills)
-  const tradeHistoryFromApi = mangoStore(
-    (s) => s.mangoAccount.tradeHistory.data
-  )
-  const loadingTradeHistory = mangoStore(
-    (s) => s.mangoAccount.tradeHistory.loading
-  )
-  const [offset, setOffset] = useState(0)
+  const {
+    data: tradeHistoryFromApi,
+    isLoading: loadingTradeHistory,
+    fetchNextPage,
+  } = useTradeHistory()
   const { width } = useViewport()
   const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
@@ -228,9 +226,10 @@ const TradeHistory = () => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return []
     let newFills: (SerumEvent | PerpFillEvent)[] = []
+    const combinedTradeHistoryPages = tradeHistoryFromApi?.pages.flat() ?? []
     if (eventQueueFillsForOwner?.length) {
       newFills = eventQueueFillsForOwner.filter((fill) => {
-        return !tradeHistoryFromApi.find((t) => {
+        return !combinedTradeHistoryPages.find((t) => {
           if ('order_id' in t && isSerumFillEvent(fill)) {
             return t.order_id === fill.orderId.toString()
           } else if ('seq_num' in t && isPerpFillEvent(fill)) {
@@ -241,7 +240,7 @@ const TradeHistory = () => {
     }
     return formatTradeHistory(group, selectedMarket, mangoAccountAddress, [
       ...newFills,
-      ...tradeHistoryFromApi,
+      ...combinedTradeHistoryPages,
     ])
   }, [
     eventQueueFillsForOwner,
@@ -249,15 +248,6 @@ const TradeHistory = () => {
     tradeHistoryFromApi,
     selectedMarket,
   ])
-
-  const handleShowMore = useCallback(() => {
-    const set = mangoStore.getState().set
-    set((s) => {
-      s.mangoAccount.tradeHistory.loading = true
-    })
-    setOffset(offset + PAGINATION_PAGE_LENGTH)
-    actions.fetchTradeHistory(offset + PAGINATION_PAGE_LENGTH)
-  }, [actions, offset])
 
   if (!selectedMarket || !group) return null
 
@@ -432,7 +422,7 @@ const TradeHistory = () => {
       {combinedTradeHistory.length &&
       combinedTradeHistory.length % PAGINATION_PAGE_LENGTH === 0 ? (
         <div className="flex justify-center py-6">
-          <LinkButton onClick={handleShowMore}>Show More</LinkButton>
+          <LinkButton onClick={() => fetchNextPage()}>Show More</LinkButton>
         </div>
       ) : null}
     </>
