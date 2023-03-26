@@ -27,10 +27,12 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import { AxisDomain } from 'recharts/types/util/types'
 import { useTranslation } from 'next-i18next'
 import FormatNumericValue from './FormatNumericValue'
+import { ContentType } from 'recharts/types/component/Tooltip'
 
 dayjs.extend(relativeTime)
 
 interface DetailedAreaChartProps {
+  customTooltip?: ContentType<number, string>
   data: any[]
   daysToShow?: string
   domain?: AxisDomain
@@ -59,6 +61,7 @@ export const formatDateAxis = (date: string, days: number) => {
 }
 
 const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
+  customTooltip,
   data,
   daysToShow = '1',
   domain,
@@ -97,7 +100,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
 
   const flipGradientCoords = useMemo(() => {
     if (!data.length) return
-    return data[0][yKey] <= 0 && data[data.length - 1][yKey] <= 0
+    return data[0][yKey] <= 0 && data[data.length - 1][yKey] < 0
   }, [data])
 
   const filteredData = useMemo(() => {
@@ -299,11 +302,11 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       cursor={{
                         strokeOpacity: 0.09,
                       }}
-                      content={<></>}
+                      content={customTooltip ? customTooltip : <></>}
                     />
                     <defs>
                       <linearGradient
-                        id={`gradientArea-${title?.replace(/\s/g, '')}`}
+                        id={`gradientArea-${title?.replace(/[^a-zA-Z]/g, '')}`}
                         x1="0"
                         y1={flipGradientCoords ? '1' : '0'}
                         x2="0"
@@ -339,7 +342,10 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                           : COLORS.DOWN[theme]
                       }
                       strokeWidth={1.5}
-                      fill={`url(#gradientArea-${title?.replace(/\s/g, '')})`}
+                      fill={`url(#gradientArea-${title?.replace(
+                        /[^a-zA-Z]/g,
+                        ''
+                      )})`}
                     />
                     <XAxis
                       axisLine={false}

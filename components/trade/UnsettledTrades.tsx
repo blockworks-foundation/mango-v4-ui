@@ -254,7 +254,7 @@ const UnsettledTrades = ({
             >
               <TableMarketName market={market} />
               <div className="flex items-center space-x-3">
-                <div>
+                <div className="font-mono">
                   <FormatNumericValue
                     value={position.getUnsettledPnlUi(market)}
                     decimals={market.baseDecimals}
@@ -264,7 +264,7 @@ const UnsettledTrades = ({
                 {!isUnownedAccount ? (
                   <IconButton
                     onClick={() => handleSettlePerpFunds(market)}
-                    size="medium"
+                    size="small"
                   >
                     {settleMktAddress === market.publicKey.toString() ? (
                       <Loading className="h-4 w-4" />
@@ -310,7 +310,7 @@ const UnsettledTrades = ({
                 {!isUnownedAccount ? (
                   <IconButton
                     onClick={() => handleSettleSerumFunds(mktAddress)}
-                    size="medium"
+                    size="small"
                   >
                     {settleMktAddress === mktAddress ? (
                       <Loading className="h-4 w-4" />

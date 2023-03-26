@@ -4,7 +4,7 @@
 
 @font-face {
   font-family: 'TT Mono';
-  src: url('/fonts/TT_Commons_Pro_Mono_Regular.woff2') format('woff2');
+  src: url('/fonts/TT_Commons_Pro_Mono_Medium.woff2') format('woff2');
 }
 
 @font-face {
@@ -15,7 +15,7 @@
 @font-face {
   font-family: 'TT Commons';
   font-weight: normal;
-  src: url('/fonts/TT_Commons_Pro_Regular.woff2') format('woff2');
+  src: url('/fonts/TT_Commons_Pro_Normal.woff2') format('woff2');
 }
 
 @font-face {
@@ -451,36 +451,6 @@ textarea,
 input[type='text'] {
   -webkit-appearance: none;
 }
-
-/* Slider */
-
-/* input[type='range']::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  height: 18px;
-  width: 16px;
-  border-radius: 100%;
-  background: var(--active);
-  cursor: pointer;
-  margin-top: -1px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
-/* } */
-
-/* All the same stuff for Firefox */
-/* input[type='range']::-moz-range-thumb {
-  height: 18px;
-  width: 16px;
-  border-radius: 100%;
-  background: var(--active);
-  cursor: pointer;
-} */
-
-/* All the same stuff for IE */
-/* input[type='range']::-ms-thumb {
-  height: 18px;
-  width: 16px;
-  border-radius: 100%;
-  background: var(--active);
-  cursor: pointer;
-} */
 
 /* Animations */
 

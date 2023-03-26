@@ -60,6 +60,8 @@ export type SymbolInfo = LibrarySymbolInfo & {
 
 const lastBarsCache = new Map()
 
+const subscriptionIds = new Map()
+
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
   intraday_multipliers: ['1', '3', '5', '15', '30', '60', '120', '240'],
@@ -102,6 +104,7 @@ export const queryPerpBars = async (
     return []
   }
   let bars: Bar[] = []
+  let previousBar: Bar | undefined = undefined
   for (const bar of data) {
     const timestamp = new Date(bar.candle_start).getTime()
     if (timestamp >= from * 1000 && timestamp < to * 1000) {
@@ -111,12 +114,13 @@ export const queryPerpBars = async (
           time: timestamp,
           low: bar.low,
           high: bar.high,
-          open: bar.open,
+          open: previousBar ? previousBar.close : bar.open,
           close: bar.close,
           volume: bar.volume,
           timestamp,
         },
       ]
+      previousBar = bar
     }
   }
   return bars
@@ -154,6 +158,7 @@ export const queryBirdeyeBars = async (
   for (const bar of data.data.items) {
     if (bar.unixTime >= from && bar.unixTime < to) {
       const timestamp = bar.unixTime * 1000
+      if (bar.h > 22311) continue
       bars = [
         ...bars,
         {
@@ -302,6 +307,7 @@ export default {
     subscriberUID: string,
     onResetCacheNeededCallback: () => void
   ) => {
+    subscriptionIds.set(subscriberUID, symbolInfo.address)
     if (symbolInfo.description?.includes('PERP')) {
       subscribeOnPerpStream(
         symbolInfo,
@@ -323,9 +329,10 @@ export default {
     }
   },
 
-  unsubscribeBars: () => {
+  unsubscribeBars: (subscriberUID: string) => {
     if (marketType === 'perp') {
-      unsubscribeFromPerpStream()
+      const marketId = subscriptionIds.get(subscriberUID)
+      unsubscribeFromPerpStream(marketId)
     } else {
       unsubscribeFromStream()
     }

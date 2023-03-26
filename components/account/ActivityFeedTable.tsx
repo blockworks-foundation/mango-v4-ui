@@ -4,8 +4,10 @@ import { IconButton, LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
+import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
+import PerpSideBadge from '@components/trade/PerpSideBadge'
 import { Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -204,7 +206,7 @@ const ActivityFeedTable = ({
               <Th className="bg-th-bkg-1 text-right">{t('activity:credit')}</Th>
               <Th className="bg-th-bkg-1 text-right">{t('activity:debit')}</Th>
               <Th className="flex justify-end bg-th-bkg-1">
-                <Tooltip content={t('activity:tooltip-fee')} delay={250}>
+                <Tooltip content={t('activity:tooltip-fee')} delay={100}>
                   <span className="tooltip-underline">{t('fee')}</span>
                 </Tooltip>
               </Th>
@@ -425,27 +427,24 @@ const MobileActivityFeedItem = ({
                 </>
               ) : isPerp ? (
                 <>
-                  <span
-                    className={`mr-1 font-body ${
-                      activity.activity_details.taker_side === 'bid'
-                        ? 'text-th-up'
-                        : 'text-th-down'
-                    }`}
-                  >
-                    {activity.activity_details.taker_side === 'bid'
-                      ? 'BUY'
-                      : 'SELL'}
-                  </span>
                   <span className="mr-1">
                     {activity.activity_details.quantity}
                   </span>
                   <span className="font-body text-th-fgd-3">
                     {activity.activity_details.perp_market_name}
                   </span>
+                  <span className="font-body">
+                    {' '}
+                    <PerpSideBadge
+                      basePosition={
+                        activity.activity_details.taker_side === 'bid' ? 1 : -1
+                      }
+                    />
+                  </span>
                 </>
               ) : isOpenbook ? (
                 <>
-                  <span
+                  {/* <span
                     className={`mr-1 font-body ${
                       activity.activity_details.side === 'buy'
                         ? 'text-th-up'
@@ -453,10 +452,14 @@ const MobileActivityFeedItem = ({
                     }`}
                   >
                     {activity.activity_details.side === 'buy' ? 'BUY' : 'SELL'}
-                  </span>
+                  </span> */}
                   <span className="mr-1">{activity.activity_details.size}</span>
                   <span className="font-body text-th-fgd-3">
                     {activity.activity_details.base_symbol}
+                  </span>
+                  <span className="font-body">
+                    {' '}
+                    <SideBadge side={activity.activity_details.side} />
                   </span>
                 </>
               ) : (

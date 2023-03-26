@@ -167,7 +167,7 @@ const RecentTrades = () => {
           <Tooltip
             className="hidden md:block"
             content={t('trade:tooltip-volume-alert')}
-            delay={250}
+            delay={100}
           >
             <IconButton
               onClick={() => setShowVolumeAlertModal(true)}

@@ -40,7 +40,7 @@ import { THEME_KEY } from 'utils/constants'
 // Top level state hydrating/updating should go in MangoProvider
 
 // Create a client
-const queryClient = new QueryClient()
+export const queryClient = new QueryClient()
 
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet

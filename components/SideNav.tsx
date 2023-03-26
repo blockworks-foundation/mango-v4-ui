@@ -13,6 +13,7 @@ import {
   XMarkIcon,
   MagnifyingGlassIcon,
   BanknotesIcon,
+  NewspaperIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -143,7 +144,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               <MenuItem
                 collapsed={false}
                 icon={<LightBulbIcon className="h-5 w-5" />}
-                title={t('learn')}
+                title={t('documentation')}
                 pagePath="https://docs.mango.markets"
                 hideIconBg
                 isExternal
@@ -154,6 +155,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 icon={<BuildingLibraryIcon className="h-5 w-5" />}
                 title={t('governance')}
                 pagePath="https://dao.mango.markets"
+                hideIconBg
+                isExternal
+                showTooltip={false}
+              />
+              <MenuItem
+                collapsed={false}
+                icon={<NewspaperIcon className="h-5 w-5" />}
+                title={t('terms-of-use')}
+                pagePath="https://docs.mango.markets/legal"
                 hideIconBg
                 isExternal
                 showTooltip={false}
@@ -175,7 +185,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               />
             }
             isOpen
-            panelTitle={`${mangoAccount?.name || ''} ${t('account')}`}
+            panelTitle={mangoAccount?.name ? mangoAccount.name : t('account')}
             title={
               <div className="w-24 text-left">
                 <p className="mb-0.5 whitespace-nowrap text-xs">
@@ -218,7 +228,7 @@ const MenuItem = ({
 }: {
   active?: boolean
   collapsed: boolean
-  icon: ReactNode
+  icon?: ReactNode
   title: string
   pagePath: string
   hideIconBg?: boolean
@@ -238,20 +248,24 @@ const MenuItem = ({
             ? 'text-th-fgd-3'
             : 'text-th-fgd-2'
         } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
+        target={isExternal ? '_blank' : ''}
+        rel={isExternal ? 'noopener noreferrer' : ''}
       >
-        <div className="flex w-full items-center justify-between">
+        <div className="flex w-full items-center">
           <div className="flex items-center">
-            <div
-              className={
-                hideIconBg
-                  ? ''
-                  : `flex h-8 w-8 items-center justify-center rounded-full ${
-                      theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
-                    }`
-              }
-            >
-              {icon}
-            </div>
+            {icon ? (
+              <div
+                className={
+                  hideIconBg
+                    ? ''
+                    : `flex h-8 w-8 items-center justify-center rounded-full ${
+                        theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                      }`
+                }
+              >
+                {icon}
+              </div>
+            ) : null}
             <Transition
               show={!collapsed}
               as={Fragment}
@@ -266,7 +280,7 @@ const MenuItem = ({
             </Transition>
           </div>
           {isExternal ? (
-            <ArrowTopRightOnSquareIcon className="mr-4 h-4 w-4" />
+            <ArrowTopRightOnSquareIcon className="ml-2 h-3 w-3" />
           ) : null}
         </div>
       </Link>
@@ -416,7 +430,7 @@ export const ExpandableMenuItem = ({
         leaveTo="opacity-0 max-h-0"
       >
         <Disclosure.Panel className="w-full overflow-hidden">
-          <div className={`${!alignBottom ? 'ml-2.5' : ''}`}>{children}</div>
+          <div className={`${!alignBottom ? 'ml-1.5' : ''}`}>{children}</div>
         </Disclosure.Panel>
       </Transition>
     </Disclosure>

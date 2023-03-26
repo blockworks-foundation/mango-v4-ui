@@ -151,6 +151,15 @@ const Dashboard: NextPage = () => {
                                   }
                                 />
                                 <KeyValuePair
+                                  label="MintInfo"
+                                  value={
+                                    <ExplorerLink
+                                      address={mintInfo!.publicKey.toString()}
+                                      anchorData
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
                                   label="Vault"
                                   value={
                                     <ExplorerLink
@@ -170,6 +179,10 @@ const Dashboard: NextPage = () => {
                                 <KeyValuePair
                                   label="Token Index"
                                   value={bank.tokenIndex}
+                                />
+                                <KeyValuePair
+                                  label="Mint Decimals"
+                                  value={bank.mintDecimals}
                                 />
                                 <KeyValuePair
                                   label="Oracle Price"
@@ -330,6 +343,10 @@ const Dashboard: NextPage = () => {
                                   value={`${bank.oracleConfig.maxStalenessSlots} slots`}
                                 />
                                 <KeyValuePair
+                                  label="Oracle: Conf filter"
+                                  value={`${bank.oracleConfig.confFilter}`}
+                                />
+                                <KeyValuePair
                                   label="Group Insurance Fund"
                                   value={`${mintInfo!.groupInsuranceFund}`}
                                 />
@@ -368,8 +385,9 @@ const Dashboard: NextPage = () => {
                 Perp Markets
               </h3>
               <div className="border-b border-th-bkg-3">
-                {Array.from(group.perpMarketsMapByOracle).map(
-                  ([oracle, perpMarket]) => {
+                {Array.from(group.perpMarketsMapByOracle)
+                  .filter(([_, perpMarket]) => !perpMarket.name.includes('OLD'))
+                  .map(([oracle, perpMarket]) => {
                     return (
                       <Disclosure key={oracle.toString()}>
                         {({ open }) => (
@@ -442,6 +460,10 @@ const Dashboard: NextPage = () => {
                                 value={perpMarket.perpMarketIndex}
                               />
                               <KeyValuePair
+                                label="Base Decimals"
+                                value={perpMarket.baseDecimals}
+                              />
+                              <KeyValuePair
                                 label="Reduce Only"
                                 value={perpMarket.reduceOnly ? 'True' : 'False'}
                               />
@@ -481,19 +503,39 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Open Interest"
-                                value={`${perpMarket.openInterest} lots`}
+                                value={`${perpMarket.openInterest} lots ($${(
+                                  perpMarket.baseLotsToUi(
+                                    perpMarket.openInterest
+                                  ) * perpMarket.uiPrice
+                                ).toFixed(2)})`}
                               />
                               <KeyValuePair
                                 label="Lot Sizes"
                                 value={`${perpMarket.baseLotSize} base /
-                          ${perpMarket.quoteLotSize} quote`}
+                          ${
+                            perpMarket.quoteLotSize
+                          } quote (tick size: $${perpMarket.priceLotsToUi(
+                                  new BN(1)
+                                )}, 1 base lot: $${(
+                                  perpMarket.baseLotsToUi(new BN(1)) *
+                                  perpMarket.uiPrice
+                                ).toFixed(3)})`}
                               />
                               <KeyValuePair
                                 label="Maint Asset/Liab Weight"
                                 value={`${perpMarket.maintBaseAssetWeight.toFixed(
                                   4
                                 )}/
-                          ${perpMarket.maintBaseLiabWeight.toFixed(4)}`}
+                          ${perpMarket.maintBaseLiabWeight.toFixed(
+                            4
+                          )} (maint leverage: ${(
+                                  1 /
+                                  (perpMarket.maintBaseLiabWeight.toNumber() -
+                                    1)
+                                ).toFixed(2)}x, init leverage: ${(
+                                  1 /
+                                  (perpMarket.initBaseLiabWeight.toNumber() - 1)
+                                ).toFixed(2)}x)`}
                               />
                               <KeyValuePair
                                 label="Init Asset/Liab Weight"
@@ -504,10 +546,10 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Base liquidation fee"
-                                value={`${
+                                value={`${(
                                   10000 *
                                   perpMarket.baseLiquidationFee.toNumber()
-                                } bps`}
+                                ).toFixed(2)} bps`}
                               />
                               <KeyValuePair
                                 label="Trading Fees"
@@ -526,11 +568,19 @@ const Dashboard: NextPage = () => {
                                 ).toFixed(2)}%`}
                               />
                               <KeyValuePair
+                                label="Funding impacty quantity"
+                                value={`${perpMarket.impactQuantity.toNumber()} ($${(
+                                  perpMarket.baseLotsToUi(
+                                    perpMarket.impactQuantity
+                                  ) * perpMarket.uiPrice
+                                ).toFixed(2)})`}
+                              />
+                              <KeyValuePair
                                 label="Fees Accrued"
                                 value={`$${toUiDecimals(
                                   perpMarket.feesAccrued,
                                   6
-                                )}`}
+                                ).toFixed(2)}`}
                               />
                               <KeyValuePair
                                 label="Fees Settled"
@@ -586,8 +636,8 @@ const Dashboard: NextPage = () => {
                                 value={`${perpMarket.settlePnlLimitFactor}`}
                               />
                               <KeyValuePair
-                                label="Settle pnl limit window size ts"
-                                value={`${perpMarket.settlePnlLimitWindowSizeTs.toNumber()}`}
+                                label="Settle pnl limit window size"
+                                value={`${perpMarket.settlePnlLimitWindowSizeTs.toNumber()} secs`}
                               />
                               <KeyValuePair
                                 label="Maint overall asset weight"
@@ -599,17 +649,22 @@ const Dashboard: NextPage = () => {
                               />
                               <KeyValuePair
                                 label="Positive pnl liquidation fee"
-                                value={`${perpMarket.positivePnlLiquidationFee
+                                value={`${(
+                                  10000 *
+                                  perpMarket.positivePnlLiquidationFee.toNumber()
+                                ).toFixed(
+                                  2
+                                )} bps (${perpMarket.positivePnlLiquidationFee
+                                  .div(perpMarket.baseLiquidationFee)
                                   .toNumber()
-                                  .toFixed(4)}`}
+                                  .toFixed(2)}x of Base liquidation fee)`}
                               />
                             </Disclosure.Panel>
                           </>
                         )}
                       </Disclosure>
                     )
-                  }
-                )}
+                  })}
               </div>
             </div>
           ) : (

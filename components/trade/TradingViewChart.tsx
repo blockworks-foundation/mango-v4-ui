@@ -69,6 +69,7 @@ const TradingViewChart = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
+  const [headerReady, setHeaderReady] = useState(false)
   const [spotOrPerp, setSpotOrPerp] = useState('spot')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
@@ -746,6 +747,9 @@ const TradingViewChart = () => {
       tvWidgetRef.current.onChartReady(() => {
         setChartReady(true)
       })
+      tvWidgetRef.current.headerReady().then(() => {
+        setHeaderReady(true)
+      })
     }
   }, [theme, defaultProps, isMobile])
 
@@ -753,13 +757,14 @@ const TradingViewChart = () => {
   useEffect(() => {
     if (
       chartReady &&
+      headerReady &&
       !orderLinesButtonRef.current &&
       !stablePriceButtonRef.current
     ) {
       createOLButton()
       createStablePriceButton()
     }
-  }, [createOLButton, chartReady, createStablePriceButton])
+  }, [createOLButton, chartReady, createStablePriceButton, headerReady])
 
   // update order lines if a user's open orders change
   useEffect(() => {

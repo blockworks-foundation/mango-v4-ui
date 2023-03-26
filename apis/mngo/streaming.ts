@@ -64,7 +64,7 @@ export function subscribeOnStream(
 
   const msg = {
     command: 'subscribe',
-    marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
+    marketId: symbolInfo.address,
   }
   if (!isOpen(socket)) {
     console.warn('Socket Closed')
@@ -74,10 +74,10 @@ export function subscribeOnStream(
   socket.send(JSON.stringify(msg))
 }
 
-export function unsubscribeFromStream() {
+export function unsubscribeFromStream(marketId: string) {
   const msg = {
     command: 'unsubscribe',
-    marketId: 'HwhVGkfsSQ9JSQeQYu2CbkRCLvsh3qRZxG6m4oMVwZpN',
+    marketId,
   }
   if (!isOpen(socket)) {
     console.warn('Socket Closed')

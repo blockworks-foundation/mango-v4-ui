@@ -76,7 +76,6 @@ const MangoAccountsListModal = ({
         s.mangoAccount.current = reloadedMangoAccount
       })
       actions.fetchOpenOrders()
-      actions.fetchTradeHistory()
       setLastAccountViewed(acc.publicKey.toString())
     } catch (e) {
       console.warn('Error selecting account', e)
@@ -195,7 +194,7 @@ const MangoAccountsListModal = ({
                         <Tooltip
                           className="hidden md:block"
                           content={t('copy-address')}
-                          delay={250}
+                          delay={100}
                         >
                           <IconButton
                             className="text-th-fgd-3"
