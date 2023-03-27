@@ -3,56 +3,49 @@ import { LinkButton } from '@components/shared/Button'
 import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { isArray } from 'lodash'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
-import { EmptyObject, ProfileDetails } from 'types'
+import { EmptyObject } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import LeaderboardTable from './LeaderboardTable'
 
-interface LeaderboardRes {
+export interface LeaderboardRes {
   date_hour: string
   mango_account: string
   pnl: number
+  profile_image_url: string | null
+  profile_name: string
   start_date_hour: string
+  trader_category: string
   wallet_pk: string
 }
 
-export type LeaderboardItem = LeaderboardRes & ProfileDetails
-
 type DaysToShow = '1DAY' | '1WEEK' | 'ALLTIME'
+
+const isLeaderboard = (
+  response: null | EmptyObject | LeaderboardRes[]
+): response is LeaderboardRes[] => {
+  if (response && Array.isArray(response)) {
+    return true
+  }
+  return false
+}
 
 const fetchLeaderboard = async (
   daysToShow: DaysToShow,
   offset = 0
-): Promise<Array<LeaderboardItem>> => {
+): Promise<Array<LeaderboardRes>> => {
   const data = await fetch(
     `${MANGO_DATA_API_URL}/leaderboard-pnl?over_period=${daysToShow}&offset=${offset}`
   )
-  const leaderboardRes: null | EmptyObject | LeaderboardRes[] =
-    await data.json()
-  if (leaderboardRes && isArray(leaderboardRes)) {
-    const profileData = await Promise.all(
-      leaderboardRes.map((r: LeaderboardRes) =>
-        fetch(
-          `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
-        )
-      )
-    )
-    const profileRes: null | EmptyObject | ProfileDetails[] = await Promise.all(
-      profileData.map((d) => d.json())
-    )
-    if (profileRes && isArray(profileRes)) {
-      const combinedRes = leaderboardRes.map(
-        (r: LeaderboardRes, i: number) => ({
-          ...r,
-          ...profileRes[i],
-        })
-      )
-      return combinedRes
-    }
+  const parsedData: null | EmptyObject | LeaderboardRes[] = await data.json()
+
+  let leaderboardData
+  if (isLeaderboard(parsedData)) {
+    leaderboardData = parsedData
   }
-  return []
+
+  return leaderboardData ?? []
 }
 
 const LeaderboardPage = () => {
@@ -101,7 +94,7 @@ const LeaderboardPage = () => {
                 activeValue={daysToShow}
                 disabled={isLoading}
                 onChange={(v) => handleDaysToShow(v)}
-                names={['24h', '7d', t('all')]}
+                names={['24h', '7d', '30d', t('all')]}
                 values={['1DAY', '1WEEK', 'ALLTIME']}
               />
             </div>

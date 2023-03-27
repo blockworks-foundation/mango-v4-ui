@@ -5,13 +5,13 @@ import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
 import { formatCurrencyValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
-import { LeaderboardItem } from './LeaderboardPage'
+import { LeaderboardRes } from './LeaderboardPage'
 
 const LeaderboardTable = ({
   data,
   loading,
 }: {
-  data: LeaderboardItem[]
+  data: LeaderboardRes[]
   loading: boolean
 }) => {
   return (
@@ -48,7 +48,7 @@ const LeaderboardRow = ({
   loading,
   rank,
 }: {
-  item: LeaderboardItem
+  item: LeaderboardRes
   loading?: boolean
   rank: number
 }) => {
