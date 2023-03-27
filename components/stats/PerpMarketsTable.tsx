@@ -10,7 +10,10 @@ import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
 import dynamic from 'next/dynamic'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
-import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
+import {
+  formatFunding,
+  usePerpFundingRate,
+} from '@components/trade/PerpFundingRate'
 import { IconButton } from '@components/shared/Button'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
@@ -95,7 +98,7 @@ const PerpMarketsTable = ({
                   (r) => r.market_index === market.perpMarketIndex
                 )
                 fundingRate = marketRate
-                  ? `${marketRate.funding_rate_hourly.toFixed(4)}%`
+                  ? `${formatFunding.format(marketRate.funding_rate_hourly)}`
                   : '–'
               } else {
                 fundingRate = '–'
