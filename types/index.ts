@@ -67,11 +67,11 @@ export type SerumEvent = Modify<
 
 export type GenericMarket = Serum3Market | PerpMarket
 
-export type TradeHistoryApiResponseType = Array<{
+export type TradeHistoryApiResponseType = {
   trade_type: string
   block_datetime: string
   activity_details: PerpTradeHistory | SpotTradeHistory
-}>
+}
 
 export type AccountPerformanceData = {
   [date: string]: {
@@ -83,6 +83,25 @@ export type AccountPerformanceData = {
     borrow_interest_cumulative_usd: number
     spot_volume_usd: number
   }
+}
+
+export type TotalAccountFundingItem = {
+  long_funding: number
+  short_funding: number
+}
+
+export type HourlyFundingData = [
+  string,
+  { [key: string]: { long_funding: number; short_funding: number } }
+]
+
+export type HourlyFundingStatsData = {
+  marketFunding: { long_funding: number; short_funding: number; time: string }[]
+  market: string
+}
+
+export interface HourlyFundingChartData extends Record<string, any> {
+  time: string
 }
 
 export interface TotalInterestDataItem {

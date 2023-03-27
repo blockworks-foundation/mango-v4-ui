@@ -11,6 +11,7 @@ interface AllButtonProps {
 
 interface ButtonProps {
   size?: 'large' | 'medium' | 'small'
+  type?: 'button' | 'submit'
 }
 
 type ButtonCombinedProps = AllButtonProps & ButtonProps
@@ -22,6 +23,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
   className,
   secondary,
   size = 'medium',
+  type = 'button',
   ...props
 }) => {
   const { theme } = useTheme()
@@ -43,7 +45,8 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
         theme === 'High Contrast' && !secondary
           ? 'text-th-bkg-1'
           : 'text-th-fgd-1'
-      } focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
+      } disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
+      type={type}
       {...props}
     >
       {children}
@@ -114,6 +117,7 @@ export const LinkButton: FunctionComponent<LinkButtonCombinedProps> = ({
         secondary ? 'text-th-active' : 'text-th-fgd-2'
       } underline focus:outline-none disabled:cursor-not-allowed  disabled:opacity-50 md:hover:no-underline  ${className}`}
       {...props}
+      type="button"
     >
       {children}
     </button>

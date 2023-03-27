@@ -76,7 +76,6 @@ const MangoAccountsListModal = ({
         s.mangoAccount.current = reloadedMangoAccount
       })
       actions.fetchOpenOrders()
-      actions.fetchTradeHistory()
       setLastAccountViewed(acc.publicKey.toString())
     } catch (e) {
       console.warn('Error selecting account', e)

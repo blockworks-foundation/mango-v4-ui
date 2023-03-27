@@ -4,9 +4,11 @@ import { LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
+import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
+import PerpSideBadge from '@components/trade/PerpSideBadge'
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -541,42 +543,34 @@ const MobileActivityFeedItem = ({
                   </>
                 ) : isPerp ? (
                   <>
-                    <span
-                      className={`mr-1 font-body ${
-                        activity.activity_details.taker_side === 'bid'
-                          ? 'text-th-up'
-                          : 'text-th-down'
-                      }`}
-                    >
-                      {activity.activity_details.taker_side === 'bid'
-                        ? 'BUY'
-                        : 'SELL'}
-                    </span>
                     <span className="mr-1">
                       {activity.activity_details.quantity}
                     </span>
                     <span className="font-body text-th-fgd-3">
                       {activity.activity_details.perp_market_name}
                     </span>
+                    <span className="font-body">
+                      {' '}
+                      <PerpSideBadge
+                        basePosition={
+                          activity.activity_details.taker_side === 'bid'
+                            ? 1
+                            : -1
+                        }
+                      />
+                    </span>
                   </>
                 ) : isOpenbook ? (
                   <>
-                    <span
-                      className={`mr-1 font-body ${
-                        activity.activity_details.side === 'buy'
-                          ? 'text-th-up'
-                          : 'text-th-down'
-                      }`}
-                    >
-                      {activity.activity_details.side === 'buy'
-                        ? 'BUY'
-                        : 'SELL'}
-                    </span>
                     <span className="mr-1">
                       {activity.activity_details.size}
                     </span>
                     <span className="font-body text-th-fgd-3">
                       {activity.activity_details.base_symbol}
+                    </span>
+                    <span className="font-body">
+                      {' '}
+                      <SideBadge side={activity.activity_details.side} />
                     </span>
                   </>
                 ) : (

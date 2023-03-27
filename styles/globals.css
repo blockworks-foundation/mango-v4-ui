@@ -401,7 +401,7 @@ body {
 }
 
 button {
-  @apply tracking-wider focus:outline-none;
+  @apply default-transition tracking-wider focus:outline-none;
 }
 
 svg {
