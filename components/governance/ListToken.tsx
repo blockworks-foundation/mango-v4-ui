@@ -20,6 +20,10 @@ import {
   MANGO_REALM_PK,
 } from 'utils/governance/constants'
 import { getAllProposals } from '@solana/spl-governance'
+import {
+  ArrowDownCircleIcon,
+  ArrowUpCircleIcon,
+} from '@heroicons/react/20/solid'
 interface TokenListForm {
   mintPk: string
   oraclePk: string
@@ -77,6 +81,7 @@ const ListToken = () => {
   const [advForm, setAdvForm] = useState<TokenListForm>({
     ...defaultTokenListFormValues,
   })
+  const [showAdvFields, setShowAdvFields] = useState(false)
   const [tokenList, setTokenList] = useState<Token[]>([])
   const [priceImpact, setPriceImpact] = useState<number>(0)
   const [currentTokenInfo, setCurrentTokenInfo] = useState<
@@ -202,180 +207,198 @@ const ListToken = () => {
             {!advForm.oraclePk && <div>Pyth oracle not found</div>}
           </div>
           <div>
-            Adv fields
             <div>
-              <Label text={'oraclePk'} />
-              <Input
-                type="text"
-                value={advForm.oraclePk}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('oraclePk', e.target.value)
-                }
-              />
-              <Label text={'oracleConfFilter'} />
-              <Input
-                type="number"
-                value={advForm.oracleConfFilter.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('oracleConfFilter', e.target.value)
-                }
-              />
-              <Label text={'maxStalenessSlots'} />
-              <Input
-                type="number"
-                value={advForm.maxStalenessSlots}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('maxStalenessSlots', e.target.value)
-                }
-              />
-              <Label text={'name'} />
-              <Input
-                type="text"
-                value={advForm.name}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('name', e.target.value)
-                }
-              />
-              <Label text={'adjustmentFactor'} />
-              <Input
-                type="text"
-                value={advForm.adjustmentFactor.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('adjustmentFactor', e.target.value)
-                }
-              />
-              <Label text={'util0'} />
-              <Input
-                type="text"
-                value={advForm.util0.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('util0', e.target.value)
-                }
-              />
-              <Label text={'rate0'} />
-              <Input
-                type="text"
-                value={advForm.rate0.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('rate0', e.target.value)
-                }
-              />
-              <Label text={'util1'} />
-              <Input
-                type="text"
-                value={advForm.util1.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('util1', e.target.value)
-                }
-              />
-              <Label text={'rate1'} />
-              <Input
-                type="text"
-                value={advForm.rate1.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('rate1', e.target.value)
-                }
-              />
-              <Label text={'maxRate'} />
-              <Input
-                type="text"
-                value={advForm.maxRate.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('maxRate', e.target.value)
-                }
-              />
-              <Label text={'loanFeeRate'} />
-              <Input
-                type="text"
-                value={advForm.loanFeeRate.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('loanFeeRate', e.target.value)
-                }
-              />
-              <Label text={'loanOriginationFeeRate'} />
-              <Input
-                type="text"
-                value={advForm.loanOriginationFeeRate.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('loanOriginationFeeRate', e.target.value)
-                }
-              />
-              <Label text={'maintAssetWeight'} />
-              <Input
-                type="text"
-                value={advForm.maintAssetWeight.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('maintAssetWeight', e.target.value)
-                }
-              />
-              <Label text={'initAssetWeight'} />
-              <Input
-                type="text"
-                value={advForm.initAssetWeight.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('initAssetWeight', e.target.value)
-                }
-              />
-              <Label text={'maintLiabWeight'} />
-              <Input
-                type="text"
-                value={advForm.maintLiabWeight.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('maintLiabWeight', e.target.value)
-                }
-              />
-              <Label text={'initLiabWeight'} />
-              <Input
-                type="text"
-                value={advForm.initLiabWeight.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('initLiabWeight', e.target.value)
-                }
-              />
-              <Label text={'liquidationFee'} />
-              <Input
-                type="text"
-                value={advForm.liquidationFee.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('liquidationFee', e.target.value)
-                }
-              />
-              <Label text={'minVaultToDepositsRatio'} />
-              <Input
-                type="text"
-                value={advForm.minVaultToDepositsRatio.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('minVaultToDepositsRatio', e.target.value)
-                }
-              />
-              <Label text={'netBorrowLimitWindowSizeTs'} />
-              <Input
-                type="text"
-                value={advForm.netBorrowLimitWindowSizeTs.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('netBorrowLimitWindowSizeTs', e.target.value)
-                }
-              />
-              <Label text={'netBorrowLimitPerWindowQuote'} />
-              <Input
-                type="text"
-                value={advForm.netBorrowLimitPerWindowQuote.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm(
-                    'netBorrowLimitPerWindowQuote',
-                    e.target.value
-                  )
-                }
-              />
-              <Label text={'tokenIndex'} />
-              <Input
-                type="text"
-                value={advForm.tokenIndex.toString()}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleSetAdvForm('tokenIndex', e.target.value)
-                }
-              />
+              Adv fields
+              {showAdvFields ? (
+                <ArrowUpCircleIcon
+                  onClick={() => setShowAdvFields(false)}
+                  className="w-5"
+                ></ArrowUpCircleIcon>
+              ) : (
+                <ArrowDownCircleIcon
+                  onClick={() => setShowAdvFields(true)}
+                  className="w-5"
+                ></ArrowDownCircleIcon>
+              )}
             </div>
+            {showAdvFields && (
+              <div>
+                <Label text={'Oracle'} />
+                <Input
+                  type="text"
+                  value={advForm.oraclePk}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('oraclePk', e.target.value)
+                  }
+                />
+                <Label text={'Oracle Confidence Filter'} />
+                <Input
+                  type="number"
+                  value={advForm.oracleConfFilter.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('oracleConfFilter', e.target.value)
+                  }
+                />
+                <Label text={'Max Staleness Slots'} />
+                <Input
+                  type="number"
+                  value={advForm.maxStalenessSlots}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('maxStalenessSlots', e.target.value)
+                  }
+                />
+                <Label text={'Token Name'} />
+                <Input
+                  type="text"
+                  value={advForm.name}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('name', e.target.value)
+                  }
+                />
+                <Label text={'Interest rate adjustment factor'} />
+                <Input
+                  type="text"
+                  value={advForm.adjustmentFactor.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('adjustmentFactor', e.target.value)
+                  }
+                />
+                <Label text={'Interest rate utilization point 0'} />
+                <Input
+                  type="text"
+                  value={advForm.util0.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('util0', e.target.value)
+                  }
+                />
+                <Label text={'Interest rate point 0'} />
+                <Input
+                  type="text"
+                  value={advForm.rate0.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('rate0', e.target.value)
+                  }
+                />
+                <Label text={'Interest rate utilization point 1'} />
+                <Input
+                  type="text"
+                  value={advForm.util1.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('util1', e.target.value)
+                  }
+                />
+                <Label text={'Interest rate point 1'} />
+                <Input
+                  type="text"
+                  value={advForm.rate1.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('rate1', e.target.value)
+                  }
+                />
+                <Label text={'Interest rate max rate'} />
+                <Input
+                  type="text"
+                  value={advForm.maxRate.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('maxRate', e.target.value)
+                  }
+                />
+                <Label text={'Loan Fee Rate'} />
+                <Input
+                  type="text"
+                  value={advForm.loanFeeRate.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('loanFeeRate', e.target.value)
+                  }
+                />
+                <Label text={'Loan Origination Fee Rate'} />
+                <Input
+                  type="text"
+                  value={advForm.loanOriginationFeeRate.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('loanOriginationFeeRate', e.target.value)
+                  }
+                />
+                <Label text={'Maintenance Asset Weight'} />
+                <Input
+                  type="text"
+                  value={advForm.maintAssetWeight.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('maintAssetWeight', e.target.value)
+                  }
+                />
+                <Label text={'Init Asset Weight'} />
+                <Input
+                  type="text"
+                  value={advForm.initAssetWeight.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('initAssetWeight', e.target.value)
+                  }
+                />
+                <Label text={'Maintenance Liab Weight'} />
+                <Input
+                  type="text"
+                  value={advForm.maintLiabWeight.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('maintLiabWeight', e.target.value)
+                  }
+                />
+                <Label text={'Init Liab Weight'} />
+                <Input
+                  type="text"
+                  value={advForm.initLiabWeight.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('initLiabWeight', e.target.value)
+                  }
+                />
+                <Label text={'Liquidation Fee'} />
+                <Input
+                  type="text"
+                  value={advForm.liquidationFee.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('liquidationFee', e.target.value)
+                  }
+                />
+                <Label text={'Min Vault To Deposits Ratio'} />
+                <Input
+                  type="text"
+                  value={advForm.minVaultToDepositsRatio.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('minVaultToDepositsRatio', e.target.value)
+                  }
+                />
+                <Label text={'Net Borrow Limit Window Size'} />
+                <Input
+                  type="text"
+                  value={advForm.netBorrowLimitWindowSizeTs.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm(
+                      'netBorrowLimitWindowSizeTs',
+                      e.target.value
+                    )
+                  }
+                />
+                <Label text={'Net Borrow Limit Per Window Quote'} />
+                <Input
+                  type="text"
+                  value={advForm.netBorrowLimitPerWindowQuote.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm(
+                      'netBorrowLimitPerWindowQuote',
+                      e.target.value
+                    )
+                  }
+                />
+                <Label text={'Token Index'} />
+                <Input
+                  type="text"
+                  value={advForm.tokenIndex.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('tokenIndex', e.target.value)
+                  }
+                />
+              </div>
+            )}
           </div>
           <div>
             <Button onClick={cancel}>Cancel</Button>
