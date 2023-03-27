@@ -19,6 +19,7 @@ import ChartTabs from './ChartTabs'
 import CoingeckoStats from './CoingeckoStats'
 import { useQuery } from '@tanstack/react-query'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import TopTokenAccounts from './TopTokenAccounts'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -185,6 +186,7 @@ const TokenPage = () => {
               %
             </span>
           </div>
+          {bank ? <TopTokenAccounts bank={bank} /> : null}
           {coingeckoTokenInfo.data && coingeckoId ? (
             <CoingeckoStats
               bank={bank}

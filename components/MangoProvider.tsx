@@ -26,7 +26,7 @@ const HydrateStore = () => {
 
   useInterval(() => {
     actions.fetchGroup()
-  }, 15000)
+  }, 25000)
 
   // refetches open orders every 30 seconds
   // only the selected market's open orders are updated via websocket
@@ -40,7 +40,6 @@ const HydrateStore = () => {
   useEffect(() => {
     const actions = mangoStore.getState().actions
     if (mangoAccountAddress) {
-      actions.fetchTradeHistory()
       actions.fetchActivityFeed(mangoAccountAddress)
     }
   }, [mangoAccountAddress])
@@ -128,7 +127,6 @@ const ReadOnlyMangoAccount = () => {
           state.mangoAccount.initialLoad = false
         })
         await actions.fetchOpenOrders()
-        actions.fetchTradeHistory()
       } catch (error) {
         console.error('error', error)
       }

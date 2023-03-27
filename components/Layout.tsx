@@ -1,5 +1,12 @@
 import SideNav from './SideNav'
-import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
+import {
+  Fragment,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
@@ -62,8 +69,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
     particlesInit()
   }, [])
 
-  const showTermsOfUse =
-    (!acceptTerms || acceptTerms < termsLastUpdated) && connected
+  const showTermsOfUse = useMemo(() => {
+    return (!acceptTerms || acceptTerms < termsLastUpdated) && connected
+  }, [acceptTerms, connected])
 
   return (
     <>
