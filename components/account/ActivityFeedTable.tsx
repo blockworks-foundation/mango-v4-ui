@@ -54,6 +54,50 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
     const { fee_cost, quote_symbol } = activity.activity_details
     fee = { value: fee_cost, symbol: quote_symbol }
   }
+  if (activity_type === 'liquidate_token_with_token') {
+    const {
+      side,
+      liab_amount,
+      liab_price,
+      liab_symbol,
+      asset_amount,
+      asset_price,
+      asset_symbol,
+    } = activity.activity_details
+    if (side === 'liqee') {
+      fee = {
+        value: formatNumericValue(
+          Math.abs(liab_amount) - Math.abs(asset_amount * asset_price)
+        ),
+        symbol: liab_symbol,
+      }
+    } else {
+      fee = {
+        value: formatNumericValue(
+          Math.abs(asset_amount) - Math.abs(liab_amount * liab_price)
+        ),
+        symbol: asset_symbol,
+      }
+    }
+  }
+  if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
+    const { base_transfer, price, quote_transfer } = activity.activity_details
+    if (base_transfer > 0) {
+      fee = {
+        value: formatNumericValue(
+          Math.abs(base_transfer * price) - Math.abs(quote_transfer)
+        ),
+        symbol: 'USDC',
+      }
+    } else {
+      fee = {
+        value: formatNumericValue(
+          Math.abs(quote_transfer) - Math.abs(base_transfer * price)
+        ),
+        symbol: 'USDC',
+      }
+    }
+  }
   return fee
 }
 
@@ -79,26 +123,19 @@ const getCreditAndDebit = (activity: any) => {
     }
   }
   if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
-    const {
-      base_transfer,
-      // perp_market_name,
-      // pnl_settle_limit_transfer,
-      // pnl_transfer,
-      price,
-      quote_transfer,
-      // side,
-    } = activity.activity_details
+    const { base_transfer, perp_market_name, quote_transfer } =
+      activity.activity_details
     if (base_transfer > 0) {
       credit = {
-        value: formatNumericValue(base_transfer * price),
-        symbol: 'USDC',
+        value: formatNumericValue(base_transfer),
+        symbol: perp_market_name,
       }
       debit = { value: formatNumericValue(quote_transfer), symbol: 'USDC' }
     } else {
       credit = { value: formatNumericValue(quote_transfer), symbol: 'USDC' }
       debit = {
-        value: formatNumericValue(base_transfer * price),
-        symbol: 'USDC',
+        value: formatNumericValue(base_transfer),
+        symbol: perp_market_name,
       }
     }
   }
@@ -154,24 +191,12 @@ const getValue = (activity: any) => {
   const { activity_type } = activity
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
-    const {
-      // side,
-      // liab_amount,
-      // liab_price,
-      asset_amount,
-      asset_price,
-    } = activity.activity_details
+    const { asset_amount, asset_price } = activity.activity_details
     value = asset_amount * asset_price
   }
   if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
-    const {
-      base_transfer,
-      // pnl_settle_limit_transfer,
-      // pnl_transfer,
-      price,
-      quote_transfer,
-      side,
-    } = activity.activity_details
+    const { base_transfer, price, quote_transfer, side } =
+      activity.activity_details
     if (base_transfer > 0) {
       if (side === 'liqee') {
         value = quote_transfer
