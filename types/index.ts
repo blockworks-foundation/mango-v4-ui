@@ -137,6 +137,7 @@ export interface SpotLiquidationFeedItem {
   asset_price: number
   asset_symbol: string
   block_datetime: string
+  counterparty: string
   liab_amount: number
   liab_price: number
   liab_symbol: string

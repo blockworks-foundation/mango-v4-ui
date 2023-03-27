@@ -34,29 +34,17 @@ const LiquidationDetails = ({
       returned: { amount: 0, symbol: '', value: 0 },
     }
     if (isPerpLiquidation(details)) {
-      const {
-        base_transfer,
-        // pnl_settle_limit_transfer,
-        // pnl_transfer,
-        price,
-        quote_transfer,
-        // side,
-      } = details
-      if (base_transfer > 0) {
-        const liquidatedAmount = base_transfer * price
-        const returnedAmount = quote_transfer
-        assets.liquidated.amount = liquidatedAmount
-        assets.liquidated.value = liquidatedAmount
-        assets.returned.amount = returnedAmount
-        assets.returned.value = returnedAmount
-      } else {
-        const liquidatedAmount = quote_transfer
-        const returnedAmount = base_transfer * price
-        assets.liquidated.amount = liquidatedAmount
-        assets.liquidated.value = liquidatedAmount
-        assets.returned.amount = returnedAmount
-        assets.returned.value = returnedAmount
-      }
+      const { base_transfer, perp_market_name, price, quote_transfer } = details
+      const isLiquidatorBase = base_transfer > 0 ? 1 : -1
+      const isLiquidatorQuote = base_transfer > 0 ? -1 : 1
+      const liquidatedAmount = Math.abs(base_transfer)
+      const returnedAmount = Math.abs(quote_transfer)
+      assets.liquidated.amount = liquidatedAmount
+      assets.liquidated.value = liquidatedAmount * price * isLiquidatorBase
+      assets.liquidated.symbol = perp_market_name
+      assets.returned.amount = returnedAmount
+      assets.returned.value = returnedAmount * isLiquidatorQuote
+      assets.returned.symbol = 'USDC'
     } else {
       const {
         liab_amount,
@@ -66,10 +54,10 @@ const LiquidationDetails = ({
         asset_price,
         asset_symbol,
       } = details
-      assets.liquidated.amount = asset_amount
+      assets.liquidated.amount = Math.abs(asset_amount)
       assets.liquidated.symbol = asset_symbol
       assets.liquidated.value = asset_amount * asset_price
-      assets.returned.amount = liab_amount
+      assets.returned.amount = Math.abs(liab_amount)
       assets.returned.symbol = liab_symbol
       assets.returned.value = liab_amount * liab_price
     }
@@ -83,16 +71,22 @@ const LiquidationDetails = ({
     assetReturnedSymbol,
     liquidatedValue,
     returnedValue,
+    fee,
   ] = useMemo(() => {
-    if (!activity) return [0, 0, '', '', 0, 0]
+    if (!activity) return [0, 0, '', '', 0, 0, 0]
     const values = getAssetLiquidatedReturned(activity.activity_details)
+    const isNegativeFee = activity.activity_details.side === 'liqee' ? -1 : 1
+    const fee =
+      (Math.abs(values.liquidated.value) - Math.abs(values.returned.value)) *
+      isNegativeFee
     return [
-      values?.liquidated.amount,
-      values?.returned.amount,
-      values?.liquidated.symbol,
-      values?.returned.symbol,
-      values?.liquidated.value,
-      values?.returned.value,
+      values.liquidated.amount,
+      values.returned.amount,
+      values.liquidated.symbol,
+      values.returned.symbol,
+      values.liquidated.value,
+      values.returned.value,
+      fee,
     ]
   }, [activity])
 
@@ -131,6 +125,11 @@ const LiquidationDetails = ({
               <p className="font-mono text-th-fgd-1">
                 <FormatNumericValue value={assetLiquidated} />{' '}
                 <span className="font-body">{assetLiquidatedSymbol}</span>
+                <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
+                <FormatNumericValue
+                  value={activity.activity_details.price}
+                  isUsd
+                />
               </p>
               <p className="font-mono text-xs text-th-fgd-3">
                 <FormatNumericValue value={liquidatedValue} isUsd />
@@ -145,17 +144,6 @@ const LiquidationDetails = ({
               <p className="font-mono text-xs text-th-fgd-3">
                 <FormatNumericValue value={returnedValue} isUsd />
               </p>
-            </div>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('activity:counterparty')}</p>
-              <a
-                className="text-sm"
-                href={`/?address=${activity.activity_details.counterparty}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t('activity:view-account')}
-              </a>
             </div>
           </>
         ) : (
@@ -206,12 +194,29 @@ const LiquidationDetails = ({
           </>
         )}
         <div className="col-span-1">
+          <p className="mb-0.5 text-sm">{t('activity:liquidation-fee')}</p>
+          <p className="font-mono text-th-fgd-1">
+            <FormatNumericValue value={fee} isUsd />
+          </p>
+        </div>
+        <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('activity:liquidation-side')}</p>
           <p className="text-th-fgd-1">
             {activity.activity_details.side === 'liqor'
               ? t('activity:liquidator')
               : t('activity:liquidated')}
           </p>
+        </div>
+        <div className="col-span-1">
+          <p className="mb-0.5 text-sm">{t('activity:counterparty')}</p>
+          <a
+            className="text-sm"
+            href={`/?address=${activity.activity_details.counterparty}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('activity:view-account')}
+          </a>
         </div>
         <div className="col-span-1">
           <p className="mb-0.5 text-sm">{t('transaction')}</p>

@@ -57,15 +57,8 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
     fee = { value: fee_cost, symbol: quote_symbol }
   }
   if (activity_type === 'liquidate_token_with_token') {
-    const {
-      side,
-      liab_amount,
-      liab_price,
-      liab_symbol,
-      asset_amount,
-      asset_price,
-      asset_symbol,
-    } = activity.activity_details
+    const { side, liab_amount, liab_symbol, asset_amount, asset_price } =
+      activity.activity_details
     if (side === 'liqee') {
       fee = {
         value: formatNumericValue(
@@ -76,9 +69,9 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
     } else {
       fee = {
         value: formatNumericValue(
-          Math.abs(asset_amount) - Math.abs(liab_amount * liab_price)
+          Math.abs(asset_amount * asset_price) - Math.abs(liab_amount)
         ),
-        symbol: asset_symbol,
+        symbol: liab_symbol,
       }
     }
   }
@@ -194,22 +187,22 @@ const getValue = (activity: any) => {
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
     const { asset_amount, asset_price } = activity.activity_details
-    value = asset_amount * asset_price
+    value = Math.abs(asset_amount * asset_price)
   }
   if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
     const { base_transfer, price, quote_transfer, side } =
       activity.activity_details
     if (base_transfer > 0) {
       if (side === 'liqee') {
-        value = quote_transfer
+        value = Math.abs(quote_transfer)
       } else {
-        value = base_transfer * price
+        value = Math.abs(base_transfer * price)
       }
     } else {
       if (side === 'liqee') {
-        value = base_transfer * price
+        value = Math.abs(base_transfer * price)
       } else {
-        value = quote_transfer
+        value = Math.abs(quote_transfer)
       }
     }
   }
