@@ -11,6 +11,7 @@ import { getProposals } from './getProposals'
 import { ConnectionContext } from './types'
 import { TokenProgramAccount } from './vsrAccounts'
 import { u64, MintLayout } from '@solana/spl-token'
+import BN from 'bn.js'
 
 export async function fetchRealm({
   connection,
@@ -112,3 +113,6 @@ export function parseMintAccountData(data: Buffer): MintInfo {
   }
   return mintInfo
 }
+
+export const fmtTokenAmount = (c: BN, decimals?: number) =>
+  c?.div(new BN(10).pow(new BN(decimals ?? 0))).toNumber() || 0

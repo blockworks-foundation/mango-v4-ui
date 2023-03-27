@@ -16,3 +16,19 @@ export const SIMULATION_WALLET = 'ENmcpFCpxN1CqyUjuog9yyUVfdXBKF3LVCwLr7grJZpk'
 export const MANGO_MINT = new PublicKey(
   'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac'
 )
+
+export const MANGO_DAO_WALLET_GOVERNANCE = new PublicKey(
+  '7zGXUAeUkY9pEGfApsY26amibvqsf2dmty1cbtxHdfaQ'
+)
+export const MANGO_DAO_WALLET = new PublicKey(
+  '5tgfd6XgwiXB9otEnzFpXK11m7Q7yZUaAJzWK4oT5UGF'
+)
+
+export const MANGO_MINT_DECIMALS = 6
+
+export const MAINNET_PYTH_PROGRAM = new PublicKey(
+  'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+)
+export const DEVNET_PYTH_PROGRAM = new PublicKey(
+  'gSbePebfvPy7tRqimPoVecS2UsBvYv46ynrzWocc92s'
+)
