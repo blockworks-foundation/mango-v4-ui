@@ -369,7 +369,7 @@ const SwapForm = () => {
           </div>
           <div className="-mb-2 flex justify-center">
             <button
-              className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 md:hover:text-th-active"
+              className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 focus:border-th-fgd-4 md:hover:text-th-active"
               onClick={handleSwitchTokens}
             >
               <ArrowDownIcon

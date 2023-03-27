@@ -24,7 +24,7 @@ const AccountsButton = () => {
   return (
     <>
       <button
-        className="hidden h-16 border-l border-th-bkg-3 px-4 md:block"
+        className="hidden h-16 border-l border-th-bkg-3 px-4 focus:bg-th-bkg-3 md:block"
         id="account-step-two"
         onClick={handleShowAccounts}
       >

@@ -27,7 +27,7 @@ const Select = ({
         {({ open }) => (
           <>
             <Listbox.Button
-              className={`default-transition h-full w-full rounded-md bg-th-input-bkg py-2.5 font-normal ring-1 ring-inset ring-th-input-border focus:border-th-fgd-4 focus:outline-none md:hover:ring-th-input-border-hover`}
+              className={`default-transition h-full w-full rounded-md bg-th-input-bkg py-2.5 font-normal ring-1 ring-inset ring-th-input-border focus:outline-none focus:ring-th-fgd-4 md:hover:ring-th-input-border-hover`}
             >
               <div
                 className={`flex items-center justify-between space-x-2 px-3 text-th-fgd-1`}

@@ -368,7 +368,7 @@ const AdvancedTradeForm = () => {
     return selectedMarket instanceof PerpMarket
       ? [t('trade:long'), t('trade:short')]
       : [t('buy'), t('sell')]
-  }, [selectedMarket])
+  }, [selectedMarket, t])
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -605,8 +605,8 @@ const AdvancedTradeForm = () => {
                 !connected
                   ? ''
                   : tradeForm.side === 'buy'
-                  ? 'bg-th-up-dark text-white md:hover:bg-th-up'
-                  : 'bg-th-down-dark text-white md:hover:bg-th-down'
+                  ? 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
+                  : 'bg-th-down text-white md:hover:bg-th-down md:hover:brightness-90'
               }`}
               disabled={connected && !tradeForm.baseSize}
               size="large"

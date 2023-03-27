@@ -76,7 +76,6 @@ const MangoAccountsListModal = ({
         s.mangoAccount.current = reloadedMangoAccount
       })
       actions.fetchOpenOrders()
-      actions.fetchTradeHistory()
       setLastAccountViewed(acc.publicKey.toString())
     } catch (e) {
       console.warn('Error selecting account', e)
@@ -129,7 +128,7 @@ const MangoAccountsListModal = ({
                     >
                       <button
                         onClick={() => handleSelectMangoAccount(acc)}
-                        className="default-transition flex h-full w-full items-center justify-between rounded-md rounded-r-none bg-th-bkg-2 px-4 text-th-fgd-1 hover:bg-th-bkg-3"
+                        className="default-transition flex h-full w-full items-center justify-between rounded-md rounded-r-none bg-th-bkg-2 px-4 text-th-fgd-1 focus:bg-th-bkg-3 md:hover:bg-th-bkg-3"
                       >
                         <div className="flex w-full items-center justify-between">
                           <div className="flex items-center space-x-2.5">

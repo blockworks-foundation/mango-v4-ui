@@ -48,7 +48,7 @@ const TabUnderline = <T extends Values>({
           <button
             onClick={() => onChange(value)}
             className={`default-transition relative flex h-10 w-1/2 
-            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 focus:text-th-fgd-1 focus:ring-0 md:h-auto md:rounded-none md:hover:opacity-100 ${
+            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 focus:text-th-fgd-1 md:h-auto md:rounded-none md:hover:opacity-100 ${
               small ? 'text-sm' : 'text-sm lg:text-base'
             }
             ${

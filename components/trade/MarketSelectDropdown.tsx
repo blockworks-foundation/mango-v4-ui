@@ -48,7 +48,7 @@ const MarketSelectDropdown = () => {
           className="relative -ml-2 flex flex-col overflow-visible"
           id="trade-step-one"
         >
-          <Popover.Button className="default-transition flex h-12 items-center justify-between px-2 hover:text-th-active">
+          <Popover.Button className="default-transition -ml-4 flex h-12 items-center justify-between px-4 hover:text-th-active focus:bg-th-bkg-3">
             <div className="flex items-center">
               {selectedMarket ? <MarketLogos market={selectedMarket} /> : null}
               <div className="whitespace-nowrap text-xl font-bold text-th-fgd-1 md:text-base">

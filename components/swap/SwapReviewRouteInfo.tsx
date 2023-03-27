@@ -579,7 +579,11 @@ const SwapReviewRouteInfo = ({
           <Disclosure>
             {({ open }) => (
               <>
-                <Disclosure.Button className="default-transition flex w-full items-center justify-between rounded-md p-3">
+                <Disclosure.Button
+                  className={`default-transition flex w-full items-center justify-between rounded-md p-3 focus:bg-th-bkg-3 ${
+                    open ? 'mb-2 rounded-b-none' : ''
+                  }`}
+                >
                   <p>{open ? t('swap:hide-fees') : t('swap:show-fees')}</p>
                   <ChevronDownIcon
                     className={`${

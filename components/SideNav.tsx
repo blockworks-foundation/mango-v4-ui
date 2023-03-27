@@ -305,7 +305,7 @@ export const ExpandableMenuItem = ({
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
       <Popover.Button
         className={`${theme === 'Light' ? 'text-th-fgd-3' : 'text-th-fgd-2'} ${
-          alignBottom ? '' : 'focus:text-th-active focus:ring-0'
+          alignBottom ? '' : 'focus:text-th-active'
         } md:hover:text-th-active`}
       >
         <div
@@ -355,7 +355,7 @@ export const ExpandableMenuItem = ({
             }`}
           >
             <Disclosure.Button
-              className={`flex h-full w-full items-center justify-between rounded-none focus:text-th-active focus:ring-0 md:hover:text-th-active`}
+              className={`flex h-full w-full items-center justify-between rounded-none focus:text-th-active md:hover:text-th-active`}
             >
               <div className="flex items-center">
                 <div

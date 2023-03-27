@@ -180,12 +180,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
         className="absolute bottom-0 left-0 z-20 h-full w-full overflow-auto rounded-lg bg-th-bkg-1 p-6"
         show={showTokenList}
       >
-        <button
-          onClick={() => setShowTokenList(false)}
-          className={`absolute left-4 top-4 z-40 w-6 text-th-fgd-4 focus:outline-none md:right-2 md:top-2 md:hover:text-th-active`}
-        >
-          <ArrowLeftIcon className={`h-6 w-6`} />
-        </button>
+        <BackButton onClick={() => setShowTokenList(false)} />
         <h2 className="mb-4 text-center text-lg">{t('select-borrow-token')}</h2>
         <div className="flex items-center px-4 pb-2">
           <div className="w-1/4">
@@ -380,3 +375,14 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
 }
 
 export default BorrowForm
+
+export const BackButton = ({ onClick }: { onClick: (x: boolean) => void }) => {
+  return (
+    <button
+      onClick={() => onClick(false)}
+      className="absolute left-4 top-4 z-40 w-6 text-th-fgd-4 focus:text-th-active focus:outline-none md:right-2 md:top-2 md:hover:text-th-active"
+    >
+      <ArrowLeftIcon className={`h-6 w-6`} />
+    </button>
+  )
+}

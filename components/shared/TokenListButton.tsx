@@ -13,7 +13,7 @@ const TokenListButton = ({
   return (
     <button
       onClick={() => setShowList(true)}
-      className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none border border-th-input-border bg-th-input-bkg py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1 focus:border-th-fgd-4 focus:ring-0"
+      className="default-transition flex h-full w-full items-center rounded-lg rounded-r-none border border-th-input-border bg-th-input-bkg py-2 px-3 text-th-fgd-2 hover:cursor-pointer hover:bg-th-bkg-2 hover:text-th-fgd-1 focus:border-th-fgd-4"
     >
       <div className="mr-2.5 flex min-w-[24px] items-center">
         <Image
