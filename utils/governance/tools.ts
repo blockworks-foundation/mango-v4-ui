@@ -116,3 +116,11 @@ export function parseMintAccountData(data: Buffer): MintInfo {
 
 export const fmtTokenAmount = (c: BN, decimals?: number) =>
   c?.div(new BN(10).pow(new BN(decimals ?? 0))).toNumber() || 0
+
+export const tryGetPubKey = (pubkey: string) => {
+  try {
+    return new PublicKey(pubkey)
+  } catch (e) {
+    return null
+  }
+}

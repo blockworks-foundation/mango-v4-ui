@@ -31,6 +31,8 @@ import { createProposal } from 'utils/governance/createProposal'
 import GovernanceStore from '@store/governanceStore'
 import { Market } from '@project-serum/serum'
 import axios from 'axios'
+import { notify } from 'utils/notifications'
+import { tryGetPubKey } from 'utils/governance/tools'
 
 interface TokenListForm {
   mintPk: string
@@ -115,109 +117,153 @@ const ListToken = () => {
     setAdvForm({ ...advForm, [propertyName]: value })
   }
   const handleTokenFind = async () => {
-    let currentTokenList: Token[] = tokenList
     cancel()
+    if (!tryGetPubKey(mint)) {
+      notify({
+        title: `Mint must be a PublicKey`,
+        type: 'error',
+      })
+      return
+    }
+    let currentTokenList: Token[] = tokenList
     if (!tokenList.length) {
-      const url =
-        CLUSTER === 'devnet' ? JUPITER_API_DEVNET : JUPITER_API_MAINNET
-      const response = await fetch(url)
-      const data: Token[] = await response.json()
-      currentTokenList = data
-      setTokenList(data)
+      currentTokenList = await getTokenList()
+      setTokenList(currentTokenList)
     }
     const tokenInfo = currentTokenList.find((x) => x.address === mint)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
       handleLiqudityCheck(new PublicKey(mint))
+      getListingParams(tokenInfo)
+    }
+  }
+  const getTokenList = async () => {
+    try {
+      const url =
+        CLUSTER === 'devnet' ? JUPITER_API_DEVNET : JUPITER_API_MAINNET
+      const response = await fetch(url)
+      const data: Token[] = await response.json()
+      return data
+    } catch (e) {
+      notify({
+        title: `Can't find token for given mint`,
+        description: `${e}`,
+        type: 'error',
+      })
+      return []
+    }
+  }
+  const getListingParams = async (tokenInfo: Token) => {
+    const [oraclePk, proposals, marketPk] = await Promise.all([
+      getOracle(tokenInfo.symbol),
+      getAllProposals(connection, MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK),
+      getBestMarket(mint),
+    ])
 
-      const [oraclePk, proposals, marketPk] = await Promise.all([
-        getOracle(tokenInfo.symbol),
-        getAllProposals(connection, MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK),
-        getBestMarket(mint),
-      ])
+    const index = proposals.flatMap((x) => x).length
+    const bankNum = 0
 
-      const index = proposals.flatMap((x) => x).length
-      const bankNum = 0
-
-      const [baseBank] = PublicKey.findProgramAddressSync(
-        [
-          Buffer.from('Bank'),
-          group!.publicKey.toBuffer(),
-          new BN(index).toArrayLike(Buffer, 'le', 2),
-          new BN(bankNum).toArrayLike(Buffer, 'le', 4),
-        ],
-        client.programId
+    const [baseBank] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from('Bank'),
+        group!.publicKey.toBuffer(),
+        new BN(index).toArrayLike(Buffer, 'le', 2),
+        new BN(bankNum).toArrayLike(Buffer, 'le', 4),
+      ],
+      client.programId
+    )
+    setAdvForm({
+      ...advForm,
+      oraclePk: oraclePk || '',
+      mintPk: mint,
+      name: tokenInfo.symbol,
+      tokenIndex: index,
+      openBookProgram: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
+      marketName: `${tokenInfo.symbol}/USDC`,
+      baseBankPk: baseBank.toBase58(),
+      quoteBankPk: group!
+        .getFirstBankByMint(new PublicKey(USDC_MINT))
+        .publicKey.toBase58(),
+      marketIndex: index,
+      openBookMarketExternalPk: marketPk?.toBase58() || '',
+    })
+  }
+  const handleLiqudityCheck = async (tokenMint: PublicKey) => {
+    try {
+      //we check price impact on token for 10k USDC
+      const USDC_AMOUNT = 10000000000
+      const SLIPPAGE_BPS = 50
+      const MODE = 'ExactIn'
+      const FEE = 0
+      const { bestRoute } = await handleGetRoutes(
+        USDC_MINT,
+        tokenMint.toBase58(),
+        USDC_AMOUNT,
+        SLIPPAGE_BPS,
+        MODE,
+        FEE,
+        wallet.publicKey!.toBase58()
       )
-      setAdvForm({
-        ...advForm,
-        oraclePk: oraclePk,
-        mintPk: mint,
-        name: tokenInfo.symbol,
-        tokenIndex: index,
-        openBookProgram: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
-        marketName: `${tokenInfo.symbol}/USDC`,
-        baseBankPk: baseBank.toBase58(),
-        quoteBankPk: group!
-          .getFirstBankByMint(new PublicKey(USDC_MINT))
-          .publicKey.toBase58(),
-        marketIndex: index,
-        openBookMarketExternalPk: marketPk!.toBase58(),
+      setPriceImpact(bestRoute ? bestRoute.priceImpactPct * 100 : 100)
+    } catch (e) {
+      notify({
+        title: `Error during liquidity check`,
+        description: `${e}`,
+        type: 'info',
       })
     }
   }
-  const handleLiqudityCheck = async (tokenMint: PublicKey) => {
-    //we check price impact on token for 10k USDC
-    const USDC_AMOUNT = 10000000000
-    const SLIPPAGE_BPS = 50
-    const MODE = 'ExactIn'
-    const FEE = 0
-    const { bestRoute } = await handleGetRoutes(
-      USDC_MINT,
-      tokenMint.toBase58(),
-      USDC_AMOUNT,
-      SLIPPAGE_BPS,
-      MODE,
-      FEE,
-      wallet.publicKey!.toBase58()
-    )
-    setPriceImpact(bestRoute ? bestRoute.priceImpactPct * 100 : 100)
-  }
   const getOracle = async (tokenSymbol: string) => {
-    const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
-    const pythAccounts = await pythClient.getData()
-    const product = pythAccounts.products.find(
-      (x) => x.base === tokenSymbol.toUpperCase()
-    )
-    return product?.price_account || ''
+    try {
+      const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
+      const pythAccounts = await pythClient.getData()
+      const product = pythAccounts.products.find(
+        (x) => x.base === tokenSymbol.toUpperCase()
+      )
+      return product?.price_account || ''
+    } catch (e) {
+      notify({
+        title: `Pyth oracle not found`,
+        description: `${e}`,
+        type: 'error',
+      })
+    }
   }
   const getBestMarket = async (tokenMint: string) => {
-    const dexProgramPk = OPENBOOK_PROGRAM_ID[CLUSTER]
+    try {
+      const dexProgramPk = OPENBOOK_PROGRAM_ID[CLUSTER]
 
-    const markets = await Market.findAccountsByMints(
-      connection,
-      new PublicKey(tokenMint),
-      new PublicKey(USDC_MINT),
-      dexProgramPk
-    )
-    if (!markets.length) {
-      return undefined
-    }
-    if (markets.length === 1) {
-      return markets[0].publicKey
-    }
-    const marketsData = await Promise.all([
-      ...markets.map((x) =>
-        axios.get(`/openSerumApi/market/${x.publicKey.toBase58()}`)
-      ),
-    ])
-    const bestMarket = marketsData
-      .flatMap((x) => x.data)
-      .sort((a, b) => b.volume24h - a.volume24h)
+      const markets = await Market.findAccountsByMints(
+        connection,
+        new PublicKey(tokenMint),
+        new PublicKey(USDC_MINT),
+        dexProgramPk
+      )
+      if (!markets.length) {
+        return undefined
+      }
+      if (markets.length === 1) {
+        return markets[0].publicKey
+      }
+      const marketsData = await Promise.all([
+        ...markets.map((x) =>
+          axios.get(`/openSerumApi/market/${x.publicKey.toBase58()}`)
+        ),
+      ])
+      const bestMarket = marketsData
+        .flatMap((x) => x.data)
+        .sort((a, b) => b.volume24h - a.volume24h)
 
-    return new PublicKey(bestMarket[0].id)
+      return new PublicKey(bestMarket[0].id)
+    } catch (e) {
+      notify({
+        title: 'Openbook market not found',
+        description: `${e}`,
+        type: 'error',
+      })
+    }
   }
   const cancel = () => {
-    setMint('')
     setCurrentTokenInfo(null)
     setPriceImpact(0)
     setAdvForm({ ...defaultTokenListFormValues })
@@ -225,7 +271,8 @@ const ListToken = () => {
   }
   const propose = async () => {
     const proposalTx = []
-    const ix = await client!.program.methods
+
+    const registerTokenIx = await client!.program.methods
       .tokenRegister(
         Number(advForm.tokenIndex),
         advForm.name,
@@ -264,14 +311,29 @@ const ListToken = () => {
         rent: SYSVAR_RENT_PUBKEY,
       })
       .instruction()
-    proposalTx.push(ix)
+    proposalTx.push(registerTokenIx)
+
+    const registerMarketix = await client!.program.methods
+      .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
+      .accounts({
+        group: group!.publicKey,
+        admin: MANGO_DAO_WALLET,
+        serumProgram: new PublicKey(advForm.openBookProgram),
+        serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
+        baseBank: new PublicKey(advForm.baseBankPk),
+        quoteBank: new PublicKey(advForm.quoteBankPk),
+        payer: MANGO_DAO_WALLET,
+      })
+      .instruction()
+    proposalTx.push(registerMarketix)
+
     const walletSigner = wallet as never
     const proposalAddress = await createProposal(
       connection,
       walletSigner,
       MANGO_DAO_WALLET_GOVERNANCE,
       voter.tokenOwnerRecord,
-      `List ${advForm.name}`,
+      `List ${advForm.name} on mango-v4 `,
       '',
       advForm.tokenIndex,
       proposalTx,
@@ -338,11 +400,20 @@ const ListToken = () => {
                 <div>mint: {currentTokenInfo?.address}</div>
                 {priceImpact > 1 && (
                   <div>
-                    Insufficiency liquidity price impact of{' '}
+                    Warning: Low liquidity price impact of{' '}
                     {priceImpact.toPrecision(2)}% on 10k USDC swap
                   </div>
                 )}
-                {!advForm.oraclePk && <div>Pyth oracle not found</div>}
+                {!advForm.oraclePk && (
+                  <div>
+                    Cant list token pyth oracle not found for given mint
+                  </div>
+                )}
+                {!advForm.openBookMarketExternalPk && (
+                  <div>
+                    Cant list token open book market not found for given mint
+                  </div>
+                )}
               </div>
               <div>
                 <div>
