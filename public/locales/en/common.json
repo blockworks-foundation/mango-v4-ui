@@ -1,6 +1,8 @@
 {
   "404-heading": "This page was liquidated",
   "404-description": "or, never existed...",
+  "accept-terms": "Accept Terms",
+  "accept-terms-desc": "By continuing, you accept the Mango",
   "account": "Account",
   "account-closed": "Account Closed 👋",
   "account-balance": "Account Balance",
@@ -13,6 +15,7 @@
   "accounts": "Accounts",
   "actions": "Actions",
   "add-new-account": "Add New Account",
+  "agree-and-continue": "Agree and Continue",
   "all": "All",
   "amount": "Amount",
   "amount-owed": "Amount Owed",
