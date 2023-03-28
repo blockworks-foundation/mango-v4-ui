@@ -60,7 +60,7 @@ export const ConnectWalletButton: React.FC = () => {
           </div>
         </div>
       </button>
-      <div className="absolute top-1/2 right-0 z-10 h-full -translate-y-1/2">
+      <div className="absolute top-1/2 right-0 z-20 h-full -translate-y-1/2">
         <WalletSelect />
       </div>
     </div>

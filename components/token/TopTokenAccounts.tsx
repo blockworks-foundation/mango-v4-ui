@@ -22,9 +22,9 @@ type TopTokenAccount = {
   token_index: number
   value: number
   wallet_pk: string
-  profile_image_url: string
-  profile_name: string
-  trader_category: string
+  profile_image_url?: string
+  profile_name?: string
+  trader_category?: string
 }
 
 const fetchTopTokenAccounts = async (tokenIndex: number) => {
@@ -44,37 +44,37 @@ const fetchTopTokenAccounts = async (tokenIndex: number) => {
       TopDepositorBorrower[]
     ] = await Promise.all([depositsResponse.json(), borrowsResponse.json()])
 
-    const depositorProfilesResponse = await Promise.all(
-      depositsData.map((r: TopDepositorBorrower) =>
-        fetch(
-          `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
-        )
-      )
-    )
+    // const depositorProfilesResponse = await Promise.all(
+    //   depositsData.map((r: TopDepositorBorrower) =>
+    //     fetch(
+    //       `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
+    //     )
+    //   )
+    // )
 
-    const depositorProfilesData = await Promise.all(
-      depositorProfilesResponse.map((d) => d.json())
-    )
+    // const depositorProfilesData = await Promise.all(
+    //   depositorProfilesResponse.map((d) => d.json())
+    // )
 
-    const borrowerProfilesResponse = await Promise.all(
-      borrowsData.map((r: TopDepositorBorrower) =>
-        fetch(
-          `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
-        )
-      )
-    )
+    // const borrowerProfilesResponse = await Promise.all(
+    //   borrowsData.map((r: TopDepositorBorrower) =>
+    //     fetch(
+    //       `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
+    //     )
+    //   )
+    // )
 
-    const borrowerProfilesData = await Promise.all(
-      borrowerProfilesResponse.map((d) => d.json())
-    )
+    // const borrowerProfilesData = await Promise.all(
+    //   borrowerProfilesResponse.map((d) => d.json())
+    // )
 
     return [
       depositsData
-        .map((data, i) => ({ ...data, ...depositorProfilesData[i] }))
+        // .map((data, i) => ({ ...data, ...depositorProfilesData[i] }))
         .slice(0, 10)
         .filter((d) => d.value > 0),
       borrowsData
-        .map((data, i) => ({ ...data, ...borrowerProfilesData[i] }))
+        // .map((data, i) => ({ ...data, ...borrowerProfilesData[i] }))
         .slice(0, 10)
         .filter((d) => d.value < 0),
     ]
