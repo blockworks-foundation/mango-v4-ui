@@ -153,4 +153,5 @@ export const createProposal = async (
       sequenceType: SequenceType.Sequential,
     })),
   })
+  return proposalAddress
 }

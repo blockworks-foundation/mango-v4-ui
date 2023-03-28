@@ -1,10 +1,12 @@
 import { AnchorProvider, BN } from '@project-serum/anchor'
 import {
+  getTokenOwnerRecord,
   getTokenOwnerRecordAddress,
   Governance,
   ProgramAccount,
   Proposal,
   Realm,
+  TokenOwnerRecord,
 } from '@solana/spl-governance'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import produce from 'immer'
@@ -38,7 +40,7 @@ type IGovernanceStore = {
   voter: {
     voteWeight: BN
     wallet: PublicKey
-    tokenOwnerRecord: PublicKey
+    tokenOwnerRecord: ProgramAccount<TokenOwnerRecord>
   }
   set: (x: (x: IGovernanceStore) => void) => void
   initConnection: (connection: Connection) => void
@@ -61,7 +63,7 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
   voter: {
     voteWeight: new BN(0),
     wallet: PublicKey.default,
-    tokenOwnerRecord: PublicKey.default,
+    tokenOwnerRecord: {} as ProgramAccount<TokenOwnerRecord>,
   },
   set: (fn) => set(produce(fn)),
   fetchVoterWeight: async (
@@ -73,11 +75,15 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     set((state) => {
       state.loadingVoter = true
     })
-    const tokenOwnerRecord = await getTokenOwnerRecordAddress(
+    const tokenOwnerRecordPk = await getTokenOwnerRecordAddress(
       MANGO_GOVERNANCE_PROGRAM,
       MANGO_REALM_PK,
       MANGO_MINT,
       wallet
+    )
+    const tokenOwnerRecord = await getTokenOwnerRecord(
+      connectionContext.current,
+      tokenOwnerRecordPk
     )
     const { votingPower } = await getDeposits({
       realmPk: MANGO_REALM_PK,

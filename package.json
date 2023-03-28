@@ -42,6 +42,7 @@
     "decimal.js": "10.4.0",
     "howler": "2.2.3",
     "html-react-parser": "3.0.4",
+    "http-proxy-middleware": "2.0.6",
     "immer": "9.0.12",
     "klinecharts": "8.6.3",
     "lodash": "4.17.21",
