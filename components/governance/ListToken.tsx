@@ -33,6 +33,7 @@ import { Market } from '@project-serum/serum'
 import axios from 'axios'
 import { notify } from 'utils/notifications'
 import { tryGetPubKey } from 'utils/governance/tools'
+import { useTranslation } from 'next-i18next'
 
 interface TokenListForm {
   mintPk: string
@@ -100,6 +101,7 @@ const ListToken = () => {
   const wallet = useWallet()
   const { connection, client, group } = mangoStore()
   const { voter, vsrClient } = GovernanceStore()
+  const { t } = useTranslation(['governance'])
 
   const [advForm, setAdvForm] = useState<TokenListForm>({
     ...defaultTokenListFormValues,
@@ -332,7 +334,7 @@ const ListToken = () => {
       connection,
       walletSigner,
       MANGO_DAO_WALLET_GOVERNANCE,
-      voter.tokenOwnerRecord,
+      voter.tokenOwnerRecord!,
       `List ${advForm.name} on mango-v4 `,
       '',
       advForm.tokenIndex,
@@ -348,19 +350,19 @@ const ListToken = () => {
 
   return (
     <div>
-      <h3>New Listing</h3>
+      <h3>{t('new-listing')}</h3>
       {!currentTokenInfo ? (
         <>
           <div>
-            <h5>Before you propose listing token on Mango:</h5>
+            <h5>{t('before-you-list')}</h5>
             <ul>
-              <li>Have you read our New Token Listing guide?</li>
-              <li>Is there sufficient liqudity on USDC and SOL pairs?</li>
-              <li>New tokens are approved by DAO vote. this takes 3 days</li>
+              <li>{t('before-listing-1')}</li>
+              <li>{t('before-listing-2')}</li>
+              <li>{t('before-listing-3')}</li>
             </ul>
           </div>
           <div>
-            <Label text={'Token mint'} />
+            <Label text={t('token-mint')} />
             <Input
               type="text"
               value={mint}
@@ -368,9 +370,9 @@ const ListToken = () => {
                 setMint(e.target.value)
               }
             />
-            <Button onClick={handleTokenFind}>Find token</Button>
+            <Button onClick={handleTokenFind}>{t('find-token')}</Button>
             <div className="text-th-warning">
-              {currentTokenInfo === undefined && 'Token not found'}
+              {currentTokenInfo === undefined && t('token-not-found')}
             </div>
           </div>
         </>
@@ -378,10 +380,10 @@ const ListToken = () => {
         <>
           {proposalPk ? (
             <>
-              <h3>Token details</h3>
-              <div>Proposal listed!</div>
+              <h3>{t('token-details')}</h3>
+              <div>{t('proposal-listed')}</div>
               <div>
-                Your proposal url:{' '}
+                {t('your-proposal-url')}
                 {`https://dao.mango.markets/dao/MNGO/proposal/${proposalPk}`}
               </div>
             </>
@@ -389,35 +391,36 @@ const ListToken = () => {
             <>
               <div>
                 <div>
-                  name:{' '}
+                  {t('name')}
                   <img
                     src={currentTokenInfo?.logoURI}
                     className="h-5 w-5"
                   ></img>
                   {currentTokenInfo?.name}
                 </div>
-                <div>symbol: {currentTokenInfo?.symbol}</div>
-                <div>mint: {currentTokenInfo?.address}</div>
+                <div>
+                  {t('symbol')} {currentTokenInfo?.symbol}
+                </div>
+                <div>
+                  {t('mint')} {currentTokenInfo?.address}
+                </div>
                 {priceImpact > 1 && (
                   <div>
-                    Warning: Low liquidity price impact of{' '}
-                    {priceImpact.toPrecision(2)}% on 10k USDC swap
+                    {t('liquidity-warning', {
+                      priceImpactPct: priceImpact.toPrecision(2).toString(),
+                    })}
                   </div>
                 )}
                 {!advForm.oraclePk && (
-                  <div>
-                    Cant list token pyth oracle not found for given mint
-                  </div>
+                  <div>{t('cant-list-no-pyth-oracle')}</div>
                 )}
                 {!advForm.openBookMarketExternalPk && (
-                  <div>
-                    Cant list token open book market not found for given mint
-                  </div>
+                  <div>{t('cant-list-no-openbook-market')}</div>
                 )}
               </div>
               <div>
                 <div>
-                  Adv fields
+                  {t('adv-fields')}
                   {showAdvFields ? (
                     <ArrowUpCircleIcon
                       onClick={() => setShowAdvFields(false)}

@@ -3,6 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import mangoStore from '@store/mangoStore'
 import BN from 'bn.js'
+import { useTranslation } from 'next-i18next'
 import { ReactNode, useEffect } from 'react'
 import { MANGO_DAO_WALLET_GOVERNANCE } from 'utils/governance/constants'
 import OnBoarding from './OnBoarding'
@@ -22,6 +23,7 @@ const OnBoardingWrapper = ({ children }: { children: ReactNode }) => {
     governances,
   } = GovernanceStore()
   const { connection } = mangoStore()
+  const { t } = useTranslation(['governance'])
 
   useEffect(() => {
     initConnection(connection)
@@ -59,7 +61,7 @@ const OnBoardingWrapper = ({ children }: { children: ReactNode }) => {
         return null
       }
     } else {
-      return <div>Please connect your wallet</div>
+      return <div>{t('connect-wallet')}</div>
     }
   }
   return Wrapper() ? Wrapper() : <div>{children}</div>

@@ -1,6 +1,7 @@
 import Button from '@components/shared/Button'
 import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
+import { Trans, useTranslation } from 'next-i18next'
 import {
   MANGO_DAO_WALLET_GOVERNANCE,
   MANGO_MINT_DECIMALS,
@@ -10,6 +11,7 @@ import { formatNumericValue } from 'utils/numbers'
 
 const OnBoarding = () => {
   const { publicKey } = useWallet()
+  const { t } = useTranslation(['governance'])
   const { connectionContext, vsrClient, governances, fetchVoterWeight } =
     GovernanceStore()
   const refetchVoterWeight = () => {
@@ -27,21 +29,18 @@ const OnBoarding = () => {
     : 0
   return (
     <div>
-      <h3>
-        Looks like currently connected wallet doesnt have any MNGO deposited
-        inside realms
-      </h3>
+      <h3>{t('on-boarding-title')}</h3>
       <div>
-        In order to create proposals here or inside realms please go to
-        https://dao.mango.markets/ and deposit minimum{' '}
-        {formatNumericValue(minimumDeposit)} MNGO
+        <Trans>
+          {t('on-boarding-description', {
+            link: 'https://dao.mango.markets/',
+            amount: formatNumericValue(minimumDeposit),
+          })}
+        </Trans>
       </div>
+      <div>{t('on-boarding-deposit-info')}</div>
       <div>
-        deposit will be be temporarily blocked for the voting period of proposal
-        after the end of proposal you can withdraw tokens
-      </div>
-      <div>
-        <Button onClick={refetchVoterWeight}>Tokens Deposited</Button>
+        <Button onClick={refetchVoterWeight}>{t('tokens-deposited')}</Button>
       </div>
     </div>
   )

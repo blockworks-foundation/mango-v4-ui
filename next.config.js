@@ -8,7 +8,7 @@ const nextConfig = {
     domains: ['raw.githubusercontent.com', 'arweave.net'],
   },
   reactStrictMode: true,
-  //proxy for openserum api blocking cors
+  //proxy for openserum api cors
   rewrites: async () => {
     return [
       {

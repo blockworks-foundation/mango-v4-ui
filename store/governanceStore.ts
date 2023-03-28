@@ -40,7 +40,7 @@ type IGovernanceStore = {
   voter: {
     voteWeight: BN
     wallet: PublicKey
-    tokenOwnerRecord: ProgramAccount<TokenOwnerRecord>
+    tokenOwnerRecord: ProgramAccount<TokenOwnerRecord> | undefined | null
   }
   set: (x: (x: IGovernanceStore) => void) => void
   initConnection: (connection: Connection) => void
@@ -63,7 +63,7 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
   voter: {
     voteWeight: new BN(0),
     wallet: PublicKey.default,
-    tokenOwnerRecord: {} as ProgramAccount<TokenOwnerRecord>,
+    tokenOwnerRecord: null,
   },
   set: (fn) => set(produce(fn)),
   fetchVoterWeight: async (
@@ -81,10 +81,16 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
       MANGO_MINT,
       wallet
     )
-    const tokenOwnerRecord = await getTokenOwnerRecord(
-      connectionContext.current,
-      tokenOwnerRecordPk
-    )
+    let tokenOwnerRecord: ProgramAccount<TokenOwnerRecord> | undefined | null =
+      undefined
+    try {
+      tokenOwnerRecord = await getTokenOwnerRecord(
+        connectionContext.current,
+        tokenOwnerRecordPk
+      )
+    } catch (e) {
+      console.log(e)
+    }
     const { votingPower } = await getDeposits({
       realmPk: MANGO_REALM_PK,
       walletPk: wallet,

@@ -1,3 +1,26 @@
 {
-    "list-token": "List Token"
+    "list-token": "List Token",
+    "connect-wallet": "Please connect your wallet",
+    "on-boarding-title": "Looks like currently connected wallet doesn't have any MNGO deposited inside realms",
+    "on-boarding-description": "In order to create proposals here or inside realms please go to {{link}} and deposit minimum {{amount}} MNGO",
+    "on-boarding-deposit-info": "Deposit will be be temporarily blocked for the voting period of proposal after the end of proposal you can withdraw tokens",
+    "tokens-deposited": "Tokens Deposited",
+    "new-listing": "New Listing",
+    "before-you-list": "Before you propose listing token on Mango",
+    "token-mint": "Token Mint",
+    "before-listing-1": "Have you read our New Token Listing guide?",
+    "before-listing-2": "Is there sufficient liquidity on USDC and SOL pairs?",
+    "before-listing-3": "New tokens are approved by DAO vote. this takes 3 days",
+    "find-token": "Find Token",
+    "token-not-found": "Token not found",
+    "token-details": "Token Details",
+    "proposal-listed": "Proposal listed!",
+    "your-proposal-url": "Your proposal url:",
+    "name": "Name",
+    "symbol": "Symbol",
+    "mint": "Mint",
+    "liquidity-warning": "Warning: Low liquidity price impact of {{priceImpactPct}}% on 10k USDC swap",
+    "cant-list-no-pyth-oracle": "Can't list token pyth oracle not found for given mint",
+    "cant-list-no-openbook-market": "Can't list token open book market not found for given mint",
+    "adv-fields": "Advanced fields"
 }
