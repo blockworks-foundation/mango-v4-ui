@@ -111,7 +111,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         connection.removeAccountChangeListener(askSubscriptionId)
       }
     }
-  }, [connection, perpMarket])
+  }, [connection, perpMarket, group])
 
   const handleMarketClose = useCallback(
     async (bids: BidsAndAsks, asks: BidsAndAsks) => {
@@ -187,7 +187,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         onClose()
       }
     },
-    []
+    [perpMarket, position, group, onClose, soundSettings]
   )
 
   return (
