@@ -233,11 +233,9 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Collected fees native"
-                                  value={`${(
-                                    toUiDecimals(
-                                      bank.collectedFeesNative.toNumber(),
-                                      bank.mintDecimals
-                                    ) * bank.uiPrice
+                                  value={`${toUiDecimals(
+                                    bank.collectedFeesNative.toNumber(),
+                                    bank.mintDecimals
                                   ).toFixed(2)} ($${(
                                     toUiDecimals(
                                       bank.collectedFeesNative.toNumber(),
