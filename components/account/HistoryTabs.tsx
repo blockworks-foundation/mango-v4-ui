@@ -27,10 +27,10 @@ const HistoryTabs = () => {
         <div className="hide-scroll flex space-x-2 pl-4 md:pl-6">
           {TABS.map((tab) => (
             <button
-              className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium md:hover:bg-th-bkg-4 ${
+              className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium focus:bg-th-bkg-4 focus:text-th-fgd-1 md:hover:bg-th-bkg-4 ${
                 activeTab === tab
                   ? 'bg-th-bkg-4 text-th-active'
-                  : 'bg-th-bkg-3 text-th-fgd-3'
+                  : 'text-th-fgd-3'
               }`}
               onClick={() => setActiveTab(tab)}
               key={tab}

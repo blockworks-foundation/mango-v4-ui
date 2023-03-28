@@ -305,7 +305,7 @@ export const ExpandableMenuItem = ({
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
       <Popover.Button
         className={`${theme === 'Light' ? 'text-th-fgd-3' : 'text-th-fgd-2'} ${
-          alignBottom ? '' : 'focus:text-th-active'
+          alignBottom ? 'focus:bg-th-bkg-3' : 'focus:text-th-active'
         } md:hover:text-th-active`}
       >
         <div
@@ -349,45 +349,43 @@ export const ExpandableMenuItem = ({
     <Disclosure>
       {({ open }) => (
         <>
-          <div
-            className={`w-full px-4 py-2 ${
-              alignBottom ? 'h-[64px] hover:bg-th-bkg-2' : ''
+          <Disclosure.Button
+            className={`default-transition flex h-full w-full items-center justify-between rounded-none px-4 py-2 focus:text-th-active md:hover:text-th-active ${
+              alignBottom
+                ? 'h-[64px] focus:bg-th-bkg-3 md:hover:bg-th-bkg-2'
+                : ''
             }`}
           >
-            <Disclosure.Button
-              className={`flex h-full w-full items-center justify-between rounded-none focus:text-th-active md:hover:text-th-active`}
-            >
-              <div className="flex items-center">
-                <div
-                  className={
-                    hideIconBg
-                      ? ''
-                      : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
-                  }
-                >
-                  {icon}
-                </div>
-                <Transition
-                  appear={true}
-                  show={!collapsed}
-                  as={Fragment}
-                  enter="transition ease-in duration-300"
-                  enterFrom="opacity-50"
-                  enterTo="opacity-100"
-                  leave="transition ease-out duration-300"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <span className="ml-3 truncate xl:text-base">{title}</span>
-                </Transition>
+            <div className="flex items-center">
+              <div
+                className={
+                  hideIconBg
+                    ? ''
+                    : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
+                }
+              >
+                {icon}
               </div>
-              <ChevronDownIcon
-                className={`${
-                  open ? 'rotate-180' : 'rotate-360'
-                } h-5 w-5 flex-shrink-0`}
-              />
-            </Disclosure.Button>
-          </div>
+              <Transition
+                appear={true}
+                show={!collapsed}
+                as={Fragment}
+                enter="transition ease-in duration-300"
+                enterFrom="opacity-50"
+                enterTo="opacity-100"
+                leave="transition ease-out duration-300"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <span className="ml-3 truncate xl:text-base">{title}</span>
+              </Transition>
+            </div>
+            <ChevronDownIcon
+              className={`${
+                open ? 'rotate-180' : 'rotate-360'
+              } h-5 w-5 flex-shrink-0`}
+            />
+          </Disclosure.Button>
           <Transition
             as={Fragment}
             enter="transition-all ease-in duration-300"

@@ -126,13 +126,17 @@ const AccountPage = () => {
     data: fundingData,
     isLoading: loadingFunding,
     isFetching: fetchingFunding,
-  } = useQuery(['funding'], () => fetchFundingTotals(mangoAccountAddress), {
-    cacheTime: 1000 * 60 * 10,
-    staleTime: 1000 * 60,
-    retry: 3,
-    refetchOnWindowFocus: false,
-    enabled: !!mangoAccountAddress,
-  })
+  } = useQuery(
+    ['funding', mangoAccountAddress],
+    () => fetchFundingTotals(mangoAccountAddress),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!mangoAccountAddress,
+    }
+  )
 
   const oneDayPerformanceData: PerformanceDataItem[] | [] = useMemo(() => {
     if (!performanceData || !performanceData.length) return []

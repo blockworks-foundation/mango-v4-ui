@@ -30,7 +30,7 @@ export const usePerpFundingRate = () => {
   return Array.isArray(res?.data) ? res : { isSuccess: false, data: null }
 }
 
-const formatFunding = Intl.NumberFormat('en', {
+export const formatFunding = Intl.NumberFormat('en', {
   minimumSignificantDigits: 1,
   maximumSignificantDigits: 2,
   style: 'percent',
