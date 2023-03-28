@@ -26,12 +26,17 @@ const AssetsLiabilities = ({ isMobile }: { isMobile: boolean }) => {
     if (!group || !mangoAccount) return [0, 0, 0, 0]
     const assets = toUiDecimalsForQuote(mangoAccount.getAssetsValue(group))
     const liabs = toUiDecimalsForQuote(mangoAccount.getLiabsValue(group))
-    const assetsRatio = (assets / (assets + liabs)) * 100
-    const liabsRatio = 100 - assetsRatio
+    let assetsRatio = 0
+    let liabsRatio = 0
+    if (assets && liabs) {
+      assetsRatio = (assets / (assets + liabs)) * 100
+      liabsRatio = 100 - assetsRatio
+    }
     return [assets, assetsRatio, liabs, liabsRatio]
   }, [group, mangoAccount])
 
   const chartData = useMemo(() => {
+    if (!assetsValue && !liabsValue) return []
     return [
       { name: 'assets', value: assetsValue },
       { name: 'liabilities', value: liabsValue },
@@ -45,7 +50,7 @@ const AssetsLiabilities = ({ isMobile }: { isMobile: boolean }) => {
 
   return (
     <div className="flex flex-col items-center pt-4 md:flex-row md:space-x-4">
-      {mangoAccount ? (
+      {mangoAccount && chartData.length ? (
         <PieChart width={size} height={size}>
           <Pie
             cursor="pointer"

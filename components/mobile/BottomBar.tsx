@@ -18,6 +18,7 @@ import {
   BanknotesIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
+import LeaderboardIcon from '@components/icons/LeaderboardIcon'
 
 const StyledBarItemLabel = ({
   children,
@@ -105,7 +106,7 @@ const MoreMenuPanel = ({
   const { t } = useTranslation(['common', 'search'])
   return (
     <div
-      className={`fixed bottom-0 z-30 h-96 w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
+      className={`fixed bottom-0 z-30 h-[420px] w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
         showPanel ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
@@ -130,9 +131,14 @@ const MoreMenuPanel = ({
           icon={<ChartBarIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
-          title={t('governance:list-token')}
-          path="/governance"
-          icon={<ChartBarIcon className="h-5 w-5" />}
+          title={t('leaderboard')}
+          path="/leaderboard"
+          icon={<LeaderboardIcon className="h-5 w-5" />}
+        />
+        <MoreMenuItem
+          title={t('leaderboard')}
+          path="/leaderboard"
+          icon={<LeaderboardIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
           title={t('search:search-accounts')}
@@ -176,17 +182,17 @@ const MoreMenuItem = ({
       target="_blank"
       rel="noopener noreferrer"
     >
-      <div className="flex items-center">
+      <div className="flex items-center space-x-3">
         {icon}
-        <span className="ml-1.5">{title}</span>
+        <span>{title}</span>
       </div>
       <ChevronRightIcon className="h-5 w-5" />
     </a>
   ) : (
     <Link href={path} shallow={true} className={classNames}>
-      <div className="flex items-center">
+      <div className="flex items-center space-x-3">
         {icon}
-        <span className="ml-1.5">{title}</span>
+        <span>{title}</span>
       </div>
       <ChevronRightIcon className="h-5 w-5" />
     </Link>

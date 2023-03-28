@@ -1,9 +1,9 @@
 import { Transition } from '@headlessui/react'
 import {
   ArrowDownTrayIcon,
+  ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
-  FireIcon,
   PencilIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -43,6 +43,8 @@ import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { isMangoError } from 'types'
 import ColorBlur from '@components/ColorBlur'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { ACCEPT_TERMS_KEY } from 'utils/constants'
 
 const UserSetupModal = ({
   isOpen,
@@ -66,6 +68,7 @@ const UserSetupModal = ({
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
+  const [, setAcceptTerms] = useLocalStorageState(ACCEPT_TERMS_KEY, '')
 
   useEffect(() => {
     if (connected) {
@@ -196,6 +199,9 @@ const UserSetupModal = ({
   )
 
   const handleNextStep = () => {
+    if (showSetupStep === 0) {
+      setAcceptTerms(Date.now())
+    }
     setShowSetupStep(showSetupStep + 1)
   }
 
@@ -203,8 +209,8 @@ const UserSetupModal = ({
     <Modal isOpen={isOpen} onClose={onClose} fullScreen disableOutsideClose>
       <div className="grid h-screen overflow-auto bg-th-bkg-1 text-left lg:grid-cols-2">
         <img
-          className={`absolute -bottom-20 left-1/2 mt-8 h-auto w-[90%] -translate-x-1/2 sm:w-[60%] md:w-[470px] lg:left-auto lg:-right-10 lg:w-[55%] lg:-translate-x-0 xl:-bottom-40 ${
-            showSetupStep !== 0 ? 'hidden lg:block' : ''
+          className={`absolute -bottom-20 left-1/2 mt-8 h-auto -translate-x-1/2 sm:w-[60%] md:w-[410px] lg:left-auto lg:-right-10 lg:w-[55%] lg:-translate-x-0 xl:-bottom-40 ${
+            showSetupStep !== 0 ? 'hidden lg:block' : 'hidden sm:block'
           }`}
           src="/images/swap-trade@0.75x.png"
           srcSet="/images/swap-trade@0.75x.png 1098x, /images/swap-trade@1x.png 1463w,
@@ -238,21 +244,26 @@ const UserSetupModal = ({
             <p className="text-base sm:mb-2 lg:text-lg">
               {t('onboarding:intro-desc')}
             </p>
-            <div className="mb-6 space-y-2 py-3">
+            <div className="mb-3 space-y-2 py-3">
               <CheckBullet text={t('onboarding:bullet-1')} />
               <CheckBullet text={t('onboarding:bullet-2')} />
               <CheckBullet text={t('onboarding:bullet-3')} />
               <CheckBullet text={t('onboarding:bullet-4')} />
             </div>
-            <Button
-              className="mb-12 w-44"
-              onClick={handleNextStep}
-              size="large"
-            >
-              <div className="flex items-center justify-center">
-                <FireIcon className="mr-2 h-5 w-5" />
-                {t('onboarding:lets-go')}
-              </div>
+            <p className="mb-6 flex flex-wrap">
+              <span className="mr-1">{t('accept-terms-desc')}</span>
+              <a
+                className="flex items-center"
+                href="https://docs.mango.markets/legal/terms-of-use"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {t('terms-of-use')}
+                <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
+              </a>
+            </p>
+            <Button className="mb-12" onClick={handleNextStep} size="large">
+              {t('agree-and-continue')}
             </Button>
           </UserSetupTransition>
           <UserSetupTransition delay show={showSetupStep === 1}>
