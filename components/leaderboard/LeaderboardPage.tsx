@@ -58,11 +58,10 @@ const LeaderboardPage = () => {
       ({ pageParam }) => fetchLeaderboard(daysToShow, pageParam),
       {
         cacheTime: 1000 * 60 * 10,
-        staleTime: 1000 * 60,
+        staleTime: 1000 * 60 * 5,
         retry: 3,
         refetchOnWindowFocus: false,
         keepPreviousData: true,
-        refetchInterval: 1000 * 60 * 5,
         getNextPageParam: (_lastPage, pages) => pages.length * 20,
       }
     )
