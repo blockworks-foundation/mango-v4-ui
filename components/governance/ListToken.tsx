@@ -66,7 +66,7 @@ const defaultTokenListFormValues: TokenListForm = {
 const ListToken = () => {
   const wallet = useWallet()
   const { connection, client, group } = mangoStore()
-  const { voter, vsrClient } = GovernanceStore()
+  const { voter, vsrClient, governances } = GovernanceStore()
   const { t } = useTranslation(['governance'])
 
   const [advForm, setAdvForm] = useState<TokenListForm>({
@@ -80,6 +80,10 @@ const ListToken = () => {
   >(null)
   const [proposalPk, setProposalPk] = useState<string | null>(null)
   const [mint, setMint] = useState('')
+  const minVoterWeight = governances
+    ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
+        .minCommunityTokensToCreateProposal
+    : new BN(0)
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setAdvForm({ ...advForm, [propertyName]: value })
@@ -437,7 +441,15 @@ const ListToken = () => {
               </div>
               <div>
                 <Button onClick={cancel}>Cancel</Button>
-                <Button onClick={propose}>Propose</Button>
+                <Button
+                  onClick={propose}
+                  disabled={
+                    !wallet.connected ||
+                    voter.voteWeight.cmp(minVoterWeight) === -1
+                  }
+                >
+                  {!wallet.connected ? 'Connect your wallet' : 'Propose'}
+                </Button>
               </div>
               <OnBoarding></OnBoarding>
             </>

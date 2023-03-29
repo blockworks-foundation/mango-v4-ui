@@ -1,4 +1,3 @@
-import Loading from '@components/shared/Loading'
 import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import mangoStore from '@store/mangoStore'
@@ -11,8 +10,6 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
     connectionContext,
     initRealm,
     vsrClient,
-    loadingRealm,
-    loadingVoter,
     fetchVoterWeight,
     realm,
   } = GovernanceStore()
@@ -39,12 +36,6 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
     vsrClient?.program.programId.toBase58(),
   ])
 
-  const Wrapper = () => {
-    if (loadingRealm || loadingVoter) {
-      return <Loading className="mr-2 h-5 w-5" />
-    }
-    return null
-  }
-  return Wrapper() ? Wrapper() : <div>{children}</div>
+  return <div>{children}</div>
 }
 export default GovernancePageWrapper
