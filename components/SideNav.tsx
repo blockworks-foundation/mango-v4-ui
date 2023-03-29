@@ -26,6 +26,7 @@ import mangoStore from '@store/mangoStore'
 import HealthHeart from './account/HealthHeart'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useTheme } from 'next-themes'
+import LeaderboardIcon from './icons/LeaderboardIcon'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
@@ -120,14 +121,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
               title={t('more')}
             >
-              {/* <MenuItem
-              active={pathname === '/fees'}
-              collapsed={false}
-              icon={<ReceiptTaxIcon className="h-5 w-5" />}
-              title={t('fees')}
-              pagePath="/fees"
-              hideIconBg
-            /> */}
+              <MenuItem
+                active={pathname === '/leaderboard'}
+                collapsed={false}
+                icon={<LeaderboardIcon className="h-5 w-5" />}
+                title={t('leaderboard')}
+                pagePath="/leaderboard"
+                hideIconBg
+                showTooltip={false}
+              />
               <MenuItem
                 active={pathname === '/search'}
                 collapsed={false}

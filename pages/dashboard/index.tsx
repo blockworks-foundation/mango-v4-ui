@@ -233,7 +233,15 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Collected fees native"
-                                  value={bank.collectedFeesNative.toNumber()}
+                                  value={`${toUiDecimals(
+                                    bank.collectedFeesNative.toNumber(),
+                                    bank.mintDecimals
+                                  ).toFixed(2)} ($${(
+                                    toUiDecimals(
+                                      bank.collectedFeesNative.toNumber(),
+                                      bank.mintDecimals
+                                    ) * bank.uiPrice
+                                  ).toFixed(2)})`}
                                 />
                                 <KeyValuePair
                                   label="Dust"
@@ -241,21 +249,35 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Deposits"
-                                  value={toUiDecimals(
+                                  value={`${toUiDecimals(
                                     bank.indexedDeposits
                                       .mul(bank.depositIndex)
                                       .toNumber(),
                                     bank.mintDecimals
-                                  )}
+                                  )} ($${(
+                                    toUiDecimals(
+                                      bank.indexedDeposits
+                                        .mul(bank.depositIndex)
+                                        .toNumber(),
+                                      bank.mintDecimals
+                                    ) * bank.uiPrice
+                                  ).toFixed(2)})`}
                                 />
                                 <KeyValuePair
                                   label="Borrows"
-                                  value={toUiDecimals(
+                                  value={`${toUiDecimals(
                                     bank.indexedBorrows
                                       .mul(bank.borrowIndex)
                                       .toNumber(),
                                     bank.mintDecimals
-                                  )}
+                                  )} ($${(
+                                    toUiDecimals(
+                                      bank.indexedBorrows
+                                        .mul(bank.borrowIndex)
+                                        .toNumber(),
+                                      bank.mintDecimals
+                                    ) * bank.uiPrice
+                                  ).toFixed(2)})`}
                                 />
                                 <KeyValuePair
                                   label="Avg Utilization"

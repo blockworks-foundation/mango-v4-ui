@@ -49,7 +49,7 @@ export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
   return []
 }
 
-function decodeBook(
+export function decodeBook(
   client: MangoClient,
   market: Market | PerpMarket,
   accInfo: AccountInfo<Buffer>,

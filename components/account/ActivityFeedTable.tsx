@@ -412,7 +412,7 @@ const ActivityFeedTable = ({
       {activityFeed.length &&
       activityFeed.length % PAGINATION_PAGE_LENGTH === 0 ? (
         <div className="flex justify-center py-6">
-          <LinkButton onClick={handleShowMore}>Show More</LinkButton>
+          <LinkButton onClick={handleShowMore}>{t('show-more')}</LinkButton>
         </div>
       ) : null}
     </>
