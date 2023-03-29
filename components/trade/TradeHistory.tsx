@@ -22,15 +22,19 @@ import { NoSymbolIcon, UsersIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
+import dayjs from 'dayjs'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
+import useTradeHistory from 'hooks/useTradeHistory'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { SerumEvent, PerpTradeHistory, SpotTradeHistory } from 'types'
 import { PAGINATION_PAGE_LENGTH } from 'utils/constants'
 import { abbreviateAddress } from 'utils/formatting'
 import { breakpoints } from 'utils/theme'
+import MarketLogos from './MarketLogos'
+import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 
 type PerpFillEvent = ParsedFillEvent
@@ -142,13 +146,14 @@ const formatTradeHistory = (
   return tradeHistory.flat().map((event) => {
     let trade
     let market = selectedMarket
-    let time = ''
+    let time: string | number = ''
     if (isSerumFillEvent(event)) {
       trade = parseSerumEvent(event)
     } else if (isPerpFillEvent(event)) {
       trade = parsePerpEvent(mangoAccountAddress, event)
       market = selectedMarket
-      time = trade.timestamp.toString()
+
+      time = trade.timestamp.toNumber() * 1000
     } else {
       trade = parseApiTradeHistory(mangoAccountAddress, event)
       time = trade.block_datetime
@@ -174,15 +179,12 @@ const TradeHistory = () => {
   const group = mangoStore.getState().group
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
-  const actions = mangoStore((s) => s.actions)
   const fills = mangoStore((s) => s.selectedMarket.fills)
-  const tradeHistoryFromApi = mangoStore(
-    (s) => s.mangoAccount.tradeHistory.data
-  )
-  const loadingTradeHistory = mangoStore(
-    (s) => s.mangoAccount.tradeHistory.loading
-  )
-  const [offset, setOffset] = useState(0)
+  const {
+    data: tradeHistoryFromApi,
+    isLoading: loadingTradeHistory,
+    fetchNextPage,
+  } = useTradeHistory()
   const { width } = useViewport()
   const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
@@ -224,9 +226,10 @@ const TradeHistory = () => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return []
     let newFills: (SerumEvent | PerpFillEvent)[] = []
+    const combinedTradeHistoryPages = tradeHistoryFromApi?.pages.flat() ?? []
     if (eventQueueFillsForOwner?.length) {
       newFills = eventQueueFillsForOwner.filter((fill) => {
-        return !tradeHistoryFromApi.find((t) => {
+        return !combinedTradeHistoryPages.find((t) => {
           if ('order_id' in t && isSerumFillEvent(fill)) {
             return t.order_id === fill.orderId.toString()
           } else if ('seq_num' in t && isPerpFillEvent(fill)) {
@@ -237,7 +240,7 @@ const TradeHistory = () => {
     }
     return formatTradeHistory(group, selectedMarket, mangoAccountAddress, [
       ...newFills,
-      ...tradeHistoryFromApi,
+      ...combinedTradeHistoryPages,
     ])
   }, [
     eventQueueFillsForOwner,
@@ -245,15 +248,6 @@ const TradeHistory = () => {
     tradeHistoryFromApi,
     selectedMarket,
   ])
-
-  const handleShowMore = useCallback(() => {
-    const set = mangoStore.getState().set
-    set((s) => {
-      s.mangoAccount.tradeHistory.loading = true
-    })
-    setOffset(offset + PAGINATION_PAGE_LENGTH)
-    actions.fetchTradeHistory(offset + PAGINATION_PAGE_LENGTH)
-  }, [actions, offset])
 
   if (!selectedMarket || !group) return null
 
@@ -277,38 +271,43 @@ const TradeHistory = () => {
             </thead>
             <tbody>
               {combinedTradeHistory.map((trade, index: number) => {
+                const { side, price, market, size, feeCost, liquidity } = trade
                 return (
                   <TrBody
-                    key={`${trade.side}${trade.size}${trade.price}${trade.time}${index}`}
+                    key={`${side}${size}${price}${index}`}
                     className="my-1 p-2"
                   >
                     <Td className="">
-                      <TableMarketName market={trade.market} />
+                      <TableMarketName market={market} />
                     </Td>
                     <Td className="text-right">
-                      <SideBadge side={trade.side} />
+                      {market instanceof PerpMarket ? (
+                        <PerpSideBadge basePosition={side === 'buy' ? 1 : -1} />
+                      ) : (
+                        <SideBadge side={side} />
+                      )}
                     </Td>
-                    <Td className="text-right font-mono">{trade.size}</Td>
+                    <Td className="text-right font-mono">{size}</Td>
                     <Td className="text-right font-mono">
-                      <FormatNumericValue value={trade.price} />
+                      <FormatNumericValue value={price} />
                     </Td>
                     <Td className="text-right font-mono">
                       <FormatNumericValue
-                        value={trade.price * trade.size}
+                        value={price * size}
                         decimals={2}
                         isUsd
                       />
                     </Td>
                     <Td className="text-right">
                       <span className="font-mono">
-                        <FormatNumericValue roundUp value={trade.feeCost} />
+                        <FormatNumericValue roundUp value={feeCost} />
                       </span>
                       <p className="font-body text-xs text-th-fgd-4">
-                        {trade.liquidity}
+                        {liquidity}
                       </p>
                     </Td>
                     <Td className="whitespace-nowrap text-right">
-                      {trade.time ? (
+                      {trade?.time ? (
                         <TableDateDisplay date={trade.time} showSeconds />
                       ) : (
                         'Recent'
@@ -352,42 +351,44 @@ const TradeHistory = () => {
       ) : (
         <div>
           {combinedTradeHistory.map((trade, index: number) => {
+            const { side, price, market, size, liquidity } = trade
             return (
               <div
                 className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-                key={`${trade.price}${trade.size}${trade.side}${trade.time}${index}`}
+                key={`${price}${size}${side}${index}`}
               >
                 <div>
-                  <TableMarketName market={selectedMarket} />
-                  <div className="mt-1 flex items-center space-x-1">
-                    <SideBadge side={trade.side} />
-                    <p className="text-th-fgd-4">
-                      <span className="font-mono text-th-fgd-2">
-                        {trade.size}
-                      </span>
-                      {' at '}
-                      <span className="font-mono text-th-fgd-2">
-                        <FormatNumericValue value={trade.price} />
-                      </span>
-                    </p>
-                  </div>
+                  <p className="text-sm text-th-fgd-1">
+                    {dayjs(trade?.time ? trade.time : Date.now()).format(
+                      'ddd D MMM'
+                    )}
+                  </p>
+                  <p className="text-xs text-th-fgd-3">
+                    {trade?.time ? dayjs(trade.time).format('h:mma') : 'Recent'}
+                  </p>
                 </div>
-                <div className="flex items-center space-x-2.5">
+                <div className="flex items-center space-x-3">
                   <div className="flex flex-col items-end">
-                    <span className="mb-0.5 flex items-center space-x-1.5">
-                      {trade.time ? (
-                        <TableDateDisplay date={trade.time} showSeconds />
+                    <div className="flex items-center">
+                      <MarketLogos market={market} size="small" />
+                      <span className="mr-1 whitespace-nowrap">
+                        {market.name}
+                      </span>
+                      {market instanceof PerpMarket ? (
+                        <PerpSideBadge basePosition={side === 'buy' ? 1 : -1} />
                       ) : (
-                        'Recent'
+                        <SideBadge side={side} />
                       )}
-                    </span>
-                    <p className="font-mono text-th-fgd-2">
-                      <FormatNumericValue
-                        value={trade.price * trade.size}
-                        decimals={2}
-                        isUsd
-                      />
-                    </p>
+                    </div>
+                    <div className="mt-0.5 flex space-x-1 leading-none text-th-fgd-2">
+                      <p className="text-th-fgd-4">
+                        <span className="font-mono text-th-fgd-2">{size}</span>
+                        {' at '}
+                        <span className="font-mono text-th-fgd-2">
+                          <FormatNumericValue value={price} />
+                        </span>
+                      </p>
+                    </div>
                   </div>
                   {'taker' in trade ? (
                     <a
@@ -395,10 +396,10 @@ const TradeHistory = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       href={`/?address=${
-                        trade.liquidity === 'Taker' ? trade.maker : trade.taker
+                        liquidity === 'Taker' ? trade.maker : trade.taker
                       }`}
                     >
-                      <IconButton size="medium">
+                      <IconButton size="small">
                         <UsersIcon className="h-4 w-4" />
                       </IconButton>
                     </a>
@@ -421,7 +422,7 @@ const TradeHistory = () => {
       {combinedTradeHistory.length &&
       combinedTradeHistory.length % PAGINATION_PAGE_LENGTH === 0 ? (
         <div className="flex justify-center py-6">
-          <LinkButton onClick={handleShowMore}>Show More</LinkButton>
+          <LinkButton onClick={() => fetchNextPage()}>Show More</LinkButton>
         </div>
       ) : null}
     </>

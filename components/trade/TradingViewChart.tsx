@@ -33,8 +33,8 @@ import { PublicKey } from '@solana/web3.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { BN } from '@project-serum/anchor'
-import SpotDatafeed from 'apis/birdeye/datafeed'
-import PerpDatafeed from 'apis/mngo/datafeed'
+import Datafeed from 'apis/datafeed'
+// import PerpDatafeed from 'apis/mngo/datafeed'
 import useStablePrice from 'hooks/useStablePrice'
 import { isMangoError } from 'types'
 
@@ -69,6 +69,7 @@ const TradingViewChart = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
+  const [headerReady, setHeaderReady] = useState(false)
   const [spotOrPerp, setSpotOrPerp] = useState('spot')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
@@ -113,7 +114,7 @@ const TradingViewChart = () => {
     if (!group || !selectedMarketName)
       return '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
 
-    if (!selectedMarketName.toLowerCase().includes('perp')) {
+    if (!selectedMarketName?.toLowerCase().includes('perp')) {
       return group
         .getSerum3MarketByName(selectedMarketName)
         .serumMarketExternal.toString()
@@ -660,8 +661,8 @@ const TradingViewChart = () => {
         'paneProperties.background': 'rgba(0,0,0,0)',
         'paneProperties.backgroundType': 'solid',
         'paneProperties.legendProperties.showBackground': false,
-        'paneProperties.vertGridProperties.color': 'rgba(0,0,0,0)',
-        'paneProperties.horzGridProperties.color': 'rgba(0,0,0,0)',
+        // 'paneProperties.vertGridProperties.color': 'rgba(0,0,0,0)',
+        // 'paneProperties.horzGridProperties.color': 'rgba(0,0,0,0)',
         'paneProperties.legendProperties.showStudyTitles': false,
         'scalesProperties.showStudyLastValue': false,
         'scalesProperties.fontSize': 11,
@@ -689,11 +690,13 @@ const TradingViewChart = () => {
           [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
         }
       })
-
+      const marketAddress =
+        mangoStore.getState().selectedMarket.current?.publicKey.toString() ||
+        '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
-        symbol: selectedMarket,
-        datafeed: spotOrPerp === 'spot' ? SpotDatafeed : PerpDatafeed,
+        symbol: marketAddress,
+        datafeed: Datafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
@@ -744,20 +747,24 @@ const TradingViewChart = () => {
       tvWidgetRef.current.onChartReady(() => {
         setChartReady(true)
       })
+      tvWidgetRef.current.headerReady().then(() => {
+        setHeaderReady(true)
+      })
     }
-  }, [selectedMarket, theme, spotOrPerp, defaultProps, isMobile])
+  }, [theme, defaultProps, isMobile])
 
   // draw custom buttons when chart is ready
   useEffect(() => {
     if (
       chartReady &&
+      headerReady &&
       !orderLinesButtonRef.current &&
       !stablePriceButtonRef.current
     ) {
       createOLButton()
       createStablePriceButton()
     }
-  }, [createOLButton, chartReady, createStablePriceButton])
+  }, [createOLButton, chartReady, createStablePriceButton, headerReady])
 
   // update order lines if a user's open orders change
   useEffect(() => {

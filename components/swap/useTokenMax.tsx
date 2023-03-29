@@ -116,16 +116,19 @@ export const useTokenMax = (useMargin = true): TokenMaxResults => {
   const outputBank = mangoStore((s) => s.swap.outputBank)
 
   const tokenInMax = useMemo(() => {
-    if (mangoAccount && group && inputBank && outputBank) {
-      return getTokenInMax(
-        mangoAccount,
-        inputBank.mint,
-        outputBank.mint,
-        group,
-        useMargin
-      )
+    try {
+      if (mangoAccount && group && inputBank && outputBank) {
+        return getTokenInMax(
+          mangoAccount,
+          inputBank.mint,
+          outputBank.mint,
+          group,
+          useMargin
+        )
+      }
+    } catch (e) {
+      console.warn('Error in useTokenMax:  ', e)
     }
-
     return {
       amount: new Decimal(0),
       amountWithBorrow: new Decimal(0),

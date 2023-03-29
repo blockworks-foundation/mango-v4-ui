@@ -20,7 +20,7 @@ import Loading from '@components/shared/Loading'
 import clsx from 'clsx'
 import { IconButton } from '@components/shared/Button'
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/20/solid'
-import spotDataFeed, { SymbolInfo } from 'apis/birdeye/datafeed'
+import spotDataFeed, { SymbolInfo } from 'apis/datafeed'
 import perpDataFeed from 'apis/mngo/datafeed'
 import { sleep } from 'utils'
 import { useKlineChart } from 'hooks/useKlineChart'
@@ -240,7 +240,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     return () => {
       dispose('update-k-line')
       if (socketConnected) {
-        currentDataFeed.unsubscribeBars()
+        currentDataFeed.unsubscribeBars('')
         currentDataFeed.closeSocket()
       }
     }

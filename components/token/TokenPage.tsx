@@ -19,6 +19,7 @@ import ChartTabs from './ChartTabs'
 import CoingeckoStats from './CoingeckoStats'
 import { useQuery } from '@tanstack/react-query'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import TopTokenAccounts from './TopTokenAccounts'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -71,16 +72,25 @@ const TokenPage = () => {
     INITIAL_ANIMATION_SETTINGS
   )
 
+  const bankName = useMemo(() => {
+    if (!token) return
+    return token === 'WBTC'
+      ? 'wBTC (Portal)'
+      : token === 'ETH'
+      ? 'ETH (Portal)'
+      : token.toString()
+  }, [token])
+
   const bank = useMemo(() => {
-    if (group && token) {
-      const bank = group.banksMapByName.get(token.toString())
+    if (group && bankName) {
+      const bank = group.banksMapByName.get(bankName)
       if (bank) {
         return bank[0]
       } else {
         setLoading(false)
       }
     }
-  }, [group, token])
+  }, [group, bankName])
 
   const logoURI = useMemo(() => {
     if (bank && mangoTokens.length) {
@@ -115,7 +125,7 @@ const TokenPage = () => {
 
   return (
     <>
-      {bank ? (
+      {bank && bankName ? (
         <>
           <div className="flex flex-col border-b border-th-bkg-3 px-6 py-5 md:flex-row md:items-center md:justify-between">
             <div className="mb-4 md:mb-1">
@@ -124,7 +134,7 @@ const TokenPage = () => {
                 {coingeckoTokenInfo.data ? (
                   <h1 className="text-base font-normal">
                     {coingeckoTokenInfo.data.name}{' '}
-                    <span className="text-th-fgd-4">({bank.name})</span>
+                    <span className="text-th-fgd-4">{bank.name}</span>
                   </h1>
                 ) : (
                   <h1 className="text-base font-normal">{bank.name}</h1>
@@ -161,7 +171,7 @@ const TokenPage = () => {
             </div>
             <ActionPanel bank={bank} />
           </div>
-          <ChartTabs token={token as string} />
+          <ChartTabs token={bankName} />
           <div className="flex items-center justify-center border-y border-th-bkg-3 px-6 py-4 text-center">
             <Tooltip
               content={'The percentage of deposits that have been lent out.'}
@@ -180,6 +190,7 @@ const TokenPage = () => {
               %
             </span>
           </div>
+          {bank ? <TopTokenAccounts bank={bank} /> : null}
           {coingeckoTokenInfo.data && coingeckoId ? (
             <CoingeckoStats
               bank={bank}

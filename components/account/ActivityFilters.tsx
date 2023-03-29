@@ -39,6 +39,7 @@ const DEFAULT_ADVANCED_FILTERS = {
 const DEFAULT_PARAMS = [
   'deposit',
   'perp_trade',
+  'liquidate_perp_base_position_or_positive_pnl',
   'liquidate_token_with_token',
   'openbook_trade',
   'swap',
@@ -68,7 +69,7 @@ const ActivityFilters = () => {
   }, [advancedFilters])
 
   const queryParams = useMemo(() => {
-    return !params.length || params.length === 6
+    return !params.length || params.length === 7
       ? advancedParamsString
       : `&activity-type=${params.toString()}${advancedParamsString}`
   }, [advancedParamsString, params])

@@ -23,7 +23,7 @@ import { isPerpFillEvent } from './TradeHistory'
 import ErrorBoundary from '@components/ErrorBoundary'
 import { useQuery } from '@tanstack/react-query'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
-import { PerpTradeHistory } from 'types'
+import { EmptyObject, PerpTradeHistory } from 'types'
 import { Market } from '@project-serum/serum'
 
 const volumeAlertSound = new Howl({
@@ -81,7 +81,7 @@ const RecentTrades = () => {
     selectedMarketAddress,
   } = useSelectedMarket()
 
-  const perpMarketQuery = useQuery<PerpTradeHistory[]>(
+  const perpMarketQuery = useQuery<PerpTradeHistory[] | EmptyObject>(
     ['market-trade-history', selectedMarketAddress],
     () => fetchMarketTradeHistory(selectedMarketAddress!),
     {
@@ -167,7 +167,7 @@ const RecentTrades = () => {
           <Tooltip
             className="hidden md:block"
             content={t('trade:tooltip-volume-alert')}
-            delay={250}
+            delay={100}
           >
             <IconButton
               onClick={() => setShowVolumeAlertModal(true)}
@@ -207,6 +207,7 @@ const RecentTrades = () => {
             <tbody>
               {selectedMarket instanceof PerpMarket
                 ? perpMarketQuery?.data &&
+                  Array.isArray(perpMarketQuery?.data) &&
                   perpMarketQuery?.data.map((t) => {
                     return (
                       <tr className="font-mono text-xs" key={`${t.seq_num}`}>

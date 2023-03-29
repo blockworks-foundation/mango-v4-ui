@@ -9,7 +9,7 @@ const ProfileImage = ({
 }: {
   imageSize: string
   placeholderSize: string
-  imageUrl?: string
+  imageUrl?: string | null
   isOwnerProfile?: boolean
 }) => {
   const profile = mangoStore((s) => s.profile.details)

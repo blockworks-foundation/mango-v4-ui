@@ -15,7 +15,7 @@
     "current-price": "Current Price",
     "entry-price": "Entry Price",
     "est-slippage": "Est. Slippage",
-    "funding-rate": "Funding Rate",
+    "funding-rate": "1h Avg Funding Rate",
     "grouping": "Grouping",
     "hide-asks": "Hide Asks",
     "hide-bids": "Hide Bids",

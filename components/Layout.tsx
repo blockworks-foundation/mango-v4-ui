@@ -1,6 +1,13 @@
 import SideNav from './SideNav'
-import { ReactNode, useCallback, useEffect } from 'react'
-import { ChevronRightIcon } from '@heroicons/react/20/solid'
+import {
+  Fragment,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
 import mangoStore from '@store/mangoStore'
@@ -8,13 +15,18 @@ import BottomBar from './mobile/BottomBar'
 import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
-import { SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
+import { ACCEPT_TERMS_KEY, SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import SuccessParticles from './shared/SuccessParticles'
 import { tsParticles } from 'tsparticles-engine'
 import { loadFull } from 'tsparticles'
+import useInterval from './shared/useInterval'
+import { Transition } from '@headlessui/react'
+import { useTranslation } from 'next-i18next'
+import TermsOfUseModal from './modals/TermsOfUseModal'
 
 const sideBarAnimationDuration = 500
+const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const { connected } = useWallet()
@@ -22,6 +34,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
     false
+  )
+  const [acceptTerms, setAcceptTerms] = useLocalStorageState(
+    ACCEPT_TERMS_KEY,
+    ''
   )
   const { width } = useViewport()
 
@@ -52,6 +68,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     particlesInit()
   }, [])
+
+  const showTermsOfUse = useMemo(() => {
+    return (!acceptTerms || acceptTerms < termsLastUpdated) && connected
+  }, [acceptTerms, connected])
 
   return (
     <>
@@ -98,9 +118,54 @@ const Layout = ({ children }: { children: ReactNode }) => {
           </div>
           {children}
         </div>
+        <DeployRefreshManager />
       </div>
+      {showTermsOfUse ? (
+        <TermsOfUseModal
+          isOpen={showTermsOfUse}
+          onClose={() => setAcceptTerms(Date.now())}
+        />
+      ) : null}
     </>
   )
 }
 
 export default Layout
+
+function DeployRefreshManager(): JSX.Element | null {
+  const { t } = useTranslation('common')
+  const [newBuildAvailable, setNewBuildAvailable] = useState(false)
+  useInterval(async () => {
+    const response = await fetch('/api/build-id')
+    const { buildId } = await response.json()
+
+    if (buildId && process.env.BUILD_ID && buildId !== process.env.BUILD_ID) {
+      // There's a new version deployed that we need to load
+      setNewBuildAvailable(true)
+    }
+  }, 30000)
+
+  return (
+    <Transition
+      appear={true}
+      show={newBuildAvailable}
+      as={Fragment}
+      enter="transition ease-in duration-300"
+      enterFrom="translate-y-0"
+      enterTo="-translate-y-[130px] md:-translate-y-20"
+      leave="transition ease-out"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+    >
+      <button
+        className="default-transition fixed -bottom-[46px] left-1/2 z-50 flex -translate-x-1/2 items-center rounded-full border border-th-bkg-4 bg-th-bkg-3 py-3 px-4 shadow-md focus:outline-none md:hover:bg-th-bkg-4 md:hover:shadow-none"
+        onClick={() => window.location.reload()}
+      >
+        <p className="mr-2 whitespace-nowrap text-th-fgd-1">
+          {t('new-version')}
+        </p>
+        <ArrowPathIcon className="h-5 w-5" />
+      </button>
+    </Transition>
+  )
+}

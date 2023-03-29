@@ -52,18 +52,7 @@ const lastBarsCache = new Map()
 
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
-  intraday_multipliers: [
-    '1',
-    '3',
-    '5',
-    '15',
-    '30',
-    '45',
-    '60',
-    '120',
-    '240',
-    '1440',
-  ],
+  intraday_multipliers: ['1', '3', '5', '15', '30', '45', '60', '120', '240'],
   exchanges: [],
 }
 
@@ -99,22 +88,25 @@ export const queryBars = async (
   if (!data || !data.length) {
     return []
   }
+  let previousBar: Bar | undefined = undefined
   let bars: Bar[] = []
   for (const bar of data) {
     const timestamp = new Date(bar.candle_start).getTime()
     if (timestamp >= from * 1000 && timestamp < to * 1000) {
+      const open = previousBar ? previousBar.close : bar.open
       bars = [
         ...bars,
         {
           time: timestamp,
           low: bar.low,
-          high: bar.high,
-          open: bar.open,
+          high: open > bar.high ? open : bar.high,
+          open,
           close: bar.close,
           volume: bar.volume,
           timestamp,
         },
       ]
+      previousBar = bar
     }
   }
   return bars
@@ -247,7 +239,7 @@ export default {
   },
 
   unsubscribeBars: () => {
-    unsubscribeFromStream()
+    unsubscribeFromStream('')
   },
   closeSocket: () => {
     closeSocket()

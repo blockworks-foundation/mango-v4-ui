@@ -1,6 +1,10 @@
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import useJupiterMints from 'hooks/useJupiterMints'
-import { NoSymbolIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import {
+  ChevronDownIcon,
+  NoSymbolIcon,
+  QuestionMarkCircleIcon,
+} from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
@@ -26,6 +30,7 @@ import useBanksWithBalances, {
   BankWithBalance,
 } from 'hooks/useBanksWithBalances'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import { Disclosure, Transition } from '@headlessui/react'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -84,7 +89,7 @@ const BalancesTable = () => {
                   <div className="flex items-center">
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
                       {logoURI ? (
-                        <Image alt="" width="20" height="20" src={logoURI} />
+                        <Image alt="" width="24" height="24" src={logoURI} />
                       ) : (
                         <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
                       )}
@@ -113,11 +118,11 @@ const BalancesTable = () => {
         </tbody>
       </Table>
     ) : (
-      <>
-        {filteredBanks.map((b) => {
+      <div className="border-b border-th-bkg-3">
+        {filteredBanks.map((b, i) => {
           const bank = b.bank
 
-          let logoURI
+          let logoURI: string | undefined
           if (mangoTokens.length) {
             logoURI = mangoTokens.find(
               (t) => t.address === bank.mint.toString()
@@ -128,55 +133,78 @@ const BalancesTable = () => {
           const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
 
           return (
-            <div
-              className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-              key={bank.name}
-            >
-              <div className="flex items-center">
-                <div className="mr-2.5 flex flex-shrink-0 items-center">
-                  {logoURI ? (
-                    <Image alt="" width="20" height="20" src={logoURI} />
-                  ) : (
-                    <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                  )}
-                </div>
-                <span>{bank.name}</span>
-              </div>
-              <div className="text-right">
-                <div className="mb-0.5 flex justify-end space-x-1.5">
-                  <Balance bank={b} />
-                  <span className="text-sm text-th-fgd-4">
-                    <FormatNumericValue
-                      value={mangoAccount ? b.balance * bank.uiPrice : 0}
-                      isUsd
-                    />
-                  </span>
-                </div>
-                <div className="flex space-x-2">
-                  <p className="text-xs text-th-fgd-4">
-                    {t('trade:in-orders')}:{' '}
-                    <span className="font-mono text-th-fgd-3">
-                      <FormatNumericValue
-                        value={inOrders}
-                        decimals={bank.mintDecimals}
+            <Disclosure key={bank.name}>
+              {({ open }) => (
+                <>
+                  <Disclosure.Button
+                    className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none ${
+                      i === 0 ? 'border-t-0' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-start">
+                        <div className="mr-2.5 mt-0.5 flex flex-shrink-0 items-center">
+                          {logoURI ? (
+                            <Image
+                              alt=""
+                              width="24"
+                              height="24"
+                              src={logoURI}
+                            />
+                          ) : (
+                            <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="mb-0.5 leading-none text-th-fgd-1">
+                            {bank.name}
+                          </p>
+                          <Balance bank={b} />
+                          <p className="mt-0.5 text-sm leading-none text-th-fgd-4">
+                            <FormatNumericValue
+                              value={
+                                mangoAccount ? b.balance * bank.uiPrice : 0
+                              }
+                              isUsd
+                            />
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDownIcon
+                        className={`${
+                          open ? 'rotate-180' : 'rotate-360'
+                        } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
                       />
-                    </span>
-                  </p>
-                  <p className="text-xs text-th-fgd-4">
-                    {t('trade:unsettled')}:{' '}
-                    <span className="font-mono text-th-fgd-3">
-                      <FormatNumericValue
-                        value={unsettled}
-                        decimals={bank.mintDecimals}
-                      />
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
+                    </div>
+                  </Disclosure.Button>
+                  <Transition
+                    enter="transition ease-in duration-200"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                  >
+                    <Disclosure.Panel>
+                      <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                        <div className="col-span-1">
+                          <p className="text-xs text-th-fgd-3">
+                            {t('trade:in-orders')}
+                          </p>
+                          <BankAmountWithValue amount={inOrders} bank={bank} />
+                        </div>
+                        <div className="col-span-1">
+                          <p className="text-xs text-th-fgd-3">
+                            {t('trade:unsettled')}
+                          </p>
+                          <BankAmountWithValue amount={unsettled} bank={bank} />
+                        </div>
+                      </div>
+                    </Disclosure.Panel>
+                  </Transition>
+                </>
+              )}
+            </Disclosure>
           )
         })}
-      </>
+      </div>
     )
   ) : mangoAccountAddress || connected ? (
     <div className="flex flex-col items-center p-8">
@@ -195,7 +223,7 @@ export default BalancesTable
 const Balance = ({ bank }: { bank: BankWithBalance }) => {
   const { selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const tokenBank = bank.bank
 
@@ -292,11 +320,11 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
   if (!balance) return <p className="flex justify-end">0</p>
 
   return (
-    <p className="flex justify-end">
+    <p className="flex justify-end text-th-fgd-2">
       {!isUnownedAccount ? (
         asPath.includes('/trade') && isBaseOrQuote ? (
           <LinkButton
-            className="font-normal underline-offset-4"
+            className="font-normal underline-offset-2 md:underline-offset-4"
             onClick={() =>
               handleTradeFormBalanceClick(Math.abs(balance), isBaseOrQuote)
             }
@@ -308,7 +336,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
           </LinkButton>
         ) : asPath.includes('/swap') ? (
           <LinkButton
-            className="font-normal underline-offset-4"
+            className="font-normal underline-offset-2 md:underline-offset-4"
             onClick={() =>
               handleSwapFormBalanceClick(
                 Number(formatNumericValue(balance, tokenBank.mintDecimals))

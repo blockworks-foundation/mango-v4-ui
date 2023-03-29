@@ -25,7 +25,6 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
-// import ThemeSwitcher from './ThemeSwitcher'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -42,7 +41,7 @@ const TopBar = () => {
   const { query } = router
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
-  const isUnownedAccount = useUnownedAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const handleCloseSetup = useCallback(() => {
     setShowUserSetup(false)
@@ -111,9 +110,6 @@ const TopBar = () => {
           </div>
         ) : null}
         <div className="flex items-center">
-          {/* <div className="px-3 md:px-4">
-            <ThemeSwitcher />
-          </div> */}
           {isUnownedAccount || (!connected && isMobile) ? null : (
             <Button
               onClick={() => handleDepositWithdrawModal('deposit')}

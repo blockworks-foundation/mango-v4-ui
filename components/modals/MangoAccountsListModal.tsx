@@ -76,7 +76,6 @@ const MangoAccountsListModal = ({
         s.mangoAccount.current = reloadedMangoAccount
       })
       actions.fetchOpenOrders()
-      actions.fetchTradeHistory()
       setLastAccountViewed(acc.publicKey.toString())
     } catch (e) {
       console.warn('Error selecting account', e)
@@ -143,25 +142,24 @@ const MangoAccountsListModal = ({
                             ) : (
                               <div className="h-5 w-5 rounded-full bg-th-bkg-4" />
                             )}
-                            <div className="text-left">
+                            <div className="div flex items-center text-left">
+                              {acc.delegate.toString() !== DEFAULT_DELEGATE ? (
+                                <div className="mr-2">
+                                  <Tooltip
+                                    content={t('delegate-account-info', {
+                                      address: abbreviateAddress(acc.delegate),
+                                    })}
+                                  >
+                                    <UserPlusIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
+                                  </Tooltip>
+                                </div>
+                              ) : null}
                               <div className="mb-0.5">
                                 <div className="flex items-center">
                                   {acc.name ? (
                                     <p className="mr-2 text-sm font-bold text-th-fgd-1">
                                       {acc.name}
                                     </p>
-                                  ) : null}
-                                  {acc.delegate.toString() !==
-                                  DEFAULT_DELEGATE ? (
-                                    <Tooltip
-                                      content={t('delegate-account-info', {
-                                        address: abbreviateAddress(
-                                          acc.delegate
-                                        ),
-                                      })}
-                                    >
-                                      <UserPlusIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
-                                    </Tooltip>
                                   ) : null}
                                 </div>
                                 <p className="text-xs text-th-fgd-3">
@@ -196,7 +194,7 @@ const MangoAccountsListModal = ({
                         <Tooltip
                           className="hidden md:block"
                           content={t('copy-address')}
-                          delay={250}
+                          delay={100}
                         >
                           <IconButton
                             className="text-th-fgd-3"

@@ -41,7 +41,8 @@ const Dashboard: NextPage = () => {
       const orders = await mangoAccount.loadPerpOpenOrdersForMarket(
         client,
         group,
-        perpOrder.orderMarket
+        perpOrder.orderMarket,
+        true
       )
       openOrders[market.publicKey.toString()] = orders
     }
@@ -114,6 +115,22 @@ const Dashboard: NextPage = () => {
                 label="Health Region Begin Init Health"
                 value={mangoAccount.healthRegionBeginInitHealth.toNumber()}
               />
+              <KeyValuePair
+                label="Perp OO Count"
+                value={mangoAccount.perpOpenOrders.length}
+              />
+              <KeyValuePair
+                label="Perp Active OO Count"
+                value={mangoAccount.perpOrdersActive().length}
+              />
+              <KeyValuePair
+                label="Perp Position Count"
+                value={mangoAccount.perps.length}
+              />
+              <KeyValuePair
+                label="Active Perp Position Count"
+                value={mangoAccount.perpActive().length}
+              />
 
               <h3 className="mt-4">Token Active Positions</h3>
               {mangoAccount.tokensActive().map((token) => {
@@ -121,6 +138,14 @@ const Dashboard: NextPage = () => {
                 return (
                   <div key={token.tokenIndex} className="mt-6">
                     <KeyValuePair label="Token's Bank Name" value={bank.name} />
+                    <KeyValuePair
+                      label="Deposits Native"
+                      value={token.deposits(bank).toString()}
+                    />
+                    <KeyValuePair
+                      label="Borrow Native"
+                      value={token.borrows(bank).toString()}
+                    />
                     <KeyValuePair
                       label="Balance UI"
                       value={token.balanceUi(bank)}
@@ -225,24 +250,49 @@ const Dashboard: NextPage = () => {
                       ).toFixed(6)}`}
                     />
                     <KeyValuePair
-                      label="Taker Quote Lots"
-                      value={perp.takerQuoteLots.toNumber()}
+                      label="Cumulative Funding"
+                      value={`$${toUiDecimalsForQuote(
+                        -perp.cumulativeLongFunding
+                      ).toFixed(6)} long / $${toUiDecimalsForQuote(
+                        perp.cumulativeShortFunding
+                      ).toFixed(6)} short / $${toUiDecimalsForQuote(
+                        -perp.cumulativeLongFunding +
+                          perp.cumulativeShortFunding
+                      ).toFixed(6)} total`}
                     />
                     <KeyValuePair
-                      label="Taker Base Lots"
-                      value={perp.takerBaseLots.toNumber()}
+                      label="Taker Lots"
+                      value={`${perp.takerQuoteLots.toNumber()} quote / ${perp.takerBaseLots.toNumber()} base`}
+                    />
+                    <KeyValuePair
+                      label="Open Orders Lots"
+                      value={`${perp.bidsBaseLots.toNumber()} bids / ${perp.asksBaseLots.toNumber()} asks`}
                     />
                     <KeyValuePair
                       label="Has open orders"
                       value={perp.hasOpenOrders().toString()}
                     />
                     <KeyValuePair
-                      label="Bids Base Lots"
-                      value={perp.bidsBaseLots.toNumber()}
+                      label="Volume"
+                      value={`$${toUiDecimalsForQuote(perp.makerVolume).toFixed(
+                        6
+                      )} maker / $${toUiDecimalsForQuote(
+                        perp.takerVolume
+                      ).toFixed(6)} taker`}
                     />
                     <KeyValuePair
-                      label="Asks Base Lots"
-                      value={perp.asksBaseLots.toNumber()}
+                      label="Perp-Spot Transfers"
+                      value={`$${toUiDecimalsForQuote(
+                        perp.perpSpotTransfers
+                      ).toFixed(6)}`}
+                    />
+                    <KeyValuePair
+                      label="Position Lifetime PnL"
+                      value={`$${toUiDecimalsForQuote(
+                        perp.realizedPnlForPositionNative
+                      ).toFixed(6)} realized / $${toUiDecimalsForQuote(
+                        perp.cumulativePnlOverPositionLifetimeUi(market)
+                      ).toFixed(6)} total`}
                     />
                   </div>
                 )

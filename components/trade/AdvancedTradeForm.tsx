@@ -13,7 +13,14 @@ import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import NumberFormat, {
   NumberFormatValues,
   SourceInfo,
@@ -44,6 +51,7 @@ import { Howl } from 'howler'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { isMangoError } from 'types'
+import InlineNotification from '@components/shared/InlineNotification'
 
 const set = mangoStore.getState().set
 
@@ -273,7 +281,7 @@ const AdvancedTradeForm = () => {
       if (selectedMarket instanceof Serum3Market) {
         const spotOrderType = tradeForm.ioc
           ? Serum3OrderType.immediateOrCancel
-          : tradeForm.postOnly
+          : tradeForm.postOnly && tradeForm.tradeType !== 'Market'
           ? Serum3OrderType.postOnly
           : Serum3OrderType.limit
         const tx = await client.serum3PlaceOrder(
@@ -350,12 +358,24 @@ const AdvancedTradeForm = () => {
     }
   }, [])
 
+  const sideNames = useMemo(() => {
+    return selectedMarket instanceof PerpMarket
+      ? [t('trade:long'), t('trade:short')]
+      : [t('buy'), t('sell')]
+  }, [selectedMarket, t])
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    connected ? handlePlaceOrder() : handleConnect()
+  }
+
   return (
     <div>
       <div className="mt-1.5 px-2 md:mt-0 md:px-4 md:pt-5 lg:mt-5 lg:pt-0">
         <TabUnderline
           activeValue={tradeForm.side}
           values={['buy', 'sell']}
+          names={sideNames}
           onChange={(v) => handleSetSide(v as 'buy' | 'sell')}
           small
         />
@@ -371,13 +391,83 @@ const AdvancedTradeForm = () => {
           values={['Limit', 'Market']}
         />
       </div>
-      <div className="mt-3 px-3 md:px-4">
-        {tradeForm.tradeType === 'Limit' ? (
-          <>
-            <div className="mb-2 mt-3 flex items-center justify-between">
-              <p className="text-xs text-th-fgd-3">{t('trade:limit-price')}</p>
+      <form onSubmit={(e) => handleSubmit(e)}>
+        <div className="mt-3 px-3 md:px-4">
+          {tradeForm.tradeType === 'Limit' ? (
+            <>
+              <div className="mb-2 mt-3 flex items-center justify-between">
+                <p className="text-xs text-th-fgd-3">
+                  {t('trade:limit-price')}
+                </p>
+              </div>
+              <div className="default-transition flex items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
+                {quoteLogoURI ? (
+                  <div className="h-5 w-5 flex-shrink-0">
+                    <Image alt="" width="20" height="20" src={quoteLogoURI} />
+                  </div>
+                ) : (
+                  <div className="h-5 w-5 flex-shrink-0">
+                    <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
+                  </div>
+                )}
+                <NumberFormat
+                  inputMode="decimal"
+                  thousandSeparator=","
+                  allowNegative={false}
+                  isNumericString={true}
+                  decimalScale={6}
+                  name="price"
+                  id="price"
+                  className="ml-2 w-full bg-transparent font-mono focus:outline-none"
+                  placeholder="0.00"
+                  value={tradeForm.price}
+                  onValueChange={handlePriceChange}
+                />
+                <div className="text-xs font-normal text-th-fgd-4">
+                  {quoteSymbol}
+                </div>
+              </div>
+            </>
+          ) : null}
+          <MaxSizeButton
+            minOrderDecimals={minOrderDecimals}
+            tickDecimals={tickDecimals}
+            useMargin={useMargin}
+          />
+          <div className="flex flex-col">
+            <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
+              <div className="h-5 w-5 flex-shrink-0">
+                <LogoWithFallback
+                  alt=""
+                  className="z-10 drop-shadow-md"
+                  width={'24'}
+                  height={'24'}
+                  src={baseLogoURI || `/icons/${baseSymbol?.toLowerCase()}.svg`}
+                  fallback={
+                    <QuestionMarkCircleIcon
+                      className={`h-5 w-5 text-th-fgd-3`}
+                    />
+                  }
+                />
+              </div>
+              <NumberFormat
+                inputMode="decimal"
+                thousandSeparator=","
+                allowNegative={false}
+                isNumericString={true}
+                decimalScale={minOrderDecimals}
+                name="base"
+                id="base"
+                className="ml-2 w-full bg-transparent font-mono focus:outline-none"
+                placeholder="0.00"
+                value={tradeForm.baseSize}
+                onValueChange={handleBaseSizeChange}
+              />
+              <div className="text-xs font-normal text-th-fgd-4">
+                {baseSymbol}
+              </div>
             </div>
-            <div className="default-transition flex items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
+            <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
               {quoteLogoURI ? (
                 <div className="h-5 w-5 flex-shrink-0">
                   <Image alt="" width="20" height="20" src={quoteLogoURI} />
@@ -392,226 +482,173 @@ const AdvancedTradeForm = () => {
                 thousandSeparator=","
                 allowNegative={false}
                 isNumericString={true}
-                decimalScale={6}
-                name="amountIn"
-                id="amountIn"
+                decimalScale={tickDecimals}
+                name="quote"
+                id="quote"
                 className="ml-2 w-full bg-transparent font-mono focus:outline-none"
                 placeholder="0.00"
-                value={tradeForm.price}
-                onValueChange={handlePriceChange}
+                value={tradeForm.quoteSize}
+                onValueChange={handleQuoteSizeChange}
               />
               <div className="text-xs font-normal text-th-fgd-4">
                 {quoteSymbol}
               </div>
             </div>
-          </>
-        ) : null}
-        <MaxSizeButton
-          minOrderDecimals={minOrderDecimals}
-          tickDecimals={tickDecimals}
-          useMargin={useMargin}
-        />
-        <div className="flex flex-col">
-          <div className="default-transition flex items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:z-10 md:hover:border-th-input-border-hover lg:text-base">
-            <div className="h-5 w-5 flex-shrink-0">
-              <LogoWithFallback
-                alt=""
-                className="z-10 drop-shadow-md"
-                width={'24'}
-                height={'24'}
-                src={baseLogoURI || `/icons/${baseSymbol?.toLowerCase()}.svg`}
-                fallback={
-                  <QuestionMarkCircleIcon className={`h-5 w-5 text-th-fgd-3`} />
-                }
-              />
-            </div>
-            <NumberFormat
-              inputMode="decimal"
-              thousandSeparator=","
-              allowNegative={false}
-              isNumericString={true}
-              decimalScale={minOrderDecimals}
-              name="amountIn"
-              id="amountIn"
-              className="ml-2 w-full bg-transparent font-mono focus:outline-none"
-              placeholder="0.00"
-              value={tradeForm.baseSize}
-              onValueChange={handleBaseSizeChange}
-            />
-            <div className="text-xs font-normal text-th-fgd-4">
-              {baseSymbol}
-            </div>
-          </div>
-          <div className="default-transition -mt-[1px] flex items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 text-sm font-bold text-th-fgd-1 md:hover:border-th-input-border-hover lg:text-base">
-            {quoteLogoURI ? (
-              <div className="h-5 w-5 flex-shrink-0">
-                <Image alt="" width="20" height="20" src={quoteLogoURI} />
-              </div>
-            ) : (
-              <div className="h-5 w-5 flex-shrink-0">
-                <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
-              </div>
-            )}
-            <NumberFormat
-              inputMode="decimal"
-              thousandSeparator=","
-              allowNegative={false}
-              isNumericString={true}
-              decimalScale={tickDecimals}
-              name="amountIn"
-              id="amountIn"
-              className="ml-2 w-full bg-transparent font-mono focus:outline-none"
-              placeholder="0.00"
-              value={tradeForm.quoteSize}
-              onValueChange={handleQuoteSizeChange}
-            />
-            <div className="text-xs font-normal text-th-fgd-4">
-              {quoteSymbol}
-            </div>
           </div>
         </div>
-      </div>
-      <div className="mt-2 flex">
-        {selectedMarket instanceof Serum3Market ? (
-          tradeFormSizeUi === 'slider' ? (
-            <SpotSlider
+        <div className="mt-2 flex">
+          {selectedMarket instanceof Serum3Market ? (
+            tradeFormSizeUi === 'slider' ? (
+              <SpotSlider
+                minOrderDecimals={minOrderDecimals}
+                tickDecimals={tickDecimals}
+                step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
+                useMargin={useMargin}
+              />
+            ) : (
+              <SpotButtonGroup
+                minOrderDecimals={minOrderDecimals}
+                tickDecimals={tickDecimals}
+                useMargin={useMargin}
+              />
+            )
+          ) : tradeFormSizeUi === 'slider' ? (
+            <PerpSlider
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
-              step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
-              useMargin={useMargin}
             />
           ) : (
-            <SpotButtonGroup
+            <PerpButtonGroup
               minOrderDecimals={minOrderDecimals}
               tickDecimals={tickDecimals}
-              useMargin={useMargin}
             />
-          )
-        ) : tradeFormSizeUi === 'slider' ? (
-          <PerpSlider
-            minOrderDecimals={minOrderDecimals}
-            tickDecimals={tickDecimals}
-          />
-        ) : (
-          <PerpButtonGroup
-            minOrderDecimals={minOrderDecimals}
-            tickDecimals={tickDecimals}
-          />
-        )}
-      </div>
-      <div className="flex flex-wrap px-5 md:flex-nowrap">
-        {tradeForm.tradeType === 'Limit' ? (
-          <div className="flex">
-            <div className="mr-3 mt-4" id="trade-step-six">
+          )}
+        </div>
+        <div className="flex flex-wrap px-5 md:flex-nowrap">
+          {tradeForm.tradeType === 'Limit' ? (
+            <div className="flex">
+              <div className="mr-3 mt-4" id="trade-step-six">
+                <Tooltip
+                  className="hidden md:block"
+                  delay={100}
+                  placement="left"
+                  content={t('trade:tooltip-post')}
+                >
+                  <Checkbox
+                    checked={tradeForm.postOnly}
+                    onChange={(e) => handlePostOnlyChange(e.target.checked)}
+                  >
+                    {t('trade:post')}
+                  </Checkbox>
+                </Tooltip>
+              </div>
+              <div className="mr-3 mt-4" id="trade-step-seven">
+                <Tooltip
+                  className="hidden md:block"
+                  delay={100}
+                  placement="left"
+                  content={t('trade:tooltip-ioc')}
+                >
+                  <div className="flex items-center text-xs text-th-fgd-3">
+                    <Checkbox
+                      checked={tradeForm.ioc}
+                      onChange={(e) => handleIocChange(e.target.checked)}
+                    >
+                      IOC
+                    </Checkbox>
+                  </div>
+                </Tooltip>
+              </div>
+            </div>
+          ) : null}
+          {selectedMarket instanceof Serum3Market ? (
+            <div className="mt-4" id="trade-step-eight">
               <Tooltip
                 className="hidden md:block"
-                delay={250}
+                delay={100}
                 placement="left"
-                content={t('trade:tooltip-post')}
+                content={t('trade:tooltip-enable-margin')}
               >
-                <Checkbox
-                  checked={tradeForm.postOnly}
-                  onChange={(e) => handlePostOnlyChange(e.target.checked)}
-                >
-                  {t('trade:post')}
+                <Checkbox checked={useMargin} onChange={handleSetMargin}>
+                  {t('trade:margin')}
                 </Checkbox>
               </Tooltip>
             </div>
-            <div className="mr-3 mt-4" id="trade-step-seven">
+          ) : (
+            <div className="mr-3 mt-4">
               <Tooltip
                 className="hidden md:block"
-                delay={250}
+                delay={100}
                 placement="left"
-                content={t('trade:tooltip-ioc')}
+                content={
+                  'Reduce will only decrease the size of an open position. This is often used for closing a position.'
+                }
               >
                 <div className="flex items-center text-xs text-th-fgd-3">
                   <Checkbox
-                    checked={tradeForm.ioc}
-                    onChange={(e) => handleIocChange(e.target.checked)}
+                    checked={tradeForm.reduceOnly}
+                    onChange={(e) => handleReduceOnlyChange(e.target.checked)}
                   >
-                    IOC
+                    {t('trade:reduce-only')}
                   </Checkbox>
                 </div>
               </Tooltip>
             </div>
-          </div>
-        ) : null}
-        {selectedMarket instanceof Serum3Market ? (
-          <div className="mt-4" id="trade-step-eight">
-            <Tooltip
-              className="hidden md:block"
-              delay={250}
-              placement="left"
-              content={t('trade:tooltip-enable-margin')}
+          )}
+        </div>
+        <div className="mt-6 mb-4 flex px-3 md:px-4">
+          {ipAllowed ? (
+            <Button
+              className={`flex w-full items-center justify-center ${
+                !connected
+                  ? ''
+                  : tradeForm.side === 'buy'
+                  ? 'bg-th-up-dark text-white md:hover:bg-th-up'
+                  : 'bg-th-down-dark text-white md:hover:bg-th-down'
+              }`}
+              disabled={connected && !tradeForm.baseSize}
+              size="large"
+              type="submit"
             >
-              <Checkbox checked={useMargin} onChange={handleSetMargin}>
-                {t('trade:margin')}
-              </Checkbox>
-            </Tooltip>
-          </div>
-        ) : (
-          <div className="mr-3 mt-4">
-            <Tooltip
-              className="hidden md:block"
-              delay={250}
-              placement="left"
-              content={
-                'Reduce will only decrease the size of an open position. This is often used for closing a position.'
-              }
-            >
-              <div className="flex items-center text-xs text-th-fgd-3">
-                <Checkbox
-                  checked={tradeForm.reduceOnly}
-                  onChange={(e) => handleReduceOnlyChange(e.target.checked)}
-                >
-                  {t('trade:reduce-only')}
-                </Checkbox>
-              </div>
-            </Tooltip>
-          </div>
-        )}
-      </div>
-      <div className="mt-6 mb-4 flex px-3 md:px-4">
-        {ipAllowed ? (
-          <Button
-            onClick={connected ? handlePlaceOrder : handleConnect}
-            className={`flex w-full items-center justify-center ${
-              !connected
-                ? ''
-                : tradeForm.side === 'buy'
-                ? 'bg-th-up-dark text-white md:hover:bg-th-up'
-                : 'bg-th-down-dark text-white md:hover:bg-th-down'
-            }`}
-            disabled={connected && !tradeForm.baseSize}
-            size="large"
-          >
-            {!connected ? (
-              <div className="flex items-center">
-                <LinkIcon className="mr-2 h-5 w-5" />
-                {t('connect')}
-              </div>
-            ) : !placingOrder ? (
-              <span className="capitalize">
-                {t('trade:place-order', { side: tradeForm.side })}
-              </span>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Loading />
-                <span className="hidden sm:block">
-                  {t('trade:placing-order')}
+              {!connected ? (
+                <div className="flex items-center">
+                  <LinkIcon className="mr-2 h-5 w-5" />
+                  {t('connect')}
+                </div>
+              ) : !placingOrder ? (
+                <span>
+                  {t('trade:place-order', {
+                    side:
+                      tradeForm.side === 'buy' ? sideNames[0] : sideNames[1],
+                  })}
                 </span>
-              </div>
-            )}
-          </Button>
-        ) : (
-          <Button disabled className="w-full leading-tight" size="large">
-            {t('country-not-allowed', {
-              country: ipCountry ? `(${ipCountry})` : '',
-            })}
-          </Button>
-        )}
-      </div>
-      <TradeSummary mangoAccount={mangoAccount} />
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Loading />
+                  <span className="hidden sm:block">
+                    {t('trade:placing-order')}
+                  </span>
+                </div>
+              )}
+            </Button>
+          ) : (
+            <Button disabled className="w-full leading-tight" size="large">
+              {t('country-not-allowed', {
+                country: ipCountry ? `(${ipCountry})` : '',
+              })}
+            </Button>
+          )}
+        </div>
+      </form>
+      {tradeForm.tradeType === 'Market' ? (
+        <div className="m-4">
+          <InlineNotification
+            type="warning"
+            desc="Use caution with market orders. Liquidity may be low."
+          />
+        </div>
+      ) : null}
+      <TradeSummary mangoAccount={mangoAccount} useMargin={useMargin} />
     </div>
   )
 }

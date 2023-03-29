@@ -41,77 +41,84 @@ const SpotMarketsTable = () => {
             </TrHead>
           </thead>
           <tbody>
-            {serumMarkets.map((market) => {
-              const bank = group?.getFirstBankByTokenIndex(
-                market.baseTokenIndex
-              )
-              const oraclePrice = bank?.uiPrice
+            {serumMarkets
+              .slice()
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((market) => {
+                const bank = group?.getFirstBankByTokenIndex(
+                  market.baseTokenIndex
+                )
+                const oraclePrice = bank?.uiPrice
 
-              const coingeckoData = coingeckoPrices.find(
-                (asset) =>
-                  asset.symbol.toUpperCase() === bank?.name.toUpperCase()
-              )
+                const coingeckoData = coingeckoPrices.find(
+                  (asset) =>
+                    asset.symbol.toUpperCase() === bank?.name.toUpperCase()
+                )
 
-              const change =
-                coingeckoData && oraclePrice
-                  ? ((oraclePrice - coingeckoData.prices[0][1]) /
-                      coingeckoData.prices[0][1]) *
-                    100
-                  : 0
+                const change =
+                  coingeckoData && oraclePrice
+                    ? ((oraclePrice - coingeckoData.prices[0][1]) /
+                        coingeckoData.prices[0][1]) *
+                      100
+                    : 0
 
-              const chartData = coingeckoData ? coingeckoData.prices : undefined
+                const chartData = coingeckoData
+                  ? coingeckoData.prices
+                  : undefined
 
-              return (
-                <TrBody key={market.publicKey.toString()}>
-                  <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <p className="font-body">{market.name}</p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
-                      <p>
-                        {oraclePrice ? (
-                          <FormatNumericValue value={oraclePrice} isUsd />
-                        ) : (
-                          '–'
-                        )}
-                      </p>
-                    </div>
-                  </Td>
-                  <Td>
-                    {!loadingPrices ? (
-                      chartData !== undefined ? (
-                        <div className="h-10 w-24">
-                          <SimpleAreaChart
-                            color={
-                              change >= 0
-                                ? COLORS.UP[theme]
-                                : COLORS.DOWN[theme]
-                            }
-                            data={chartData}
-                            name={bank!.name}
-                            xKey="0"
-                            yKey="1"
-                          />
-                        </div>
-                      ) : bank?.name === 'USDC' ||
-                        bank?.name === 'USDT' ? null : (
-                        <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-                      )
-                    ) : (
-                      <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
-                    )}
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col items-end">
-                      <Change change={change} suffix="%" />
-                    </div>
-                  </Td>
-                </TrBody>
-              )
-            })}
+                return (
+                  <TrBody key={market.publicKey.toString()}>
+                    <Td>
+                      <div className="flex items-center">
+                        <MarketLogos market={market} />
+                        <p className="font-body">{market.name}</p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <p>
+                          {oraclePrice ? (
+                            <FormatNumericValue value={oraclePrice} isUsd />
+                          ) : (
+                            '–'
+                          )}
+                        </p>
+                      </div>
+                    </Td>
+                    <Td>
+                      {!loadingPrices ? (
+                        chartData !== undefined ? (
+                          <div className="h-10 w-24">
+                            <SimpleAreaChart
+                              color={
+                                change >= 0
+                                  ? COLORS.UP[theme]
+                                  : COLORS.DOWN[theme]
+                              }
+                              data={chartData}
+                              name={bank!.name}
+                              xKey="0"
+                              yKey="1"
+                            />
+                          </div>
+                        ) : bank?.name === 'USDC' ||
+                          bank?.name === 'USDT' ? null : (
+                          <p className="mb-0 text-th-fgd-4">
+                            {t('unavailable')}
+                          </p>
+                        )
+                      ) : (
+                        <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+                      )}
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col items-end">
+                        <Change change={change} suffix="%" />
+                      </div>
+                    </Td>
+                  </TrBody>
+                )
+              })}
           </tbody>
         </Table>
       ) : (

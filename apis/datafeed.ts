@@ -1,11 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { makeApiRequest, parseResolution } from './helpers'
+import { makeApiRequest, parseResolution } from './birdeye/helpers'
+import {
+  makeApiRequest as makePerpApiRequest,
+  parseResolution as parsePerpResolution,
+} from './mngo/helpers'
 import {
   closeSocket,
-  isOpen,
-  subscribeOnStream,
+  // isOpen,
+  subscribeOnStream as subscribeOnSpotStream,
   unsubscribeFromStream,
-} from './streaming'
+} from './birdeye/streaming'
+import {
+  closeSocket as closePerpSocket,
+  // isOpen as isPerpOpen,
+  subscribeOnStream as subscribeOnPerpStream,
+  unsubscribeFromStream as unsubscribeFromPerpStream,
+} from './mngo/streaming'
 import mangoStore from '@store/mangoStore'
 import {
   DatafeedConfiguration,
@@ -24,7 +34,6 @@ export const SUPPORTED_RESOLUTIONS = [
   '120',
   '240',
   '1D',
-  '1W',
 ] as const
 
 type BaseBar = {
@@ -51,6 +60,8 @@ export type SymbolInfo = LibrarySymbolInfo & {
 
 const lastBarsCache = new Map()
 
+const subscriptionIds = new Map()
+
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
   intraday_multipliers: ['1', '3', '5', '15', '30', '60', '120', '240'],
@@ -65,7 +76,57 @@ const configurationData = {
 //   return data.data.tokens
 // }
 
-export const queryBars = async (
+let marketType: 'spot' | 'perp'
+
+export const queryPerpBars = async (
+  tokenAddress: string,
+  resolution: typeof SUPPORTED_RESOLUTIONS[number],
+  periodParams: {
+    firstDataRequest: boolean
+    from: number
+    to: number
+  }
+): Promise<Bar[]> => {
+  const { from, to } = periodParams
+
+  const urlParameters = {
+    'perp-market': tokenAddress,
+    resolution: parsePerpResolution(resolution),
+    start_datetime: new Date(from * 1000).toISOString(),
+    end_datetime: new Date(to * 1000).toISOString(),
+  }
+
+  const query = Object.keys(urlParameters)
+    .map((name: string) => `${name}=${(urlParameters as any)[name]}`)
+    .join('&')
+  const data = await makePerpApiRequest(`/stats/candles-perp?${query}`)
+  if (!data || !data.length) {
+    return []
+  }
+  let bars: Bar[] = []
+  let previousBar: Bar | undefined = undefined
+  for (const bar of data) {
+    const timestamp = new Date(bar.candle_start).getTime()
+    if (timestamp >= from * 1000 && timestamp < to * 1000) {
+      bars = [
+        ...bars,
+        {
+          time: timestamp,
+          low: bar.low,
+          high: bar.high,
+          open: previousBar ? previousBar.close : bar.open,
+          close: bar.close,
+          volume: bar.volume,
+          timestamp,
+        },
+      ]
+      previousBar = bar
+    }
+  }
+  return bars
+}
+
+export const queryBirdeyeBars = async (
   tokenAddress: string,
   resolution: typeof SUPPORTED_RESOLUTIONS[number],
   periodParams: {
@@ -97,6 +158,7 @@ export const queryBars = async (
   for (const bar of data.data.items) {
     if (bar.unixTime >= from && bar.unixTime < to) {
       const timestamp = bar.unixTime * 1000
+      if (bar.h > 22311) continue
       bars = [
         ...bars,
         {
@@ -150,6 +212,7 @@ export default {
       }
     }
     const ticker = mangoStore.getState().selectedMarket.name
+    console.log('ticker', ticker, mangoStore.getState().group)
 
     const symbolInfo: SymbolInfo = {
       address: symbolItem.address,
@@ -195,11 +258,25 @@ export default {
   ) => {
     try {
       const { firstDataRequest } = periodParams
-      const bars = await queryBars(
-        symbolInfo.address,
-        resolution as any,
-        periodParams
-      )
+      let bars
+      if (
+        symbolInfo.description?.includes('PERP') &&
+        symbolInfo.address !== '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+      ) {
+        marketType = 'perp'
+        bars = await queryPerpBars(
+          symbolInfo.address,
+          resolution as any,
+          periodParams
+        )
+      } else {
+        marketType = 'spot'
+        bars = await queryBirdeyeBars(
+          symbolInfo.address,
+          resolution as any,
+          periodParams
+        )
+      }
 
       if (!bars || bars.length === 0) {
         // "noData" should be set if there is no data in the requested period.
@@ -208,7 +285,6 @@ export default {
         })
         return
       }
-
       if (firstDataRequest) {
         lastBarsCache.set(symbolInfo.address, {
           ...bars[bars.length - 1],
@@ -231,22 +307,46 @@ export default {
     subscriberUID: string,
     onResetCacheNeededCallback: () => void
   ) => {
-    subscribeOnStream(
-      symbolInfo,
-      resolution,
-      onRealtimeCallback,
-      subscriberUID,
-      onResetCacheNeededCallback,
-      lastBarsCache.get(symbolInfo.address)
-    )
+    subscriptionIds.set(subscriberUID, symbolInfo.address)
+    if (symbolInfo.description?.includes('PERP')) {
+      subscribeOnPerpStream(
+        symbolInfo,
+        resolution,
+        onRealtimeCallback,
+        subscriberUID,
+        onResetCacheNeededCallback,
+        lastBarsCache.get(symbolInfo.address)
+      )
+    } else {
+      subscribeOnSpotStream(
+        symbolInfo,
+        resolution,
+        onRealtimeCallback,
+        subscriberUID,
+        onResetCacheNeededCallback,
+        lastBarsCache.get(symbolInfo.address)
+      )
+    }
   },
 
-  unsubscribeBars: () => {
-    unsubscribeFromStream()
+  unsubscribeBars: (subscriberUID: string) => {
+    if (marketType === 'perp') {
+      const marketId = subscriptionIds.get(subscriberUID)
+      unsubscribeFromPerpStream(marketId)
+    } else {
+      unsubscribeFromStream()
+    }
   },
+
   closeSocket: () => {
-    closeSocket()
+    if (marketType === 'spot') {
+      closeSocket()
+    } else {
+      closePerpSocket()
+    }
   },
+
   name: 'birdeye',
-  isSocketOpen: isOpen,
+
+  // isSocketOpen: marketType === 'spot' ? isOpen : isPerpOpen,
 }

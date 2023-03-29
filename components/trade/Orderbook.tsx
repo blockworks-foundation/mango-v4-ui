@@ -30,6 +30,15 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 
+const getMarket = () => {
+  const group = mangoStore.getState().group
+  const selectedMarket = mangoStore.getState().selectedMarket.current
+  if (!group || !selectedMarket) return
+  return selectedMarket instanceof PerpMarket
+    ? selectedMarket
+    : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+}
+
 export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
   const depth = 300
   if (book instanceof SpotOrderBook) {
@@ -40,7 +49,7 @@ export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
   return []
 }
 
-function decodeBook(
+export function decodeBook(
   client: MangoClient,
   market: Market | PerpMarket,
   accInfo: AccountInfo<Buffer>,
@@ -80,7 +89,8 @@ const getCumulativeOrderbookSide = (
   maxSize: number,
   depth: number,
   usersOpenOrderPrices: number[],
-  grouping: number
+  grouping: number,
+  isGrouped: boolean
 ): cumOrderbookSide[] => {
   let cumulativeSize = 0
   return orders.slice(0, depth).map(([price, size]) => {
@@ -95,7 +105,8 @@ const getCumulativeOrderbookSide = (
       isUsersOrder: hasOpenOrderForPriceGroup(
         usersOpenOrderPrices,
         price,
-        grouping
+        grouping,
+        isGrouped
       ),
     }
   })
@@ -154,16 +165,28 @@ const groupBy = (
 const hasOpenOrderForPriceGroup = (
   openOrderPrices: number[],
   price: number,
-  grouping: number
+  grouping: number,
+  isGrouped: boolean
 ) => {
+  if (!isGrouped) {
+    return !!openOrderPrices.find((ooPrice) => {
+      return ooPrice === price
+    })
+  }
   return !!openOrderPrices.find((ooPrice) => {
     return ooPrice >= price - grouping && ooPrice <= price + grouping
   })
 }
 
 const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
-  book.perpMarket[`_${side}`] = book
-  mangoStore.getState().actions.fetchOpenOrders()
+  const group = mangoStore.getState().group
+  const perpMarket = group?.getPerpMarketByMarketIndex(
+    book.perpMarket.perpMarketIndex
+  )
+  if (perpMarket) {
+    perpMarket[`_${side}`] = book
+    // mangoStore.getState().actions.fetchOpenOrders()
+  }
 }
 
 const depth = 40
@@ -187,15 +210,15 @@ const Orderbook = () => {
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const [grouping, setGrouping] = useState(0.01)
   const [tickSize, setTickSize] = useState(0)
-  const [showBuys, setShowBuys] = useState(true)
-  const [showSells, setShowSells] = useState(true)
+  const [showBids, setShowBids] = useState(true)
+  const [showAsks, setShowAsks] = useState(true)
 
   const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
 
-  const depthArray = useMemo(() => {
+  const depthArray: number[] = useMemo(() => {
     const bookDepth = !isMobile ? depth : 9
     return Array(bookDepth).fill(0)
   }, [isMobile])
@@ -276,14 +299,15 @@ const Orderbook = () => {
                   return a[1]
                 })
               )
-
+            const isGrouped = grouping !== market.tickSize
             const bidsToDisplay = getCumulativeOrderbookSide(
               bids,
               totalSize,
               maxSize,
               depth,
               usersOpenOrderPrices,
-              grouping
+              grouping,
+              isGrouped
             )
             const asksToDisplay = getCumulativeOrderbookSide(
               asks,
@@ -291,7 +315,8 @@ const Orderbook = () => {
               maxSize,
               depth,
               usersOpenOrderPrices,
-              grouping
+              grouping,
+              isGrouped
             )
 
             currentOrderbookData.current = newOrderbook
@@ -301,7 +326,9 @@ const Orderbook = () => {
               let spread = 0,
                 spreadPercentage = 0
               if (bid && ask) {
-                spread = ask - bid
+                spread = parseFloat(
+                  (ask - bid).toFixed(getDecimalCount(market.tickSize))
+                )
                 spreadPercentage = (spread / ask) * 100
               }
 
@@ -337,20 +364,17 @@ const Orderbook = () => {
     return asksPk.toString()
   }, [market])
 
+  // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
     console.log('setting up orderbook websockets')
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
-    const selectedMarket = mangoStore.getState().selectedMarket.current
     const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
+    const market = getMarket()
+    if (!group || !market) return
 
     let bidSubscriptionId: number | undefined = undefined
     let askSubscriptionId: number | undefined = undefined
-    const market =
-      selectedMarket instanceof PerpMarket
-        ? selectedMarket
-        : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
     const bidsPk = new PublicKey(bidAccountAddress)
     if (bidsPk) {
       connection
@@ -370,6 +394,8 @@ const Orderbook = () => {
           const lastSeenSlot =
             mangoStore.getState().selectedMarket.lastSeenSlot.bids
           if (context.slot > lastSeenSlot) {
+            const market = getMarket()
+            if (!market) return
             const decodedBook = decodeBook(client, market, info, 'bids')
             if (decodedBook instanceof BookSide) {
               updatePerpMarketOnGroup(decodedBook, 'bids')
@@ -404,6 +430,8 @@ const Orderbook = () => {
           const lastSeenSlot =
             mangoStore.getState().selectedMarket.lastSeenSlot.asks
           if (context.slot > lastSeenSlot) {
+            const market = getMarket()
+            if (!market) return
             const decodedBook = decodeBook(client, market, info, 'asks')
             if (decodedBook instanceof BookSide) {
               updatePerpMarketOnGroup(decodedBook, 'asks')
@@ -433,8 +461,8 @@ const Orderbook = () => {
   }, [verticallyCenterOrderbook])
 
   const resetOrderbook = useCallback(async () => {
-    setShowBuys(true)
-    setShowSells(true)
+    setShowBids(true)
+    setShowAsks(true)
     await sleep(300)
     verticallyCenterOrderbook()
   }, [verticallyCenterOrderbook])
@@ -447,36 +475,44 @@ const Orderbook = () => {
     setIsScrolled(true)
   }, [])
 
+  const toggleSides = (side: string) => {
+    if (side === 'bids') {
+      setShowBids(true)
+      setShowAsks(false)
+    } else {
+      setShowBids(false)
+      setShowAsks(true)
+    }
+  }
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
         <div id="trade-step-three" className="flex items-center space-x-1.5">
           <Tooltip
-            className="hidden md:block"
-            content={showBuys ? t('trade:hide-bids') : t('trade:show-bids')}
+            className={`hidden md:block ${!showAsks ? 'md:hidden' : ''}`}
+            content={t('trade:show-bids')}
             placement="bottom"
           >
             <button
               className={`rounded ${
-                showBuys ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+                showAsks ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
               } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
-              onClick={() => setShowBuys(!showBuys)}
-              disabled={!showSells}
+              onClick={() => toggleSides('bids')}
             >
               <OrderbookIcon className="h-4 w-4" side="buy" />
             </button>
           </Tooltip>
           <Tooltip
-            className="hidden md:block"
-            content={showSells ? t('trade:hide-asks') : t('trade:show-asks')}
+            className={`hidden md:block ${!showBids ? 'md:hidden' : ''}`}
+            content={t('trade:show-asks')}
             placement="bottom"
           >
             <button
               className={`rounded ${
-                showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
+                showBids ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
               } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
-              onClick={() => setShowSells(!showSells)}
-              disabled={!showBuys}
+              onClick={() => toggleSides('asks')}
             >
               <OrderbookIcon className="h-4 w-4" side="sell" />
             </button>
@@ -487,9 +523,7 @@ const Orderbook = () => {
             placement="bottom"
           >
             <button
-              className={`rounded ${
-                showSells ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              className="default-transition flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed"
               onClick={resetOrderbook}
             >
               <ArrowPathIcon className="h-4 w-4" />
@@ -502,7 +536,7 @@ const Orderbook = () => {
               className="hidden md:block"
               content={t('trade:grouping')}
               placement="left"
-              delay={250}
+              delay={100}
             >
               <GroupSize
                 tickSize={market.tickSize}
@@ -526,10 +560,11 @@ const Orderbook = () => {
         ref={orderbookElRef}
         onScroll={handleScroll}
       >
-        {showSells
+        {showAsks
           ? depthArray.map((_x, idx) => {
               let index = idx
-              if (orderbookData?.asks) {
+              const reverse = showAsks && !showBids
+              if (orderbookData?.asks && !reverse) {
                 const lengthDiff = depthArray.length - orderbookData.asks.length
                 if (lengthDiff > 0) {
                   index = index < lengthDiff ? -1 : Math.abs(lengthDiff - index)
@@ -557,7 +592,7 @@ const Orderbook = () => {
               )
             })
           : null}
-        {showBuys && showSells ? (
+        {showBids && showAsks ? (
           <div
             className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4"
             id="trade-step-nine"
@@ -578,7 +613,7 @@ const Orderbook = () => {
             </div>
           </div>
         ) : null}
-        {showBuys
+        {showBids
           ? depthArray.map((_x, index) => (
               <div className="h-[24px]" key={index}>
                 {!!orderbookData?.bids[index] && market ? (

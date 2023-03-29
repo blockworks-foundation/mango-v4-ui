@@ -4,13 +4,11 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import { FAVORITE_MARKETS_KEY } from 'utils/constants'
 import MarketLogos from './MarketLogos'
 
 const FavoriteMarketsBar = () => {
   const [favoriteMarkets] = useLocalStorageState(FAVORITE_MARKETS_KEY, [])
-  const { asPath } = useRouter()
   const { selectedMarket } = useSelectedMarket()
   const { group } = useMangoGroup()
 
@@ -39,15 +37,12 @@ const FavoriteMarketsBar = () => {
           <Link href={`/trade?name=${mkt}`} key={mkt} shallow={true}>
             <div
               className={`default-transition flex items-center whitespace-nowrap py-1 text-xs hover:text-th-active hover:opacity-100 ${
-                asPath.includes(mkt) ||
-                (asPath === '/trade' &&
-                  selectedMarket &&
-                  selectedMarket.name === mkt)
+                selectedMarket && selectedMarket.name === mkt
                   ? 'text-th-active'
                   : 'text-th-fgd-1 opacity-60'
               }`}
             >
-              {market ? <MarketLogos market={market} small /> : null}
+              {market ? <MarketLogos market={market} size="small" /> : null}
               <span className="mb-0 mr-1.5 text-xs">{mkt}</span>
               {/* {change24h ? (
                 <div

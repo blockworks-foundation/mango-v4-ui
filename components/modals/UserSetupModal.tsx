@@ -1,9 +1,9 @@
 import { Transition } from '@headlessui/react'
 import {
   ArrowDownTrayIcon,
+  ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
-  FireIcon,
   PencilIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -42,6 +42,9 @@ import { withValueLimit } from '@components/swap/SwapForm'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { isMangoError } from 'types'
+import ColorBlur from '@components/ColorBlur'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { ACCEPT_TERMS_KEY } from 'utils/constants'
 
 const UserSetupModal = ({
   isOpen,
@@ -65,6 +68,7 @@ const UserSetupModal = ({
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
+  const [, setAcceptTerms] = useLocalStorageState(ACCEPT_TERMS_KEY, '')
 
   useEffect(() => {
     if (connected) {
@@ -195,24 +199,34 @@ const UserSetupModal = ({
   )
 
   const handleNextStep = () => {
+    if (showSetupStep === 0) {
+      setAcceptTerms(Date.now())
+    }
     setShowSetupStep(showSetupStep + 1)
   }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} fullScreen disableOutsideClose>
-      <div className="radial-gradient-bg grid h-screen overflow-auto text-left lg:grid-cols-2">
+      <div className="grid h-screen overflow-auto bg-th-bkg-1 text-left lg:grid-cols-2">
         <img
-          className="absolute -bottom-6 right-0 hidden h-auto w-[53%] lg:block xl:w-[57%]"
-          src="/images/trade@0.75x.png"
-          srcSet="/images/trade@0.75x.png 1157w, /images/trade@1x.png 1542w,
-          /images/trade@2x.png 3084w"
-          sizes="(max-width: 1600px) 1157px, (max-width: 2500px) 1542px, 3084px"
+          className={`absolute -bottom-20 left-1/2 mt-8 h-auto -translate-x-1/2 sm:w-[60%] md:w-[410px] lg:left-auto lg:-right-10 lg:w-[55%] lg:-translate-x-0 xl:-bottom-40 ${
+            showSetupStep !== 0 ? 'hidden lg:block' : 'hidden sm:block'
+          }`}
+          src="/images/swap-trade@0.75x.png"
+          srcSet="/images/swap-trade@0.75x.png 1098x, /images/swap-trade@1x.png 1463w,
+          /images/swap-trade@2x.png 2926w"
+          sizes="(max-width: 1600px) 1098px, (max-width: 2500px) 1463px, 2926px"
           alt="next"
         />
         <img
           className={`absolute top-6 left-6 h-10 w-10 flex-shrink-0`}
           src="/logos/logo-mark.svg"
           alt="next"
+        />
+        <ColorBlur
+          width="66%"
+          height="300px"
+          className="-top-20 left-0 opacity-20 brightness-125"
         />
         <div className="absolute top-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
@@ -224,37 +238,32 @@ const UserSetupModal = ({
         </div>
         <div className="col-span-1 flex flex-col items-center justify-center p-6 pt-24">
           <UserSetupTransition show={showSetupStep === 0}>
-            <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
+            <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:max-w-[400px] lg:text-6xl">
               {t('onboarding:intro-heading')}
             </h2>
-            <p className="text-base sm:mb-4">{t('onboarding:intro-desc')}</p>
-            <div className="mb-6 space-y-2 py-3">
-              <div className="flex items-center space-x-2">
-                <CheckCircleIcon className="h-5 w-5 text-th-success" />
-                <p className="text-base">{t('onboarding:bullet-1')}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircleIcon className="h-5 w-5 text-th-success" />
-                <p className="text-base">{t('onboarding:bullet-2')}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircleIcon className="h-5 w-5 text-th-success" />
-                <p className="text-base">{t('onboarding:bullet-3')}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircleIcon className="h-5 w-5 text-th-success" />
-                <p className="text-base">{t('onboarding:bullet-4')}</p>
-              </div>
+            <p className="text-base sm:mb-2 lg:text-lg">
+              {t('onboarding:intro-desc')}
+            </p>
+            <div className="mb-3 space-y-2 py-3">
+              <CheckBullet text={t('onboarding:bullet-1')} />
+              <CheckBullet text={t('onboarding:bullet-2')} />
+              <CheckBullet text={t('onboarding:bullet-3')} />
+              <CheckBullet text={t('onboarding:bullet-4')} />
             </div>
-            <Button
-              className="mb-12 w-44"
-              onClick={handleNextStep}
-              size="large"
-            >
-              <div className="flex items-center justify-center">
-                <FireIcon className="mr-2 h-5 w-5" />
-                {t('onboarding:lets-go')}
-              </div>
+            <p className="mb-6 flex flex-wrap">
+              <span className="mr-1">{t('accept-terms-desc')}</span>
+              <a
+                className="flex items-center"
+                href="https://docs.mango.markets/legal/terms-of-use"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {t('terms-of-use')}
+                <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
+              </a>
+            </p>
+            <Button className="mb-12" onClick={handleNextStep} size="large">
+              {t('agree-and-continue')}
             </Button>
           </UserSetupTransition>
           <UserSetupTransition delay show={showSetupStep === 1}>
@@ -510,7 +519,7 @@ const UserSetupModal = ({
                 </UserSetupTransition>
                 <UserSetupTransition show={depositToken.length === 0}>
                   <div
-                    className="thin-scroll absolute top-36 w-full overflow-auto"
+                    className="thin-scroll absolute top-[62px] w-full overflow-auto md:top-[74px] lg:top-36"
                     style={{ height: 'calc(100vh - 380px)' }}
                   >
                     <div className="flex items-center px-4 pb-2">
@@ -582,6 +591,15 @@ const UserSetupModal = ({
 
 export default UserSetupModal
 
+const CheckBullet = ({ text }: { text: string }) => {
+  return (
+    <div className="flex items-center space-x-2">
+      <CheckCircleIcon className="h-5 w-5 text-th-active" />
+      <p className="text-base text-th-fgd-2">{text}</p>
+    </div>
+  )
+}
+
 const UserSetupTransition = ({
   show,
   children,
@@ -594,7 +612,7 @@ const UserSetupTransition = ({
   return (
     <Transition
       appear
-      className="h-full w-full max-w-lg"
+      className="h-full w-full max-w-md"
       show={show}
       enter={`transition ease-in duration-300 ${delay ? 'delay-300' : ''}`}
       enterFrom="opacity-0"

@@ -14,11 +14,14 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useCallback, useState } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import MarketCloseModal from './MarketCloseModal'
+import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 
@@ -40,6 +43,7 @@ const PerpPositions = () => {
   const isUnownedAccount = useUnownedAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const { asPath } = useRouter()
 
   const handlePositionClick = (positionSize: number, market: PerpMarket) => {
     const tradeForm = mangoStore.getState().tradeForm
@@ -102,6 +106,7 @@ const PerpPositions = () => {
                     <Th className="text-right">{t('trade:size')}</Th>
                     <Th className="text-right">{t('trade:notional')}</Th>
                     <Th className="text-right">{t('trade:entry-price')}</Th>
+                    <Th className="text-right">{t('trade:oracle-price')}</Th>
                     <Th className="text-right">{`${t('trade:unsettled')} ${t(
                       'pnl'
                     )}`}</Th>
@@ -174,6 +179,13 @@ const PerpPositions = () => {
                         <Td className="text-right font-mono">
                           <FormatNumericValue
                             value={position.getAverageEntryPriceUi(market)}
+                            decimals={getDecimalCount(market.tickSize)}
+                            isUsd
+                          />
+                        </Td>
+                        <Td className="text-right font-mono">
+                          <FormatNumericValue
+                            value={market.uiPrice}
                             decimals={getDecimalCount(market.tickSize)}
                             isUsd
                           />
@@ -253,47 +265,70 @@ const PerpPositions = () => {
                   className="flex items-center justify-between border-b border-th-bkg-3 p-4"
                   key={`${position.marketIndex}`}
                 >
-                  <div>
-                    <TableMarketName market={market} />
-                    <div className="mt-1 flex items-center space-x-1">
-                      <PerpSideBadge basePosition={basePosition} />
-                      <p className="text-th-fgd-4">
-                        <span className="font-mono text-th-fgd-3">
-                          {isSelectedMarket ? (
-                            <LinkButton
-                              onClick={() =>
-                                handlePositionClick(floorBasePosition, market)
-                              }
-                            >
+                  <div className="flex items-start">
+                    <div className="mt-0.5">
+                      <MarketLogos market={market} size="large" />
+                    </div>
+                    <div>
+                      <div className="mb-1 flex space-x-1 leading-none text-th-fgd-2">
+                        {selectedMarket?.name === market.name ? (
+                          <span className="whitespace-nowrap">
+                            {market.name}
+                          </span>
+                        ) : (
+                          <Link href={`/trade?name=${market.name}`}>
+                            <div className="default-transition flex items-center underline underline-offset-2 md:hover:text-th-fgd-3 md:hover:no-underline">
+                              <span className="whitespace-nowrap">
+                                {market.name}
+                              </span>
+                            </div>
+                          </Link>
+                        )}
+                        <PerpSideBadge basePosition={basePosition} />
+                      </div>
+                      <div className="flex items-center space-x-1 leading-none">
+                        <p className="flex text-th-fgd-4">
+                          <span className="font-mono text-th-fgd-3">
+                            {isSelectedMarket && asPath === '/trade' ? (
+                              <LinkButton
+                                className="font-normal"
+                                onClick={() =>
+                                  handlePositionClick(floorBasePosition, market)
+                                }
+                              >
+                                <FormatNumericValue
+                                  value={Math.abs(basePosition)}
+                                  decimals={getDecimalCount(
+                                    market.minOrderSize
+                                  )}
+                                />
+                              </LinkButton>
+                            ) : (
                               <FormatNumericValue
                                 value={Math.abs(basePosition)}
                                 decimals={getDecimalCount(market.minOrderSize)}
                               />
-                            </LinkButton>
-                          ) : (
+                            )}
+                          </span>
+                          <span className="mx-1">from</span>
+                          <span className="font-mono text-th-fgd-3">
                             <FormatNumericValue
-                              value={Math.abs(basePosition)}
-                              decimals={getDecimalCount(market.minOrderSize)}
+                              value={position.getAverageEntryPriceUi(market)}
+                              decimals={getDecimalCount(market.tickSize)}
+                              isUsd
                             />
-                          )}
-                        </span>
-                        {' at '}
-                        <span className="font-mono text-th-fgd-3">
-                          <FormatNumericValue
-                            value={position.getAverageEntryPriceUi(market)}
-                            decimals={getDecimalCount(market.tickSize)}
-                            isUsd
-                          />
-                        </span>
-                      </p>
+                          </span>
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-4">
                     <div
-                      className={`text-right font-mono ${
+                      className={`text-right font-mono leading-none ${
                         cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
                       }`}
                     >
+                      <p className="mb-1 text-th-fgd-4">PnL</p>
                       <FormatNumericValue value={cummulativePnl} isUsd />
                     </div>
                     {!isUnownedAccount ? (

@@ -46,10 +46,15 @@ const SharePositionModal = ({
 
   const roi = useMemo(() => {
     if (!market) return 0
+    let roi
     const indexPrice = market.uiPrice
-    const roi = ((indexPrice - entryPrice) / entryPrice) * 100
+    if (basePosition > 0) {
+      roi = (indexPrice / entryPrice - 1) * 100
+    } else {
+      roi = (indexPrice / entryPrice - 1) * -100
+    }
     return roi
-  }, [market, entryPrice])
+  }, [basePosition, entryPrice, market])
 
   useEffect(() => {
     if (image) {

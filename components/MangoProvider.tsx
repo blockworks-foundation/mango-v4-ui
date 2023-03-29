@@ -26,7 +26,7 @@ const HydrateStore = () => {
 
   useInterval(() => {
     actions.fetchGroup()
-  }, 15000)
+  }, 25000)
 
   // refetches open orders every 30 seconds
   // only the selected market's open orders are updated via websocket
@@ -40,7 +40,6 @@ const HydrateStore = () => {
   useEffect(() => {
     const actions = mangoStore.getState().actions
     if (mangoAccountAddress) {
-      actions.fetchTradeHistory()
       actions.fetchActivityFeed(mangoAccountAddress)
     }
   }, [mangoAccountAddress])
@@ -85,7 +84,9 @@ const HydrateStore = () => {
             mangoAccount.publicKey,
             decodedMangoAccount
           )
-          await newMangoAccount.reloadSerum3OpenOrders(client)
+          if (newMangoAccount.serum3Active().length > 0) {
+            await newMangoAccount.reloadSerum3OpenOrders(client)
+          }
           set((s) => {
             s.mangoAccount.current = newMangoAccount
             s.mangoAccount.lastSlot = context.slot
@@ -126,7 +127,6 @@ const ReadOnlyMangoAccount = () => {
           state.mangoAccount.initialLoad = false
         })
         await actions.fetchOpenOrders()
-        actions.fetchTradeHistory()
       } catch (error) {
         console.error('error', error)
       }

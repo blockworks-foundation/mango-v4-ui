@@ -20,5 +20,10 @@ export default function useMangoAccount(): {
     return mangoAccountPk?.toString() || ''
   }, [mangoAccountPk])
 
-  return { mangoAccount, initialLoad, mangoAccountAddress, mangoAccountPk }
+  return {
+    mangoAccount,
+    initialLoad,
+    mangoAccountAddress,
+    mangoAccountPk,
+  }
 }

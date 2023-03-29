@@ -1,4 +1,4 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 import { useViewport } from '../../hooks/useViewport'
@@ -10,13 +10,17 @@ import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
 import dynamic from 'next/dynamic'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
-import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
+import {
+  formatFunding,
+  usePerpFundingRate,
+} from '@components/trade/PerpFundingRate'
 import { IconButton } from '@components/shared/Button'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { getDecimalCount } from 'utils/numbers'
 import Tooltip from '@components/shared/Tooltip'
 import { PerpStatsItem } from 'types'
+import useMangoGroup from 'hooks/useMangoGroup'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -43,7 +47,7 @@ export const getOneDayPerpStats = (
 const PerpMarketsTable = ({
   setShowPerpDetails,
 }: {
-  setShowPerpDetails: (x: string) => void
+  setShowPerpDetails: (x: PerpMarket) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const perpMarkets = mangoStore((s) => s.perpMarkets)
@@ -53,6 +57,7 @@ const PerpMarketsTable = ({
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
+  const { group } = useMangoGroup()
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -77,7 +82,7 @@ const PerpMarketsTable = ({
             </TrHead>
           </thead>
           <tbody>
-            {perpMarkets.map((market) => {
+            {perpMarkets.map((market, index) => {
               const symbol = market.name.split('-')[0]
               const marketStats = getOneDayPerpStats(perpStats, market.name)
 
@@ -93,7 +98,7 @@ const PerpMarketsTable = ({
                   (r) => r.market_index === market.perpMarketIndex
                 )
                 fundingRate = marketRate
-                  ? `${marketRate.funding_rate_hourly.toFixed(4)}%`
+                  ? `${formatFunding.format(marketRate.funding_rate_hourly)}`
                   : '–'
               } else {
                 fundingRate = '–'
@@ -102,7 +107,11 @@ const PerpMarketsTable = ({
               const openInterest = market.baseLotsToUi(market.openInterest)
 
               return (
-                <TrBody key={market.publicKey.toString()}>
+                <TrBody
+                  className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                  key={market.publicKey.toString()}
+                  onClick={() => setShowPerpDetails(perpMarkets[index])}
+                >
                   <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market} />
@@ -144,10 +153,19 @@ const PerpMarketsTable = ({
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>
-                        <FormatNumericValue
-                          value={market.stablePriceModel.stablePrice}
-                          isUsd
-                        />
+                        {group ? (
+                          <FormatNumericValue
+                            value={group.toUiPrice(
+                              I80F48.fromNumber(
+                                market.stablePriceModel.stablePrice
+                              ),
+                              market.baseDecimals
+                            )}
+                            isUsd
+                          />
+                        ) : (
+                          'N/A'
+                        )}
                       </p>
                     </div>
                   </Td>
@@ -164,7 +182,7 @@ const PerpMarketsTable = ({
                           decimals={getDecimalCount(market.minOrderSize)}
                         />
                       </p>
-                      <p className="text-xs text-th-fgd-4">
+                      <p className="text-th-fgd-4">
                         <FormatNumericValue
                           value={openInterest * market.uiPrice}
                           isUsd
@@ -179,12 +197,7 @@ const PerpMarketsTable = ({
                   </Td>
                   <Td>
                     <div className="flex justify-end">
-                      <IconButton
-                        onClick={() => setShowPerpDetails(market.name)}
-                        size="small"
-                      >
-                        <ChevronRightIcon className="h-5 w-5" />
-                      </IconButton>
+                      <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
                     </div>
                   </Td>
                 </TrBody>
@@ -216,7 +229,7 @@ const MobilePerpMarketItem = ({
   setShowPerpDetails,
 }: {
   market: PerpMarket
-  setShowPerpDetails: (x: string) => void
+  setShowPerpDetails: (x: PerpMarket) => void
 }) => {
   const { t } = useTranslation('common')
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
@@ -278,10 +291,7 @@ const MobilePerpMarketItem = ({
             <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
           )}
         </div>
-        <IconButton
-          onClick={() => setShowPerpDetails(market.name)}
-          size="medium"
-        >
+        <IconButton onClick={() => setShowPerpDetails(market)} size="medium">
           <ChevronRightIcon className="h-5 w-5" />
         </IconButton>
       </div>

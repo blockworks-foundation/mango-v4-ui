@@ -323,7 +323,13 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   />
                 </div>
                 <div className="flex justify-between">
-                  <Tooltip content={t('loan-origination-fee-tooltip')}>
+                  <Tooltip
+                    content={t('loan-origination-fee-tooltip', {
+                      fee: `${(
+                        bank.loanOriginationFeeRate.toNumber() * 100
+                      ).toFixed(3)}%`,
+                    })}
+                  >
                     <p className="tooltip-underline">
                       {t('loan-origination-fee')}
                     </p>

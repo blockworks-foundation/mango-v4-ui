@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
-import { IconButton, LinkButton } from '@components/shared/Button'
+import { LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
+import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
-import { Transition } from '@headlessui/react'
+import { Disclosure, Transition } from '@headlessui/react'
+import PerpSideBadge from '@components/trade/PerpSideBadge'
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -20,11 +22,12 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { Fragment, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { ActivityFeed, isLiquidationFeedItem, LiquidationActivity } from 'types'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
+import LiquidationDetails from './LiquidationDetails'
 
 const formatFee = (value: number) => {
   return value.toLocaleString(undefined, {
@@ -53,6 +56,43 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
     const { fee_cost, quote_symbol } = activity.activity_details
     fee = { value: fee_cost, symbol: quote_symbol }
   }
+  if (activity_type === 'liquidate_token_with_token') {
+    const { side, liab_amount, liab_symbol, asset_amount, asset_price } =
+      activity.activity_details
+    if (side === 'liqee') {
+      fee = {
+        value: formatNumericValue(
+          Math.abs(liab_amount) - Math.abs(asset_amount * asset_price)
+        ),
+        symbol: liab_symbol,
+      }
+    } else {
+      fee = {
+        value: formatNumericValue(
+          Math.abs(asset_amount * asset_price) - Math.abs(liab_amount)
+        ),
+        symbol: liab_symbol,
+      }
+    }
+  }
+  if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
+    const { base_transfer, price, quote_transfer } = activity.activity_details
+    if (base_transfer > 0) {
+      fee = {
+        value: formatNumericValue(
+          Math.abs(base_transfer * price) - Math.abs(quote_transfer)
+        ),
+        symbol: 'USDC',
+      }
+    } else {
+      fee = {
+        value: formatNumericValue(
+          Math.abs(quote_transfer) - Math.abs(base_transfer * price)
+        ),
+        symbol: 'USDC',
+      }
+    }
+  }
   return fee
 }
 
@@ -75,6 +115,23 @@ const getCreditAndDebit = (activity: any) => {
         symbol: asset_symbol,
       }
       debit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
+    }
+  }
+  if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
+    const { base_transfer, perp_market_name, quote_transfer } =
+      activity.activity_details
+    if (base_transfer > 0) {
+      credit = {
+        value: formatNumericValue(base_transfer),
+        symbol: perp_market_name,
+      }
+      debit = { value: formatNumericValue(quote_transfer), symbol: 'USDC' }
+    } else {
+      credit = { value: formatNumericValue(quote_transfer), symbol: 'USDC' }
+      debit = {
+        value: formatNumericValue(base_transfer),
+        symbol: perp_market_name,
+      }
     }
   }
   if (activity_type === 'deposit') {
@@ -129,12 +186,24 @@ const getValue = (activity: any) => {
   const { activity_type } = activity
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
-    const { side, liab_amount, liab_price, asset_amount, asset_price } =
+    const { asset_amount, asset_price } = activity.activity_details
+    value = Math.abs(asset_amount * asset_price)
+  }
+  if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
+    const { base_transfer, price, quote_transfer, side } =
       activity.activity_details
-    if (side === 'liqee') {
-      value = asset_amount * asset_price
+    if (base_transfer > 0) {
+      if (side === 'liqee') {
+        value = Math.abs(quote_transfer)
+      } else {
+        value = Math.abs(base_transfer * price)
+      }
     } else {
-      value = liab_amount * liab_price
+      if (side === 'liqee') {
+        value = Math.abs(base_transfer * price)
+      } else {
+        value = Math.abs(quote_transfer)
+      }
     }
   }
   if (activity_type === 'deposit' || activity_type === 'withdraw') {
@@ -204,7 +273,7 @@ const ActivityFeedTable = ({
               <Th className="bg-th-bkg-1 text-right">{t('activity:credit')}</Th>
               <Th className="bg-th-bkg-1 text-right">{t('activity:debit')}</Th>
               <Th className="flex justify-end bg-th-bkg-1">
-                <Tooltip content={t('activity:tooltip-fee')} delay={250}>
+                <Tooltip content={t('activity:tooltip-fee')} delay={100}>
                   <span className="tooltip-underline">{t('fee')}</span>
                 </Tooltip>
               </Th>
@@ -216,8 +285,6 @@ const ActivityFeedTable = ({
             {activityFeed.map((activity, index: number) => {
               const { activity_type, block_datetime } = activity
               const { signature } = activity.activity_details
-              const isLiquidation =
-                activity_type === 'liquidate_token_with_token'
               const isOpenbook = activity_type === 'openbook_trade'
               const amounts = getCreditAndDebit(activity)
               const value = getValue(activity)
@@ -226,7 +293,7 @@ const ActivityFeedTable = ({
                 <TrBody
                   key={signature + index}
                   className={`default-transition text-sm hover:bg-th-bkg-2 ${
-                    isLiquidation ? 'cursor-pointer' : ''
+                    isLiquidationFeedItem(activity) ? 'cursor-pointer' : ''
                   }`}
                   onClick={
                     isLiquidationFeedItem(activity)
@@ -269,7 +336,8 @@ const ActivityFeedTable = ({
                     className={`text-right font-mono ${
                       activity_type === 'swap' ||
                       activity_type === 'perp_trade' ||
-                      isOpenbook
+                      isOpenbook ||
+                      isLiquidationFeedItem(activity)
                         ? 'text-th-fgd-2'
                         : value >= 0
                         ? 'text-th-up'
@@ -279,13 +347,14 @@ const ActivityFeedTable = ({
                     {value > 0 &&
                     activity_type !== 'swap' &&
                     activity_type !== 'perp_trade' &&
-                    !isOpenbook
+                    !isOpenbook &&
+                    !isLiquidationFeedItem(activity)
                       ? '+'
                       : ''}
                     <FormatNumericValue value={value} isUsd />
                   </Td>
                   <Td>
-                    {activity_type !== 'liquidate_token_with_token' ? (
+                    {!isLiquidationFeedItem(activity) ? (
                       <div className="flex items-center justify-end">
                         <Tooltip
                           content={`View on ${t(
@@ -343,7 +412,7 @@ const ActivityFeedTable = ({
       {activityFeed.length &&
       activityFeed.length % PAGINATION_PAGE_LENGTH === 0 ? (
         <div className="flex justify-center py-6">
-          <LinkButton onClick={handleShowMore}>Show More</LinkButton>
+          <LinkButton onClick={handleShowMore}>{t('show-more')}</LinkButton>
         </div>
       ) : null}
     </>
@@ -369,119 +438,146 @@ const MobileActivityFeedItem = ({
   getValue: (x: any) => number
 }) => {
   const { t } = useTranslation(['common', 'activity'])
-  const [expandActivityDetails, setExpandActivityDetails] = useState(false)
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
   )
   const { activity_type, block_datetime } = activity
   const { signature } = activity.activity_details
-  const isLiquidation = activity_type === 'liquidate_token_with_token'
   const isSwap = activity_type === 'swap'
   const isOpenbook = activity_type === 'openbook_trade'
   const isPerp = activity_type === 'perp_trade'
   const value = getValue(activity)
 
   return (
-    <div key={signature} className="border-b border-th-bkg-3 p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-th-fgd-1">
-            {dayjs(block_datetime).format('ddd D MMM')}
-          </p>
-          <p className="text-xs text-th-fgd-3">
-            {dayjs(block_datetime).format('h:mma')}
-          </p>
-        </div>
-        <div className="flex items-center space-x-4">
+    <div key={signature} className="border-b border-th-bkg-3">
+      {isLiquidationFeedItem(activity) ? (
+        <Disclosure>
+          {({ open }) => (
+            <>
+              <Disclosure.Button className="w-full p-4 text-left focus:outline-none">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-th-fgd-1">
+                      {dayjs(block_datetime).format('ddd D MMM')}
+                    </p>
+                    <p className="text-xs text-th-fgd-3">
+                      {dayjs(block_datetime).format('h:mma')}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-6 pr-2">
+                    <div>
+                      <p className="text-right text-xs">
+                        {t(`activity:${activity_type}`)}
+                      </p>
+                      <p className="text-right font-mono text-sm text-th-fgd-1">
+                        <FormatNumericValue value={value} isUsd />
+                      </p>
+                    </div>
+                    <ChevronDownIcon
+                      className={`${
+                        open ? 'rotate-180' : 'rotate-360'
+                      } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                    />
+                  </div>
+                </div>
+              </Disclosure.Button>
+              <Transition
+                enter="transition ease-in duration-200"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+              >
+                <Disclosure.Panel>
+                  <div className="border-t border-th-bkg-3 px-4 py-4">
+                    <LiquidationDetails activity={activity} />
+                  </div>
+                </Disclosure.Panel>
+              </Transition>
+            </>
+          )}
+        </Disclosure>
+      ) : (
+        <div className="flex items-center justify-between p-4">
           <div>
-            <p className="text-right text-xs">
-              {t(`activity:${activity_type}`)}
+            <p className="text-sm text-th-fgd-1">
+              {dayjs(block_datetime).format('ddd D MMM')}
             </p>
-            <p className="text-right font-mono text-sm text-th-fgd-1">
-              {isLiquidation ? (
-                <FormatNumericValue value={value} isUsd />
-              ) : isSwap ? (
-                <>
-                  <span className="mr-1">
-                    <FormatNumericValue
-                      value={activity.activity_details.swap_in_amount}
-                      decimals={6}
-                    />
-                  </span>
-                  <span className="font-body text-th-fgd-3">
-                    {activity.activity_details.swap_in_symbol}
-                  </span>
-                  <span className="mx-1 font-body text-th-fgd-3">for</span>
-                  <span className="mr-1">
-                    <FormatNumericValue
-                      value={activity.activity_details.swap_out_amount}
-                      decimals={6}
-                    />
-                  </span>
-                  <span className="font-body text-th-fgd-3">
-                    {activity.activity_details.swap_out_symbol}
-                  </span>
-                </>
-              ) : isPerp ? (
-                <>
-                  <span
-                    className={`mr-1 font-body ${
-                      activity.activity_details.taker_side === 'bid'
-                        ? 'text-th-up'
-                        : 'text-th-down'
-                    }`}
-                  >
-                    {activity.activity_details.taker_side === 'bid'
-                      ? 'BUY'
-                      : 'SELL'}
-                  </span>
-                  <span className="mr-1">
-                    {activity.activity_details.quantity}
-                  </span>
-                  <span className="font-body text-th-fgd-3">
-                    {activity.activity_details.perp_market_name}
-                  </span>
-                </>
-              ) : isOpenbook ? (
-                <>
-                  <span
-                    className={`mr-1 font-body ${
-                      activity.activity_details.side === 'buy'
-                        ? 'text-th-up'
-                        : 'text-th-down'
-                    }`}
-                  >
-                    {activity.activity_details.side === 'buy' ? 'BUY' : 'SELL'}
-                  </span>
-                  <span className="mr-1">{activity.activity_details.size}</span>
-                  <span className="font-body text-th-fgd-3">
-                    {activity.activity_details.base_symbol}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="mr-1">
-                    {activity.activity_details.quantity}
-                  </span>
-                  <span className="font-body text-th-fgd-3">
-                    {activity.activity_details.symbol}
-                  </span>
-                </>
-              )}
+            <p className="text-xs text-th-fgd-3">
+              {dayjs(block_datetime).format('h:mma')}
             </p>
           </div>
-          {isLiquidation ? (
-            <IconButton
-              onClick={() => setExpandActivityDetails((prev) => !prev)}
-            >
-              <ChevronDownIcon
-                className={`${
-                  expandActivityDetails ? 'rotate-180' : 'rotate-360'
-                } h-6 w-6 flex-shrink-0 text-th-fgd-1`}
-              />
-            </IconButton>
-          ) : (
+          <div className="flex items-center space-x-4">
+            <div>
+              <p className="text-right text-xs">
+                {t(`activity:${activity_type}`)}
+              </p>
+              <p className="text-right font-mono text-sm text-th-fgd-1">
+                {isSwap ? (
+                  <>
+                    <span className="mr-1">
+                      <FormatNumericValue
+                        value={activity.activity_details.swap_in_amount}
+                        decimals={6}
+                      />
+                    </span>
+                    <span className="font-body text-th-fgd-3">
+                      {activity.activity_details.swap_in_symbol}
+                    </span>
+                    <span className="mx-1 font-body text-th-fgd-3">for</span>
+                    <span className="mr-1">
+                      <FormatNumericValue
+                        value={activity.activity_details.swap_out_amount}
+                        decimals={6}
+                      />
+                    </span>
+                    <span className="font-body text-th-fgd-3">
+                      {activity.activity_details.swap_out_symbol}
+                    </span>
+                  </>
+                ) : isPerp ? (
+                  <>
+                    <span className="mr-1">
+                      {activity.activity_details.quantity}
+                    </span>
+                    <span className="font-body text-th-fgd-3">
+                      {activity.activity_details.perp_market_name}
+                    </span>
+                    <span className="font-body">
+                      {' '}
+                      <PerpSideBadge
+                        basePosition={
+                          activity.activity_details.taker_side === 'bid'
+                            ? 1
+                            : -1
+                        }
+                      />
+                    </span>
+                  </>
+                ) : isOpenbook ? (
+                  <>
+                    <span className="mr-1">
+                      {activity.activity_details.size}
+                    </span>
+                    <span className="font-body text-th-fgd-3">
+                      {activity.activity_details.base_symbol}
+                    </span>
+                    <span className="font-body">
+                      {' '}
+                      <SideBadge side={activity.activity_details.side} />
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-1">
+                      {activity.activity_details.quantity}
+                    </span>
+                    <span className="font-body text-th-fgd-3">
+                      {activity.activity_details.symbol}
+                    </span>
+                  </>
+                )}
+              </p>
+            </div>
             <a
               href={`${preferredExplorer.url}${signature}`}
               target="_blank"
@@ -496,89 +592,9 @@ const MobileActivityFeedItem = ({
                 />
               </div>
             </a>
-          )}
-        </div>
-      </div>
-      <Transition
-        appear={true}
-        show={expandActivityDetails}
-        as={Fragment}
-        enter="transition ease-in duration-200"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leave="transition ease-out"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
-      >
-        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4">
-          <div className="col-span-1">
-            <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
-            <p className="font-mono text-sm text-th-fgd-1">
-              <FormatNumericValue
-                value={activity.activity_details.asset_amount}
-              />{' '}
-              <span className="font-body">
-                {activity.activity_details.asset_symbol}
-              </span>
-              <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-              <FormatNumericValue
-                value={activity.activity_details.asset_price}
-                isUsd
-              />
-            </p>
-            <p className="font-mono text-xs text-th-fgd-3">
-              <FormatNumericValue
-                value={
-                  activity.activity_details.asset_price *
-                  activity.activity_details.asset_amount
-                }
-                isUsd
-              />
-            </p>
-          </div>
-          <div className="col-span-1">
-            <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
-            <p className="font-mono text-sm text-th-fgd-1">
-              <FormatNumericValue
-                value={activity.activity_details.liab_amount}
-              />{' '}
-              <span className="font-body">
-                {activity.activity_details.liab_symbol}
-              </span>
-              <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-              <FormatNumericValue
-                value={activity.activity_details.liab_price}
-                isUsd
-              />
-            </p>
-            <p className="font-mono text-xs text-th-fgd-3">
-              <FormatNumericValue
-                value={
-                  activity.activity_details.liab_price *
-                  activity.activity_details.liab_amount
-                }
-                isUsd
-              />
-            </p>
-          </div>
-          <div className="col-span-2 flex justify-center pt-3">
-            <a
-              className="default-transition flex items-center text-sm text-th-fgd-1 hover:text-th-fgd-3"
-              href={`${preferredExplorer.url}${signature}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                alt=""
-                width="20"
-                height="20"
-                src={`/explorer-logos/${preferredExplorer.name}.png`}
-              />
-              <span className="ml-2 text-base">{t('view-transaction')}</span>
-            </a>
           </div>
         </div>
-      </Transition>
+      )}
     </div>
   )
 }

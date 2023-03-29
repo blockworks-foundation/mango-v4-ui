@@ -61,13 +61,13 @@ const MarketSelectDropdown = () => {
               } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute -left-5 top-12 z-40 mr-4 w-screen bg-th-bkg-2 pb-4 pt-2 md:w-72">
-            <p className="my-2 ml-4 text-xs">{t('perp')}</p>
+          <Popover.Panel className="absolute -left-4 top-12 z-40 mr-4 w-screen rounded-none bg-th-bkg-2 pb-4 pt-2 md:-left-6 md:w-72 md:rounded-br-md">
+            <p className="my-2 ml-4 text-xs md:ml-6">{t('perp')}</p>
             {perpMarkets?.length
               ? perpMarkets.map((m) => {
                   return (
                     <div
-                      className="flex items-center justify-between py-2 px-4"
+                      className="flex items-center justify-between py-2 px-4 md:px-6"
                       key={m.publicKey.toString()}
                       onClick={() => {
                         close()
@@ -80,7 +80,7 @@ const MarketSelectDropdown = () => {
                         }}
                         shallow={true}
                       >
-                        <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-active">
+                        <div className="default-transition flex items-center hover:cursor-pointer md:hover:text-th-fgd-3">
                           <MarketLogos market={m} />
                           <span
                             className={
@@ -98,7 +98,7 @@ const MarketSelectDropdown = () => {
                   )
                 })
               : null}
-            <p className="my-2 ml-4 text-xs">{t('spot')}</p>
+            <p className="my-2 ml-4 text-xs md:ml-6">{t('spot')}</p>
             {serumMarkets?.length ? (
               <>
                 {serumMarkets
@@ -107,8 +107,11 @@ const MarketSelectDropdown = () => {
                   .map((m) => {
                     return (
                       <div
-                        className="flex items-center justify-between py-2 px-4"
+                        className="flex items-center justify-between py-2 px-4 md:px-6"
                         key={m.publicKey.toString()}
+                        onClick={() => {
+                          close()
+                        }}
                       >
                         <Link
                           href={{
@@ -117,7 +120,7 @@ const MarketSelectDropdown = () => {
                           }}
                           shallow={true}
                         >
-                          <div className="default-transition flex items-center hover:cursor-pointer hover:text-th-active">
+                          <div className="default-transition flex items-center hover:cursor-pointer md:hover:text-th-fgd-3">
                             <MarketLogos market={m} />
                             <span
                               className={
