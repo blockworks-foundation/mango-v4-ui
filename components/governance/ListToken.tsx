@@ -10,7 +10,7 @@ import {
   JUPITER_API_MAINNET,
   USDC_MINT,
 } from 'utils/constants'
-import { PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import { Keypair, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
 import { PythHttpClient } from '@pythnetwork/client'
@@ -36,6 +36,8 @@ import { tryGetPubKey } from 'utils/governance/tools'
 import { useTranslation } from 'next-i18next'
 import OnBoarding from './OnBoarding'
 import { emptyPk } from 'utils/governance/vsrAccounts'
+import { AnchorProvider, Program } from '@project-serum/anchor'
+import EmptyWallet from 'utils/wallet'
 
 interface TokenListForm {
   mintPk: string
@@ -187,6 +189,26 @@ const ListToken = () => {
   }
   const getOracle = async (tokenSymbol: string) => {
     try {
+      let oraclePk = ''
+      const pythOracle = await getPythOracle(tokenSymbol)
+      if (pythOracle) {
+        oraclePk = pythOracle
+      } else {
+        const switchBoardOracle = await getSwitchBoardOracle(tokenSymbol)
+        oraclePk = switchBoardOracle
+      }
+
+      return oraclePk
+    } catch (e) {
+      notify({
+        title: `Oracle not found`,
+        description: `${e}`,
+        type: 'error',
+      })
+    }
+  }
+  const getPythOracle = async (tokenSymbol: string) => {
+    try {
       const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
       const pythAccounts = await pythClient.getData()
       const product = pythAccounts.products.find(
@@ -194,11 +216,56 @@ const ListToken = () => {
       )
       return product?.price_account || ''
     } catch (e) {
-      notify({
-        title: `Pyth oracle not found`,
-        description: `${e}`,
-        type: 'error',
-      })
+      console.log(e)
+      return ''
+    }
+  }
+  const getSwitchBoardOracle = async (tokenSymbol: string) => {
+    try {
+      const VS_TOKEN_SYMBOL = 'usd'
+      const SWITCHBOARD_PROGRAM_ID =
+        'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
+
+      const options = AnchorProvider.defaultOptions()
+      const provider = new AnchorProvider(
+        connection,
+        new EmptyWallet(Keypair.generate()),
+        options
+      )
+      const idl = await Program.fetchIdl(
+        new PublicKey(SWITCHBOARD_PROGRAM_ID),
+        provider
+      )
+      const switchboardProgram = new Program(
+        idl!,
+        new PublicKey(SWITCHBOARD_PROGRAM_ID),
+        provider
+      )
+
+      const allFeeds =
+        await switchboardProgram.account.aggregatorAccountData.all()
+
+      const feedNames = allFeeds.map((x) =>
+        String.fromCharCode(
+          ...[...(x.account.name as number[])].filter((x) => x)
+        )
+      )
+      const possibleFeedIndexes = feedNames.reduce(function (r, v, i) {
+        return r.concat(
+          v.toLowerCase().includes(tokenSymbol.toLowerCase()) &&
+            v.toLowerCase().includes(VS_TOKEN_SYMBOL)
+            ? i
+            : []
+        )
+      }, [] as number[])
+
+      const possibleFeeds = allFeeds.filter(
+        (x, i) => possibleFeedIndexes.includes(i) && x.account.isLocked
+      )
+      return possibleFeeds.length ? possibleFeeds[0].publicKey.toBase58() : ''
+    } catch (e) {
+      console.log(e)
+      return ''
     }
   }
   const getBestMarket = async (tokenMint: string) => {
