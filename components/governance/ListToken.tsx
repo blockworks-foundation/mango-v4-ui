@@ -12,7 +12,7 @@ import {
 } from 'utils/constants'
 import { PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
+import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
 import { PythHttpClient } from '@pythnetwork/client'
 import {
   MAINNET_PYTH_PROGRAM,
@@ -34,29 +34,13 @@ import axios from 'axios'
 import { notify } from 'utils/notifications'
 import { tryGetPubKey } from 'utils/governance/tools'
 import { useTranslation } from 'next-i18next'
+import OnBoarding from './OnBoarding'
+import { emptyPk } from 'utils/governance/vsrAccounts'
 
 interface TokenListForm {
   mintPk: string
   oraclePk: string
-  oracleConfFilter: number
-  maxStalenessSlots: string
   name: string
-  adjustmentFactor: number
-  util0: number
-  rate0: number
-  util1: number
-  rate1: number
-  maxRate: number
-  loanFeeRate: number
-  loanOriginationFeeRate: number
-  maintAssetWeight: number
-  initAssetWeight: number
-  maintLiabWeight: number
-  initLiabWeight: number
-  liquidationFee: number
-  minVaultToDepositsRatio: number
-  netBorrowLimitWindowSizeTs: number
-  netBorrowLimitPerWindowQuote: number
   tokenIndex: number
   openBookMarketExternalPk: string
   baseBankPk: string
@@ -66,28 +50,10 @@ interface TokenListForm {
   marketName: string
 }
 
-const defaultTokenListFormValues = {
+const defaultTokenListFormValues: TokenListForm = {
   mintPk: '',
-  maxStalenessSlots: '',
   oraclePk: '',
-  oracleConfFilter: 0.1,
   name: '',
-  adjustmentFactor: 0.004,
-  util0: 0.7,
-  rate0: 0.1,
-  util1: 0.85,
-  rate1: 0.2,
-  maxRate: 2.0,
-  loanFeeRate: 0.005,
-  loanOriginationFeeRate: 0.0005,
-  maintAssetWeight: 1,
-  initAssetWeight: 1,
-  maintLiabWeight: 1,
-  initLiabWeight: 1,
-  liquidationFee: 0,
-  minVaultToDepositsRatio: 0.2,
-  netBorrowLimitWindowSizeTs: 24 * 60 * 60,
-  netBorrowLimitPerWindowQuote: toNative(1000000, 6).toNumber(),
   tokenIndex: 0,
   openBookMarketExternalPk: '',
   baseBankPk: '',
@@ -204,7 +170,7 @@ const ListToken = () => {
         SLIPPAGE_BPS,
         MODE,
         FEE,
-        wallet.publicKey!.toBase58()
+        wallet.publicKey ? wallet.publicKey?.toBase58() : emptyPk
       )
       setPriceImpact(bestRoute ? bestRoute.priceImpactPct * 100 : 100)
     } catch (e) {
@@ -275,44 +241,16 @@ const ListToken = () => {
     const proposalTx = []
 
     const registerTokenIx = await client!.program.methods
-      .tokenRegister(
-        Number(advForm.tokenIndex),
-        advForm.name,
-        {
-          confFilter: Number(advForm.oracleConfFilter),
-          maxStalenessSlots:
-            advForm.maxStalenessSlots !== ''
-              ? Number(advForm.maxStalenessSlots)
-              : null,
-        },
-        {
-          adjustmentFactor: Number(advForm.adjustmentFactor),
-          util0: Number(advForm.util0),
-          rate0: Number(advForm.rate0),
-          util1: Number(advForm.util1),
-          rate1: Number(advForm.rate1),
-          maxRate: Number(advForm.maxRate),
-        },
-        Number(advForm.loanFeeRate),
-        Number(advForm.loanOriginationFeeRate),
-        Number(advForm.maintAssetWeight),
-        Number(advForm.initAssetWeight),
-        Number(advForm.maintLiabWeight),
-        Number(advForm.initLiabWeight),
-        Number(advForm.liquidationFee),
-        Number(advForm.minVaultToDepositsRatio),
-        new BN(advForm.netBorrowLimitWindowSizeTs),
-        new BN(advForm.netBorrowLimitPerWindowQuote)
-      )
+      .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
       .accounts({
         group: group!.publicKey,
-        admin: MANGO_DAO_WALLET,
         mint: new PublicKey(advForm.mintPk),
         oracle: new PublicKey(advForm.oraclePk),
         payer: MANGO_DAO_WALLET,
         rent: SYSVAR_RENT_PUBKEY,
       })
       .instruction()
+
     proposalTx.push(registerTokenIx)
 
     const registerMarketix = await client!.program.methods
@@ -443,170 +381,6 @@ const ListToken = () => {
                         handleSetAdvForm('oraclePk', e.target.value)
                       }
                     />
-                    <Label text={'Oracle Confidence Filter'} />
-                    <Input
-                      type="number"
-                      value={advForm.oracleConfFilter.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('oracleConfFilter', e.target.value)
-                      }
-                    />
-                    <Label text={'Max Staleness Slots'} />
-                    <Input
-                      type="number"
-                      value={advForm.maxStalenessSlots}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('maxStalenessSlots', e.target.value)
-                      }
-                    />
-                    <Label text={'Token Name'} />
-                    <Input
-                      type="text"
-                      value={advForm.name}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('name', e.target.value)
-                      }
-                    />
-                    <Label text={'Interest rate adjustment factor'} />
-                    <Input
-                      type="text"
-                      value={advForm.adjustmentFactor.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('adjustmentFactor', e.target.value)
-                      }
-                    />
-                    <Label text={'Interest rate utilization point 0'} />
-                    <Input
-                      type="text"
-                      value={advForm.util0.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('util0', e.target.value)
-                      }
-                    />
-                    <Label text={'Interest rate point 0'} />
-                    <Input
-                      type="text"
-                      value={advForm.rate0.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('rate0', e.target.value)
-                      }
-                    />
-                    <Label text={'Interest rate utilization point 1'} />
-                    <Input
-                      type="text"
-                      value={advForm.util1.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('util1', e.target.value)
-                      }
-                    />
-                    <Label text={'Interest rate point 1'} />
-                    <Input
-                      type="text"
-                      value={advForm.rate1.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('rate1', e.target.value)
-                      }
-                    />
-                    <Label text={'Interest rate max rate'} />
-                    <Input
-                      type="text"
-                      value={advForm.maxRate.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('maxRate', e.target.value)
-                      }
-                    />
-                    <Label text={'Loan Fee Rate'} />
-                    <Input
-                      type="text"
-                      value={advForm.loanFeeRate.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('loanFeeRate', e.target.value)
-                      }
-                    />
-                    <Label text={'Loan Origination Fee Rate'} />
-                    <Input
-                      type="text"
-                      value={advForm.loanOriginationFeeRate.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm(
-                          'loanOriginationFeeRate',
-                          e.target.value
-                        )
-                      }
-                    />
-                    <Label text={'Maintenance Asset Weight'} />
-                    <Input
-                      type="text"
-                      value={advForm.maintAssetWeight.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('maintAssetWeight', e.target.value)
-                      }
-                    />
-                    <Label text={'Init Asset Weight'} />
-                    <Input
-                      type="text"
-                      value={advForm.initAssetWeight.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('initAssetWeight', e.target.value)
-                      }
-                    />
-                    <Label text={'Maintenance Liab Weight'} />
-                    <Input
-                      type="text"
-                      value={advForm.maintLiabWeight.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('maintLiabWeight', e.target.value)
-                      }
-                    />
-                    <Label text={'Init Liab Weight'} />
-                    <Input
-                      type="text"
-                      value={advForm.initLiabWeight.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('initLiabWeight', e.target.value)
-                      }
-                    />
-                    <Label text={'Liquidation Fee'} />
-                    <Input
-                      type="text"
-                      value={advForm.liquidationFee.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('liquidationFee', e.target.value)
-                      }
-                    />
-                    <Label text={'Min Vault To Deposits Ratio'} />
-                    <Input
-                      type="text"
-                      value={advForm.minVaultToDepositsRatio.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm(
-                          'minVaultToDepositsRatio',
-                          e.target.value
-                        )
-                      }
-                    />
-                    <Label text={'Net Borrow Limit Window Size'} />
-                    <Input
-                      type="text"
-                      value={advForm.netBorrowLimitWindowSizeTs.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm(
-                          'netBorrowLimitWindowSizeTs',
-                          e.target.value
-                        )
-                      }
-                    />
-                    <Label text={'Net Borrow Limit Per Window Quote'} />
-                    <Input
-                      type="text"
-                      value={advForm.netBorrowLimitPerWindowQuote.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm(
-                          'netBorrowLimitPerWindowQuote',
-                          e.target.value
-                        )
-                      }
-                    />
                     <Label text={'Token Index'} />
                     <Input
                       type="text"
@@ -665,6 +439,7 @@ const ListToken = () => {
                 <Button onClick={cancel}>Cancel</Button>
                 <Button onClick={propose}>Propose</Button>
               </div>
+              <OnBoarding></OnBoarding>
             </>
           )}
         </>

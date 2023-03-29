@@ -1,12 +1,12 @@
+import GovernancePageWrapper from './GovernancePageWrapper'
 import ListToken from './ListToken'
-import OnBoardingWrapper from './OnBoardingWrapper'
 
 const GovernancePage = () => {
   return (
     <div className="px-6 py-4">
-      <OnBoardingWrapper>
+      <GovernancePageWrapper>
         <ListToken></ListToken>
-      </OnBoardingWrapper>
+      </GovernancePageWrapper>
     </div>
   )
 }

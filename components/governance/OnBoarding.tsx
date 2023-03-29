@@ -1,4 +1,5 @@
 import Button from '@components/shared/Button'
+import { BN } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import { Trans, useTranslation } from 'next-i18next'
@@ -12,7 +13,7 @@ import { formatNumericValue } from 'utils/numbers'
 const OnBoarding = () => {
   const { publicKey } = useWallet()
   const { t } = useTranslation(['governance'])
-  const { connectionContext, vsrClient, governances, fetchVoterWeight } =
+  const { connectionContext, vsrClient, governances, fetchVoterWeight, voter } =
     GovernanceStore()
   const refetchVoterWeight = () => {
     if (!publicKey || !vsrClient || !connectionContext) {
@@ -20,21 +21,22 @@ const OnBoarding = () => {
     }
     fetchVoterWeight(publicKey, vsrClient, connectionContext)
   }
-  const minimumDeposit = governances
-    ? fmtTokenAmount(
-        governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
-          .minCommunityTokensToCreateProposal,
-        MANGO_MINT_DECIMALS
-      )
+  const minVoterWeight = governances
+    ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
+        .minCommunityTokensToCreateProposal
+    : new BN(0)
+  const mintVoterWeightNumber = governances
+    ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
     : 0
-  return (
+
+  return voter.voteWeight.cmp(minVoterWeight) !== -1 ? null : (
     <div>
       <h3>{t('on-boarding-title')}</h3>
       <div>
         <Trans>
           {t('on-boarding-description', {
             link: 'https://dao.mango.markets/',
-            amount: formatNumericValue(minimumDeposit),
+            amount: formatNumericValue(mintVoterWeightNumber),
           })}
         </Trans>
       </div>
