@@ -20,7 +20,7 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
     console.log('init connection')
   }, [connection.rpcEndpoint])
   useEffect(() => {
-    if (connectionContext) {
+    if (connectionContext?.endpoint) {
       initRealm(connectionContext)
       console.log('init realm')
     }

@@ -20,7 +20,7 @@
     "symbol": "Symbol",
     "mint": "Mint",
     "liquidity-warning": "Warning: Low liquidity price impact of {{priceImpactPct}}% on 10k USDC swap",
-    "cant-list-no-pyth-oracle": "Can't list token pyth oracle not found for given mint",
+    "cant-list-oracle-not-found": "Can't list token, oracle not found for given mint",
     "cant-list-no-openbook-market": "Can't list token open book market not found for given mint",
     "adv-fields": "Advanced fields"
 }

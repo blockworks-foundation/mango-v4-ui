@@ -38,6 +38,7 @@ import OnBoarding from './OnBoarding'
 import { emptyPk } from 'utils/governance/vsrAccounts'
 import { AnchorProvider, Program } from '@project-serum/anchor'
 import EmptyWallet from 'utils/wallet'
+import Loading from '@components/shared/Loading'
 
 interface TokenListForm {
   mintPk: string
@@ -68,12 +69,14 @@ const defaultTokenListFormValues: TokenListForm = {
 const ListToken = () => {
   const wallet = useWallet()
   const { connection, client, group } = mangoStore()
-  const { voter, vsrClient, governances } = GovernanceStore()
+  const { voter, vsrClient, governances, loadingRealm, loadingVoter } =
+    GovernanceStore()
   const { t } = useTranslation(['governance'])
 
   const [advForm, setAdvForm] = useState<TokenListForm>({
     ...defaultTokenListFormValues,
   })
+  const [loadingListingParams, setLoadingListingParams] = useState(false)
   const [showAdvFields, setShowAdvFields] = useState(false)
   const [tokenList, setTokenList] = useState<Token[]>([])
   const [priceImpact, setPriceImpact] = useState<number>(0)
@@ -128,13 +131,13 @@ const ListToken = () => {
     }
   }
   const getListingParams = async (tokenInfo: Token) => {
-    const [oraclePk, proposals, marketPk] = await Promise.all([
+    setLoadingListingParams(true)
+    const [oraclePk, index, marketPk] = await Promise.all([
       getOracle(tokenInfo.symbol),
-      getAllProposals(connection, MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK),
+      handleGetMangoDaoProposalsIndex(),
       getBestMarket(mint),
     ])
 
-    const index = proposals.flatMap((x) => x).length
     const bankNum = 0
 
     const [baseBank] = PublicKey.findProgramAddressSync(
@@ -161,6 +164,7 @@ const ListToken = () => {
       marketIndex: index,
       openBookMarketExternalPk: marketPk?.toBase58() || '',
     })
+    setLoadingListingParams(false)
   }
   const handleLiqudityCheck = async (tokenMint: PublicKey) => {
     try {
@@ -183,8 +187,25 @@ const ListToken = () => {
       notify({
         title: `Error during liquidity check`,
         description: `${e}`,
-        type: 'info',
+        type: 'error',
       })
+    }
+  }
+  const handleGetMangoDaoProposalsIndex = async () => {
+    try {
+      const proposals = await getAllProposals(
+        connection,
+        MANGO_GOVERNANCE_PROGRAM,
+        MANGO_REALM_PK
+      )
+      return proposals.flatMap((x) => x).length
+    } catch (e) {
+      notify({
+        title: `Can't fetch proposals to get free index for proposal`,
+        description: `${e}`,
+        type: 'error',
+      })
+      return 0
     }
   }
   const getOracle = async (tokenSymbol: string) => {
@@ -216,7 +237,11 @@ const ListToken = () => {
       )
       return product?.price_account || ''
     } catch (e) {
-      console.log(e)
+      notify({
+        title: `Pyth oracle get error`,
+        description: `${e}`,
+        type: 'error',
+      })
       return ''
     }
   }
@@ -264,7 +289,11 @@ const ListToken = () => {
       )
       return possibleFeeds.length ? possibleFeeds[0].publicKey.toBase58() : ''
     } catch (e) {
-      console.log(e)
+      notify({
+        title: `Switchboard oracle get error`,
+        description: `${e}`,
+        type: 'error',
+      })
       return ''
     }
   }
@@ -344,7 +373,7 @@ const ListToken = () => {
       walletSigner,
       MANGO_DAO_WALLET_GOVERNANCE,
       voter.tokenOwnerRecord!,
-      `List ${advForm.name} on mango-v4 `,
+      `List ${advForm.name} on Mango-v4 `,
       '',
       advForm.tokenIndex,
       proposalTx,
@@ -359,7 +388,10 @@ const ListToken = () => {
 
   return (
     <div>
-      <h3>{t('new-listing')}</h3>
+      <h3>
+        {t('new-listing')}{' '}
+        {(loadingRealm || loadingVoter) && <Loading className="w-3"></Loading>}
+      </h3>
       {!currentTokenInfo ? (
         <>
           <div>
@@ -379,7 +411,12 @@ const ListToken = () => {
                 setMint(e.target.value)
               }
             />
-            <Button onClick={handleTokenFind}>{t('find-token')}</Button>
+            <Button
+              onClick={handleTokenFind}
+              disabled={loadingVoter || loadingRealm}
+            >
+              {t('find-token')}
+            </Button>
             <div className="text-th-warning">
               {currentTokenInfo === undefined && t('token-not-found')}
             </div>
@@ -420,10 +457,11 @@ const ListToken = () => {
                     })}
                   </div>
                 )}
-                {!advForm.oraclePk && (
-                  <div>{t('cant-list-no-pyth-oracle')}</div>
+
+                {!advForm.oraclePk && !loadingListingParams && (
+                  <div>{t('cant-list-oracle-not-found')}</div>
                 )}
-                {!advForm.openBookMarketExternalPk && (
+                {!advForm.openBookMarketExternalPk && !loadingListingParams && (
                   <div>{t('cant-list-no-openbook-market')}</div>
                 )}
               </div>
@@ -512,7 +550,9 @@ const ListToken = () => {
                   onClick={propose}
                   disabled={
                     !wallet.connected ||
-                    voter.voteWeight.cmp(minVoterWeight) === -1
+                    voter.voteWeight.cmp(minVoterWeight) === -1 ||
+                    loadingRealm ||
+                    loadingVoter
                   }
                 >
                   {!wallet.connected ? 'Connect your wallet' : 'Propose'}
