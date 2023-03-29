@@ -914,7 +914,6 @@ const mangoStore = create<MangoStore>()(
               state.profile.loadDetails = false
             })
           } catch (e) {
-            notify({ type: 'error', title: 'Failed to load profile details' })
             console.error(e)
             set((state) => {
               state.profile.loadDetails = false
@@ -936,7 +935,6 @@ const mangoStore = create<MangoStore>()(
               state.settings.loading = false
             })
           } catch (e) {
-            notify({ type: 'error', title: 'Failed to load profile details' })
             console.error(e)
             set((state) => {
               state.settings.loading = false
