@@ -16,17 +16,23 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
   const { connection } = mangoStore()
 
   useEffect(() => {
-    initConnection(connection)
-    console.log('init connection')
+    if (connection.rpcEndpoint) {
+      initConnection(connection)
+      console.log('init connection')
+    }
   }, [connection.rpcEndpoint])
   useEffect(() => {
-    if (connectionContext?.endpoint) {
+    if (connectionContext?.endpoint && realm === null) {
       initRealm(connectionContext)
       console.log('init realm')
     }
   }, [connectionContext?.endpoint, realm === null])
   useEffect(() => {
-    if (publicKey && connectionContext && vsrClient) {
+    if (
+      publicKey?.toBase58() &&
+      connectionContext?.endpoint &&
+      vsrClient?.program.programId.toBase58()
+    ) {
       fetchVoterWeight(publicKey, vsrClient, connectionContext)
       console.log('fetch voter weight')
     }

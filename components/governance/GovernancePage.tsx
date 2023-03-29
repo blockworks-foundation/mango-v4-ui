@@ -1,5 +1,5 @@
 import GovernancePageWrapper from './GovernancePageWrapper'
-import ListToken from './ListToken'
+import ListToken from './ListToken/ListToken'
 
 const GovernancePage = () => {
   return (
