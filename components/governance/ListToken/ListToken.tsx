@@ -114,7 +114,7 @@ const ListToken = () => {
     cancel()
     if (!tryGetPubKey(mint)) {
       notify({
-        title: `Mint must be a PublicKey`,
+        title: `Enter a valid token mint`,
         type: 'error',
       })
       return
