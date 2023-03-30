@@ -23,9 +23,9 @@ import {
 } from 'utils/governance/constants'
 import { getAllProposals } from '@solana/spl-governance'
 import {
-  CheckCircleIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/20/solid'
 import BN from 'bn.js'
 import { createProposal } from 'utils/governance/createProposal'
@@ -451,7 +451,7 @@ const ListToken = () => {
             <h2 className="mb-2 text-lg">{t('before-you-list')}</h2>
             <ul>
               <li className="mb-2 flex items-center text-base">
-                <CheckCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-up" />
+                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
                 <span>
                   {t('before-listing-1')}{' '}
                   <a
@@ -460,12 +460,11 @@ const ListToken = () => {
                     target="_blank"
                   >
                     {t('mango-governance')}
-                  </a>{' '}
-                  {t('before-listing-1a')}
+                  </a>
                 </span>
               </li>
               <li className="mb-2 flex items-center text-base">
-                <CheckCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-up" />
+                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
                 <span>
                   {t('before-listing-2')}{' '}
                   <a
@@ -478,11 +477,11 @@ const ListToken = () => {
                 </span>
               </li>
               <li className="mb-2 flex items-center text-base">
-                <CheckCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-up" />
+                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
                 {t('before-listing-3')}
               </li>
               <li className="mb-2 flex items-center text-base">
-                <CheckCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-up" />
+                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
                 {t('before-listing-4')}
               </li>
             </ul>
