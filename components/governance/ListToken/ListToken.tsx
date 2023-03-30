@@ -59,6 +59,8 @@ type TokenListForm = {
   marketIndex: number
   openBookProgram: string
   marketName: string
+  proposalTitle: string
+  proposalDescription: string
 }
 
 const defaultTokenListFormValues: TokenListForm = {
@@ -72,6 +74,8 @@ const defaultTokenListFormValues: TokenListForm = {
   marketIndex: 0,
   openBookProgram: '',
   marketName: '',
+  proposalTitle: '',
+  proposalDescription: '',
 }
 
 const ListToken = () => {
@@ -114,7 +118,7 @@ const ListToken = () => {
     cancel()
     if (!tryGetPubKey(mint)) {
       notify({
-        title: `Enter a valid token mint`,
+        title: t('enter-valid-token-mint'),
         type: 'error',
       })
       return
@@ -140,7 +144,7 @@ const ListToken = () => {
       return data
     } catch (e) {
       notify({
-        title: `Can't find token for given mint`,
+        title: t('cant-find-token-for-mint'),
         description: `${e}`,
         type: 'error',
       })
@@ -180,6 +184,7 @@ const ListToken = () => {
         .publicKey.toBase58(),
       marketIndex: index,
       openBookMarketExternalPk: marketPk?.toBase58() || '',
+      proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
     })
     setLoadingListingParams(false)
   }
@@ -202,7 +207,7 @@ const ListToken = () => {
       setPriceImpact(bestRoute ? bestRoute.priceImpactPct * 100 : 100)
     } catch (e) {
       notify({
-        title: `Error during liquidity check`,
+        title: t('liquidity-check-error'),
         description: `${e}`,
         type: 'error',
       })
@@ -218,7 +223,7 @@ const ListToken = () => {
       return proposals.flatMap((x) => x).length
     } catch (e) {
       notify({
-        title: `Can't fetch proposals to get free index for proposal`,
+        title: t('proposals-fetch-error'),
         description: `${e}`,
         type: 'error',
       })
@@ -239,7 +244,7 @@ const ListToken = () => {
       return oraclePk
     } catch (e) {
       notify({
-        title: `Oracle not found`,
+        title: t('oracle-not-found'),
         description: `${e}`,
         type: 'error',
       })
@@ -255,7 +260,7 @@ const ListToken = () => {
       return product?.price_account || ''
     } catch (e) {
       notify({
-        title: `Pyth oracle get error`,
+        title: t('pyth-oracle-error'),
         description: `${e}`,
         type: 'error',
       })
@@ -307,7 +312,7 @@ const ListToken = () => {
       return possibleFeeds.length ? possibleFeeds[0].publicKey.toBase58() : ''
     } catch (e) {
       notify({
-        title: `Switchboard oracle get error`,
+        title: t('switch-oracle-error'),
         description: `${e}`,
         type: 'error',
       })
@@ -342,7 +347,7 @@ const ListToken = () => {
       return new PublicKey(bestMarket[0].id)
     } catch (e) {
       notify({
-        title: 'Openbook market not found',
+        title: t('openbook-market-not-found'),
         description: `${e}`,
         type: 'error',
       })
@@ -361,7 +366,9 @@ const ListToken = () => {
     }
     if (!wallet?.publicKey || !vsrClient || !connectionContext) return
     await fetchVoterWeight(wallet.publicKey, vsrClient, connectionContext)
+
     if (voter.voteWeight.cmp(minVoterWeight) === -1) return
+
     const proposalTx = []
     const registerTokenIx = await client!.program.methods
       .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
@@ -396,8 +403,8 @@ const ListToken = () => {
       walletSigner,
       MANGO_DAO_WALLET_GOVERNANCE,
       voter.tokenOwnerRecord!,
-      `List ${advForm.name} on Mango-v4 `,
-      '',
+      advForm.proposalTitle,
+      advForm.proposalDescription,
       advForm.tokenIndex,
       proposalTx,
       vsrClient!
@@ -415,21 +422,21 @@ const ListToken = () => {
       'oraclePk',
     ]
     const numberFields: (keyof TokenListForm)[] = ['tokenIndex']
-    const textFields: (keyof TokenListForm)[] = ['marketName']
+    const textFields: (keyof TokenListForm)[] = ['marketName', 'proposalTitle']
 
     for (const key of pubkeyFields) {
       if (!tryGetPubKey(advForm[key] as string)) {
-        invalidFields[key] = 'Invalid PublicKey'
+        invalidFields[key] = t('invalid-pk')
       }
     }
     for (const key of numberFields) {
       if (isNaN(advForm[key] as number) || advForm[key] === '') {
-        invalidFields[key] = 'Invalid Number'
+        invalidFields[key] = t('invalid-num')
       }
     }
     for (const key of textFields) {
       if (!advForm[key]) {
-        invalidFields[key] = 'Field is required'
+        invalidFields[key] = t('field-req')
       }
     }
     if (Object.keys(invalidFields).length) {
@@ -579,7 +586,7 @@ const ListToken = () => {
                       <Disclosure.Panel>
                         <div className="space-y-4 rounded-md rounded-t-none bg-th-bkg-2 p-4">
                           <div>
-                            <Label text={'Oracle'} />
+                            <Label text={t('oracle')} />
                             <Input
                               error={formErrors.oraclePk !== undefined}
                               type="text"
@@ -598,7 +605,7 @@ const ListToken = () => {
                             ) : null}
                           </div>
                           <div>
-                            <Label text={'Token Index'} />
+                            <Label text={t('token-index')} />
                             <Input
                               error={formErrors.tokenIndex !== undefined}
                               type="number"
@@ -617,7 +624,7 @@ const ListToken = () => {
                             )}
                           </div>
                           <div>
-                            <Label text={'Openbook Market External'} />
+                            <Label text={t('openbook-market-external')} />
                             <Input
                               error={
                                 formErrors.openBookMarketExternalPk !==
@@ -642,7 +649,7 @@ const ListToken = () => {
                             )}
                           </div>
                           <div>
-                            <Label text={'Base Bank'} />
+                            <Label text={t('base-bank')} />
                             <Input
                               error={formErrors.baseBankPk !== undefined}
                               type="text"
@@ -661,7 +668,7 @@ const ListToken = () => {
                             )}
                           </div>
                           <div>
-                            <Label text={'Quote Bank'} />
+                            <Label text={t('quote-bank')} />
                             <Input
                               error={formErrors.quoteBankPk !== undefined}
                               type="text"
@@ -680,7 +687,7 @@ const ListToken = () => {
                             )}
                           </div>
                           <div>
-                            <Label text={'Openbook Program'} />
+                            <Label text={t('openbook-program')} />
                             <Input
                               error={formErrors.openBookProgram !== undefined}
                               type="text"
@@ -702,7 +709,7 @@ const ListToken = () => {
                             )}
                           </div>
                           <div>
-                            <Label text={'Market Name'} />
+                            <Label text={t('market-name')} />
                             <Input
                               error={formErrors.marketName !== undefined}
                               type="text"
@@ -716,6 +723,52 @@ const ListToken = () => {
                                 <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
                                 <p className="mb-0 text-xs text-th-down">
                                   {formErrors.marketName}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <Label text={t('proposal-title')} />
+                            <Input
+                              error={formErrors.proposalTitle !== undefined}
+                              type="text"
+                              value={advForm.proposalTitle.toString()}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleSetAdvForm(
+                                  'proposalTitle',
+                                  e.target.value
+                                )
+                              }
+                            />
+                            {formErrors.proposalTitle && (
+                              <div className="mt-1.5 flex items-center space-x-1">
+                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                <p className="mb-0 text-xs text-th-down">
+                                  {formErrors.proposalTitle}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <Label text={t('proposal-des')} />
+                            <Input
+                              error={
+                                formErrors.proposalDescription !== undefined
+                              }
+                              type="text"
+                              value={advForm.proposalDescription.toString()}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleSetAdvForm(
+                                  'proposalDescription',
+                                  e.target.value
+                                )
+                              }
+                            />
+                            {formErrors.proposalDescription && (
+                              <div className="mt-1.5 flex items-center space-x-1">
+                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                <p className="mb-0 text-xs text-th-down">
+                                  {formErrors.proposalDescription}
                                 </p>
                               </div>
                             )}

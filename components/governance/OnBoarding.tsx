@@ -14,12 +14,7 @@ const OnBoarding = () => {
   const { connected } = useWallet()
   const { t } = useTranslation(['governance'])
   const { governances, voter } = GovernanceStore()
-  // const refetchVoterWeight = () => {
-  //   if (!publicKey || !vsrClient || !connectionContext) {
-  //     return
-  //   }
-  //   fetchVoterWeight(publicKey, vsrClient, connectionContext)
-  // }
+
   const minVoterWeight = governances
     ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
         .minCommunityTokensToCreateProposal
@@ -48,19 +43,6 @@ const OnBoarding = () => {
         }
         desc={t('on-boarding-deposit-info')}
       />
-      {/* <h3>{t('on-boarding-title')}</h3>
-      <div>
-        <Trans>
-          {t('on-boarding-description', {
-            link: 'https://dao.mango.markets/',
-            amount: formatNumericValue(mintVoterWeightNumber),
-          })}
-        </Trans>
-      </div>
-      <div>{t('on-boarding-deposit-info')}</div>
-      <div>
-        <Button onClick={refetchVoterWeight}>{t('tokens-deposited')}</Button>
-      </div> */}
     </div>
   )
 }

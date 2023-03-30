@@ -18,13 +18,11 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (connection.rpcEndpoint) {
       initConnection(connection)
-      console.log('init connection')
     }
   }, [connection.rpcEndpoint])
   useEffect(() => {
     if (connectionContext?.endpoint && realm === null) {
       initRealm(connectionContext)
-      console.log('init realm')
     }
   }, [connectionContext?.endpoint, realm === null])
   useEffect(() => {
@@ -34,7 +32,6 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
       vsrClient?.program.programId.toBase58()
     ) {
       fetchVoterWeight(publicKey, vsrClient, connectionContext)
-      console.log('fetch voter weight')
     }
   }, [
     publicKey?.toBase58(),
