@@ -15,9 +15,9 @@
     regenerator-runtime "^0.13.11"
 
 "@blockworks-foundation/mango-v4@^0.9.9":
-  version "0.9.10"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.9.10.tgz#af6de3f552904e8f028912c908c7d145e01331c9"
-  integrity sha512-4eea9qpKN2Y7v8/HMabnTfueVkQtvnVxoi/mAGAumvnQJZ3KK74133KhTwdhWXgJUJfD72lLKhjj1uLKzzwg/g==
+  version "0.9.12"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.9.12.tgz#75f65bab2e1771effc0f8f34abe2242303de75ae"
+  integrity sha512-yCucveDmI9ImRqTbvylRLNsK9VkVgY6z28DdiE/kLZ3D2yt2p4s6LRTlUJCwHsqtBr+eUtYR3Y0YfiDa9+hFxQ==
   dependencies:
     "@coral-xyz/anchor" "^0.26.0"
     "@project-serum/serum" "0.13.65"
@@ -1616,9 +1616,9 @@
   integrity sha512-evMDG1bC4rgQg4ku9tKpuMh5iBNEwNa3tf9zRHdP1qlv+1WUg44xat4IxCE14gIpZRGUUWAx2VhItCZc25NfMA==
 
 "@types/node@*":
-  version "18.15.10"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.15.10.tgz#4ee2171c3306a185d1208dad5f44dae3dee4cfe3"
-  integrity sha512-9avDaQJczATcXgfmMAW3MIWArOO7A+m90vuCFLr8AotWf8igO/mRoYukrk2cqZVtv38tHs33retzHEilM7FpeQ==
+  version "18.15.11"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.15.11.tgz#b3b790f09cb1696cffcec605de025b088fa4225f"
+  integrity sha512-E5Kwq2n4SbMzQOn6wnmBjuK9ouqlURrcZDVfbo9ftDDTFt3nk7ZKK4GMOzoYgnpQJKcxwQw+lGaBvvlMo0qN/Q==
 
 "@types/node@17.0.23":
   version "17.0.23"
