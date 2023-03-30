@@ -42,6 +42,10 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
     vsrClient?.program.programId.toBase58(),
   ])
 
-  return <div>{children}</div>
+  return (
+    <div className="grid grid-cols-12">
+      <div className="col-span-12 lg:col-span-8 lg:col-start-3">{children}</div>
+    </div>
+  )
 }
 export default GovernancePageWrapper

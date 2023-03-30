@@ -23,8 +23,8 @@ import {
 } from 'utils/governance/constants'
 import { getAllProposals } from '@solana/spl-governance'
 import {
-  ArrowDownCircleIcon,
-  ArrowUpCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
 import BN from 'bn.js'
@@ -41,6 +41,10 @@ import { AnchorProvider, Program } from '@project-serum/anchor'
 import EmptyWallet from 'utils/wallet'
 import Loading from '@components/shared/Loading'
 import ListTokenSuccess from './ListTokenSuccess'
+import InlineNotification from '@components/shared/InlineNotification'
+import { Disclosure } from '@headlessui/react'
+import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
+import { abbreviateAddress } from 'utils/formatting'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -73,15 +77,21 @@ const defaultTokenListFormValues: TokenListForm = {
 const ListToken = () => {
   const wallet = useWallet()
   const { connection, client, group } = mangoStore()
-  const { voter, vsrClient, governances, loadingRealm, loadingVoter } =
-    GovernanceStore()
+  const {
+    voter,
+    vsrClient,
+    governances,
+    loadingRealm,
+    loadingVoter,
+    fetchVoterWeight,
+    connectionContext,
+  } = GovernanceStore()
   const { t } = useTranslation(['governance'])
 
   const [advForm, setAdvForm] = useState<TokenListForm>({
     ...defaultTokenListFormValues,
   })
   const [loadingListingParams, setLoadingListingParams] = useState(false)
-  const [showAdvFields, setShowAdvFields] = useState(false)
   const [tokenList, setTokenList] = useState<Token[]>([])
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [priceImpact, setPriceImpact] = useState<number>(0)
@@ -94,6 +104,7 @@ const ListToken = () => {
     ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
         .minCommunityTokensToCreateProposal
     : new BN(0)
+  const { handleConnect } = useEnhancedWallet()
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
@@ -348,6 +359,9 @@ const ListToken = () => {
     if (Object.keys(invalidFields).length) {
       return
     }
+    if (!wallet?.publicKey || !vsrClient || !connectionContext) return
+    await fetchVoterWeight(wallet.publicKey, vsrClient, connectionContext)
+    if (voter.voteWeight.cmp(minVoterWeight) === -1) return
     const proposalTx = []
     const registerTokenIx = await client!.program.methods
       .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
@@ -430,34 +444,71 @@ const ListToken = () => {
 
   return (
     <div>
-      <h3>
-        {t('new-listing')}{' '}
-        {(loadingRealm || loadingVoter) && <Loading className="w-3"></Loading>}
-      </h3>
+      <h1 className="mb-4 flex items-center">{t('new-listing')}</h1>
       {!currentTokenInfo ? (
         <>
-          <div>
-            <h5>{t('before-you-list')}</h5>
+          <div className="mb-6">
+            <h2 className="mb-2 text-lg">{t('before-you-list')}</h2>
             <ul>
-              <li>{t('before-listing-1')}</li>
-              <li>{t('before-listing-2')}</li>
-              <li>{t('before-listing-3')}</li>
+              <li className="mb-2 flex items-center text-base">
+                <CheckCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-up" />
+                <span>
+                  {t('before-listing-1')}{' '}
+                  <a
+                    href="https://dao.mango.markets"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {t('mango-governance')}
+                  </a>{' '}
+                  {t('before-listing-1a')}
+                </span>
+              </li>
+              <li className="mb-2 flex items-center text-base">
+                <CheckCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-up" />
+                <span>
+                  {t('before-listing-2')}{' '}
+                  <a
+                    href="https://raydium.io/create-market"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {t('openbook-market')}
+                  </a>
+                </span>
+              </li>
+              <li className="mb-2 flex items-center text-base">
+                <CheckCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-up" />
+                {t('before-listing-3')}
+              </li>
+              <li className="mb-2 flex items-center text-base">
+                <CheckCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-up" />
+                {t('before-listing-4')}
+              </li>
             </ul>
           </div>
           <div>
             <Label text={t('token-mint')} />
-            <Input
-              type="text"
-              value={mint}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setMint(e.target.value)
-              }
-            />
+            <div className="max-w-[460px]">
+              <Input
+                type="text"
+                value={mint}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setMint(e.target.value)
+                }
+              />
+            </div>
             <Button
+              className="mt-6 flex w-36 items-center justify-center"
               onClick={handleTokenFind}
               disabled={loadingVoter || loadingRealm}
+              size="large"
             >
-              {t('find-token')}
+              {loadingRealm || loadingVoter ? (
+                <Loading className="w-4"></Loading>
+              ) : (
+                t('find-token')
+              )}
             </Button>
             <div className="text-th-warning">
               {currentTokenInfo === undefined && t('token-not-found')}
@@ -467,201 +518,258 @@ const ListToken = () => {
       ) : (
         <>
           {proposalPk ? (
-            <ListTokenSuccess proposalPk={proposalPk}></ListTokenSuccess>
+            <ListTokenSuccess
+              proposalPk={proposalPk}
+              token={currentTokenInfo?.name}
+            ></ListTokenSuccess>
           ) : (
             <>
-              <div>
-                <div>
-                  {t('name')}
-                  <img
-                    src={currentTokenInfo?.logoURI}
-                    className="h-5 w-5"
-                  ></img>
-                  {currentTokenInfo?.name}
+              <div className="rounded-md bg-th-bkg-2 p-4">
+                <h3 className="mb-2">{t('token-details')}</h3>
+                <div className="mb-2 flex items-center justify-between">
+                  <p>{t('name')}</p>
+                  <div className="flex items-center">
+                    <img
+                      src={currentTokenInfo?.logoURI}
+                      className="mr-2 h-5 w-5"
+                    ></img>
+                    <p className="text-th-fgd-2">{currentTokenInfo?.name}</p>
+                  </div>
                 </div>
-                <div>
-                  {t('symbol')} {currentTokenInfo?.symbol}
+                <div className="mb-2 flex items-center justify-between">
+                  <p>{t('symbol')}</p>
+                  <p className="text-th-fgd-2">{currentTokenInfo?.symbol}</p>
                 </div>
-                <div>
-                  {t('mint')} {currentTokenInfo?.address}
+                <div className="flex items-center justify-between">
+                  <p>{t('mint')}</p>
+                  <a className="flex items-center">
+                    {abbreviateAddress(
+                      new PublicKey(currentTokenInfo?.address)
+                    )}
+                  </a>
                 </div>
-                {priceImpact > 1 && (
-                  <div>
-                    {t('liquidity-warning', {
-                      priceImpactPct: priceImpact.toPrecision(2).toString(),
-                    })}
+                {priceImpact > 2 && (
+                  <div className="mt-4">
+                    <InlineNotification
+                      desc={t('liquidity-warning', {
+                        priceImpactPct: priceImpact.toPrecision(2).toString(),
+                      })}
+                      type="warning"
+                    />
                   </div>
                 )}
-
-                {!advForm.oraclePk && !loadingListingParams && (
-                  <div>{t('cant-list-oracle-not-found')}</div>
-                )}
-                {!advForm.openBookMarketExternalPk && !loadingListingParams && (
-                  <div>{t('cant-list-no-openbook-market')}</div>
-                )}
               </div>
-              <div>
-                <div>
-                  {t('adv-fields')}
-                  {showAdvFields ? (
-                    <ArrowUpCircleIcon
-                      onClick={() => setShowAdvFields(false)}
-                      className="w-5"
-                    ></ArrowUpCircleIcon>
-                  ) : (
-                    <ArrowDownCircleIcon
-                      onClick={() => setShowAdvFields(true)}
-                      className="w-5"
-                    ></ArrowDownCircleIcon>
+              <div className="mb-6">
+                <Disclosure>
+                  {({ open }) => (
+                    <>
+                      <Disclosure.Button
+                        className={`mt-4 w-full rounded-md bg-th-bkg-2 p-4 md:hover:bg-th-bkg-3 ${
+                          open ? 'rounded-b-none' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          {t('adv-fields')}
+                          <ChevronDownIcon
+                            className={`h-5 w-5 text-th-fgd-3 ${
+                              open ? 'rotate-180' : 'rotate-360'
+                            }`}
+                          />
+                        </div>
+                      </Disclosure.Button>
+                      <Disclosure.Panel>
+                        <div className="space-y-4 rounded-md rounded-t-none bg-th-bkg-2 p-4">
+                          <div>
+                            <Label text={'Oracle'} />
+                            <Input
+                              error={formErrors.oraclePk !== undefined}
+                              type="text"
+                              value={advForm.oraclePk}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleSetAdvForm('oraclePk', e.target.value)
+                              }
+                            />
+                            {formErrors.oraclePk ? (
+                              <div className="mt-1.5 flex items-center space-x-1">
+                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                <p className="mb-0 text-xs text-th-down">
+                                  {formErrors.oraclePk}
+                                </p>
+                              </div>
+                            ) : null}
+                          </div>
+                          <div>
+                            <Label text={'Token Index'} />
+                            <Input
+                              error={formErrors.tokenIndex !== undefined}
+                              type="number"
+                              value={advForm.tokenIndex.toString()}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleSetAdvForm('tokenIndex', e.target.value)
+                              }
+                            />
+                            {formErrors.tokenIndex && (
+                              <div className="mt-1.5 flex items-center space-x-1">
+                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                <p className="mb-0 text-xs text-th-down">
+                                  {formErrors.tokenIndex}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <Label text={'Openbook Market External'} />
+                            <Input
+                              error={
+                                formErrors.openBookMarketExternalPk !==
+                                undefined
+                              }
+                              type="text"
+                              value={advForm.openBookMarketExternalPk.toString()}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleSetAdvForm(
+                                  'openBookMarketExternalPk',
+                                  e.target.value
+                                )
+                              }
+                            />
+                            {formErrors.openBookMarketExternalPk && (
+                              <div className="mt-1.5 flex items-center space-x-1">
+                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                <p className="mb-0 text-xs text-th-down">
+                                  {formErrors.openBookMarketExternalPk}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <Label text={'Base Bank'} />
+                            <Input
+                              error={formErrors.baseBankPk !== undefined}
+                              type="text"
+                              value={advForm.baseBankPk.toString()}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleSetAdvForm('baseBankPk', e.target.value)
+                              }
+                            />
+                            {formErrors.baseBankPk && (
+                              <div className="mt-1.5 flex items-center space-x-1">
+                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                <p className="mb-0 text-xs text-th-down">
+                                  {formErrors.baseBankPk}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <Label text={'Quote Bank'} />
+                            <Input
+                              error={formErrors.quoteBankPk !== undefined}
+                              type="text"
+                              value={advForm.quoteBankPk.toString()}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleSetAdvForm('quoteBankPk', e.target.value)
+                              }
+                            />
+                            {formErrors.quoteBankPk && (
+                              <div className="mt-1.5 flex items-center space-x-1">
+                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                <p className="mb-0 text-xs text-th-down">
+                                  {formErrors.quoteBankPk}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <Label text={'Openbook Program'} />
+                            <Input
+                              error={formErrors.openBookProgram !== undefined}
+                              type="text"
+                              value={advForm.openBookProgram.toString()}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleSetAdvForm(
+                                  'openBookProgram',
+                                  e.target.value
+                                )
+                              }
+                            />
+                            {formErrors.openBookProgram && (
+                              <div className="mt-1.5 flex items-center space-x-1">
+                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                <p className="mb-0 text-xs text-th-down">
+                                  {formErrors.openBookProgram}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <Label text={'Market Name'} />
+                            <Input
+                              error={formErrors.marketName !== undefined}
+                              type="text"
+                              value={advForm.marketName.toString()}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleSetAdvForm('marketName', e.target.value)
+                              }
+                            />
+                            {formErrors.marketName && (
+                              <div className="mt-1.5 flex items-center space-x-1">
+                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                <p className="mb-0 text-xs text-th-down">
+                                  {formErrors.marketName}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Disclosure.Panel>
+                    </>
                   )}
-                </div>
-                {showAdvFields && (
-                  <div>
-                    <Label text={'Oracle'} />
-                    <Input
-                      error={formErrors.oraclePk !== undefined}
-                      type="text"
-                      value={advForm.oraclePk}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('oraclePk', e.target.value)
-                      }
-                    />
-                    {formErrors.oraclePk && (
-                      <div className="mt-1.5 flex items-center space-x-1">
-                        <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-                        <p className="mb-0 text-xs text-th-down">
-                          {formErrors.oraclePk}
-                        </p>
-                      </div>
-                    )}
-                    <Label text={'Token Index'} />
-                    <Input
-                      error={formErrors.tokenIndex !== undefined}
-                      type="number"
-                      value={advForm.tokenIndex.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('tokenIndex', e.target.value)
-                      }
-                    />
-                    {formErrors.tokenIndex && (
-                      <div className="mt-1.5 flex items-center space-x-1">
-                        <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-                        <p className="mb-0 text-xs text-th-down">
-                          {formErrors.tokenIndex}
-                        </p>
-                      </div>
-                    )}
-                    <Label text={'Openbook Market External'} />
-                    <Input
-                      error={formErrors.openBookMarketExternalPk !== undefined}
-                      type="text"
-                      value={advForm.openBookMarketExternalPk.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm(
-                          'openBookMarketExternalPk',
-                          e.target.value
-                        )
-                      }
-                    />
-                    {formErrors.openBookMarketExternalPk && (
-                      <div className="mt-1.5 flex items-center space-x-1">
-                        <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-                        <p className="mb-0 text-xs text-th-down">
-                          {formErrors.openBookMarketExternalPk}
-                        </p>
-                      </div>
-                    )}
-                    <Label text={'Base Bank'} />
-                    <Input
-                      error={formErrors.baseBankPk !== undefined}
-                      type="text"
-                      value={advForm.baseBankPk.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('baseBankPk', e.target.value)
-                      }
-                    />
-                    {formErrors.baseBankPk && (
-                      <div className="mt-1.5 flex items-center space-x-1">
-                        <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-                        <p className="mb-0 text-xs text-th-down">
-                          {formErrors.baseBankPk}
-                        </p>
-                      </div>
-                    )}
-                    <Label text={'Quote Bank'} />
-                    <Input
-                      error={formErrors.quoteBankPk !== undefined}
-                      type="text"
-                      value={advForm.quoteBankPk.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('quoteBankPk', e.target.value)
-                      }
-                    />
-                    {formErrors.quoteBankPk && (
-                      <div className="mt-1.5 flex items-center space-x-1">
-                        <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-                        <p className="mb-0 text-xs text-th-down">
-                          {formErrors.quoteBankPk}
-                        </p>
-                      </div>
-                    )}
-                    <Label text={'Openbook Program'} />
-                    <Input
-                      error={formErrors.openBookProgram !== undefined}
-                      type="text"
-                      value={advForm.openBookProgram.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('openBookProgram', e.target.value)
-                      }
-                    />
-                    {formErrors.openBookProgram && (
-                      <div className="mt-1.5 flex items-center space-x-1">
-                        <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-                        <p className="mb-0 text-xs text-th-down">
-                          {formErrors.openBookProgram}
-                        </p>
-                      </div>
-                    )}
-                    <Label text={'Market Name'} />
-                    <Input
-                      error={formErrors.marketName !== undefined}
-                      type="text"
-                      value={advForm.marketName.toString()}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handleSetAdvForm('marketName', e.target.value)
-                      }
-                    />
-                    {formErrors.marketName && (
-                      <div className="mt-1.5 flex items-center space-x-1">
-                        <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-                        <p className="mb-0 text-xs text-th-down">
-                          {formErrors.marketName}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                </Disclosure>
               </div>
-              <div>
-                <Button onClick={cancel}>Cancel</Button>
-                <Button
-                  onClick={propose}
-                  disabled={
-                    !wallet.connected ||
-                    voter.voteWeight.cmp(minVoterWeight) === -1 ||
-                    loadingRealm ||
-                    loadingVoter
-                  }
-                >
-                  <div className="flex">
-                    {!wallet.connected ? 'Connect your wallet' : 'Propose'}
-                    {(loadingListingParams || loadingVoter || loadingRealm) && (
-                      <Loading className="w-3"></Loading>
+              {!advForm.oraclePk && !loadingListingParams ? (
+                <div className="my-4">
+                  <InlineNotification
+                    desc={t('cant-list-oracle-not-found')}
+                    type="error"
+                  />
+                </div>
+              ) : null}
+              {!advForm.openBookMarketExternalPk && !loadingListingParams ? (
+                <div className="mb-4">
+                  <InlineNotification
+                    desc={t('cant-list-no-openbook-market')}
+                    type="error"
+                  />
+                </div>
+              ) : null}
+              <OnBoarding />
+              <div className="mt-6 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                {wallet.connected ? (
+                  <Button
+                    className="flex w-full items-center justify-center sm:w-44"
+                    onClick={propose}
+                    disabled={
+                      // voter.voteWeight.cmp(minVoterWeight) === -1 ||
+                      loadingRealm || loadingVoter
+                    }
+                    size="large"
+                  >
+                    {loadingListingParams || loadingVoter || loadingRealm ? (
+                      <Loading className="w-4"></Loading>
+                    ) : (
+                      t('propose-listing')
                     )}
-                  </div>
+                  </Button>
+                ) : (
+                  <Button onClick={handleConnect} size="large">
+                    {t('connect-wallet')}
+                  </Button>
+                )}
+                <Button secondary onClick={cancel} size="large">
+                  {t('cancel')}
                 </Button>
               </div>
-              <OnBoarding></OnBoarding>
             </>
           )}
         </>

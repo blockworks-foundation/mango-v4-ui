@@ -3,9 +3,9 @@ import ListToken from './ListToken/ListToken'
 
 const GovernancePage = () => {
   return (
-    <div className="px-6 py-4">
+    <div className="p-8 pb-20 md:pb-16 lg:p-10">
       <GovernancePageWrapper>
-        <ListToken></ListToken>
+        <ListToken />
       </GovernancePageWrapper>
     </div>
   )

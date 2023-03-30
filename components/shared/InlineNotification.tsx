@@ -8,7 +8,7 @@ import {
 
 interface InlineNotificationProps {
   desc?: string | ReactElement
-  title?: string
+  title?: string | ReactElement
   type: 'error' | 'info' | 'success' | 'warning'
   hideBorder?: boolean
   hidePadding?: boolean
@@ -55,7 +55,7 @@ const InlineNotification: FunctionComponent<InlineNotificationProps> = ({
       <InformationCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
     ) : null}
     <div>
-      <div>{title}</div>
+      <div className="text-th-fgd-2">{title}</div>
       <div
         className={`${title && desc && 'pt-1'} text-left text-xs font-normal`}
       >

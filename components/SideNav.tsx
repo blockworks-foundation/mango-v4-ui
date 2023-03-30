@@ -14,7 +14,7 @@ import {
   MagnifyingGlassIcon,
   BanknotesIcon,
   NewspaperIcon,
-  HandRaisedIcon,
+  PlusCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -134,20 +134,20 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 showTooltip={false}
               />
               <MenuItem
+                active={pathname === '/governance'}
+                collapsed={false}
+                icon={<PlusCircleIcon className="h-5 w-5" />}
+                title={t('governance:list-token')}
+                pagePath="/governance"
+                hideIconBg
+                showTooltip={false}
+              />
+              <MenuItem
                 active={pathname === '/search'}
                 collapsed={false}
                 icon={<MagnifyingGlassIcon className="h-5 w-5" />}
                 title={t('search:search-accounts')}
                 pagePath="/search"
-                hideIconBg
-                showTooltip={false}
-              />
-              <MenuItem
-                active={pathname === '/governance'}
-                collapsed={false}
-                icon={<HandRaisedIcon className="h-5 w-5" />}
-                title={t('governance:list-token')}
-                pagePath="/governance"
                 hideIconBg
                 showTooltip={false}
               />
