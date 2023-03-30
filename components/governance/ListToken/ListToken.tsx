@@ -790,7 +790,18 @@ const ListToken = () => {
               {!advForm.openBookMarketExternalPk && !loadingListingParams ? (
                 <div className="mb-4">
                   <InlineNotification
-                    desc={t('cant-list-no-openbook-market')}
+                    desc={
+                      <div>
+                        <a
+                          href="https://raydium.io/create-market"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                          className="underline"
+                        >
+                          {t('cant-list-no-openbook-market')}
+                        </a>
+                      </div>
+                    }
                     type="error"
                   />
                 </div>
