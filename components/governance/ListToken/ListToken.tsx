@@ -19,6 +19,7 @@ import {
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
   MANGO_GOVERNANCE_PROGRAM,
+  MANGO_MINT_DECIMALS,
   MANGO_REALM_PK,
 } from 'utils/governance/constants'
 import { getAllProposals } from '@solana/spl-governance'
@@ -33,7 +34,7 @@ import GovernanceStore from '@store/governanceStore'
 import { Market } from '@project-serum/serum'
 import axios from 'axios'
 import { notify } from 'utils/notifications'
-import { tryGetPubKey } from 'utils/governance/tools'
+import { fmtTokenAmount, tryGetPubKey } from 'utils/governance/tools'
 import { useTranslation } from 'next-i18next'
 import OnBoarding from '../OnBoarding'
 import { emptyPk } from 'utils/governance/vsrAccounts'
@@ -45,6 +46,7 @@ import InlineNotification from '@components/shared/InlineNotification'
 import { Disclosure } from '@headlessui/react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { abbreviateAddress } from 'utils/formatting'
+import { formatNumericValue } from 'utils/numbers'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -108,6 +110,9 @@ const ListToken = () => {
     ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
         .minCommunityTokensToCreateProposal
     : new BN(0)
+  const mintVoterWeightNumber = governances
+    ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
+    : 0
   const { handleConnect } = useEnhancedWallet()
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
@@ -367,7 +372,15 @@ const ListToken = () => {
     if (!wallet?.publicKey || !vsrClient || !connectionContext) return
     await fetchVoterWeight(wallet.publicKey, vsrClient, connectionContext)
 
-    if (voter.voteWeight.cmp(minVoterWeight) === -1) return
+    if (voter.voteWeight.cmp(minVoterWeight) === -1) {
+      notify({
+        title: `${t('on-boarding-description', {
+          amount: formatNumericValue(mintVoterWeightNumber),
+        })} ${t('mango-governance')}`,
+        type: 'error',
+      })
+      return
+    }
 
     const proposalTx = []
     const registerTokenIx = await client!.program.methods
@@ -574,7 +587,13 @@ const ListToken = () => {
                           open ? 'rounded-b-none' : ''
                         }`}
                       >
-                        <div className="flex items-center justify-between">
+                        <div
+                          className={`flex items-center justify-between ${
+                            Object.values(formErrors).length
+                              ? 'text-th-warning'
+                              : ''
+                          }`}
+                        >
                           {t('adv-fields')}
                           <ChevronDownIcon
                             className={`h-5 w-5 text-th-fgd-3 ${
@@ -812,10 +831,7 @@ const ListToken = () => {
                   <Button
                     className="flex w-full items-center justify-center sm:w-44"
                     onClick={propose}
-                    disabled={
-                      // voter.voteWeight.cmp(minVoterWeight) === -1 ||
-                      loadingRealm || loadingVoter
-                    }
+                    disabled={loadingRealm || loadingVoter}
                     size="large"
                   >
                     {loadingListingParams || loadingVoter || loadingRealm ? (
