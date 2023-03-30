@@ -25,7 +25,7 @@
     "symbol": "Symbol",
     "mint": "Mint",
     "liquidity-warning": "Low liquidity. Price impact of {{priceImpactPct}}% on a 10k USDC swap.",
-    "cant-list-oracle-not-found": "Oracle not found. Create a Pyth oracle before continuing.",
+    "cant-list-oracle-not-found": "Oracle not found. Create a Pyth/Switchboard oracle before continuing.",
     "cant-list-no-openbook-market": "Openbook market not found. Create an Openbook market before continuing.",
     "adv-fields": "Advanced Options",
     "success": "Success!",
