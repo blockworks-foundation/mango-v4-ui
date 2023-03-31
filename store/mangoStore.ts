@@ -712,10 +712,7 @@ const mangoStore = create<MangoStore>()(
               )
             }
 
-            if (
-              mangoAccount.serum3Active().length &&
-              Object.keys(openOrders).length
-            ) {
+            if (mangoAccount.serum3Active().length) {
               serumOpenOrderAccounts = Array.from(
                 mangoAccount.serum3OosMapByMarketIndex.values()
               )
