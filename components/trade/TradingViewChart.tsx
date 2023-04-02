@@ -37,6 +37,7 @@ import Datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
 import useStablePrice from 'hooks/useStablePrice'
 import { isMangoError } from 'types'
+import { formatPrice } from 'apis/birdeye/helpers'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -724,6 +725,18 @@ const TradingViewChart = () => {
           'header_symbol_search',
           'popup_hints',
         ],
+        // eslint-disable-next-line
+        // @ts-ignore
+        custom_formatters: {
+          priceFormatterFactory: () => {
+            return {
+              format: (price) => {
+                // return the appropriate format
+                return formatPrice(price)
+              },
+            }
+          },
+        },
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,

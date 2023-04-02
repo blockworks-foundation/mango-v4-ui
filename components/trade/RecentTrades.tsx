@@ -87,7 +87,7 @@ const RecentTrades = () => {
     {
       cacheTime: 1000 * 60 * 15,
       staleTime: 0,
-      enabled: !!selectedMarketAddress,
+      enabled: !!selectedMarketAddress && market instanceof PerpMarket,
       refetchOnWindowFocus: true,
       refetchInterval: 1000 * 10,
     }

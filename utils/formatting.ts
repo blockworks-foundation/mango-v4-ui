@@ -1,9 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
-import {
-  countLeadingZeros,
-  formatNumericValue,
-  numberCompacter,
-} from './numbers'
+import { formatNumericValue, numberCompacter } from './numbers'
 
 export function abbreviateAddress(address: PublicKey, size = 5) {
   const base58 = address.toBase58()

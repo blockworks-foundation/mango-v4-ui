@@ -83,27 +83,26 @@ const UnsettledTrades = ({
     setSettleMktAddress(market.publicKey.toString())
 
     try {
-      const mangoAccounts = await client.getAllMangoAccounts(group)
       const perpPosition = mangoAccount.getPerpPosition(market.perpMarketIndex)
       const mangoAccountPnl = perpPosition?.getEquityUi(market)
 
       if (mangoAccountPnl === undefined)
         throw new Error('Unable to get account P&L')
 
-      const sign = Math.sign(mangoAccountPnl)
-      const filteredAccounts = mangoAccounts
-        .map((m) => ({
-          mangoAccount: m,
-          pnl:
-            m?.getPerpPosition(market.perpMarketIndex)?.getEquityUi(market) ||
-            0,
-        }))
-        .sort((a, b) => sign * (a.pnl - b.pnl))
+      console.log('mangoAccountPnl', mangoAccountPnl)
+
+      const settleCandidates = await market.getSettlePnlCandidates(
+        client,
+        group,
+        mangoAccountPnl < 0 ? 'positive' : 'negative',
+        2
+      )
+      console.log('settleCandidates', settleCandidates)
 
       const profitableAccount =
-        mangoAccountPnl >= 0 ? mangoAccount : filteredAccounts[0].mangoAccount
+        mangoAccountPnl < 0 ? settleCandidates[0].account : mangoAccount
       const unprofitableAccount =
-        mangoAccountPnl < 0 ? mangoAccount : filteredAccounts[0].mangoAccount
+        mangoAccountPnl > 0 ? settleCandidates[0].account : mangoAccount
 
       const txid = await client.perpSettlePnl(
         group,

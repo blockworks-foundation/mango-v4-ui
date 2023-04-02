@@ -158,7 +158,7 @@ export const queryBirdeyeBars = async (
   for (const bar of data.data.items) {
     if (bar.unixTime >= from && bar.unixTime < to) {
       const timestamp = bar.unixTime * 1000
-      if (bar.h > 22311) continue
+      if (bar.h >= 223111) continue
       bars = [
         ...bars,
         {
@@ -223,7 +223,7 @@ export default {
       session: '24x7',
       timezone: 'Etc/UTC',
       minmov: 1,
-      pricescale: 100,
+      pricescale: 10 ** 16,
       has_intraday: true,
       has_weekly_and_monthly: false,
       has_empty_bars: true,
