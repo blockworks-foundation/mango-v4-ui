@@ -79,12 +79,12 @@ const MaxSizeButton = ({
         if (tradeType === 'Market' || !price) {
           state.tradeForm.quoteSize = floorToDecimal(
             max * oraclePrice,
-            minOrderDecimals
+            tickDecimals
           ).toFixed()
         } else {
           state.tradeForm.quoteSize = floorToDecimal(
             max * parseFloat(price),
-            minOrderDecimals
+            tickDecimals
           ).toFixed()
         }
       }

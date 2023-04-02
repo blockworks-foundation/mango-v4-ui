@@ -39,7 +39,7 @@ import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { getDecimalCount } from 'utils/numbers'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
 import useIpAddress from 'hooks/useIpAddress'
 import ButtonGroup from '@components/forms/ButtonGroup'
@@ -174,15 +174,70 @@ const AdvancedTradeForm = () => {
     })
   }, [])
 
-  const handleSetMargin = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.checked) {
-      set((s) => {
-        s.tradeForm.quoteSize = ''
-        s.tradeForm.baseSize = ''
-      })
-    }
-    setUseMargin(e.target.checked)
-  }, [])
+  const handleSetMargin = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.checked) {
+        const price =
+          tradeForm.tradeType === 'Market' ? oraclePrice : tradeForm.price
+        const group = mangoStore.getState().group
+        if (
+          group &&
+          mangoAccount &&
+          price &&
+          selectedMarket &&
+          selectedMarket instanceof Serum3Market
+        ) {
+          if (tradeForm.side === 'buy') {
+            const balance = mangoAccount.getTokenBalanceUi(
+              group.getFirstBankByTokenIndex(selectedMarket.quoteTokenIndex)
+            )
+            const max = Math.max(balance, 0)
+            if (parseFloat(tradeForm.quoteSize) > max) {
+              set((s) => {
+                if (max > 0) {
+                  s.tradeForm.quoteSize = floorToDecimal(
+                    max,
+                    tickDecimals
+                  ).toFixed()
+                  s.tradeForm.baseSize = floorToDecimal(
+                    max / Number(price),
+                    minOrderDecimals
+                  ).toFixed()
+                } else {
+                  s.tradeForm.quoteSize = ''
+                  s.tradeForm.baseSize = ''
+                }
+              })
+            }
+          } else {
+            const balance = mangoAccount.getTokenBalanceUi(
+              group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+            )
+            const max = Math.max(balance, 0)
+            if (parseFloat(tradeForm.baseSize) > max) {
+              set((s) => {
+                if (max > 0) {
+                  s.tradeForm.baseSize = floorToDecimal(
+                    max,
+                    minOrderDecimals
+                  ).toFixed()
+                  s.tradeForm.quoteSize = floorToDecimal(
+                    max * Number(price),
+                    tickDecimals
+                  ).toFixed()
+                } else {
+                  s.tradeForm.baseSize = ''
+                  s.tradeForm.quoteSize = ''
+                }
+              })
+            }
+          }
+        }
+      }
+      setUseMargin(e.target.checked)
+    },
+    [mangoAccount, oraclePrice, selectedMarket, set, tradeForm]
+  )
 
   const [tickDecimals, tickSize] = useMemo(() => {
     const group = mangoStore.getState().group
@@ -606,7 +661,7 @@ const AdvancedTradeForm = () => {
                   ? 'bg-th-up-dark text-white md:hover:bg-th-up'
                   : 'bg-th-down-dark text-white md:hover:bg-th-down'
               }`}
-              disabled={connected && !tradeForm.baseSize}
+              disabled={connected && (!tradeForm.baseSize || !tradeForm.price)}
               size="large"
               type="submit"
             >
