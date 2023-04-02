@@ -1,4 +1,4 @@
-import GovernancePage from '@components/governance/GovernancePage'
+import ListTokenPage from '@components/governance/ListToken/ListTokenPage'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 
@@ -14,8 +14,8 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
-const Governance: NextPage = () => {
-  return <GovernancePage />
+const ListToken: NextPage = () => {
+  return <ListTokenPage />
 }
 
-export default Governance
+export default ListToken

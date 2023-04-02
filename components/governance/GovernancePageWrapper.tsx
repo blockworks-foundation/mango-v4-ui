@@ -12,6 +12,7 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
     vsrClient,
     fetchVoterWeight,
     realm,
+    voter,
   } = GovernanceStore()
   const { connection } = mangoStore()
 
@@ -29,7 +30,8 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
     if (
       publicKey?.toBase58() &&
       connectionContext?.endpoint &&
-      vsrClient?.program.programId.toBase58()
+      vsrClient?.program.programId.toBase58() &&
+      voter.wallet.toBase58() !== publicKey.toBase58()
     ) {
       fetchVoterWeight(publicKey, vsrClient, connectionContext)
     }

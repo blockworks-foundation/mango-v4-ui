@@ -16,6 +16,8 @@ import {
   ArrowTrendingUpIcon,
   MagnifyingGlassIcon,
   BanknotesIcon,
+  ArchiveBoxArrowDownIcon,
+  PlusCircleIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 import LeaderboardIcon from '@components/icons/LeaderboardIcon'
@@ -103,7 +105,7 @@ const MoreMenuPanel = ({
   showPanel: boolean
   setShowPanel: (showPanel: boolean) => void
 }) => {
-  const { t } = useTranslation(['common', 'search'])
+  const { t } = useTranslation(['common', 'search', 'governance'])
   return (
     <div
       className={`fixed bottom-0 z-30 h-[420px] w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
@@ -149,6 +151,18 @@ const MoreMenuPanel = ({
           title={t('learn')}
           path="https://docs.mango.markets/"
           icon={<LightBulbIcon className="h-5 w-5" />}
+          isExternal
+        />
+        <MoreMenuItem
+          title={t('governance:list-token')}
+          path="/governance/listToken"
+          icon={<PlusCircleIcon className="h-5 w-5" />}
+          isExternal
+        />
+        <MoreMenuItem
+          title={t('governance:vote')}
+          path="/governance/vote"
+          icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
           isExternal
         />
         <MoreMenuItem
