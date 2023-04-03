@@ -1,7 +1,7 @@
 import { BN } from '@coral-xyz/anchor'
-import { MintInfo } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { VsrClient } from './voteStakeRegistryClient'
+import { RawMint } from '@solana/spl-token'
 
 export type TokenProgramAccount<T> = {
   publicKey: PublicKey
@@ -54,7 +54,7 @@ export interface Deposit {
   votingMintConfigIdx: number
 }
 export interface DepositWithMintAccount extends Deposit {
-  mint: TokenProgramAccount<MintInfo>
+  mint: TokenProgramAccount<RawMint>
   index: number
   available: BN
   vestingRate: BN | null

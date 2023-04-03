@@ -1,4 +1,3 @@
-import { MintInfo } from '@blockworks-foundation/mango-v4'
 import { BN, EventParser } from '@coral-xyz/anchor'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import {
@@ -17,6 +16,7 @@ import {
   tryGetRegistrar,
   tryGetVoter,
 } from './vsrAccounts'
+import { RawMint } from '@solana/spl-token'
 
 export const getDeposits = async ({
   isUsed = true,
@@ -44,7 +44,7 @@ export const getDeposits = async ({
   const existingRegistrar = await tryGetRegistrar(registrar, client)
   const mintCfgs = existingRegistrar?.votingMints || []
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mints: { [key: string]: TokenProgramAccount<MintInfo> | undefined } = {}
+  const mints: { [key: string]: TokenProgramAccount<RawMint> | undefined } = {}
   let votingPower = new BN(0)
   let votingPowerFromDeposits = new BN(0)
   let deposits: DepositWithMintAccount[] = []
