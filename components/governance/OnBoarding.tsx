@@ -13,7 +13,8 @@ import { formatNumericValue } from 'utils/numbers'
 const OnBoarding = () => {
   const { connected } = useWallet()
   const { t } = useTranslation(['governance'])
-  const { governances, voter } = GovernanceStore()
+  const governances = GovernanceStore((s) => s.governances)
+  const voter = GovernanceStore((s) => s.voter)
 
   const minVoterWeight = governances
     ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config

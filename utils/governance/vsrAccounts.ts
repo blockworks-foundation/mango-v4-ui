@@ -53,6 +53,7 @@ export interface Deposit {
   lockup: Lockup
   votingMintConfigIdx: number
 }
+
 export interface DepositWithMintAccount extends Deposit {
   mint: TokenProgramAccount<MintInfo>
   index: number

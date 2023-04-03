@@ -23,6 +23,7 @@ export async function fetchRealm({
   const realm = await getRealm(connection, realmId)
   return realm
 }
+
 export async function fetchGovernances({
   connection,
   realmId,
@@ -41,6 +42,7 @@ export async function fetchGovernances({
   const governancesMap = accountsToPubkeyMap(governances)
   return governancesMap
 }
+
 export async function fetchProposals({
   connectionContext,
   programId,

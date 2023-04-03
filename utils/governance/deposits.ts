@@ -40,10 +40,12 @@ export const getDeposits = async ({
     clientProgramId
   )
   const { voter } = await getVoterPDA(registrar, walletPk, clientProgramId)
-  const existingVoter = await tryGetVoter(voter, client)
-  const existingRegistrar = await tryGetRegistrar(registrar, client)
+  const [existingVoter, existingRegistrar] = await Promise.all([
+    tryGetVoter(voter, client),
+    tryGetRegistrar(registrar, client),
+  ])
+
   const mintCfgs = existingRegistrar?.votingMints || []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mints: { [key: string]: TokenProgramAccount<MintInfo> | undefined } = {}
   let votingPower = new BN(0)
   let votingPowerFromDeposits = new BN(0)

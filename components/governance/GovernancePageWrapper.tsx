@@ -5,26 +5,27 @@ import { ReactNode, useEffect } from 'react'
 
 const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
   const { publicKey } = useWallet()
-  const {
-    initConnection,
-    connectionContext,
-    initRealm,
-    vsrClient,
-    fetchVoterWeight,
-    realm,
-  } = GovernanceStore()
-  const { connection } = mangoStore()
+
+  const initConnection = GovernanceStore((s) => s.initConnection)
+  const connectionContext = GovernanceStore((s) => s.connectionContext)
+  const initRealm = GovernanceStore((s) => s.initRealm)
+  const vsrClient = GovernanceStore((s) => s.vsrClient)
+  const fetchVoterWeight = GovernanceStore((s) => s.fetchVoterWeight)
+  const realm = GovernanceStore((s) => s.realm)
+  const connection = mangoStore((s) => s.connection)
 
   useEffect(() => {
     if (connection.rpcEndpoint) {
       initConnection(connection)
     }
   }, [connection.rpcEndpoint])
+
   useEffect(() => {
     if (connectionContext?.endpoint && realm === null) {
       initRealm(connectionContext)
     }
   }, [connectionContext?.endpoint, realm === null])
+
   useEffect(() => {
     if (
       publicKey?.toBase58() &&

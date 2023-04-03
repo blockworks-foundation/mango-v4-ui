@@ -47,6 +47,7 @@ import { Disclosure } from '@headlessui/react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { abbreviateAddress } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -82,16 +83,17 @@ const defaultTokenListFormValues: TokenListForm = {
 
 const ListToken = () => {
   const wallet = useWallet()
-  const { connection, client, group } = mangoStore()
-  const {
-    voter,
-    vsrClient,
-    governances,
-    loadingRealm,
-    loadingVoter,
-    fetchVoterWeight,
-    connectionContext,
-  } = GovernanceStore()
+  const connection = mangoStore((s) => s.connection)
+  const client = mangoStore((s) => s.client)
+  const { group } = useMangoGroup()
+  const { handleConnect } = useEnhancedWallet()
+  const voter = GovernanceStore((s) => s.voter)
+  const vsrClient = GovernanceStore((s) => s.vsrClient)
+  const governances = GovernanceStore((s) => s.governances)
+  const loadingRealm = GovernanceStore((s) => s.loadingRealm)
+  const loadingVoter = GovernanceStore((s) => s.loadingVoter)
+  const fetchVoterWeight = GovernanceStore((s) => s.fetchVoterWeight)
+  const connectionContext = GovernanceStore((s) => s.connectionContext)
   const { t } = useTranslation(['governance'])
 
   const [advForm, setAdvForm] = useState<TokenListForm>({
@@ -113,12 +115,12 @@ const ListToken = () => {
   const mintVoterWeightNumber = governances
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
     : 0
-  const { handleConnect } = useEnhancedWallet()
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
     setAdvForm({ ...advForm, [propertyName]: value })
   }
+
   const handleTokenFind = async () => {
     cancel()
     if (!tryGetPubKey(mint)) {
@@ -140,6 +142,7 @@ const ListToken = () => {
       getListingParams(tokenInfo)
     }
   }
+
   const getTokenList = async () => {
     try {
       const url =
@@ -156,6 +159,7 @@ const ListToken = () => {
       return []
     }
   }
+
   const getListingParams = async (tokenInfo: Token) => {
     setLoadingListingParams(true)
     const [oraclePk, index, marketPk] = await Promise.all([
@@ -193,6 +197,7 @@ const ListToken = () => {
     })
     setLoadingListingParams(false)
   }
+
   const handleLiqudityCheck = async (tokenMint: PublicKey) => {
     try {
       //we check price impact on token for 10k USDC
@@ -218,6 +223,7 @@ const ListToken = () => {
       })
     }
   }
+
   const handleGetMangoDaoProposalsIndex = async () => {
     try {
       const proposals = await getAllProposals(
@@ -235,6 +241,7 @@ const ListToken = () => {
       return 0
     }
   }
+
   const getOracle = async (tokenSymbol: string) => {
     try {
       let oraclePk = ''
@@ -255,6 +262,7 @@ const ListToken = () => {
       })
     }
   }
+
   const getPythOracle = async (tokenSymbol: string) => {
     try {
       const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
@@ -272,6 +280,7 @@ const ListToken = () => {
       return ''
     }
   }
+
   const getSwitchBoardOracle = async (tokenSymbol: string) => {
     try {
       const VS_TOKEN_SYMBOL = 'usd'
@@ -324,6 +333,7 @@ const ListToken = () => {
       return ''
     }
   }
+
   const getBestMarket = async (tokenMint: string) => {
     try {
       const dexProgramPk = OPENBOOK_PROGRAM_ID[CLUSTER]
@@ -358,12 +368,14 @@ const ListToken = () => {
       })
     }
   }
+
   const cancel = () => {
     setCurrentTokenInfo(null)
     setPriceImpact(0)
     setAdvForm({ ...defaultTokenListFormValues })
     setProposalPk(null)
   }
+
   const propose = async () => {
     const invalidFields = isFormValid(advForm)
     if (Object.keys(invalidFields).length) {
@@ -424,6 +436,7 @@ const ListToken = () => {
     )
     setProposalPk(proposalAddress.toBase58())
   }
+
   const isFormValid = (advForm: TokenListForm) => {
     const invalidFields: FormErrors = {}
     setFormErrors({})
