@@ -1,4 +1,13 @@
-import { Governance, Proposal, ProposalState } from '@solana/spl-governance'
+import { BN } from '@project-serum/anchor'
+import {
+  Governance,
+  MintMaxVoteWeightSource,
+  MintMaxVoteWeightSourceType,
+  Proposal,
+  ProposalState,
+} from '@solana/spl-governance'
+import { Mint } from '@solana/spl-token'
+import BigNumber from 'bignumber.js'
 import dayjs from 'dayjs'
 
 export const isInCoolOffTime = (
@@ -25,4 +34,34 @@ export const isInCoolOffTime = (
     : undefined
 
   return !!isInCoolOffTime && proposal!.state !== ProposalState.Defeated
+}
+
+/** Returns max VoteWeight for given mint and max source */
+export function getMintMaxVoteWeight(
+  mint: Mint,
+  maxVoteWeightSource: MintMaxVoteWeightSource
+) {
+  if (maxVoteWeightSource.type === MintMaxVoteWeightSourceType.SupplyFraction) {
+    const supplyFraction = maxVoteWeightSource.getSupplyFraction()
+
+    const maxVoteWeight = new BigNumber(supplyFraction.toString())
+      .multipliedBy(mint.supply.toString())
+      .shiftedBy(-MintMaxVoteWeightSource.SUPPLY_FRACTION_DECIMALS)
+
+    return new BN(maxVoteWeight.dp(0, BigNumber.ROUND_DOWN).toString())
+  } else {
+    // absolute value
+    return maxVoteWeightSource.value
+  }
+}
+
+export const calculatePct = (c = new BN(0), total?: BN) => {
+  if (total?.isZero()) {
+    return 0
+  }
+
+  return new BN(100)
+    .mul(c)
+    .div(total ?? new BN(1))
+    .toNumber()
 }
