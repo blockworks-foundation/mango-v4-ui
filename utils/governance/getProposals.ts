@@ -7,7 +7,6 @@ import {
   Proposal,
 } from '@solana/spl-governance'
 import { PublicKey } from '@solana/web3.js'
-import axios from 'axios'
 import { ConnectionContext } from './types'
 
 export const getProposals = async (
@@ -15,13 +14,12 @@ export const getProposals = async (
   connection: ConnectionContext,
   programId: PublicKey
 ) => {
-  const proposalsRaw = await axios.request({
-    url: connection.endpoint,
+  const proposalsRaw = await fetch(connection.endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    data: JSON.stringify([
+    body: JSON.stringify([
       ...pubkeys.map((x) => {
         return getProposalsFilter(
           programId,
@@ -42,9 +40,11 @@ export const getProposals = async (
   })
 
   const accounts: ProgramAccount<Proposal>[] = []
-  const rawAccounts = proposalsRaw.data
+  const proposalsData = await proposalsRaw.json()
+
+  const rawAccounts = proposalsData
     ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      proposalsRaw.data.flatMap((x: any) => x.result)
+      proposalsData.flatMap((x: any) => x.result)
     : []
   for (const rawAccount of rawAccounts) {
     try {

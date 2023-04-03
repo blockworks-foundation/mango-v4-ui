@@ -32,7 +32,6 @@ import BN from 'bn.js'
 import { createProposal } from 'utils/governance/createProposal'
 import GovernanceStore from '@store/governanceStore'
 import { Market } from '@project-serum/serum'
-import axios from 'axios'
 import { notify } from 'utils/notifications'
 import { fmtTokenAmount, tryGetPubKey } from 'utils/governance/tools'
 import { useTranslation } from 'next-i18next'
@@ -350,14 +349,16 @@ const ListToken = () => {
       if (markets.length === 1) {
         return markets[0].publicKey
       }
-      const marketsData = await Promise.all([
+      const marketsDataJsons = await Promise.all([
         ...markets.map((x) =>
-          axios.get(`/openSerumApi/market/${x.publicKey.toBase58()}`)
+          fetch(`/openSerumApi/market/${x.publicKey.toBase58()}`)
         ),
       ])
-      const bestMarket = marketsData
-        .flatMap((x) => x.data)
-        .sort((a, b) => b.volume24h - a.volume24h)
+      const marketsData = await Promise.all([
+        ...marketsDataJsons.map((x) => x.json()),
+      ])
+
+      const bestMarket = marketsData.sort((a, b) => b.volume24h - a.volume24h)
 
       return new PublicKey(bestMarket[0].id)
     } catch (e) {

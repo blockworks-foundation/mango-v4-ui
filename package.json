@@ -34,7 +34,6 @@
     "@types/howler": "2.2.7",
     "@types/lodash": "4.14.185",
     "assert": "2.0.0",
-    "axios": "1.2.4",
     "big.js": "6.2.1",
     "clsx": "1.2.1",
     "date-fns": "2.29.3",
