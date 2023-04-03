@@ -11,5 +11,5 @@ export const formatYAxis = (value: number) => {
     ? '0'
     : Math.abs(value) > 1
     ? numberCompacter.format(value)
-    : formatNumericValue(value, 2)
+    : formatNumericValue(value, 4)
 }

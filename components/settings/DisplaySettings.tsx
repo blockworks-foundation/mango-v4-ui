@@ -1,5 +1,10 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
 import Select from '@components/forms/Select'
+import ChartMiddleOBLeft from '@components/icons/ChartMiddleOBLeft'
+import ChartMiddleOBRight from '@components/icons/ChartMiddleOBRight'
+import ChartOnLeft from '@components/icons/ChartOnLeft'
+import ChartOnRight from '@components/icons/ChartOnRight'
+import Tooltip from '@components/shared/Tooltip'
 // import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
@@ -10,6 +15,7 @@ import {
   NOTIFICATION_POSITION_KEY,
   SIZE_INPUT_UI_KEY,
   TRADE_CHART_UI_KEY,
+  TRADE_LAYOUT_KEY,
 } from 'utils/constants'
 
 const NOTIFICATION_POSITIONS = [
@@ -64,6 +70,10 @@ const DisplaySettings = () => {
   const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
     TRADE_CHART_UI_KEY,
     'trading-view'
+  )
+  const [tradeLayout, setTradeLayout] = useLocalStorageState(
+    TRADE_LAYOUT_KEY,
+    'chartLeft'
   )
 
   // const handleLangChange = useCallback(
@@ -123,6 +133,59 @@ const DisplaySettings = () => {
               </Select.Option>
             ))}
           </Select>
+        </div>
+      </div>
+      <div className="hidden border-t border-th-bkg-3 py-4 md:px-4 lg:flex lg:items-center lg:justify-between">
+        <p className="mb-2 md:mb-0">{t('settings:trade-layout')}</p>
+        <div className="flex space-x-3">
+          <Tooltip content={t('settings:chart-left')}>
+            <button
+              className={`flex h-max items-center justify-center rounded border ${
+                tradeLayout === 'chartLeft'
+                  ? 'border-th-active'
+                  : 'border-th-bkg-4 md:hover:border-th-fgd-4'
+              } p-0.5 `}
+              onClick={() => setTradeLayout('chartLeft')}
+            >
+              <ChartOnLeft className="h-auto w-32" />
+            </button>
+          </Tooltip>
+          <Tooltip content={t('settings:chart-middle-ob-right')}>
+            <button
+              className={`flex h-max items-center justify-center rounded border ${
+                tradeLayout === 'chartMiddleOBRight'
+                  ? 'border-th-active'
+                  : 'border-th-bkg-4 md:hover:border-th-fgd-4'
+              } p-0.5 `}
+              onClick={() => setTradeLayout('chartMiddleOBRight')}
+            >
+              <ChartMiddleOBRight className="h-auto w-32" />
+            </button>
+          </Tooltip>
+          <Tooltip content={t('settings:chart-middle-ob-left')}>
+            <button
+              className={`flex h-max items-center justify-center rounded border ${
+                tradeLayout === 'chartMiddleOBLeft'
+                  ? 'border-th-active'
+                  : 'border-th-bkg-4 md:hover:border-th-fgd-4'
+              } p-0.5 `}
+              onClick={() => setTradeLayout('chartMiddleOBLeft')}
+            >
+              <ChartMiddleOBLeft className="h-auto w-32" />
+            </button>
+          </Tooltip>
+          <Tooltip content={t('settings:chart-right')}>
+            <button
+              className={`flex h-max items-center justify-center rounded border ${
+                tradeLayout === 'chartRight'
+                  ? 'border-th-active'
+                  : 'border-th-bkg-4 md:hover:border-th-fgd-4'
+              } p-0.5 `}
+              onClick={() => setTradeLayout('chartRight')}
+            >
+              <ChartOnRight className="h-auto w-32" />
+            </button>
+          </Tooltip>
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">

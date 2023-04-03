@@ -31,5 +31,12 @@
     "value-from": "價值多於",
     "value-to": "價值少於",
     "withdraw": "取款",
-    "withdrawals": "取款"
+    "withdrawals": "取款",
+    "counterparty": "Counterparty",
+    "liquidate_perp_base_position_or_positive_pnl": "Perp Liquidation",
+    "liquidated": "Liquidated",
+    "liquidation-fee": "Liquidation Fee",
+    "liquidation-side": "Liquidation Side",
+    "liquidator": "Liquidator",
+    "view-account": "View Account"
 }

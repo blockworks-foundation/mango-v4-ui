@@ -19,6 +19,7 @@ import ChartTabs from './ChartTabs'
 import CoingeckoStats from './CoingeckoStats'
 import { useQuery } from '@tanstack/react-query'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import TopTokenAccounts from './TopTokenAccounts'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -73,7 +74,11 @@ const TokenPage = () => {
 
   const bankName = useMemo(() => {
     if (!token) return
-    return token === 'WBTC' ? 'wBTC (Portal)' : token.toString()
+    return token === 'WBTC'
+      ? 'wBTC (Portal)'
+      : token === 'ETH'
+      ? 'ETH (Portal)'
+      : token.toString()
   }, [token])
 
   const bank = useMemo(() => {
@@ -185,6 +190,7 @@ const TokenPage = () => {
               %
             </span>
           </div>
+          {bank ? <TopTokenAccounts bank={bank} /> : null}
           {coingeckoTokenInfo.data && coingeckoId ? (
             <CoingeckoStats
               bank={bank}

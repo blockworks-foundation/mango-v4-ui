@@ -147,5 +147,6 @@ export const getDecimalCount = (value: number): number => {
 }
 
 export const numberCompacter = Intl.NumberFormat('en', {
+  maximumFractionDigits: 2,
   notation: 'compact',
 })

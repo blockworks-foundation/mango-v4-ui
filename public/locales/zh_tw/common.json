@@ -154,6 +154,17 @@
   "wallet-balance": "錢包餘額",
   "wallet-disconnected": "已斷開錢包連接",
   "withdraw": "取款",
-  "withdraw-amount": "取款額"
+  "withdraw-amount": "取款額",
+  "accept-terms": "Accept Terms",
+  "accept-terms-desc": "By continuing, you accept the Mango",
+  "agree-and-continue": "Agree and Continue",
+  "all": "All",
+  "documentation": "Documentation",
+  "funding": "Funding",
+  "leaderboard": "Leaderboard",
+  "mango-stats": "Mango Stats",
+  "perp-markets": "Perp Markets",
+  "show-more": "Show More",
+  "spot-markets": "Spot Markets"
  }
  

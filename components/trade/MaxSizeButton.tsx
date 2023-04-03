@@ -7,7 +7,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo } from 'react'
-import { formatNumericValue } from 'utils/numbers'
+import { floorToDecimal } from 'utils/numbers'
 import { useSpotMarketMax } from './SpotSlider'
 
 const MaxSizeButton = ({
@@ -59,30 +59,33 @@ const MaxSizeButton = ({
     const set = mangoStore.getState().set
     set((state) => {
       if (side === 'buy') {
-        state.tradeForm.quoteSize = formatNumericValue(max, tickDecimals)
+        state.tradeForm.quoteSize = floorToDecimal(max, tickDecimals).toFixed()
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.baseSize = formatNumericValue(
+          state.tradeForm.baseSize = floorToDecimal(
             max / oraclePrice,
             minOrderDecimals
-          )
+          ).toFixed()
         } else {
-          state.tradeForm.baseSize = formatNumericValue(
+          state.tradeForm.baseSize = floorToDecimal(
             max / parseFloat(price),
             minOrderDecimals
-          )
+          ).toFixed()
         }
       } else {
-        state.tradeForm.baseSize = formatNumericValue(max, minOrderDecimals)
+        state.tradeForm.baseSize = floorToDecimal(
+          max,
+          minOrderDecimals
+        ).toFixed()
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.quoteSize = formatNumericValue(
+          state.tradeForm.quoteSize = floorToDecimal(
             max * oraclePrice,
             minOrderDecimals
-          )
+          ).toFixed()
         } else {
-          state.tradeForm.quoteSize = formatNumericValue(
+          state.tradeForm.quoteSize = floorToDecimal(
             max * parseFloat(price),
             minOrderDecimals
-          )
+          ).toFixed()
         }
       }
     })
