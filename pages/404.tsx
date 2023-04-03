@@ -10,7 +10,6 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'profile',
         'search',
         'settings',
-        'governance',
       ])),
       // Will be passed to the page component as props
     },
