@@ -121,7 +121,7 @@ export const getVoterWeightPDA = async (
 export const tryGetVoter = async (voterPk: PublicKey, client: VsrClient) => {
   try {
     const voter = await client?.program.account.voter.fetch(voterPk)
-    return voter as Voter
+    return voter as unknown as Voter
   } catch (e) {
     return null
   }
@@ -134,7 +134,7 @@ export const tryGetRegistrar = async (
     const existingRegistrar = await client.program.account.registrar.fetch(
       registrarPk
     )
-    return existingRegistrar as Registrar
+    return existingRegistrar as unknown as Registrar
   } catch (e) {
     return null
   }
