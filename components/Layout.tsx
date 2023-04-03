@@ -24,6 +24,7 @@ import useInterval from './shared/useInterval'
 import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
+import FavoriteMarketsBar from './trade/FavoriteMarketsBar'
 
 const sideBarAnimationDuration = 500
 const termsLastUpdated = 1679441610978
@@ -116,6 +117,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 pl-4 md:pl-6">
             <TopBar />
           </div>
+          <FavoriteMarketsBar />
           {children}
         </div>
         <DeployRefreshManager />

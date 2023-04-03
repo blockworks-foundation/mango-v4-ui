@@ -13,7 +13,6 @@ import MobileTradeAdvancedPage from './MobileTradeAdvancedPage'
 import OrderbookAndTrades from './OrderbookAndTrades'
 // import { useWallet } from '@solana/wallet-adapter-react'
 // import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
-import FavoriteMarketsBar from './FavoriteMarketsBar'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { TRADE_LAYOUT_KEY } from 'utils/constants'
 
@@ -207,7 +206,6 @@ const TradeAdvancedPage = () => {
     <MobileTradeAdvancedPage />
   ) : (
     <>
-      <FavoriteMarketsBar />
       <ResponsiveGridLayout
         onBreakpointChange={(bp) => console.log('bp: ', bp)}
         // layouts={savedLayouts ? savedLayouts : defaultLayouts}
