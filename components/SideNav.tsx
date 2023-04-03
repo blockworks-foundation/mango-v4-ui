@@ -32,7 +32,7 @@ import { IconButton } from './shared/Button'
 import LeaderboardIcon from './icons/LeaderboardIcon'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
-  const { t } = useTranslation(['common', 'search', 'governance'])
+  const { t } = useTranslation(['common', 'search'])
   const { connected } = useWallet()
   const group = mangoStore.getState().group
   const { mangoAccount } = useMangoAccount()
