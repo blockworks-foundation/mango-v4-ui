@@ -51,6 +51,7 @@ export const useBirdeyeMarketPrices = () => {
   )
 
   return {
+    isFetching: res?.isFetching,
     isLoading: res?.isLoading,
     data: res?.data || [],
   }

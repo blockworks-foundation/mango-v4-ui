@@ -1,16 +1,12 @@
-import { Bank, PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { Bank, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { IconButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
 import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
 import { ChartBarIcon } from '@heroicons/react/20/solid'
-import { Market } from '@project-serum/serum'
 import mangoStore from '@store/mangoStore'
-import { useQuery } from '@tanstack/react-query'
-import useJupiterMints from 'hooks/useJupiterMints'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
-import { Token } from 'types/jupiter'
 import {
   formatCurrencyValue,
   getDecimalCount,
@@ -19,30 +15,9 @@ import {
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
 import { BorshAccountsCoder } from '@coral-xyz/anchor'
-
-type ResponseType = {
-  prices: [number, number][]
-  market_caps: [number, number][]
-  total_volumes: [number, number][]
-}
-
-const fetchTokenChange = async (
-  mangoTokens: Token[],
-  baseAddress: string
-): Promise<ResponseType> => {
-  let coingeckoId = mangoTokens.find((t) => t.address === baseAddress)
-    ?.extensions?.coingeckoId
-
-  if (baseAddress === '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh') {
-    coingeckoId = 'bitcoin'
-  }
-
-  const response = await fetch(
-    `https://api.coingecko.com/api/v3/coins/${coingeckoId}/market_chart?vs_currency=usd&days=1`
-  )
-  const data = await response.json()
-  return data
-}
+import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
+import SheenLoader from '@components/shared/SheenLoader'
+import usePrevious from '@components/shared/usePrevious'
 
 const AdvancedMarketHeader = ({
   showChart,
@@ -59,9 +34,11 @@ const AdvancedMarketHeader = ({
     selectedMarket,
   } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
-  const { mangoTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
   const [price, setPrice] = useState(stalePrice)
+  const { data: birdeyePrices, isLoading: loadingPrices } =
+    useBirdeyeMarketPrices()
+  const previousMarketName = usePrevious(selectedMarketName)
 
   //subscribe to the market oracle account
   useEffect(() => {
@@ -116,29 +93,17 @@ const AdvancedMarketHeader = ({
     }
   }, [serumOrPerpMarket])
 
-  const spotBaseAddress = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (group && selectedMarket && selectedMarket instanceof Serum3Market) {
-      return group
-        .getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
-        .mint.toString()
-    }
-  }, [selectedMarket])
-
-  const spotChangeResponse = useQuery(
-    ['coingecko-tokens', spotBaseAddress],
-    () => fetchTokenChange(mangoTokens, spotBaseAddress!),
-    {
-      cacheTime: 1000 * 60 * 15,
-      staleTime: 1000 * 60 * 10,
-      retry: 3,
-      enabled:
-        !!spotBaseAddress &&
-        serumOrPerpMarket instanceof Market &&
-        mangoTokens.length > 0,
-      refetchOnWindowFocus: false,
-    }
-  )
+  const birdeyeData = useMemo(() => {
+    if (
+      !birdeyePrices?.length ||
+      !selectedMarket ||
+      selectedMarket instanceof PerpMarket
+    )
+      return
+    return birdeyePrices.find(
+      (m) => m.mint === selectedMarket.serumMarketExternal.toString()
+    )
+  }, [birdeyePrices, selectedMarket])
 
   const change = useMemo(() => {
     if (!price || !serumOrPerpMarket) return 0
@@ -149,18 +114,17 @@ const AdvancedMarketHeader = ({
         ? ((price - changeData[0].price) / changeData[0].price) * 100
         : 0
     } else {
-      if (!spotChangeResponse.data) return 0
+      if (!birdeyeData || selectedMarketName !== previousMarketName) return 0
       return (
-        ((price - spotChangeResponse.data.prices?.[0][1]) /
-          spotChangeResponse.data.prices?.[0][1]) *
-        100
+        ((price - birdeyeData.data[0].value) / birdeyeData.data[0].value) * 100
       )
     }
   }, [
-    spotChangeResponse,
+    birdeyeData,
     price,
     serumOrPerpMarket,
     perpStats,
+    previousMarketName,
     selectedMarketName,
   ])
 
@@ -191,7 +155,13 @@ const AdvancedMarketHeader = ({
           </div>
           <div className="ml-6 flex-col whitespace-nowrap">
             <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
-            <Change change={change} size="small" suffix="%" />
+            {!loadingPrices ? (
+              <Change change={change} size="small" suffix="%" />
+            ) : (
+              <SheenLoader className="mt-0.5">
+                <div className="h-4 w-12 rounded bg-th-bkg-2" />
+              </SheenLoader>
+            )}
           </div>
           {serumOrPerpMarket instanceof PerpMarket ? (
             <>
