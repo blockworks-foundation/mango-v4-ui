@@ -137,7 +137,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 active={pathname === '/governance'}
                 collapsed={false}
                 icon={<PlusCircleIcon className="h-5 w-5" />}
-                title={t('governance:list-token')}
+                title={t('common:list-token')}
                 pagePath="/governance"
                 hideIconBg
                 showTooltip={false}
