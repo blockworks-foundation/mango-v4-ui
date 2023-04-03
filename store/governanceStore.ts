@@ -88,9 +88,8 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
         connectionContext.current,
         tokenOwnerRecordPk
       )
-    } catch (e) {
-      console.log(e)
-    }
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
     const { votingPower } = await getDeposits({
       realmPk: MANGO_REALM_PK,
       walletPk: wallet,
