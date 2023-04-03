@@ -9,8 +9,8 @@
     "tooltip-leverage": "總資價值除以賬戶餘額",
     "tooltip-pnl": "你帳戶的盈虧",
     "tooltip-total-collateral": "可用於交易和借貸的質押品（包括未結清的盈虧）",
+    "tooltip-total-funding": "賺取和支付的合約資金費總和",
     "tooltip-total-interest": "你獲取的利息（存款）減你付出的利息（借貸）",
-    "week-starting": "從{{week}}來算的一周",
-    "tooltip-total-funding": "The sum of perp position funding earned and paid",
-    "total-funding-earned": "Total Funding Earned"
+    "total-funding-earned": "總資金費",
+    "week-starting": "從{{week}}來算的一周"
 }

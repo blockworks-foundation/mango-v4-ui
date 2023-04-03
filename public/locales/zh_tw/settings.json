@@ -6,10 +6,10 @@
     "bottom-left": "左下",
     "bottom-right": "右下",
     "buttons": "按鈕",
-    "chart-left": "Chart Left",
-    "chart-middle-ob-left": "Chart Middle, Orderbook Left",
-    "chart-middle-ob-right": "Chart Middle, Orderbook Right",
-    "chart-right": "Chart Right",
+    "chart-left": "圖表左",
+    "chart-middle-ob-left": "圖表中，掛單薄左",
+    "chart-middle-ob-right": "圖表中，掛單薄右",
+    "chart-right": "圖表右",
     "chinese": "简体中文",
     "chinese-traditional": "繁體中文",
     "custom": "自定",
@@ -46,9 +46,9 @@
     "theme": "模式",
     "top-left": "左上",
     "top-right": "右上",
-    "transaction-fail": "交易失敗",
-    "transaction-success": "交易成功",
     "trade-chart": "交易圖表",
-    "trade-layout": "Trade Layout",
-    "trading-view": "Trading View"
+    "trade-layout": "交易佈局",
+    "trading-view": "Trading View",
+    "transaction-fail": "交易失敗",
+    "transaction-success": "交易成功"
 }
