@@ -163,7 +163,7 @@ export type MangoStore = {
   perpMarkets: PerpMarket[]
   perpStats: {
     loading: boolean
-    data: PerpStatsItem[] | null
+    data: PerpStatsItem[]
   }
   profile: {
     details: ProfileDetails | null
@@ -748,8 +748,7 @@ const mangoStore = create<MangoStore>()(
         fetchPerpStats: async () => {
           const set = get().set
           const group = get().group
-          const stats = get().perpStats.data
-          if ((stats && stats.length) || !group) return
+          if (!group) return []
           set((state) => {
             state.perpStats.loading = true
           })
