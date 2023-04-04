@@ -1,8 +1,8 @@
 import { Bank, PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
-import { IconButton } from '@components/shared/Button'
+import { IconButton, LinkButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
 import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
-import { ChartBarIcon } from '@heroicons/react/20/solid'
+import { ChartBarIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import { Market } from '@project-serum/serum'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
@@ -19,6 +19,7 @@ import {
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
 import { BorshAccountsCoder } from '@coral-xyz/anchor'
+import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal.tsx'
 
 type ResponseType = {
   prices: [number, number][]
@@ -62,6 +63,7 @@ const AdvancedMarketHeader = ({
   const { mangoTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
   const [price, setPrice] = useState(stalePrice)
+  const [showMarketDetails, setShowMarketDetails] = useState(false)
 
   //subscribe to the market oracle account
   useEffect(() => {
@@ -165,78 +167,99 @@ const AdvancedMarketHeader = ({
   ])
 
   return (
-    <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
-      <div className="w-full px-4 md:w-auto md:px-6 md:py-0 lg:pb-0">
-        <MarketSelectDropdown />
-      </div>
-      <div className="hide-scroll flex w-full items-center justify-between overflow-x-auto border-t border-th-bkg-3 py-2 px-5 md:border-t-0 md:py-0 md:px-0">
-        <div className="flex items-center">
-          <div
-            id="trade-step-two"
-            className="flex-col whitespace-nowrap md:ml-6"
-          >
-            <div className="text-xs text-th-fgd-4">
-              {t('trade:oracle-price')}
-            </div>
-            <div className="font-mono text-xs text-th-fgd-2">
-              {price ? (
-                `${formatCurrencyValue(
-                  price,
-                  getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
-                )}`
-              ) : (
-                <span className="text-th-fgd-4">–</span>
-              )}
-            </div>
-          </div>
-          <div className="ml-6 flex-col whitespace-nowrap">
-            <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
-            <Change change={change} size="small" suffix="%" />
-          </div>
-          {serumOrPerpMarket instanceof PerpMarket ? (
-            <>
-              <div className="ml-6 flex-col whitespace-nowrap">
-                <div className="text-xs text-th-fgd-4">
-                  {t('trade:funding-rate')}
-                </div>
-                <PerpFundingRate />
-              </div>
-              <div className="ml-6 flex-col whitespace-nowrap text-xs">
-                <div className="text-th-fgd-4">{t('trade:open-interest')}</div>
-                <span className="font-mono">
-                  $
-                  {numberCompacter.format(
-                    serumOrPerpMarket.baseLotsToUi(
-                      serumOrPerpMarket.openInterest
-                    ) * serumOrPerpMarket.uiPrice
-                  )}
-                  <span className="mx-1">|</span>
-                  {numberCompacter.format(
-                    serumOrPerpMarket.baseLotsToUi(
-                      serumOrPerpMarket.openInterest
-                    )
-                  )}{' '}
-                  <span className="font-body text-th-fgd-3">
-                    {serumOrPerpMarket.name.split('-')[0]}
-                  </span>
-                </span>
-              </div>
-            </>
-          ) : null}
+    <>
+      <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
+        <div className="w-full px-4 md:w-auto md:px-6 md:py-0 lg:pb-0">
+          <MarketSelectDropdown />
         </div>
-        {setShowChart ? (
-          <div className="ml-6">
-            <IconButton
-              className={showChart ? 'text-th-active' : 'text-th-fgd-2'}
-              onClick={() => setShowChart(!showChart)}
-              hideBg
+        <div className="hide-scroll flex w-full items-center justify-between overflow-x-auto border-t border-th-bkg-3 py-2 px-5 md:border-t-0 md:py-0 md:px-0 md:pr-6">
+          <div className="flex items-center">
+            <div
+              id="trade-step-two"
+              className="flex-col whitespace-nowrap md:ml-6"
             >
-              <ChartBarIcon className="h-5 w-5" />
-            </IconButton>
+              <div className="text-xs text-th-fgd-4">
+                {t('trade:oracle-price')}
+              </div>
+              <div className="font-mono text-xs text-th-fgd-2">
+                {price ? (
+                  `${formatCurrencyValue(
+                    price,
+                    getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
+                  )}`
+                ) : (
+                  <span className="text-th-fgd-4">–</span>
+                )}
+              </div>
+            </div>
+            <div className="ml-6 flex-col whitespace-nowrap">
+              <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
+              <Change change={change} size="small" suffix="%" />
+            </div>
+            {serumOrPerpMarket instanceof PerpMarket ? (
+              <>
+                <div className="ml-6 flex-col whitespace-nowrap">
+                  <div className="text-xs text-th-fgd-4">
+                    {t('trade:funding-rate')}
+                  </div>
+                  <PerpFundingRate />
+                </div>
+                <div className="ml-6 flex-col whitespace-nowrap text-xs">
+                  <div className="text-th-fgd-4">
+                    {t('trade:open-interest')}
+                  </div>
+                  <span className="font-mono">
+                    $
+                    {numberCompacter.format(
+                      serumOrPerpMarket.baseLotsToUi(
+                        serumOrPerpMarket.openInterest
+                      ) * serumOrPerpMarket.uiPrice
+                    )}
+                    <span className="mx-1">|</span>
+                    {numberCompacter.format(
+                      serumOrPerpMarket.baseLotsToUi(
+                        serumOrPerpMarket.openInterest
+                      )
+                    )}{' '}
+                    <span className="font-body text-th-fgd-3">
+                      {serumOrPerpMarket.name.split('-')[0]}
+                    </span>
+                  </span>
+                </div>
+              </>
+            ) : null}
           </div>
-        ) : null}
+          <div className="ml-6 flex items-center space-x-4">
+            {selectedMarket instanceof PerpMarket ? (
+              <LinkButton
+                className="flex items-center whitespace-nowrap text-th-fgd-3 no-underline md:hover:text-th-fgd-4"
+                onClick={() => setShowMarketDetails(true)}
+              >
+                <InformationCircleIcon className="h-5 w-5 flex-shrink-0 md:mr-1.5 md:h-4 md:w-4" />
+                <span className="hidden text-xs md:inline">
+                  {t('trade:market-details', { market: '' })}
+                </span>
+              </LinkButton>
+            ) : null}
+            {setShowChart ? (
+              <IconButton
+                className={showChart ? 'text-th-active' : 'text-th-fgd-2'}
+                onClick={() => setShowChart(!showChart)}
+                hideBg
+              >
+                <ChartBarIcon className="h-5 w-5" />
+              </IconButton>
+            ) : null}
+          </div>
+        </div>
       </div>
-    </div>
+      {showMarketDetails ? (
+        <PerpMarketDetailsModal
+          isOpen={showMarketDetails}
+          onClose={() => setShowMarketDetails(false)}
+        />
+      ) : null}
+    </>
   )
 }
 
