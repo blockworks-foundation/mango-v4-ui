@@ -176,17 +176,18 @@ const getCreditAndDebit = (activity: any, mangoAccountAddress: string) => {
         : taker_side === 'bid'
         ? 'ask'
         : 'bid'
-    const fee = taker === mangoAccountAddress ? taker_fee : maker_fee
+    const feeRatio = taker === mangoAccountAddress ? taker_fee : maker_fee
     const notional = quantity * price
+    const fee = feeRatio * notional
     if (side === 'bid') {
       credit = { value: quantity, symbol: perp_market_name }
       debit = {
-        value: formatNumericValue(notional + fee * notional * -1),
+        value: formatNumericValue((notional + fee) * -1),
         symbol: 'USDC',
       }
     } else {
       credit = {
-        value: formatNumericValue(notional - fee * notional),
+        value: formatNumericValue(notional - fee),
         symbol: 'USDC',
       }
       debit = { value: `-${quantity}`, symbol: perp_market_name }
