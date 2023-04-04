@@ -135,6 +135,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 showTooltip={false}
               />
               <MenuItem
+                active={pathname === '/search'}
+                collapsed={false}
+                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                title={t('search:search-accounts')}
+                pagePath="/search"
+                hideIconBg
+                showTooltip={false}
+              />
+              <MenuItem
                 active={pathname === '/governance/listToken'}
                 collapsed={false}
                 icon={<PlusCircleIcon className="h-5 w-5" />}
@@ -149,15 +158,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
                 title={t('common:vote')}
                 pagePath="/governance/vote"
-                hideIconBg
-                showTooltip={false}
-              />
-              <MenuItem
-                active={pathname === '/search'}
-                collapsed={false}
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-                title={t('search:search-accounts')}
-                pagePath="/search"
                 hideIconBg
                 showTooltip={false}
               />
