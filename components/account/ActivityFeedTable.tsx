@@ -32,7 +32,7 @@ import LiquidationDetails from './LiquidationDetails'
 const formatFee = (value: number) => {
   return value.toLocaleString(undefined, {
     minimumSignificantDigits: 1,
-    maximumSignificantDigits: 1,
+    maximumSignificantDigits: 2,
   })
 }
 
@@ -46,9 +46,13 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
       : { value: '0', symbol: '' }
   }
   if (activity_type === 'perp_trade') {
-    const { maker_fee, taker_fee, maker } = activity.activity_details
+    const { maker_fee, taker_fee, maker, price, quantity } =
+      activity.activity_details
+    const value = price * quantity
     fee = {
-      value: formatFee(mangoAccountAddress === maker ? maker_fee : taker_fee),
+      value: formatFee(
+        mangoAccountAddress === maker ? maker_fee * value : taker_fee * value
+      ),
       symbol: 'USDC',
     }
   }
@@ -173,15 +177,16 @@ const getCreditAndDebit = (activity: any, mangoAccountAddress: string) => {
         ? 'ask'
         : 'bid'
     const fee = taker === mangoAccountAddress ? taker_fee : maker_fee
+    const notional = quantity * price
     if (side === 'bid') {
       credit = { value: quantity, symbol: perp_market_name }
       debit = {
-        value: formatNumericValue(quantity * price * -1 + fee),
+        value: formatNumericValue(notional + fee * notional * -1),
         symbol: 'USDC',
       }
     } else {
       credit = {
-        value: formatNumericValue(quantity * price - fee),
+        value: formatNumericValue(notional - fee * notional),
         symbol: 'USDC',
       }
       debit = { value: `-${quantity}`, symbol: perp_market_name }
@@ -205,7 +210,7 @@ const getCreditAndDebit = (activity: any, mangoAccountAddress: string) => {
   return { credit, debit }
 }
 
-const getValue = (activity: any) => {
+const getValue = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
@@ -238,8 +243,13 @@ const getValue = (activity: any) => {
     value = swap_out_amount * swap_out_price_usd
   }
   if (activity_type === 'perp_trade') {
-    const { price, quantity } = activity.activity_details
-    value = quantity * price
+    const { price, quantity, taker, taker_fee, maker_fee } =
+      activity.activity_details
+    const isTaker = taker === mangoAccountAddress
+    const feeRatio = isTaker ? taker_fee : maker_fee
+    const notional = quantity * price
+    const fee = feeRatio * notional
+    value = isTaker ? notional + fee : notional - fee
   }
   if (activity_type === 'openbook_trade') {
     const { price, size } = activity.activity_details
@@ -310,7 +320,7 @@ const ActivityFeedTable = ({
               const { signature } = activity.activity_details
               const isOpenbook = activity_type === 'openbook_trade'
               const amounts = getCreditAndDebit(activity, mangoAccountAddress)
-              const value = getValue(activity)
+              const value = getValue(activity, mangoAccountAddress)
               const fee = getFee(activity, mangoAccountAddress)
               return (
                 <TrBody
@@ -348,9 +358,7 @@ const ActivityFeedTable = ({
                     </span>
                   </Td>
                   <Td className="text-right font-mono">
-                    {activity_type === 'perp'
-                      ? (Number(fee.value) * value).toFixed(5)
-                      : fee.value}{' '}
+                    {fee.value}{' '}
                     <span className="font-body text-th-fgd-3">
                       {fee.symbol}
                     </span>
@@ -458,19 +466,20 @@ const MobileActivityFeedItem = ({
   getValue,
 }: {
   activity: any
-  getValue: (x: any) => number
+  getValue: (a: any, m: string) => number
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
   )
+  const { mangoAccountAddress } = useMangoAccount()
   const { activity_type, block_datetime } = activity
   const { signature } = activity.activity_details
   const isSwap = activity_type === 'swap'
   const isOpenbook = activity_type === 'openbook_trade'
   const isPerp = activity_type === 'perp_trade'
-  const value = getValue(activity)
+  const value = getValue(activity, mangoAccountAddress)
 
   return (
     <div key={signature} className="border-b border-th-bkg-3">
