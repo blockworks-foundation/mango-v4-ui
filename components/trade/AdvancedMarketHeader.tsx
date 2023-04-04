@@ -28,6 +28,7 @@ const AdvancedMarketHeader = ({
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const perpStats = mangoStore((s) => s.perpStats.data)
+  const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const {
     serumOrPerpMarket,
     price: stalePrice,
@@ -87,11 +88,9 @@ const AdvancedMarketHeader = ({
   }, [connection, selectedMarket])
 
   useEffect(() => {
-    if (serumOrPerpMarket instanceof PerpMarket) {
-      const actions = mangoStore.getState().actions
-      actions.fetchPerpStats()
-    }
-  }, [serumOrPerpMarket])
+    const actions = mangoStore.getState().actions
+    actions.fetchPerpStats()
+  }, [])
 
   const birdeyeData = useMemo(() => {
     if (
@@ -106,7 +105,12 @@ const AdvancedMarketHeader = ({
   }, [birdeyePrices, selectedMarket])
 
   const change = useMemo(() => {
-    if (!price || !serumOrPerpMarket) return 0
+    if (
+      !price ||
+      !serumOrPerpMarket ||
+      selectedMarketName !== previousMarketName
+    )
+      return 0
     if (serumOrPerpMarket instanceof PerpMarket) {
       const changeData = getOneDayPerpStats(perpStats, selectedMarketName)
 
@@ -114,7 +118,7 @@ const AdvancedMarketHeader = ({
         ? ((price - changeData[0].price) / changeData[0].price) * 100
         : 0
     } else {
-      if (!birdeyeData || selectedMarketName !== previousMarketName) return 0
+      if (!birdeyeData) return 0
       return (
         ((price - birdeyeData.data[0].value) / birdeyeData.data[0].value) * 100
       )
@@ -155,11 +159,11 @@ const AdvancedMarketHeader = ({
           </div>
           <div className="ml-6 flex-col whitespace-nowrap">
             <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
-            {!loadingPrices ? (
+            {!loadingPrices && !loadingPerpStats ? (
               <Change change={change} size="small" suffix="%" />
             ) : (
               <SheenLoader className="mt-0.5">
-                <div className="h-4 w-12 rounded bg-th-bkg-2" />
+                <div className="h-3.5 w-12 bg-th-bkg-2" />
               </SheenLoader>
             )}
           </div>
