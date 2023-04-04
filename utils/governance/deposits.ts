@@ -162,7 +162,6 @@ const getDepositsAdditionalInfoEvents = async (
       batchOfDeposits.value.logs!
     ) as unknown as EventData[]
     events.push(...[...logEvents])
-    console.log(events)
   }
   return events
 }

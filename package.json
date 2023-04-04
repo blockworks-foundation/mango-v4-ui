@@ -18,7 +18,6 @@
     "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz"
   },
   "dependencies": {
-    "@blockworks-foundation/mangolana": "0.0.1-beta.11",
     "@blockworks-foundation/mango-v4": "^0.9.13",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "2.0.10",

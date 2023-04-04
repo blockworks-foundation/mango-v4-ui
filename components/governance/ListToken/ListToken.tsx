@@ -107,6 +107,7 @@ const ListToken = () => {
   >(null)
   const [proposalPk, setProposalPk] = useState<string | null>(null)
   const [mint, setMint] = useState('')
+  const [creatingProposal, setCreatingProposal] = useState(false)
   const minVoterWeight = governances
     ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
         .minCommunityTokensToCreateProposal
@@ -424,18 +425,29 @@ const ListToken = () => {
     proposalTx.push(registerMarketix)
 
     const walletSigner = wallet as never
-    const proposalAddress = await createProposal(
-      connection,
-      walletSigner,
-      MANGO_DAO_WALLET_GOVERNANCE,
-      voter.tokenOwnerRecord!,
-      advForm.proposalTitle,
-      advForm.proposalDescription,
-      advForm.tokenIndex,
-      proposalTx,
-      vsrClient!
-    )
-    setProposalPk(proposalAddress.toBase58())
+    setCreatingProposal(true)
+    try {
+      const proposalAddress = await createProposal(
+        connection,
+        walletSigner,
+        MANGO_DAO_WALLET_GOVERNANCE,
+        voter.tokenOwnerRecord!,
+        advForm.proposalTitle,
+        advForm.proposalDescription,
+        advForm.tokenIndex,
+        proposalTx,
+        vsrClient
+      )
+      setProposalPk(proposalAddress.toBase58())
+    } catch (e) {
+      notify({
+        title: t('error-proposal-creation'),
+        description: `${e}`,
+        type: 'error',
+      })
+    }
+
+    setCreatingProposal(false)
   }
 
   const isFormValid = (advForm: TokenListForm) => {
@@ -848,7 +860,10 @@ const ListToken = () => {
                     disabled={loadingRealm || loadingVoter}
                     size="large"
                   >
-                    {loadingListingParams || loadingVoter || loadingRealm ? (
+                    {loadingListingParams ||
+                    loadingVoter ||
+                    loadingRealm ||
+                    creatingProposal ? (
                       <Loading className="w-4"></Loading>
                     ) : (
                       t('propose-listing')

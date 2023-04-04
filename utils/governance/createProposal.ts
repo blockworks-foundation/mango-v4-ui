@@ -13,14 +13,17 @@ import {
   withInsertTransaction,
   withSignOffProposal,
 } from '@solana/spl-governance'
-import { Connection, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js'
 import { chunk } from 'lodash'
 import { MANGO_MINT } from 'utils/constants'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from './constants'
 import { DEFAULT_VSR_ID, VsrClient } from './voteStakeRegistryClient'
 import { getRegistrarPDA, getVoterPDA, getVoterWeightPDA } from './vsrAccounts'
-import { sendSignAndConfirmTransactions } from '@blockworks-foundation/mangolana/lib/transactions'
-import { SequenceType } from '@blockworks-foundation/mangolana/lib/globalTypes'
 
 export const createProposal = async (
   connection: Connection,
@@ -141,17 +144,27 @@ export const createProposal = async (
   )
 
   const txChunks = chunk([...instructions, ...insertInstructions], 2)
-
-  await sendSignAndConfirmTransactions({
-    connection,
-    wallet,
-    transactionInstructions: txChunks.map((txChunk) => ({
-      instructionsSet: txChunk.map((tx) => ({
-        signers: [],
-        transactionInstruction: tx,
-      })),
-      sequenceType: SequenceType.Sequential,
-    })),
-  })
+  const transactions: Transaction[] = []
+  const latestBlockhash = await connection.getLatestBlockhash('finalized')
+  for (const chunk of txChunks) {
+    const tx = new Transaction()
+    tx.add(...chunk)
+    tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
+    tx.recentBlockhash = latestBlockhash.blockhash
+    tx.feePayer = payer
+    transactions.push(tx)
+  }
+  const signedTransactions = await wallet.signAllTransactions(transactions)
+  for (const tx of signedTransactions) {
+    const rawTransaction = tx.serialize()
+    const address = await connection.sendRawTransaction(rawTransaction, {
+      skipPreflight: true,
+    })
+    await connection.confirmTransaction({
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      signature: address,
+    })
+  }
   return proposalAddress
 }

@@ -53,5 +53,6 @@
     "openbook-program": "Openbook Program",
     "market-name": "Market Name",
     "proposal-title": "Proposal Title",
-    "proposal-des": "Proposal Description"
+    "proposal-des": "Proposal Description",
+    "error-proposal-creation": "Error on proposal creation or no confirmation of transactions"
 }
