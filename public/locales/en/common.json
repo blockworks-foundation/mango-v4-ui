@@ -166,6 +166,7 @@
   "wallet-disconnected": "Disconnected from wallet",
   "withdraw": "Withdraw",
   "withdraw-amount": "Withdraw Amount",
-  "list-token": "List Token"
+  "list-token": "List Token",
+  "vote": "Vote"
  }
  
