@@ -69,6 +69,9 @@ export function subscribeOnStream(
   }
   if (!isOpen(socket)) {
     console.warn('Socket Closed')
+    socket.addEventListener('open', (_event) => {
+      socket.send(JSON.stringify(msg))
+    })
     return
   }
   console.warn('[subscribeBars birdeye]')

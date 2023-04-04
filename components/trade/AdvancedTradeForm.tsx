@@ -115,7 +115,7 @@ const AdvancedTradeForm = () => {
 
         s.tradeForm.baseSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
-          s.tradeForm.quoteSize = (price * parseFloat(e.value)).toString()
+          s.tradeForm.quoteSize = new Decimal(price).mul(e.value).toFixed()
         } else {
           s.tradeForm.quoteSize = ''
         }
@@ -135,7 +135,7 @@ const AdvancedTradeForm = () => {
 
         s.tradeForm.quoteSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
-          s.tradeForm.baseSize = (parseFloat(e.value) / price).toString()
+          s.tradeForm.baseSize = new Decimal(e.value).div(price).toFixed()
         } else {
           s.tradeForm.baseSize = ''
         }
@@ -415,7 +415,7 @@ const AdvancedTradeForm = () => {
                   thousandSeparator=","
                   allowNegative={false}
                   isNumericString={true}
-                  decimalScale={6}
+                  decimalScale={tickDecimals}
                   name="price"
                   id="price"
                   className="ml-2 w-full bg-transparent font-mono focus:outline-none"

@@ -18,7 +18,7 @@
     "grouping": "Grouping",
     "hide-asks": "Hide Asks",
     "hide-bids": "Hide Bids",
-    "hourly-funding": "Hourly Funding",
+    "hourly-funding": "Average Hourly Funding",
     "in-orders": "In Orders",
     "init-leverage": "Init Leverage",
     "instantaneous-funding": "Instantaneous Funding",

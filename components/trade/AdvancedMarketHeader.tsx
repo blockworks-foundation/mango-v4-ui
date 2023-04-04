@@ -11,7 +11,11 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import { Token } from 'types/jupiter'
-import { getDecimalCount, numberCompacter } from 'utils/numbers'
+import {
+  formatCurrencyValue,
+  getDecimalCount,
+  numberCompacter,
+} from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
 import { BorshAccountsCoder } from '@coral-xyz/anchor'
@@ -179,8 +183,9 @@ const AdvancedMarketHeader = ({
               </div>
               <div className="font-mono text-xs text-th-fgd-2">
                 {price ? (
-                  `$${price.toFixed(
-                    getDecimalCount(serumOrPerpMarket?.tickSize || 0.01) + 1
+                  `${formatCurrencyValue(
+                    price,
+                    getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
                   )}`
                 ) : (
                   <span className="text-th-fgd-4">–</span>

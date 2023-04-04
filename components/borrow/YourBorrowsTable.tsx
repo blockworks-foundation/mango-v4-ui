@@ -3,6 +3,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import {
   ArrowDownRightIcon,
   ArrowUpLeftIcon,
+  ChevronDownIcon,
   NoSymbolIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
@@ -17,12 +18,13 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import ConnectEmptyState from '../shared/ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
-import { IconButton } from '@components/shared/Button'
+import Button, { IconButton } from '@components/shared/Button'
 import { useCallback, useState } from 'react'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import Tooltip from '@components/shared/Tooltip'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithBalance } from 'hooks/useBanksWithBalances'
+import { Disclosure, Transition } from '@headlessui/react'
 
 export const getAvailableToBorrow = (
   bankWithBal: BankWithBalance,
@@ -171,80 +173,120 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
             </tbody>
           </Table>
         ) : (
-          banks.map((b) => {
-            const bank: Bank = b.bank
+          <div className="border-b border-th-bkg-3">
+            {banks.map((b) => {
+              const bank: Bank = b.bank
 
-            let logoURI
-            if (mangoTokens.length) {
-              logoURI = mangoTokens.find(
-                (t) => t.address === bank.mint.toString()
-              )?.logoURI
-            }
+              let logoURI: string | undefined
+              if (mangoTokens.length) {
+                logoURI = mangoTokens.find(
+                  (t) => t.address === bank.mint.toString()
+                )?.logoURI
+              }
 
-            const available = group
-              ? getAvailableToBorrow(b, group)
-              : new Decimal(0)
+              const available = group
+                ? getAvailableToBorrow(b, group)
+                : new Decimal(0)
 
-            const borrowedAmount = mangoAccount
-              ? Math.abs(mangoAccount.getTokenBalanceUi(bank))
-              : 0
+              const borrowedAmount = mangoAccount
+                ? Math.abs(mangoAccount.getTokenBalanceUi(bank))
+                : 0
 
-            return (
-              <div
-                key={bank.name}
-                className="border-b border-th-bkg-3 px-6 py-4"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="mr-2.5 flex flex-shrink-0 items-center">
-                      {logoURI ? (
-                        <Image alt="" width="24" height="24" src={logoURI} />
-                      ) : (
-                        <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                      )}
-                    </div>
-                    <p className="text-th-fgd-1">{bank.name}</p>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <div>
-                      <p className="mb-0.5 text-right text-xs">
-                        {t('borrow:borrowed-amount')}
-                      </p>
-                      <BankAmountWithValue
-                        amount={borrowedAmount}
-                        bank={bank}
-                      />
-                    </div>
-                    <div>
-                      <p className="mb-0.5 text-right text-xs">{t('rate')}</p>
-                      <p className="text-right text-th-down">
-                        {formatNumericValue(bank.getBorrowRateUi(), 2)}%
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <IconButton
-                        onClick={() =>
-                          handleShowActionModals(bank.name, 'repay')
-                        }
-                        size="medium"
+              return (
+                <Disclosure key={bank.name}>
+                  {({ open }) => (
+                    <>
+                      <Disclosure.Button
+                        className={`w-full border-t border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
                       >
-                        <ArrowDownRightIcon className="h-5 w-5" />
-                      </IconButton>
-                      <IconButton
-                        disabled={available.eq(0)}
-                        onClick={() =>
-                          handleShowActionModals(bank.name, 'borrow')
-                        }
-                        size="medium"
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="mr-2.5 flex flex-shrink-0 items-center">
+                              {logoURI ? (
+                                <Image
+                                  alt=""
+                                  width="24"
+                                  height="24"
+                                  src={logoURI}
+                                />
+                              ) : (
+                                <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
+                              )}
+                            </div>
+                            <p className="text-th-fgd-1">{bank.name}</p>
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <div>
+                              <p className="mb-0.5 text-right text-xs">
+                                {t('borrow:borrowed-amount')}
+                              </p>
+                              <BankAmountWithValue
+                                amount={borrowedAmount}
+                                bank={bank}
+                              />
+                            </div>
+                            <ChevronDownIcon
+                              className={`${
+                                open ? 'rotate-180' : 'rotate-360'
+                              } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                            />
+                          </div>
+                        </div>
+                      </Disclosure.Button>
+                      <Transition
+                        enter="transition ease-in duration-200"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
                       >
-                        <ArrowUpLeftIcon className="h-5 w-5" />
-                      </IconButton>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )
-          })
+                        <Disclosure.Panel>
+                          <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                            <div className="col-span-1">
+                              <p className="text-xs text-th-fgd-3">
+                                {t('rate')}
+                              </p>
+                              <p className="font-mono text-th-down">
+                                {formatNumericValue(bank.getBorrowRateUi(), 2)}%
+                              </p>
+                            </div>
+                            <div className="col-span-1">
+                              <p className="text-xs text-th-fgd-3">
+                                {t('available')}
+                              </p>
+                              <BankAmountWithValue
+                                amount={available}
+                                bank={bank}
+                              />
+                            </div>
+                            <Button
+                              className="col-span-1 flex items-center justify-center"
+                              disabled={!mangoAccount}
+                              onClick={() =>
+                                handleShowActionModals(bank.name, 'repay')
+                              }
+                              secondary
+                            >
+                              <ArrowDownRightIcon className="mr-2 h-5 w-5" />
+                              {`${t('repay')} ${bank.name.split(' ')[0]}`}
+                            </Button>
+                            <Button
+                              className="col-span-1 flex items-center justify-center"
+                              onClick={() =>
+                                handleShowActionModals(bank.name, 'borrow')
+                              }
+                              secondary
+                            >
+                              <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
+                              {`${t('borrow')} ${bank.name.split(' ')[0]}`}
+                            </Button>
+                          </div>
+                        </Disclosure.Panel>
+                      </Transition>
+                    </>
+                  )}
+                </Disclosure>
+              )
+            })}
+          </div>
         )
       ) : mangoAccountAddress || connected ? (
         <div className="border-b border-th-bkg-3">

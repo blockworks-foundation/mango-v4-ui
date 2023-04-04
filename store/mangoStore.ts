@@ -712,10 +712,7 @@ const mangoStore = create<MangoStore>()(
               )
             }
 
-            if (
-              mangoAccount.serum3Active().length &&
-              Object.keys(openOrders).length
-            ) {
+            if (mangoAccount.serum3Active().length) {
               serumOpenOrderAccounts = Array.from(
                 mangoAccount.serum3OosMapByMarketIndex.values()
               )
@@ -914,7 +911,6 @@ const mangoStore = create<MangoStore>()(
               state.profile.loadDetails = false
             })
           } catch (e) {
-            notify({ type: 'error', title: 'Failed to load profile details' })
             console.error(e)
             set((state) => {
               state.profile.loadDetails = false
@@ -936,7 +932,6 @@ const mangoStore = create<MangoStore>()(
               state.settings.loading = false
             })
           } catch (e) {
-            notify({ type: 'error', title: 'Failed to load profile details' })
             console.error(e)
             set((state) => {
               state.settings.loading = false
