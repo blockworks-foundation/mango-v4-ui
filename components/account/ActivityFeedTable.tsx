@@ -96,7 +96,7 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
   return fee
 }
 
-const getCreditAndDebit = (activity: any) => {
+const getCreditAndDebit = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let credit = { value: '0', symbol: '' }
   let debit = { value: '0', symbol: '' }
@@ -157,11 +157,34 @@ const getCreditAndDebit = (activity: any) => {
     }
   }
   if (activity_type === 'perp_trade') {
-    const { perp_market_name, price, quantity } = activity.activity_details
-    credit = { value: quantity, symbol: perp_market_name }
-    debit = {
-      value: formatNumericValue(quantity * price * -1),
-      symbol: 'USDC',
+    const {
+      maker_fee,
+      perp_market_name,
+      price,
+      quantity,
+      taker,
+      taker_fee,
+      taker_side,
+    } = activity.activity_details
+    const side =
+      taker === mangoAccountAddress
+        ? taker_side
+        : taker_side === 'bid'
+        ? 'ask'
+        : 'bid'
+    const fee = taker === mangoAccountAddress ? taker_fee : maker_fee
+    if (side === 'bid') {
+      credit = { value: quantity, symbol: perp_market_name }
+      debit = {
+        value: formatNumericValue(quantity * price * -1 + fee),
+        symbol: 'USDC',
+      }
+    } else {
+      credit = {
+        value: formatNumericValue(quantity * price - fee),
+        symbol: 'USDC',
+      }
+      debit = { value: `-${quantity}`, symbol: perp_market_name }
     }
   }
   if (activity_type === 'openbook_trade') {
@@ -286,7 +309,7 @@ const ActivityFeedTable = ({
               const { activity_type, block_datetime } = activity
               const { signature } = activity.activity_details
               const isOpenbook = activity_type === 'openbook_trade'
-              const amounts = getCreditAndDebit(activity)
+              const amounts = getCreditAndDebit(activity, mangoAccountAddress)
               const value = getValue(activity)
               const fee = getFee(activity, mangoAccountAddress)
               return (
