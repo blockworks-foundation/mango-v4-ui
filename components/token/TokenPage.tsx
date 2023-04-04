@@ -106,21 +106,22 @@ const TokenPage = () => {
     }
   }, [bank, mangoTokens])
 
-  const coingeckoTokenInfo = useQuery<CoingeckoDataType, Error>(
-    ['coingecko-token-info', coingeckoId],
-    () => fetchTokenInfo(coingeckoId),
-    {
-      cacheTime: 1000 * 60 * 15,
-      staleTime: 1000 * 60 * 5,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!coingeckoId,
-    }
-  )
+  const { data: coingeckoTokenInfo, isLoading: loadingCoingeckoInfo } =
+    useQuery<CoingeckoDataType, Error>(
+      ['coingecko-token-info', coingeckoId],
+      () => fetchTokenInfo(coingeckoId),
+      {
+        cacheTime: 1000 * 60 * 15,
+        staleTime: 1000 * 60 * 5,
+        retry: 3,
+        refetchOnWindowFocus: false,
+        enabled: !!coingeckoId,
+      }
+    )
 
   const { high_24h, low_24h, price_change_percentage_24h } =
-    coingeckoTokenInfo.data
-      ? coingeckoTokenInfo.data.market_data
+    coingeckoTokenInfo?.market_data
+      ? coingeckoTokenInfo.market_data
       : DEFAULT_COINGECKO_VALUES
 
   return (
@@ -131,9 +132,9 @@ const TokenPage = () => {
             <div className="mb-4 md:mb-1">
               <div className="mb-1.5 flex items-center space-x-2">
                 <Image src={logoURI!} height="20" width="20" />
-                {coingeckoTokenInfo.data ? (
+                {coingeckoTokenInfo ? (
                   <h1 className="text-base font-normal">
-                    {coingeckoTokenInfo.data.name}{' '}
+                    {coingeckoTokenInfo.name}{' '}
                     <span className="text-th-fgd-4">{bank.name}</span>
                   </h1>
                 ) : (
@@ -155,13 +156,13 @@ const TokenPage = () => {
                     <FormatNumericValue value={bank.uiPrice} isUsd />
                   )}
                 </div>
-                {coingeckoTokenInfo.data ? (
+                {coingeckoTokenInfo?.market_data ? (
                   <div className="mb-2">
                     <Change change={price_change_percentage_24h} suffix="%" />
                   </div>
                 ) : null}
               </div>
-              {coingeckoTokenInfo.data ? (
+              {coingeckoTokenInfo?.market_data ? (
                 <DailyRange
                   high={high_24h.usd}
                   low={low_24h.usd}
@@ -191,12 +192,17 @@ const TokenPage = () => {
             </span>
           </div>
           {bank ? <TopTokenAccounts bank={bank} /> : null}
-          {coingeckoTokenInfo.data && coingeckoId ? (
+          {coingeckoTokenInfo?.market_data ? (
             <CoingeckoStats
               bank={bank}
-              coingeckoData={coingeckoTokenInfo.data}
-              coingeckoId={coingeckoId}
+              coingeckoData={coingeckoTokenInfo.market_data}
             />
+          ) : loadingCoingeckoInfo && coingeckoId ? (
+            <div className="p-6">
+              <SheenLoader className="flex flex-1">
+                <div className="h-72 w-full rounded-lg bg-th-bkg-2 md:h-80" />
+              </SheenLoader>
+            </div>
           ) : (
             <div className="flex flex-col items-center p-6">
               <span className="mb-0.5 text-2xl">🦎</span>

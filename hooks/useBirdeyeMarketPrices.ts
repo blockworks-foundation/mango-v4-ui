@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import { makeApiRequest } from 'apis/birdeye/helpers'
 
-interface PriceResponse {
+export interface BirdeyePriceResponse {
   address: string
   unixTime: number
   value: number
@@ -12,12 +11,12 @@ interface PriceResponse {
 
 const fetchBirdeyePrices = async (
   spotMarkets: Serum3Market[]
-): Promise<{ data: PriceResponse[]; mint: string }[]> => {
+): Promise<{ data: BirdeyePriceResponse[]; mint: string }[]> => {
   const mints = spotMarkets.map((market) =>
     market.serumMarketExternal.toString()
   )
 
-  const promises: any = []
+  const promises = []
   for (const mint of mints) {
     const queryEnd = Math.floor(Date.now() / 1000)
     const queryStart = queryEnd - 86400
@@ -38,7 +37,7 @@ const fetchBirdeyePrices = async (
 
 export const useBirdeyeMarketPrices = () => {
   const spotMarkets = mangoStore((s) => s.serumMarkets)
-  const res = useQuery<any[], Error>(
+  const res = useQuery(
     ['birdeye-market-prices'],
     () => fetchBirdeyePrices(spotMarkets),
     {

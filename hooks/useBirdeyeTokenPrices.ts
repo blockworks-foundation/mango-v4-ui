@@ -1,22 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from '@tanstack/react-query'
 import { makeApiRequest } from 'apis/birdeye/helpers'
-import { useMemo } from 'react'
 import { Token } from 'types/jupiter'
+import { BirdeyePriceResponse } from './useBirdeyeMarketPrices'
 import useJupiterMints from './useJupiterMints'
-
-interface PriceResponse {
-  address: string
-  unixTime: number
-  value: number
-}
 
 const fetchBirdeyePrices = async (
   mangoTokens: Token[]
-): Promise<{ data: PriceResponse[]; mint: string }[]> => {
+): Promise<{ data: BirdeyePriceResponse[]; mint: string }[]> => {
   const mints = mangoTokens.map((token) => token.address)
 
-  const promises: any = []
+  const promises = []
   for (const mint of mints) {
     const queryEnd = Math.floor(Date.now() / 1000)
     const queryStart = queryEnd - 86400
@@ -37,7 +30,7 @@ const fetchBirdeyePrices = async (
 
 export const useBirdeyeTokenPrices = () => {
   const { mangoTokens } = useJupiterMints()
-  const res = useQuery<any[], Error>(
+  const res = useQuery(
     ['birdeye-token-prices'],
     () => fetchBirdeyePrices(mangoTokens),
     {
