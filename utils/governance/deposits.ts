@@ -18,6 +18,27 @@ import {
   tryGetVoter,
 } from './vsrAccounts'
 
+type Event = {
+  depositEntryIndex: number
+  locking: {
+    amount: BN
+    endTimestamp: BN
+    vesting: {
+      nextTimestamp: BN
+      rate: BN
+    }
+  } | null
+  unlocked: BN
+  votingMintConfigIndex: number
+  votingPower: BN
+  votingPowerBaseline: BN
+}
+
+type EventData = {
+  data: Event
+  name: string
+}
+
 export const getDeposits = async ({
   isUsed = true,
   realmPk,
@@ -84,16 +105,16 @@ export const getDeposits = async ({
       deposits = deposits.map((x) => {
         const additionalInfoData = depositsInfo.find(
           (info) => info.data.depositEntryIndex === x.index
-        ).data
+        )?.data
 
-        x.currentlyLocked = additionalInfoData.locking?.amount || new BN(0)
-        x.available = additionalInfoData.unlocked || new BN(0)
-        x.vestingRate = additionalInfoData.locking?.vesting?.rate || new BN(0)
+        x.currentlyLocked = additionalInfoData?.locking?.amount || new BN(0)
+        x.available = additionalInfoData?.unlocked || new BN(0)
+        x.vestingRate = additionalInfoData?.locking?.vesting?.rate || new BN(0)
         x.nextVestingTimestamp =
-          additionalInfoData.locking?.vesting?.nextTimestamp || null
-        x.votingPower = additionalInfoData.votingPower || new BN(0)
+          additionalInfoData?.locking?.vesting?.nextTimestamp || null
+        x.votingPower = additionalInfoData?.votingPower || new BN(0)
         x.votingPowerBaseline =
-          additionalInfoData.votingPowerBaseline || new BN(0)
+          additionalInfoData?.votingPowerBaseline || new BN(0)
         return x
       })
       if (
@@ -121,8 +142,7 @@ const getDepositsAdditionalInfoEvents = async (
   //because we switch wallet in here we can't use rpc from npm module
   //anchor dont allow to switch wallets inside existing client
   //parse events response as anchor do
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const events: any[] = []
+  const events: EventData[] = []
   const parser = new EventParser(client.program.programId, client.program.coder)
   const maxRange = 8
   const maxIndex = Math.max(...usedDeposits.map((x) => x.index)) + 1
@@ -138,8 +158,11 @@ const getDepositsAdditionalInfoEvents = async (
       .instruction()
     transaction.add(logVoterInfoIx)
     const batchOfDeposits = await connection.simulateTransaction(transaction)
-    const logEvents = parser.parseLogs(batchOfDeposits.value.logs!)
+    const logEvents = parser.parseLogs(
+      batchOfDeposits.value.logs!
+    ) as unknown as EventData[]
     events.push(...[...logEvents])
+    console.log(events)
   }
   return events
 }
