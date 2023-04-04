@@ -22,6 +22,7 @@ const VoteResults = ({ proposal, communityMint }: VoteResultsProps) => {
     totalVoteCount === 0 ? 0 : (voteCount / totalVoteCount) * 100
   const relativeYesVotes = getRelativeVoteCount(yesVoteCount)
   const relativeNoVotes = getRelativeVoteCount(noVoteCount)
+
   return (
     <div className="flex items-center space-x-4">
       {proposal ? (

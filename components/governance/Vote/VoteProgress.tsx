@@ -16,7 +16,8 @@ type Props = {
 }
 
 const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
-  const { realm } = GovernanceStore()
+  const realm = GovernanceStore((s) => s.realm)
+
   const voteThresholdPct =
     governance.account.config.communityVoteThreshold.value || 0
   const maxVoteWeight =
@@ -43,6 +44,7 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
       : actualVotesRequired
   const progress = yesVoteProgress
   const votesRequired = yesVotesRequired
+
   return (
     <div className={`rounded-md`}>
       <div className="flex items-center">

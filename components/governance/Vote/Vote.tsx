@@ -21,8 +21,9 @@ import VoteResults from './VoteResult'
 import { tryGetMint } from 'utils/governance/tools'
 
 const Vote = () => {
-  const { connection } = mangoStore()
-  const { governances } = GovernanceStore()
+  const connection = mangoStore((s) => s.connection)
+  const governances = GovernanceStore((s) => s.governances)
+
   const [proposals, setProposals] = useState<ProgramAccount<Proposal>[]>([])
   const [mangoMint, setMangoMint] = useState<MintInfo | null>(null)
   const [votingProposals, setVotingProposals] = useState<
