@@ -15,7 +15,7 @@ import {
   MANGO_MINT,
   MANGO_REALM_PK,
 } from 'utils/governance/constants'
-import { getDeposits } from 'utils/governance/deposits'
+import { getDeposits } from 'utils/governance/fetch/deposits'
 import {
   fetchGovernances,
   fetchProposals,

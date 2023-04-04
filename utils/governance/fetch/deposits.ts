@@ -5,9 +5,9 @@ import {
   DEPOSIT_EVENT_NAME,
   SIMULATION_WALLET,
   VOTER_INFO_EVENT_NAME,
-} from './constants'
-import { tryGetMint } from './tools'
-import { VsrClient } from './voteStakeRegistryClient'
+} from '../constants'
+import { tryGetMint } from '../tools'
+import { VsrClient } from '../voteStakeRegistryClient'
 import {
   DepositWithMintAccount,
   emptyPk,
@@ -16,7 +16,7 @@ import {
   TokenProgramAccount,
   tryGetRegistrar,
   tryGetVoter,
-} from './vsrAccounts'
+} from '../accounts/vsrAccounts'
 
 type Event = {
   depositEntryIndex: number

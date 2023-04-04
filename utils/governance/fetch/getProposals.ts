@@ -7,7 +7,7 @@ import {
   Proposal,
 } from '@solana/spl-governance'
 import { PublicKey } from '@solana/web3.js'
-import { ConnectionContext } from './types'
+import { ConnectionContext } from '../types'
 
 export const getProposals = async (
   pubkeys: PublicKey[],

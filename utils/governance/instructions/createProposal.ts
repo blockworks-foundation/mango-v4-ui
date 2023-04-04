@@ -21,9 +21,13 @@ import {
 } from '@solana/web3.js'
 import { chunk } from 'lodash'
 import { MANGO_MINT } from 'utils/constants'
-import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from './constants'
-import { DEFAULT_VSR_ID, VsrClient } from './voteStakeRegistryClient'
-import { getRegistrarPDA, getVoterPDA, getVoterWeightPDA } from './vsrAccounts'
+import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
+import { DEFAULT_VSR_ID, VsrClient } from '../voteStakeRegistryClient'
+import {
+  getRegistrarPDA,
+  getVoterPDA,
+  getVoterWeightPDA,
+} from '../accounts/vsrAccounts'
 
 export const createProposal = async (
   connection: Connection,

@@ -7,9 +7,9 @@ import {
   pubkeyFilter,
 } from '@solana/spl-governance'
 import { Connection, PublicKey } from '@solana/web3.js'
-import { getProposals } from './getProposals'
+import { getProposals } from './fetch/getProposals'
 import { ConnectionContext } from './types'
-import { TokenProgramAccount } from './vsrAccounts'
+import { TokenProgramAccount } from './accounts/vsrAccounts'
 import { u64, MintLayout } from '@solana/spl-token'
 import BN from 'bn.js'
 

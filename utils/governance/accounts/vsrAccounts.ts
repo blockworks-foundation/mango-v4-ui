@@ -1,7 +1,7 @@
 import { BN } from '@coral-xyz/anchor'
 import { MintInfo } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { VsrClient } from './voteStakeRegistryClient'
+import { VsrClient } from '../voteStakeRegistryClient'
 
 export type TokenProgramAccount<T> = {
   publicKey: PublicKey
