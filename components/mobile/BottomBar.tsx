@@ -16,6 +16,7 @@ import {
   ArrowTrendingUpIcon,
   MagnifyingGlassIcon,
   BanknotesIcon,
+  PlusCircleIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 import LeaderboardIcon from '@components/icons/LeaderboardIcon'
@@ -136,9 +137,9 @@ const MoreMenuPanel = ({
           icon={<LeaderboardIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
-          title={t('leaderboard')}
-          path="/leaderboard"
-          icon={<LeaderboardIcon className="h-5 w-5" />}
+          title={t('common:list-token')}
+          path="/governance"
+          icon={<PlusCircleIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
           title={t('search:search-accounts')}
