@@ -8,6 +8,15 @@ const nextConfig = {
     domains: ['raw.githubusercontent.com', 'arweave.net'],
   },
   reactStrictMode: true,
+  //proxy for openserum api cors
+  rewrites: async () => {
+    return [
+      {
+        source: '/openSerumApi/:path*',
+        destination: 'https://openserum.io/api/serum/:path*',
+      },
+    ]
+  },
   webpack: (config, opts) => {
     if (!opts.isServer) {
       // don't resolve 'fs' module on the client to prevent this error on build --> Error: Can't resolve 'fs'

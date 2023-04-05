@@ -34,7 +34,11 @@ import Loading from '@components/shared/Loading'
 import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider from './PerpSlider'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { SIZE_INPUT_UI_KEY, SOUND_SETTINGS_KEY } from 'utils/constants'
+import {
+  SIZE_INPUT_UI_KEY,
+  SOUND_SETTINGS_KEY,
+  TRADE_CHECKBOXES_KEY,
+} from 'utils/constants'
 import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
@@ -66,13 +70,20 @@ const INPUT_SUFFIX_CLASSNAMES =
 const INPUT_PREFIX_CLASSNAMES =
   'absolute left-2 top-1/2 h-5 w-5 flex-shrink-0 -translate-y-1/2'
 
+const DEFAULT_CHECKBOX_SETTINGS = {
+  ioc: false,
+  post: false,
+  margin: true,
+}
+
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
-  const [useMargin, setUseMargin] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
+  const [savedCheckboxSettings, setSavedCheckboxSettings] =
+    useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
   const { ipAllowed, ipCountry } = useIpAddress()
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
@@ -121,7 +132,7 @@ const AdvancedTradeForm = () => {
 
         s.tradeForm.baseSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
-          s.tradeForm.quoteSize = (price * parseFloat(e.value)).toString()
+          s.tradeForm.quoteSize = new Decimal(price).mul(e.value).toFixed()
         } else {
           s.tradeForm.quoteSize = ''
         }
@@ -141,7 +152,7 @@ const AdvancedTradeForm = () => {
 
         s.tradeForm.quoteSize = e.value
         if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
-          s.tradeForm.baseSize = (parseFloat(e.value) / price).toString()
+          s.tradeForm.baseSize = new Decimal(e.value).div(price).toFixed()
         } else {
           s.tradeForm.baseSize = ''
         }
@@ -150,21 +161,49 @@ const AdvancedTradeForm = () => {
     [oraclePrice]
   )
 
-  const handlePostOnlyChange = useCallback((postOnly: boolean) => {
-    set((s) => {
-      s.tradeForm.postOnly = postOnly
-      if (s.tradeForm.ioc === true) {
-        s.tradeForm.ioc = !postOnly
+  const handlePostOnlyChange = useCallback(
+    (postOnly: boolean) => {
+      let ioc = tradeForm.ioc
+      if (postOnly) {
+        ioc = !postOnly
       }
-    })
-  }, [])
+      set((s) => {
+        s.tradeForm.postOnly = postOnly
+        s.tradeForm.ioc = ioc
+      })
+      setSavedCheckboxSettings({
+        ...savedCheckboxSettings,
+        ioc: ioc,
+        post: postOnly,
+      })
+    },
+    [savedCheckboxSettings]
+  )
 
-  const handleIocChange = useCallback((ioc: boolean) => {
+  const handleIocChange = useCallback(
+    (ioc: boolean) => {
+      let postOnly = tradeForm.postOnly
+      if (ioc) {
+        postOnly = !ioc
+      }
+      set((s) => {
+        s.tradeForm.ioc = ioc
+        s.tradeForm.postOnly = postOnly
+      })
+      setSavedCheckboxSettings({
+        ...savedCheckboxSettings,
+        ioc: ioc,
+        post: postOnly,
+      })
+    },
+    [savedCheckboxSettings]
+  )
+
+  useEffect(() => {
+    const { ioc, post } = savedCheckboxSettings
     set((s) => {
       s.tradeForm.ioc = ioc
-      if (s.tradeForm.postOnly === true) {
-        s.tradeForm.postOnly = !ioc
-      }
+      s.tradeForm.postOnly = post
     })
   }, [])
 
@@ -180,15 +219,21 @@ const AdvancedTradeForm = () => {
     })
   }, [])
 
-  const handleSetMargin = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.checked) {
-      set((s) => {
-        s.tradeForm.quoteSize = ''
-        s.tradeForm.baseSize = ''
+  const handleSetMargin = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.checked) {
+        set((s) => {
+          s.tradeForm.quoteSize = ''
+          s.tradeForm.baseSize = ''
+        })
+      }
+      setSavedCheckboxSettings({
+        ...savedCheckboxSettings,
+        margin: e.target.checked,
       })
-    }
-    setUseMargin(e.target.checked)
-  }, [])
+    },
+    [savedCheckboxSettings]
+  )
 
   const [tickDecimals, tickSize] = useMemo(() => {
     const group = mangoStore.getState().group
@@ -421,7 +466,7 @@ const AdvancedTradeForm = () => {
                   thousandSeparator=","
                   allowNegative={false}
                   isNumericString={true}
-                  decimalScale={6}
+                  decimalScale={tickDecimals}
                   name="price"
                   id="price"
                   className="default-transition flex w-full items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover lg:text-base"
@@ -436,7 +481,7 @@ const AdvancedTradeForm = () => {
           <MaxSizeButton
             minOrderDecimals={minOrderDecimals}
             tickDecimals={tickDecimals}
-            useMargin={useMargin}
+            useMargin={savedCheckboxSettings.margin}
           />
           <div className="flex flex-col">
             <div className="relative">
@@ -505,13 +550,13 @@ const AdvancedTradeForm = () => {
                 minOrderDecimals={minOrderDecimals}
                 tickDecimals={tickDecimals}
                 step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
-                useMargin={useMargin}
+                useMargin={savedCheckboxSettings.margin}
               />
             ) : (
               <SpotButtonGroup
                 minOrderDecimals={minOrderDecimals}
                 tickDecimals={tickDecimals}
-                useMargin={useMargin}
+                useMargin={savedCheckboxSettings.margin}
               />
             )
           ) : tradeFormSizeUi === 'slider' ? (
@@ -537,7 +582,7 @@ const AdvancedTradeForm = () => {
                   content={t('trade:tooltip-post')}
                 >
                   <Checkbox
-                    checked={tradeForm.postOnly}
+                    checked={savedCheckboxSettings.post}
                     onChange={(e) => handlePostOnlyChange(e.target.checked)}
                   >
                     {t('trade:post')}
@@ -553,7 +598,7 @@ const AdvancedTradeForm = () => {
                 >
                   <div className="flex items-center text-xs text-th-fgd-3">
                     <Checkbox
-                      checked={tradeForm.ioc}
+                      checked={savedCheckboxSettings.ioc}
                       onChange={(e) => handleIocChange(e.target.checked)}
                     >
                       IOC
@@ -571,7 +616,10 @@ const AdvancedTradeForm = () => {
                 placement="left"
                 content={t('trade:tooltip-enable-margin')}
               >
-                <Checkbox checked={useMargin} onChange={handleSetMargin}>
+                <Checkbox
+                  checked={savedCheckboxSettings.margin}
+                  onChange={handleSetMargin}
+                >
                   {t('trade:margin')}
                 </Checkbox>
               </Tooltip>
@@ -650,7 +698,10 @@ const AdvancedTradeForm = () => {
           />
         </div>
       ) : null}
-      <TradeSummary mangoAccount={mangoAccount} useMargin={useMargin} />
+      <TradeSummary
+        mangoAccount={mangoAccount}
+        useMargin={savedCheckboxSettings.margin}
+      />
     </div>
   )
 }
