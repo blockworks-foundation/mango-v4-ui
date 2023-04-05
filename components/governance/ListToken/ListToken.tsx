@@ -567,7 +567,7 @@ const ListToken = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
-                  <a className="flex items-center">
+                  <a className="flex items-center hover:cursor-pointer">
                     {abbreviateAddress(
                       new PublicKey(currentTokenInfo?.address)
                     )}
