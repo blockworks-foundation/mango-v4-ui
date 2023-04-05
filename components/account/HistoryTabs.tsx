@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import SwapHistoryTable from '../swap/SwapHistoryTable'
-import ActivityFeed from './ActivityFeed'
 import TradeHistory from '@components/trade/TradeHistory'
 import { useTranslation } from 'next-i18next'
 import ActivityFilters from './ActivityFilters'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
+import ActivityFeedTable from './ActivityFeedTable'
 
 const TABS = ['activity:activity-feed', 'activity:swaps', 'activity:trades']
 
@@ -49,13 +49,13 @@ const HistoryTabs = () => {
 const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case 'activity:activity-feed':
-      return <ActivityFeed />
+      return <ActivityFeedTable />
     case 'activity:swaps':
       return <SwapHistoryTable />
     case 'activity:trades':
       return <TradeHistory />
     default:
-      return <ActivityFeed />
+      return <ActivityFeedTable />
   }
 }
 
