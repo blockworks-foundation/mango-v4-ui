@@ -23,16 +23,23 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useCallback, useState } from 'react'
-import { ActivityFeed, isLiquidationFeedItem, LiquidationActivity } from 'types'
+import {
+  ActivityFeed,
+  isLiquidationFeedItem,
+  LiquidationActivity,
+  isPerpTradeFeedItem,
+  PerpTradeActivity,
+} from 'types'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import LiquidationDetails from './LiquidationDetails'
+import PerpTradeDetails from './PerpTradeDetails'
 
-const formatFee = (value: number) => {
+export const formatFee = (value: number) => {
   return value.toLocaleString(undefined, {
     minimumSignificantDigits: 1,
-    maximumSignificantDigits: 2,
+    maximumSignificantDigits: 3,
   })
 }
 
@@ -264,7 +271,9 @@ const ActivityFeedTable = ({
   handleShowActivityDetails,
 }: {
   activityFeed: ActivityFeed[]
-  handleShowActivityDetails: (x: LiquidationActivity) => void
+  handleShowActivityDetails: (
+    x: LiquidationActivity | PerpTradeActivity
+  ) => void
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const { mangoAccountAddress } = useMangoAccount()
@@ -323,14 +332,16 @@ const ActivityFeedTable = ({
               const amounts = getCreditAndDebit(activity, mangoAccountAddress)
               const value = getValue(activity, mangoAccountAddress)
               const fee = getFee(activity, mangoAccountAddress)
+              const isExpandable =
+                isLiquidationFeedItem(activity) || isPerpTradeFeedItem(activity)
               return (
                 <TrBody
-                  key={signature + index}
+                  key={`${signature}${index}`}
                   className={`default-transition text-sm hover:bg-th-bkg-2 ${
-                    isLiquidationFeedItem(activity) ? 'cursor-pointer' : ''
+                    isExpandable ? 'cursor-pointer' : ''
                   }`}
                   onClick={
-                    isLiquidationFeedItem(activity)
+                    isExpandable
                       ? () => handleShowActivityDetails(activity)
                       : undefined
                   }
@@ -366,10 +377,7 @@ const ActivityFeedTable = ({
                   </Td>
                   <Td
                     className={`text-right font-mono ${
-                      activity_type === 'swap' ||
-                      activity_type === 'perp_trade' ||
-                      isOpenbook ||
-                      isLiquidationFeedItem(activity)
+                      activity_type === 'swap' || isOpenbook || isExpandable
                         ? 'text-th-fgd-2'
                         : value >= 0
                         ? 'text-th-up'
@@ -378,15 +386,14 @@ const ActivityFeedTable = ({
                   >
                     {value > 0 &&
                     activity_type !== 'swap' &&
-                    activity_type !== 'perp_trade' &&
                     !isOpenbook &&
-                    !isLiquidationFeedItem(activity)
+                    !isExpandable
                       ? '+'
                       : ''}
                     <FormatNumericValue value={value} isUsd />
                   </Td>
                   <Td>
-                    {!isLiquidationFeedItem(activity) ? (
+                    {!isExpandable ? (
                       <div className="flex items-center justify-end">
                         <Tooltip
                           content={`View on ${t(
@@ -481,10 +488,22 @@ const MobileActivityFeedItem = ({
   const isOpenbook = activity_type === 'openbook_trade'
   const isPerp = activity_type === 'perp_trade'
   const value = getValue(activity, mangoAccountAddress)
+  const isExpandable =
+    isLiquidationFeedItem(activity) || isPerpTradeFeedItem(activity)
+
+  const isPerpTaker =
+    isPerpTradeFeedItem(activity) &&
+    activity.activity_details.taker === mangoAccountAddress
+
+  const perpTradeSide = isPerpTaker
+    ? activity.activity_details.taker_side
+    : activity.activity_details.taker_side === 'bid'
+    ? 'ask'
+    : 'bid'
 
   return (
     <div key={signature} className="border-b border-th-bkg-3">
-      {isLiquidationFeedItem(activity) ? (
+      {isExpandable ? (
         <Disclosure>
           {({ open }) => (
             <>
@@ -503,9 +522,26 @@ const MobileActivityFeedItem = ({
                       <p className="text-right text-xs">
                         {t(`activity:${activity_type}`)}
                       </p>
-                      <p className="text-right font-mono text-sm text-th-fgd-1">
-                        <FormatNumericValue value={value} isUsd />
-                      </p>
+                      {isLiquidationFeedItem(activity) ? (
+                        <p className="text-right font-mono text-sm text-th-fgd-1">
+                          <FormatNumericValue value={value} isUsd />
+                        </p>
+                      ) : (
+                        <p className="font-mono text-th-fgd-1">
+                          <span className="mr-1">
+                            {activity.activity_details.quantity}
+                          </span>
+                          <span className="font-body text-th-fgd-3">
+                            {activity.activity_details.perp_market_name}
+                          </span>
+                          <span className="font-body">
+                            {' '}
+                            <PerpSideBadge
+                              basePosition={perpTradeSide === 'bid' ? 1 : -1}
+                            />
+                          </span>
+                        </p>
+                      )}
                     </div>
                     <ChevronDownIcon
                       className={`${
@@ -522,7 +558,11 @@ const MobileActivityFeedItem = ({
               >
                 <Disclosure.Panel>
                   <div className="border-t border-th-bkg-3 px-4 py-4">
-                    <LiquidationDetails activity={activity} />
+                    {isLiquidationFeedItem(activity) ? (
+                      <LiquidationDetails activity={activity} />
+                    ) : (
+                      <PerpTradeDetails activity={activity} />
+                    )}
                   </div>
                 </Disclosure.Panel>
               </Transition>

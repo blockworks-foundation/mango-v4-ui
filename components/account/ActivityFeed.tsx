@@ -1,16 +1,24 @@
 import mangoStore from '@store/mangoStore'
 import { useEffect, useState } from 'react'
 import ActivityFeedTable from './ActivityFeedTable'
-import { LiquidationActivity } from 'types'
+import {
+  LiquidationActivity,
+  PerpTradeActivity,
+  isLiquidationFeedItem,
+} from 'types'
 import LiquidationDetails from './LiquidationDetails'
+import PerpTradeDetails from './PerpTradeDetails'
 
 const ActivityFeed = () => {
   const activityFeed = mangoStore((s) => s.activityFeed.feed)
-  const [showActivityDetail, setShowActivityDetail] =
-    useState<LiquidationActivity>()
+  const [showActivityDetail, setShowActivityDetail] = useState<
+    LiquidationActivity | PerpTradeActivity
+  >()
   const [scrollPosition, setScrollPosition] = useState(0)
 
-  const handleShowActivityDetails = (activity: LiquidationActivity) => {
+  const handleShowActivityDetails = (
+    activity: LiquidationActivity | PerpTradeActivity
+  ) => {
     setShowActivityDetail(activity)
     setScrollPosition(window.scrollY)
   }
@@ -28,10 +36,17 @@ const ActivityFeed = () => {
     />
   ) : (
     <div className="px-6">
-      <LiquidationDetails
-        activity={showActivityDetail}
-        setShowActivityDetail={setShowActivityDetail}
-      />
+      {isLiquidationFeedItem(showActivityDetail) ? (
+        <LiquidationDetails
+          activity={showActivityDetail}
+          setShowActivityDetail={setShowActivityDetail}
+        />
+      ) : (
+        <PerpTradeDetails
+          activity={showActivityDetail}
+          setShowActivityDetail={setShowActivityDetail}
+        />
+      )}
     </div>
   )
 }
