@@ -1,10 +1,4 @@
-import {
-  Connection,
-  Keypair,
-  Transaction,
-  TransactionInstruction,
-  sendAndConfirmTransaction,
-} from '@solana/web3.js'
+import { Connection, Keypair, TransactionInstruction } from '@solana/web3.js'
 import {
   ChatMessageBody,
   getGovernanceProgramVersion,
@@ -13,7 +7,6 @@ import {
   TokenOwnerRecord,
   VoteChoice,
   VoteKind,
-  WalletSigner,
   withPostChatMessage,
 } from '@solana/spl-governance'
 import { ProgramAccount } from '@solana/spl-governance'
@@ -24,14 +17,18 @@ import { withCastVote } from '@solana/spl-governance'
 import { VsrClient } from '../voteStakeRegistryClient'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { updateVoterWeightRecord } from './updateVoteWeightRecord'
+import { WalletContextState } from '@solana/wallet-adapter-react'
+import { MangoClient } from '@blockworks-foundation/mango-v4'
+import { notify } from 'utils/notifications'
 
 export async function castVote(
   connection: Connection,
-  wallet: WalletSigner,
+  wallet: WalletContextState,
   proposal: ProgramAccount<Proposal>,
   tokenOwnerRecord: ProgramAccount<TokenOwnerRecord>,
   voteKind: VoteKind,
-  client: VsrClient,
+  vsrClient: VsrClient,
+  mangoClient: MangoClient,
   message?: ChatMessageBody | undefined
 ) {
   const signers: Keypair[] = []
@@ -46,7 +43,7 @@ export async function castVote(
   )
 
   const { updateVoterWeightRecordIx, voterWeightPk } =
-    await updateVoterWeightRecord(client, walletPubkey)
+    await updateVoterWeightRecord(vsrClient, walletPubkey)
   instructions.push(updateVoterWeightRecordIx)
 
   // It is not clear that defining these extraneous fields, `deny` and `veto`, is actually necessary.
@@ -100,7 +97,7 @@ export async function castVote(
 
   if (message) {
     const { updateVoterWeightRecordIx, voterWeightPk } =
-      await updateVoterWeightRecord(client, walletPubkey)
+      await updateVoterWeightRecord(vsrClient, walletPubkey)
     instructions.push(updateVoterWeightRecordIx)
 
     await withPostChatMessage(
@@ -120,8 +117,11 @@ export async function castVote(
     )
   }
 
-  const transaction = new Transaction()
-  transaction.add(...instructions)
-
-  await sendAndConfirmTransaction(connection, transaction, signers)
+  const tx = await mangoClient.sendAndConfirmTransaction(instructions)
+  notify({
+    title: 'Transaction confirmed',
+    type: 'success',
+    txid: tx,
+    noSound: true,
+  })
 }
