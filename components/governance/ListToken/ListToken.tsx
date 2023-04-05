@@ -18,11 +18,8 @@ import {
   MAINNET_PYTH_PROGRAM,
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
-  MANGO_GOVERNANCE_PROGRAM,
   MANGO_MINT_DECIMALS,
-  MANGO_REALM_PK,
 } from 'utils/governance/constants'
-import { getAllProposals } from '@solana/spl-governance'
 import {
   ChevronDownIcon,
   ExclamationCircleIcon,
@@ -91,6 +88,7 @@ const ListToken = () => {
   const governances = GovernanceStore((s) => s.governances)
   const loadingRealm = GovernanceStore((s) => s.loadingRealm)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
+  const proposals = GovernanceStore((s) => s.proposals)
   const fetchVoterWeight = GovernanceStore((s) => s.fetchVoterWeight)
   const connectionContext = GovernanceStore((s) => s.connectionContext)
   const { t } = useTranslation(['governance'])
@@ -162,11 +160,11 @@ const ListToken = () => {
 
   const getListingParams = async (tokenInfo: Token) => {
     setLoadingListingParams(true)
-    const [oraclePk, index, marketPk] = await Promise.all([
+    const [oraclePk, marketPk] = await Promise.all([
       getOracle(tokenInfo.symbol),
-      handleGetMangoDaoProposalsIndex(),
       getBestMarket(mint),
     ])
+    const index = proposals ? Object.values(proposals).length : 0
 
     const bankNum = 0
 
@@ -221,24 +219,6 @@ const ListToken = () => {
         description: `${e}`,
         type: 'error',
       })
-    }
-  }
-
-  const handleGetMangoDaoProposalsIndex = async () => {
-    try {
-      const proposals = await getAllProposals(
-        connection,
-        MANGO_GOVERNANCE_PROGRAM,
-        MANGO_REALM_PK
-      )
-      return proposals.flatMap((x) => x).length
-    } catch (e) {
-      notify({
-        title: t('proposals-fetch-error'),
-        description: `${e}`,
-        type: 'error',
-      })
-      return 0
     }
   }
 
