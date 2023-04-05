@@ -10,13 +10,15 @@ import {
 import { fmtTokenAmount } from 'utils/governance/tools'
 import { formatNumericValue } from 'utils/numbers'
 
-const OnBoarding = () => {
+const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
   const { connected } = useWallet()
   const { t } = useTranslation(['governance'])
   const governances = GovernanceStore((s) => s.governances)
   const voter = GovernanceStore((s) => s.voter)
 
-  const minVoterWeight = governances
+  const minVoterWeight = minVotes
+    ? minVotes
+    : governances
     ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
         .minCommunityTokensToCreateProposal
     : new BN(0)
