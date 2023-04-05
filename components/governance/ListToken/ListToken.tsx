@@ -567,11 +567,11 @@ const ListToken = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
-                  <a className="flex items-center hover:cursor-pointer">
+                  <p className="flex items-center">
                     {abbreviateAddress(
                       new PublicKey(currentTokenInfo?.address)
                     )}
-                  </a>
+                  </p>
                 </div>
                 {priceImpact > 2 && (
                   <div className="mt-4">
