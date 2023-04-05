@@ -137,14 +137,14 @@ const MoreMenuPanel = ({
           icon={<LeaderboardIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
-          title={t('common:list-token')}
-          path="/governance"
-          icon={<PlusCircleIcon className="h-5 w-5" />}
-        />
-        <MoreMenuItem
           title={t('search:search-accounts')}
           path="/search"
           icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+        />
+        <MoreMenuItem
+          title={t('common:list-token')}
+          path="/governance"
+          icon={<PlusCircleIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
           title={t('learn')}
