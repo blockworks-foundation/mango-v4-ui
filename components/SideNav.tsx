@@ -134,20 +134,20 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 showTooltip={false}
               />
               <MenuItem
-                active={pathname === '/governance'}
-                collapsed={false}
-                icon={<PlusCircleIcon className="h-5 w-5" />}
-                title={t('common:list-token')}
-                pagePath="/governance"
-                hideIconBg
-                showTooltip={false}
-              />
-              <MenuItem
                 active={pathname === '/search'}
                 collapsed={false}
                 icon={<MagnifyingGlassIcon className="h-5 w-5" />}
                 title={t('search:search-accounts')}
                 pagePath="/search"
+                hideIconBg
+                showTooltip={false}
+              />
+              <MenuItem
+                active={pathname === '/governance/listToken'}
+                collapsed={false}
+                icon={<PlusCircleIcon className="h-5 w-5" />}
+                title={t('common:list-token')}
+                pagePath="/governance/listToken"
                 hideIconBg
                 showTooltip={false}
               />
