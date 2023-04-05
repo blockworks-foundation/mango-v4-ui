@@ -132,6 +132,26 @@ export interface DepositWithdrawFeedItem {
   wallet_pk: string
 }
 
+export interface PerpTradeFeedItem {
+  block_datetime: string
+  maker: string
+  maker_fee: number
+  maker_order_id: string | null
+  market_index: number
+  perp_market: string
+  perp_market_name: string
+  price: number
+  quantity: number
+  seq_num: number
+  signature: number
+  slot: number
+  taker: string
+  taker_client_order_id: string | null
+  taker_fee: number
+  taker_order_id: string | null
+  taker_side: string
+}
+
 export interface SpotLiquidationFeedItem {
   asset_amount: number
   asset_price: number
@@ -173,10 +193,26 @@ export interface LiquidationActivity {
   symbol: string
 }
 
+export interface PerpTradeActivity {
+  activity_details: PerpTradeFeedItem
+  block_datetime: string
+  activity_type: string
+  symbol: string
+}
+
 export function isLiquidationFeedItem(
   item: ActivityFeed
 ): item is LiquidationActivity {
   if (item.activity_type.includes('liquidate')) {
+    return true
+  }
+  return false
+}
+
+export function isPerpTradeFeedItem(
+  item: ActivityFeed
+): item is PerpTradeActivity {
+  if (item.activity_type === 'perp_trade') {
     return true
   }
   return false
@@ -234,7 +270,7 @@ export type ActivityFeed = {
     | SpotLiquidationFeedItem
     | PerpLiquidationFeedItem
     | SwapHistoryItem
-    | PerpTradeHistory
+    | PerpTradeFeedItem
     | SpotTradeHistory
 }
 

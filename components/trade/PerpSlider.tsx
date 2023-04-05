@@ -1,7 +1,7 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
-import { BN } from 'bn.js'
+import BN from 'bn.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'

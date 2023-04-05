@@ -1,19 +1,18 @@
 import React, { FunctionComponent } from 'react'
 
 type SideBadgeProps = {
-  isPerp?: boolean
   side: string
 }
 
-const SideBadge: FunctionComponent<SideBadgeProps> = ({ side, isPerp }) => {
+const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
   if (side !== 'buy' && side !== 'sell') {
-    return <div className="text-th-fgd-3">Unknown</div>
+    return <span>Unknown</span>
   }
 
   const isBid = side === 'buy'
 
   return (
-    <div
+    <span
       className={`inline-block rounded uppercase ${
         isBid
           ? 'text-th-up md:border md:border-th-up'
@@ -21,8 +20,8 @@ const SideBadge: FunctionComponent<SideBadgeProps> = ({ side, isPerp }) => {
       }
        uppercase md:-my-0.5 md:px-1.5 md:py-0.5 md:text-xs`}
     >
-      {isPerp ? (isBid ? 'long' : 'short') : side}
-    </div>
+      {isBid ? 'Buy' : 'Sell'}
+    </span>
   )
 }
 

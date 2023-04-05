@@ -636,7 +636,7 @@ const AccountPage = () => {
                 {t('account:total-funding-earned')}
               </p>
             </Tooltip>
-            {Math.abs(fundingTotalValue) > 1 && mangoAccountAddress ? (
+            {mangoAccountAddress ? (
               <Tooltip
                 className="hidden md:block"
                 content="Funding Chart"
