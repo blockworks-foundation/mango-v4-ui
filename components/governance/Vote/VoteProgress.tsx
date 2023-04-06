@@ -46,7 +46,7 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
   const votesRequired = yesVotesRequired
 
   return (
-    <div className={`rounded-md`}>
+    <div className="w-full rounded-md">
       <div className="flex items-center">
         <div className="w-full">
           <div className="flex items-center">

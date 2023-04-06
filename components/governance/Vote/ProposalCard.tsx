@@ -12,7 +12,11 @@ import VoteResults from './VoteResult'
 import QuorumProgress from './VoteProgress'
 import GovernanceStore from '@store/governanceStore'
 import Button from '@components/shared/Button'
-import { HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowTopRightOnSquareIcon,
+  HandThumbDownIcon,
+  HandThumbUpIcon,
+} from '@heroicons/react/20/solid'
 import { BN } from '@project-serum/anchor'
 import { useEffect, useState } from 'react'
 import { MANGO_GOVERNANCE_PROGRAM } from 'utils/governance/constants'
@@ -125,73 +129,72 @@ const ProposalCard = ({
     wallet.publicKey?.toBase58(),
   ])
 
-  return (
-    governance && (
-      <div
-        className="border-b border-th-bkg-3 p-4"
-        key={proposal.pubkey.toBase58()}
-      >
-        <div>{proposal.account.name}</div>
-        <div>
-          <a
-            href={`https://dao.mango.markets/dao/MNGO/proposal/${proposal.pubkey.toBase58()}`}
-          >
-            Read full description
-          </a>
+  return governance ? (
+    <div
+      className="rounded-lg border border-th-bkg-3 p-4 md:p-6"
+      key={proposal.pubkey.toBase58()}
+    >
+      <div className="mb-6 flex flex-col md:flex-row md:items-start md:justify-between">
+        <div className="pr-6">
+          <h2 className="mb-2 text-lg md:text-xl">
+            <a
+              href={`https://dao.mango.markets/dao/MNGO/proposal/${proposal.pubkey.toBase58()}`}
+            >
+              <span className="mr-2">{proposal.account.name}</span>
+              <ArrowTopRightOnSquareIcon className="mb-1 inline-block h-4 w-4 flex-shrink-0" />
+            </a>
+          </h2>
+          <p className="mb-2 md:mb-0">{proposal.account.descriptionLink}</p>
         </div>
         <VoteCountdown
           proposal={proposal.account}
           governance={governance.account}
         />
-        {mangoMint && (
-          <>
-            <VoteResults
-              communityMint={mangoMint}
-              proposal={proposal.account}
-            ></VoteResults>
-            <QuorumProgress
-              proposal={proposal}
-              governance={governance}
-              communityMint={mangoMint}
-            ></QuorumProgress>
-          </>
-        )}
-        <div>
-          {!isVoteCast ? (
-            <>
-              <Button
-                className="w-1/2"
-                onClick={() => vote(VoteKind.Approve)}
-                disabled={!canVote}
-              >
-                <div className="flex flex-row items-center justify-center">
-                  <HandThumbUpIcon className="mr-2 h-4 w-4" />
-                  {voting ? <Loading className="w-3"></Loading> : 'Vote Yes'}
-                </div>
-              </Button>
-              <Button
-                className="w-1/2"
-                onClick={() => vote(VoteKind.Deny)}
-                disabled={!canVote}
-              >
-                <div className="flex flex-row items-center justify-center">
-                  <HandThumbDownIcon className="mr-2 h-4 w-4" />
-                  {voting ? <Loading className="w-3"></Loading> : 'Vote No'}
-                </div>
-              </Button>{' '}
-            </>
-          ) : (
-            <Button
-              className="min-w-[200px]"
-              onClick={() => submitRelinquishVote()}
-            >
-              {voting ? <Loading className="w-3"></Loading> : 'Relinquish Vote'}
-            </Button>
-          )}
-        </div>
       </div>
-    )
-  )
+      <div>
+        {!isVoteCast ? (
+          <div className="flex space-x-4">
+            <Button
+              className="w-32"
+              onClick={() => vote(VoteKind.Approve)}
+              disabled={!canVote}
+              secondary
+            >
+              <div className="flex flex-row items-center justify-center">
+                <HandThumbUpIcon className="mr-2 h-4 w-4" />
+                {voting ? <Loading className="w-3"></Loading> : 'Vote Yes'}
+              </div>
+            </Button>
+            <Button
+              className="w-32"
+              onClick={() => vote(VoteKind.Deny)}
+              disabled={!canVote}
+              secondary
+            >
+              <div className="flex flex-row items-center justify-center">
+                <HandThumbDownIcon className="mr-2 h-4 w-4" />
+                {voting ? <Loading className="w-3"></Loading> : 'Vote No'}
+              </div>
+            </Button>
+          </div>
+        ) : (
+          <Button secondary onClick={() => submitRelinquishVote()}>
+            {voting ? <Loading className="w-3"></Loading> : 'Relinquish Vote'}
+          </Button>
+        )}
+      </div>
+      {mangoMint && (
+        <div className="mt-6 flex w-full flex-col space-y-4 border-t border-th-bkg-3 pt-4 md:flex-row md:space-y-0 md:space-x-6">
+          <VoteResults communityMint={mangoMint} proposal={proposal.account} />
+          <QuorumProgress
+            proposal={proposal}
+            governance={governance}
+            communityMint={mangoMint}
+          />
+        </div>
+      )}
+    </div>
+  ) : null
 }
 
 export default ProposalCard

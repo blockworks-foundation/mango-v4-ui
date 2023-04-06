@@ -58,6 +58,7 @@ const Vote = () => {
         <Loading className="w-5"></Loading>
       ) : (
         <div>
+          <h1 className="mb-4">Current Proposals</h1>
           {!loadingVoter && (
             <OnBoarding minVotes={new BN(1000000)}></OnBoarding>
           )}
