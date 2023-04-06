@@ -2,7 +2,7 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import { formatNumericValue } from 'utils/numbers'
+import { floorToDecimal } from 'utils/numbers'
 import { useTokenMax } from './useTokenMax'
 
 const MaxSwapAmount = ({
@@ -23,7 +23,7 @@ const MaxSwapAmount = ({
   if (mangoAccountLoading) return null
 
   const setMax = (value: Decimal) => {
-    setAmountIn(formatNumericValue(value, decimals))
+    setAmountIn(floorToDecimal(value, decimals).toFixed())
   }
 
   return (

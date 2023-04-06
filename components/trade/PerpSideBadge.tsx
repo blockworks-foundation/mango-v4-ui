@@ -2,7 +2,7 @@ const PerpSideBadge = ({ basePosition }: { basePosition: number }) => {
   return (
     <>
       {basePosition !== 0 ? (
-        <div
+        <span
           className={`inline-block rounded uppercase ${
             basePosition > 0
               ? 'text-th-up md:border md:border-th-up'
@@ -11,7 +11,7 @@ const PerpSideBadge = ({ basePosition }: { basePosition: number }) => {
        uppercase md:-my-0.5 md:px-1.5 md:py-0.5 md:text-xs`}
         >
           {basePosition > 0 ? 'Long' : 'Short'}
-        </div>
+        </span>
       ) : (
         '--'
       )}
