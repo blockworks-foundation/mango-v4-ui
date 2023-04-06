@@ -24,7 +24,7 @@ const VoteResults = ({ proposal, communityMint }: VoteResultsProps) => {
   const relativeNoVotes = getRelativeVoteCount(noVoteCount)
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex w-full items-center space-x-4">
       {proposal ? (
         <div className={`w-full rounded-md`}>
           <div className="flex">
