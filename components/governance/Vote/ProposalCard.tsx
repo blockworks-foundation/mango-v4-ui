@@ -28,6 +28,12 @@ import { PublicKey } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
 import Loading from '@components/shared/Loading'
 
+enum PROCESSED_VOTE_TYPE {
+  APPROVE,
+  DENY,
+  RELINQUISH,
+}
+
 const ProposalCard = ({
   proposal,
   mangoMint,
@@ -43,7 +49,9 @@ const ProposalCard = ({
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const updateProposals = GovernanceStore((s) => s.updateProposals)
 
-  const [voting, setVoting] = useState(false)
+  const [processedVoteType, setProcessedVoteType] = useState<
+    PROCESSED_VOTE_TYPE | ''
+  >('')
   const [voteRecordAddress, setVoteRecordAddress] = useState<PublicKey | null>(
     null
   )
@@ -55,7 +63,11 @@ const ProposalCard = ({
 
   //Approve 0, deny 1
   const vote = async (voteType: VoteKind) => {
-    setVoting(true)
+    setProcessedVoteType(
+      voteType === VoteKind.Approve
+        ? PROCESSED_VOTE_TYPE.APPROVE
+        : PROCESSED_VOTE_TYPE.DENY
+    )
     try {
       await castVote(
         connection,
@@ -75,11 +87,11 @@ const ProposalCard = ({
       })
     }
 
-    setVoting(false)
+    setProcessedVoteType('')
   }
 
   const submitRelinquishVote = async () => {
-    setVoting(true)
+    setProcessedVoteType(PROCESSED_VOTE_TYPE.RELINQUISH)
     try {
       await relinquishVote(
         connection,
@@ -97,7 +109,7 @@ const ProposalCard = ({
         type: 'error',
       })
     }
-    setVoting(false)
+    setProcessedVoteType('')
   }
 
   useEffect(() => {
@@ -156,29 +168,45 @@ const ProposalCard = ({
             <Button
               className="w-32"
               onClick={() => vote(VoteKind.Approve)}
-              disabled={!canVote}
+              disabled={!canVote || processedVoteType !== ''}
               secondary
             >
               <div className="flex flex-row items-center justify-center">
                 <HandThumbUpIcon className="mr-2 h-4 w-4" />
-                {voting ? <Loading className="w-3"></Loading> : 'Vote Yes'}
+                {processedVoteType === PROCESSED_VOTE_TYPE.APPROVE ? (
+                  <Loading className="w-3"></Loading>
+                ) : (
+                  'Vote Yes'
+                )}
               </div>
             </Button>
             <Button
               className="w-32"
               onClick={() => vote(VoteKind.Deny)}
-              disabled={!canVote}
+              disabled={!canVote || processedVoteType !== ''}
               secondary
             >
               <div className="flex flex-row items-center justify-center">
                 <HandThumbDownIcon className="mr-2 h-4 w-4" />
-                {voting ? <Loading className="w-3"></Loading> : 'Vote No'}
+                {processedVoteType === PROCESSED_VOTE_TYPE.DENY ? (
+                  <Loading className="w-3"></Loading>
+                ) : (
+                  'Vote No'
+                )}
               </div>
             </Button>
           </div>
         ) : (
-          <Button secondary onClick={() => submitRelinquishVote()}>
-            {voting ? <Loading className="w-3"></Loading> : 'Relinquish Vote'}
+          <Button
+            disabled={processedVoteType !== ''}
+            secondary
+            onClick={() => submitRelinquishVote()}
+          >
+            {processedVoteType === PROCESSED_VOTE_TYPE.RELINQUISH ? (
+              <Loading className="w-3"></Loading>
+            ) : (
+              'Relinquish Vote'
+            )}
           </Button>
         )}
       </div>
