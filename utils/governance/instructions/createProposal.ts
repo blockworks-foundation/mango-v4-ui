@@ -4,7 +4,6 @@ import {
   getSignatoryRecordAddress,
   ProgramAccount,
   serializeInstructionToBase64,
-  SYSTEM_PROGRAM_ID,
   TokenOwnerRecord,
   VoteType,
   WalletSigner,
@@ -22,12 +21,8 @@ import {
 import { chunk } from 'lodash'
 import { MANGO_MINT } from 'utils/constants'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
-import { DEFAULT_VSR_ID, VsrClient } from '../voteStakeRegistryClient'
-import {
-  getRegistrarPDA,
-  getVoterPDA,
-  getVoterWeightPDA,
-} from '../accounts/vsrAccounts'
+import { VsrClient } from '../voteStakeRegistryClient'
+import { updateVoterWeightRecord } from './updateVoteWeightRecord'
 
 export const createProposal = async (
   connection: Connection,
@@ -57,27 +52,8 @@ export const createProposal = async (
   const options = ['Approve']
   const useDenyOption = true
 
-  //will run only if plugin is connected with realm
-  const { registrar } = await getRegistrarPDA(
-    MANGO_REALM_PK,
-    new PublicKey(MANGO_MINT),
-    DEFAULT_VSR_ID
-  )
-  const { voter } = await getVoterPDA(registrar, walletPk, DEFAULT_VSR_ID)
-  const { voterWeightPk } = await getVoterWeightPDA(
-    registrar,
-    walletPk,
-    DEFAULT_VSR_ID
-  )
-  const updateVoterWeightRecordIx = await client.program.methods
-    .updateVoterWeightRecord()
-    .accounts({
-      registrar,
-      voter,
-      voterWeightRecord: voterWeightPk,
-      systemProgram: SYSTEM_PROGRAM_ID,
-    })
-    .instruction()
+  const { updateVoterWeightRecordIx, voterWeightPk } =
+    await updateVoterWeightRecord(client, walletPk)
   instructions.push(updateVoterWeightRecordIx)
 
   const proposalAddress = await withCreateProposal(

@@ -1,5 +1,6 @@
 import { AnchorProvider, BN } from '@project-serum/anchor'
 import {
+  getAllProposals,
   getProposal,
   getTokenOwnerRecord,
   getTokenOwnerRecordAddress,
@@ -18,8 +19,8 @@ import {
 } from 'utils/governance/constants'
 import { getDeposits } from 'utils/governance/fetch/deposits'
 import {
+  accountsToPubkeyMap,
   fetchGovernances,
-  fetchProposals,
   fetchRealm,
 } from 'utils/governance/tools'
 import { ConnectionContext, EndpointTypes } from 'utils/governance/types'
@@ -148,16 +149,17 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     set((state) => {
       state.loadingProposals = true
     })
-    const proposals = await fetchProposals({
-      connectionContext: connectionContext,
-      programId: MANGO_GOVERNANCE_PROGRAM,
-      governances: Object.keys(governances).map((x) => new PublicKey(x)),
-    })
+    const proposals = await getAllProposals(
+      connectionContext.current,
+      MANGO_GOVERNANCE_PROGRAM,
+      MANGO_REALM_PK
+    )
+    const proposalsObj = accountsToPubkeyMap(proposals.flatMap((p) => p))
     set((state) => {
       state.loadingProposals = false
       state.realm = realm
       state.governances = governances
-      state.proposals = proposals
+      state.proposals = proposalsObj
       state.loadingRealm = false
     })
   },
