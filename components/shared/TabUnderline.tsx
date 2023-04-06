@@ -48,17 +48,17 @@ const TabUnderline = <T extends Values>({
           <button
             onClick={() => onChange(value)}
             className={`default-transition relative flex h-10 w-1/2 
-            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 focus:text-th-fgd-1 md:h-auto md:rounded-none md:hover:opacity-100 ${
+            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 md:h-auto md:rounded-none md:hover:opacity-100 ${
               small ? 'text-sm' : 'text-sm lg:text-base'
             }
             ${
               activeValue === value
                 ? activeValue === 'buy'
-                  ? 'text-th-up'
+                  ? 'text-th-up focus:text-th-up'
                   : activeValue === 'sell'
-                  ? 'text-th-down'
-                  : 'text-th-active'
-                : 'text-th-fgd-4 hover:text-th-fgd-3'
+                  ? 'text-th-down focus:text-th-down'
+                  : 'text-th-active focus:text-th-active'
+                : 'text-th-fgd-4 focus:text-th-fgd-1 md:hover:text-th-fgd-3'
             }
           `}
             key={`${value}` + i}

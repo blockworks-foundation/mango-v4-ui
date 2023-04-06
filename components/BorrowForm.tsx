@@ -49,6 +49,9 @@ interface BorrowFormProps {
   token?: string
 }
 
+export const ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES =
+  'default-transition w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4'
+
 function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
@@ -244,7 +247,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   allowNegative={false}
                   isNumericString={true}
                   decimalScale={bank?.mintDecimals || 6}
-                  className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover"
+                  className={ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES}
                   placeholder="0.00"
                   value={inputAmount}
                   onValueChange={handleInputChange}

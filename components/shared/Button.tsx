@@ -34,7 +34,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       className={`rounded-md ${
         secondary
           ? 'border border-th-button focus:border-th-fgd-4 md:hover:border-th-button-hover'
-          : 'bg-th-button md:hover:bg-th-button-hover'
+          : 'bg-th-button focus:border focus:border-th-fgd-4 md:hover:bg-th-button-hover'
       } ${
         size === 'medium'
           ? 'h-10 px-4'
@@ -45,7 +45,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
         theme === 'High Contrast' && !secondary
           ? 'text-th-bkg-1'
           : 'text-th-fgd-1'
-      } focus:brightness-125 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      } disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
       type={type}
       {...props}
     >

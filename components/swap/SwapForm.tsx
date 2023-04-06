@@ -57,7 +57,7 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
 }
 
 const NUMBER_FORMAT_CLASSNAMES =
-  'w-full rounded-l-none rounded-r-lg border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-base font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none lg:text-lg xl:text-xl'
+  'default-transition w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4'
 
 const set = mangoStore.getState().set
 

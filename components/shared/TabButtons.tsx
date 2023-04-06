@@ -25,7 +25,7 @@ const TabButtons = <T extends Values>({
       {values.map(([label, count], i) => (
         <div className={fillWidth ? 'flex-1' : ''} key={`${label}` + i}>
           <button
-            className={`default-transition flex h-12 w-full items-center justify-center px-4 font-normal focus:bg-th-bkg-2 focus:text-th-fgd-1 md:px-6 ${
+            className={`default-transition flex h-12 w-full items-center justify-center px-4 font-normal focus:bg-th-bkg-2 md:px-6 ${
               rounded ? 'rounded-md' : 'rounded-none'
             } ${
               showBorders
@@ -39,8 +39,8 @@ const TabButtons = <T extends Values>({
                   ? 'bg-th-up-dark font-display text-th-fgd-1'
                   : label === 'sell'
                   ? 'bg-th-down-dark font-display text-th-fgd-1'
-                  : 'bg-th-bkg-2 text-th-active'
-                : 'hover:cursor-pointer hover:text-th-fgd-2'
+                  : 'bg-th-bkg-2 text-th-active focus:text-th-active'
+                : 'hover:cursor-pointer hover:text-th-fgd-2 focus:text-th-fgd-1'
             }`}
             key={`${label}${i}`}
             onClick={() => onChange(label)}

@@ -45,7 +45,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           text-th-fgd-1 ${
             error ? 'border-th-down' : 'border-th-input-border'
           } focus:border-th-fgd-4 focus:outline-none
-          md:hover:border-th-input-border-hover 
+          md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4
           ${
             disabled
               ? 'cursor-not-allowed bg-th-bkg-3 text-th-fgd-3 hover:border-th-fgd-4'
