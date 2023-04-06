@@ -1,8 +1,5 @@
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
-import { IconButton } from '@components/shared/Button'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import { ArrowLeftIcon } from '@heroicons/react/20/solid'
-import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -16,17 +13,14 @@ import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 
 const LiquidationDetails = ({
   activity,
-  setShowActivityDetail,
 }: {
   activity: LiquidationActivity
-  setShowActivityDetail?: (x: LiquidationActivity | undefined) => void
 }) => {
   const { t } = useTranslation(['common', 'activity', 'settings'])
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
   )
-  const { block_datetime } = activity
 
   const getAssetLiquidatedReturned = (details: SpotOrPerpLiquidationItem) => {
     const assets = {
@@ -91,152 +85,148 @@ const LiquidationDetails = ({
   }, [activity])
 
   return (
-    <div className="md:pb-10">
-      {setShowActivityDetail ? (
-        <div className="flex items-center py-6">
-          <IconButton
-            className="mr-4"
-            onClick={() => setShowActivityDetail(undefined)}
-            size="small"
-          >
-            <ArrowLeftIcon className="h-5 w-5" />
-          </IconButton>
-          <h2 className="text-lg">{t('activity:liquidation-details')}</h2>
-        </div>
-      ) : null}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {isPerpLiquidation(activity.activity_details) ? (
-          <>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('date')}</p>
-              <p className="text-th-fgd-1">
-                {dayjs(block_datetime).format('ddd D MMM')}
-              </p>
-              <p className="text-xs text-th-fgd-3">
-                {dayjs(block_datetime).format('h:mma')}
-              </p>
-            </div>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('activity:liquidation-type')}</p>
-              <p className="text-th-fgd-1">{t('perp')}</p>
-            </div>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
-              <p className="font-mono text-th-fgd-1">
-                <FormatNumericValue value={assetLiquidated} />{' '}
-                <span className="font-body">{assetLiquidatedSymbol}</span>
-                <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-                <FormatNumericValue
-                  value={activity.activity_details.price}
-                  isUsd
-                />
-              </p>
-              <p className="font-mono text-xs text-th-fgd-3">
-                <FormatNumericValue value={liquidatedValue} isUsd />
-              </p>
-            </div>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
-              <p className="font-mono text-th-fgd-1">
-                <FormatNumericValue value={assetReturned} />{' '}
-                <span className="font-body">{assetReturnedSymbol}</span>
-              </p>
-              <p className="font-mono text-xs text-th-fgd-3">
-                <FormatNumericValue value={returnedValue} isUsd />
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('date')}</p>
-              <p className="text-th-fgd-1">
-                {dayjs(block_datetime).format('ddd D MMM')}
-              </p>
-              <p className="text-xs text-th-fgd-3">
-                {dayjs(block_datetime).format('h:mma')}
-              </p>
-            </div>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('activity:liquidation-type')}</p>
-              <p className="text-th-fgd-1">{t('spot')}</p>
-            </div>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('activity:asset-liquidated')}</p>
-              <p className="font-mono text-th-fgd-1">
-                <FormatNumericValue value={assetLiquidated} />{' '}
-                <span className="font-body">{assetLiquidatedSymbol}</span>
-                <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-                <FormatNumericValue
-                  value={activity.activity_details.asset_price}
-                  isUsd
-                />
-              </p>
-              <p className="font-mono text-xs text-th-fgd-3">
-                <FormatNumericValue value={liquidatedValue} isUsd />
-              </p>
-            </div>
-            <div className="col-span-1">
-              <p className="mb-0.5 text-sm">{t('activity:asset-returned')}</p>
-              <p className="font-mono text-th-fgd-1">
-                <FormatNumericValue value={assetReturned} />{' '}
-                <span className="font-body">{assetReturnedSymbol}</span>
-                <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
-                <FormatNumericValue
-                  value={activity.activity_details.liab_price}
-                  isUsd
-                />
-              </p>
-              <p className="font-mono text-xs text-th-fgd-3">
-                <FormatNumericValue value={returnedValue} isUsd />
-              </p>
-            </div>
-          </>
-        )}
-        <div className="col-span-1">
-          <p className="mb-0.5 text-sm">{t('activity:liquidation-fee')}</p>
-          <p className="font-mono text-th-fgd-1">
-            <FormatNumericValue value={fee} isUsd />
-          </p>
-        </div>
-        <div className="col-span-1">
-          <p className="mb-0.5 text-sm">{t('activity:liquidation-side')}</p>
-          <p className="text-th-fgd-1">
-            {activity.activity_details.side === 'liqor'
-              ? t('activity:liquidator')
-              : t('activity:liquidated')}
-          </p>
-        </div>
-        <div className="col-span-1">
-          <p className="mb-0.5 text-sm">{t('activity:counterparty')}</p>
-          <a
-            className="text-sm"
-            href={`/?address=${activity.activity_details.counterparty}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t('activity:view-account')}
-          </a>
-        </div>
-        <div className="col-span-1">
-          <p className="mb-0.5 text-sm">{t('transaction')}</p>
-          <a
-            className="default-transition flex items-center text-th-fgd-2 hover:text-th-fgd-3"
-            href={`${preferredExplorer.url}${activity.activity_details.signature}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              alt=""
-              width="20"
-              height="20"
-              src={`/explorer-logos/${preferredExplorer.name}.png`}
-            />
-            <span className="ml-2 text-sm">
-              {t(`settings:${preferredExplorer.name}`)}
-            </span>
-          </a>
-        </div>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {isPerpLiquidation(activity.activity_details) ? (
+        <>
+          <div className="col-span-1">
+            <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+              {t('activity:liquidation-type')}
+            </p>
+            <p className="font-body text-th-fgd-1">{t('perp')}</p>
+          </div>
+          <div className="col-span-1">
+            <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+              {t('activity:asset-liquidated')}
+            </p>
+            <p className="text-th-fgd-1">
+              <FormatNumericValue value={assetLiquidated} />{' '}
+              <span className="font-body text-th-fgd-3">
+                {assetLiquidatedSymbol}
+              </span>
+              <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
+              <FormatNumericValue
+                value={activity.activity_details.price}
+                isUsd
+              />
+            </p>
+            <p className="text-xs text-th-fgd-3">
+              <FormatNumericValue value={liquidatedValue} isUsd />
+            </p>
+          </div>
+          <div className="col-span-1">
+            <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+              {t('activity:asset-returned')}
+            </p>
+            <p className="text-th-fgd-1">
+              <FormatNumericValue value={assetReturned} />{' '}
+              <span className="font-body text-th-fgd-3">
+                {assetReturnedSymbol}
+              </span>
+            </p>
+            <p className="text-xs text-th-fgd-3">
+              <FormatNumericValue value={returnedValue} isUsd />
+            </p>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="col-span-1">
+            <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+              {t('activity:liquidation-type')}
+            </p>
+            <p className="font-body text-th-fgd-1">{t('spot')}</p>
+          </div>
+          <div className="col-span-1">
+            <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+              {t('activity:asset-liquidated')}
+            </p>
+            <p className="text-th-fgd-1">
+              <FormatNumericValue value={assetLiquidated} />{' '}
+              <span className="font-body text-th-fgd-3">
+                {assetLiquidatedSymbol}
+              </span>
+              <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
+              <FormatNumericValue
+                value={activity.activity_details.asset_price}
+                isUsd
+              />
+            </p>
+            <p className="text-xs text-th-fgd-3">
+              <FormatNumericValue value={liquidatedValue} isUsd />
+            </p>
+          </div>
+          <div className="col-span-1">
+            <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+              {t('activity:asset-returned')}
+            </p>
+            <p className="text-th-fgd-1">
+              <FormatNumericValue value={assetReturned} />{' '}
+              <span className="font-body text-th-fgd-3">
+                {assetReturnedSymbol}
+              </span>
+              <span className="ml-2 font-body text-th-fgd-3">at</span>{' '}
+              <FormatNumericValue
+                value={activity.activity_details.liab_price}
+                isUsd
+              />
+            </p>
+            <p className="text-xs text-th-fgd-3">
+              <FormatNumericValue value={returnedValue} isUsd />
+            </p>
+          </div>
+        </>
+      )}
+      <div className="col-span-1">
+        <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+          {t('activity:liquidation-fee')}
+        </p>
+        <p className="text-th-fgd-1">
+          <FormatNumericValue value={fee} isUsd />
+        </p>
+      </div>
+      <div className="col-span-1">
+        <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+          {t('activity:liquidation-side')}
+        </p>
+        <p className="font-body text-th-fgd-1">
+          {activity.activity_details.side === 'liqor'
+            ? t('activity:liquidator')
+            : t('activity:liquidated')}
+        </p>
+      </div>
+      <div className="col-span-1">
+        <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+          {t('activity:counterparty')}
+        </p>
+        <a
+          className="text-sm"
+          href={`/?address=${activity.activity_details.counterparty}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('activity:view-account')}
+        </a>
+      </div>
+      <div className="col-span-1">
+        <p className="mb-0.5 font-body text-sm text-th-fgd-3">
+          {t('transaction')}
+        </p>
+        <a
+          className="flex items-center"
+          href={`${preferredExplorer.url}${activity.activity_details.signature}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            alt=""
+            width="20"
+            height="20"
+            src={`/explorer-logos/${preferredExplorer.name}.png`}
+          />
+          <span className="ml-2 text-sm">
+            {t(`settings:${preferredExplorer.name}`)}
+          </span>
+        </a>
       </div>
     </div>
   )

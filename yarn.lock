@@ -14,10 +14,10 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
-"@blockworks-foundation/mango-v4@^0.9.13":
-  version "0.9.13"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.9.13.tgz#4869bf461a31d7a32da676f8c41217a07ba77fe8"
-  integrity sha512-2fkwB2Ogpox6LtFTxAG/J6PqE//LYbYYt2M1zNEZSiqXoNjEOg6qeA6xDo6CWK1HTE66su7PqDmluje7yEl4dA==
+"@blockworks-foundation/mango-v4@^0.9.14":
+  version "0.9.14"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.9.14.tgz#e46f890d3321e5ea9b1f7cb84713e64b68d8af45"
+  integrity sha512-g0Bv5q5znOPk9GTI3cKsXLxWF+lNF/sn1xLg0RNDwyuVCejM0eqJ2X6hfFIBRGVSolScvG+1w5BuEO8sBcD+Hg==
   dependencies:
     "@coral-xyz/anchor" "^0.26.0"
     "@project-serum/serum" "0.13.65"

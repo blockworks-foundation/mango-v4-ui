@@ -9,11 +9,7 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import PerpSideBadge from '@components/trade/PerpSideBadge'
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  NoSymbolIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import dayjs from 'dayjs'
@@ -23,16 +19,17 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useCallback, useState } from 'react'
-import { ActivityFeed, isLiquidationFeedItem, LiquidationActivity } from 'types'
+import { isLiquidationFeedItem, isPerpTradeFeedItem } from 'types'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import LiquidationDetails from './LiquidationDetails'
+import PerpTradeDetails from './PerpTradeDetails'
 
-const formatFee = (value: number) => {
+export const formatFee = (value: number) => {
   return value.toLocaleString(undefined, {
     minimumSignificantDigits: 1,
-    maximumSignificantDigits: 1,
+    maximumSignificantDigits: 3,
   })
 }
 
@@ -46,9 +43,13 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
       : { value: '0', symbol: '' }
   }
   if (activity_type === 'perp_trade') {
-    const { maker_fee, taker_fee, maker } = activity.activity_details
+    const { maker_fee, taker_fee, maker, price, quantity } =
+      activity.activity_details
+    const value = price * quantity
     fee = {
-      value: formatFee(mangoAccountAddress === maker ? maker_fee : taker_fee),
+      value: formatFee(
+        mangoAccountAddress === maker ? maker_fee * value : taker_fee * value
+      ),
       symbol: 'USDC',
     }
   }
@@ -96,7 +97,7 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
   return fee
 }
 
-const getCreditAndDebit = (activity: any) => {
+const getCreditAndDebit = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let credit = { value: '0', symbol: '' }
   let debit = { value: '0', symbol: '' }
@@ -157,11 +158,36 @@ const getCreditAndDebit = (activity: any) => {
     }
   }
   if (activity_type === 'perp_trade') {
-    const { perp_market_name, price, quantity } = activity.activity_details
-    credit = { value: quantity, symbol: perp_market_name }
-    debit = {
-      value: formatNumericValue(quantity * price * -1),
-      symbol: 'USDC',
+    const {
+      maker_fee,
+      perp_market_name,
+      price,
+      quantity,
+      taker,
+      taker_fee,
+      taker_side,
+    } = activity.activity_details
+    const side =
+      taker === mangoAccountAddress
+        ? taker_side
+        : taker_side === 'bid'
+        ? 'ask'
+        : 'bid'
+    const feeRatio = taker === mangoAccountAddress ? taker_fee : maker_fee
+    const notional = quantity * price
+    const fee = feeRatio * notional
+    if (side === 'bid') {
+      credit = { value: quantity, symbol: perp_market_name }
+      debit = {
+        value: formatNumericValue((notional + fee) * -1),
+        symbol: 'USDC',
+      }
+    } else {
+      credit = {
+        value: formatNumericValue(notional - fee),
+        symbol: 'USDC',
+      }
+      debit = { value: `-${quantity}`, symbol: perp_market_name }
     }
   }
   if (activity_type === 'openbook_trade') {
@@ -182,7 +208,7 @@ const getCreditAndDebit = (activity: any) => {
   return { credit, debit }
 }
 
-const getValue = (activity: any) => {
+const getValue = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
@@ -215,8 +241,13 @@ const getValue = (activity: any) => {
     value = swap_out_amount * swap_out_price_usd
   }
   if (activity_type === 'perp_trade') {
-    const { price, quantity } = activity.activity_details
-    value = quantity * price
+    const { price, quantity, taker, taker_fee, maker_fee } =
+      activity.activity_details
+    const isTaker = taker === mangoAccountAddress
+    const feeRatio = isTaker ? taker_fee : maker_fee
+    const notional = quantity * price
+    const fee = feeRatio * notional
+    value = isTaker ? notional + fee : notional - fee
   }
   if (activity_type === 'openbook_trade') {
     const { price, size } = activity.activity_details
@@ -225,14 +256,9 @@ const getValue = (activity: any) => {
   return value
 }
 
-const ActivityFeedTable = ({
-  activityFeed,
-  handleShowActivityDetails,
-}: {
-  activityFeed: ActivityFeed[]
-  handleShowActivityDetails: (x: LiquidationActivity) => void
-}) => {
+const ActivityFeedTable = () => {
   const { t } = useTranslation(['common', 'activity'])
+  const activityFeed = mangoStore((s) => s.activityFeed.feed)
   const { mangoAccountAddress } = useMangoAccount()
   const actions = mangoStore((s) => s.actions)
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
@@ -286,105 +312,121 @@ const ActivityFeedTable = ({
               const { activity_type, block_datetime } = activity
               const { signature } = activity.activity_details
               const isOpenbook = activity_type === 'openbook_trade'
-              const amounts = getCreditAndDebit(activity)
-              const value = getValue(activity)
+              const amounts = getCreditAndDebit(activity, mangoAccountAddress)
+              const value = getValue(activity, mangoAccountAddress)
               const fee = getFee(activity, mangoAccountAddress)
+              const isExpandable =
+                isLiquidationFeedItem(activity) || isPerpTradeFeedItem(activity)
               return (
-                <TrBody
-                  key={signature + index}
-                  className={`default-transition text-sm hover:bg-th-bkg-2 ${
-                    isLiquidationFeedItem(activity) ? 'cursor-pointer' : ''
-                  }`}
-                  onClick={
-                    isLiquidationFeedItem(activity)
-                      ? () => handleShowActivityDetails(activity)
-                      : undefined
-                  }
-                >
-                  <Td>
-                    <p className="font-body">
-                      {dayjs(block_datetime).format('ddd D MMM')}
-                    </p>
-                    <p className="text-xs text-th-fgd-3">
-                      {dayjs(block_datetime).format('h:mma')}
-                    </p>
-                  </Td>
-                  <Td className="text-right">
-                    {t(`activity:${activity_type}`)}
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {amounts.credit.value}{' '}
-                    <span className="font-body text-th-fgd-3">
-                      {amounts.credit.symbol}
-                    </span>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {amounts.debit.value}{' '}
-                    <span className="font-body text-th-fgd-3">
-                      {amounts.debit.symbol}
-                    </span>
-                  </Td>
-                  <Td className="text-right font-mono">
-                    {activity_type === 'perp'
-                      ? (Number(fee.value) * value).toFixed(5)
-                      : fee.value}{' '}
-                    <span className="font-body text-th-fgd-3">
-                      {fee.symbol}
-                    </span>
-                  </Td>
-                  <Td
-                    className={`text-right font-mono ${
-                      activity_type === 'swap' ||
-                      activity_type === 'perp_trade' ||
-                      isOpenbook ||
-                      isLiquidationFeedItem(activity)
-                        ? 'text-th-fgd-2'
-                        : value >= 0
-                        ? 'text-th-up'
-                        : 'text-th-down'
-                    }`}
-                  >
-                    {value > 0 &&
-                    activity_type !== 'swap' &&
-                    activity_type !== 'perp_trade' &&
-                    !isOpenbook &&
-                    !isLiquidationFeedItem(activity)
-                      ? '+'
-                      : ''}
-                    <FormatNumericValue value={value} isUsd />
-                  </Td>
-                  <Td>
-                    {!isLiquidationFeedItem(activity) ? (
-                      <div className="flex items-center justify-end">
-                        <Tooltip
-                          content={`View on ${t(
-                            `settings:${preferredExplorer.name}`
-                          )}`}
-                          placement="top-end"
+                <Disclosure key={`${signature}${index}`}>
+                  {({ open }) => (
+                    <>
+                      <Disclosure.Button
+                        as={TrBody}
+                        className={`default-transition text-sm ${
+                          isExpandable
+                            ? 'cursor-pointer md:hover:bg-th-bkg-2'
+                            : 'pointer-events-none'
+                        }`}
+                      >
+                        <Td>
+                          <p className="font-body">
+                            {dayjs(block_datetime).format('ddd D MMM')}
+                          </p>
+                          <p className="text-xs text-th-fgd-3">
+                            {dayjs(block_datetime).format('h:mma')}
+                          </p>
+                        </Td>
+                        <Td className="text-right">
+                          {t(`activity:${activity_type}`)}
+                        </Td>
+                        <Td className="text-right font-mono">
+                          {amounts.credit.value}{' '}
+                          <span className="font-body text-th-fgd-3">
+                            {amounts.credit.symbol}
+                          </span>
+                        </Td>
+                        <Td className="text-right font-mono">
+                          {amounts.debit.value}{' '}
+                          <span className="font-body text-th-fgd-3">
+                            {amounts.debit.symbol}
+                          </span>
+                        </Td>
+                        <Td className="text-right font-mono">
+                          {fee.value}{' '}
+                          <span className="font-body text-th-fgd-3">
+                            {fee.symbol}
+                          </span>
+                        </Td>
+                        <Td
+                          className={`text-right font-mono ${
+                            activity_type === 'swap' ||
+                            isOpenbook ||
+                            isExpandable
+                              ? 'text-th-fgd-2'
+                              : value >= 0
+                              ? 'text-th-up'
+                              : 'text-th-down'
+                          }`}
                         >
-                          <a
-                            href={`${preferredExplorer.url}${signature}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <div className="h-6 w-6">
-                              <Image
-                                alt=""
-                                width="24"
-                                height="24"
-                                src={`/explorer-logos/${preferredExplorer.name}.png`}
+                          {value > 0 &&
+                          activity_type !== 'swap' &&
+                          !isOpenbook &&
+                          !isExpandable
+                            ? '+'
+                            : ''}
+                          <FormatNumericValue value={value} isUsd />
+                        </Td>
+                        <Td>
+                          {!isExpandable ? (
+                            <div className="flex items-center justify-end">
+                              <Tooltip
+                                content={`View on ${t(
+                                  `settings:${preferredExplorer.name}`
+                                )}`}
+                                placement="top-end"
+                              >
+                                <a
+                                  href={`${preferredExplorer.url}${signature}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <div className="h-6 w-6">
+                                    <Image
+                                      alt=""
+                                      width="24"
+                                      height="24"
+                                      src={`/explorer-logos/${preferredExplorer.name}.png`}
+                                    />
+                                  </div>
+                                </a>
+                              </Tooltip>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-end">
+                              <ChevronDownIcon
+                                className={`h-6 w-6 text-th-fgd-3 ${
+                                  open ? 'rotate-180' : 'rotate-360'
+                                }`}
                               />
                             </div>
-                          </a>
-                        </Tooltip>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-end">
-                        <ChevronRightIcon className="h-6 w-6 text-th-fgd-3" />
-                      </div>
-                    )}
-                  </Td>
-                </TrBody>
+                          )}
+                        </Td>
+                      </Disclosure.Button>
+                      <Disclosure.Panel as={TrBody}>
+                        {isLiquidationFeedItem(activity) ? (
+                          <td className="p-6" colSpan={7}>
+                            <LiquidationDetails activity={activity} />
+                          </td>
+                        ) : isPerpTradeFeedItem(activity) ? (
+                          <td className="p-6" colSpan={7}>
+                            <PerpTradeDetails activity={activity} />
+                          </td>
+                        ) : null}
+                      </Disclosure.Panel>
+                    </>
+                  )}
+                </Disclosure>
               )
             })}
           </tbody>
@@ -435,23 +477,36 @@ const MobileActivityFeedItem = ({
   getValue,
 }: {
   activity: any
-  getValue: (x: any) => number
+  getValue: (a: any, m: string) => number
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
     EXPLORERS[0]
   )
+  const { mangoAccountAddress } = useMangoAccount()
   const { activity_type, block_datetime } = activity
   const { signature } = activity.activity_details
   const isSwap = activity_type === 'swap'
   const isOpenbook = activity_type === 'openbook_trade'
   const isPerp = activity_type === 'perp_trade'
-  const value = getValue(activity)
+  const value = getValue(activity, mangoAccountAddress)
+  const isExpandable =
+    isLiquidationFeedItem(activity) || isPerpTradeFeedItem(activity)
+
+  const isPerpTaker =
+    isPerpTradeFeedItem(activity) &&
+    activity.activity_details.taker === mangoAccountAddress
+
+  const perpTradeSide = isPerpTaker
+    ? activity.activity_details.taker_side
+    : activity.activity_details.taker_side === 'bid'
+    ? 'ask'
+    : 'bid'
 
   return (
     <div key={signature} className="border-b border-th-bkg-3">
-      {isLiquidationFeedItem(activity) ? (
+      {isExpandable ? (
         <Disclosure>
           {({ open }) => (
             <>
@@ -470,9 +525,26 @@ const MobileActivityFeedItem = ({
                       <p className="text-right text-xs">
                         {t(`activity:${activity_type}`)}
                       </p>
-                      <p className="text-right font-mono text-sm text-th-fgd-1">
-                        <FormatNumericValue value={value} isUsd />
-                      </p>
+                      {isLiquidationFeedItem(activity) ? (
+                        <p className="text-right font-mono text-sm text-th-fgd-1">
+                          <FormatNumericValue value={value} isUsd />
+                        </p>
+                      ) : (
+                        <p className="font-mono text-th-fgd-1">
+                          <span className="mr-1">
+                            {activity.activity_details.quantity}
+                          </span>
+                          <span className="font-body text-th-fgd-3">
+                            {activity.activity_details.perp_market_name}
+                          </span>
+                          <span className="font-body">
+                            {' '}
+                            <PerpSideBadge
+                              basePosition={perpTradeSide === 'bid' ? 1 : -1}
+                            />
+                          </span>
+                        </p>
+                      )}
                     </div>
                     <ChevronDownIcon
                       className={`${
@@ -489,7 +561,11 @@ const MobileActivityFeedItem = ({
               >
                 <Disclosure.Panel>
                   <div className="border-t border-th-bkg-3 px-4 py-4">
-                    <LiquidationDetails activity={activity} />
+                    {isLiquidationFeedItem(activity) ? (
+                      <LiquidationDetails activity={activity} />
+                    ) : (
+                      <PerpTradeDetails activity={activity} />
+                    )}
                   </div>
                 </Disclosure.Panel>
               </Transition>

@@ -1,6 +1,7 @@
 import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import { FadeInFadeOut } from '@components/shared/Transitions'
+import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -30,6 +31,7 @@ const MaxSizeButton = ({
     useMargin
   )
   const { isUnownedAccount } = useUnownedAccount()
+  const { connected } = useWallet()
 
   const perpMax = useMemo(() => {
     const group = mangoStore.getState().group
@@ -113,7 +115,7 @@ const MaxSizeButton = ({
   return (
     <div className="mb-2 mt-3 flex items-center justify-between">
       <p className="text-xs text-th-fgd-3">{t('trade:size')}</p>
-      <FadeInFadeOut show={!!price && !isUnownedAccount}>
+      <FadeInFadeOut show={!!price && !isUnownedAccount && connected}>
         <MaxAmountButton
           className="text-xs"
           decimals={minOrderDecimals}

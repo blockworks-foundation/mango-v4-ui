@@ -365,10 +365,6 @@ const Dashboard: NextPage = () => {
                                   value={`${bank.oracleConfig.maxStalenessSlots} slots`}
                                 />
                                 <KeyValuePair
-                                  label="Oracle: Conf filter"
-                                  value={`${bank.oracleConfig.confFilter}`}
-                                />
-                                <KeyValuePair
                                   label="Group Insurance Fund"
                                   value={`${mintInfo!.groupInsuranceFund}`}
                                 />

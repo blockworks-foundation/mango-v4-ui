@@ -37,6 +37,7 @@
   "cancel": "Cancel",
   "chart-unavailable": "Chart Unavailable",
   "clear-all": "Clear All",
+  "close": "Close",
   "close-account": "Close Account",
   "close-account-desc": "Are you sure? Closing your account is irreversible",
   "closing-account": "Closing your account...",
@@ -168,5 +169,6 @@
   "withdraw-amount": "Withdraw Amount",
   "list-token": "List Token",
   "vote": "Vote"
+  "list-token": "List Token"
  }
  

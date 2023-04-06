@@ -29,6 +29,8 @@ export const SOUND_SETTINGS_KEY = 'soundSettings-0.1'
 
 export const SIZE_INPUT_UI_KEY = 'tradeFormUi-0.2'
 
+export const TRADE_CHECKBOXES_KEY = 'tradeCheckboxes-0.1'
+
 export const GRID_LAYOUT_KEY = 'savedLayouts-0.2'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.2'
