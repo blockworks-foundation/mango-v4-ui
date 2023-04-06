@@ -17,15 +17,15 @@ const fetchBirdeyePrices = async (
   )
 
   const promises = []
+  const queryEnd = Math.floor(Date.now() / 1000)
+  const queryStart = queryEnd - 86400
   for (const mint of mints) {
-    const queryEnd = Math.floor(Date.now() / 1000)
-    const queryStart = queryEnd - 86400
     const query = `defi/history_price?address=${mint}&address_type=pair&type=30m&time_from=${queryStart}&time_to=${queryEnd}`
     promises.push(makeApiRequest(query))
   }
 
   const responses = await Promise.all(promises)
-  if (responses.length) {
+  if (responses?.length) {
     return responses.map((res) => ({
       data: res.data.items,
       mint: res.data.items[0].address,

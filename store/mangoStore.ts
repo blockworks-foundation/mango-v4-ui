@@ -163,7 +163,7 @@ export type MangoStore = {
   perpMarkets: PerpMarket[]
   perpStats: {
     loading: boolean
-    data: PerpStatsItem[]
+    data: PerpStatsItem[] | null
   }
   profile: {
     details: ProfileDetails | null

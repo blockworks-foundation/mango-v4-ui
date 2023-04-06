@@ -35,7 +35,7 @@ const MangoPerpStatsCharts = () => {
   // }, [perpMarkets])
 
   const totalFeeValues = useMemo(() => {
-    if (!perpStats.length) return []
+    if (!perpStats || !perpStats.length) return []
     const values = perpStats.reduce((a: FeeValueItem[], c: PerpStatsItem) => {
       const hasDate = a.find((d: FeeValueItem) => d.date === c.date_hour)
       if (!hasDate) {
@@ -52,7 +52,7 @@ const MangoPerpStatsCharts = () => {
   }, [perpStats])
 
   const totalOpenInterestValues = useMemo(() => {
-    if (!perpStats.length) return []
+    if (!perpStats || !perpStats.length) return []
     const values = perpStats.reduce((a: OiValueItem[], c: PerpStatsItem) => {
       const hasDate = a.find((d: OiValueItem) => d.date === c.date_hour)
       if (!hasDate) {
