@@ -44,7 +44,6 @@ const ProposalCard = ({
   const updateProposals = GovernanceStore((s) => s.updateProposals)
 
   const [voting, setVoting] = useState(false)
-
   const [voteRecordAddress, setVoteRecordAddress] = useState<PublicKey | null>(
     null
   )

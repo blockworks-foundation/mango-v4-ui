@@ -20,19 +20,23 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
 
   const voteThresholdPct =
     governance.account.config.communityVoteThreshold.value || 0
+
   const maxVoteWeight =
     realm &&
     getMintMaxVoteWeight(
       communityMint,
       realm.account.config.communityMintMaxVoteWeightSource
     )
+
   const minimumYesVotes =
     fmtTokenAmount(maxVoteWeight!, communityMint.decimals) *
     (voteThresholdPct / 100)
+
   const yesVoteCount = fmtTokenAmount(
     proposal.account.getYesVoteCount(),
     communityMint.decimals
   )
+
   const rawYesVotesRequired = minimumYesVotes - yesVoteCount
   const actualVotesRequired = rawYesVotesRequired < 0 ? 0 : rawYesVotesRequired
   const yesVoteProgress = actualVotesRequired

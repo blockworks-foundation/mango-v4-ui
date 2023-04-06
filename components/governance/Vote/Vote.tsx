@@ -19,6 +19,7 @@ const Vote = () => {
   const loadingProposals = GovernanceStore((s) => s.loadingProposals)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const loadingRealm = GovernanceStore((s) => s.loadingRealm)
+
   const [mangoMint, setMangoMint] = useState<MintInfo | null>(null)
   const [votingProposals, setVotingProposals] = useState<
     ProgramAccount<Proposal>[]
