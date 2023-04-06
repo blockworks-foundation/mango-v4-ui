@@ -1,4 +1,4 @@
-import VotePage from '@components/governance/vote/VotePage'
+import VotePage from '@components/governance/Vote/VotePage'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 
