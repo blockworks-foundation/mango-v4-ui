@@ -202,11 +202,15 @@ const PerpPositions = () => {
                             cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
                           }`}
                         >
-                          <FormatNumericValue value={cummulativePnl} isUsd />
+                          <FormatNumericValue
+                            value={cummulativePnl}
+                            isUsd
+                            decimals={2}
+                          />
                         </Td>
                         {!isUnownedAccount ? (
                           <Td>
-                            <div className="flex items-center justify-end space-x-2">
+                            <div className="flex items-center justify-end space-x-4">
                               <Button
                                 className="text-xs"
                                 secondary
@@ -217,7 +221,6 @@ const PerpPositions = () => {
                               </Button>
                               <IconButton
                                 hideBg
-                                size="medium"
                                 onClick={() =>
                                   handleShowShare(openPerpPositions[index])
                                 }
