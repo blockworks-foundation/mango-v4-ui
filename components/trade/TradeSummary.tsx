@@ -53,12 +53,12 @@ const TradeSummary = ({
             ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
                 group,
                 selectedMarket.perpMarketIndex,
-                parseFloat(tradeForm.baseSize)
+                parseFloat(tradeForm.baseSize) || 0
               )
             : mangoAccount.simHealthRatioWithPerpBidUiChanges(
                 group,
                 selectedMarket.perpMarketIndex,
-                parseFloat(tradeForm.baseSize)
+                parseFloat(tradeForm.baseSize) || 0
               )
       }
     } catch (e) {

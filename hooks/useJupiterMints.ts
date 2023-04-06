@@ -4,12 +4,10 @@ import { CLUSTER } from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { Token } from 'types/jupiter'
+import { JUPITER_API_DEVNET, JUPITER_API_MAINNET } from 'utils/constants'
 
 const fetchJupiterTokens = async (group: Group) => {
-  const url =
-    CLUSTER === 'devnet'
-      ? 'https://api.jup.ag/api/tokens/devnet'
-      : 'https://token.jup.ag/strict'
+  const url = CLUSTER === 'devnet' ? JUPITER_API_DEVNET : JUPITER_API_MAINNET
   const response = await fetch(url)
   const data: Token[] = await response.json()
 

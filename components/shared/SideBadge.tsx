@@ -6,13 +6,13 @@ type SideBadgeProps = {
 
 const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
   if (side !== 'buy' && side !== 'sell') {
-    return <div>Unknown</div>
+    return <span>Unknown</span>
   }
 
   const isBid = side === 'buy'
 
   return (
-    <div
+    <span
       className={`inline-block rounded uppercase ${
         isBid
           ? 'text-th-up md:border md:border-th-up'
@@ -21,7 +21,7 @@ const SideBadge: FunctionComponent<SideBadgeProps> = ({ side }) => {
        uppercase md:-my-0.5 md:px-1.5 md:py-0.5 md:text-xs`}
     >
       {isBid ? 'Buy' : 'Sell'}
-    </div>
+    </span>
   )
 }
 

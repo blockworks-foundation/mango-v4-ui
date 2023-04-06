@@ -81,7 +81,6 @@ const SwapHistoryTable = () => {
                 signature,
                 swap_in_amount,
                 swap_in_loan_origination_fee,
-                swap_in_price_usd,
                 swap_in_symbol,
                 swap_out_amount,
                 loan,
@@ -137,23 +136,15 @@ const SwapHistoryTable = () => {
                           src={baseLogoURI || ''}
                         />
                       </div>
-                      <div>
-                        <p className="whitespace-nowrap">
-                          <FormatNumericValue
-                            value={swap_in_amount}
-                            decimals={inDecimals}
-                          />{' '}
-                          <span className="font-body text-th-fgd-3">
-                            {inSymbol}
-                          </span>
-                        </p>
-                        <p className="text-xs text-th-fgd-3">
-                          <span className="font-body text-th-fgd-4">
-                            {t('price')}:
-                          </span>{' '}
-                          <FormatNumericValue value={swap_in_price_usd} isUsd />
-                        </p>
-                      </div>
+                      <p className="whitespace-nowrap">
+                        <FormatNumericValue
+                          value={swap_in_amount}
+                          decimals={inDecimals}
+                        />{' '}
+                        <span className="font-body text-th-fgd-3">
+                          {inSymbol}
+                        </span>
+                      </p>
                     </div>
                   </Td>
                   <Td>
@@ -166,24 +157,15 @@ const SwapHistoryTable = () => {
                           src={quoteLogoURI || ''}
                         />
                       </div>
-                      <div>
-                        <p className="whitespace-nowrap">
-                          <FormatNumericValue
-                            value={swap_out_amount}
-                            decimals={outDecimals}
-                          />{' '}
-                          <span className="font-body text-th-fgd-3">
-                            {outSymbol}
-                          </span>
-                        </p>
-                        <p className="text-xs text-th-fgd-4">
-                          <span className="font-body">{t('price')}:</span>{' '}
-                          <FormatNumericValue
-                            value={swap_out_price_usd}
-                            isUsd
-                          />
-                        </p>
-                      </div>
+                      <p className="whitespace-nowrap">
+                        <FormatNumericValue
+                          value={swap_out_amount}
+                          decimals={outDecimals}
+                        />{' '}
+                        <span className="font-body text-th-fgd-3">
+                          {outSymbol}
+                        </span>
+                      </p>
                     </div>
                   </Td>
                   <Td>
@@ -253,7 +235,6 @@ const SwapHistoryTable = () => {
               signature,
               swap_in_amount,
               swap_in_loan_origination_fee,
-              swap_in_price_usd,
               swap_in_symbol,
               swap_out_amount,
               loan,
@@ -341,28 +322,6 @@ const SwapHistoryTable = () => {
                             <p className="font-mono text-th-fgd-1">
                               <FormatNumericValue
                                 value={swap_out_price_usd * swap_out_amount}
-                                isUsd
-                              />
-                            </p>
-                          </div>
-                          <div className="col-span-1">
-                            <p className="text-xs text-th-fgd-3">
-                              {`${swap_in_symbol} ${t('price')}`}
-                            </p>
-                            <p className="font-mono text-th-fgd-1">
-                              <FormatNumericValue
-                                value={swap_in_price_usd}
-                                isUsd
-                              />
-                            </p>
-                          </div>
-                          <div className="col-span-1">
-                            <p className="text-xs text-th-fgd-3">
-                              {`${swap_out_symbol} ${t('price')}`}
-                            </p>
-                            <p className="font-mono text-th-fgd-1">
-                              <FormatNumericValue
-                                value={swap_out_price_usd}
                                 isUsd
                               />
                             </p>
