@@ -9,7 +9,12 @@ const socket = new WebSocket(`wss://api.mngo.cloud/fills/v1/`)
 
 // Connection opened
 socket.addEventListener('open', (_event) => {
-  console.log('[socket] Connected mngo')
+  console.log('[socket] Open mngo')
+})
+
+// Connection closed
+socket.addEventListener('close', (_event) => {
+  console.log('[socket] Closed by peer mngo')
 })
 
 // Listen for messages
@@ -69,23 +74,23 @@ export function subscribeOnStream(
     marketId: symbolInfo.address,
   }
   if (!isOpen(socket)) {
-    console.warn('Socket Closed')
+    console.warn('[socket] Closed mngo')
     return
   }
-  console.warn('[subscribeOnStream mngo]', subscriberUID)
+  console.warn('[subscribeOnStream]', subscriberUID)
   socket.send(JSON.stringify(msg))
 }
 
-export function unsubscribeFromStream(uid: string) {
+export function unsubscribeFromStream(subscriberUID: string) {
   const msg = {
     command: 'unsubscribe',
-    marketId: uid.split('_')[0],
+    marketId: subscriberUID.split('_')[0],
   }
   if (!isOpen(socket)) {
     console.warn('Socket Closed')
     return
   }
-  console.warn('[unsubscribeFromStream mngo]', uid)
+  console.warn('[unsubscribeFromStream]', subscriberUID)
   socket.send(JSON.stringify(msg))
 }
 
@@ -94,7 +99,7 @@ export function closeSocket() {
     console.warn('Socket Closed mngo')
     return
   }
-  console.warn('[closeSocket mngo]')
+  console.warn('[socket] Close mngo')
   socket.close()
 }
 

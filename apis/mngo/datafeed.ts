@@ -49,7 +49,6 @@ type SymbolInfo = LibrarySymbolInfo & {
 }
 
 const lastBarsCache = new Map()
-const subscriptionIdToMarketKey = new Map()
 
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
@@ -238,10 +237,7 @@ export default {
   },
 
   unsubscribeBars: (subscriberUID: any) => {
-    console.log(
-      '[unsubscribeBars]: Method call with subscriberUID:',
-      subscriberUID
-    )
+    console.log('[unsubscribeBars]', subscriberUID)
     unsubscribeFromStream(subscriberUID)
   },
   closeSocket: () => {
