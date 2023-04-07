@@ -9,7 +9,7 @@ export const API_URL = 'https://public-api.birdeye.so/'
 
 export const socketUrl = `wss://public-api.birdeye.so/socket?x-api-key=${NEXT_PUBLIC_BIRDEYE_API_KEY}`
 
-// Make requests to CryptoCompare API
+// Make requests to Birdeye API
 export async function makeApiRequest(path: string) {
   const response = await fetch(`${API_URL}${path}`, {
     headers: {

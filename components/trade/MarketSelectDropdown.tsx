@@ -1,8 +1,13 @@
 // import ChartRangeButtons from '@components/shared/ChartRangeButtons'
+import Change from '@components/shared/Change'
 import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
+import SheenLoader from '@components/shared/SheenLoader'
+import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
+import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
+import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
@@ -15,6 +20,11 @@ const MarketSelectDropdown = () => {
   const { selectedMarket } = useSelectedMarket()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const allPerpMarkets = mangoStore((s) => s.perpMarkets)
+  const perpStats = mangoStore((s) => s.perpStats.data)
+  const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
+  const { group } = useMangoGroup()
+  const { data: birdeyePrices, isLoading: loadingPrices } =
+    useBirdeyeMarketPrices()
   // const [spotBaseFilter, setSpotBaseFilter] = useState('All')
 
   const perpMarkets = useMemo(() => {
@@ -61,10 +71,17 @@ const MarketSelectDropdown = () => {
               } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute -left-4 top-12 z-40 mr-4 w-screen rounded-none bg-th-bkg-2 pb-4 pt-2 md:-left-6 md:w-72 md:rounded-br-md">
+          <Popover.Panel className="absolute -left-4 top-12 z-40 mr-4 w-screen rounded-none bg-th-bkg-2 pb-4 pt-2 md:-left-6 md:w-96 md:rounded-br-md">
             <p className="my-2 ml-4 text-xs md:ml-6">{t('perp')}</p>
             {perpMarkets?.length
               ? perpMarkets.map((m) => {
+                  const changeData = getOneDayPerpStats(perpStats, m.name)
+
+                  const change = changeData.length
+                    ? ((m.uiPrice - changeData[0].price) /
+                        changeData[0].price) *
+                      100
+                    : 0
                   return (
                     <div
                       className="flex items-center justify-between py-2 px-4 md:px-6"
@@ -93,7 +110,16 @@ const MarketSelectDropdown = () => {
                           </span>
                         </div>
                       </Link>
-                      <FavoriteMarketButton market={m} />
+                      <div className="flex items-center space-x-3">
+                        {!loadingPerpStats ? (
+                          <Change change={change} suffix="%" />
+                        ) : (
+                          <SheenLoader className="mt-0.5">
+                            <div className="h-3.5 w-12 bg-th-bkg-2" />
+                          </SheenLoader>
+                        )}
+                        <FavoriteMarketButton market={m} />
+                      </div>
                     </div>
                   )
                 })
@@ -105,6 +131,21 @@ const MarketSelectDropdown = () => {
                   .map((x) => x)
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((m) => {
+                    const birdeyeData = birdeyePrices?.length
+                      ? birdeyePrices.find(
+                          (market) =>
+                            market.mint === m.serumMarketExternal.toString()
+                        )
+                      : null
+                    const bank = group?.getFirstBankByTokenIndex(
+                      m.baseTokenIndex
+                    )
+                    const change =
+                      birdeyeData && bank
+                        ? ((bank.uiPrice - birdeyeData.data[0].value) /
+                            birdeyeData.data[0].value) *
+                          100
+                        : 0
                     return (
                       <div
                         className="flex items-center justify-between py-2 px-4 md:px-6"
@@ -133,7 +174,16 @@ const MarketSelectDropdown = () => {
                             </span>
                           </div>
                         </Link>
-                        <FavoriteMarketButton market={m} />
+                        <div className="flex items-center space-x-3">
+                          {!loadingPrices ? (
+                            <Change change={change} suffix="%" />
+                          ) : (
+                            <SheenLoader className="mt-0.5">
+                              <div className="h-3.5 w-12 bg-th-bkg-2" />
+                            </SheenLoader>
+                          )}
+                          <FavoriteMarketButton market={m} />
+                        </div>
                       </div>
                     )
                   })}
