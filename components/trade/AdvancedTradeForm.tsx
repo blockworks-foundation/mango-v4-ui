@@ -362,6 +362,8 @@ const AdvancedTradeForm = () => {
             : tradeForm.postOnly
             ? PerpOrderType.postOnly
             : PerpOrderType.limit
+        console.log('perpOrderType', perpOrderType)
+
         const tx = await client.perpPlaceOrder(
           group,
           mangoAccount,
@@ -580,7 +582,7 @@ const AdvancedTradeForm = () => {
                   content={t('trade:tooltip-post')}
                 >
                   <Checkbox
-                    checked={savedCheckboxSettings.post}
+                    checked={tradeForm.postOnly}
                     onChange={(e) => handlePostOnlyChange(e.target.checked)}
                   >
                     {t('trade:post')}
@@ -596,7 +598,7 @@ const AdvancedTradeForm = () => {
                 >
                   <div className="flex items-center text-xs text-th-fgd-3">
                     <Checkbox
-                      checked={savedCheckboxSettings.ioc}
+                      checked={tradeForm.ioc}
                       onChange={(e) => handleIocChange(e.target.checked)}
                     >
                       IOC
