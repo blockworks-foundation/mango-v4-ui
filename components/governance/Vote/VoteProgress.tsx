@@ -38,16 +38,14 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
   )
 
   const rawYesVotesRequired = minimumYesVotes - yesVoteCount
-  const actualVotesRequired = rawYesVotesRequired < 0 ? 0 : rawYesVotesRequired
-  const yesVoteProgress = actualVotesRequired
-    ? 100 - (actualVotesRequired / minimumYesVotes) * 100
+  const votesRequiredInRange = rawYesVotesRequired < 0 ? 0 : rawYesVotesRequired
+  const yesVoteProgress = votesRequiredInRange
+    ? 100 - (votesRequiredInRange / minimumYesVotes) * 100
     : 100
   const yesVotesRequired =
     communityMint.decimals == 0
-      ? Math.ceil(actualVotesRequired)
-      : actualVotesRequired
-  const progress = yesVoteProgress
-  const votesRequired = yesVotesRequired
+      ? Math.ceil(votesRequiredInRange)
+      : votesRequiredInRange
 
   return (
     <div className="w-full rounded-md">
@@ -61,13 +59,13 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
               <InformationCircleIcon className="text-fgd-2 h-5 w-5 cursor-help" />
             </Tooltip>
           </div>
-          {typeof progress !== 'undefined' && progress < 100 ? (
+          {typeof yesVoteProgress !== 'undefined' && yesVoteProgress < 100 ? (
             <p className="text-fgd-1 mb-0 font-bold">{`${(
-              votesRequired ?? 0
+              yesVotesRequired ?? 0
             ).toLocaleString(undefined, {
               maximumFractionDigits: 0,
-            })} ${(progress ?? 0) > 0 ? 'more' : ''} Yes vote${
-              (votesRequired ?? 0) > 1 ? 's' : ''
+            })} ${(yesVoteProgress ?? 0) > 0 ? 'more' : ''} Yes vote${
+              (yesVotesRequired ?? 0) > 1 ? 's' : ''
             } required`}</p>
           ) : (
             <div className="flex items-center">
@@ -82,10 +80,10 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
       <div className="mt-2.5 flex h-2 w-full flex-grow rounded bg-th-bkg-4">
         <div
           style={{
-            width: `${progress}%`,
+            width: `${yesVoteProgress}%`,
           }}
           className={`${
-            (progress ?? 0) >= 100 ? 'bg-th-up' : 'bg-th-fgd-2'
+            (yesVoteProgress ?? 0) >= 100 ? 'bg-th-up' : 'bg-th-fgd-2'
           } flex rounded`}
         ></div>
       </div>

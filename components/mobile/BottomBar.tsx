@@ -137,11 +137,6 @@ const MoreMenuPanel = ({
           icon={<LeaderboardIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
-          title={t('leaderboard')}
-          path="/leaderboard"
-          icon={<LeaderboardIcon className="h-5 w-5" />}
-        />
-        <MoreMenuItem
           title={t('search:search-accounts')}
           path="/search"
           icon={<MagnifyingGlassIcon className="h-5 w-5" />}
@@ -149,6 +144,11 @@ const MoreMenuPanel = ({
         <MoreMenuItem
           title={t('common:list-token')}
           path="/governance/listToken"
+          icon={<PlusCircleIcon className="h-5 w-5" />}
+        />
+        <MoreMenuItem
+          title={t('common:vote')}
+          path="/governance/vote"
           icon={<PlusCircleIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
