@@ -11,8 +11,10 @@ import OnBoarding from '../OnBoarding'
 import { BN } from '@project-serum/anchor'
 import ProposalCard from './ProposalCard'
 import Loading from '@components/shared/Loading'
+import { useTranslation } from 'next-i18next'
 
 const Vote = () => {
+  const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
   const governances = GovernanceStore((s) => s.governances)
   const proposals = GovernanceStore((s) => s.proposals)
@@ -59,7 +61,7 @@ const Vote = () => {
         <Loading className="w-5"></Loading>
       ) : (
         <div>
-          <h1 className="mb-4">Current Proposals</h1>
+          <h1 className="mb-4">{t('current-proposals')}</h1>
           {!loadingVoter && (
             <OnBoarding minVotes={new BN(1000000)}></OnBoarding>
           )}

@@ -54,5 +54,15 @@
     "market-name": "Market Name",
     "proposal-title": "Proposal Title",
     "proposal-des": "Proposal Description",
-    "error-proposal-creation": "Error on proposal creation or no confirmation of transactions"
+    "error-proposal-creation": "Error on proposal creation or no confirmation of transactions",
+    "vote-yes": "Vote Yes",
+    "vote-no": "Vote No",
+    "relinquish-vote": "Relinquish Vote",
+    "current-poposals": "Current Proposals",
+    "voting-ended": "Voting ended",
+    "ends": "Ends",
+    "approval-q": "Approval Quorum",
+    "required-approval-achieved": "Required approval achieved",
+    "no-votes": "No Votes",
+    "yes-votes": "Yes Votes"
 }

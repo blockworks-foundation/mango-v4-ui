@@ -6,6 +6,7 @@ import {
 import { Governance, ProgramAccount, Proposal } from '@solana/spl-governance'
 import { MintInfo } from '@solana/spl-token'
 import GovernanceStore from '@store/governanceStore'
+import { useTranslation } from 'next-i18next'
 import { getMintMaxVoteWeight } from 'utils/governance/proposals'
 import { fmtTokenAmount } from 'utils/governance/tools'
 
@@ -16,6 +17,8 @@ type Props = {
 }
 
 const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
+  const { t } = useTranslation(['governance'])
+
   const realm = GovernanceStore((s) => s.realm)
 
   const voteThresholdPct =
@@ -52,7 +55,7 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
       <div className="flex items-center">
         <div className="w-full">
           <div className="flex items-center">
-            <p className="text-fgd-2 mb-0 mr-1.5">Approval Quorum</p>
+            <p className="text-fgd-2 mb-0 mr-1.5">{t('approval-q')}</p>
             <Tooltip
               content={`Proposals must reach a minimum number of 'Yes' votes before they are eligible to pass. If the minimum is reached but there are more 'No' votes when voting ends the proposal will fail.`}
             >
@@ -71,7 +74,7 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
             <div className="flex items-center">
               <CheckCircleIcon className="text-green mr-1.5 h-5 w-5 flex-shrink-0" />
               <p className="text-fgd-1 mb-0 font-bold">
-                Required approval achieved
+                {t('required-approval-achieved')}
               </p>
             </div>
           )}

@@ -27,6 +27,7 @@ import { relinquishVote } from 'utils/governance/instructions/relinquishVote'
 import { PublicKey } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
 import Loading from '@components/shared/Loading'
+import { useTranslation } from 'next-i18next'
 
 enum PROCESSED_VOTE_TYPE {
   APPROVE,
@@ -41,6 +42,7 @@ const ProposalCard = ({
   proposal: ProgramAccount<Proposal>
   mangoMint: MintInfo
 }) => {
+  const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
   const governances = GovernanceStore((s) => s.governances)
@@ -180,7 +182,7 @@ const ProposalCard = ({
                 {processedVoteType === PROCESSED_VOTE_TYPE.APPROVE ? (
                   <Loading className="w-3"></Loading>
                 ) : (
-                  'Vote Yes'
+                  t('vote-yes')
                 )}
               </div>
             </Button>
@@ -195,7 +197,7 @@ const ProposalCard = ({
                 {processedVoteType === PROCESSED_VOTE_TYPE.DENY ? (
                   <Loading className="w-3"></Loading>
                 ) : (
-                  'Vote No'
+                  t('vote-no')
                 )}
               </div>
             </Button>
@@ -209,7 +211,7 @@ const ProposalCard = ({
             {processedVoteType === PROCESSED_VOTE_TYPE.RELINQUISH ? (
               <Loading className="w-3"></Loading>
             ) : (
-              'Relinquish Vote'
+              t('relinquish-vote')
             )}
           </Button>
         )}

@@ -2,6 +2,7 @@ import { Proposal } from '@solana/spl-governance'
 import VoteResultsBar from './VoteResultBar'
 import { fmtTokenAmount } from 'utils/governance/tools'
 import { MintInfo } from '@solana/spl-token'
+import { useTranslation } from 'next-i18next'
 
 type VoteResultsProps = {
   proposal: Proposal
@@ -9,6 +10,8 @@ type VoteResultsProps = {
 }
 
 const VoteResults = ({ proposal, communityMint }: VoteResultsProps) => {
+  const { t } = useTranslation(['governance'])
+
   const yesVoteCount = fmtTokenAmount(
     proposal.getYesVoteCount(),
     communityMint.decimals
@@ -29,7 +32,7 @@ const VoteResults = ({ proposal, communityMint }: VoteResultsProps) => {
         <div className={`w-full rounded-md`}>
           <div className="flex">
             <div className="w-1/2">
-              <p>Yes Votes</p>
+              <p>{t('yes-votes')}</p>
               <p className={`hero-text font-bold text-th-fgd-1`}>
                 {(yesVoteCount ?? 0).toLocaleString()}
                 <span className="ml-1 text-xs font-normal text-th-fgd-3">
@@ -38,7 +41,7 @@ const VoteResults = ({ proposal, communityMint }: VoteResultsProps) => {
               </p>
             </div>
             <div className="w-1/2 text-right">
-              <p>No Votes</p>
+              <p>{t('no-votes')}</p>
               <p className={`hero-text font-bold text-th-fgd-1`}>
                 {(noVoteCount ?? 0).toLocaleString()}
                 <span className="ml-1 text-xs font-normal text-th-fgd-3">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Governance, Proposal } from '@solana/spl-governance'
 import dayjs from 'dayjs'
+import { useTranslation } from 'next-i18next'
 
 interface CountdownState {
   days: number
@@ -29,6 +30,8 @@ export function VoteCountdown({
   proposal: Proposal
   governance: Governance
 }) {
+  const { t } = useTranslation(['governance'])
+
   const [countdown, setCountdown] = useState(ZeroCountdown)
 
   useEffect(() => {
@@ -80,10 +83,10 @@ export function VoteCountdown({
   return (
     <>
       {isZeroCountdown(countdown) ? (
-        <div className="text-fgd-3">Voting ended</div>
+        <div className="text-fgd-3">{t('voting-ended')}</div>
       ) : (
         <div className="text-fgd-1 flex w-40 items-center">
-          <div className="text-fgd-3 mr-1">Ends</div>
+          <div className="text-fgd-3 mr-1">{t('ends')}</div>
           {countdown && countdown.days > 0 && (
             <>
               <div className="bg-bkg-1 rounded px-1 py-0.5">
