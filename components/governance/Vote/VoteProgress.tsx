@@ -56,9 +56,7 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
         <div className="w-full">
           <div className="flex items-center">
             <p className="text-fgd-2 mb-0 mr-1.5">{t('approval-q')}</p>
-            <Tooltip
-              content={`Proposals must reach a minimum number of 'Yes' votes before they are eligible to pass. If the minimum is reached but there are more 'No' votes when voting ends the proposal will fail.`}
-            >
+            <Tooltip content={t('quorum-description')}>
               <InformationCircleIcon className="text-fgd-2 h-5 w-5 cursor-help" />
             </Tooltip>
           </div>

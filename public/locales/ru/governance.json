@@ -64,5 +64,7 @@
     "approval-q": "Approval Quorum",
     "required-approval-achieved": "Required approval achieved",
     "no-votes": "No Votes",
-    "yes-votes": "Yes Votes"
+    "yes-votes": "Yes Votes",
+    "current-proposals": "Current Proposals",
+    "quorum-description": "Proposals must reach a minimum number of 'Yes' votes before they are eligible to pass. If the minimum is reached but there are more 'No' votes when voting ends the proposal will fail."
 }
