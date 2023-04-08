@@ -7,11 +7,13 @@ import { MintInfo } from '@solana/spl-token'
 import { MANGO_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import { tryGetMint } from 'utils/governance/tools'
-import OnBoarding from '../OnBoarding'
 import { BN } from '@project-serum/anchor'
-import ProposalCard from './ProposalCard'
 import Loading from '@components/shared/Loading'
 import { useTranslation } from 'next-i18next'
+import dynamic from 'next/dynamic'
+
+const ProposalCard = dynamic(() => import('./ProposalCard'))
+const OnBoarding = dynamic(() => import('../OnBoarding'))
 
 const Vote = () => {
   const { t } = useTranslation(['governance'])

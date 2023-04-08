@@ -1,6 +1,8 @@
-import VotePage from '@components/governance/Vote/VotePage'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
+import dynamic from 'next/dynamic'
+
+const VotePage = dynamic(() => import('@components/governance/Vote/VotePage'))
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
