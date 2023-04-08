@@ -42,7 +42,7 @@ const ProposalCard = ({
   proposal: ProgramAccount<Proposal>
   mangoMint: MintInfo
 }) => {
-  const { t } = useTranslation(['governance'])
+  const { t } = useTranslation('governance')
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
   const governances = GovernanceStore((s) => s.governances)
@@ -54,6 +54,8 @@ const ProposalCard = ({
   const [processedVoteType, setProcessedVoteType] = useState<
     PROCESSED_VOTE_TYPE | ''
   >('')
+  const [voteType, setVoteType] = useState<VoteKind | undefined>(undefined)
+
   const [voteRecordAddress, setVoteRecordAddress] = useState<PublicKey | null>(
     null
   )
@@ -138,6 +140,17 @@ const ProposalCard = ({
         voter.tokenOwnerRecord!.pubkey!
       )
       setVoteRecordAddress(voteRecordAddress)
+      try {
+        const governanceAccount = await getGovernanceAccount(
+          connection,
+          voteRecordAddress,
+          VoteRecord
+        )
+        setIsVoteCast(true)
+        setVoteType(governanceAccount.account.vote?.voteType)
+      } catch (e) {
+        setIsVoteCast(false)
+      }
     }
     if (voter.tokenOwnerRecord?.pubkey.toBase58()) {
       handleGetVoteRecordAddress()
@@ -177,10 +190,10 @@ const ProposalCard = ({
               disabled={!canVote || processedVoteType !== ''}
               secondary
             >
-              <div className="flex flex-row items-center justify-center">
+              <div className="flex items-center justify-center">
                 <HandThumbUpIcon className="mr-2 h-4 w-4" />
                 {processedVoteType === PROCESSED_VOTE_TYPE.APPROVE ? (
-                  <Loading className="w-3"></Loading>
+                  <Loading className="w-4"></Loading>
                 ) : (
                   t('vote-yes')
                 )}
@@ -192,10 +205,10 @@ const ProposalCard = ({
               disabled={!canVote || processedVoteType !== ''}
               secondary
             >
-              <div className="flex flex-row items-center justify-center">
+              <div className="flex items-center justify-center">
                 <HandThumbDownIcon className="mr-2 h-4 w-4" />
                 {processedVoteType === PROCESSED_VOTE_TYPE.DENY ? (
-                  <Loading className="w-3"></Loading>
+                  <Loading className="w-4"></Loading>
                 ) : (
                   t('vote-no')
                 )}
@@ -203,17 +216,38 @@ const ProposalCard = ({
             </Button>
           </div>
         ) : (
-          <Button
-            disabled={processedVoteType !== ''}
-            secondary
-            onClick={() => submitRelinquishVote()}
-          >
-            {processedVoteType === PROCESSED_VOTE_TYPE.RELINQUISH ? (
-              <Loading className="w-3"></Loading>
-            ) : (
-              t('relinquish-vote')
-            )}
-          </Button>
+          <div className="flex flex-wrap items-center">
+            <Button
+              className="mr-4 flex w-40 items-center justify-center"
+              disabled={processedVoteType !== ''}
+              secondary
+              onClick={() => submitRelinquishVote()}
+            >
+              {processedVoteType === PROCESSED_VOTE_TYPE.RELINQUISH ? (
+                <Loading className="w-4"></Loading>
+              ) : (
+                t('relinquish-vote')
+              )}
+            </Button>
+            {voteType !== undefined ? (
+              <div className="my-2 flex">
+                <p className="mr-2">{t('current-vote')}</p>
+                <span className="font-bold text-th-fgd-2">
+                  {voteType === VoteKind.Approve ? (
+                    <span className="flex items-center">
+                      <HandThumbUpIcon className="mr-1.5 h-3 w-3" />
+                      {t('yes')}
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      <HandThumbDownIcon className="mr-1.5 h-3 w-3" />
+                      {t('no')}
+                    </span>
+                  )}
+                </span>
+              </div>
+            ) : null}
+          </div>
         )}
       </div>
       {mangoMint && (
