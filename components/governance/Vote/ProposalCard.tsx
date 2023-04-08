@@ -117,12 +117,11 @@ const ProposalCard = ({
       setIsVoteCast(false)
       try {
         await getGovernanceAccount(connection, voteRecordAddress!, VoteRecord)
-        console.log('@@@@@')
         setIsVoteCast(true)
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
-    if (voteRecordAddress) {
+    if (voteRecordAddress?.toBase58()) {
       handleGetVoteRecord()
     } else {
       setIsVoteCast(false)
@@ -138,12 +137,12 @@ const ProposalCard = ({
       )
       setVoteRecordAddress(voteRecordAddress)
     }
-    if (wallet.publicKey?.toBase58()) {
+    if (voter.tokenOwnerRecord?.pubkey.toBase58()) {
       handleGetVoteRecordAddress()
     } else {
       setVoteRecordAddress(null)
     }
-  }, [proposal.pubkey.toBase58(), wallet.publicKey?.toBase58()])
+  }, [proposal.pubkey.toBase58(), voter.tokenOwnerRecord?.pubkey.toBase58()])
 
   return governance ? (
     <div

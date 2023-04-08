@@ -42,17 +42,17 @@ type IGovernanceStore = {
   loadingProposals: boolean
   voter: {
     voteWeight: BN
-    wallet: PublicKey
     tokenOwnerRecord: ProgramAccount<TokenOwnerRecord> | undefined | null
   }
   set: (x: (x: IGovernanceStore) => void) => void
   initConnection: (connection: Connection) => void
   initRealm: (connectionContext: ConnectionContext) => void
-  fetchVoterWeight: (
+  fetchVoter: (
     wallet: PublicKey,
     vsrClient: VsrClient,
     connectionContext: ConnectionContext
   ) => void
+  resetVoter: () => void
   updateProposals: (proposalPk: PublicKey) => void
 }
 
@@ -67,11 +67,10 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
   loadingProposals: false,
   voter: {
     voteWeight: new BN(0),
-    wallet: PublicKey.default,
     tokenOwnerRecord: null,
   },
   set: (fn) => set(produce(fn)),
-  fetchVoterWeight: async (
+  fetchVoter: async (
     wallet: PublicKey,
     vsrClient: VsrClient,
     connectionContext: ConnectionContext
@@ -104,9 +103,15 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     })
     set((state) => {
       state.voter.voteWeight = votingPower
-      state.voter.wallet = wallet
       state.voter.tokenOwnerRecord = tokenOwnerRecord
       state.loadingVoter = false
+    })
+  },
+  resetVoter: () => {
+    const set = get().set
+    set((state) => {
+      state.voter.voteWeight = new BN(0)
+      state.voter.tokenOwnerRecord = null
     })
   },
   initConnection: async (connection) => {
