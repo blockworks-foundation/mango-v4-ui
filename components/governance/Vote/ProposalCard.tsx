@@ -115,30 +115,35 @@ const ProposalCard = ({
   useEffect(() => {
     const handleGetVoteRecord = async () => {
       setIsVoteCast(false)
+      try {
+        await getGovernanceAccount(connection, voteRecordAddress!, VoteRecord)
+        console.log('@@@@@')
+        setIsVoteCast(true)
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+    }
+    if (voteRecordAddress) {
+      handleGetVoteRecord()
+    } else {
+      setIsVoteCast(false)
+    }
+  }, [voteRecordAddress, proposal.pubkey.toBase58()])
+
+  useEffect(() => {
+    const handleGetVoteRecordAddress = async () => {
       const voteRecordAddress = await getVoteRecordAddress(
         MANGO_GOVERNANCE_PROGRAM,
         proposal.pubkey,
         voter.tokenOwnerRecord!.pubkey!
       )
       setVoteRecordAddress(voteRecordAddress)
-      try {
-        await getGovernanceAccount(connection, voteRecordAddress, VoteRecord)
-        setIsVoteCast(true)
-      } catch (e) {
-        setIsVoteCast(false)
-      }
     }
-    if (voter.tokenOwnerRecord?.pubkey.toBase58()) {
-      handleGetVoteRecord()
+    if (wallet.publicKey?.toBase58()) {
+      handleGetVoteRecordAddress()
     } else {
       setVoteRecordAddress(null)
-      setIsVoteCast(false)
     }
-  }, [
-    voter.tokenOwnerRecord?.pubkey.toBase58(),
-    proposal.pubkey.toBase58(),
-    wallet.publicKey?.toBase58(),
-  ])
+  }, [proposal.pubkey.toBase58(), wallet.publicKey?.toBase58()])
 
   return governance ? (
     <div
