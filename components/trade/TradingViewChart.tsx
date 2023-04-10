@@ -7,6 +7,7 @@ import {
   ResolutionString,
   IOrderLineAdapter,
   EntityId,
+  AvailableSaveloadVersions,
   IExecutionLineAdapter,
   Direction,
 } from '@public/charting_library'
@@ -16,6 +17,7 @@ import {
   DEFAULT_MARKET_NAME,
   SHOW_ORDER_LINES_KEY,
   SHOW_STABLE_PRICE_KEY,
+  TV_USER_ID_KEY,
 } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
@@ -93,6 +95,7 @@ const TradingViewChart = () => {
   const [showStablePrice, toggleShowStablePrice] = useState(
     showStablePriceLocalStorage
   )
+  const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
   const stablePrice = useStablePrice()
   const stablePriceLine = mangoStore((s) => s.tradingView.stablePriceLine)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
@@ -105,6 +108,10 @@ const TradingViewChart = () => {
       theme: 'Dark',
       container: 'tv_chart_container',
       libraryPath: '/charting_library/',
+      chartsStorageUrl: 'https://tv-backend-v4.herokuapp.com',
+      chartsStorageApiVersion: '1.1' as AvailableSaveloadVersions,
+      clientId: 'mango.markets',
+      userId: '',
       fullscreen: false,
       autosize: true,
       studiesOverrides: {
@@ -741,7 +748,10 @@ const TradingViewChart = () => {
           defaultProps.container as ChartingLibraryWidgetOptions['container'],
         library_path: defaultProps.libraryPath as string,
         locale: 'en',
-        enabled_features: ['hide_left_toolbar_by_default'],
+        enabled_features: [
+          'hide_left_toolbar_by_default',
+          // userId ? 'study_templates' : '',
+        ],
         disabled_features: [
           'use_localstorage_for_settings',
           'timeframes_toolbar',
@@ -755,7 +765,7 @@ const TradingViewChart = () => {
           'header_screenshot',
           // 'header_widget_dom_node',
           // 'header_widget',
-          'header_saveload',
+          !userId ? 'header_saveload' : '',
           'header_undo_redo',
           'header_interval_dialog_button',
           'show_interval_dialog_on_key_press',
@@ -774,6 +784,10 @@ const TradingViewChart = () => {
             }
           },
         },
+        charts_storage_url: defaultProps.chartsStorageUrl,
+        charts_storage_api_version: defaultProps.chartsStorageApiVersion,
+        client_id: defaultProps.clientId,
+        user_id: userId ? userId : defaultProps.userId,
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,
@@ -801,7 +815,7 @@ const TradingViewChart = () => {
         setHeaderReady(true)
       })
     }
-  }, [theme, defaultProps, isMobile])
+  }, [theme, defaultProps, isMobile, userId])
 
   // draw custom buttons when chart is ready
   useEffect(() => {

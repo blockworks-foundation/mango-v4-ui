@@ -277,7 +277,6 @@ export default {
           periodParams
         )
       }
-
       if (!bars || bars.length === 0) {
         // "noData" should be set if there is no data in the requested period.
         onHistoryCallback([], {
