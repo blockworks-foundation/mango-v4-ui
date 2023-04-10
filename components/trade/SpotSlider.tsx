@@ -13,6 +13,7 @@ export const useSpotMarketMax = (
   side: string,
   useMargin: boolean
 ) => {
+  const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const max = useMemo(() => {
     const group = mangoStore.getState().group
     if (!mangoAccount || !group || !selectedMarket) return 100
@@ -26,21 +27,27 @@ export const useSpotMarketMax = (
           group,
           selectedMarket.serumMarketExternal
         )
-        spotMax = mangoAccount.getTokenBalanceUi(
-          group.getFirstBankByTokenIndex(selectedMarket.quoteTokenIndex)
+        const bank = group.getFirstBankByTokenIndex(
+          selectedMarket.quoteTokenIndex
         )
+        const balance = mangoAccount.getTokenBalanceUi(bank)
+        const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+        spotMax = balance + unsettled
       } else {
         leverageMax = mangoAccount.getMaxBaseForSerum3AskUi(
           group,
           selectedMarket.serumMarketExternal
         )
-        spotMax = mangoAccount.getTokenBalanceUi(
-          group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+        const bank = group.getFirstBankByTokenIndex(
+          selectedMarket.baseTokenIndex
         )
+        const balance = mangoAccount.getTokenBalanceUi(bank)
+        const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+        spotMax = balance + unsettled
       }
       return useMargin ? leverageMax : Math.max(spotMax, 0)
     } catch (e) {
-      console.error('Error calculating max leverage: spot btn group: ', e)
+      console.error('Error calculating max size: ', e)
       return 0
     }
   }, [side, selectedMarket, mangoAccount, useMargin])
