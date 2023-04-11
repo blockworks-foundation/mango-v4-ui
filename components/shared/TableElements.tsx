@@ -56,7 +56,7 @@ export const Td = ({
   children: ReactNode
   className?: string
 }) => (
-  <td className={`px-2 py-3 first:pl-6 last:pr-6 xl:px-4 ${className}`}>
+  <td className={`px-2 py-3 md:first:pl-6 md:last:pr-6 xl:px-4 ${className}`}>
     {children}
   </td>
 )

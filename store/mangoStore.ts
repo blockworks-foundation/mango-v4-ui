@@ -57,6 +57,8 @@ import {
   NFT,
   TourSettings,
   ProfileDetails,
+  isSpotTradeFeedItem,
+  isPerpTradeFeedItem,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -66,6 +68,7 @@ import {
   EntityId,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
+import Decimal from 'decimal.js'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -474,10 +477,103 @@ const mangoStore = create<MangoStore>()(
 
               const latestFeed = entries
                 .map(([key, value]) => {
-                  return { ...value, symbol: key }
+                  return { ...value }
                 })
+                .reduce((a: ActivityFeed[], c: ActivityFeed) => {
+                  // merge trades with the same signature
+                  if (isSpotTradeFeedItem(c)) {
+                    const found = a.find(
+                      (item: ActivityFeed) =>
+                        isSpotTradeFeedItem(item) &&
+                        item.activity_details.signature ===
+                          c.activity_details.signature
+                    )
+                    if (found && isSpotTradeFeedItem(found)) {
+                      const foundPrice = new Decimal(
+                        found.activity_details.size
+                      )
+                      const currentPrice = new Decimal(c.activity_details.size)
+                      const newPrice = foundPrice
+                        .plus(currentPrice)
+                        .div(2)
+                        .toNumber()
+                      const foundSize = new Decimal(found.activity_details.size)
+                      const currentSize = new Decimal(c.activity_details.size)
+                      const newSize = foundSize.plus(currentSize).toNumber()
+                      const foundFeeCost = new Decimal(
+                        found.activity_details.size
+                      )
+                      const currentFeeCost = new Decimal(
+                        c.activity_details.size
+                      )
+                      const newFeeCost = foundFeeCost
+                        .plus(currentFeeCost)
+                        .toNumber()
+                      const foundRebate = new Decimal(
+                        found.activity_details.size
+                      )
+                      const currentRebate = new Decimal(c.activity_details.size)
+                      const newRebate = foundRebate
+                        .plus(currentRebate)
+                        .toNumber()
+                      found.activity_details.price = newPrice
+                      found.activity_details.size = newSize
+                      found.activity_details.fee_cost = newFeeCost
+                      found.activity_details.referrer_rebate = newRebate
+                      found.activity_details.fills = [
+                        ...found.activity_details.fills,
+                        c.activity_details,
+                      ]
+                    } else {
+                      c.activity_details.fills = [{ ...c.activity_details }]
+                      a.push(c)
+                    }
+                  } else if (isPerpTradeFeedItem(c)) {
+                    const mangoAccountAddress =
+                      get().mangoAccount.current?.publicKey.toString()
+                    const found = a.find(
+                      (item: ActivityFeed) =>
+                        isPerpTradeFeedItem(item) &&
+                        item.activity_details.signature ===
+                          c.activity_details.signature
+                    )
+                    if (found && isPerpTradeFeedItem(found)) {
+                      const foundQuantity = new Decimal(
+                        found.activity_details.quantity
+                      )
+                      const currentQuantity = new Decimal(
+                        c.activity_details.quantity
+                      )
+                      const newQuantity = foundQuantity
+                        .plus(currentQuantity)
+                        .toNumber()
+                      const foundPrice = new Decimal(
+                        found.activity_details.price
+                      )
+                      const currentPrice = new Decimal(c.activity_details.price)
+                      const newPrice = foundPrice
+                        .plus(currentPrice)
+                        .div(2)
+                        .toNumber()
+                      const isTaker =
+                        found.activity_details.taker === mangoAccountAddress
+                      found.activity_details.price = newPrice
+                      found.activity_details.quantity = newQuantity
+                      found.activity_details.fills = [
+                        ...found.activity_details.fills,
+                        c.activity_details,
+                      ]
+                    } else {
+                      c.activity_details.fills = [{ ...c.activity_details }]
+                      a.push(c)
+                    }
+                  } else {
+                    a.push(c)
+                  }
+                  return a
+                }, [])
                 .sort(
-                  (a, b) =>
+                  (a: ActivityFeed, b: ActivityFeed) =>
                     dayjs(b.block_datetime).unix() -
                     dayjs(a.block_datetime).unix()
                 )

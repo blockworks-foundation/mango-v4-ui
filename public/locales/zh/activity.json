@@ -12,6 +12,7 @@
     "deposit": "Deposit",
     "deposits": "Deposits",
     "execution-price": "Execution Price",
+    "fills": "{{market}} Fills",
     "filter-results": "Filter",
     "liquidate_perp_base_position_or_positive_pnl": "Perp Liquidation",
     "liquidate_token_with_token": "Spot Liquidation",

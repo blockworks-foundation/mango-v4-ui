@@ -34,6 +34,7 @@ export interface SpotTradeHistory {
   open_orders_owner: string
   base_symbol: string
   quote_symbol: string
+  fills: SpotTradeHistory[]
 }
 
 export interface PerpTradeHistory {
@@ -150,6 +151,7 @@ export interface PerpTradeFeedItem {
   taker_fee: number
   taker_order_id: string | null
   taker_side: string
+  fills: PerpTradeFeedItem[]
 }
 
 export interface SpotLiquidationFeedItem {
@@ -190,14 +192,18 @@ export interface LiquidationActivity {
   activity_details: SpotOrPerpLiquidationItem
   block_datetime: string
   activity_type: string
-  symbol: string
 }
 
 export interface PerpTradeActivity {
   activity_details: PerpTradeFeedItem
   block_datetime: string
   activity_type: string
-  symbol: string
+}
+
+export interface SpotTradeActivity {
+  activity_details: SpotTradeHistory
+  block_datetime: string
+  activity_type: string
 }
 
 export function isLiquidationFeedItem(
@@ -213,6 +219,15 @@ export function isPerpTradeFeedItem(
   item: ActivityFeed
 ): item is PerpTradeActivity {
   if (item.activity_type === 'perp_trade') {
+    return true
+  }
+  return false
+}
+
+export function isSpotTradeFeedItem(
+  item: ActivityFeed
+): item is SpotTradeActivity {
+  if (item.activity_type === 'openbook_trade') {
     return true
   }
   return false
@@ -264,7 +279,6 @@ export interface PerpStatsItem {
 export type ActivityFeed = {
   activity_type: string
   block_datetime: string
-  symbol: string
   activity_details:
     | DepositWithdrawFeedItem
     | SpotLiquidationFeedItem

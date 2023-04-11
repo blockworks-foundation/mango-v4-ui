@@ -5,6 +5,7 @@ type ModalProps = {
   children: React.ReactNode
   disableOutsideClose?: boolean
   fullScreen?: boolean
+  wide?: boolean
   isOpen: boolean
   onClose: () => void
   hideClose?: boolean
@@ -13,7 +14,8 @@ type ModalProps = {
 function Modal({
   children,
   disableOutsideClose = false,
-  fullScreen = false,
+  fullScreen,
+  wide,
   isOpen,
   onClose,
   hideClose,
@@ -44,7 +46,9 @@ function Modal({
           className={`h-full w-full bg-th-bkg-1 ${
             fullScreen
               ? ''
-              : 'p-4 pt-6 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
+              : `p-4 pt-6 sm:h-auto ${
+                  wide ? 'sm:max-w-xl' : 'sm:max-w-md'
+                } sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6`
           } relative `}
         >
           {!hideClose ? (
