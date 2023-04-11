@@ -30,6 +30,8 @@ const LeverageSlider = ({
   useEffect(() => {
     if (amount) {
       setValue(amount)
+    } else {
+      setValue(0)
     }
   }, [amount])
 

@@ -43,7 +43,7 @@ import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { getDecimalCount } from 'utils/numbers'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
 import useIpAddress from 'hooks/useIpAddress'
 import ButtonGroup from '@components/forms/ButtonGroup'
@@ -215,18 +215,69 @@ const AdvancedTradeForm = () => {
 
   const handleSetMargin = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      if (!e.target.checked) {
-        set((s) => {
-          s.tradeForm.quoteSize = ''
-          s.tradeForm.baseSize = ''
-        })
-      }
       setSavedCheckboxSettings({
         ...savedCheckboxSettings,
         margin: e.target.checked,
       })
+
+      const { group } = mangoStore.getState()
+      const { tradeType, side, price, baseSize, quoteSize } = tradeForm
+      const tradePrice = tradeType === 'Market' ? oraclePrice : price
+
+      if (
+        !group ||
+        !mangoAccount ||
+        !tradePrice ||
+        !(selectedMarket instanceof Serum3Market)
+      ) {
+        return
+      }
+
+      const isBuySide = side === 'buy'
+      const tokenIndex =
+        selectedMarket[isBuySide ? 'quoteTokenIndex' : 'baseTokenIndex']
+      const balance = mangoAccount.getTokenBalanceUi(
+        group.getFirstBankByTokenIndex(tokenIndex)
+      )
+      const max = Math.max(balance, 0)
+
+      const sizeToCompare = isBuySide ? quoteSize : baseSize
+      const isSizeTooLarge = parseFloat(sizeToCompare) > max
+
+      set((s) => {
+        if (max <= 0) {
+          s.tradeForm.baseSize = ''
+          s.tradeForm.quoteSize = ''
+          return
+        }
+        if (isSizeTooLarge) {
+          if (isBuySide) {
+            s.tradeForm.quoteSize = floorToDecimal(max, tickDecimals).toFixed()
+            s.tradeForm.baseSize = floorToDecimal(
+              max / Number(tradePrice),
+              minOrderDecimals
+            ).toFixed()
+          } else {
+            s.tradeForm.baseSize = floorToDecimal(
+              max,
+              minOrderDecimals
+            ).toFixed()
+            s.tradeForm.quoteSize = floorToDecimal(
+              max * Number(tradePrice),
+              tickDecimals
+            ).toFixed()
+          }
+        }
+      })
     },
-    [savedCheckboxSettings]
+    [
+      mangoAccount,
+      oraclePrice,
+      savedCheckboxSettings,
+      selectedMarket,
+      set,
+      tradeForm,
+    ]
   )
 
   const [tickDecimals, tickSize] = useMemo(() => {
@@ -656,7 +707,7 @@ const AdvancedTradeForm = () => {
                   ? 'bg-th-up-dark text-white md:hover:bg-th-up'
                   : 'bg-th-down-dark text-white md:hover:bg-th-down'
               }`}
-              disabled={connected && !tradeForm.baseSize}
+              disabled={connected && (!tradeForm.baseSize || !tradeForm.price)}
               size="large"
               type="submit"
             >
