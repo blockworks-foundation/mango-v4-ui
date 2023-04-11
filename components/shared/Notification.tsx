@@ -91,7 +91,7 @@ const NotificationList = () => {
   if (!mounted) return null
 
   return (
-    <div className={`${getPosition(notificationPosition)}`}>
+    <div className={`${getPosition(notificationPosition)} w-full sm:w-auto`}>
       {notifications.filter((n) => n.show).length > 1 ? (
         <button
           className="default-transition pointer-events-auto my-1 flex items-center rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
@@ -208,7 +208,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
 
   return (
     <Transition
-      className="my-1 w-full md:w-auto"
+      className="my-1 w-full sm:w-auto"
       show={show}
       appear={true}
       enter="ease-out duration-500 transition"
@@ -227,7 +227,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
       }`}
     >
       <div
-        className={`pointer-events-auto w-full rounded-md border bg-th-bkg-2 shadow-lg md:w-auto ${
+        className={`pointer-events-auto w-full rounded-md border bg-th-bkg-2 shadow-lg sm:w-auto ${
           type === 'success'
             ? 'border-th-success'
             : type === 'error'
@@ -235,7 +235,7 @@ const Notification = ({ notification }: { notification: Notification }) => {
             : 'border-th-bkg-4'
         }`}
       >
-        <div className={`relative flex w-full items-center p-3.5 md:w-96`}>
+        <div className={`relative flex w-full items-center p-3.5 sm:w-96`}>
           <div className={`mr-1 flex-shrink-0`}>
             {type === 'success' ? (
               <CheckCircleIcon className={`h-6 w-6 text-th-success`} />
