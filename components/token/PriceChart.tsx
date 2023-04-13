@@ -1,4 +1,5 @@
 import { formatDateAxis } from '@components/shared/DetailedAreaChart'
+import dayjs from 'dayjs'
 import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
 import { useTheme } from 'next-themes'
 import { useMemo } from 'react'
@@ -60,7 +61,9 @@ const PriceChart = ({
                 fontSize: 10,
               }}
               tickLine={false}
-              tickFormatter={(d) => formatDateAxis(d, daysToShow)}
+              tickFormatter={(d) =>
+                formatDateAxis(dayjs(d * 1000).toISOString(), daysToShow)
+              }
             />
             <YAxis
               axisLine={false}

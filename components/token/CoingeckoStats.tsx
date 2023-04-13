@@ -75,7 +75,7 @@ const CoingeckoStats = ({
     isLoading: loadingBirdeyePrices,
     isFetching: fetchingBirdeyePrices,
   } = useQuery(
-    ['birdeye-token-prices', daysToShow, bank],
+    ['birdeye-token-prices', daysToShow, bank.mint],
     () => fetchBirdeyePrices(daysToShow, bank.mint.toString()),
     {
       cacheTime: 1000 * 60 * 15,
