@@ -45,13 +45,8 @@ export const getOneDayPerpStats = (
 }
 
 const goToPerpMarketDetails = (market: PerpMarket, router: NextRouter) => {
-  router.push(
-    {
-      pathname: `/perp-stats/${market.name}`,
-      query: { details: 'cool' },
-    },
-    `/perp-stats/${market.name}`
-  )
+  const query = { ...router.query, ['market']: market.name }
+  router.push({ pathname: router.pathname, query })
 }
 
 const PerpMarketsTable = () => {

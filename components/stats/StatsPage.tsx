@@ -3,11 +3,13 @@ import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useViewport } from 'hooks/useViewport'
+import { useRouter } from 'next/router'
 import { useEffect, useMemo } from 'react'
 import { STATS_TAB_KEY } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import MangoStats from './MangoStats'
 import PerpMarketsTable from './PerpMarketsTable'
+import PerpStatsPage from './PerpStatsPage'
 import SpotMarketsTable from './SpotMarketsTable'
 import TokenStats from './TokenStats'
 
@@ -24,6 +26,8 @@ const StatsPage = () => {
   const { group } = useMangoGroup()
   const { width } = useViewport()
   const fullWidthTabs = width ? width < breakpoints.lg : false
+  const router = useRouter()
+  const { market } = router.query
 
   useEffect(() => {
     if (group && (!perpStats || !perpStats.length)) {
@@ -34,7 +38,9 @@ const StatsPage = () => {
   const tabsWithCount: [string, number][] = useMemo(() => {
     return TABS.map((t) => [t, 0])
   }, [])
-  return (
+  return market ? (
+    <PerpStatsPage />
+  ) : (
     <div className="pb-20 md:pb-16">
       <div className="border-b border-th-bkg-3">
         <TabButtons
