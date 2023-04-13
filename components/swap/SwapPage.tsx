@@ -26,7 +26,7 @@ const SwapPage = () => {
       <div className="flex items-center justify-center bg-th-down-muted py-2 px-6">
         <ExclamationTriangleIcon className="mr-1.5 h-4 w-4 flex-shrink-0 text-white" />
         <span className="leading-tight text-white">
-          Swaps are currently disabled. A progam update is required.
+          Swaps are currently disabled. A program update is required.
         </span>
       </div>
       <div className="grid grid-cols-12">
