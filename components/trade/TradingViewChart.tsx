@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useMemo, useState, useCallback } from 'react'
 import { useTheme } from 'next-themes'
 import {
@@ -7,6 +8,7 @@ import {
   ResolutionString,
   IOrderLineAdapter,
   EntityId,
+  IExecutionLineAdapter,
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
@@ -38,6 +40,8 @@ import Datafeed from 'apis/datafeed'
 import useStablePrice from 'hooks/useStablePrice'
 import { isMangoError } from 'types'
 import { formatPrice } from 'apis/birdeye/helpers'
+import useTradeHistory from 'hooks/useTradeHistory'
+import dayjs from 'dayjs'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -65,6 +69,8 @@ function hexToRgb(hex: string) {
     : null
 }
 
+const TRADE_EXECUTION_LIMIT = 100
+
 const TradingViewChart = () => {
   const { t } = useTranslation(['tv-chart', 'trade'])
   const { theme } = useTheme()
@@ -77,6 +83,12 @@ const TradingViewChart = () => {
   const [showOrderLines, toggleShowOrderLines] = useState(
     showOrderLinesLocalStorage
   )
+  const tradeExecutions = mangoStore((s) => s.tradingView.tradeExecutions)
+  const { data: combinedTradeHistory, isLoading: loadingTradeHistory } =
+    useTradeHistory()
+  const [showTradeExecutions, toggleShowTradeExecutions] = useState(false)
+  const [cachedTradeHistory, setCachedTradeHistory] =
+    useState(combinedTradeHistory)
 
   const [showStablePriceLocalStorage, toggleShowStablePriceLocalStorage] =
     useLocalStorageState(SHOW_STABLE_PRICE_KEY, false)
@@ -615,6 +627,18 @@ const TradingViewChart = () => {
     [drawLinesForMarket, deleteLines, theme]
   )
 
+  const toggleTradeExecutions = useCallback(
+    (el: HTMLElement) => {
+      toggleShowTradeExecutions((prevState) => !prevState)
+      if (el.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
+        el.style.color = COLORS.FGD4[theme]
+      } else {
+        el.style.color = COLORS.ACTIVE[theme]
+      }
+    },
+    [theme]
+  )
+
   const createStablePriceButton = useCallback(() => {
     const toggleStablePrice = (button: HTMLElement) => {
       toggleShowStablePrice((prevState: boolean) => !prevState)
@@ -655,6 +679,21 @@ const TradingViewChart = () => {
     }
     orderLinesButtonRef.current = button
   }, [t, toggleOrderLines, showOrderLinesLocalStorage, theme])
+
+  const createTEButton = useCallback(() => {
+    const button = tvWidgetRef?.current?.createButton()
+    if (!button) {
+      return
+    }
+    button.textContent = 'TE'
+    button.setAttribute('title', t('tv-chart:toggle-trade-executions'))
+    button.addEventListener('click', () => toggleTradeExecutions(button))
+    if (showTradeExecutions) {
+      button.style.color = COLORS.ACTIVE[theme]
+    } else {
+      button.style.color = COLORS.FGD4[theme]
+    }
+  }, [t, toggleTradeExecutions, showTradeExecutions, theme])
 
   useEffect(() => {
     if (window) {
@@ -775,9 +814,16 @@ const TradingViewChart = () => {
       !stablePriceButtonRef.current
     ) {
       createOLButton()
+      createTEButton()
       createStablePriceButton()
     }
-  }, [createOLButton, chartReady, createStablePriceButton, headerReady])
+  }, [
+    createOLButton,
+    createTEButton,
+    chartReady,
+    createStablePriceButton,
+    headerReady,
+  ])
 
   // update order lines if a user's open orders change
   useEffect(() => {
@@ -838,6 +884,94 @@ const TradingViewChart = () => {
     }
     return subscription
   }, [chartReady, showOrderLines, deleteLines, drawLinesForMarket])
+
+  // Todo: fix types
+  const drawTradeExecutions = useCallback(
+    (trades: any[]) => {
+      const newTradeExecutions = new Map()
+      const filteredTrades = trades
+        .filter((trade) => {
+          return trade.market.name === selectedMarketName
+        })
+        .slice(0, TRADE_EXECUTION_LIMIT)
+      for (let i = 0; i < filteredTrades.length; i++) {
+        const trade = filteredTrades[i]
+        try {
+          const arrowID = tvWidgetRef
+            .current!.chart()
+            .createExecutionShape()
+            .setTime(dayjs(trade.time).unix())
+            .setDirection(trade.side)
+            .setArrowHeight(6)
+            .setArrowColor(
+              trade.side === 'buy' ? COLORS.UP[theme] : COLORS.DOWN[theme]
+            )
+            .setTooltip(`${trade.size} at ${trade.price}`)
+          if (arrowID) {
+            try {
+              newTradeExecutions.set(`${trade.time}${i}`, arrowID)
+            } catch (error) {
+              console.log('could not set newTradeExecution')
+            }
+          } else {
+            console.log(
+              `Could not create execution shape for trade ${trade.time}${i}`
+            )
+          }
+        } catch (error) {
+          console.log(`could not draw arrow: ${error}`)
+        }
+      }
+      return newTradeExecutions
+    },
+    [selectedMarketName, theme]
+  )
+
+  const removeTradeExecutions = useCallback(
+    (tradeExecutions: Map<string, IExecutionLineAdapter>) => {
+      const set = mangoStore.getState().set
+      if (chartReady && tvWidgetRef?.current) {
+        for (const val of tradeExecutions.values()) {
+          try {
+            val.remove()
+          } catch (error) {
+            console.log(`arrow ${val} could not be removed`)
+          }
+        }
+      }
+      set((s) => {
+        s.tradingView.tradeExecutions = new Map()
+      })
+    },
+    [chartReady, tvWidgetRef?.current]
+  )
+
+  useEffect(() => {
+    if (!loadingTradeHistory && showTradeExecutions) {
+      setCachedTradeHistory(combinedTradeHistory)
+    }
+  }, [loadingTradeHistory, showTradeExecutions])
+
+  useEffect(() => {
+    if (cachedTradeHistory.length !== combinedTradeHistory.length) {
+      setCachedTradeHistory(combinedTradeHistory)
+    }
+  }, [combinedTradeHistory])
+
+  useEffect(() => {
+    removeTradeExecutions(tradeExecutions)
+    if (
+      showTradeExecutions &&
+      tvWidgetRef &&
+      tvWidgetRef.current &&
+      chartReady
+    ) {
+      const set = mangoStore.getState().set
+      set((s) => {
+        s.tradingView.tradeExecutions = drawTradeExecutions(cachedTradeHistory)
+      })
+    }
+  }, [cachedTradeHistory, selectedMarketName, showTradeExecutions])
 
   return (
     <div id={defaultProps.container as string} className="tradingview-chart" />

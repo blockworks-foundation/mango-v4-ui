@@ -64,6 +64,7 @@ import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
 import {
   EntityId,
+  IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
 
@@ -214,6 +215,7 @@ export type MangoStore = {
   tradingView: {
     stablePriceLine: EntityId | undefined
     orderLines: Map<string | BN, IOrderLineAdapter>
+    tradeExecutions: Map<string, IExecutionLineAdapter>
   }
   wallet: {
     tokens: TokenAccount[]
@@ -365,6 +367,7 @@ const mangoStore = create<MangoStore>()(
       tradingView: {
         stablePriceLine: undefined,
         orderLines: new Map(),
+        tradeExecutions: new Map(),
       },
       wallet: {
         tokens: [],
