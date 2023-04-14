@@ -1,5 +1,3 @@
-import { IconButton } from '@components/shared/Button'
-import { ChevronLeftIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
@@ -16,14 +14,13 @@ const DetailedAreaChart = dynamic(
 )
 
 const PerpMarketDetails = ({
+  marketStats,
   perpMarket,
-  setShowPerpDetails,
 }: {
+  marketStats: PerpStatsItem[]
   perpMarket: PerpMarket
-  setShowPerpDetails: (x: PerpMarket | null) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const perpStats = mangoStore((s) => s.perpStats.data)
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const [priceDaysToShow, setPriceDaysToShow] = useState('30')
   const [oiDaysToShow, setOiDaysToShow] = useState('30')
@@ -31,13 +28,10 @@ const PerpMarketDetails = ({
   const [instantFundingDaysToShow, setInstantFundingDaysToShow] = useState('30')
   const rate = usePerpFundingRate()
 
-  const [marketStats, lastStat] = useMemo(() => {
-    if (!perpStats) return [undefined, undefined]
-    const stats = perpStats
-      .filter((stat) => stat.perp_market === perpMarket.name)
-      .reverse()
-    return [stats, stats[stats.length - 1]]
-  }, [perpStats, perpMarket])
+  const lastStat = useMemo(() => {
+    if (!marketStats.length) return undefined
+    return marketStats[marketStats.length - 1]
+  }, [marketStats])
 
   const fundingRate = useMemo(() => {
     if (!lastStat) return 0
@@ -75,7 +69,7 @@ const PerpMarketDetails = ({
 
   return (
     <div className="grid grid-cols-2">
-      <div className="col-span-2 flex items-center border-b border-th-bkg-3 px-6 py-3">
+      {/* <div className="col-span-2 flex items-center border-b border-th-bkg-3 px-6 py-3">
         <IconButton
           className="mr-4"
           onClick={() => setShowPerpDetails(null)}
@@ -84,7 +78,7 @@ const PerpMarketDetails = ({
           <ChevronLeftIcon className="h-5 w-5" />
         </IconButton>
         <h2 className="text-lg">{`${perpMarket.name} ${t('stats')}`}</h2>
-      </div>
+      </div> */}
       {marketStats?.length && lastStat ? (
         <>
           <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
