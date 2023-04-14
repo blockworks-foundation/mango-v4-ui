@@ -55,6 +55,8 @@ export const ACCEPT_TERMS_KEY = 'termsOfUseAccepted-0.1'
 
 export const TRADE_LAYOUT_KEY = 'tradeLayoutKey-0.1'
 
+export const STATS_TAB_KEY = 'activeStatsTab-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',

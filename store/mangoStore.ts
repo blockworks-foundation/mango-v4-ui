@@ -748,8 +748,7 @@ const mangoStore = create<MangoStore>()(
         fetchPerpStats: async () => {
           const set = get().set
           const group = get().group
-          const stats = get().perpStats.data
-          if ((stats && stats.length) || !group) return
+          if (!group) return []
           set((state) => {
             state.perpStats.loading = true
           })

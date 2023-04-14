@@ -5,11 +5,10 @@ import {
   EllipsisHorizontalIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { breakpoints } from '../utils/theme'
@@ -24,7 +23,7 @@ import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import BorrowRepayModal from './modals/BorrowRepayModal'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
-import { USDC_MINT } from 'utils/constants'
+import { SHOW_ZERO_BALANCES_KEY, USDC_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import ActionsLinkButton from './account/ActionsLinkButton'
 import FormatNumericValue from './shared/FormatNumericValue'
@@ -33,12 +32,15 @@ import useBanksWithBalances, {
   BankWithBalance,
 } from 'hooks/useBanksWithBalances'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
-  const { connected } = useWallet()
-  const [showZeroBalances, setShowZeroBalances] = useState(true)
-  const { mangoAccount } = useMangoAccount()
+  const [showZeroBalances, setShowZeroBalances] = useLocalStorageState(
+    SHOW_ZERO_BALANCES_KEY,
+    true
+  )
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoTokens } = useJupiterMints()
   const totalInterestData = mangoStore(
@@ -50,30 +52,26 @@ const TokenList = () => {
 
   const filteredBanks = useMemo(() => {
     if (banks.length) {
-      return showZeroBalances
+      return showZeroBalances || !mangoAccountAddress
         ? banks
         : banks.filter((b) => Math.abs(b.balance) > 0)
     }
     return []
-  }, [banks, showZeroBalances])
-
-  useEffect(() => {
-    if (!connected) {
-      setShowZeroBalances(true)
-    }
-  }, [connected])
+  }, [banks, mangoAccountAddress, showZeroBalances])
 
   return (
     <ContentBox hideBorder hidePadding>
-      <div className="flex w-full items-center justify-end border-b border-th-bkg-3 py-3 px-6 lg:-mt-[36px] lg:mb-4 lg:w-auto lg:border-0 lg:py-0">
-        <Switch
-          checked={showZeroBalances}
-          disabled={!mangoAccount}
-          onChange={() => setShowZeroBalances(!showZeroBalances)}
-        >
-          {t('show-zero-balances')}
-        </Switch>
-      </div>
+      {mangoAccountAddress ? (
+        <div className="flex w-full items-center justify-end border-b border-th-bkg-3 py-3 px-6 lg:-mt-[36px] lg:mb-4 lg:w-auto lg:border-0 lg:py-0">
+          <Switch
+            checked={showZeroBalances}
+            disabled={!mangoAccount}
+            onChange={() => setShowZeroBalances(!showZeroBalances)}
+          >
+            {t('show-zero-balances')}
+          </Switch>
+        </div>
+      ) : null}
       {showTableView ? (
         <Table>
           <thead>

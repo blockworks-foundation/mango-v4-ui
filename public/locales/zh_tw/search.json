@@ -1,14 +1,14 @@
 {
-    "mango-account": "Account Address",
-    "mango-account-name": "Account Name",
-    "no-results": "No Results",
-    "no-results-desc": "Try another search. Searches are case-sensitive",
-    "profile-name": "Profile Name",
-    "results": "Results",
-    "search": "Search",
-    "search-accounts": "Search Accounts",
-    "search-by": "Search By",
-    "search-for": "Search For",
-    "search-failed": "Something went wrong. Try again later",
-    "wallet-pk": "Wallet Address"
+    "mango-account": "帳戶地址",
+    "mango-account-name": "帳戶標籤",
+    "no-results": "無結果",
+    "no-results-desc": "嘗試其他搜尋。搜尋區分大小寫",
+    "profile-name": "個人檔案標籤",
+    "results": "結果",
+    "search": "搜尋",
+    "search-accounts": "搜尋帳戶",
+    "search-by": "搜尋方式",
+    "search-for": "搜尋",
+    "search-failed": "出錯了。稍後再試。",
+    "wallet-pk": "錢包地址"
 }

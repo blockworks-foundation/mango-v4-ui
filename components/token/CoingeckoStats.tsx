@@ -4,9 +4,11 @@ import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
 import { ArrowSmallUpIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import { useQuery } from '@tanstack/react-query'
+import { makeApiRequest } from 'apis/birdeye/helpers'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { useCoingecko } from 'hooks/useCoingecko'
+import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
 import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
@@ -34,40 +36,55 @@ const DEFAULT_COINGECKO_VALUES = {
   total_volume: 0,
 }
 
+interface BirdeyeResponse {
+  data: { items: BirdeyePriceResponse[] }
+  success: boolean
+}
+
+const fetchBirdeyePrices = async (
+  daysToShow: string,
+  mint: string
+): Promise<BirdeyePriceResponse[] | []> => {
+  const interval = daysToShow === '1' ? '30m' : daysToShow === '7' ? '1H' : '4H'
+  const queryEnd = Math.floor(Date.now() / 1000)
+  const queryStart = queryEnd - parseInt(daysToShow) * 86400
+  const query = `defi/history_price?address=${mint}&address_type=token&type=${interval}&time_from=${queryStart}&time_to=${queryEnd}`
+  const response: BirdeyeResponse = await makeApiRequest(query)
+
+  if (response.success && response?.data?.items) {
+    return response.data.items
+  }
+  return []
+}
+
 const CoingeckoStats = ({
   bank,
   coingeckoData,
-  coingeckoId,
 }: {
   bank: Bank
   // TODO: Add Coingecko api types
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   coingeckoData: any
-  coingeckoId: string
 }) => {
   const { t } = useTranslation(['common', 'token'])
   const [showFullDesc, setShowFullDesc] = useState(false)
   const [daysToShow, setDaysToShow] = useState<string>('1')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [chartData, setChartData] = useState<{ prices: any[] } | null>(null)
-  const [loadChartData, setLoadChartData] = useState(true)
-  const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
 
-  const handleDaysToShow = async (days: string) => {
-    if (days !== '1') {
-      try {
-        const response = await fetch(
-          `https://api.coingecko.com/api/v3/coins/${coingeckoId}/market_chart?vs_currency=usd&days=${days}`
-        )
-        const data = await response.json()
-        setLoadChartData(false)
-        setChartData(data)
-      } catch {
-        setLoadChartData(false)
-      }
+  const {
+    data: birdeyePrices,
+    isLoading: loadingBirdeyePrices,
+    isFetching: fetchingBirdeyePrices,
+  } = useQuery(
+    ['birdeye-token-prices', daysToShow, bank.mint],
+    () => fetchBirdeyePrices(daysToShow, bank.mint.toString()),
+    {
+      cacheTime: 1000 * 60 * 15,
+      staleTime: 1000 * 60 * 10,
+      retry: 3,
+      enabled: !!bank,
+      refetchOnWindowFocus: false,
     }
-    setDaysToShow(days)
-  }
+  )
 
   const {
     ath,
@@ -82,28 +99,7 @@ const CoingeckoStats = ({
     max_supply,
     total_supply,
     total_volume,
-  } = coingeckoData ? coingeckoData.market_data : DEFAULT_COINGECKO_VALUES
-
-  const loadingChart = useMemo(() => {
-    return daysToShow == '1' ? loadingPrices : loadChartData
-  }, [loadChartData, loadingPrices])
-
-  const coingeckoTokenPrices = useMemo(() => {
-    if (daysToShow === '1' && coingeckoPrices.length && bank) {
-      const tokenPriceData = coingeckoPrices.find(
-        (asset) => asset.symbol.toUpperCase() === bank.name.toUpperCase()
-      )
-
-      if (tokenPriceData) {
-        return tokenPriceData.prices
-      }
-    } else {
-      if (chartData && !loadingChart) {
-        return chartData.prices
-      }
-    }
-    return []
-  }, [coingeckoPrices, bank, daysToShow, chartData, loadingChart])
+  } = coingeckoData ? coingeckoData : DEFAULT_COINGECKO_VALUES
 
   const truncateDescription = (desc: string) =>
     desc.substring(0, (desc + ' ').lastIndexOf(' ', 144))
@@ -140,34 +136,29 @@ const CoingeckoStats = ({
           </div>
         </div>
       ) : null}
-      {!loadingChart ? (
-        coingeckoTokenPrices.length ? (
-          <>
-            <div className="mt-4 flex w-full items-center justify-between px-6">
-              <h2 className="text-base">{bank.name} Price Chart</h2>
-              <ChartRangeButtons
-                activeValue={daysToShow}
-                names={['24H', '7D', '30D']}
-                values={['1', '7', '30']}
-                onChange={(v) => handleDaysToShow(v)}
-              />
-            </div>
-            <PriceChart
-              daysToShow={parseInt(daysToShow)}
-              prices={coingeckoTokenPrices}
-            />
-          </>
-        ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
-          <div className="flex flex-col items-center p-6">
-            <NoSymbolIcon className="mb-1 h-6 w-6 text-th-fgd-4" />
-            <p className="mb-0 text-th-fgd-4">{t('token:chart-unavailable')}</p>
-          </div>
-        )
-      ) : (
+      <div className="mt-4 flex w-full items-center justify-between px-6">
+        <h2 className="text-base">{bank.name} Price Chart</h2>
+        <ChartRangeButtons
+          activeValue={daysToShow}
+          names={['24H', '7D', '30D']}
+          values={['1', '7', '30']}
+          onChange={(v) => setDaysToShow(v)}
+        />
+      </div>
+      {birdeyePrices?.length ? (
+        <PriceChart daysToShow={parseInt(daysToShow)} prices={birdeyePrices} />
+      ) : loadingBirdeyePrices || fetchingBirdeyePrices ? (
         <div className="p-6">
           <SheenLoader className="flex flex-1">
-            <div className="h-72 w-full rounded-md bg-th-bkg-2" />
+            <div className="h-72 w-full rounded-lg bg-th-bkg-2 md:h-80" />
           </SheenLoader>
+        </div>
+      ) : (
+        <div className="m-6 flex h-72 items-center justify-center rounded-lg border border-th-bkg-3 md:h-80">
+          <div className="flex flex-col items-center">
+            <NoSymbolIcon className="mb-2 h-7 w-7 text-th-fgd-4" />
+            <p>{t('chart-unavailable')}</p>
+          </div>
         </div>
       )}
       <div className="grid grid-cols-1 border-b border-th-bkg-3 md:grid-cols-2">
