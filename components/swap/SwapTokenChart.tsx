@@ -6,9 +6,10 @@ import {
   Area,
   XAxis,
   YAxis,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Text,
+  ReferenceDot,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
 import ContentBox from '../shared/ContentBox'
@@ -28,9 +29,17 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { useTranslation } from 'next-i18next'
-import { ArrowsRightLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowsRightLeftIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  NoSymbolIcon,
+} from '@heroicons/react/20/solid'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalChart'
+import { interpolateNumber } from 'd3-interpolate'
+import { IconButton } from '@components/shared/Button'
+import Tooltip from '@components/shared/Tooltip'
 
 dayjs.extend(relativeTime)
 
@@ -94,6 +103,9 @@ const SwapTokenChart = () => {
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
   )
+  const swapHistory = mangoStore((s) => s.mangoAccount.swapHistory.data)
+  const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
+  const [showSwaps, setShowSwaps] = useState(false)
 
   const chartDataQuery = useQuery(
     ['chart-data', baseTokenId, quoteTokenId, daysToShow],
@@ -121,6 +133,56 @@ const SwapTokenChart = () => {
     }
   }, [flipPrices, chartDataQuery])
 
+  const chartSwapTimes = useMemo(() => {
+    if (loadSwapHistory || !swapHistory.length || !inputBank || !outputBank)
+      return []
+    const chartSymbols = [inputBank.name, outputBank.name]
+    return swapHistory
+      .filter(
+        (swap) =>
+          chartSymbols.includes(swap.swap_in_symbol) &&
+          chartSymbols.includes(swap.swap_out_symbol)
+      )
+      .map((val) => dayjs(val.block_datetime).unix() * 1000)
+  }, [swapHistory, loadSwapHistory, inputBank, outputBank])
+
+  const highlightPoints = useMemo(() => {
+    if (!chartData.length || !chartSwapTimes.length) return []
+    return chartSwapTimes.map((x) => {
+      const makeChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
+      const index = chartData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
+      if (index === 0) {
+        return { time: x, price: chartData[0].price, ...makeChartDataItem } // return first data point y value if highlight x is less than first data point x
+      } else if (index === -1) {
+        return {
+          time: x,
+          price: chartData[chartData.length - 1].price,
+          ...makeChartDataItem,
+        } // return last data point y value if highlight x is greater than last data point x
+      } else {
+        const x0 = chartData[index - 1].time
+        const x1 = chartData[index].time
+        const y0 = chartData[index - 1].price
+        const y1 = chartData[index].price
+        const interpolateY = interpolateNumber(y0, y1) // create interpolate function for y values
+        const y = interpolateY((x - x0) / (x1 - x0)) // estimate y value at highlight x using interpolate function
+        return { time: x, price: y, ...makeChartDataItem }
+      }
+    })
+  }, [chartData, chartSwapTimes])
+
+  const charty = useMemo(() => {
+    if (!chartData.length) return []
+    const minTime = chartData[0].time
+    const maxTime = chartData[chartData.length - 1].time
+    if (highlightPoints.length) {
+      const swapPoints = highlightPoints.filter(
+        (point) => point.time >= minTime && point.time <= maxTime
+      )
+      return chartData.concat(swapPoints).sort((a, b) => a.time - b.time)
+    } else return chartData
+  }, [chartData, highlightPoints])
+
   const handleMouseMove: CategoricalChartFunc = (coords) => {
     if (coords.activePayload) {
       setMouseData(coords.activePayload[0].payload)
@@ -144,18 +206,17 @@ const SwapTokenChart = () => {
   }, [inputCoingeckoId, outputCoingeckoId])
 
   const calculateChartChange = () => {
-    if (chartData?.length) {
+    if (charty?.length) {
       if (mouseData) {
-        const index = chartData.findIndex((d) => d.time === mouseData.time)
+        const index = charty.findIndex((d) => d.time === mouseData.time)
         return (
-          ((chartData[index]['price'] - chartData[0]['price']) /
-            chartData[0]['price']) *
+          ((charty[index]['price'] - charty[0]['price']) / charty[0]['price']) *
           100
         )
       } else
         return (
-          ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
-            chartData[0]['price']) *
+          ((charty[charty.length - 1]['price'] - charty[0]['price']) /
+            charty[0]['price']) *
           100
         )
     }
@@ -175,6 +236,21 @@ const SwapTokenChart = () => {
       : `${outputSymbol}/${inputSymbol}`
   }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
 
+  const getSwapFillColor = (x: number) => {
+    const swapDetails = swapHistory.find(
+      (swap) => dayjs(swap.block_datetime).unix() * 1000 === x
+    )
+    const side =
+      swapDetails?.swap_in_symbol === inputBank?.name ? 'sell' : 'buy'
+    return side === 'buy'
+      ? !flipPrices
+        ? COLORS.UP[theme]
+        : COLORS.DOWN[theme]
+      : !flipPrices
+      ? COLORS.DOWN[theme]
+      : COLORS.UP[theme]
+  }
+
   return (
     <ContentBox hideBorder hidePadding className="h-full px-6 py-3">
       {chartDataQuery?.isLoading || chartDataQuery.isFetching ? (
@@ -189,19 +265,20 @@ const SwapTokenChart = () => {
             <div className="h-[18px] bg-th-bkg-2" />
           </SheenLoader>
         </>
-      ) : chartData?.length && baseTokenId && quoteTokenId ? (
+      ) : charty?.length && baseTokenId && quoteTokenId ? (
         <div className="relative">
           <div className="flex items-start justify-between">
             <div>
               {inputBank && outputBank ? (
                 <div className="mb-0.5 flex items-center">
                   <p className="text-base text-th-fgd-3">{swapMarketName}</p>
-                  <div
-                    className="px-2 hover:cursor-pointer hover:text-th-active"
+                  <IconButton
+                    className="px-2 text-th-fgd-3"
                     onClick={() => setFlipPrices(!flipPrices)}
+                    hideBg
                   >
-                    <ArrowsRightLeftIcon className="h-4 w-4" />
-                  </div>
+                    <ArrowsRightLeftIcon className="h-5 w-5" />
+                  </IconButton>
                 </div>
               ) : null}
               {mouseData ? (
@@ -236,12 +313,12 @@ const SwapTokenChart = () => {
                         width={35}
                         play
                         numbers={formatNumericValue(
-                          chartData[chartData.length - 1].price
+                          charty[charty.length - 1].price
                         )}
                       />
                     ) : (
                       <FormatNumericValue
-                        value={chartData[chartData.length - 1].price}
+                        value={charty[charty.length - 1].price}
                       />
                     )}
                     <span
@@ -251,7 +328,7 @@ const SwapTokenChart = () => {
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
-                    {dayjs(chartData[chartData.length - 1].time).format(
+                    {dayjs(charty[charty.length - 1].time).format(
                       'DD MMM YY, h:mma'
                     )}
                   </p>
@@ -260,7 +337,26 @@ const SwapTokenChart = () => {
             </div>
           </div>
           <div className="mt-2 h-40 w-auto md:h-72">
-            <div className="absolute top-[2px] right-0 -mb-2 flex justify-end">
+            <div className="absolute top-[2px] right-0 -mb-2 flex items-center justify-end space-x-4">
+              <Tooltip
+                content={
+                  showSwaps
+                    ? t('swap:hide-swap-history')
+                    : t('swap:show-swap-history')
+                }
+              >
+                <IconButton
+                  className="text-th-fgd-3"
+                  hideBg
+                  onClick={() => setShowSwaps(!showSwaps)}
+                >
+                  {showSwaps ? (
+                    <EyeIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  )}
+                </IconButton>
+              </Tooltip>
               <ChartRangeButtons
                 activeValue={daysToShow}
                 names={['24H', '7D', '30D']}
@@ -271,12 +367,12 @@ const SwapTokenChart = () => {
             <div className="h-full md:-mx-2 md:mt-4">
               <ResponsiveContainer>
                 <AreaChart
-                  data={chartData}
+                  data={charty}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
                   // margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                 >
-                  <Tooltip
+                  <RechartsTooltip
                     cursor={{
                       strokeOpacity: 0.09,
                     }}
@@ -321,7 +417,7 @@ const SwapTokenChart = () => {
                     }
                     strokeWidth={1.5}
                     fill="url(#gradientArea)"
-                    label={<CustomizedLabel chartData={chartData} />}
+                    label={<CustomizedLabel chartData={charty} />}
                   />
                   <XAxis dataKey="time" hide padding={{ left: 0, right: 0 }} />
                   <YAxis
@@ -331,6 +427,19 @@ const SwapTokenChart = () => {
                     hide
                     padding={{ top: 20, bottom: 20 }}
                   />
+                  {showSwaps
+                    ? highlightPoints.map((point, index) => (
+                        <ReferenceDot
+                          key={index}
+                          x={point.time}
+                          y={point.price}
+                          r={4}
+                          fill={getSwapFillColor(point.time)}
+                          stroke={'white'}
+                          isFront={true}
+                        />
+                      ))
+                    : null}
                 </AreaChart>
               </ResponsiveContainer>
             </div>
