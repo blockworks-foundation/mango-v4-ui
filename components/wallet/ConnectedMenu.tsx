@@ -138,17 +138,6 @@ const ConnectedMenu = () => {
                     </button>
                   </Menu.Item>
                 ) : null}
-                {/* <Menu.Item>
-                  <button
-                    className="flex w-full flex-row items-center rounded-none py-0.5 font-normal hover:cursor-pointer hover:text-th-active focus:outline-none"
-                    onClick={() => setShowProfileImageModal(true)}
-                  >
-                    <ProfileIcon className="h-4 w-4" />
-                    <div className="pl-2 text-left">
-                      {t('edit-profile-image')}
-                    </div>
-                  </button>
-                </Menu.Item> */}
                 <Menu.Item>
                   <button
                     className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none md:hover:cursor-pointer md:hover:text-th-fgd-1"

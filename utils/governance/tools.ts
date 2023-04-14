@@ -1,4 +1,3 @@
-import { MintInfo } from '@blockworks-foundation/mango-v4'
 import {
   getGovernanceAccounts,
   getRealm,
@@ -10,7 +9,7 @@ import { Connection, PublicKey } from '@solana/web3.js'
 import { getProposals } from './fetch/getProposals'
 import { ConnectionContext } from './types'
 import { TokenProgramAccount } from './accounts/vsrAccounts'
-import { u64, MintLayout } from '@solana/spl-token'
+import { MintLayout, RawMint } from '@solana/spl-token'
 import BN from 'bn.js'
 
 export async function fetchRealm({
@@ -79,7 +78,7 @@ export function arrayToRecord<T>(
 export async function tryGetMint(
   connection: Connection,
   publicKey: PublicKey
-): Promise<TokenProgramAccount<MintInfo> | undefined> {
+): Promise<TokenProgramAccount<RawMint> | undefined> {
   try {
     const result = await connection.getAccountInfo(publicKey)
     const data = Buffer.from(result!.data)
@@ -97,22 +96,8 @@ export async function tryGetMint(
   }
 }
 
-export function parseMintAccountData(data: Buffer): MintInfo {
+export function parseMintAccountData(data: Buffer): RawMint {
   const mintInfo = MintLayout.decode(data)
-  if (mintInfo.mintAuthorityOption === 0) {
-    mintInfo.mintAuthority = null
-  } else {
-    mintInfo.mintAuthority = new PublicKey(mintInfo.mintAuthority)
-  }
-
-  mintInfo.supply = u64.fromBuffer(mintInfo.supply)
-  mintInfo.isInitialized = mintInfo.isInitialized != 0
-
-  if (mintInfo.freezeAuthorityOption === 0) {
-    mintInfo.freezeAuthority = null
-  } else {
-    mintInfo.freezeAuthority = new PublicKey(mintInfo.freezeAuthority)
-  }
   return mintInfo
 }
 
