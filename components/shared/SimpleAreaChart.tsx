@@ -25,7 +25,7 @@ const SimpleAreaChart = ({
       <AreaChart data={data}>
         <defs>
           <linearGradient
-            id={`gradientArea-${name}`}
+            id={`gradientArea-${name.replace(/[^a-zA-Z]/g, '')}`}
             x1="0"
             y1={flipGradientCoords ? '0' : '1'}
             x2="0"
@@ -39,7 +39,7 @@ const SimpleAreaChart = ({
           type="monotone"
           dataKey={yKey}
           stroke={color}
-          fill={`url(#gradientArea-${name})`}
+          fill={`url(#gradientArea-${name.replace(/[^a-zA-Z]/g, '')}`}
         />
         <XAxis dataKey={xKey} hide />
         <YAxis

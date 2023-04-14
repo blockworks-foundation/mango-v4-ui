@@ -52,6 +52,7 @@ const ButtonGroup = <T extends Values>({
             style={{
               width: `${100 / values.length}%`,
             }}
+            type="button"
           >
             {names ? (unit ? names[i] + unit : names[i]) : unit ? v + unit : v}
           </button>

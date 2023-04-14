@@ -11,6 +11,8 @@
     "connect-positions": "連接以查看您的持倉",
     "connect-trade-history": "連接以查看交易紀錄",
     "connect-unsettled": "連接以查看未結清餘額",
+    "copy-and-share": "複製影像",
+    "current-price": "目前價格",
     "entry-price": "入場價",
     "est-slippage": "預計下滑",
     "funding-limits": "資金費限制",
@@ -70,6 +72,7 @@
     "tooltip-volume-alert": "交易量警報設定",
     "trade-sounds-tooltip": "為每筆新交易播放警報聲音",
     "trades": "交易",
+    "tweet-position": "分享至Twitter",
     "unsettled": "未結清",
     "volume-alert": "交易量警報",
     "volume-alert-desc": "交易量超過警報設定時播放聲音"
