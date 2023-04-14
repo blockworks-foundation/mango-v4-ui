@@ -6,8 +6,6 @@ import {
   pubkeyFilter,
 } from '@solana/spl-governance'
 import { Connection, PublicKey } from '@solana/web3.js'
-import { getProposals } from './fetch/getProposals'
-import { ConnectionContext } from './types'
 import { TokenProgramAccount } from './accounts/vsrAccounts'
 import { MintLayout, RawMint } from '@solana/spl-token'
 import BN from 'bn.js'
@@ -40,25 +38,6 @@ export async function fetchGovernances({
   )
   const governancesMap = accountsToPubkeyMap(governances)
   return governancesMap
-}
-
-export async function fetchProposals({
-  connectionContext,
-  programId,
-  governances,
-}: {
-  connectionContext: ConnectionContext
-  programId: PublicKey
-  governances: PublicKey[]
-}) {
-  const proposalsByGovernance = await getProposals(
-    governances,
-    connectionContext,
-    programId
-  )
-
-  const proposals = accountsToPubkeyMap(proposalsByGovernance.flatMap((p) => p))
-  return proposals
 }
 
 export function accountsToPubkeyMap<T>(accounts: ProgramAccount<T>[]) {

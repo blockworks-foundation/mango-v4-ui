@@ -20,7 +20,7 @@
     "margin": "Margin",
     "margin-desc": "When margin is on you can trade with more size than your token balance. Using margin increases your risk of loss. If you're not an experienced trader, use it with caution.",
     "market-selector": "Market Selector",
-    "market-selector-desc": "Chose the market you want to trade.",
+    "market-selector-desc": "Choose the market you want to trade.",
     "oracle-price": "Oracle Price",
     "oracle-price-desc": "The oracle price uses an average of price data from many sources. It's used to avoid price manipulation which could lead to liquidations.",
     "orderbook-grouping": "Orderbook Grouping",

@@ -147,6 +147,11 @@ const MoreMenuPanel = ({
           icon={<PlusCircleIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
+          title={t('common:vote')}
+          path="/governance/vote"
+          icon={<PlusCircleIcon className="h-5 w-5" />}
+        />
+        <MoreMenuItem
           title={t('learn')}
           path="https://docs.mango.markets/"
           icon={<LightBulbIcon className="h-5 w-5" />}
