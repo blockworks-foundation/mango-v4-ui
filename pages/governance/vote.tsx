@@ -2,9 +2,7 @@ import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import dynamic from 'next/dynamic'
 
-const ListTokenPage = dynamic(
-  () => import('@components/governance/ListToken/ListTokenPage')
-)
+const VotePage = dynamic(() => import('@components/governance/Vote/VotePage'))
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -20,8 +18,8 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
-const Governance: NextPage = () => {
-  return <ListTokenPage />
+const ListToken: NextPage = () => {
+  return <VotePage />
 }
 
-export default Governance
+export default ListToken
