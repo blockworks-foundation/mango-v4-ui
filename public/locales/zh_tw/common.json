@@ -72,7 +72,7 @@
   "wallet-balance": "錢包餘額",
   "wallet-disconnected": "已斷開錢包連接",
   "withdraw": "取款",
-  "withdraw-amount": "取款額,
-  "list-token": "List Token",
-  "vote": "Vote""
+  "withdraw-amount": "取款額",
+  "list-token": "列表代币",
+  "vote": "投票"
 }
