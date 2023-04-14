@@ -178,9 +178,7 @@ const LeaderboardRow = ({
           >
             {rank}
           </p>
-          {rank < 4 ? (
-            <MedalIcon className="absolute shadow-md" rank={rank} />
-          ) : null}
+          {rank < 4 ? <MedalIcon className="absolute" rank={rank} /> : null}
         </div>
         <ProfileImage
           imageSize={'40'}
