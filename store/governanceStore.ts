@@ -1,5 +1,7 @@
 import { AnchorProvider, BN } from '@project-serum/anchor'
 import {
+  getAllProposals,
+  getProposal,
   getTokenOwnerRecord,
   getTokenOwnerRecordAddress,
   Governance,
@@ -17,8 +19,8 @@ import {
 } from 'utils/governance/constants'
 import { getDeposits } from 'utils/governance/fetch/deposits'
 import {
+  accountsToPubkeyMap,
   fetchGovernances,
-  fetchProposals,
   fetchRealm,
 } from 'utils/governance/tools'
 import { ConnectionContext, EndpointTypes } from 'utils/governance/types'
@@ -37,19 +39,21 @@ type IGovernanceStore = {
   vsrClient: VsrClient | null
   loadingRealm: boolean
   loadingVoter: boolean
+  loadingProposals: boolean
   voter: {
     voteWeight: BN
-    wallet: PublicKey
     tokenOwnerRecord: ProgramAccount<TokenOwnerRecord> | undefined | null
   }
   set: (x: (x: IGovernanceStore) => void) => void
   initConnection: (connection: Connection) => void
   initRealm: (connectionContext: ConnectionContext) => void
-  fetchVoterWeight: (
+  fetchVoter: (
     wallet: PublicKey,
     vsrClient: VsrClient,
     connectionContext: ConnectionContext
   ) => void
+  resetVoter: () => void
+  updateProposals: (proposalPk: PublicKey) => void
 }
 
 const GovernanceStore = create<IGovernanceStore>((set, get) => ({
@@ -60,13 +64,13 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
   vsrClient: null,
   loadingRealm: false,
   loadingVoter: false,
+  loadingProposals: false,
   voter: {
     voteWeight: new BN(0),
-    wallet: PublicKey.default,
     tokenOwnerRecord: null,
   },
   set: (fn) => set(produce(fn)),
-  fetchVoterWeight: async (
+  fetchVoter: async (
     wallet: PublicKey,
     vsrClient: VsrClient,
     connectionContext: ConnectionContext
@@ -99,9 +103,15 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     })
     set((state) => {
       state.voter.voteWeight = votingPower
-      state.voter.wallet = wallet
       state.voter.tokenOwnerRecord = tokenOwnerRecord
       state.loadingVoter = false
+    })
+  },
+  resetVoter: () => {
+    const set = get().set
+    set((state) => {
+      state.voter.voteWeight = new BN(0)
+      state.voter.tokenOwnerRecord = null
     })
   },
   initConnection: async (connection) => {
@@ -141,16 +151,38 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
         realmId: MANGO_REALM_PK,
       }),
     ])
-    const proposals = await fetchProposals({
-      connectionContext: connectionContext,
-      programId: MANGO_GOVERNANCE_PROGRAM,
-      governances: Object.keys(governances).map((x) => new PublicKey(x)),
-    })
     set((state) => {
+      state.loadingProposals = true
+    })
+    const proposals = await getAllProposals(
+      connectionContext.current,
+      MANGO_GOVERNANCE_PROGRAM,
+      MANGO_REALM_PK
+    )
+    const proposalsObj = accountsToPubkeyMap(proposals.flatMap((p) => p))
+    set((state) => {
+      state.loadingProposals = false
       state.realm = realm
       state.governances = governances
-      state.proposals = proposals
+      state.proposals = proposalsObj
       state.loadingRealm = false
+    })
+  },
+  updateProposals: async (proposalPk: PublicKey) => {
+    const state = get()
+    const set = get().set
+    set((state) => {
+      state.loadingProposals = true
+    })
+    const proposal = await getProposal(
+      state.connectionContext!.current!,
+      proposalPk
+    )
+    const newProposals = { ...state.proposals }
+    newProposals[proposal.pubkey.toBase58()] = proposal
+    set((state) => {
+      state.proposals = newProposals
+      state.loadingProposals = false
     })
   },
 }))

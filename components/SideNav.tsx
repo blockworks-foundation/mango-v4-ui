@@ -15,6 +15,7 @@ import {
   BanknotesIcon,
   NewspaperIcon,
   PlusCircleIcon,
+  ArchiveBoxArrowDownIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -148,6 +149,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 icon={<PlusCircleIcon className="h-5 w-5" />}
                 title={t('common:list-token')}
                 pagePath="/governance/listToken"
+                hideIconBg
+                showTooltip={false}
+              />
+              <MenuItem
+                active={pathname === '/governance/vote'}
+                collapsed={false}
+                icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
+                title={t('common:vote')}
+                pagePath="/governance/vote"
                 hideIconBg
                 showTooltip={false}
               />

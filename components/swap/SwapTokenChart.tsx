@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   Text,
   ReferenceDot,
+  ReferenceDotProps,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
 import ContentBox from '../shared/ContentBox'
@@ -40,6 +41,8 @@ import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalCh
 import { interpolateNumber } from 'd3-interpolate'
 import { IconButton } from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
+import { SwapHistoryItem } from 'types'
+import { Bank } from '@blockworks-foundation/mango-v4'
 
 dayjs.extend(relativeTime)
 
@@ -88,6 +91,56 @@ const CustomizedLabel = ({
   } else return <div />
 }
 
+interface ExtendedReferenceDotProps extends ReferenceDotProps {
+  swapHistory: SwapHistoryItem[]
+  inputBank: Bank | undefined
+  flipPrices: boolean
+}
+
+const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
+  const { cx, cy, x, swapHistory, inputBank, flipPrices } = props
+  const swapDetails = swapHistory.find(
+    (swap) => dayjs(swap.block_datetime).unix() * 1000 === x
+  )
+  const side = swapDetails?.swap_in_symbol === inputBank?.name ? 'sell' : 'buy'
+
+  const buy = {
+    pathCoords: 'M11 0.858312L0.857867 15.0004H21.1421L11 0.858312Z',
+    fill: 'var(--up)',
+    yOffset: 1,
+  }
+
+  const sell = {
+    pathCoords:
+      'M11 14.1427L21.1421 0.000533306L0.857865 0.000529886L11 14.1427Z',
+    fill: 'var(--down)',
+    yOffset: -11,
+  }
+
+  const sideArrowProps =
+    side === 'buy' ? (!flipPrices ? buy : sell) : !flipPrices ? sell : buy
+  return cx && cy ? (
+    <svg
+      width="14.67"
+      height="10"
+      viewBox="0 0 20 15"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      x={cx - 8}
+      y={cy + sideArrowProps.yOffset}
+    >
+      <path
+        d={sideArrowProps.pathCoords}
+        fill={sideArrowProps.fill}
+        stroke={'var(--bkg-1)'}
+        strokeWidth={2}
+      />
+    </svg>
+  ) : (
+    <div />
+  )
+}
+
 const SwapTokenChart = () => {
   const { t } = useTranslation('common')
   const inputBank = mangoStore((s) => s.swap.inputBank)
@@ -107,7 +160,7 @@ const SwapTokenChart = () => {
   const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
   const [showSwaps, setShowSwaps] = useState(false)
 
-  const chartDataQuery = useQuery(
+  const coingeckoDataQuery = useQuery(
     ['chart-data', baseTokenId, quoteTokenId, daysToShow],
     () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
     {
@@ -118,12 +171,12 @@ const SwapTokenChart = () => {
     }
   )
 
-  const chartData = useMemo(() => {
-    if (!chartDataQuery?.data?.length) return []
+  const coingeckoData = useMemo(() => {
+    if (!coingeckoDataQuery?.data?.length) return []
     if (!flipPrices) {
-      return chartDataQuery.data
+      return coingeckoDataQuery.data
     } else {
-      return chartDataQuery.data.map((d: ChartDataItem) => {
+      return coingeckoDataQuery.data.map((d: ChartDataItem) => {
         const price =
           d.inputTokenPrice / d.outputTokenPrice === d.price
             ? d.outputTokenPrice / d.inputTokenPrice
@@ -131,10 +184,16 @@ const SwapTokenChart = () => {
         return { ...d, price: price }
       })
     }
-  }, [flipPrices, chartDataQuery])
+  }, [flipPrices, coingeckoDataQuery])
 
   const chartSwapTimes = useMemo(() => {
-    if (loadSwapHistory || !swapHistory.length || !inputBank || !outputBank)
+    if (
+      loadSwapHistory ||
+      !swapHistory ||
+      !swapHistory.length ||
+      !inputBank ||
+      !outputBank
+    )
       return []
     const chartSymbols = [inputBank.name, outputBank.name]
     return swapHistory
@@ -146,42 +205,42 @@ const SwapTokenChart = () => {
       .map((val) => dayjs(val.block_datetime).unix() * 1000)
   }, [swapHistory, loadSwapHistory, inputBank, outputBank])
 
-  const highlightPoints = useMemo(() => {
-    if (!chartData.length || !chartSwapTimes.length) return []
+  const swapHistoryPoints = useMemo(() => {
+    if (!coingeckoData.length || !chartSwapTimes.length) return []
     return chartSwapTimes.map((x) => {
       const makeChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
-      const index = chartData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
+      const index = coingeckoData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
       if (index === 0) {
-        return { time: x, price: chartData[0].price, ...makeChartDataItem } // return first data point y value if highlight x is less than first data point x
+        return { time: x, price: coingeckoData[0].price, ...makeChartDataItem } // return first data point y value if highlight x is less than first data point x
       } else if (index === -1) {
         return {
           time: x,
-          price: chartData[chartData.length - 1].price,
+          price: coingeckoData[coingeckoData.length - 1].price,
           ...makeChartDataItem,
         } // return last data point y value if highlight x is greater than last data point x
       } else {
-        const x0 = chartData[index - 1].time
-        const x1 = chartData[index].time
-        const y0 = chartData[index - 1].price
-        const y1 = chartData[index].price
+        const x0 = coingeckoData[index - 1].time
+        const x1 = coingeckoData[index].time
+        const y0 = coingeckoData[index - 1].price
+        const y1 = coingeckoData[index].price
         const interpolateY = interpolateNumber(y0, y1) // create interpolate function for y values
         const y = interpolateY((x - x0) / (x1 - x0)) // estimate y value at highlight x using interpolate function
         return { time: x, price: y, ...makeChartDataItem }
       }
     })
-  }, [chartData, chartSwapTimes])
+  }, [coingeckoData, chartSwapTimes])
 
-  const charty = useMemo(() => {
-    if (!chartData.length) return []
-    const minTime = chartData[0].time
-    const maxTime = chartData[chartData.length - 1].time
-    if (highlightPoints.length) {
-      const swapPoints = highlightPoints.filter(
+  const chartData = useMemo(() => {
+    if (!coingeckoData.length) return []
+    const minTime = coingeckoData[0].time
+    const maxTime = coingeckoData[coingeckoData.length - 1].time
+    if (swapHistoryPoints.length) {
+      const swapPoints = swapHistoryPoints.filter(
         (point) => point.time >= minTime && point.time <= maxTime
       )
-      return chartData.concat(swapPoints).sort((a, b) => a.time - b.time)
-    } else return chartData
-  }, [chartData, highlightPoints])
+      return coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
+    } else return coingeckoData
+  }, [coingeckoData, swapHistoryPoints])
 
   const handleMouseMove: CategoricalChartFunc = (coords) => {
     if (coords.activePayload) {
@@ -206,17 +265,18 @@ const SwapTokenChart = () => {
   }, [inputCoingeckoId, outputCoingeckoId])
 
   const calculateChartChange = () => {
-    if (charty?.length) {
+    if (chartData?.length) {
       if (mouseData) {
-        const index = charty.findIndex((d) => d.time === mouseData.time)
+        const index = chartData.findIndex((d) => d.time === mouseData.time)
         return (
-          ((charty[index]['price'] - charty[0]['price']) / charty[0]['price']) *
+          ((chartData[index]['price'] - chartData[0]['price']) /
+            chartData[0]['price']) *
           100
         )
       } else
         return (
-          ((charty[charty.length - 1]['price'] - charty[0]['price']) /
-            charty[0]['price']) *
+          ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
+            chartData[0]['price']) *
           100
         )
     }
@@ -236,24 +296,9 @@ const SwapTokenChart = () => {
       : `${outputSymbol}/${inputSymbol}`
   }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
 
-  const getSwapFillColor = (x: number) => {
-    const swapDetails = swapHistory.find(
-      (swap) => dayjs(swap.block_datetime).unix() * 1000 === x
-    )
-    const side =
-      swapDetails?.swap_in_symbol === inputBank?.name ? 'sell' : 'buy'
-    return side === 'buy'
-      ? !flipPrices
-        ? COLORS.UP[theme]
-        : COLORS.DOWN[theme]
-      : !flipPrices
-      ? COLORS.DOWN[theme]
-      : COLORS.UP[theme]
-  }
-
   return (
     <ContentBox hideBorder hidePadding className="h-full px-6 py-3">
-      {chartDataQuery?.isLoading || chartDataQuery.isFetching ? (
+      {coingeckoDataQuery?.isLoading || coingeckoDataQuery.isFetching ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />
@@ -265,7 +310,7 @@ const SwapTokenChart = () => {
             <div className="h-[18px] bg-th-bkg-2" />
           </SheenLoader>
         </>
-      ) : charty?.length && baseTokenId && quoteTokenId ? (
+      ) : chartData?.length && baseTokenId && quoteTokenId ? (
         <div className="relative">
           <div className="flex items-start justify-between">
             <div>
@@ -313,12 +358,12 @@ const SwapTokenChart = () => {
                         width={35}
                         play
                         numbers={formatNumericValue(
-                          charty[charty.length - 1].price
+                          chartData[chartData.length - 1].price
                         )}
                       />
                     ) : (
                       <FormatNumericValue
-                        value={charty[charty.length - 1].price}
+                        value={chartData[chartData.length - 1].price}
                       />
                     )}
                     <span
@@ -328,7 +373,7 @@ const SwapTokenChart = () => {
                     </span>
                   </div>
                   <p className="text-sm text-th-fgd-4">
-                    {dayjs(charty[charty.length - 1].time).format(
+                    {dayjs(chartData[chartData.length - 1].time).format(
                       'DD MMM YY, h:mma'
                     )}
                   </p>
@@ -367,10 +412,9 @@ const SwapTokenChart = () => {
             <div className="h-full md:-mx-2 md:mt-4">
               <ResponsiveContainer>
                 <AreaChart
-                  data={charty}
+                  data={chartData}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
-                  // margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                 >
                   <RechartsTooltip
                     cursor={{
@@ -417,7 +461,7 @@ const SwapTokenChart = () => {
                     }
                     strokeWidth={1.5}
                     fill="url(#gradientArea)"
-                    label={<CustomizedLabel chartData={charty} />}
+                    label={<CustomizedLabel chartData={chartData} />}
                   />
                   <XAxis dataKey="time" hide padding={{ left: 0, right: 0 }} />
                   <YAxis
@@ -427,16 +471,20 @@ const SwapTokenChart = () => {
                     hide
                     padding={{ top: 20, bottom: 20 }}
                   />
-                  {showSwaps
-                    ? highlightPoints.map((point, index) => (
+                  {showSwaps && swapHistoryPoints.length
+                    ? swapHistoryPoints.map((point, index) => (
                         <ReferenceDot
                           key={index}
                           x={point.time}
                           y={point.price}
-                          r={4}
-                          fill={getSwapFillColor(point.time)}
-                          stroke={'white'}
                           isFront={true}
+                          shape={
+                            <SwapHistoryArrows
+                              swapHistory={swapHistory}
+                              inputBank={inputBank}
+                              flipPrices={flipPrices}
+                            />
+                          }
                         />
                       ))
                     : null}
