@@ -25,6 +25,7 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import NotificationsButton from './NotificationsButton'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -119,6 +120,7 @@ const TopBar = () => {
           )}
           {connected ? (
             <div className="flex items-center pr-4 md:pr-0">
+              <NotificationsButton />
               <AccountsButton />
               <ConnectedMenu />
             </div>
