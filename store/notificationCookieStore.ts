@@ -2,45 +2,43 @@ import produce from 'immer'
 import Cookies from 'js-cookie'
 import create from 'zustand'
 
-type INotificationCookieStore = {
+type ICookieStore = {
   currentToken: string
-  set: (x: (x: INotificationCookieStore) => void) => void
+  set: (x: (x: ICookieStore) => void) => void
   updateCookie: (wallet?: string) => void
   removeCookie: (wallet: string) => void
   setCookie: (wallet: string, token: string) => void
 }
 
-const NotificationCookieStore = create<INotificationCookieStore>(
-  (set, get) => ({
-    currentToken: '',
-    set: (fn) => set(produce(fn)),
-    updateCookie: async (wallet?: string) => {
-      const set = get().set
-      const token = wallet ? getWalletToken(wallet) : ''
+const CookieStore = create<ICookieStore>((set, get) => ({
+  currentToken: '',
+  set: (fn) => set(produce(fn)),
+  updateCookie: async (wallet?: string) => {
+    const set = get().set
+    const token = wallet ? getWalletToken(wallet) : ''
+    set((state) => {
+      state.currentToken = token
+    })
+  },
+  removeCookie: async (wallet: string) => {
+    const set = get().set
+    if (getWalletToken(wallet)) {
+      removeWalletToken(wallet)
       set((state) => {
-        state.currentToken = token
+        state.currentToken = ''
       })
-    },
-    removeCookie: async (wallet: string) => {
-      const set = get().set
-      if (getWalletToken(wallet)) {
-        removeWalletToken(wallet)
-        set((state) => {
-          state.currentToken = ''
-        })
-      }
-    },
-    setCookie: async (wallet: string, token: string) => {
-      const set = get().set
-      setWalletToken(wallet, token)
-      set((state) => {
-        state.currentToken = token
-      })
-    },
-  })
-)
+    }
+  },
+  setCookie: async (wallet: string, token: string) => {
+    const set = get().set
+    setWalletToken(wallet, token)
+    set((state) => {
+      state.currentToken = token
+    })
+  },
+}))
 
-export default NotificationCookieStore
+export default CookieStore
 
 const cookieName = 'authToken-'
 
