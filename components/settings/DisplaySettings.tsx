@@ -7,12 +7,15 @@ import ChartOnRight from '@components/icons/ChartOnRight'
 import Tooltip from '@components/shared/Tooltip'
 import { TradeLayout } from '@components/trade/TradeAdvancedPage'
 // import dayjs from 'dayjs'
-import useLocalStorageState from 'hooks/useLocalStorageState'
-import { useTranslation } from 'next-i18next'
-import { useTheme } from 'next-themes'
 import { ReactNode } from 'react'
 // import { useRouter } from 'next/router'
 // import { useCallback } from 'react'
+import dayjs from 'dayjs'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { useTranslation } from 'next-i18next'
+import { useTheme } from 'next-themes'
+import { useCallback } from 'react'
+import { useRouter } from 'next/router'
 import {
   NOTIFICATION_POSITION_KEY,
   SIZE_INPUT_UI_KEY,
@@ -30,17 +33,17 @@ const NOTIFICATION_POSITIONS = [
 const TRADING_CHARTS = ['custom', 'trading-view']
 const TRADE_FORM_UI = ['slider', 'buttons']
 
-// const LANGS = [
-// { locale: 'en', name: 'english', description: 'english' },
-// { locale: 'ru', name: 'russian', description: 'russian' },
-// { locale: 'es', name: 'spanish', description: 'spanish' },
-// {
-//   locale: 'zh_tw',
-//   name: 'chinese-traditional',
-//   description: 'traditional chinese',
-// },
-// { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
-// ]
+const LANGS = [
+  { locale: 'en', name: 'english', description: 'english' },
+  // { locale: 'ru', name: 'russian', description: 'russian' },
+  // { locale: 'es', name: 'spanish', description: 'spanish' },
+  {
+    locale: 'zh_tw',
+    name: 'chinese-traditional',
+    description: 'traditional chinese',
+  },
+  // { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
+]
 
 export const THEMES = [
   'light',
@@ -58,9 +61,12 @@ export const THEMES = [
 const DisplaySettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, setTheme } = useTheme()
-  // const [savedLanguage, setSavedLanguage] = useLocalStorageState('language', '')
-  // const router = useRouter()
-  // const { pathname, asPath, query } = router
+  const [savedLanguage, setSavedLanguage] = useLocalStorageState(
+    'language',
+    'en'
+  )
+  const router = useRouter()
+  const { pathname, asPath, query } = router
   const [notificationPosition, setNotificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
     'bottom-left'
@@ -75,14 +81,14 @@ const DisplaySettings = () => {
   )
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
 
-  // const handleLangChange = useCallback(
-  //   (l: string) => {
-  //     setSavedLanguage(l)
-  //     router.push({ pathname, query }, asPath, { locale: l })
-  //     dayjs.locale(l == 'zh_tw' ? 'zh-tw' : l)
-  //   },
-  //   [router]
-  // )
+  const handleLangChange = useCallback(
+    (l: string) => {
+      setSavedLanguage(l)
+      router.push({ pathname, query }, asPath, { locale: l })
+      dayjs.locale(l == 'zh_tw' ? 'zh-tw' : l)
+    },
+    [router, pathname, query, asPath, setSavedLanguage]
+  )
 
   return (
     <>
@@ -103,9 +109,9 @@ const DisplaySettings = () => {
           </Select>
         </div>
       </div>
-      {/* <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
+      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('settings:language')}</p>
-        <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
+        <div className="w-full min-w-[220px] md:w-auto md:pl-4">
           <ButtonGroup
             activeValue={savedLanguage}
             onChange={(l) => handleLangChange(l)}
@@ -113,7 +119,7 @@ const DisplaySettings = () => {
             names={LANGS.map((val) => t(`settings:${val.name}`))}
           />
         </div>
-      </div> */}
+      </div>
       <div className="hidden border-t border-th-bkg-3 py-4 md:flex md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('settings:notification-position')}</p>
         <div className="w-full min-w-[140px] md:w-auto">

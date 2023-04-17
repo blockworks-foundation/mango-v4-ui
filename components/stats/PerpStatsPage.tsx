@@ -10,10 +10,6 @@ const PerpStatsPage = () => {
   const { market } = router.query
   const { group } = useMangoGroup()
   const perpStats = mangoStore((s) => s.perpStats.data)
-  // const [animationSettings] = useLocalStorageState(
-  //   ANIMATION_SETTINGS_KEY,
-  //   INITIAL_ANIMATION_SETTINGS
-  // )
 
   useEffect(() => {
     if (!perpStats || !perpStats.length) {
@@ -32,11 +28,6 @@ const PerpStatsPage = () => {
     const marketStats = perpStats
       .filter((stat) => stat.market_index === marketDetails.perpMarketIndex)
       .reverse()
-    // const change = marketStats.length
-    //   ? ((marketDetails.uiPrice - marketStats[0].price) /
-    //       marketStats[0].price) *
-    //     100
-    //   : 0
     return marketStats
   }, [marketDetails, perpStats])
 
@@ -48,23 +39,6 @@ const PerpStatsPage = () => {
             <MarketLogos market={marketDetails} size="large" />
             <h1 className="text-xl">{marketDetails.name}</h1>
           </div>
-          {/* <div className="flex flex-wrap items-end font-display text-5xl text-th-fgd-1">
-            <div className="mr-3">
-              {animationSettings['number-scroll'] ? (
-                <FlipNumbers
-                  height={48}
-                  width={35}
-                  play
-                  delay={0.05}
-                  duration={1}
-                  numbers={formatCurrencyValue(marketDetails.uiPrice)}
-                />
-              ) : (
-                <FormatNumericValue value={marketDetails.uiPrice} isUsd />
-              )}
-            </div>
-            <Change change={change} suffix="%" />
-          </div> */}
         </div>
       </div>
       <PerpMarketDetails marketStats={marketStats} perpMarket={marketDetails} />

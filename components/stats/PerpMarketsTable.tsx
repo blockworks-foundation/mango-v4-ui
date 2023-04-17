@@ -21,6 +21,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { PerpStatsItem } from 'types'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { NextRouter, useRouter } from 'next/router'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -188,13 +189,30 @@ const PerpMarketsTable = () => {
                     </div>
                   </Td>
                   <Td>
-                    <div className="flex flex-col text-right">
-                      <p>
-                        {fundingRate}
-                        <span className="mx-1">|</span>
-                        {fundingRateApr}{' '}
-                        <span className="font-body text-th-fgd-3">APR</span>
-                      </p>
+                    <div className="flex items-center justify-end">
+                      <p className="">{fundingRate}</p>
+                      <Tooltip
+                        content={
+                          <>
+                            {fundingRateApr ? (
+                              <div className="">
+                                The 1hr rate as an APR is {fundingRateApr}.
+                              </div>
+                            ) : null}
+                            <div className="mt-2">
+                              Funding is paid continuously. The 1hr rate
+                              displayed is a rolling average of the past 60
+                              mins.
+                            </div>
+                            <div className="mt-2">
+                              When positive, longs will pay shorts and when
+                              negative shorts pay longs.
+                            </div>
+                          </>
+                        }
+                      >
+                        <InformationCircleIcon className="ml-2 h-4 w-4" />
+                      </Tooltip>
                     </div>
                   </Td>
                   <Td>
