@@ -1,4 +1,4 @@
-import { MintInfo } from '@blockworks-foundation/mango-v4'
+import { MintInfo } from '@solana/spl-token'
 import { BN, EventParser } from '@coral-xyz/anchor'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import {

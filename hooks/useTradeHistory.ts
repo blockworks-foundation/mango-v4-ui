@@ -131,6 +131,28 @@ const formatTradeHistory = (
   })
 }
 
+const filterNewFills = (
+  eventQueueFills: (SerumEvent | PerpFillEvent)[],
+  apiTradeHistory: (SpotTradeHistory | PerpTradeHistory)[]
+): (SerumEvent | PerpFillEvent)[] => {
+  return eventQueueFills.filter((fill) => {
+    return !apiTradeHistory.find((trade) => {
+      if ('order_id' in trade && isSerumFillEvent(fill)) {
+        return trade.order_id === fill.orderId.toString()
+      } else if ('seq_num' in trade && isPerpFillEvent(fill)) {
+        const fillTimestamp = new Date(
+          fill.timestamp.toNumber() * 1000
+        ).getTime()
+        const lastApiTradeTimestamp = new Date(
+          apiTradeHistory[apiTradeHistory.length - 1].block_datetime
+        ).getTime()
+        if (fillTimestamp < lastApiTradeTimestamp) return true
+        return trade.seq_num === fill.seqNum.toNumber()
+      }
+    })
+  })
+}
+
 const isTradeHistory = (
   response: null | EmptyObject | TradeHistoryApiResponseType[]
 ): response is TradeHistoryApiResponseType[] => {
@@ -163,7 +185,6 @@ const fetchTradeHistory = async (
 }
 
 export default function useTradeHistory() {
-  const group = mangoStore.getState().group
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const fills = mangoStore((s) => s.selectedMarket.fills)
@@ -218,24 +239,22 @@ export default function useTradeHistory() {
 
   const combinedTradeHistory = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !selectedMarket || response.isLoading) return []
-    let newFills: (SerumEvent | PerpFillEvent)[] = []
-    const combinedTradeHistoryPages = response.data?.pages.flat() ?? []
-    if (eventQueueFillsForOwner?.length) {
-      newFills = eventQueueFillsForOwner.filter((fill) => {
-        return !combinedTradeHistoryPages.find((t) => {
-          if ('order_id' in t && isSerumFillEvent(fill)) {
-            return t.order_id === fill.orderId.toString()
-          } else if ('seq_num' in t && isPerpFillEvent(fill)) {
-            return t.seq_num === fill.seqNum.toNumber()
-          }
-        })
-      })
-    }
-    return formatTradeHistory(group, selectedMarket, mangoAccountAddress, [
-      ...newFills,
-      ...combinedTradeHistoryPages,
-    ])
+    if (!group || !selectedMarket) return []
+
+    const apiTradeHistory = response.data?.pages.flat() ?? []
+
+    const newFills: (SerumEvent | PerpFillEvent)[] =
+      eventQueueFillsForOwner?.length
+        ? filterNewFills(eventQueueFillsForOwner, apiTradeHistory)
+        : []
+
+    const combinedHistory = [...newFills, ...apiTradeHistory]
+    return formatTradeHistory(
+      group,
+      selectedMarket,
+      mangoAccountAddress,
+      combinedHistory
+    )
   }, [eventQueueFillsForOwner, mangoAccountAddress, response, selectedMarket])
 
   return { ...response, data: combinedTradeHistory }

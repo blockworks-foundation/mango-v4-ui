@@ -376,11 +376,12 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Net borrows in window / Net borrow limit per window quote"
-                                  value={`$${toUiDecimals(
-                                    bank.netBorrowsInWindow.toNumber(),
-                                    6
-                                  )} / $${toUiDecimals(
-                                    bank.netBorrowLimitPerWindowQuote.toNumber(),
+                                  value={`$${toUiDecimalsForQuote(
+                                    I80F48.fromI64(bank.netBorrowsInWindow).mul(
+                                      bank.price
+                                    )
+                                  ).toFixed(2)} / $${toUiDecimals(
+                                    bank.netBorrowLimitPerWindowQuote,
                                     6
                                   )}`}
                                 />

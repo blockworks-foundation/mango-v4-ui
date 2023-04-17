@@ -438,9 +438,9 @@ const SwapForm = () => {
               setShowConfirm={setShowConfirm}
               amountIn={amountInAsDecimal}
               inputSymbol={inputBank?.name}
-              amountOut={
-                selectedRoute ? amountOutAsDecimal.toNumber() : undefined
-              }
+              // amountOut={
+              //   selectedRoute ? amountOutAsDecimal.toNumber() : undefined
+              // }
               isDelegatedAccount={isDelegatedAccount}
             />
           ) : (
@@ -507,7 +507,7 @@ export default SwapForm
 
 const SwapFormSubmitButton = ({
   amountIn,
-  amountOut,
+  // amountOut,
   inputSymbol,
   loadingSwapDetails,
   selectedRoute,
@@ -516,7 +516,7 @@ const SwapFormSubmitButton = ({
   isDelegatedAccount,
 }: {
   amountIn: Decimal
-  amountOut: number | undefined
+  // amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
   selectedRoute: RouteInfo | undefined | null
@@ -533,12 +533,12 @@ const SwapFormSubmitButton = ({
     ? amountWithBorrow.lt(amountIn)
     : tokenMax.lt(amountIn)
 
-  const disabled =
-    connected &&
-    (!amountIn.toNumber() ||
-      showInsufficientBalance ||
-      !amountOut ||
-      !selectedRoute)
+  // const disabled =
+  //   connected &&
+  //   (!amountIn.toNumber() ||
+  //     showInsufficientBalance ||
+  //     !amountOut ||
+  //     !selectedRoute)
 
   const onClick = connected ? () => setShowConfirm(true) : handleConnect
 
@@ -547,7 +547,8 @@ const SwapFormSubmitButton = ({
       <Button
         onClick={onClick}
         className="mt-6 mb-4 flex w-full items-center justify-center text-base"
-        disabled={disabled}
+        // disabled={disabled}
+        disabled={true}
         size="large"
       >
         {isDelegatedAccount ? (

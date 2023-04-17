@@ -1,11 +1,11 @@
 {
-    "assets-to-borrow": "Assets to Borrow",
-    "available-to-borrow": "Available to Borrow",
-    "borrowed-amount": "Borrowed Amount",
-    "connect-borrows": "Connect to see your borrows",
-    "current-borrow-value": "Current Borrow Value",
-    "liability-weight-desc": "Liability weight adds to the value of the liability in your account health calculation.",
-    "no-borrows": "No Borrows",
-    "tooltip-available": "The max amount you can borrow",
-    "your-borrows": "Your Borrows"
+    "assets-to-borrow": "可借資產",
+    "available-to-borrow": "可借餘額",
+    "borrowed-amount": "借貸數量",
+    "connect-borrows": "連接而查看你的借貸",
+    "current-borrow-value": "借貸價值",
+    "liability-weight-desc": "計算帳戶健康時債務權重會增加債務價值。",
+    "no-borrows": "無借貸",
+    "tooltip-available": "你可借的最多資產",
+    "your-borrows": "你的借貸"
 }

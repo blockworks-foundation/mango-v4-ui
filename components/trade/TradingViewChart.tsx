@@ -69,8 +69,6 @@ function hexToRgb(hex: string) {
     : null
 }
 
-const TRADE_EXECUTION_LIMIT = 100
-
 const TradingViewChart = () => {
   const { t } = useTranslation(['tv-chart', 'trade'])
   const { theme } = useTheme()
@@ -893,7 +891,7 @@ const TradingViewChart = () => {
         .filter((trade) => {
           return trade.market.name === selectedMarketName
         })
-        .slice(0, TRADE_EXECUTION_LIMIT)
+        .slice()
       for (let i = 0; i < filteredTrades.length; i++) {
         const trade = filteredTrades[i]
         try {
