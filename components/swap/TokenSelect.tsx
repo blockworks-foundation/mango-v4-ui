@@ -7,6 +7,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import { Dispatch, SetStateAction } from 'react'
+import { formatTokenSymbol } from 'utils/tokens'
 
 type TokenSelectProps = {
   bank: Bank | undefined
@@ -41,7 +42,9 @@ const TokenSelect = ({ bank, showTokenList, type }: TokenSelectProps) => {
         )}
       </div>
       <div className="flex w-full items-center justify-between">
-        <div className="text-xl font-bold text-th-fgd-1">{bank?.name}</div>
+        <div className="text-xl font-bold text-th-fgd-1">
+          {formatTokenSymbol(bank!.name)}
+        </div>
         <ChevronDownIcon className="h-6 w-6" />
       </div>
     </div>

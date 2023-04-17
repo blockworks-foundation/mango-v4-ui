@@ -102,5 +102,10 @@ export const fetchNftsFromHolaplexIndexer = async (owner: PublicKey) => {
   return body.data
 }
 
-export const formatTokenSymbol = (symbol: string) =>
-  symbol === 'MSOL' ? 'mSOL' : symbol
+export const formatTokenSymbol = (symbol: string) => {
+  if (symbol.toLowerCase().includes('portal')) {
+    const truncSymbol = symbol.split(' ')[0]
+    return truncSymbol === 'WBTC' ? 'wBTC' : truncSymbol
+  }
+  return symbol === 'MSOL' ? 'mSOL' : symbol
+}
