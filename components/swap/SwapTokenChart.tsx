@@ -234,13 +234,13 @@ const SwapTokenChart = () => {
     if (!coingeckoData.length) return []
     const minTime = coingeckoData[0].time
     const maxTime = coingeckoData[coingeckoData.length - 1].time
-    if (swapHistoryPoints.length) {
+    if (swapHistoryPoints.length && showSwaps) {
       const swapPoints = swapHistoryPoints.filter(
         (point) => point.time >= minTime && point.time <= maxTime
       )
       return coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
     } else return coingeckoData
-  }, [coingeckoData, swapHistoryPoints])
+  }, [coingeckoData, swapHistoryPoints, showSwaps])
 
   const handleMouseMove: CategoricalChartFunc = (coords) => {
     if (coords.activePayload) {
