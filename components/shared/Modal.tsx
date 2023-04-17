@@ -47,6 +47,7 @@ function Modal({
               : 'p-4 pt-6 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
           } relative `}
         >
+          <div>{children}</div>
           {!hideClose ? (
             <button
               onClick={onClose}
@@ -55,7 +56,6 @@ function Modal({
               <XMarkIcon className={`h-6 w-6`} />
             </button>
           ) : null}
-          <div>{children}</div>
         </Dialog.Panel>
       </div>
     </Dialog>
