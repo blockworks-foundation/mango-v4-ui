@@ -45,6 +45,7 @@ import { isMangoError } from 'types'
 import ColorBlur from '@components/ColorBlur'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ACCEPT_TERMS_KEY } from 'utils/constants'
+import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES } from '@components/BorrowForm'
 
 const UserSetupModal = ({
   isOpen,
@@ -429,7 +430,7 @@ const UserSetupModal = ({
                       allowNegative={false}
                       isNumericString={true}
                       decimalScale={tokenMax.decimals || 6}
-                      className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                      className={ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES}
                       placeholder="0.00"
                       value={depositAmount}
                       onValueChange={(e: NumberFormatValues) => {

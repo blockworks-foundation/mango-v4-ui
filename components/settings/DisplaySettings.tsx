@@ -5,6 +5,11 @@ import ChartMiddleOBRight from '@components/icons/ChartMiddleOBRight'
 import ChartOnLeft from '@components/icons/ChartOnLeft'
 import ChartOnRight from '@components/icons/ChartOnRight'
 import Tooltip from '@components/shared/Tooltip'
+import { TradeLayout } from '@components/trade/TradeAdvancedPage'
+// import dayjs from 'dayjs'
+import { ReactNode } from 'react'
+// import { useRouter } from 'next/router'
+// import { useCallback } from 'react'
 import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
@@ -74,10 +79,7 @@ const DisplaySettings = () => {
     TRADE_CHART_UI_KEY,
     'trading-view'
   )
-  const [tradeLayout, setTradeLayout] = useLocalStorageState(
-    TRADE_LAYOUT_KEY,
-    'chartLeft'
-  )
+  const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
 
   const handleLangChange = useCallback(
     (l: string) => {
@@ -101,9 +103,7 @@ const DisplaySettings = () => {
           >
             {THEMES.map((theme) => (
               <Select.Option key={theme} value={t(`settings:${theme}`)}>
-                <div className="flex w-full items-center justify-between">
-                  {t(`settings:${theme}`)}
-                </div>
+                {t(`settings:${theme}`)}
               </Select.Option>
             ))}
           </Select>
@@ -111,7 +111,7 @@ const DisplaySettings = () => {
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('settings:language')}</p>
-        <div className="w-full min-w-[330px] md:w-[480px] md:pl-4">
+        <div className="w-full min-w-[220px] md:w-auto md:pl-4">
           <ButtonGroup
             activeValue={savedLanguage}
             onChange={(l) => handleLangChange(l)}
@@ -130,9 +130,7 @@ const DisplaySettings = () => {
           >
             {NOTIFICATION_POSITIONS.map((val) => (
               <Select.Option key={val} value={t(`settings:${val}`)}>
-                <div className="flex w-full items-center justify-between">
-                  {t(`settings:${val}`)}
-                </div>
+                {t(`settings:${val}`)}
               </Select.Option>
             ))}
           </Select>
@@ -142,52 +140,32 @@ const DisplaySettings = () => {
         <p className="mb-2 md:mb-0">{t('settings:trade-layout')}</p>
         <div className="flex space-x-3">
           <Tooltip content={t('settings:chart-left')}>
-            <button
-              className={`flex h-max items-center justify-center rounded border ${
-                tradeLayout === 'chartLeft'
-                  ? 'border-th-active'
-                  : 'border-th-bkg-4 md:hover:border-th-fgd-4'
-              } p-0.5 `}
+            <ChartLayoutButton
+              icon={<ChartOnLeft className="h-auto w-32" />}
+              position="chartLeft"
               onClick={() => setTradeLayout('chartLeft')}
-            >
-              <ChartOnLeft className="h-auto w-32" />
-            </button>
+            />
           </Tooltip>
           <Tooltip content={t('settings:chart-middle-ob-right')}>
-            <button
-              className={`flex h-max items-center justify-center rounded border ${
-                tradeLayout === 'chartMiddleOBRight'
-                  ? 'border-th-active'
-                  : 'border-th-bkg-4 md:hover:border-th-fgd-4'
-              } p-0.5 `}
+            <ChartLayoutButton
+              icon={<ChartMiddleOBRight className="h-auto w-32" />}
+              position="chartMiddleOBRight"
               onClick={() => setTradeLayout('chartMiddleOBRight')}
-            >
-              <ChartMiddleOBRight className="h-auto w-32" />
-            </button>
+            />
           </Tooltip>
           <Tooltip content={t('settings:chart-middle-ob-left')}>
-            <button
-              className={`flex h-max items-center justify-center rounded border ${
-                tradeLayout === 'chartMiddleOBLeft'
-                  ? 'border-th-active'
-                  : 'border-th-bkg-4 md:hover:border-th-fgd-4'
-              } p-0.5 `}
+            <ChartLayoutButton
+              icon={<ChartMiddleOBLeft className="h-auto w-32" />}
+              position="chartMiddleOBLeft"
               onClick={() => setTradeLayout('chartMiddleOBLeft')}
-            >
-              <ChartMiddleOBLeft className="h-auto w-32" />
-            </button>
+            />
           </Tooltip>
           <Tooltip content={t('settings:chart-right')}>
-            <button
-              className={`flex h-max items-center justify-center rounded border ${
-                tradeLayout === 'chartRight'
-                  ? 'border-th-active'
-                  : 'border-th-bkg-4 md:hover:border-th-fgd-4'
-              } p-0.5 `}
+            <ChartLayoutButton
+              icon={<ChartOnRight className="h-auto w-32" />}
+              position="chartRight"
               onClick={() => setTradeLayout('chartRight')}
-            >
-              <ChartOnRight className="h-auto w-32" />
-            </button>
+            />
           </Tooltip>
         </div>
       </div>
@@ -218,3 +196,27 @@ const DisplaySettings = () => {
 }
 
 export default DisplaySettings
+
+const ChartLayoutButton = ({
+  onClick,
+  icon,
+  position,
+}: {
+  onClick: (l: TradeLayout) => void
+  icon: ReactNode
+  position: TradeLayout
+}) => {
+  const [tradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
+  return (
+    <button
+      className={`flex h-max items-center justify-center rounded border ${
+        tradeLayout === position
+          ? 'border-th-active'
+          : 'border-th-bkg-4 md:hover:border-th-fgd-4'
+      } p-0.5 focus:border-th-fgd-4`}
+      onClick={() => onClick(position)}
+    >
+      {icon}
+    </button>
+  )
+}
