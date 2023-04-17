@@ -23,7 +23,7 @@
     "hourly-funding": "Average Hourly Funding",
     "in-orders": "In Orders",
     "init-leverage": "Init Leverage",
-    "instantaneous-funding": "Instantaneous Funding",
+    "instantaneous-funding": "Instantaneous Funding Snapshot",
     "interval-seconds": "Interval (seconds)",
     "limit-price": "Limit Price",
     "long": "Long",
