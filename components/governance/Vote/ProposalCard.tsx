@@ -7,7 +7,7 @@ import {
   getVoteRecordAddress,
 } from '@solana/spl-governance'
 import { VoteCountdown } from './VoteCountdown'
-import { MintInfo } from '@solana/spl-token'
+import { RawMint } from '@solana/spl-token'
 import VoteResults from './VoteResult'
 import QuorumProgress from './VoteProgress'
 import GovernanceStore from '@store/governanceStore'
@@ -40,7 +40,7 @@ const ProposalCard = ({
   mangoMint,
 }: {
   proposal: ProgramAccount<Proposal>
-  mangoMint: MintInfo
+  mangoMint: RawMint
 }) => {
   const { t } = useTranslation('governance')
   const connection = mangoStore((s) => s.connection)

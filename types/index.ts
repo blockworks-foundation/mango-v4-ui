@@ -246,6 +246,7 @@ export interface SwapHistoryItem {
 export interface NFT {
   address: string
   image: string
+  name: string
 }
 
 export interface PerpStatsItem {
