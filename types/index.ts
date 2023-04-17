@@ -6,6 +6,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
 import { Event } from '@project-serum/serum/lib/queue'
+import { formatTradeHistory } from 'hooks/useTradeHistory'
 
 export type EmptyObject = { [K in keyof never]?: never }
 export interface OrderbookL2 {
@@ -67,6 +68,8 @@ export const isApiSpotTradeHistory = (
 }
 
 export type PerpFillEvent = ParsedFillEvent
+
+export type CombinedTradeHistory = ReturnType<typeof formatTradeHistory>
 
 export type CombinedTradeHistoryTypes =
   | SpotTradeHistory

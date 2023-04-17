@@ -94,7 +94,7 @@ const parseApiTradeHistory = (
   }
 }
 
-const formatTradeHistory = (
+export const formatTradeHistory = (
   group: Group,
   selectedMarket: Serum3Market | PerpMarket,
   mangoAccountAddress: string,

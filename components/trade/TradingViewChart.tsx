@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useMemo, useState, useCallback } from 'react'
 import { useTheme } from 'next-themes'
 import {
@@ -9,6 +8,7 @@ import {
   IOrderLineAdapter,
   EntityId,
   IExecutionLineAdapter,
+  Direction,
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
@@ -38,7 +38,7 @@ import { BN } from '@project-serum/anchor'
 import Datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
 import useStablePrice from 'hooks/useStablePrice'
-import { isMangoError } from 'types'
+import { CombinedTradeHistory, isMangoError } from 'types'
 import { formatPrice } from 'apis/birdeye/helpers'
 import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
@@ -883,9 +883,8 @@ const TradingViewChart = () => {
     return subscription
   }, [chartReady, showOrderLines, deleteLines, drawLinesForMarket])
 
-  // Todo: fix types
   const drawTradeExecutions = useCallback(
-    (trades: any[]) => {
+    (trades: CombinedTradeHistory) => {
       const newTradeExecutions = new Map()
       const filteredTrades = trades
         .filter((trade) => {
@@ -899,7 +898,7 @@ const TradingViewChart = () => {
             .current!.chart()
             .createExecutionShape()
             .setTime(dayjs(trade.time).unix())
-            .setDirection(trade.side)
+            .setDirection(trade.side as Direction)
             .setArrowHeight(6)
             .setArrowColor(
               trade.side === 'buy' ? COLORS.UP[theme] : COLORS.DOWN[theme]
