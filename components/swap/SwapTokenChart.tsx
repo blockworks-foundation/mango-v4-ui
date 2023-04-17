@@ -42,7 +42,6 @@ import { interpolateNumber } from 'd3-interpolate'
 import { IconButton } from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
 import { SwapHistoryItem } from 'types'
-import { Bank } from '@blockworks-foundation/mango-v4'
 
 dayjs.extend(relativeTime)
 
@@ -93,16 +92,23 @@ const CustomizedLabel = ({
 
 interface ExtendedReferenceDotProps extends ReferenceDotProps {
   swapHistory: SwapHistoryItem[]
-  inputBank: Bank | undefined
+  swapMarketName: string
   flipPrices: boolean
 }
 
 const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
-  const { cx, cy, x, swapHistory, inputBank, flipPrices } = props
+  const { cx, cy, x, swapHistory, swapMarketName, flipPrices } = props
   const swapDetails = swapHistory.find(
     (swap) => dayjs(swap.block_datetime).unix() * 1000 === x
   )
-  const side = swapDetails?.swap_in_symbol === inputBank?.name ? 'sell' : 'buy'
+  const side =
+    swapDetails?.swap_in_symbol === swapMarketName.split('/')[0]
+      ? !flipPrices
+        ? 'sell'
+        : 'buy'
+      : !flipPrices
+      ? 'buy'
+      : 'sell'
 
   const buy = {
     pathCoords: 'M11 0.858312L0.857867 15.0004H21.1421L11 0.858312Z',
@@ -481,7 +487,7 @@ const SwapTokenChart = () => {
                           shape={
                             <SwapHistoryArrows
                               swapHistory={swapHistory}
-                              inputBank={inputBank}
+                              swapMarketName={swapMarketName}
                               flipPrices={flipPrices}
                             />
                           }
