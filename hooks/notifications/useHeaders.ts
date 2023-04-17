@@ -9,7 +9,8 @@ export function useHeaders() {
   return {
     headers: {
       authorization: token,
-      publickey: walletPubKey,
+      publickey: walletPubKey || '',
+      'Content-Type': 'application/json',
     },
   }
 }

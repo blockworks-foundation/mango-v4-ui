@@ -1,11 +1,11 @@
 import { NOTIFICATION_API } from 'utils/constants'
 
-type Notification = {
+export type Notification = {
   content: string
   createdAt: string
   seen: boolean
   title: string
-  _id: string
+  id: number
 }
 
 export const fetchNotifications = async (wallet: string, token: string) => {

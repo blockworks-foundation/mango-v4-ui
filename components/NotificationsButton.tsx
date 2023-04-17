@@ -9,14 +9,16 @@ import { useCookies } from 'hooks/notifications/useCookies'
 import { useNotifications } from 'hooks/notifications/useNotifications'
 import { useState } from 'react'
 import NotificationsModal from './modals/NotificationsModal'
+import { useToaster } from 'hooks/notifications/useToaster'
 
 const NotificationsButton = () => {
   useCookies()
+  useToaster()
   const wallet = useWallet()
   const setCookie = NotificationCookieStore((s) => s.setCookie)
   const isAuth = useIsAuthorized()
   const { data } = useNotifications()
-  const notificationCount = data?.filter((x) => !x.seen).length
+  const notificationCount = data?.filter((x) => !x.seen).length || 0
   const [showModal, setShowModal] = useState(false)
 
   const toggleModal = () => {
@@ -80,7 +82,7 @@ const NotificationsButton = () => {
           <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
         </svg>
         <span className="sr-only">Notifications</span>
-        {notificationCount && (
+        {notificationCount !== 0 && (
           <div className="absolute -top-2 -right-2 inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white dark:border-gray-900">
             {notificationCount}
           </div>

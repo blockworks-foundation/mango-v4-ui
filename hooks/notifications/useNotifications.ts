@@ -8,14 +8,17 @@ export function useNotifications() {
   const walletPubKey = wallet.publicKey?.toBase58()
   const token = NotificationCookieStore((s) => s.currentToken)
   const criteria = `${walletPubKey}${token}`
+  //10min
+  const refetchMs = 600000
 
   return useQuery(
     ['notifications', criteria],
     () => fetchNotifications(walletPubKey!, token!),
     {
       enabled: !!(walletPubKey && token),
-      staleTime: 600000,
+      staleTime: refetchMs,
       retry: 1,
+      refetchInterval: refetchMs,
     }
   )
 }
