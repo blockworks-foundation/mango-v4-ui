@@ -4,6 +4,12 @@ import { useEffect } from 'react'
 import { useNotifications } from './useNotifications'
 import { notify } from 'utils/notifications'
 
+type Error = {
+  response: {
+    status: number
+  }
+}
+
 export function useCookies() {
   const wallet = useWallet()
   const updateCookie = NotificationCookieStore((s) => s.updateCookie)
@@ -15,8 +21,7 @@ export function useCookies() {
   }, [wallet.publicKey?.toBase58()])
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any)?.response?.status && wallet.publicKey) {
+    if ((error as Error)?.response?.status && wallet.publicKey) {
       removeCookie(wallet.publicKey?.toBase58())
       notify({
         title: 'Unauthorized for notifications',
