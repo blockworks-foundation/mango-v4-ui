@@ -23,7 +23,7 @@ import {
 import EmptyWallet from '../utils/wallet'
 import { Notification, notify } from '../utils/notifications'
 import {
-  fetchNftsFromHolaplexIndexer,
+  getNFTsByOwner,
   getTokenAccountsByOwnerWithWrappedSol,
   TokenAccount,
 } from '../utils/tokens'
@@ -664,9 +664,9 @@ const mangoStore = create<MangoStore>()(
             state.wallet.nfts.loading = true
           })
           try {
-            const data = await fetchNftsFromHolaplexIndexer(ownerPk)
+            const nfts = await getNFTsByOwner(ownerPk, connection)
             set((state) => {
-              state.wallet.nfts.data = data.nfts
+              state.wallet.nfts.data = nfts
               state.wallet.nfts.loading = false
             })
           } catch (error) {
@@ -748,8 +748,7 @@ const mangoStore = create<MangoStore>()(
         fetchPerpStats: async () => {
           const set = get().set
           const group = get().group
-          const stats = get().perpStats.data
-          if ((stats && stats.length) || !group) return
+          if (!group) return []
           set((state) => {
             state.perpStats.loading = true
           })

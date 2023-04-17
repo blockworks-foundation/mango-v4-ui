@@ -32,7 +32,7 @@ export const usePerpFundingRate = () => {
 
 export const formatFunding = Intl.NumberFormat('en', {
   minimumSignificantDigits: 1,
-  maximumSignificantDigits: 2,
+  maximumSignificantDigits: 3,
   style: 'percent',
 })
 
@@ -54,22 +54,18 @@ const PerpFundingRate = () => {
   }, [rate, selectedMarket])
 
   return (
-    <>
-      <div className="font-mono text-xs text-th-fgd-2">
-        {selectedMarket instanceof PerpMarket && fundingRate ? (
-          `${formatFunding.format(fundingRate)}`
-        ) : (
-          <span className="text-th-fgd-4">-</span>
-        )}
-      </div>
-      {/* <div className="font-mono text-xs text-th-fgd-2">
-        {selectedMarket instanceof PerpMarket &&
-        bids instanceof BookSide &&
-        asks instanceof BookSide
-          ? selectedMarket.getCurrentFundingRate(bids, asks)
-          : '-'}
-      </div> */}
-    </>
+    <p className="font-mono text-xs text-th-fgd-2">
+      {selectedMarket instanceof PerpMarket && fundingRate ? (
+        <span>
+          {formatFunding.format(fundingRate)}
+          <span className="mx-1">|</span>
+          {formatFunding.format(fundingRate * 8760)}{' '}
+          <span className="font-body text-th-fgd-3">APR</span>
+        </span>
+      ) : (
+        <span className="text-th-fgd-4">-</span>
+      )}
+    </p>
   )
 }
 

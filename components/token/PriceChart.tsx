@@ -1,4 +1,6 @@
 import { formatDateAxis } from '@components/shared/DetailedAreaChart'
+import dayjs from 'dayjs'
+import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
 import { useTheme } from 'next-themes'
 import { useMemo } from 'react'
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
@@ -9,13 +11,13 @@ const PriceChart = ({
   prices,
   daysToShow,
 }: {
-  prices: number[][]
+  prices: BirdeyePriceResponse[]
   daysToShow: number
 }) => {
   const { theme } = useTheme()
 
   const change = useMemo(() => {
-    return prices[prices.length - 1][1] - prices[0][1]
+    return prices[prices.length - 1].value - prices[0].value
   }, [prices])
 
   return (
@@ -44,14 +46,14 @@ const PriceChart = ({
             <Area
               isAnimationActive={false}
               type="monotone"
-              dataKey="1"
+              dataKey="value"
               stroke={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
               strokeWidth={1.5}
               fill="url(#gradientArea)"
             />
             <XAxis
               axisLine={false}
-              dataKey="0"
+              dataKey="unixTime"
               minTickGap={20}
               padding={{ left: 20, right: 20 }}
               tick={{
@@ -59,11 +61,13 @@ const PriceChart = ({
                 fontSize: 10,
               }}
               tickLine={false}
-              tickFormatter={(d) => formatDateAxis(d, daysToShow)}
+              tickFormatter={(d) =>
+                formatDateAxis(dayjs(d * 1000).toISOString(), daysToShow)
+              }
             />
             <YAxis
               axisLine={false}
-              dataKey={'1'}
+              dataKey="value"
               type="number"
               domain={['dataMin', 'dataMax']}
               padding={{ top: 20, bottom: 20 }}
@@ -73,7 +77,7 @@ const PriceChart = ({
               }}
               tickFormatter={(x) => formatCurrencyValue(x)}
               tickLine={false}
-              width={prices[0][1] < 0.00001 ? 100 : 60}
+              width={prices[0].value < 0.00001 ? 100 : 60}
             />
           </AreaChart>
         </ResponsiveContainer>

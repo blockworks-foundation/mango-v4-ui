@@ -178,9 +178,7 @@ const LeaderboardRow = ({
           >
             {rank}
           </p>
-          {rank < 4 ? (
-            <MedalIcon className="absolute shadow-md" rank={rank} />
-          ) : null}
+          {rank < 4 ? <MedalIcon className="absolute" rank={rank} /> : null}
         </div>
         <ProfileImage
           imageSize={'40'}
@@ -199,7 +197,8 @@ const LeaderboardRow = ({
       </div>
       <div className="flex items-center pl-4">
         <p className="mr-2 text-right font-mono text-th-fgd-2 md:text-base">
-          <FormatNumericValue value={value} />
+          {/* remove isUsd when api returns token amount rather than value */}
+          <FormatNumericValue value={value} isUsd />
         </p>
         <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
       </div>
