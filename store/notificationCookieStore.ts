@@ -53,7 +53,7 @@ const removeWalletToken = (wallet: string) => {
 
 const setWalletToken = (wallet: string, token: string) => {
   Cookies.set(`${cookieName}${wallet}`, token, {
-    secure: false,
+    secure: true,
     sameSite: 'strict',
     expires: 90,
   })
