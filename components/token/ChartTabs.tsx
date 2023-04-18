@@ -34,7 +34,11 @@ const ChartTabs = ({ token }: { token: string }) => {
   const statsHistory = useMemo(() => {
     if (!tokenStats?.length) return []
     return tokenStats.reduce((a: TokenStatsItem[], c: TokenStatsItem) => {
-      if (c.symbol === token) {
+      if (
+        c.symbol === token ||
+        // ETH needs to be renamed ETH (Portal) in tokenStats db
+        (c.symbol === 'ETH' && token === 'ETH (Portal)')
+      ) {
         const copy = { ...c }
         copy.deposit_apr = copy.deposit_apr * 100
         copy.borrow_apr = copy.borrow_apr * 100

@@ -159,7 +159,7 @@ const EditProfileForm = ({
         <Label text={t('profile:profile-name')} />
         <Input
           type="text"
-          error={!!inputError.length}
+          hasError={!!inputError.length}
           value={profileName}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             onChangeNameInput(e.target.value)

@@ -497,7 +497,7 @@ const Orderbook = () => {
             <button
               className={`rounded ${
                 showAsks ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:bg-th-bkg-4 focus:outline-none disabled:cursor-not-allowed`}
               onClick={() => toggleSides('bids')}
             >
               <OrderbookIcon className="h-4 w-4" side="buy" />
@@ -511,7 +511,7 @@ const Orderbook = () => {
             <button
               className={`rounded ${
                 showBids ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:bg-th-bkg-4 focus:outline-none disabled:cursor-not-allowed`}
               onClick={() => toggleSides('asks')}
             >
               <OrderbookIcon className="h-4 w-4" side="sell" />
@@ -523,7 +523,7 @@ const Orderbook = () => {
             placement="bottom"
           >
             <button
-              className="default-transition flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed"
+              className="default-transition flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:bg-th-bkg-4 focus:outline-none disabled:cursor-not-allowed"
               onClick={resetOrderbook}
             >
               <ArrowPathIcon className="h-4 w-4" />

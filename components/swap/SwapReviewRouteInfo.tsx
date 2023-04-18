@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {
@@ -199,6 +200,7 @@ const SwapReviewRouteInfo = ({
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
+  const focusRef = useRef<HTMLButtonElement>(null)
 
   const inputTokenIconUri = useMemo(() => {
     return inputTokenInfo ? inputTokenInfo.logoURI : ''
@@ -210,6 +212,12 @@ const SwapReviewRouteInfo = ({
       10 ** outputTokenInfo.decimals
     )
   }, [selectedRoute, outputTokenInfo])
+
+  useEffect(() => {
+    if (focusRef?.current) {
+      focusRef.current.focus()
+    }
+  }, [focusRef])
 
   useEffect(() => {
     setCoingeckoPrices(EMPTY_COINGECKO_PRICES)
@@ -354,6 +362,7 @@ const SwapReviewRouteInfo = ({
           className="absolute top-4 left-4 mr-3 text-th-fgd-2"
           onClick={onClose}
           size="small"
+          ref={focusRef}
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
@@ -570,7 +579,11 @@ const SwapReviewRouteInfo = ({
           <Disclosure>
             {({ open }) => (
               <>
-                <Disclosure.Button className="default-transition flex w-full items-center justify-between rounded-md p-3">
+                <Disclosure.Button
+                  className={`default-transition flex w-full items-center justify-between rounded-md p-3 focus:bg-th-bkg-3 ${
+                    open ? 'mb-2 rounded-b-none' : ''
+                  }`}
+                >
                   <p>{open ? t('swap:hide-fees') : t('swap:show-fees')}</p>
                   <ChevronDownIcon
                     className={`${

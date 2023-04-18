@@ -175,12 +175,7 @@ const AdvancedMarketHeader = ({
             </div>
             {serumOrPerpMarket instanceof PerpMarket ? (
               <>
-                <div className="ml-6 flex-col whitespace-nowrap">
-                  <div className="text-xs text-th-fgd-4">
-                    {t('trade:funding-rate')}
-                  </div>
-                  <PerpFundingRate />
-                </div>
+                <PerpFundingRate />
                 <div className="ml-6 flex-col whitespace-nowrap text-xs">
                   <div className="text-th-fgd-4">
                     {t('trade:open-interest')}

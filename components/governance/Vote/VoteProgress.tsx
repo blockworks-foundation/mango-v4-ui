@@ -4,7 +4,7 @@ import {
   InformationCircleIcon,
 } from '@heroicons/react/20/solid'
 import { Governance, ProgramAccount, Proposal } from '@solana/spl-governance'
-import { MintInfo } from '@solana/spl-token'
+import { RawMint } from '@solana/spl-token'
 import GovernanceStore from '@store/governanceStore'
 import { useTranslation } from 'next-i18next'
 import { getMintMaxVoteWeight } from 'utils/governance/proposals'
@@ -13,7 +13,7 @@ import { fmtTokenAmount } from 'utils/governance/tools'
 type Props = {
   governance: ProgramAccount<Governance>
   proposal: ProgramAccount<Proposal>
-  communityMint: MintInfo
+  communityMint: RawMint
 }
 
 const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
