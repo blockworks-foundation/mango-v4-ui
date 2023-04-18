@@ -140,5 +140,10 @@ export async function getNFTsByOwner(owner: PublicKey, connection: Connection) {
   return nfts.map(enhanceNFT)
 }
 
-export const formatTokenSymbol = (symbol: string) =>
-  symbol === 'MSOL' ? 'mSOL' : symbol
+export const formatTokenSymbol = (symbol: string) => {
+  if (symbol.toLowerCase().includes('portal')) {
+    const truncSymbol = symbol.split(' ')[0]
+    return truncSymbol === 'WBTC' ? 'wBTC' : truncSymbol
+  }
+  return symbol === 'MSOL' ? 'mSOL' : symbol
+}
