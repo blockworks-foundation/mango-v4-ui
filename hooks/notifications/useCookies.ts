@@ -5,28 +5,29 @@ import { useNotifications } from './useNotifications'
 import { notify } from 'utils/notifications'
 
 type Error = {
-  response: {
-    status: number
-  }
+  status: number
+  error: string
 }
 
 export function useCookies() {
   const wallet = useWallet()
   const updateCookie = NotificationCookieStore((s) => s.updateCookie)
   const removeCookie = NotificationCookieStore((s) => s.removeCookie)
+  const token = NotificationCookieStore((s) => s.currentToken)
   const { error } = useNotifications()
+  const errorResp = error as Error
 
   useEffect(() => {
     updateCookie(wallet.publicKey?.toBase58())
   }, [wallet.publicKey?.toBase58()])
 
   useEffect(() => {
-    if ((error as Error)?.response?.status && wallet.publicKey) {
+    if (errorResp?.status === 401 && wallet.publicKey && token) {
       removeCookie(wallet.publicKey?.toBase58())
       notify({
-        title: 'Unauthorized for notifications',
+        title: errorResp.error,
         type: 'error',
       })
     }
-  }, [error, wallet.publicKey?.toBase58()])
+  }, [errorResp, wallet.publicKey?.toBase58()])
 }

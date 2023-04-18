@@ -15,5 +15,9 @@ export const fetchNotifications = async (wallet: string, token: string) => {
       publickey: wallet,
     },
   })
-  return data.json() as Promise<Notification[]>
+  const body = await data.json()
+  if (body.error) {
+    throw { error: body.error, status: data.status }
+  }
+  return body as Notification[]
 }

@@ -13,11 +13,12 @@ import { Payload, SIWS } from '@web3auth/sign-in-with-solana'
 import { useHeaders } from 'hooks/notifications/useHeaders'
 import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
 import { useNotifications } from 'hooks/notifications/useNotifications'
-import { Fragment, useEffect, useMemo } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { NOTIFICATION_API } from 'utils/constants'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
+import { notify } from 'utils/notifications'
 
 const NotificationsDraw = ({
   isOpen,
@@ -32,6 +33,7 @@ const NotificationsDraw = ({
   const isAuth = useIsAuthorized()
   const headers = useHeaders()
   const setCookie = NotificationCookieStore((s) => s.setCookie)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   const unseenNotifications = useMemo(() => {
     if (!data || !data.length) return []
@@ -39,15 +41,67 @@ const NotificationsDraw = ({
   }, [data])
 
   const markAsSeen = async (ids: number[]) => {
-    await fetch(`${NOTIFICATION_API}notifications/seen`, {
-      method: 'POST',
-      headers: headers.headers,
-      body: JSON.stringify({
-        ids: ids,
-        seen: true,
-      }),
-    })
-    refetch()
+    try {
+      const resp = await fetch(`${NOTIFICATION_API}notifications/seen`, {
+        method: 'POST',
+        headers: headers.headers,
+        body: JSON.stringify({
+          ids: ids,
+          seen: true,
+        }),
+      })
+      const body = await resp.json()
+      const error = body.error
+      if (error) {
+        notify({
+          type: 'error',
+          title: 'Error',
+          description: error,
+        })
+        return
+      }
+      refetch()
+    } catch (e) {
+      notify({
+        type: 'error',
+        title: 'Error',
+        description: JSON.stringify(e),
+      })
+    }
+  }
+
+  const remove = async (ids: number[]) => {
+    setIsRemoving(true)
+    try {
+      const resp = await fetch(
+        `${NOTIFICATION_API}notifications/removeForUser`,
+        {
+          method: 'POST',
+          headers: headers.headers,
+          body: JSON.stringify({
+            ids: ids,
+          }),
+        }
+      )
+      const body = await resp.json()
+      const error = body.error
+      if (error) {
+        notify({
+          type: 'error',
+          title: 'Error',
+          description: error,
+        })
+        return
+      }
+      refetch()
+    } catch (e) {
+      notify({
+        type: 'error',
+        title: 'Error',
+        description: JSON.stringify(e),
+      })
+    }
+    setIsRemoving(false)
   }
 
   function createSolanaMessage() {
@@ -75,8 +129,17 @@ const NotificationsDraw = ({
           signatureString: bs58.encode(resp),
         }),
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const token = (await tokenResp.json()).token
+      const body = await tokenResp.json()
+      const token = body.token
+      const error = body.error
+      if (error) {
+        notify({
+          type: 'error',
+          title: 'Error',
+          description: error,
+        })
+        return
+      }
       setCookie(payload.address, token)
     })
   }
@@ -118,7 +181,10 @@ const NotificationsDraw = ({
               <h2 className="text-lg">{t('notifications')}</h2>
               <div className="flex items-center">
                 {data?.length ? (
-                  <LinkButton className="mr-4 flex items-center text-xs">
+                  <LinkButton
+                    disabled={isRemoving}
+                    className="mr-4 flex items-center text-xs"
+                  >
                     <TrashIcon className="mr-1 h-3 w-3" />
                     <span>{t('clear-all')}</span>
                   </LinkButton>
@@ -135,13 +201,6 @@ const NotificationsDraw = ({
               <>
                 {data?.length ? (
                   <>
-                    {/* <Button
-                        onClick={() =>
-                          markAsSeen([...unseenNotifications.map((x) => x.id)])
-                        }
-                      >
-                        Mark all as seen
-                      </Button> */}
                     <div className="space-y-4 border-b border-th-bkg-3 pb-4">
                       {data?.map((notification) => (
                         <div
@@ -151,8 +210,12 @@ const NotificationsDraw = ({
                           <div className="px-6">
                             <div className="mb-1 flex items-start justify-between">
                               <h4 className="mr-4">{notification.title}</h4>
-                              {/* Add delete function */}
-                              <IconButton className="mt-1 text-th-fgd-3" hideBg>
+                              <IconButton
+                                disabled={isRemoving}
+                                onClick={() => remove([notification.id])}
+                                className="mt-1 text-th-fgd-3"
+                                hideBg
+                              >
                                 <TrashIcon className="h-4 w-4" />
                               </IconButton>
                             </div>
@@ -165,15 +228,6 @@ const NotificationsDraw = ({
                               </p>
                             </div>
                             <p>{notification.content}</p>
-                            {/* <div className="ml-auto">
-                              {!notification.seen && (
-                                <Button
-                                  onClick={() => markAsSeen([notification.id])}
-                                >
-                                  Mark as seen
-                                </Button>
-                              )}
-                            </div> */}
                           </div>
                         </div>
                       ))}
