@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  ParsedFillEvent,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
 import { Event } from '@project-serum/serum/lib/queue'
+import { formatTradeHistory } from 'hooks/useTradeHistory'
 
 export type EmptyObject = { [K in keyof never]?: never }
 export interface OrderbookL2 {
@@ -53,6 +58,37 @@ export interface PerpTradeHistory {
   price: number
   quantity: number
   seq_num: number
+}
+
+export const isApiSpotTradeHistory = (
+  t: SpotTradeHistory | PerpTradeHistory
+): t is SpotTradeHistory => {
+  if ('open_orders' in t) return true
+  else return false
+}
+
+export type PerpFillEvent = ParsedFillEvent
+
+export type CombinedTradeHistory = ReturnType<typeof formatTradeHistory>
+
+export type CombinedTradeHistoryTypes =
+  | SpotTradeHistory
+  | PerpTradeHistory
+  | PerpFillEvent
+  | SerumEvent
+
+export const isSerumFillEvent = (
+  t: CombinedTradeHistoryTypes
+): t is SerumEvent => {
+  if ('eventFlags' in t) return true
+  else return false
+}
+
+export const isPerpFillEvent = (
+  t: CombinedTradeHistoryTypes
+): t is PerpFillEvent => {
+  if ('takerSide' in t) return true
+  else return false
 }
 
 export type SerumEvent = Modify<
