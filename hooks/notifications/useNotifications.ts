@@ -9,7 +9,7 @@ export function useNotifications() {
   const token = NotificationCookieStore((s) => s.currentToken)
   const criteria = `${walletPubKey}${token}`
   //10min
-  const refetchMs = 10000
+  const refetchMs = 600000
 
   return useQuery(
     ['notifications', criteria],

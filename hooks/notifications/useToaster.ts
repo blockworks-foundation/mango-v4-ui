@@ -9,7 +9,7 @@ export function useToaster() {
   const previousData = usePrevious(data)
 
   useEffect(() => {
-    if (data && previousData) {
+    if (data && data.length && previousData) {
       const oldIds = previousData.map((item: Notification) => item.id)
       const newObjects = data.filter(
         (item: Notification) => !oldIds.includes(item.id)

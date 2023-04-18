@@ -17,6 +17,7 @@ import { Fragment, useEffect, useMemo } from 'react'
 import { NOTIFICATION_API } from 'utils/constants'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import dayjs from 'dayjs'
+import { useTranslation } from 'next-i18next'
 
 const NotificationsDraw = ({
   isOpen,
@@ -25,6 +26,7 @@ const NotificationsDraw = ({
   isOpen: boolean
   onClose: () => void
 }) => {
+  const { t } = useTranslation('notifications')
   const { data, refetch } = useNotifications()
   const wallet = useWallet()
   const isAuth = useIsAuthorized()
@@ -113,12 +115,12 @@ const NotificationsDraw = ({
             className={`thin-scroll absolute right-0 z-40 h-full w-full overflow-y-auto bg-th-bkg-1 text-left md:w-96`}
           >
             <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 pl-6">
-              <h2 className="text-lg">Notifications</h2>
+              <h2 className="text-lg">{t('notifications')}</h2>
               <div className="flex items-center">
                 {data?.length ? (
                   <LinkButton className="mr-4 flex items-center text-xs">
                     <TrashIcon className="mr-1 h-3 w-3" />
-                    <span>Clear All</span>
+                    <span>{t('clear-all')}</span>
                   </LinkButton>
                 ) : null}
                 <button
@@ -181,8 +183,10 @@ const NotificationsDraw = ({
                   <div className="relative top-1/2 flex -translate-y-1/2 flex-col justify-center px-6 pb-20">
                     <div className="flex flex-col items-center justify-center text-center">
                       <FaceSmileIcon className="mb-2 h-7 w-7 text-th-fgd-2" />
-                      <h3 className="mb-1 text-base">Nothing to see here</h3>
-                      <p>You&apos;re all up-to-date</p>
+                      <h3 className="mb-1 text-base">
+                        {t('empty-state-title')}
+                      </h3>
+                      <p>{t('empty-state-desc')}</p>
                     </div>
                   </div>
                 )}
@@ -191,10 +195,10 @@ const NotificationsDraw = ({
               <div className="relative top-1/2 flex -translate-y-1/2 flex-col justify-center px-6 pb-20">
                 <div className="flex flex-col items-center justify-center text-center">
                   <InboxIcon className="mb-2 h-7 w-7 text-th-fgd-2" />
-                  <h3 className="mb-1 text-base">Notifications Inbox</h3>
-                  <p>Verify your wallet to start receiving notifications.</p>
+                  <h3 className="mb-1 text-base">{t('unauth-title')}</h3>
+                  <p>{t('unauth-desc')}</p>
                   <Button className="mt-6" onClick={createSolanaMessage}>
-                    Sign Message
+                    {t('sign-message')}
                   </Button>
                 </div>
               </div>

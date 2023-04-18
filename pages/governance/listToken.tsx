@@ -10,11 +10,12 @@ export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
       ...(await serverSideTranslations(locale, [
-        'governance',
-        'search',
         'common',
+        'governance',
+        'notifications',
         'onboarding',
         'profile',
+        'search',
       ])),
     },
   }
