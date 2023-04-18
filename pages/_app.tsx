@@ -19,7 +19,7 @@ import {
   GlowWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
-import Notifications from '../components/shared/Notification'
+import Notifications from '@components/notifications//Notification'
 import { ThemeProvider } from 'next-themes'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/Layout'

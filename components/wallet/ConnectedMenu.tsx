@@ -78,10 +78,13 @@ const ConnectedMenu = () => {
           <div className="relative">
             <Menu.Button
               className={`default-transition h-16 ${
-                !isMobile ? 'w-48 border-l border-th-bkg-3 px-4' : ''
-              } hover:bg-th-bkg-2 focus:outline-none`}
+                !isMobile ? 'w-48 border-l border-th-bkg-3 px-4' : 'w-16'
+              } focus:outline-none md:hover:bg-th-bkg-2`}
             >
-              <div className="flex items-center" id="account-step-one">
+              <div
+                className="flex items-center justify-center md:justify-start"
+                id="account-step-one"
+              >
                 <ProfileImage
                   imageSize="40"
                   placeholderSize="24"

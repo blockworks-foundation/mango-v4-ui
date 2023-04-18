@@ -25,7 +25,7 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
-import NotificationsButton from './NotificationsButton'
+import NotificationsButton from './notifications/NotificationsButton'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -119,7 +119,7 @@ const TopBar = () => {
             >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           )}
           {connected ? (
-            <div className="flex items-center pr-4 md:pr-0">
+            <div className="flex items-center">
               <NotificationsButton />
               <AccountsButton />
               <ConnectedMenu />
