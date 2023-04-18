@@ -184,6 +184,7 @@ const NotificationsDraw = ({
                   <LinkButton
                     disabled={isRemoving}
                     className="mr-4 flex items-center text-xs"
+                    onClick={() => remove(data.map((n) => n.id))}
                   >
                     <TrashIcon className="mr-1 h-3 w-3" />
                     <span>{t('clear-all')}</span>
