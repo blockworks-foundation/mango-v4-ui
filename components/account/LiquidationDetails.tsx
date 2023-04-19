@@ -1,5 +1,7 @@
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
+import { PublicKey } from '@solana/web3.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
@@ -10,6 +12,7 @@ import {
   SpotOrPerpLiquidationItem,
 } from 'types'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
+import { abbreviateAddress } from 'utils/formatting'
 
 const LiquidationDetails = ({
   activity,
@@ -199,12 +202,17 @@ const LiquidationDetails = ({
           {t('activity:counterparty')}
         </p>
         <a
-          className="text-sm"
+          className="flex items-center text-sm"
           href={`/?address=${activity.activity_details.counterparty}`}
           target="_blank"
           rel="noopener noreferrer"
         >
-          {t('activity:view-account')}
+          <span className="mr-1.5">
+            {abbreviateAddress(
+              new PublicKey(activity.activity_details.counterparty)
+            )}
+          </span>
+          <ArrowTopRightOnSquareIcon className="h-3 w-3" />
         </a>
       </div>
       <div className="col-span-1">
