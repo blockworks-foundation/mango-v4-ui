@@ -1,7 +1,7 @@
 import usePrevious from '@components/shared/usePrevious'
 import { useNotifications } from './useNotifications'
 import { useEffect } from 'react'
-import { Notification } from '../../fetches/notifications'
+import { Notification } from '../../apis/notifications'
 import { notify } from 'utils/notifications'
 
 export function useToaster() {

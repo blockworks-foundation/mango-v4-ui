@@ -13,14 +13,14 @@ import { Payload, SIWS } from '@web3auth/sign-in-with-solana'
 import { useHeaders } from 'hooks/notifications/useHeaders'
 import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
 import { useNotifications } from 'hooks/notifications/useNotifications'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { NOTIFICATION_API } from 'utils/constants'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
 
-const NotificationsDraw = ({
+const NotificationsDrawer = ({
   isOpen,
   onClose,
 }: {
@@ -40,71 +40,77 @@ const NotificationsDraw = ({
     return data.filter((x) => !x.seen)
   }, [data])
 
-  const markAsSeen = async (ids: number[]) => {
-    try {
-      const resp = await fetch(`${NOTIFICATION_API}notifications/seen`, {
-        method: 'POST',
-        headers: headers.headers,
-        body: JSON.stringify({
-          ids: ids,
-          seen: true,
-        }),
-      })
-      const body = await resp.json()
-      const error = body.error
-      if (error) {
-        notify({
-          type: 'error',
-          title: 'Error',
-          description: error,
-        })
-        return
-      }
-      refetch()
-    } catch (e) {
-      notify({
-        type: 'error',
-        title: 'Error',
-        description: JSON.stringify(e),
-      })
-    }
-  }
-
-  const remove = async (ids: number[]) => {
-    setIsRemoving(true)
-    try {
-      const resp = await fetch(
-        `${NOTIFICATION_API}notifications/removeForUser`,
-        {
+  const markAsSeen = useCallback(
+    async (ids: number[]) => {
+      try {
+        const resp = await fetch(`${NOTIFICATION_API}notifications/seen`, {
           method: 'POST',
           headers: headers.headers,
           body: JSON.stringify({
             ids: ids,
+            seen: true,
           }),
+        })
+        const body = await resp.json()
+        const error = body.error
+        if (error) {
+          notify({
+            type: 'error',
+            title: 'Error',
+            description: error,
+          })
+          return
         }
-      )
-      const body = await resp.json()
-      const error = body.error
-      if (error) {
+        refetch()
+      } catch (e) {
         notify({
           type: 'error',
           title: 'Error',
-          description: error,
+          description: JSON.stringify(e),
         })
-        return
       }
-      refetch()
-    } catch (e) {
-      notify({
-        type: 'error',
-        title: 'Error',
-        description: JSON.stringify(e),
-      })
-    }
-    setIsRemoving(false)
-  }
+    },
+    [NOTIFICATION_API, headers]
+  )
 
-  function createSolanaMessage() {
+  const remove = useCallback(
+    async (ids: number[]) => {
+      setIsRemoving(true)
+      try {
+        const resp = await fetch(
+          `${NOTIFICATION_API}notifications/removeForUser`,
+          {
+            method: 'POST',
+            headers: headers.headers,
+            body: JSON.stringify({
+              ids: ids,
+            }),
+          }
+        )
+        const body = await resp.json()
+        const error = body.error
+        if (error) {
+          notify({
+            type: 'error',
+            title: 'Error',
+            description: error,
+          })
+          return
+        }
+        refetch()
+      } catch (e) {
+        notify({
+          type: 'error',
+          title: 'Error',
+          description: JSON.stringify(e),
+        })
+      }
+      setIsRemoving(false)
+    },
+    [NOTIFICATION_API, headers]
+  )
+
+  const createSolanaMessage = useCallback(() => {
     const payload = new Payload()
     payload.domain = window.location.host
     payload.address = wallet.publicKey!.toString()
@@ -142,7 +148,7 @@ const NotificationsDraw = ({
       }
       setCookie(payload.address, token)
     })
-  }
+  }, [window.location, wallet, NOTIFICATION_API])
 
   // Mark all notifications as seen when the inbox is opened
   useEffect(() => {
@@ -258,12 +264,6 @@ const NotificationsDraw = ({
                 </div>
               </div>
             )}
-            {/* <button
-              onClick={onClose}
-              className={`absolute left-0 top-0 z-40 flex h-16 w-14 items-center justify-center text-th-fgd-3 focus:outline-none md:-left-16 md:w-16 md:bg-th-bkg-2 md:hover:bg-th-bkg-3 md:focus:bg-th-bkg-3`}
-            >
-              <XMarkIcon className={`h-5 w-5`} />
-            </button> */}
           </Dialog.Panel>
         </Transition.Child>
       </Dialog>
@@ -271,4 +271,4 @@ const NotificationsDraw = ({
   )
 }
 
-export default NotificationsDraw
+export default NotificationsDrawer

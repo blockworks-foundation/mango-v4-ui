@@ -1,7 +1,7 @@
 import { useCookies } from 'hooks/notifications/useCookies'
 import { useNotifications } from 'hooks/notifications/useNotifications'
 import { useEffect, useMemo, useState } from 'react'
-import NotificationsDraw from './NotificationsDraw'
+import NotificationsDrawer from './NotificationsDrawer'
 import { useToaster } from 'hooks/notifications/useToaster'
 import { BellIcon } from '@heroicons/react/20/solid'
 import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
@@ -52,7 +52,7 @@ const NotificationsButton = () => {
           </div>
         ) : null}
       </button>
-      <NotificationsDraw isOpen={showDraw} onClose={toggleModal} />
+      <NotificationsDrawer isOpen={showDraw} onClose={toggleModal} />
     </>
   )
 }
