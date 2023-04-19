@@ -3,7 +3,7 @@ import mangoStore from '@store/mangoStore'
 import { Howl } from 'howler'
 import { SOUND_SETTINGS_KEY } from './constants'
 
-export type Notification = {
+export type TransactionNotification = {
   type: 'success' | 'info' | 'error' | 'confirm'
   title: string
   description?: null | string
@@ -53,7 +53,7 @@ export function notify(newNotification: {
     }
   }
 
-  const newNotif: Notification = {
+  const newNotif: TransactionNotification = {
     id: newId,
     type: 'success',
     show: true,

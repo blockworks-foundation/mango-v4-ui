@@ -7,7 +7,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
-import { Notification, notify } from '../../utils/notifications'
+import { TransactionNotification, notify } from '../../utils/notifications'
 import Loading from '@components/shared/Loading'
 import { Transition } from '@headlessui/react'
 import {
@@ -22,7 +22,7 @@ import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 
 const setMangoStore = mangoStore.getState().set
 
-const NotificationList = () => {
+const TransactionNotificationList = () => {
   const { t } = useTranslation()
   const notifications = mangoStore((s) => s.notifications)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -102,13 +102,17 @@ const NotificationList = () => {
         </button>
       ) : null}
       {reversedNotifications.map((n) => (
-        <Notification key={n.id} notification={n} />
+        <TransactionNotification key={n.id} notification={n} />
       ))}
     </div>
   )
 }
 
-const Notification = ({ notification }: { notification: Notification }) => {
+const TransactionNotification = ({
+  notification,
+}: {
+  notification: TransactionNotification
+}) => {
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
     'Bottom-Left'
@@ -302,4 +306,4 @@ const Notification = ({ notification }: { notification: Notification }) => {
   )
 }
 
-export default NotificationList
+export default TransactionNotificationList
