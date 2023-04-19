@@ -124,30 +124,38 @@ const NotificationsDrawer = ({
     const messageText = message.prepareMessage()
     const messageEncoded = new TextEncoder().encode(messageText)
 
-    wallet.signMessage!(messageEncoded).then(async (resp) => {
-      const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...payload,
-          signatureString: bs58.encode(resp),
-        }),
+    wallet.signMessage!(messageEncoded)
+      .then(async (resp) => {
+        const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...payload,
+            signatureString: bs58.encode(resp),
+          }),
+        })
+        const body = await tokenResp.json()
+        const token = body.token
+        const error = body.error
+        if (error) {
+          notify({
+            type: 'error',
+            title: 'Error',
+            description: error,
+          })
+          return
+        }
+        setCookie(payload.address, token)
       })
-      const body = await tokenResp.json()
-      const token = body.token
-      const error = body.error
-      if (error) {
+      .catch((e) => {
         notify({
           type: 'error',
           title: 'Error',
-          description: error,
+          description: e.message ? e.message : `${e}`,
         })
-        return
-      }
-      setCookie(payload.address, token)
-    })
+      })
   }, [window.location, wallet, NOTIFICATION_API])
 
   // Mark all notifications as seen when the inbox is opened
