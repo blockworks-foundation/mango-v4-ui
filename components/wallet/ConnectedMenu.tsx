@@ -78,7 +78,7 @@ const ConnectedMenu = () => {
           <Popover.Button
             className={`default-transition h-16 ${
               !isMobile ? 'w-48 border-l border-th-bkg-3 px-4' : ''
-            } hover:bg-th-bkg-2 focus:outline-none focus-visible:bg-th-bkg-3`}
+            } focus:outline-none focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2`}
           >
             <div className="flex items-center" id="account-step-one">
               <ProfileImage

@@ -37,13 +37,13 @@ const ButtonGroup = <T extends Values>({
         ) : null}
         {values.map((v, i) => (
           <button
-            className={`${className} default-transition relative w-1/2 cursor-pointer rounded-md px-3 text-center focus-visible:bg-th-bkg-3 disabled:cursor-not-allowed ${
+            className={`${className} default-transition relative w-1/2 cursor-pointer rounded-md px-3 text-center focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-2 disabled:cursor-not-allowed ${
               large ? 'h-12 text-sm' : 'h-10 text-xs'
             } font-normal
               ${
                 v === activeValue
-                  ? `text-th-active focus-visible:text-th-active`
-                  : `text-th-fgd-2 focus-visible:text-th-fgd-1 md:hover:text-th-fgd-1`
+                  ? `text-th-active`
+                  : `text-th-fgd-2 md:hover:text-th-fgd-1`
               }
             `}
             disabled={disabled}
