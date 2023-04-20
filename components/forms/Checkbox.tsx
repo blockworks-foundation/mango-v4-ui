@@ -18,7 +18,7 @@ const Checkbox = ({
   labelClass,
   ...props
 }: CheckboxProps) => (
-  <label className="default-transition flex cursor-pointer items-center text-th-fgd-3 hover:text-th-fgd-2">
+  <label className="flex cursor-pointer items-center text-th-fgd-3 hover:text-th-fgd-2">
     <input
       checked={checked}
       {...props}
@@ -40,7 +40,7 @@ const Checkbox = ({
     <div
       className={`${
         checked && !disabled && !halfState ? 'bg-th-active' : 'bg-th-bkg-4'
-      } default-transition flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded`}
+      } flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded`}
     >
       {halfState ? (
         <div className="mb-0.5 font-bold text-th-bkg-1">–</div>

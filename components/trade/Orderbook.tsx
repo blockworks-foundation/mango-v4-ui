@@ -502,7 +502,7 @@ const Orderbook = () => {
             <button
               className={`rounded ${
                 showAsks ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
+              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
               onClick={() => toggleSides('bids')}
             >
               <OrderbookIcon className="h-4 w-4" side="buy" />
@@ -516,7 +516,7 @@ const Orderbook = () => {
             <button
               className={`rounded ${
                 showBids ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
+              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
               onClick={() => toggleSides('asks')}
             >
               <OrderbookIcon className="h-4 w-4" side="sell" />
@@ -524,7 +524,7 @@ const Orderbook = () => {
           </Tooltip>
           <Tooltip content={'Reset and center orderbook'} placement="bottom">
             <button
-              className="default-transition flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed"
+              className="flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed"
               onClick={resetOrderbook}
             >
               <ArrowPathIcon className="h-4 w-4" />

@@ -27,7 +27,7 @@ const Select = ({
         {({ open }) => (
           <>
             <Listbox.Button
-              className={`default-transition h-full w-full rounded-md bg-th-input-bkg py-2.5 font-normal ring-1 ring-inset ring-th-input-border focus:outline-none focus:ring-th-fgd-4 md:hover:ring-th-input-border-hover`}
+              className={`h-full w-full rounded-md bg-th-input-bkg py-2.5 font-normal ring-1 ring-inset ring-th-input-border focus:outline-none focus:ring-th-fgd-4 md:hover:ring-th-input-border-hover`}
             >
               <div
                 className={`flex items-center justify-between space-x-2 px-3 text-th-fgd-1`}
@@ -38,7 +38,7 @@ const Select = ({
                   <span className="text-th-fgd-3">{placeholder}</span>
                 )}
                 <ChevronDownIcon
-                  className={`default-transition h-5 w-5 flex-shrink-0 text-th-fgd-3 ${
+                  className={`h-5 w-5 flex-shrink-0 text-th-fgd-3 ${
                     open ? 'rotate-180' : 'rotate-360'
                   }`}
                 />
@@ -65,7 +65,7 @@ interface OptionProps {
 const Option = ({ value, children, className }: OptionProps) => {
   return (
     <Listbox.Option
-      className="default-transition mb-0 text-th-fgd-2 hover:cursor-pointer focus-visible:text-th-active md:hover:text-th-fgd-1"
+      className="mb-0 text-th-fgd-2 hover:cursor-pointer focus-visible:text-th-active md:hover:text-th-fgd-1"
       value={value}
     >
       {({ selected }) => (

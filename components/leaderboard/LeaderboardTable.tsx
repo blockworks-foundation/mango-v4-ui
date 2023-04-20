@@ -59,7 +59,7 @@ const LeaderboardRow = ({
 
   return !loading ? (
     <a
-      className="default-transition flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
+      className="flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
       href={`/?address=${mango_account}`}
       rel="noopener noreferrer"
       target="_blank"

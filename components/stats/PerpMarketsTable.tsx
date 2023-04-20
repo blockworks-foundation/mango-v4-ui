@@ -121,7 +121,7 @@ const PerpMarketsTable = () => {
 
               return (
                 <TrBody
-                  className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                  className="md:hover:cursor-pointer md:hover:bg-th-bkg-2"
                   key={market.publicKey.toString()}
                   onClick={() => goToPerpMarketDetails(market, router)}
                 >

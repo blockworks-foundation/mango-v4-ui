@@ -142,7 +142,7 @@ const ActivityFilters = () => {
         ) : null}
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`default-transition mr-4 ml-3 rounded-md border border-th-button px-2 py-1.5 focus-visible:border-th-fgd-4 md:mr-6 md:hover:border-th-button-hover`}
+          className={`mr-4 ml-3 rounded-md border border-th-button px-2 py-1.5 focus-visible:border-th-fgd-4 md:mr-6 md:hover:border-th-button-hover`}
         >
           <Disclosure.Button
             as="div"

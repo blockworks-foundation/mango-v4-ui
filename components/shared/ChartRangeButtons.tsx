@@ -19,7 +19,7 @@ const ChartRangeButtons: FunctionComponent<ChartRangeButtonsProps> = ({
     <div className="relative flex">
       {activeValue && values.includes(activeValue) ? (
         <div
-          className="default-transition absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-3"
+          className="absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-3"
           style={{
             transform: `translateX(${
               values.findIndex((v) => v === activeValue) * 100
@@ -30,7 +30,7 @@ const ChartRangeButtons: FunctionComponent<ChartRangeButtonsProps> = ({
       ) : null}
       {values.map((v, i) => (
         <button
-          className={`${className} default-transition relative h-6 cursor-pointer rounded-md px-3 text-center text-xs focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1
+          className={`${className} relative h-6 cursor-pointer rounded-md px-3 text-center text-xs focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1
               ${
                 v === activeValue
                   ? `text-th-active`

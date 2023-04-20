@@ -164,7 +164,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
           <div className="mb-4 grid w-full grid-flow-row grid-cols-3 gap-3">
             {nfts.map((n, i) => (
               <button
-                className={`default-transition col-span-1 flex items-center justify-center rounded-md border bg-th-bkg-2 py-3 sm:py-4 md:hover:bg-th-bkg-3 ${
+                className={`col-span-1 flex items-center justify-center rounded-md border bg-th-bkg-2 py-3 sm:py-4 md:hover:bg-th-bkg-3 ${
                   selectedProfile === n.image
                     ? 'border-th-active'
                     : 'border-th-bkg-3'

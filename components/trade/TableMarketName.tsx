@@ -15,7 +15,7 @@ const TableMarketName = ({ market }: { market: PerpMarket | Serum3Market }) => {
     </div>
   ) : (
     <Link href={`/trade?name=${market.name}`}>
-      <div className="default-transition flex items-center underline underline-offset-2 md:underline-offset-4 md:hover:text-th-fgd-3 md:hover:no-underline">
+      <div className="flex items-center underline underline-offset-2 md:underline-offset-4 md:hover:text-th-fgd-3 md:hover:no-underline">
         <MarketLogos market={market} size="large" />
         <span className="whitespace-nowrap">{market.name}</span>
       </div>

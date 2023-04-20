@@ -257,7 +257,7 @@ const MenuItem = ({
       <Link
         href={pagePath}
         shallow={true}
-        className={`default-transition flex cursor-pointer pl-4 focus:outline-none focus-visible:text-th-active md:hover:text-th-active ${
+        className={`flex cursor-pointer pl-4 focus:outline-none focus-visible:text-th-active md:hover:text-th-active ${
           active
             ? 'text-th-active'
             : theme === 'Light'
@@ -341,7 +341,7 @@ export const ExpandableMenuItem = ({
                 }`
           } ${
             alignBottom
-              ? 'default-transition flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
+              ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
               : ''
           }`}
         >
@@ -374,7 +374,7 @@ export const ExpandableMenuItem = ({
       {({ open }) => (
         <>
           <Disclosure.Button
-            className={`default-transition flex h-full w-full items-center justify-between rounded-none px-4 py-2 focus-visible:text-th-active md:hover:text-th-active ${
+            className={`flex h-full w-full items-center justify-between rounded-none px-4 py-2 focus-visible:text-th-active md:hover:text-th-active ${
               alignBottom
                 ? 'h-[64px] focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
                 : ''

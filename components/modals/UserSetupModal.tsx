@@ -368,7 +368,7 @@ const UserSetupModal = ({
                       )}
                     </Button>
                     <LinkButton onClick={onClose}>
-                      <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
+                      <span className="text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                         {t('onboarding:skip')}
                       </span>
                     </LinkButton>
@@ -513,7 +513,7 @@ const UserSetupModal = ({
                     )}
                   </Button>
                   <LinkButton onClick={onClose}>
-                    <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
+                    <span className="text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                       {t('onboarding:skip')}
                     </span>
                   </LinkButton>
@@ -562,7 +562,7 @@ const UserSetupModal = ({
                       onboarding
                     />
                     <LinkButton className="mt-6" onClick={onClose}>
-                      <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
+                      <span className="text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
                         {t('onboarding:skip-finish')}
                       </span>
                     </LinkButton>

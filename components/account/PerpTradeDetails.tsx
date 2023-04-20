@@ -121,7 +121,7 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
           {t('transaction')}
         </p>
         <a
-          className="default-transition flex items-center"
+          className="flex items-center"
           href={`${preferredExplorer.url}${signature}`}
           target="_blank"
           rel="noopener noreferrer"

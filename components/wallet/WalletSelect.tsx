@@ -17,9 +17,7 @@ const WalletSelect = () => {
             disabled={!group}
           >
             <ChevronDownIcon
-              className={`default-transition h-6 w-6 ${
-                open ? 'rotate-180' : 'rotate-360'
-              }`}
+              className={`h-6 w-6 ${open ? 'rotate-180' : 'rotate-360'}`}
             />
           </Popover.Button>
           <Transition

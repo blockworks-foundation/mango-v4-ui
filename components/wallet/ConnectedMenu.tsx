@@ -76,7 +76,7 @@ const ConnectedMenu = () => {
       <Popover>
         <div className="relative">
           <Popover.Button
-            className={`default-transition h-16 ${
+            className={`h-16 ${
               !isMobile ? 'w-48 border-l border-th-bkg-3 px-4' : ''
             } focus:outline-none focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2`}
           >
@@ -114,7 +114,7 @@ const ConnectedMenu = () => {
           >
             <Popover.Panel className="absolute right-0 top-[61px] z-20 mt-1 w-48 space-y-1.5 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 focus:outline-none md:rounded-r-none">
               <button
-                className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:text-th-fgd-1"
+                className="flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:text-th-fgd-1"
                 onClick={() => setShowEditProfileModal(true)}
               >
                 <UserCircleIcon className="h-4 w-4" />
@@ -124,7 +124,7 @@ const ConnectedMenu = () => {
               </button>
               {isMobile ? (
                 <button
-                  className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active"
+                  className="flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active"
                   onClick={() => setShowMangoAccountsModal(true)}
                 >
                   <CurrencyDollarIcon className="h-4 w-4" />
@@ -132,7 +132,7 @@ const ConnectedMenu = () => {
                 </button>
               ) : null}
               <button
-                className="default-transition flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:text-th-fgd-1"
+                className="flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:text-th-fgd-1"
                 onClick={handleDisconnect}
               >
                 <ArrowRightOnRectangleIcon className="h-4 w-4" />
