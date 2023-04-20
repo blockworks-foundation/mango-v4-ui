@@ -18,7 +18,7 @@ const ProfileImage = ({
     <img
       alt=""
       src={imageUrl ? imageUrl : profile?.profile_image_url}
-      className={`default-transition rounded-full`}
+      className={`rounded-full`}
       style={{ width: `${imageSize}px`, height: `${imageSize}px` }}
     />
   ) : (

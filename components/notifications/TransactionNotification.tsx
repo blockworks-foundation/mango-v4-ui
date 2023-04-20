@@ -94,7 +94,7 @@ const TransactionNotificationList = () => {
     <div className={`${getPosition(notificationPosition)} w-full sm:w-auto`}>
       {notifications.filter((n) => n.show).length > 1 ? (
         <button
-          className="default-transition pointer-events-auto my-1 flex items-center rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
+          className="pointer-events-auto my-1 flex items-center rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
           onClick={clearAll}
         >
           <XMarkIcon className="mr-1 h-3.5 w-3.5" />
@@ -266,7 +266,7 @@ const TransactionNotification = ({
             {txid ? (
               <a
                 href={preferredExplorer.url + txid + '?cluster=' + CLUSTER}
-                className="default-transition mt-1 flex items-center text-xs text-th-active underline hover:text-th-fgd-2"
+                className="mt-1 flex items-center text-xs text-th-active underline hover:text-th-fgd-2"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -282,7 +282,7 @@ const TransactionNotification = ({
           <div className={`absolute right-2 top-2 flex-shrink-0`}>
             <button
               onClick={hideNotification}
-              className={`default-transition text-th-fgd-4 focus:outline-none md:hover:text-th-fgd-3`}
+              className={`text-th-fgd-4 focus:outline-none md:hover:text-th-fgd-3`}
             >
               <span className={`sr-only`}>Close</span>
               <svg

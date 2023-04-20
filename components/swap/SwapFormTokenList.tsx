@@ -63,7 +63,7 @@ const TokenItem = ({
     <div>
       <button
         key={address}
-        className={`default-transition flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2`}
+        className={`flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:outline-none focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2`}
         onClick={() => onSubmit(address)}
       >
         <div className="flex items-center">

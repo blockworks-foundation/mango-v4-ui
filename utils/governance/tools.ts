@@ -90,3 +90,52 @@ export const tryGetPubKey = (pubkey: string) => {
     return null
   }
 }
+
+const urlRegex =
+  // eslint-disable-next-line
+  /(https:\/\/)(gist\.github.com\/)([\w\/]{1,39}\/)([\w]{1,32})/
+
+export async function fetchGistFile(gistUrl: string) {
+  const controller = new AbortController()
+  const pieces = gistUrl.match(urlRegex)
+  if (pieces) {
+    const justIdWithoutUser = pieces[4]
+    if (justIdWithoutUser) {
+      const apiUrl = 'https://api.github.com/gists/' + justIdWithoutUser
+      const apiResponse = await fetch(apiUrl, {
+        signal: controller.signal,
+      })
+      const jsonContent = await apiResponse.json()
+      if (apiResponse.status === 200) {
+        const nextUrlFileName = Object.keys(jsonContent['files'])[0]
+        const nextUrl = jsonContent['files'][nextUrlFileName]['raw_url']
+        if (nextUrl.startsWith('https://gist.githubusercontent.com/')) {
+          const fileResponse = await fetch(nextUrl, {
+            signal: controller.signal,
+          })
+          const body = await fileResponse.json()
+          //console.log('fetchGistFile file', gistUrl, fileResponse)
+          return body
+        }
+        return undefined
+      } else {
+        console.warn('could not fetchGistFile', {
+          gistUrl,
+          apiResponse: jsonContent,
+        })
+      }
+    }
+  }
+
+  return undefined
+}
+
+export async function resolveProposalDescription(descriptionLink: string) {
+  try {
+    const url = new URL(descriptionLink)
+    const desc = (await fetchGistFile(url.toString())) ?? descriptionLink
+    return desc
+  } catch {
+    return descriptionLink
+  }
+}

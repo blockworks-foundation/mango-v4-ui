@@ -206,7 +206,7 @@ const NotificationsDrawer = ({
                 ) : null}
                 <button
                   onClick={onClose}
-                  className="flex h-16 w-16 items-center justify-center border-l border-th-bkg-3 text-th-fgd-3 focus:bg-th-bkg-2 focus:outline-none md:hover:bg-th-bkg-2"
+                  className="flex h-16 w-16 items-center justify-center border-l border-th-bkg-3 text-th-fgd-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
                 >
                   <XMarkIcon className={`h-5 w-5`} />
                 </button>

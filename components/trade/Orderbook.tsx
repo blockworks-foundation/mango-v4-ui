@@ -189,7 +189,6 @@ const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
   }
 }
 
-const depth = 40
 type OrderbookData = {
   bids: cumOrderbookSide[]
   asks: cumOrderbookSide[]
@@ -218,10 +217,13 @@ const Orderbook = () => {
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
 
-  const depthArray: number[] = useMemo(() => {
-    const bookDepth = !isMobile ? depth : 9
-    return Array(bookDepth).fill(0)
+  const depth = useMemo(() => {
+    return isMobile ? 9 : 40
   }, [isMobile])
+
+  const depthArray: number[] = useMemo(() => {
+    return Array(depth).fill(0)
+  }, [depth])
 
   useEffect(() => {
     if (market && market.tickSize !== tickSize) {
@@ -488,42 +490,41 @@ const Orderbook = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-        <div id="trade-step-three" className="flex items-center space-x-1.5">
+        <div
+          id="trade-step-three"
+          className="hidden items-center space-x-1.5 md:flex"
+        >
           <Tooltip
-            className={`hidden md:block ${!showAsks ? 'md:hidden' : ''}`}
+            className={`${!showAsks ? 'hidden' : ''}`}
             content={t('trade:show-bids')}
             placement="bottom"
           >
             <button
               className={`rounded ${
                 showAsks ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:bg-th-bkg-4 focus:outline-none disabled:cursor-not-allowed`}
+              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
               onClick={() => toggleSides('bids')}
             >
               <OrderbookIcon className="h-4 w-4" side="buy" />
             </button>
           </Tooltip>
           <Tooltip
-            className={`hidden md:block ${!showBids ? 'md:hidden' : ''}`}
+            className={`${!showBids ? 'hidden' : ''}`}
             content={t('trade:show-asks')}
             placement="bottom"
           >
             <button
               className={`rounded ${
                 showBids ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:bg-th-bkg-4 focus:outline-none disabled:cursor-not-allowed`}
+              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
               onClick={() => toggleSides('asks')}
             >
               <OrderbookIcon className="h-4 w-4" side="sell" />
             </button>
           </Tooltip>
-          <Tooltip
-            className="hidden md:block"
-            content={'Reset and center orderbook'}
-            placement="bottom"
-          >
+          <Tooltip content={'Reset and center orderbook'} placement="bottom">
             <button
-              className="default-transition flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:bg-th-bkg-4 focus:outline-none disabled:cursor-not-allowed"
+              className="flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed"
               onClick={resetOrderbook}
             >
               <ArrowPathIcon className="h-4 w-4" />
@@ -531,20 +532,23 @@ const Orderbook = () => {
           </Tooltip>
         </div>
         {market ? (
-          <div id="trade-step-four">
-            <Tooltip
-              className="hidden md:block"
-              content={t('trade:grouping')}
-              placement="left"
-              delay={100}
-            >
-              <GroupSize
-                tickSize={market.tickSize}
-                onChange={onGroupSizeChange}
-                value={grouping}
-              />
-            </Tooltip>
-          </div>
+          <>
+            <p className="text-xs md:hidden">{t('trade:grouping')}:</p>
+            <div id="trade-step-four">
+              <Tooltip
+                className="hidden md:block"
+                content={t('trade:grouping')}
+                placement="left"
+                delay={100}
+              >
+                <GroupSize
+                  tickSize={market.tickSize}
+                  onChange={onGroupSizeChange}
+                  value={grouping}
+                />
+              </Tooltip>
+            </div>
+          </>
         ) : null}
       </div>
       <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">

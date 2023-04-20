@@ -424,7 +424,7 @@ const SwapReviewRouteInfo = ({
                   )}
                 </p>
                 <ArrowsRightLeftIcon
-                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-2 hover:text-th-active"
+                  className="ml-1 h-4 w-4 cursor-pointer text-th-fgd-2 hover:text-th-active"
                   onClick={() => setSwapRate(!swapRate)}
                 />
               </div>
@@ -580,7 +580,7 @@ const SwapReviewRouteInfo = ({
             {({ open }) => (
               <>
                 <Disclosure.Button
-                  className={`default-transition flex w-full items-center justify-between rounded-md p-3 focus:bg-th-bkg-3 ${
+                  className={`flex w-full items-center justify-between rounded-md p-3 focus-visible:bg-th-bkg-3 ${
                     open ? 'mb-2 rounded-b-none' : ''
                   }`}
                 >
