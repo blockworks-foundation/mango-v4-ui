@@ -159,8 +159,8 @@ export type MangoStore = {
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
-  notificationIdCounter: number
-  notifications: Array<TransactionNotification>
+  transactionNotificationIdCounter: number
+  transactionNotifications: Array<TransactionNotification>
   perpMarkets: PerpMarket[]
   perpStats: {
     loading: boolean
@@ -303,8 +303,8 @@ const mangoStore = create<MangoStore>()(
       },
       mangoAccounts: [],
       markets: undefined,
-      notificationIdCounter: 0,
-      notifications: [],
+      transactionNotificationIdCounter: 0,
+      transactionNotifications: [],
       perpMarkets: [],
       perpStats: {
         loading: false,

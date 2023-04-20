@@ -29,8 +29,8 @@ export function notify(newNotification: {
   noSound?: boolean
 }) {
   const setMangoStore = mangoStore.getState().set
-  const notifications = mangoStore.getState().notifications
-  const lastId = mangoStore.getState().notificationIdCounter
+  const notifications = mangoStore.getState().transactionNotifications
+  const lastId = mangoStore.getState().transactionNotificationIdCounter
   const newId = lastId + 1
   const savedSoundSettings = localStorage.getItem(SOUND_SETTINGS_KEY)
   const soundSettings = savedSoundSettings
@@ -62,7 +62,7 @@ export function notify(newNotification: {
   }
 
   setMangoStore((state) => {
-    state.notificationIdCounter = newId
-    state.notifications = [...notifications, newNotif]
+    state.transactionNotificationIdCounter = newId
+    state.transactionNotifications = [...notifications, newNotif]
   })
 }

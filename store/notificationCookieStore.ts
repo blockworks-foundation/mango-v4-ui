@@ -55,6 +55,6 @@ const setWalletToken = (wallet: string, token: string) => {
   Cookies.set(`${cookieName}${wallet}`, token, {
     secure: true,
     sameSite: 'strict',
-    expires: 90,
+    expires: 360,
   })
 }
