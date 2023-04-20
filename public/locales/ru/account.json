@@ -1,6 +1,7 @@
 {
     "assets": "Assets",
     "assets-liabilities": "Assets & Liabilities",
+    "export": "Export {{dataType}}",
     "liabilities": "Liabilities",
     "no-pnl-history": "No PnL History",
     "pnl-chart": "PnL Chart",

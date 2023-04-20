@@ -33,7 +33,7 @@ export const formatFee = (value: number) => {
   })
 }
 
-const getFee = (activity: any, mangoAccountAddress: string) => {
+export const getFee = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let fee = { value: '0', symbol: '' }
   if (activity_type === 'swap') {
@@ -97,7 +97,10 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
   return fee
 }
 
-const getCreditAndDebit = (activity: any, mangoAccountAddress: string) => {
+export const getCreditAndDebit = (
+  activity: any,
+  mangoAccountAddress: string
+) => {
   const { activity_type } = activity
   let credit = { value: '0', symbol: '' }
   let debit = { value: '0', symbol: '' }
@@ -208,7 +211,7 @@ const getCreditAndDebit = (activity: any, mangoAccountAddress: string) => {
   return { credit, debit }
 }
 
-const getValue = (activity: any, mangoAccountAddress: string) => {
+export const getValue = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
