@@ -318,7 +318,7 @@ const OpenOrders = () => {
                       <>
                         <Td className="w-[16.67%]">
                           <input
-                            className="default-transition h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            className="default-transition h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                             type="text"
                             value={modifiedOrderSize}
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -329,7 +329,7 @@ const OpenOrders = () => {
                         <Td className="w-[16.67%]">
                           <input
                             autoFocus
-                            className="default-transition h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            className="default-transition h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                             type="text"
                             value={modifiedOrderPrice}
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -488,7 +488,7 @@ const OpenOrders = () => {
                         <div>
                           <p className="text-xs">{t('trade:size')}</p>
                           <Input
-                            className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                             type="text"
                             value={modifiedOrderSize}
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -500,7 +500,7 @@ const OpenOrders = () => {
                           <p className="text-xs">{t('price')}</p>
                           <Input
                             autoFocus
-                            className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                             type="text"
                             value={modifiedOrderPrice}
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>

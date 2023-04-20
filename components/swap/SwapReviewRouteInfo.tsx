@@ -580,7 +580,7 @@ const SwapReviewRouteInfo = ({
             {({ open }) => (
               <>
                 <Disclosure.Button
-                  className={`default-transition flex w-full items-center justify-between rounded-md p-3 focus:bg-th-bkg-3 ${
+                  className={`default-transition flex w-full items-center justify-between rounded-md p-3 focus-visible:bg-th-bkg-3 ${
                     open ? 'mb-2 rounded-b-none' : ''
                   }`}
                 >

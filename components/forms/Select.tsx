@@ -65,7 +65,7 @@ interface OptionProps {
 const Option = ({ value, children, className }: OptionProps) => {
   return (
     <Listbox.Option
-      className="default-transition mb-0 text-th-fgd-2 hover:cursor-pointer focus:text-th-active md:hover:text-th-fgd-1"
+      className="default-transition mb-0 text-th-fgd-2 hover:cursor-pointer focus-visible:text-th-active md:hover:text-th-fgd-1"
       value={value}
     >
       {({ selected }) => (

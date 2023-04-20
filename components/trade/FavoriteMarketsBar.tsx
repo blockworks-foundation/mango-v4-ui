@@ -35,7 +35,7 @@ const FavoriteMarketsBar = () => {
         }
         return (
           <Link
-            className={`default-transition flex items-center whitespace-nowrap py-1 text-xs hover:text-th-active hover:opacity-100 focus:text-th-fgd-1 focus:opacity-100 focus:outline-none ${
+            className={`default-transition flex items-center whitespace-nowrap py-1 text-xs hover:text-th-active hover:opacity-100 focus-visible:text-th-fgd-1 focus-visible:opacity-100 focus-visible:outline-none ${
               selectedMarket && selectedMarket.name === mkt
                 ? 'text-th-active'
                 : 'text-th-fgd-1 opacity-60'

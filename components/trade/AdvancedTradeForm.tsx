@@ -522,7 +522,7 @@ const AdvancedTradeForm = () => {
                   decimalScale={tickDecimals}
                   name="price"
                   id="price"
-                  className="default-transition flex w-full items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
+                  className="default-transition flex w-full items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:border-th-fgd-4 lg:text-base"
                   placeholder="0.00"
                   value={tradeForm.price}
                   onValueChange={handlePriceChange}

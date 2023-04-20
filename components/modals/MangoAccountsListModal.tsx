@@ -128,7 +128,7 @@ const MangoAccountsListModal = ({
                     >
                       <button
                         onClick={() => handleSelectMangoAccount(acc)}
-                        className="default-transition flex h-full w-full items-center justify-between rounded-md rounded-r-none border border-th-bkg-4 px-4 text-th-fgd-1 focus:border-th-fgd-4 md:hover:border-th-fgd-4"
+                        className="default-transition flex h-full w-full items-center justify-between rounded-md rounded-r-none border border-th-bkg-4 px-4 text-th-fgd-1 focus-visible:border-th-fgd-4 md:hover:border-th-fgd-4"
                       >
                         <div className="flex w-full items-center justify-between">
                           <div className="flex items-center space-x-2.5">

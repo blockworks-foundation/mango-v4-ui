@@ -33,8 +33,8 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       disabled={disabled}
       className={`rounded-md ${
         secondary
-          ? 'border border-th-button focus:border-th-fgd-4 md:hover:border-th-button-hover'
-          : 'bg-th-button focus:border focus:border-th-fgd-4 md:hover:bg-th-button-hover'
+          ? 'border border-th-button focus-visible:border-th-fgd-4 md:hover:border-th-button-hover'
+          : 'bg-th-button focus-visible:border focus-visible:border-th-fgd-4 md:hover:bg-th-button-hover'
       } ${
         size === 'medium'
           ? 'h-10 px-4'
@@ -82,9 +82,9 @@ export const IconButton = forwardRef<
       } default-transition items-center justify-center rounded-full ${
         hideBg
           ? 'md:hover:text-th-active'
-          : 'border border-th-button focus:border-th-fgd-3 md:hover:border-th-button-hover'
+          : 'border border-th-button focus-visible:border-th-fgd-3 md:hover:border-th-button-hover'
       } text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:bg-th-bkg-4 
-      disabled:text-th-fgd-4 md:disabled:hover:text-th-fgd-4 ${className} focus:text-th-active`}
+      disabled:text-th-fgd-4 md:disabled:hover:text-th-fgd-4 ${className} focus-visible:text-th-active`}
       ref={ref}
     >
       {children}
@@ -114,7 +114,7 @@ export const LinkButton: FunctionComponent<LinkButtonCombinedProps> = ({
       disabled={disabled}
       className={`default-transition flex items-center border-0 font-bold ${
         secondary ? 'text-th-active' : 'text-th-fgd-2'
-      } rounded-sm underline focus:text-th-active focus:no-underline disabled:cursor-not-allowed  disabled:opacity-50 md:hover:no-underline  ${className}`}
+      } rounded-sm underline focus-visible:text-th-active focus-visible:no-underline disabled:cursor-not-allowed  disabled:opacity-50 md:hover:no-underline  ${className}`}
       {...props}
       type="button"
     >

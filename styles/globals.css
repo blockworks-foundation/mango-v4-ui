@@ -543,7 +543,7 @@ table p {
 /* slider */
 
 input[type='range'] {
-  @apply default-transition h-1.5 appearance-none rounded bg-th-bkg-3 bg-gradient-to-r from-th-active to-th-active bg-no-repeat focus:bg-th-bkg-4;
+  @apply default-transition h-1.5 appearance-none rounded bg-th-bkg-3 bg-gradient-to-r from-th-active to-th-active bg-no-repeat focus-visible:bg-th-bkg-4;
 }
 
 input[type='range']::-webkit-slider-thumb {

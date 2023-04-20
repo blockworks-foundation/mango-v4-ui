@@ -30,7 +30,7 @@ const ChartRangeButtons: FunctionComponent<ChartRangeButtonsProps> = ({
       ) : null}
       {values.map((v, i) => (
         <button
-          className={`${className} default-transition relative h-6 cursor-pointer rounded-md px-3 text-center text-xs focus:bg-th-bkg-3 focus:text-th-fgd-1
+          className={`${className} default-transition relative h-6 cursor-pointer rounded-md px-3 text-center text-xs focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1
               ${
                 v === activeValue
                   ? `text-th-active`
