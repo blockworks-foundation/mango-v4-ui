@@ -522,7 +522,7 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 xl:col-span-1 xl:border-t-0">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 xl:col-span-1 xl:border-l xl:border-t-0">
           <div id="account-step-seven" className="flex flex-col items-start">
             <div className="flex w-full items-center justify-between">
               <Tooltip
