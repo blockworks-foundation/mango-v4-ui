@@ -19,7 +19,7 @@ import {
   GlowWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
-import Notifications from '../components/shared/Notification'
+import TransactionNotification from '@components/notifications/TransactionNotification'
 import { ThemeProvider } from 'next-themes'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/Layout'
@@ -118,7 +118,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                     <Component {...pageProps} />
                   </Layout>
                 </ViewportProvider>
-                <Notifications />
+                <TransactionNotification />
               </ThemeProvider>
             </EnhancedWalletProvider>
           </WalletProvider>
