@@ -281,14 +281,14 @@ const SwapForm = () => {
     >
       <div>
         <Transition
-          className="absolute top-0 left-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
+          className="absolute top-0 right-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
           show={showConfirm}
           enter="transition ease-in duration-300"
-          enterFrom="translate-x-full"
+          enterFrom="-translate-x-full"
           enterTo="translate-x-0"
           leave="transition ease-out duration-300"
           leaveFrom="translate-x-0"
-          leaveTo="translate-x-full"
+          leaveTo="-translate-x-full"
         >
           <SwapReviewRouteInfo
             onClose={() => setShowConfirm(false)}
