@@ -85,7 +85,7 @@ const Chat = () => {
         </LinkButton>
       )}
       <div className="bg-th-bkg-2 px-3 py-0.5">
-        <LinkButton className="mb-0 text-xxs font-normal no-underline">
+        <LinkButton className="mb-0 text-xxs font-normal">
           <span className="text-th-fgd-4">Content Policy</span>
         </LinkButton>
       </div>

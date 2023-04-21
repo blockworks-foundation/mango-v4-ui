@@ -19,7 +19,7 @@ const MaxAmountButton = ({
 }) => {
   return (
     <LinkButton
-      className={`font-normal no-underline ${className} md:hover:text-th-fgd-3`}
+      className={`font-normal ${className}`}
       disabled={disabled}
       onClick={onClick}
     >

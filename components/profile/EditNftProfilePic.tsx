@@ -153,7 +153,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
             {t('save')}
           </Button>
           {profile?.profile_image_url ? (
-            <LinkButton className="text-sm" onClick={removeProfileImage}>
+            <LinkButton onClick={removeProfileImage}>
               {t('profile:remove')}
             </LinkButton>
           ) : null}
