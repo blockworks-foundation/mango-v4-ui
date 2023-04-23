@@ -10,10 +10,10 @@ import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
 import dynamic from 'next/dynamic'
-import { useCoingecko } from 'hooks/useCoingecko'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 const SimpleAreaChart = dynamic(
   () => import('@components/shared/SimpleAreaChart'),
   { ssr: false }
@@ -21,12 +21,13 @@ const SimpleAreaChart = dynamic(
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
-  const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
   const { group } = useMangoGroup()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const { data: birdeyePrices, isLoading: loadingPrices } =
+    useBirdeyeMarketPrices()
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -41,89 +42,96 @@ const SpotMarketsTable = () => {
             </TrHead>
           </thead>
           <tbody>
-            {serumMarkets.map((market) => {
-              const bank = group?.getFirstBankByTokenIndex(
-                market.baseTokenIndex
-              )
-              const oraclePrice = bank?.uiPrice
+            {serumMarkets
+              .slice()
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((market) => {
+                const bank = group?.getFirstBankByTokenIndex(
+                  market.baseTokenIndex
+                )
+                const oraclePrice = bank?.uiPrice
 
-              const coingeckoData = coingeckoPrices.find(
-                (asset) =>
-                  asset.symbol.toUpperCase() === bank?.name.toUpperCase()
-              )
+                const birdeyeData = birdeyePrices.find(
+                  (m) => m.mint === market.serumMarketExternal.toString()
+                )
 
-              const change =
-                coingeckoData && oraclePrice
-                  ? ((oraclePrice - coingeckoData.prices[0][1]) /
-                      coingeckoData.prices[0][1]) *
-                    100
-                  : 0
+                const change =
+                  birdeyeData && oraclePrice
+                    ? ((oraclePrice - birdeyeData.data[0].value) /
+                        birdeyeData.data[0].value) *
+                      100
+                    : 0
 
-              const chartData = coingeckoData ? coingeckoData.prices : undefined
+                const chartData = birdeyeData ? birdeyeData.data : undefined
 
-              return (
-                <TrBody key={market.publicKey.toString()}>
-                  <Td>
-                    <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <p className="font-body">{market.name}</p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
-                      <p>
-                        {oraclePrice ? (
-                          <FormatNumericValue value={oraclePrice} isUsd />
-                        ) : (
-                          '–'
-                        )}
-                      </p>
-                    </div>
-                  </Td>
-                  <Td>
-                    {!loadingPrices ? (
-                      chartData !== undefined ? (
-                        <div className="h-10 w-24">
-                          <SimpleAreaChart
-                            color={
-                              change >= 0
-                                ? COLORS.UP[theme]
-                                : COLORS.DOWN[theme]
-                            }
-                            data={chartData}
-                            name={bank!.name}
-                            xKey="0"
-                            yKey="1"
-                          />
-                        </div>
-                      ) : bank?.name === 'USDC' ||
-                        bank?.name === 'USDT' ? null : (
-                        <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-                      )
-                    ) : (
-                      <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
-                    )}
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col items-end">
-                      <Change change={change} suffix="%" />
-                    </div>
-                  </Td>
-                </TrBody>
-              )
-            })}
+                return (
+                  <TrBody key={market.publicKey.toString()}>
+                    <Td>
+                      <div className="flex items-center">
+                        <MarketLogos market={market} />
+                        <p className="font-body">{market.name}</p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <p>
+                          {oraclePrice ? (
+                            <FormatNumericValue value={oraclePrice} isUsd />
+                          ) : (
+                            '–'
+                          )}
+                        </p>
+                      </div>
+                    </Td>
+                    <Td>
+                      {!loadingPrices ? (
+                        chartData !== undefined ? (
+                          <div className="h-10 w-24">
+                            <SimpleAreaChart
+                              color={
+                                change >= 0
+                                  ? COLORS.UP[theme]
+                                  : COLORS.DOWN[theme]
+                              }
+                              data={chartData}
+                              name={bank!.name}
+                              xKey="unixTime"
+                              yKey="value"
+                            />
+                          </div>
+                        ) : bank?.name === 'USDC' ||
+                          bank?.name === 'USDT' ? null : (
+                          <p className="mb-0 text-th-fgd-4">
+                            {t('unavailable')}
+                          </p>
+                        )
+                      ) : (
+                        <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+                      )}
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col items-end">
+                        <Change change={change} suffix="%" />
+                      </div>
+                    </Td>
+                  </TrBody>
+                )
+              })}
           </tbody>
         </Table>
       ) : (
         <div>
-          {serumMarkets.map((market) => {
-            return (
-              <MobileSpotMarketItem
-                key={market.publicKey.toString()}
-                market={market}
-              />
-            )
-          })}
+          {serumMarkets
+            .slice()
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((market) => {
+              return (
+                <MobileSpotMarketItem
+                  key={market.publicKey.toString()}
+                  market={market}
+                />
+              )
+            })}
         </div>
       )}
     </ContentBox>
@@ -134,38 +142,38 @@ export default SpotMarketsTable
 
 const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
   const { t } = useTranslation('common')
-  const { isLoading: loadingPrices, data: coingeckoPrices } = useCoingecko()
+  const { data: birdeyePrices, isLoading: loadingPrices } =
+    useBirdeyeMarketPrices()
   const { group } = useMangoGroup()
   const { theme } = useTheme()
   const bank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
 
-  const coingeckoData = useMemo(() => {
+  const birdeyeData = useMemo(() => {
     if (!loadingPrices && bank) {
-      return coingeckoPrices.find(
-        (asset) => asset.symbol.toUpperCase() === bank?.name
+      return birdeyePrices.find(
+        (m) => m.mint === market.serumMarketExternal.toString()
       )
     }
     return null
   }, [loadingPrices, bank])
 
   const change = useMemo(() => {
-    if (coingeckoData) {
+    if (birdeyeData && bank) {
       return (
-        ((coingeckoData.prices[coingeckoData.prices.length - 1][1] -
-          coingeckoData.prices[0][1]) /
-          coingeckoData.prices[0][1]) *
+        ((bank.uiPrice - birdeyeData.data[0].value) /
+          birdeyeData.data[0].value) *
         100
       )
     }
     return 0
-  }, [coingeckoData])
+  }, [birdeyeData, bank])
 
   const chartData = useMemo(() => {
-    if (coingeckoData) {
-      return coingeckoData.prices
+    if (birdeyeData) {
+      return birdeyeData.data
     }
     return undefined
-  }, [coingeckoData])
+  }, [birdeyeData])
 
   return (
     <div className="border-b border-th-bkg-3 px-6 py-4">
@@ -193,11 +201,11 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
                 color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
                 data={chartData}
                 name={bank!.name}
-                xKey="0"
-                yKey="1"
+                xKey="unixTime"
+                yKey="value"
               />
             </div>
-          ) : bank?.name === 'USDC' || bank?.name === 'USDT' ? null : (
+          ) : (
             <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
           )
         ) : (

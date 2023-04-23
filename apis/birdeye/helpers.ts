@@ -1,3 +1,5 @@
+import Decimal from 'decimal.js'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const NEXT_PUBLIC_BIRDEYE_API_KEY =
   process.env.NEXT_PUBLIC_BIRDEYE_API_KEY ||
@@ -7,7 +9,7 @@ export const API_URL = 'https://public-api.birdeye.so/'
 
 export const socketUrl = `wss://public-api.birdeye.so/socket?x-api-key=${NEXT_PUBLIC_BIRDEYE_API_KEY}`
 
-// Make requests to CryptoCompare API
+// Make requests to Birdeye API
 export async function makeApiRequest(path: string) {
   const response = await fetch(`${API_URL}${path}`, {
     headers: {
@@ -58,4 +60,81 @@ export function getNextBarTime(lastBar: any, resolution = '1D') {
   }
 
   return nextBarTime
+}
+
+export const SUBSCRIPT_NUMBER_MAP: Record<number, string> = {
+  4: '₄',
+  5: '₅',
+  6: '₆',
+  7: '₇',
+  8: '₈',
+  9: '₉',
+  10: '₁₀',
+  11: '₁₁',
+  12: '₁₂',
+  13: '₁₃',
+  14: '₁₄',
+  15: '₁₅',
+}
+
+export const calcPricePrecision = (num: number | string) => {
+  if (!num) return 8
+
+  switch (true) {
+    case Math.abs(+num) < 0.00000000001:
+      return 16
+
+    case Math.abs(+num) < 0.000000001:
+      return 14
+
+    case Math.abs(+num) < 0.0000001:
+      return 12
+
+    case Math.abs(+num) < 0.00001:
+      return 10
+
+    case Math.abs(+num) < 0.05:
+      return 6
+
+    case Math.abs(+num) < 1:
+      return 4
+
+    case Math.abs(+num) < 20:
+      return 3
+
+    default:
+      return 2
+  }
+}
+
+export const formatPrice = (
+  num: number,
+  precision?: number,
+  gr0 = true
+): string => {
+  if (!num) {
+    return num.toString()
+  }
+
+  if (!precision) {
+    precision = calcPricePrecision(+num)
+  }
+
+  let formated: string = new Decimal(num).toFixed(precision)
+
+  if (formated.match(/^0\.[0]+$/g)) {
+    formated = formated.replace(/\.[0]+$/g, '')
+  }
+
+  if (gr0 && formated.match(/\.0{4,15}[1-9]+/g)) {
+    const match = formated.match(/\.0{4,15}/g)
+    if (!match) return ''
+    const matchString: string = match[0].slice(1)
+    formated = formated.replace(
+      /\.0{4,15}/g,
+      `.0${SUBSCRIPT_NUMBER_MAP[matchString.length]}`
+    )
+  }
+
+  return formated
 }

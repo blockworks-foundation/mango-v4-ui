@@ -6,6 +6,7 @@ import { abbreviateAddress } from 'utils/formatting'
 import CreateAccountModal from './modals/CreateAccountModal'
 import { DEFAULT_DELEGATE } from './modals/DelegateModal'
 import MangoAccountsListModal from './modals/MangoAccountsListModal'
+import SheenLoader from './shared/SheenLoader'
 import Tooltip from './shared/Tooltip'
 
 const AccountsButton = () => {
@@ -24,7 +25,7 @@ const AccountsButton = () => {
   return (
     <>
       <button
-        className="hidden h-16 border-l border-th-bkg-3 px-4 md:block"
+        className="hidden h-16 border-l border-th-bkg-3 px-4 focus:bg-th-bkg-3 md:block"
         id="account-step-two"
         onClick={handleShowAccounts}
       >
@@ -44,7 +45,9 @@ const AccountsButton = () => {
               ) : null}
             </div>
           ) : initialLoad ? (
-            <span>{t('loading')}...</span>
+            <SheenLoader className="mt-1">
+              <div className="h-4 w-24 bg-th-bkg-2" />
+            </SheenLoader>
           ) : (
             <span>
               <span className="mr-1.5">🥭</span>

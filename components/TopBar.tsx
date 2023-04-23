@@ -25,7 +25,6 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
-// import ThemeSwitcher from './ThemeSwitcher'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -66,7 +65,7 @@ const TopBar = () => {
     <>
       <div className="flex w-full items-center justify-between space-x-4">
         <span className="mb-0 flex items-center">
-          {query.token ? (
+          {query.token || query.market ? (
             <div className="mr-2 flex h-16 items-center border-r border-th-bkg-3 pr-4 md:mr-4 md:pr-6">
               <IconButton onClick={() => router.back()} hideBg size="small">
                 <ArrowLeftIcon className="h-6 w-6" />
@@ -111,9 +110,6 @@ const TopBar = () => {
           </div>
         ) : null}
         <div className="flex items-center">
-          {/* <div className="px-3 md:px-4">
-            <ThemeSwitcher />
-          </div> */}
           {isUnownedAccount || (!connected && isMobile) ? null : (
             <Button
               onClick={() => handleDepositWithdrawModal('deposit')}

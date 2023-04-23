@@ -1,4 +1,4 @@
-export const LAST_ACCOUNT_KEY = 'mangoAccount-0.3'
+export const LAST_ACCOUNT_KEY = 'mangoAccount-0.4'
 
 export const CLIENT_TX_TIMEOUT = 90000
 
@@ -29,6 +29,8 @@ export const SOUND_SETTINGS_KEY = 'soundSettings-0.1'
 
 export const SIZE_INPUT_UI_KEY = 'tradeFormUi-0.2'
 
+export const TRADE_CHECKBOXES_KEY = 'tradeCheckboxes-0.1'
+
 export const GRID_LAYOUT_KEY = 'savedLayouts-0.2'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.2'
@@ -48,6 +50,12 @@ export const SHOW_STABLE_PRICE_KEY = 'showStablePriceKey-0.1'
 export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
 
 export const SHOW_SWAP_INTRO_MODAL = 'showSwapModal-0.1'
+
+export const ACCEPT_TERMS_KEY = 'termsOfUseAccepted-0.1'
+
+export const TRADE_LAYOUT_KEY = 'tradeLayoutKey-0.1'
+
+export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [
@@ -77,3 +85,6 @@ export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '400px'
 export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 
 export const PAGINATION_PAGE_LENGTH = 250
+
+export const JUPITER_API_MAINNET = 'https://token.jup.ag/strict'
+export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'

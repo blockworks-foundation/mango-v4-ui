@@ -1,4 +1,4 @@
-import { SUPPORTED_RESOLUTIONS as SUPPORTED_SPOT_RESOLUTIONS } from 'apis/birdeye/datafeed'
+import { SUPPORTED_RESOLUTIONS as SUPPORTED_SPOT_RESOLUTIONS } from 'apis/datafeed'
 
 export const ONE_HOUR_MINS = 60
 export const ONE_MINUTE_SECONDS = 60

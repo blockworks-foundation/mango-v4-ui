@@ -66,8 +66,17 @@ export default function EnhancedWalletProvider({
   useEffect(() => {
     if (wallet) {
       setPreselectedWalletName(wallet.adapter.name)
+    } else {
+      const hasInstalledWallet = displayedWallets.find(
+        (w) => w.readyState === 'Installed'
+      )
+      if (hasInstalledWallet) {
+        setPreselectedWalletName(hasInstalledWallet.adapter.name)
+      } else {
+        setPreselectedWalletName('Phantom')
+      }
     }
-  }, [wallet, setPreselectedWalletName])
+  }, [displayedWallets, wallet, setPreselectedWalletName])
 
   useEffect(() => {
     if (!wallet && preselectedWalletName) {

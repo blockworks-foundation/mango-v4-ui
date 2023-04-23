@@ -30,6 +30,7 @@ import Change from '../shared/Change'
 import Tooltip from '@components/shared/Tooltip'
 import {
   ANIMATION_SETTINGS_KEY,
+  MANGO_DATA_API_URL,
   // IS_ONBOARDED_KEY
 } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -48,7 +49,34 @@ const AssetsLiabilities = dynamic(() => import('./AssetsLiabilities'), {
 })
 
 const TABS = ['account-value', 'account:assets-liabilities']
-import { PerformanceDataItem } from 'types'
+import { PerformanceDataItem, TotalAccountFundingItem } from 'types'
+import { useQuery } from '@tanstack/react-query'
+const FundingDetails = dynamic(() => import('./FundingDetails'), {
+  ssr: false,
+})
+
+const fetchFundingTotals = async (mangoAccountPk: string) => {
+  try {
+    const data = await fetch(
+      `${MANGO_DATA_API_URL}/stats/funding-account-total?mango-account=${mangoAccountPk}`
+    )
+    const res = await data.json()
+    if (res) {
+      const entries: [string, Omit<TotalAccountFundingItem, 'market'>][] =
+        Object.entries(res)
+
+      const stats: TotalAccountFundingItem[] = entries
+        .map(([key, value]) => {
+          return { ...value, market: key }
+        })
+        .filter((x) => x)
+
+      return stats
+    }
+  } catch (e) {
+    console.log('Failed to fetch account funding', e)
+  }
+}
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
@@ -65,7 +93,11 @@ const AccountPage = () => {
     (s) => s.mangoAccount.interestTotals.data
   )
   const [chartToShow, setChartToShow] = useState<
-    'account-value' | 'cumulative-interest-value' | 'pnl' | ''
+    | 'account-value'
+    | 'cumulative-interest-value'
+    | 'pnl'
+    | 'hourly-funding'
+    | ''
   >('')
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const [showPnlHistory, setShowPnlHistory] = useState<boolean>(false)
@@ -89,6 +121,22 @@ const AccountPage = () => {
       actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
   }, [actions, mangoAccountAddress, connected])
+
+  const {
+    data: fundingData,
+    isLoading: loadingFunding,
+    isFetching: fetchingFunding,
+  } = useQuery(
+    ['funding', mangoAccountAddress],
+    () => fetchFundingTotals(mangoAccountAddress),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!mangoAccountAddress,
+    }
+  )
 
   const oneDayPerformanceData: PerformanceDataItem[] | [] = useMemo(() => {
     if (!performanceData || !performanceData.length) return []
@@ -172,6 +220,16 @@ const AccountPage = () => {
     return 0.0
   }, [totalInterestData])
 
+  const fundingTotalValue = useMemo(() => {
+    if (fundingData?.length && mangoAccountAddress) {
+      return fundingData.reduce(
+        (a, c) => a + c.long_funding + c.short_funding,
+        0
+      )
+    }
+    return 0.0
+  }, [fundingData, mangoAccountAddress])
+
   const oneDayInterestChange = useMemo(() => {
     if (oneDayPerformanceData.length) {
       const first = oneDayPerformanceData[0]
@@ -197,7 +255,7 @@ const AccountPage = () => {
   }, [mangoAccount, group])
 
   const handleChartToShow = (
-    chartName: 'pnl' | 'cumulative-interest-value'
+    chartName: 'pnl' | 'cumulative-interest-value' | 'hourly-funding'
   ) => {
     if (
       (chartName === 'cumulative-interest-value' && interestTotalValue > 1) ||
@@ -206,6 +264,9 @@ const AccountPage = () => {
       setChartToShow(chartName)
     }
     if (chartName === 'pnl' && performanceData.length > 4) {
+      setChartToShow(chartName)
+    }
+    if (chartName === 'hourly-funding') {
       setChartToShow(chartName)
     }
   }
@@ -235,10 +296,10 @@ const AccountPage = () => {
           <div className="hide-scroll flex justify-center space-x-2 md:justify-start">
             {TABS.map((tab) => (
               <button
-                className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium md:hover:text-th-fgd-2 ${
+                className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium focus:bg-th-bkg-3 md:hover:text-th-fgd-2 ${
                   activeTab === tab
-                    ? 'bg-th-bkg-3 text-th-active'
-                    : 'text-th-fgd-3'
+                    ? 'bg-th-bkg-3 text-th-active focus:text-th-active'
+                    : 'text-th-fgd-3 focus:text-th-fgd-1'
                 }`}
                 onClick={() => setActiveTab(tab)}
                 key={tab}
@@ -346,13 +407,13 @@ const AccountPage = () => {
           <AccountActions />
         </div>
       </div>
-      <div className="grid grid-cols-5 border-b border-th-bkg-3">
-        <div className="col-span-5 border-t border-th-bkg-3 py-3 px-6 lg:col-span-1 lg:border-t-0">
+      <div className="grid grid-cols-6 border-b border-th-bkg-3">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 px-6 md:col-span-3 lg:col-span-2 lg:border-t-0 xl:col-span-1">
           <div id="account-step-four">
             <Tooltip
               maxWidth="20rem"
-              placement="bottom-start"
-              delay={250}
+              placement="top-start"
+              delay={100}
               content={
                 <div className="flex-col space-y-2 text-sm">
                   <p className="text-xs">
@@ -394,13 +455,13 @@ const AccountPage = () => {
             <HealthBar health={maintHealth} />
           </div>
         </div>
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-3 md:border-l lg:col-span-2 lg:border-t-0 xl:col-span-1">
           <div id="account-step-five">
             <Tooltip
               content={t('account:tooltip-free-collateral')}
               maxWidth="20rem"
-              placement="bottom"
-              delay={250}
+              placement="top-start"
+              delay={100}
             >
               <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                 {t('free-collateral')}
@@ -423,8 +484,8 @@ const AccountPage = () => {
               <Tooltip
                 content={t('account:tooltip-total-collateral')}
                 maxWidth="20rem"
-                placement="bottom"
-                delay={250}
+                placement="top-start"
+                delay={100}
               >
                 <span className="tooltip-underline">{t('total')}</span>:
                 <span className="ml-1 font-mono text-th-fgd-2">
@@ -444,13 +505,13 @@ const AccountPage = () => {
             </span>
           </div>
         </div>
-        <div className="col-span-5 flex border-t border-th-bkg-3 py-3 pl-6 lg:col-span-1 lg:border-l lg:border-t-0">
+        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-3 lg:col-span-2 lg:border-l lg:border-t-0 xl:col-span-1">
           <div id="account-step-six">
             <Tooltip
               content={t('account:tooltip-leverage')}
               maxWidth="20rem"
-              placement="bottom"
-              delay={250}
+              placement="top-start"
+              delay={100}
             >
               <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                 {t('leverage')}
@@ -461,13 +522,13 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-5 border-t border-th-bkg-3 py-3 pl-6 pr-4 lg:col-span-1 lg:border-l lg:border-t-0">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 xl:col-span-1 xl:border-t-0">
           <div id="account-step-seven" className="flex flex-col items-start">
             <div className="flex w-full items-center justify-between">
               <Tooltip
                 content={t('account:tooltip-pnl')}
-                placement="bottom"
-                delay={250}
+                placement="top-start"
+                delay={100}
               >
                 <p className="tooltip-underline inline text-sm text-th-fgd-3 xl:text-base">
                   {t('pnl')}
@@ -479,7 +540,7 @@ const AccountPage = () => {
                     <Tooltip
                       className="hidden md:block"
                       content={t('account:pnl-chart')}
-                      delay={250}
+                      delay={100}
                     >
                       <IconButton
                         className="text-th-fgd-3"
@@ -493,7 +554,7 @@ const AccountPage = () => {
                   <Tooltip
                     className="hidden md:block"
                     content={t('account:pnl-history')}
-                    delay={250}
+                    delay={100}
                   >
                     <IconButton
                       className="text-th-fgd-3"
@@ -519,24 +580,24 @@ const AccountPage = () => {
             </div>
           </div>
         </div>
-        <div className="col-span-5 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left lg:col-span-1 lg:border-l lg:border-t-0">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left md:col-span-3 lg:col-span-2 lg:border-l xl:col-span-1 xl:border-t-0">
           <div id="account-step-eight">
             <div className="flex w-full items-center justify-between">
               <Tooltip
                 content={t('account:tooltip-total-interest')}
                 maxWidth="20rem"
-                placement="bottom-end"
-                delay={250}
+                placement="top-start"
+                delay={100}
               >
                 <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
                   {t('total-interest-earned')}
                 </p>
               </Tooltip>
-              {interestTotalValue > 1 || interestTotalValue < -1 ? (
+              {Math.abs(interestTotalValue) > 1 && mangoAccountAddress ? (
                 <Tooltip
                   className="hidden md:block"
                   content="Cumulative Interest Chart"
-                  delay={250}
+                  delay={100}
                 >
                   <IconButton
                     className="text-th-fgd-3"
@@ -562,6 +623,48 @@ const AccountPage = () => {
               <p className="text-xs text-th-fgd-4">{t('rolling-change')}</p>
             </div>
           </div>
+        </div>
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left md:col-span-3 md:border-l lg:col-span-2 xl:col-span-1 xl:border-t-0">
+          <div className="flex w-full items-center justify-between">
+            <Tooltip
+              content={t('account:tooltip-total-funding')}
+              maxWidth="20rem"
+              placement="top-start"
+              delay={100}
+            >
+              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+                {t('account:total-funding-earned')}
+              </p>
+            </Tooltip>
+            {mangoAccountAddress ? (
+              <Tooltip
+                className="hidden md:block"
+                content="Funding Chart"
+                delay={100}
+              >
+                <IconButton
+                  className="text-th-fgd-3"
+                  hideBg
+                  onClick={() => handleChartToShow('hourly-funding')}
+                >
+                  <ChartBarIcon className="h-5 w-5" />
+                </IconButton>
+              </Tooltip>
+            ) : null}
+          </div>
+          {(loadingFunding || fetchingFunding) && mangoAccountAddress ? (
+            <SheenLoader className="mt-2">
+              <div className="h-7 w-16 bg-th-bkg-2" />
+            </SheenLoader>
+          ) : (
+            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              <FormatNumericValue
+                value={fundingTotalValue}
+                decimals={2}
+                isUsd={true}
+              />
+            </p>
+          )}
         </div>
       </div>
       <AccountTabs />
@@ -592,6 +695,8 @@ const AccountPage = () => {
           hideChart={handleHideChart}
           yKey="pnl"
         />
+      ) : chartToShow === 'hourly-funding' ? (
+        <FundingDetails hideChart={handleHideChart} />
       ) : (
         <AccountChart
           chartToShow="cumulative-interest-value"

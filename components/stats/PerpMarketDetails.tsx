@@ -1,5 +1,3 @@
-import { IconButton } from '@components/shared/Button'
-import { ChevronLeftIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
@@ -8,21 +6,21 @@ import { useMemo, useState } from 'react'
 import { formatYAxis } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
+import { PerpStatsItem } from 'types'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
 )
 
 const PerpMarketDetails = ({
-  perpMarketName,
-  setShowPerpDetails,
+  marketStats,
+  perpMarket,
 }: {
-  perpMarketName: string
-  setShowPerpDetails: (x: string) => void
+  marketStats: PerpStatsItem[]
+  perpMarket: PerpMarket
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const perpMarkets = mangoStore((s) => s.perpMarkets)
-  const perpStats = mangoStore((s) => s.perpStats.data)
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const [priceDaysToShow, setPriceDaysToShow] = useState('30')
   const [oiDaysToShow, setOiDaysToShow] = useState('30')
@@ -30,17 +28,10 @@ const PerpMarketDetails = ({
   const [instantFundingDaysToShow, setInstantFundingDaysToShow] = useState('30')
   const rate = usePerpFundingRate()
 
-  const perpMarket = useMemo(() => {
-    return perpMarkets.find((m) => (m.name = perpMarketName))
-  }, [perpMarkets, perpMarketName])
-
-  const [marketStats, lastStat] = useMemo(() => {
-    if (!perpStats) return [[], undefined]
-    const stats = perpStats
-      .filter((stat) => stat.perp_market === perpMarketName)
-      .reverse()
-    return [stats, stats[stats.length - 1]]
-  }, [perpStats])
+  const lastStat = useMemo(() => {
+    if (!marketStats.length) return undefined
+    return marketStats[marketStats.length - 1]
+  }, [marketStats])
 
   const fundingRate = useMemo(() => {
     if (!lastStat) return 0
@@ -53,19 +44,42 @@ const PerpMarketDetails = ({
     return lastStat.instantaneous_funding_rate
   }, [rate, lastStat])
 
+  const perpHourlyStats = useMemo(() => {
+    const latestStat = { ...lastStat } as PerpStatsItem
+    latestStat.instantaneous_funding_rate = fundingRate ? fundingRate : 0
+    latestStat.date_hour = dayjs().toISOString()
+    if (marketStats) {
+      const perpHourly = marketStats.concat([latestStat])
+      return perpHourly.map((stat) => ({
+        ...stat,
+        funding_rate_hourly: stat.funding_rate_hourly * 100,
+      }))
+    }
+  }, [marketStats, fundingRate])
+
+  const instantFundingRateStats = useMemo(() => {
+    if (marketStats) {
+      return marketStats.map((stat) => ({
+        ...stat,
+        instantaneous_funding_rate: stat.instantaneous_funding_rate * 100,
+      }))
+    }
+    return []
+  }, [marketStats])
+
   return (
     <div className="grid grid-cols-2">
-      <div className="col-span-2 flex items-center border-b border-th-bkg-3 px-6 py-3">
+      {/* <div className="col-span-2 flex items-center border-b border-th-bkg-3 px-6 py-3">
         <IconButton
           className="mr-4"
-          onClick={() => setShowPerpDetails('')}
+          onClick={() => setShowPerpDetails(null)}
           size="small"
         >
           <ChevronLeftIcon className="h-5 w-5" />
         </IconButton>
-        <h2 className="text-lg">{`${perpMarketName} ${t('stats')}`}</h2>
-      </div>
-      {marketStats.length && lastStat ? (
+        <h2 className="text-lg">{`${perpMarket.name} ${t('stats')}`}</h2>
+      </div> */}
+      {marketStats?.length && lastStat ? (
         <>
           <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
             <DetailedAreaChart
@@ -112,7 +126,7 @@ const PerpMarketDetails = ({
           </div>
           <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
             <DetailedAreaChart
-              data={marketStats}
+              data={perpHourlyStats ? perpHourlyStats : []}
               daysToShow={hourlyFundingeDaysToShow}
               setDaysToShow={setHourlyFundingDaysToShow}
               heightClass="h-64"
@@ -128,13 +142,7 @@ const PerpMarketDetails = ({
           </div>
           <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
             <DetailedAreaChart
-              data={marketStats.concat([
-                {
-                  ...lastStat,
-                  date_hour: dayjs().toISOString(),
-                  instantaneous_funding_rate: fundingRate ?? 0,
-                },
-              ])}
+              data={instantFundingRateStats}
               daysToShow={instantFundingDaysToShow}
               setDaysToShow={setInstantFundingDaysToShow}
               heightClass="h-64"

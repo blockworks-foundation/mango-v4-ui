@@ -91,14 +91,14 @@ const BorrowPage = () => {
 
   return (
     <>
-      <div className="flex flex-col border-b border-th-bkg-3 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col md:flex-row">
           <div className="pb-4 md:pr-6 md:pb-0">
             <Tooltip
               maxWidth="20rem"
               placement="bottom-start"
               content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
-              delay={250}
+              delay={100}
             >
               <p className="mb-0.5 text-base">
                 {t('borrow:current-borrow-value')}

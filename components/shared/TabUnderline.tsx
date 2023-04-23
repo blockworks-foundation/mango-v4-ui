@@ -6,16 +6,19 @@ interface TabUnderlineProps<T extends Values> {
   activeValue: string
   onChange: (x: T) => void
   values: T[]
+  names?: Array<string>
   small?: boolean
 }
 
 const TabUnderline = <T extends Values>({
   activeValue,
   values,
+  names,
   onChange,
   small,
 }: TabUnderlineProps<T>) => {
   const { t } = useTranslation('common')
+
   return (
     <div
       className={`relative mb-3 border-b border-th-bkg-3 ${
@@ -51,16 +54,16 @@ const TabUnderline = <T extends Values>({
             ${
               activeValue === value
                 ? activeValue === 'buy'
-                  ? 'text-th-up'
+                  ? 'text-th-up focus:text-th-up'
                   : activeValue === 'sell'
-                  ? 'text-th-down'
-                  : 'text-th-active'
-                : 'text-th-fgd-4 hover:text-th-fgd-3'
+                  ? 'text-th-down focus:text-th-down'
+                  : 'text-th-active focus:text-th-active'
+                : 'text-th-fgd-4 focus:text-th-fgd-1 md:hover:text-th-fgd-3'
             }
           `}
             key={`${value}` + i}
           >
-            {t(`${value}`)}
+            {names ? names[i] : t(`${value}`)}
           </button>
         ))}
       </nav>

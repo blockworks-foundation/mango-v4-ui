@@ -20,7 +20,7 @@ const volumeAlertSound = new Howl({
 export const DEFAULT_VOLUME_ALERT_SETTINGS = { seconds: 30, value: 10000 }
 
 const INPUT_CLASSES =
-  'h-12 w-full rounded-md border border-th-input-border bg-th-input-bkg px-3 font-mono text-base text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover'
+  'h-12 w-full rounded-md border border-th-input-border bg-th-input-bkg px-3 font-mono text-base text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover'
 
 const TradeVolumeAlertModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation(['common', 'trade'])
@@ -41,8 +41,8 @@ const TradeVolumeAlertModal = ({ isOpen, onClose }: ModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <h2 className="mb-2">{t('trade:volume-alert')}</h2>
-      <p className="mb-2">
+      <h2 className="mb-2 text-center">{t('trade:volume-alert')}</h2>
+      <p className="mb-2 text-center">
         {t('trade:volume-alert-desc')}.{' '}
         <i>Warning: this is an experimental feature.</i>
       </p>

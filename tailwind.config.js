@@ -15,10 +15,7 @@ module.exports = {
         'spin-fast': 'spin 0.5s linear infinite',
       },
       backgroundImage: {
-        'long-loss': "url('/share_images/bg-long-loss.png')",
-        'long-profit': "url('/share_images/bg-long-profit.png')",
-        'short-loss': "url('/share_images/bg-short-loss.png')",
-        'short-profit': "url('/share_images/bg-short-profit.png')",
+        'share-position': "url('/images/share-image.png')",
       },
       boxShadow: {
         bottomBar: '0px -4px 8px -1px rgba(0,0,0,0.2)',
@@ -31,8 +28,8 @@ module.exports = {
             dark: 'hsl(45, 86%, 57%)',
           },
           button: {
-            DEFAULT: 'hsl(269, 23%, 48%)',
-            hover: 'hsl(269, 23%, 43%)',
+            DEFAULT: 'hsl(269, 38%, 48%)',
+            hover: 'hsl(269, 38%, 43%)',
           },
           input: {
             bkg: 'hsl(256, 18%, 10%)',

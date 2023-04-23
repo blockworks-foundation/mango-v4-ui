@@ -28,15 +28,36 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useSelectedMarket from 'hooks/useSelectedMarket'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
+import Link from 'next/link'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { isMangoError } from 'types'
 import { notify } from 'utils/notifications'
 import { getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
+import MarketLogos from './MarketLogos'
+import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
+
+const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
+  const openOrders = mangoStore.getState().mangoAccount.openOrders
+  let foundedMarketPk: string | undefined = undefined
+  for (const [marketPk, orders] of Object.entries(openOrders)) {
+    for (const order of orders) {
+      if (order.orderId.eq(o.orderId)) {
+        foundedMarketPk = marketPk
+        break
+      }
+    }
+    if (foundedMarketPk) {
+      break
+    }
+  }
+  return foundedMarketPk
+}
 
 const OpenOrders = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -53,23 +74,7 @@ const OpenOrders = () => {
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
   const { isUnownedAccount } = useUnownedAccount()
-
-  const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
-    const openOrders = mangoStore.getState().mangoAccount.openOrders
-    let foundedMarketPk: string | undefined = undefined
-    for (const [marketPk, orders] of Object.entries(openOrders)) {
-      for (const order of orders) {
-        if (order.orderId.eq(o.orderId)) {
-          foundedMarketPk = marketPk
-          break
-        }
-      }
-      if (foundedMarketPk) {
-        break
-      }
-    }
-    return foundedMarketPk
-  }
+  const { selectedMarket } = useSelectedMarket()
 
   const handleCancelSerumOrder = useCallback(
     async (o: Order) => {
@@ -114,7 +119,7 @@ const OpenOrders = () => {
         setCancelId('')
       }
     },
-    [t, openOrders]
+    [t]
   )
 
   const modifyOrder = useCallback(
@@ -254,6 +259,7 @@ const OpenOrders = () => {
         </thead>
         <tbody>
           {Object.entries(openOrders)
+            .sort()
             .map(([marketPk, orders]) => {
               return orders.map((o) => {
                 const group = mangoStore.getState().group!
@@ -284,7 +290,7 @@ const OpenOrders = () => {
                 }
                 return (
                   <TrBody
-                    key={`${o.side}${o.size}${o.price}`}
+                    key={`${o.side}${o.size}${o.price}${o.orderId.toString()}`}
                     className="my-1 p-2"
                   >
                     <Td className="w-[16.67%]">
@@ -408,12 +414,10 @@ const OpenOrders = () => {
             let market: PerpMarket | Serum3Market
             let tickSize: number
             let minOrderSize: number
-            let side: string
             if (o instanceof PerpOrder) {
               market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
               tickSize = market.tickSize
               minOrderSize = market.minOrderSize
-              side = 'bid' in o.side ? 'buy' : 'sell'
             } else {
               market = group.getSerum3MarketByExternalMarket(
                 new PublicKey(marketPk)
@@ -423,7 +427,6 @@ const OpenOrders = () => {
               )
               tickSize = serumMarket.tickSize
               minOrderSize = serumMarket.minOrderSize
-              side = o.side
             }
             return (
               <div
@@ -431,52 +434,82 @@ const OpenOrders = () => {
                 key={`${o.side}${o.size}${o.price}`}
               >
                 <div>
-                  <TableMarketName market={market} />
                   {modifyOrderId !== o.orderId.toString() ? (
-                    <div className="mt-1 flex items-center space-x-1">
-                      <SideBadge side={side} />
-                      <p className="text-th-fgd-4">
-                        <span className="font-mono text-th-fgd-3">
-                          <FormatNumericValue
-                            value={o.size}
-                            decimals={getDecimalCount(minOrderSize)}
-                          />
-                        </span>
-                        {' at '}
-                        <span className="font-mono text-th-fgd-3">
-                          <FormatNumericValue
-                            value={o.price}
-                            decimals={getDecimalCount(tickSize)}
-                          />
-                        </span>
-                      </p>
+                    <div className="flex items-start">
+                      <div className="mt-0.5">
+                        <MarketLogos market={market} size="large" />
+                      </div>
+                      <div>
+                        <div className="mb-1 flex space-x-1 leading-none text-th-fgd-2">
+                          {selectedMarket?.name === market.name ? (
+                            <span className="whitespace-nowrap">
+                              {market.name}
+                            </span>
+                          ) : (
+                            <Link href={`/trade?name=${market.name}`}>
+                              <div className="default-transition flex items-center underline underline-offset-2 md:hover:text-th-fgd-3 md:hover:no-underline">
+                                <span className="whitespace-nowrap">
+                                  {market.name}
+                                </span>
+                              </div>
+                            </Link>
+                          )}
+                          {o instanceof PerpOrder ? (
+                            <PerpSideBadge
+                              basePosition={'bid' in o.side ? 1 : -1}
+                            />
+                          ) : (
+                            <SideBadge side={o.side} />
+                          )}
+                        </div>
+                        <p className="leading-none text-th-fgd-4">
+                          <span className="font-mono text-th-fgd-3">
+                            <FormatNumericValue
+                              value={o.size}
+                              decimals={getDecimalCount(minOrderSize)}
+                            />
+                          </span>
+                          {' at '}
+                          <span className="font-mono text-th-fgd-3">
+                            <FormatNumericValue
+                              value={o.price}
+                              decimals={getDecimalCount(tickSize)}
+                            />
+                          </span>
+                        </p>
+                      </div>
                     </div>
                   ) : (
-                    <div className="mt-2 flex space-x-4">
-                      <div>
-                        <p className="text-xs">{t('trade:size')}</p>
-                        <Input
-                          className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
-                          type="text"
-                          value={modifiedOrderSize}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                            setModifiedOrderSize(e.target.value)
-                          }
-                        />
+                    <>
+                      <p className="text-th-fgd-2">{`${t('edit')} ${
+                        market.name
+                      } ${t('order')}`}</p>
+                      <div className="mt-2 flex space-x-4">
+                        <div>
+                          <p className="text-xs">{t('trade:size')}</p>
+                          <Input
+                            className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            type="text"
+                            value={modifiedOrderSize}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setModifiedOrderSize(e.target.value)
+                            }
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs">{t('price')}</p>
+                          <Input
+                            autoFocus
+                            className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
+                            type="text"
+                            value={modifiedOrderPrice}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setModifiedOrderPrice(e.target.value)
+                            }
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs">{t('price')}</p>
-                        <Input
-                          autoFocus
-                          className="default-transition w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-active focus:outline-none"
-                          type="text"
-                          value={modifiedOrderPrice}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                            setModifiedOrderPrice(e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
+                    </>
                   )}
                 </div>
                 {!isUnownedAccount ? (
@@ -486,7 +519,7 @@ const OpenOrders = () => {
                         <>
                           <IconButton
                             onClick={() => showEditOrderForm(o, tickSize)}
-                            size="medium"
+                            size="small"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </IconButton>
@@ -497,7 +530,7 @@ const OpenOrders = () => {
                                 ? handleCancelPerpOrder(o)
                                 : handleCancelSerumOrder(o)
                             }
-                            size="medium"
+                            size="small"
                           >
                             {cancelId === o.orderId.toString() ? (
                               <Loading className="h-4 w-4" />
@@ -510,7 +543,7 @@ const OpenOrders = () => {
                         <>
                           <IconButton
                             onClick={() => modifyOrder(o)}
-                            size="medium"
+                            size="small"
                           >
                             {loadingModifyOrder ? (
                               <Loading className="h-4 w-4" />
@@ -520,7 +553,7 @@ const OpenOrders = () => {
                           </IconButton>
                           <IconButton
                             onClick={cancelEditOrderForm}
-                            size="medium"
+                            size="small"
                           >
                             <XMarkIcon className="h-4 w-4" />
                           </IconButton>

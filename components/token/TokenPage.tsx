@@ -19,6 +19,7 @@ import ChartTabs from './ChartTabs'
 import CoingeckoStats from './CoingeckoStats'
 import { useQuery } from '@tanstack/react-query'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import TopTokenAccounts from './TopTokenAccounts'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -71,16 +72,25 @@ const TokenPage = () => {
     INITIAL_ANIMATION_SETTINGS
   )
 
+  const bankName = useMemo(() => {
+    if (!token) return
+    return token === 'WBTC'
+      ? 'wBTC (Portal)'
+      : token === 'ETH'
+      ? 'ETH (Portal)'
+      : token.toString()
+  }, [token])
+
   const bank = useMemo(() => {
-    if (group && token) {
-      const bank = group.banksMapByName.get(token.toString())
+    if (group && bankName) {
+      const bank = group.banksMapByName.get(bankName)
       if (bank) {
         return bank[0]
       } else {
         setLoading(false)
       }
     }
-  }, [group, token])
+  }, [group, bankName])
 
   const logoURI = useMemo(() => {
     if (bank && mangoTokens.length) {
@@ -96,35 +106,36 @@ const TokenPage = () => {
     }
   }, [bank, mangoTokens])
 
-  const coingeckoTokenInfo = useQuery<CoingeckoDataType, Error>(
-    ['coingecko-token-info', coingeckoId],
-    () => fetchTokenInfo(coingeckoId),
-    {
-      cacheTime: 1000 * 60 * 15,
-      staleTime: 1000 * 60 * 5,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!coingeckoId,
-    }
-  )
+  const { data: coingeckoTokenInfo, isLoading: loadingCoingeckoInfo } =
+    useQuery<CoingeckoDataType, Error>(
+      ['coingecko-token-info', coingeckoId],
+      () => fetchTokenInfo(coingeckoId),
+      {
+        cacheTime: 1000 * 60 * 15,
+        staleTime: 1000 * 60 * 5,
+        retry: 3,
+        refetchOnWindowFocus: false,
+        enabled: !!coingeckoId,
+      }
+    )
 
   const { high_24h, low_24h, price_change_percentage_24h } =
-    coingeckoTokenInfo.data
-      ? coingeckoTokenInfo.data.market_data
+    coingeckoTokenInfo?.market_data
+      ? coingeckoTokenInfo.market_data
       : DEFAULT_COINGECKO_VALUES
 
   return (
     <>
-      {bank ? (
+      {bank && bankName ? (
         <>
           <div className="flex flex-col border-b border-th-bkg-3 px-6 py-5 md:flex-row md:items-center md:justify-between">
             <div className="mb-4 md:mb-1">
               <div className="mb-1.5 flex items-center space-x-2">
                 <Image src={logoURI!} height="20" width="20" />
-                {coingeckoTokenInfo.data ? (
+                {coingeckoTokenInfo ? (
                   <h1 className="text-base font-normal">
-                    {coingeckoTokenInfo.data.name}{' '}
-                    <span className="text-th-fgd-4">({bank.name})</span>
+                    {coingeckoTokenInfo.name}{' '}
+                    <span className="text-th-fgd-4">{bank.name}</span>
                   </h1>
                 ) : (
                   <h1 className="text-base font-normal">{bank.name}</h1>
@@ -145,13 +156,13 @@ const TokenPage = () => {
                     <FormatNumericValue value={bank.uiPrice} isUsd />
                   )}
                 </div>
-                {coingeckoTokenInfo.data ? (
+                {coingeckoTokenInfo?.market_data ? (
                   <div className="mb-2">
                     <Change change={price_change_percentage_24h} suffix="%" />
                   </div>
                 ) : null}
               </div>
-              {coingeckoTokenInfo.data ? (
+              {coingeckoTokenInfo?.market_data ? (
                 <DailyRange
                   high={high_24h.usd}
                   low={low_24h.usd}
@@ -161,7 +172,7 @@ const TokenPage = () => {
             </div>
             <ActionPanel bank={bank} />
           </div>
-          <ChartTabs token={token as string} />
+          <ChartTabs token={bankName} />
           <div className="flex items-center justify-center border-y border-th-bkg-3 px-6 py-4 text-center">
             <Tooltip
               content={'The percentage of deposits that have been lent out.'}
@@ -180,12 +191,18 @@ const TokenPage = () => {
               %
             </span>
           </div>
-          {coingeckoTokenInfo.data && coingeckoId ? (
+          {bank ? <TopTokenAccounts bank={bank} /> : null}
+          {coingeckoTokenInfo?.market_data ? (
             <CoingeckoStats
               bank={bank}
-              coingeckoData={coingeckoTokenInfo.data}
-              coingeckoId={coingeckoId}
+              coingeckoData={coingeckoTokenInfo.market_data}
             />
+          ) : loadingCoingeckoInfo && coingeckoId ? (
+            <div className="p-6">
+              <SheenLoader className="flex flex-1">
+                <div className="h-72 w-full rounded-lg bg-th-bkg-2 md:h-80" />
+              </SheenLoader>
+            </div>
           ) : (
             <div className="flex flex-col items-center p-6">
               <span className="mb-0.5 text-2xl">🦎</span>

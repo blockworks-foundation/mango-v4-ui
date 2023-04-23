@@ -8,10 +8,10 @@ import LogoWithFallback from '@components/shared/LogoWithFallback'
 
 const MarketLogos = ({
   market,
-  small,
+  size = 'medium',
 }: {
   market: Serum3Market | PerpMarket
-  small?: boolean
+  size?: 'small' | 'medium' | 'large'
 }) => {
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
@@ -49,15 +49,27 @@ const MarketLogos = ({
     }
   }, [group, mangoTokens, market])
 
+  const pxSize = size === 'small' ? '16' : size === 'large' ? '24' : '20'
+
   return (
     <div
-      className={`relative ${small ? 'mr-1.5 h-4' : 'mr-2 h-5'} ${
+      className={`relative ${
+        size === 'small'
+          ? 'mr-1.5 h-4'
+          : size === 'large'
+          ? 'mr-2 h-6'
+          : 'mr-2 h-5'
+      } ${
         market instanceof Serum3Market
-          ? small
+          ? size === 'small'
             ? 'w-[27px]'
+            : size === 'large'
+            ? 'w-[40px]'
             : 'w-[34px]'
-          : small
+          : size === 'small'
           ? 'w-[16px]'
+          : size === 'large'
+          ? 'w-[24px]'
           : 'w-[20px]'
       }`}
     >
@@ -65,14 +77,10 @@ const MarketLogos = ({
         <LogoWithFallback
           alt=""
           className="flex-shrink-0 drop-shadow-md"
-          width={small ? '16' : '20'}
-          height={small ? '16' : '20'}
+          width={pxSize}
+          height={pxSize}
           src={logos.baseLogoURI || `/icons/${logos?.name?.toLowerCase()}.svg`}
-          fallback={
-            <QuestionMarkCircleIcon
-              className={`${small ? 'h-4 w-4' : 'h-5 w-5'} text-th-fgd-3`}
-            />
-          }
+          fallback={<FallbackIcon size={size} />}
         />
       </div>
       <div className="absolute right-0 top-0">
@@ -80,16 +88,12 @@ const MarketLogos = ({
           <Image
             alt=""
             className="flex-shrink-0 opacity-60"
-            width={small ? '16' : '20'}
-            height={small ? '16' : '20'}
+            width={pxSize}
+            height={pxSize}
             src={logos.quoteLogoURI}
           />
         ) : market instanceof PerpMarket ? null : (
-          <QuestionMarkCircleIcon
-            className={`${
-              small ? 'h-4 w-4' : 'h-5 w-5'
-            } flex-shrink-0 text-th-fgd-3`}
-          />
+          <FallbackIcon size={size} />
         )}
       </div>
     </div>
@@ -97,3 +101,13 @@ const MarketLogos = ({
 }
 
 export default MarketLogos
+
+const FallbackIcon = ({ size }: { size: 'small' | 'medium' | 'large' }) => {
+  return (
+    <QuestionMarkCircleIcon
+      className={`${
+        size === 'small' ? 'h-4 w-4' : size === 'large' ? 'h-6 w-6' : 'h-5 w-5'
+      } flex-shrink-0 text-th-fgd-3`}
+    />
+  )
+}

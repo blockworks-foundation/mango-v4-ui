@@ -30,6 +30,8 @@ const LeverageSlider = ({
   useEffect(() => {
     if (amount) {
       setValue(amount)
+    } else {
+      setValue(0)
     }
   }, [amount])
 
@@ -55,7 +57,7 @@ const LeverageSlider = ({
         min="0"
         max={leverageMax}
         step={step}
-        className="w-full"
+        className="w-full focus:outline-none"
         onChange={handleSliderChange}
         value={value}
       ></input>

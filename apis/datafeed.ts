@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { makeApiRequest, parseResolution } from './helpers'
+import { makeApiRequest, parseResolution } from './birdeye/helpers'
 import {
   makeApiRequest as makePerpApiRequest,
   parseResolution as parsePerpResolution,
-} from '../mngo/helpers'
+} from './mngo/helpers'
 import {
   closeSocket,
   // isOpen,
   subscribeOnStream as subscribeOnSpotStream,
   unsubscribeFromStream,
-} from './streaming'
+} from './birdeye/streaming'
 import {
   closeSocket as closePerpSocket,
   // isOpen as isPerpOpen,
   subscribeOnStream as subscribeOnPerpStream,
   unsubscribeFromStream as unsubscribeFromPerpStream,
-} from '../mngo/streaming'
+} from './mngo/streaming'
 import mangoStore from '@store/mangoStore'
 import {
   DatafeedConfiguration,
@@ -60,6 +60,8 @@ export type SymbolInfo = LibrarySymbolInfo & {
 
 const lastBarsCache = new Map()
 
+const subscriptionIds = new Map()
+
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
   intraday_multipliers: ['1', '3', '5', '15', '30', '60', '120', '240'],
@@ -102,6 +104,7 @@ export const queryPerpBars = async (
     return []
   }
   let bars: Bar[] = []
+  let previousBar: Bar | undefined = undefined
   for (const bar of data) {
     const timestamp = new Date(bar.candle_start).getTime()
     if (timestamp >= from * 1000 && timestamp < to * 1000) {
@@ -111,12 +114,13 @@ export const queryPerpBars = async (
           time: timestamp,
           low: bar.low,
           high: bar.high,
-          open: bar.open,
+          open: previousBar ? previousBar.close : bar.open,
           close: bar.close,
           volume: bar.volume,
           timestamp,
         },
       ]
+      previousBar = bar
     }
   }
   return bars
@@ -154,6 +158,7 @@ export const queryBirdeyeBars = async (
   for (const bar of data.data.items) {
     if (bar.unixTime >= from && bar.unixTime < to) {
       const timestamp = bar.unixTime * 1000
+      if (bar.h >= 223111) continue
       bars = [
         ...bars,
         {
@@ -207,6 +212,7 @@ export default {
       }
     }
     const ticker = mangoStore.getState().selectedMarket.name
+    console.log('ticker', ticker, mangoStore.getState().group)
 
     const symbolInfo: SymbolInfo = {
       address: symbolItem.address,
@@ -217,7 +223,7 @@ export default {
       session: '24x7',
       timezone: 'Etc/UTC',
       minmov: 1,
-      pricescale: 100,
+      pricescale: 10 ** 16,
       has_intraday: true,
       has_weekly_and_monthly: false,
       has_empty_bars: true,
@@ -301,6 +307,7 @@ export default {
     subscriberUID: string,
     onResetCacheNeededCallback: () => void
   ) => {
+    subscriptionIds.set(subscriberUID, symbolInfo.address)
     if (symbolInfo.description?.includes('PERP')) {
       subscribeOnPerpStream(
         symbolInfo,

@@ -9,6 +9,8 @@
     "tooltip-leverage": "Total assets value divided by account equity value",
     "tooltip-pnl": "The amount your account has profited or lost",
     "tooltip-total-collateral": "Total value of collateral for trading and borrowing (including unsettled PnL)",
+    "tooltip-total-funding": "The sum of perp position funding earned and paid",
     "tooltip-total-interest": "The value of interest earned (deposits) minus interest paid (borrows)",
+    "total-funding-earned": "Total Funding Earned",
     "week-starting": "Week starting {{week}}"
 }

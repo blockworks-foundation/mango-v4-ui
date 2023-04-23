@@ -17,8 +17,10 @@ import Slippage from './Slippage'
 
 const TradeSummary = ({
   mangoAccount,
+  useMargin,
 }: {
   mangoAccount: MangoAccount | undefined
+  useMargin: boolean
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
@@ -51,12 +53,12 @@ const TradeSummary = ({
             ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
                 group,
                 selectedMarket.perpMarketIndex,
-                parseFloat(tradeForm.baseSize)
+                parseFloat(tradeForm.baseSize) || 0
               )
             : mangoAccount.simHealthRatioWithPerpBidUiChanges(
                 group,
                 selectedMarket.perpMarketIndex,
-                parseFloat(tradeForm.baseSize)
+                parseFloat(tradeForm.baseSize) || 0
               )
       }
     } catch (e) {
@@ -69,6 +71,36 @@ const TradeSummary = ({
       ? 0
       : Math.trunc(simulatedHealthRatio)
   }, [group, mangoAccount, selectedMarket, tradeForm])
+
+  const balanceBank = useMemo(() => {
+    if (
+      !group ||
+      !selectedMarket ||
+      selectedMarket instanceof PerpMarket ||
+      !useMargin
+    )
+      return
+    if (tradeForm.side === 'buy') {
+      return group.getFirstBankByTokenIndex(selectedMarket.quoteTokenIndex)
+    } else {
+      return group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+    }
+  }, [group, selectedMarket, tradeForm.side])
+
+  const borrowAmount = useMemo(() => {
+    if (!balanceBank || !mangoAccount) return 0
+    let borrowAmount
+    const balance = mangoAccount.getTokenDepositsUi(balanceBank)
+    if (tradeForm.side === 'buy') {
+      const remainingBalance = balance - parseFloat(tradeForm.quoteSize)
+      borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+    } else {
+      const remainingBalance = balance - parseFloat(tradeForm.baseSize)
+      borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+    }
+
+    return borrowAmount
+  }, [balanceBank, mangoAccount, tradeForm])
 
   return (
     <div className="space-y-2 px-3 md:px-4">
@@ -87,6 +119,30 @@ const TradeSummary = ({
         </p>
       </div>
       <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
+      {borrowAmount ? (
+        <div className="flex justify-between text-xs">
+          <Tooltip
+            content={t('loan-origination-fee-tooltip', {
+              fee: `${(
+                balanceBank!.loanOriginationFeeRate.toNumber() * 100
+              ).toFixed(3)}%`,
+            })}
+            delay={100}
+          >
+            <p className="tooltip-underline">{t('loan-origination-fee')}</p>
+          </Tooltip>
+          <p className="text-right font-mono text-th-fgd-2">
+            ~
+            <FormatNumericValue
+              value={
+                borrowAmount * balanceBank!.loanOriginationFeeRate.toNumber()
+              }
+              decimals={balanceBank!.mintDecimals}
+            />{' '}
+            <span className="font-body text-th-fgd-4">{balanceBank!.name}</span>
+          </p>
+        </div>
+      ) : null}
       <div className="flex justify-between text-xs">
         <Tooltip content="The amount of capital you have to use for trades and loans. When your free collateral reaches $0 you won't be able to trade, borrow or withdraw.">
           <p className="tooltip-underline">{t('free-collateral')}</p>

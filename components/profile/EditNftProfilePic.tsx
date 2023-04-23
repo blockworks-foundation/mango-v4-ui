@@ -8,14 +8,18 @@ import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { notify } from 'utils/notifications'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 
-const ImgWithLoader = (props: { className: string; src: string }) => {
+const ImgWithLoader = (props: {
+  className: string
+  src: string
+  alt: string
+}) => {
   const [isLoading, setIsLoading] = useState(true)
   return (
     <div className="relative">
       {isLoading && (
         <PhotoIcon className="absolute left-1/2 top-1/2 z-10 h-1/4 w-1/4 -translate-x-1/2 -translate-y-1/2 animate-pulse text-th-fgd-4" />
       )}
-      <img {...props} onLoad={() => setIsLoading(false)} alt="" />
+      <img {...props} onLoad={() => setIsLoading(false)} alt={props.alt} />
     </div>
   )
 }
@@ -158,17 +162,18 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       {nfts.length > 0 ? (
         <div className="flex flex-col items-center">
           <div className="mb-4 grid w-full grid-flow-row grid-cols-3 gap-3">
-            {nfts.map((n) => (
+            {nfts.map((n, i) => (
               <button
                 className={`default-transition col-span-1 flex items-center justify-center rounded-md border bg-th-bkg-2 py-3 sm:py-4 md:hover:bg-th-bkg-3 ${
                   selectedProfile === n.image
                     ? 'border-th-active'
                     : 'border-th-bkg-3'
                 }`}
-                key={n.image}
+                key={n.image + i}
                 onClick={() => setSelectedProfile(n.image)}
               >
                 <ImgWithLoader
+                  alt={n.name}
                   className="h-16 w-16 flex-shrink-0 rounded-full sm:h-20 sm:w-20"
                   src={n.image}
                 />
@@ -178,7 +183,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
         </div>
       ) : nftsLoading ? (
         <div className="mb-4 grid w-full grid-flow-row grid-cols-3 gap-4">
-          {[...Array(9)].map((i) => (
+          {[...Array(9)].map((x, i) => (
             <div
               className="col-span-1 h-[90px] animate-pulse rounded-md bg-th-bkg-3 sm:h-28"
               key={i}

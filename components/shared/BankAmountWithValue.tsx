@@ -25,7 +25,7 @@ const BankAmountWithValue = ({
         <span className={`text-th-fgd-4 ${stacked ? 'block' : ''}`}>
           <FormatNumericValue
             value={value ? value : Number(amount) * bank.uiPrice}
-            decimals={2}
+            decimals={fixDecimals ? 2 : undefined}
             isUsd={true}
           />
         </span>

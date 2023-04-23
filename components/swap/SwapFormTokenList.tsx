@@ -1,4 +1,4 @@
-import { memo, useMemo, useEffect } from 'react'
+import { memo, useMemo, useEffect, useRef } from 'react'
 import { Token } from '../../types/jupiter'
 import mangoStore from '@store/mangoStore'
 import { IconButton } from '../shared/Button'
@@ -133,6 +133,7 @@ const SwapFormTokenList = ({
   const outputBank = mangoStore((s) => s.swap.outputBank)
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
+  const focusRef = useRef<HTMLButtonElement>(null)
 
   // const popularTokens = useMemo(() => {
   //   return tokens.filter((token) => {
@@ -202,6 +203,12 @@ const SwapFormTokenList = ({
   // const sortedTokens = search ? startSearch(tokenInfos, search) : tokenInfos
   const sortedTokens = tokenInfos
 
+  useEffect(() => {
+    if (focusRef?.current) {
+      focusRef.current.focus()
+    }
+  }, [focusRef])
+
   return (
     <>
       <p className="mb-3">
@@ -215,6 +222,7 @@ const SwapFormTokenList = ({
         className="absolute top-2 right-2 text-th-fgd-3 hover:text-th-fgd-2"
         onClick={onClose}
         hideBg
+        ref={focusRef}
       >
         <XMarkIcon className="h-6 w-6" />
       </IconButton>

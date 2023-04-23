@@ -96,16 +96,16 @@ html .container-113jHcZc {
 
 /* toggle toolbar arrow */
 
-html .toggleButton-3zv4iS2j .arrow-3zv4iS2j {
-  stroke: #000;
+html .toggleButton-5IlBhjdP .arrow-5IlBhjdP {
+  stroke: var(--black)
 }
 
-html .toggleButton-3zv4iS2j:hover .arrow-3zv4iS2j {
-  stroke: #000;
+html .toggleButton-5IlBhjdP:hover .arrow-5IlBhjdP {
+  stroke: var(--black)
 }
 
-.container-3CL4Geq2 .arrow-3CL4Geq2, html .container-3CL4Geq2:hover .arrow-3CL4Geq2 {
-  stroke: #000;
+html .container-68Nk42BD:hover .arrow-68Nk42BD {
+  stroke: var(--black)
 }
 
 /* menu background */
@@ -195,16 +195,16 @@ html.theme-dark .container-113jHcZc {
 
 /* toggle toolbar arrow */
 
-html.theme-dark .toggleButton-3zv4iS2j .arrow-3zv4iS2j {
-  stroke: #000;
+html.theme-dark .toggleButton-5IlBhjdP .arrow-5IlBhjdP {
+  stroke: var(--black)
 }
 
-html.theme-dark .toggleButton-3zv4iS2j:hover .arrow-3zv4iS2j {
-  stroke: #000;
+html.theme-dark .toggleButton-5IlBhjdP:hover .arrow-5IlBhjdP {
+  stroke: var(--black)
 }
 
-.container-3CL4Geq2 .arrow-3CL4Geq2, html.theme-dark .container-3CL4Geq2:hover .arrow-3CL4Geq2 {
-  stroke: #000;
+html.theme-dark .container-68Nk42BD:hover .arrow-68Nk42BD {
+  stroke: var(--black)
 }
 
 /* menu background */

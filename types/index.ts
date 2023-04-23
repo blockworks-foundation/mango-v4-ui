@@ -67,11 +67,11 @@ export type SerumEvent = Modify<
 
 export type GenericMarket = Serum3Market | PerpMarket
 
-export type TradeHistoryApiResponseType = Array<{
+export type TradeHistoryApiResponseType = {
   trade_type: string
   block_datetime: string
   activity_details: PerpTradeHistory | SpotTradeHistory
-}>
+}
 
 export type AccountPerformanceData = {
   [date: string]: {
@@ -83,6 +83,25 @@ export type AccountPerformanceData = {
     borrow_interest_cumulative_usd: number
     spot_volume_usd: number
   }
+}
+
+export type TotalAccountFundingItem = {
+  long_funding: number
+  short_funding: number
+}
+
+export type HourlyFundingData = [
+  string,
+  { [key: string]: { long_funding: number; short_funding: number } }
+]
+
+export type HourlyFundingStatsData = {
+  marketFunding: { long_funding: number; short_funding: number; time: string }[]
+  market: string
+}
+
+export interface HourlyFundingChartData extends Record<string, any> {
+  time: string
 }
 
 export interface TotalInterestDataItem {
@@ -113,22 +132,69 @@ export interface DepositWithdrawFeedItem {
   wallet_pk: string
 }
 
-export interface LiquidationFeedItem {
+export interface PerpTradeFeedItem {
+  block_datetime: string
+  maker: string
+  maker_fee: number
+  maker_order_id: string | null
+  market_index: number
+  perp_market: string
+  perp_market_name: string
+  price: number
+  quantity: number
+  seq_num: number
+  signature: number
+  slot: number
+  taker: string
+  taker_client_order_id: string | null
+  taker_fee: number
+  taker_order_id: string | null
+  taker_side: string
+}
+
+export interface SpotLiquidationFeedItem {
   asset_amount: number
   asset_price: number
   asset_symbol: string
   block_datetime: string
+  counterparty: string
   liab_amount: number
   liab_price: number
   liab_symbol: string
   mango_account: string
   mango_group: string
-  side: string
+  side: 'liqor' | 'liqee'
   signature: string
 }
 
+export interface PerpLiquidationFeedItem {
+  base_transfer: -0.5
+  block_datetime: string
+  counterparty: string
+  mango_account: string
+  mango_group: string
+  perp_market_name: string
+  pnl_settle_limit_transfer: number
+  pnl_transfer: number
+  price: number
+  quote_transfer: number
+  side: 'liqor' | 'liqee'
+  signature: string
+}
+
+export type SpotOrPerpLiquidationItem =
+  | SpotLiquidationFeedItem
+  | PerpLiquidationFeedItem
+
 export interface LiquidationActivity {
-  activity_details: LiquidationFeedItem
+  activity_details: SpotOrPerpLiquidationItem
+  block_datetime: string
+  activity_type: string
+  symbol: string
+}
+
+export interface PerpTradeActivity {
+  activity_details: PerpTradeFeedItem
   block_datetime: string
   activity_type: string
   symbol: string
@@ -138,6 +204,24 @@ export function isLiquidationFeedItem(
   item: ActivityFeed
 ): item is LiquidationActivity {
   if (item.activity_type.includes('liquidate')) {
+    return true
+  }
+  return false
+}
+
+export function isPerpTradeFeedItem(
+  item: ActivityFeed
+): item is PerpTradeActivity {
+  if (item.activity_type === 'perp_trade') {
+    return true
+  }
+  return false
+}
+
+export function isPerpLiquidation(
+  activityDetails: SpotOrPerpLiquidationItem
+): activityDetails is PerpLiquidationFeedItem {
+  if ((activityDetails as PerpLiquidationFeedItem).base_transfer) {
     return true
   }
   return false
@@ -162,6 +246,7 @@ export interface SwapHistoryItem {
 export interface NFT {
   address: string
   image: string
+  name: string
 }
 
 export interface PerpStatsItem {
@@ -183,9 +268,10 @@ export type ActivityFeed = {
   symbol: string
   activity_details:
     | DepositWithdrawFeedItem
-    | LiquidationFeedItem
+    | SpotLiquidationFeedItem
+    | PerpLiquidationFeedItem
     | SwapHistoryItem
-    | PerpTradeHistory
+    | PerpTradeFeedItem
     | SpotTradeHistory
 }
 

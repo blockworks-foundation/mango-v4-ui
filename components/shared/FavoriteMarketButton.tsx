@@ -27,14 +27,14 @@ const FavoriteMarketButton = ({
     (marketName: string) => marketName === market.name
   ) ? (
     <button
-      className="default-transition flex items-center justify-center text-th-active md:hover:text-th-fgd-3"
+      className="default-transition flex items-center justify-center text-th-active focus:text-th-fgd-4 md:hover:text-th-fgd-3"
       onClick={() => removeFromFavorites(market.name)}
     >
       <FilledStarIcon className="h-5 w-5" />
     </button>
   ) : (
     <button
-      className="default-transition flex items-center justify-center text-th-fgd-4 md:hover:text-th-active"
+      className="default-transition flex items-center justify-center text-th-fgd-4 focus:text-th-active md:hover:text-th-active"
       onClick={() => addToFavorites(market.name)}
     >
       <StarIcon className="h-5 w-5" />

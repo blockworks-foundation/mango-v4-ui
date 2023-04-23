@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import SwapHistoryTable from '../swap/SwapHistoryTable'
-import ActivityFeed from './ActivityFeed'
 import TradeHistory from '@components/trade/TradeHistory'
 import { useTranslation } from 'next-i18next'
 import ActivityFilters from './ActivityFilters'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
+import ActivityFeedTable from './ActivityFeedTable'
 
 const TABS = ['activity:activity-feed', 'activity:swaps', 'activity:trades']
 
@@ -27,10 +27,10 @@ const HistoryTabs = () => {
         <div className="hide-scroll flex space-x-2 pl-4 md:pl-6">
           {TABS.map((tab) => (
             <button
-              className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium md:hover:bg-th-bkg-4 ${
+              className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium focus:bg-th-bkg-4 md:hover:bg-th-bkg-4 ${
                 activeTab === tab
-                  ? 'bg-th-bkg-4 text-th-active'
-                  : 'bg-th-bkg-3 text-th-fgd-3'
+                  ? 'bg-th-bkg-4 text-th-active focus:text-th-active'
+                  : 'text-th-fgd-3 focus:text-th-fgd-1'
               }`}
               onClick={() => setActiveTab(tab)}
               key={tab}
@@ -49,13 +49,13 @@ const HistoryTabs = () => {
 const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case 'activity:activity-feed':
-      return <ActivityFeed />
+      return <ActivityFeedTable />
     case 'activity:swaps':
       return <SwapHistoryTable />
     case 'activity:trades':
       return <TradeHistory />
     default:
-      return <ActivityFeed />
+      return <ActivityFeedTable />
   }
 }
 

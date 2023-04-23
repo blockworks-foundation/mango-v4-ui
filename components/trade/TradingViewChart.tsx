@@ -33,10 +33,11 @@ import { PublicKey } from '@solana/web3.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { BN } from '@project-serum/anchor'
-import SpotDatafeed from 'apis/birdeye/datafeed'
+import Datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
 import useStablePrice from 'hooks/useStablePrice'
 import { isMangoError } from 'types'
+import { formatPrice } from 'apis/birdeye/helpers'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -69,6 +70,7 @@ const TradingViewChart = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
+  const [headerReady, setHeaderReady] = useState(false)
   const [spotOrPerp, setSpotOrPerp] = useState('spot')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
@@ -695,7 +697,7 @@ const TradingViewChart = () => {
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
         symbol: marketAddress,
-        datafeed: SpotDatafeed,
+        datafeed: Datafeed,
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
@@ -723,6 +725,18 @@ const TradingViewChart = () => {
           'header_symbol_search',
           'popup_hints',
         ],
+        // eslint-disable-next-line
+        // @ts-ignore
+        custom_formatters: {
+          priceFormatterFactory: () => {
+            return {
+              format: (price) => {
+                // return the appropriate format
+                return formatPrice(price)
+              },
+            }
+          },
+        },
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,
@@ -746,6 +760,9 @@ const TradingViewChart = () => {
       tvWidgetRef.current.onChartReady(() => {
         setChartReady(true)
       })
+      tvWidgetRef.current.headerReady().then(() => {
+        setHeaderReady(true)
+      })
     }
   }, [theme, defaultProps, isMobile])
 
@@ -753,13 +770,14 @@ const TradingViewChart = () => {
   useEffect(() => {
     if (
       chartReady &&
+      headerReady &&
       !orderLinesButtonRef.current &&
       !stablePriceButtonRef.current
     ) {
       createOLButton()
       createStablePriceButton()
     }
-  }, [createOLButton, chartReady, createStablePriceButton])
+  }, [createOLButton, chartReady, createStablePriceButton, headerReady])
 
   // update order lines if a user's open orders change
   useEffect(() => {

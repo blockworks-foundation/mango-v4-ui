@@ -4,7 +4,7 @@
 
 @font-face {
   font-family: 'TT Mono';
-  src: url('/fonts/TT_Commons_Pro_Mono_Regular.woff2') format('woff2');
+  src: url('/fonts/TT_Commons_Pro_Mono_Medium.woff2') format('woff2');
 }
 
 @font-face {
@@ -15,7 +15,7 @@
 @font-face {
   font-family: 'TT Commons';
   font-weight: normal;
-  src: url('/fonts/TT_Commons_Pro_Regular.woff2') format('woff2');
+  src: url('/fonts/TT_Commons_Pro_Normal.woff2') format('woff2');
 }
 
 @font-face {
@@ -396,6 +396,8 @@ th {
 
 body {
   @apply font-body text-sm tracking-wider;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button {
@@ -438,6 +440,10 @@ li {
   @apply text-sm text-th-fgd-3;
 }
 
+a {
+  @apply default-transition text-th-fgd-1 md:hover:text-th-fgd-3;
+}
+
 /* Forms */
 
 input::placeholder {
@@ -449,36 +455,6 @@ textarea,
 input[type='text'] {
   -webkit-appearance: none;
 }
-
-/* Slider */
-
-/* input[type='range']::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  height: 18px;
-  width: 16px;
-  border-radius: 100%;
-  background: var(--active);
-  cursor: pointer;
-  margin-top: -1px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
-/* } */
-
-/* All the same stuff for Firefox */
-/* input[type='range']::-moz-range-thumb {
-  height: 18px;
-  width: 16px;
-  border-radius: 100%;
-  background: var(--active);
-  cursor: pointer;
-} */
-
-/* All the same stuff for IE */
-/* input[type='range']::-ms-thumb {
-  height: 18px;
-  width: 16px;
-  border-radius: 100%;
-  background: var(--active);
-  cursor: pointer;
-} */
 
 /* Animations */
 
@@ -567,7 +543,7 @@ table p {
 /* slider */
 
 input[type='range'] {
-  @apply h-1.5 appearance-none rounded bg-th-bkg-3 bg-gradient-to-r from-th-active to-th-active bg-no-repeat;
+  @apply default-transition h-1.5 appearance-none rounded bg-th-bkg-3 bg-gradient-to-r from-th-active to-th-active bg-no-repeat focus:bg-th-bkg-4;
 }
 
 input[type='range']::-webkit-slider-thumb {

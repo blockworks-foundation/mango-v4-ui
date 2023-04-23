@@ -29,7 +29,7 @@ const Tooltip = ({
         appendTo={() => document.body}
         maxWidth={maxWidth}
         interactive
-        delay={delay}
+        delay={[delay, 0]}
         content={
           content ? (
             <div
@@ -57,7 +57,7 @@ const Content = ({
 } & HTMLAttributes<HTMLDivElement>) => {
   return (
     <div
-      className={`default-transition inline-block cursor-help border-b border-dashed border-th-fgd-3 border-opacity-20 hover:border-th-bkg-2 ${className}`}
+      className={`inline-block cursor-help border-b border-dashed border-th-fgd-3 border-opacity-20 hover:border-th-bkg-2 ${className}`}
     >
       {children}
     </div>

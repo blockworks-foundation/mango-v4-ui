@@ -40,7 +40,7 @@ import { THEME_KEY } from 'utils/constants'
 // Top level state hydrating/updating should go in MangoProvider
 
 // Create a client
-const queryClient = new QueryClient()
+export const queryClient = new QueryClient()
 
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet
@@ -94,11 +94,11 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="twitter:title" content="Mango Markets" />
         <meta
           name="twitter:description"
-          content="Mango Markets - Decentralised, cross-margin trading up to 10x leverage with lightning speed and near-zero fees."
+          content="A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure."
         />
         <meta
           name="twitter:image"
-          content="https://www.mango.markets/socials/twitter-image-1200x600.png?34567878"
+          content="https://app.mango.markets/images/1200x600-share.png?34567878"
         />
         <meta name="google" content="notranslate" />
         <link rel="manifest" href="/manifest.json"></link>

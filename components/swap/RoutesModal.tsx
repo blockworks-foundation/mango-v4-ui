@@ -54,7 +54,7 @@ const RoutesModal = ({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col text-left">
-                    <div className="overflow-ellipsis whitespace-nowrap font-bold">
+                    <div className="overflow-ellipsis font-bold">
                       {route.marketInfos.map((info, index) => {
                         let includeSeparator = false
                         if (

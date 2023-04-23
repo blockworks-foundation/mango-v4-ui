@@ -23,7 +23,7 @@ import {
 import EmptyWallet from '../utils/wallet'
 import { Notification, notify } from '../utils/notifications'
 import {
-  fetchNftsFromHolaplexIndexer,
+  getNFTsByOwner,
   getTokenAccountsByOwnerWithWrappedSol,
   TokenAccount,
 } from '../utils/tokens'
@@ -53,7 +53,6 @@ import {
   SwapHistoryItem,
   TotalInterestDataItem,
   TradeForm,
-  TradeHistoryApiResponseType,
   TokenStatsItem,
   NFT,
   TourSettings,
@@ -248,7 +247,6 @@ export type MangoStore = {
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
-    fetchTradeHistory: (offset?: number) => Promise<void>
     fetchWalletTokens: (walletPk: PublicKey) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     loadMarketFills: () => Promise<void>
@@ -514,13 +512,13 @@ const mangoStore = create<MangoStore>()(
             const serumMarkets = Array.from(
               group.serum3MarketsMapByExternal.values()
             )
-            const perpMarkets = Array.from(
-              group.perpMarketsMapByName.values()
-            ).filter(
-              (p) =>
-                p.publicKey.toString() !==
-                '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
-            )
+            const perpMarkets = Array.from(group.perpMarketsMapByName.values())
+              .filter(
+                (p) =>
+                  p.publicKey.toString() !==
+                  '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+              )
+              .sort((a, b) => a.name.localeCompare(b.name))
 
             const selectedMarket =
               serumMarkets.find((m) => m.name === selectedMarketName) ||
@@ -666,9 +664,9 @@ const mangoStore = create<MangoStore>()(
             state.wallet.nfts.loading = true
           })
           try {
-            const data = await fetchNftsFromHolaplexIndexer(ownerPk)
+            const nfts = await getNFTsByOwner(ownerPk, connection)
             set((state) => {
-              state.wallet.nfts.data = data.nfts
+              state.wallet.nfts.data = nfts
               state.wallet.nfts.loading = false
             })
           } catch (error) {
@@ -687,7 +685,6 @@ const mangoStore = create<MangoStore>()(
             await get().actions.reloadMangoAccount()
           }
           const mangoAccount = get().mangoAccount.current
-
           if (!mangoAccount || !group) return
 
           try {
@@ -697,26 +694,25 @@ const mangoStore = create<MangoStore>()(
             const activeSerumMarketIndices = [
               ...new Set(mangoAccount.serum3Active().map((s) => s.marketIndex)),
             ]
+            if (activeSerumMarketIndices.length) {
+              await Promise.all(
+                activeSerumMarketIndices.map(async (serum3Orders) => {
+                  const market =
+                    group.getSerum3MarketByMarketIndex(serum3Orders)
+                  if (market) {
+                    const orders =
+                      await mangoAccount.loadSerum3OpenOrdersForMarket(
+                        client,
+                        group,
+                        market.serumMarketExternal
+                      )
+                    openOrders[market.serumMarketExternal.toString()] = orders
+                  }
+                })
+              )
+            }
 
-            await Promise.all(
-              activeSerumMarketIndices.map(async (serum3Orders) => {
-                const market = group.getSerum3MarketByMarketIndex(serum3Orders)
-                if (market) {
-                  const orders =
-                    await mangoAccount.loadSerum3OpenOrdersForMarket(
-                      client,
-                      group,
-                      market.serumMarketExternal
-                    )
-                  openOrders[market.serumMarketExternal.toString()] = orders
-                }
-              })
-            )
-
-            if (
-              mangoAccount.serum3Active().length &&
-              Object.keys(openOrders).length
-            ) {
+            if (mangoAccount.serum3Active().length) {
               serumOpenOrderAccounts = Array.from(
                 mangoAccount.serum3OosMapByMarketIndex.values()
               )
@@ -734,7 +730,8 @@ const mangoStore = create<MangoStore>()(
                 const orders = await mangoAccount.loadPerpOpenOrdersForMarket(
                   client,
                   group,
-                  perpMktIndex
+                  perpMktIndex,
+                  market._bids ? false : true
                 )
                 openOrders[market.publicKey.toString()] = orders
               })
@@ -751,8 +748,7 @@ const mangoStore = create<MangoStore>()(
         fetchPerpStats: async () => {
           const set = get().set
           const group = get().group
-          const stats = get().perpStats.data
-          if ((stats && stats.length) || !group) return
+          if (!group) return []
           set((state) => {
             state.perpStats.loading = true
           })
@@ -914,7 +910,6 @@ const mangoStore = create<MangoStore>()(
               state.profile.loadDetails = false
             })
           } catch (e) {
-            notify({ type: 'error', title: 'Failed to load profile details' })
             console.error(e)
             set((state) => {
               state.profile.loadDetails = false
@@ -936,7 +931,6 @@ const mangoStore = create<MangoStore>()(
               state.settings.loading = false
             })
           } catch (e) {
-            notify({ type: 'error', title: 'Failed to load profile details' })
             console.error(e)
             set((state) => {
               state.settings.loading = false
@@ -980,40 +974,6 @@ const mangoStore = create<MangoStore>()(
             })
           } catch (err) {
             console.error('Error fetching fills:', err)
-          }
-        },
-        async fetchTradeHistory(offset = 0) {
-          const set = get().set
-          const mangoAccountPk =
-            get().mangoAccount?.current?.publicKey.toString()
-          const loadedHistory =
-            mangoStore.getState().mangoAccount.tradeHistory.data
-          try {
-            const response = await fetch(
-              `${MANGO_DATA_API_URL}/stats/trade-history?mango-account=${mangoAccountPk}&limit=${PAGINATION_PAGE_LENGTH}&offset=${offset}`
-            )
-            const jsonResponse:
-              | null
-              | EmptyObject
-              | TradeHistoryApiResponseType = await response.json()
-            if (Array.isArray(jsonResponse)) {
-              const newHistory = jsonResponse.map((h) => h.activity_details)
-              const history =
-                offset !== 0 ? loadedHistory.concat(newHistory) : newHistory
-              set((s) => {
-                s.mangoAccount.tradeHistory.data = history
-              })
-            } else {
-              set((s) => {
-                s.mangoAccount.tradeHistory.data = []
-              })
-            }
-          } catch (e) {
-            console.error('Unable to fetch trade history', e)
-          } finally {
-            set((s) => {
-              s.mangoAccount.tradeHistory.loading = false
-            })
           }
         },
         updateConnection(endpointUrl) {

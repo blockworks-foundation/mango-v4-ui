@@ -39,6 +39,7 @@ const DEFAULT_ADVANCED_FILTERS = {
 const DEFAULT_PARAMS = [
   'deposit',
   'perp_trade',
+  'liquidate_perp_base_position_or_positive_pnl',
   'liquidate_token_with_token',
   'openbook_trade',
   'swap',
@@ -68,7 +69,7 @@ const ActivityFilters = () => {
   }, [advancedFilters])
 
   const queryParams = useMemo(() => {
-    return !params.length || params.length === 6
+    return !params.length || params.length === 7
       ? advancedParamsString
       : `&activity-type=${params.toString()}${advancedParamsString}`
   }, [advancedParamsString, params])
@@ -139,12 +140,14 @@ const ActivityFilters = () => {
             </IconButton>
           </Tooltip>
         ) : null}
-        <div
+        <button
           onClick={() => setShowFilters(!showFilters)}
-          role="button"
-          className={`default-transition mr-4 ml-3 rounded-md border border-th-button px-2 py-1.5 md:mr-6 md:hover:border-th-button-hover`}
+          className={`default-transition mr-4 ml-3 rounded-md border border-th-button px-2 py-1.5 focus:border-th-fgd-4 md:mr-6 md:hover:border-th-button-hover`}
         >
-          <Disclosure.Button className="flex h-full w-full items-center justify-between">
+          <Disclosure.Button
+            as="div"
+            className="flex h-full w-full items-center justify-between"
+          >
             <div className="flex items-center space-x-2">
               <AdjustmentsVerticalIcon className="hidden h-5 w-5 text-th-fgd-4 sm:block" />
               <span className="text-sm font-medium text-th-fgd-1">
@@ -157,7 +160,7 @@ const ActivityFilters = () => {
               } ml-1.5 h-5 w-5 flex-shrink-0`}
             />
           </Disclosure.Button>
-        </div>
+        </button>
       </div>
       {showFilters ? (
         <Disclosure.Panel
