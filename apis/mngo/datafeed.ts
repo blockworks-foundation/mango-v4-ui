@@ -228,7 +228,6 @@ export default {
     subscriberUID: string,
     onResetCacheNeededCallback: () => void
   ) => {
-    console.log('[subscribeBars]', subscriberUID)
     subscribeOnStream(
       symbolInfo,
       resolution,
@@ -240,7 +239,6 @@ export default {
   },
 
   unsubscribeBars: (subscriberUID: any) => {
-    console.log('[unsubscribeBars]', subscriberUID)
     unsubscribeFromStream(subscriberUID)
   },
   closeSocket: () => {
