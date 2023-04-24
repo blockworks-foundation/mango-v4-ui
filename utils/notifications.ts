@@ -3,7 +3,7 @@ import mangoStore from '@store/mangoStore'
 import { Howl } from 'howler'
 import { SOUND_SETTINGS_KEY } from './constants'
 
-export type Notification = {
+export type TransactionNotification = {
   type: 'success' | 'info' | 'error' | 'confirm'
   title: string
   description?: null | string
@@ -29,8 +29,8 @@ export function notify(newNotification: {
   noSound?: boolean
 }) {
   const setMangoStore = mangoStore.getState().set
-  const notifications = mangoStore.getState().notifications
-  const lastId = mangoStore.getState().notificationIdCounter
+  const notifications = mangoStore.getState().transactionNotifications
+  const lastId = mangoStore.getState().transactionNotificationIdCounter
   const newId = lastId + 1
   const savedSoundSettings = localStorage.getItem(SOUND_SETTINGS_KEY)
   const soundSettings = savedSoundSettings
@@ -53,7 +53,7 @@ export function notify(newNotification: {
     }
   }
 
-  const newNotif: Notification = {
+  const newNotif: TransactionNotification = {
     id: newId,
     type: 'success',
     show: true,
@@ -62,7 +62,7 @@ export function notify(newNotification: {
   }
 
   setMangoStore((state) => {
-    state.notificationIdCounter = newId
-    state.notifications = [...notifications, newNotif]
+    state.transactionNotificationIdCounter = newId
+    state.transactionNotifications = [...notifications, newNotif]
   })
 }

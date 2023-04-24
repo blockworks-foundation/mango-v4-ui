@@ -288,6 +288,7 @@ export interface NFT {
 export interface PerpStatsItem {
   date_hour: string
   fees_accrued: number
+  fees_settled: number
   funding_rate_hourly: number
   instantaneous_funding_rate: number
   mango_group: string
@@ -296,6 +297,7 @@ export interface PerpStatsItem {
   perp_market: string
   price: number
   stable_price: number
+  total_fees: number
 }
 
 export type ActivityFeed = {

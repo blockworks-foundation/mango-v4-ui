@@ -16,6 +16,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
     props: {
       ...(await serverSideTranslations(locale, [
         'common',
+        'notifications',
         'onboarding',
         'onboarding-tours',
         'profile',

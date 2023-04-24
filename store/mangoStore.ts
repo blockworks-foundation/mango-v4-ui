@@ -21,7 +21,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
-import { Notification, notify } from '../utils/notifications'
+import { TransactionNotification, notify } from '../utils/notifications'
 import {
   getNFTsByOwner,
   getTokenAccountsByOwnerWithWrappedSol,
@@ -159,8 +159,8 @@ export type MangoStore = {
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
-  notificationIdCounter: number
-  notifications: Array<Notification>
+  transactionNotificationIdCounter: number
+  transactionNotifications: Array<TransactionNotification>
   perpMarkets: PerpMarket[]
   perpStats: {
     loading: boolean
@@ -305,8 +305,8 @@ const mangoStore = create<MangoStore>()(
       },
       mangoAccounts: [],
       markets: undefined,
-      notificationIdCounter: 0,
-      notifications: [],
+      transactionNotificationIdCounter: 0,
+      transactionNotifications: [],
       perpMarkets: [],
       perpStats: {
         loading: false,

@@ -76,11 +76,14 @@ const ConnectedMenu = () => {
       <Popover>
         <div className="relative">
           <Popover.Button
-            className={`h-16 ${
-              !isMobile ? 'w-48 border-l border-th-bkg-3 px-4' : ''
-            } focus:outline-none focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2`}
+            className={`default-transition h-16 ${
+              !isMobile ? 'w-48 border-l border-th-bkg-3 px-4' : 'w-16'
+            } hover:bg-th-bkg-2 focus:outline-none focus-visible:bg-th-bkg-3`}
           >
-            <div className="flex items-center" id="account-step-one">
+            <div
+              className="flex items-center justify-center md:justify-start"
+              id="account-step-one"
+            >
               <ProfileImage
                 imageSize="40"
                 placeholderSize="24"

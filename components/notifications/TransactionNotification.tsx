@@ -7,8 +7,8 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
-import { Notification, notify } from '../../utils/notifications'
-import Loading from './Loading'
+import { TransactionNotification, notify } from '../../utils/notifications'
+import Loading from '@components/shared/Loading'
 import { Transition } from '@headlessui/react'
 import {
   CLIENT_TX_TIMEOUT,
@@ -22,9 +22,9 @@ import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 
 const setMangoStore = mangoStore.getState().set
 
-const NotificationList = () => {
+const TransactionNotificationList = () => {
   const { t } = useTranslation()
-  const notifications = mangoStore((s) => s.notifications)
+  const transactionNotifications = mangoStore((s) => s.transactionNotifications)
   const walletTokens = mangoStore((s) => s.wallet.tokens)
   const notEnoughSoLMessage = t('deposit-more-sol')
   const [notificationPosition] = useLocalStorageState(
@@ -37,11 +37,11 @@ const NotificationList = () => {
   // if a notification is shown with {"InstructionError":[0,{"Custom":1}]} then
   // add a notification letting the user know they may not have enough SOL
   useEffect(() => {
-    if (notifications.length) {
-      const customErrorNotification = notifications.find(
+    if (transactionNotifications.length) {
+      const customErrorNotification = transactionNotifications.find(
         (n) => n.description && n.description.includes('"Custom":1')
       )
-      const notEnoughSolNotification = notifications.find(
+      const notEnoughSolNotification = transactionNotifications.find(
         (n) => n.title && n.title.includes(notEnoughSoLMessage)
       )
 
@@ -56,19 +56,19 @@ const NotificationList = () => {
         })
       }
     }
-  }, [notifications, walletTokens, maxSolDeposit])
+  }, [transactionNotifications, walletTokens, maxSolDeposit])
 
   const clearAll = useCallback(() => {
     setMangoStore((s) => {
-      const newNotifications = s.notifications.map((n) => ({
+      const newNotifications = s.transactionNotifications.map((n) => ({
         ...n,
         show: false,
       }))
-      s.notifications = newNotifications
+      s.transactionNotifications = newNotifications
     })
-  }, [notifications])
+  }, [transactionNotifications])
 
-  const reversedNotifications = [...notifications].reverse()
+  const reversedNotifications = [...transactionNotifications].reverse()
 
   const getPosition = (position: string) => {
     const sharedClasses =
@@ -92,7 +92,7 @@ const NotificationList = () => {
 
   return (
     <div className={`${getPosition(notificationPosition)} w-full sm:w-auto`}>
-      {notifications.filter((n) => n.show).length > 1 ? (
+      {transactionNotifications.filter((n) => n.show).length > 1 ? (
         <button
           className="pointer-events-auto my-1 flex items-center rounded bg-th-bkg-3 px-2 py-1 text-xs text-th-fgd-3 md:hover:bg-th-bkg-4"
           onClick={clearAll}
@@ -102,13 +102,17 @@ const NotificationList = () => {
         </button>
       ) : null}
       {reversedNotifications.map((n) => (
-        <Notification key={n.id} notification={n} />
+        <TransactionNotification key={n.id} notification={n} />
       ))}
     </div>
   )
 }
 
-const Notification = ({ notification }: { notification: Notification }) => {
+const TransactionNotification = ({
+  notification,
+}: {
+  notification: TransactionNotification
+}) => {
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
     'Bottom-Left'
@@ -141,20 +145,20 @@ const Notification = ({ notification }: { notification: Notification }) => {
   useEffect(() => {
     if ((type === 'error' || type === 'success') && txid) {
       setMangoStore((s) => {
-        const newNotifications = s.notifications.map((n) =>
+        const newNotifications = s.transactionNotifications.map((n) =>
           n.txid === txid && n.type === 'confirm' ? { ...n, show: false } : n
         )
-        s.notifications = newNotifications
+        s.transactionNotifications = newNotifications
       })
     }
   }, [type, txid])
 
   const hideNotification = () => {
     setMangoStore((s) => {
-      const newNotifications = s.notifications.map((n) =>
+      const newNotifications = s.transactionNotifications.map((n) =>
         n.id === id ? { ...n, show: false } : n
       )
-      s.notifications = newNotifications
+      s.transactionNotifications = newNotifications
     })
   }
 
@@ -302,4 +306,4 @@ const Notification = ({ notification }: { notification: Notification }) => {
   )
 }
 
-export default NotificationList
+export default TransactionNotificationList

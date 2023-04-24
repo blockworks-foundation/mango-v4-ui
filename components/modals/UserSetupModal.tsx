@@ -368,9 +368,7 @@ const UserSetupModal = ({
                       )}
                     </Button>
                     <LinkButton onClick={onClose}>
-                      <span className="text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
-                        {t('onboarding:skip')}
-                      </span>
+                      {t('onboarding:skip')}
                     </LinkButton>
                   </div>
                 </div>
@@ -513,9 +511,7 @@ const UserSetupModal = ({
                     )}
                   </Button>
                   <LinkButton onClick={onClose}>
-                    <span className="text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
-                      {t('onboarding:skip')}
-                    </span>
+                    {t('onboarding:skip')}
                   </LinkButton>
                 </UserSetupTransition>
                 <UserSetupTransition show={depositToken.length === 0}>
@@ -547,40 +543,6 @@ const UserSetupModal = ({
               </div>
             ) : null}
           </UserSetupTransition>
-          {/* <UserSetupTransition delay show={showSetupStep === 4}>
-            {showSetupStep === 4 ? (
-              <div className="relative">
-                <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
-                  {t('onboarding:your-profile')}
-                </h2>
-                <p className="text-base">{t('onboarding:profile-desc')}</p>
-                {!showEditProfilePic ? (
-                  <div className="mt-6 border-t border-th-bkg-3 pt-3">
-                    <EditProfileForm
-                      onFinish={onClose}
-                      onEditProfileImage={() => setShowEditProfilePic(true)}
-                      onboarding
-                    />
-                    <LinkButton className="mt-6" onClick={onClose}>
-                      <span className="text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
-                        {t('onboarding:skip-finish')}
-                      </span>
-                    </LinkButton>
-                  </div>
-                ) : null}
-                <UserSetupTransition show={showEditProfilePic}>
-                  <div
-                    className="thin-scroll absolute mt-6 w-full overflow-auto border-t border-th-bkg-3 px-2 pt-6"
-                    style={{ height: 'calc(100vh - 360px)' }}
-                  >
-                    <EditNftProfilePic
-                      onClose={() => setShowEditProfilePic(false)}
-                    />
-                  </div>
-                </UserSetupTransition>
-              </div>
-            ) : null}
-          </UserSetupTransition> */}
         </div>
         <div className="col-span-1 hidden h-screen lg:block">
           <ParticlesBackground />
