@@ -52,11 +52,13 @@ const TotalDepositBorrowCharts = () => {
           hasDate.borrowValue =
             hasDate.borrowValue + Math.floor(c.total_borrows * c.price)
         }
-        return a
+        return a.sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        )
       },
       []
     )
-    return values.reverse()
+    return values
   }, [tokenStats])
 
   const [currentTotalDepositValue, currentTotalBorrowValue] = useMemo(() => {
