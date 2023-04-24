@@ -122,7 +122,7 @@ const CoingeckoStats = ({
             {coingeckoData.description.en.length > description.length ||
             showFullDesc ? (
               <span
-                className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
+                className="ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
                 onClick={() => setShowFullDesc(!showFullDesc)}
               >
                 {showFullDesc ? 'Less' : 'More'}

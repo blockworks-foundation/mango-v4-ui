@@ -175,12 +175,7 @@ const AdvancedMarketHeader = ({
             </div>
             {serumOrPerpMarket instanceof PerpMarket ? (
               <>
-                <div className="ml-6 flex-col whitespace-nowrap">
-                  <div className="text-xs text-th-fgd-4">
-                    {t('trade:funding-rate')}
-                  </div>
-                  <PerpFundingRate />
-                </div>
+                <PerpFundingRate />
                 <div className="ml-6 flex-col whitespace-nowrap text-xs">
                   <div className="text-th-fgd-4">
                     {t('trade:open-interest')}
@@ -209,7 +204,7 @@ const AdvancedMarketHeader = ({
           <div className="ml-6 flex items-center space-x-4">
             {selectedMarket instanceof PerpMarket ? (
               <LinkButton
-                className="flex items-center whitespace-nowrap text-th-fgd-3 no-underline md:hover:text-th-fgd-4"
+                className="flex items-center whitespace-nowrap text-th-fgd-3"
                 onClick={() => setShowMarketDetails(true)}
               >
                 <InformationCircleIcon className="h-5 w-5 flex-shrink-0 md:mr-1.5 md:h-4 md:w-4" />

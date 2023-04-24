@@ -21,9 +21,9 @@ import {
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
-import { Notification, notify } from '../utils/notifications'
+import { TransactionNotification, notify } from '../utils/notifications'
 import {
-  fetchNftsFromHolaplexIndexer,
+  getNFTsByOwner,
   getTokenAccountsByOwnerWithWrappedSol,
   TokenAccount,
 } from '../utils/tokens'
@@ -64,6 +64,7 @@ import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
 import {
   EntityId,
+  IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
 
@@ -159,8 +160,8 @@ export type MangoStore = {
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
-  notificationIdCounter: number
-  notifications: Array<Notification>
+  transactionNotificationIdCounter: number
+  transactionNotifications: Array<TransactionNotification>
   perpMarkets: PerpMarket[]
   perpStats: {
     loading: boolean
@@ -215,6 +216,7 @@ export type MangoStore = {
   tradingView: {
     stablePriceLine: EntityId | undefined
     orderLines: Map<string | BN, IOrderLineAdapter>
+    tradeExecutions: Map<string, IExecutionLineAdapter>
   }
   wallet: {
     tokens: TokenAccount[]
@@ -302,8 +304,8 @@ const mangoStore = create<MangoStore>()(
       },
       mangoAccounts: [],
       markets: undefined,
-      notificationIdCounter: 0,
-      notifications: [],
+      transactionNotificationIdCounter: 0,
+      transactionNotifications: [],
       perpMarkets: [],
       perpStats: {
         loading: false,
@@ -366,6 +368,7 @@ const mangoStore = create<MangoStore>()(
       tradingView: {
         stablePriceLine: undefined,
         orderLines: new Map(),
+        tradeExecutions: new Map(),
       },
       wallet: {
         tokens: [],
@@ -665,9 +668,9 @@ const mangoStore = create<MangoStore>()(
             state.wallet.nfts.loading = true
           })
           try {
-            const data = await fetchNftsFromHolaplexIndexer(ownerPk)
+            const nfts = await getNFTsByOwner(ownerPk, connection)
             set((state) => {
-              state.wallet.nfts.data = data.nfts
+              state.wallet.nfts.data = nfts
               state.wallet.nfts.loading = false
             })
           } catch (error) {

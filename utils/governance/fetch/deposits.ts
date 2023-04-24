@@ -1,4 +1,3 @@
-import { MintInfo } from '@solana/spl-token'
 import { BN, EventParser } from '@coral-xyz/anchor'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import {
@@ -17,6 +16,7 @@ import {
   tryGetRegistrar,
   tryGetVoter,
 } from '../accounts/vsrAccounts'
+import { RawMint } from '@solana/spl-token'
 
 type Event = {
   depositEntryIndex: number
@@ -67,7 +67,7 @@ export const getDeposits = async ({
   ])
 
   const mintCfgs = existingRegistrar?.votingMints || []
-  const mints: { [key: string]: TokenProgramAccount<MintInfo> | undefined } = {}
+  const mints: { [key: string]: TokenProgramAccount<RawMint> | undefined } = {}
   let votingPower = new BN(0)
   let votingPowerFromDeposits = new BN(0)
   let deposits: DepositWithMintAccount[] = []

@@ -324,7 +324,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
       {!isUnownedAccount ? (
         asPath.includes('/trade') && isBaseOrQuote ? (
           <LinkButton
-            className="font-normal underline-offset-2 md:underline-offset-4"
+            className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
             onClick={() =>
               handleTradeFormBalanceClick(Math.abs(balance), isBaseOrQuote)
             }
@@ -336,7 +336,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
           </LinkButton>
         ) : asPath.includes('/swap') ? (
           <LinkButton
-            className="font-normal underline-offset-2 md:underline-offset-4"
+            className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
             onClick={() =>
               handleSwapFormBalanceClick(
                 Number(formatNumericValue(balance, tokenBank.mintDecimals))

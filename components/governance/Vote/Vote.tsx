@@ -3,7 +3,7 @@ import GovernanceStore from '@store/governanceStore'
 import mangoStore from '@store/mangoStore'
 import { useEffect, useState } from 'react'
 import { isInCoolOffTime } from 'utils/governance/proposals'
-import { MintInfo } from '@solana/spl-token'
+import { RawMint } from '@solana/spl-token'
 import { MANGO_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import dynamic from 'next/dynamic'
@@ -27,7 +27,7 @@ const Vote = () => {
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const loadingRealm = GovernanceStore((s) => s.loadingRealm)
 
-  const [mangoMint, setMangoMint] = useState<MintInfo | null>(null)
+  const [mangoMint, setMangoMint] = useState<RawMint | null>(null)
   const [votingProposals, setVotingProposals] = useState<
     ProgramAccount<Proposal>[]
   >([])

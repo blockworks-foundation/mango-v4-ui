@@ -164,7 +164,7 @@ const LeaderboardRow = ({
 
   return (
     <a
-      className="default-transition flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
+      className="flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
       href={`/?address=${mango_account}`}
       rel="noopener noreferrer"
       target="_blank"
@@ -197,7 +197,8 @@ const LeaderboardRow = ({
       </div>
       <div className="flex items-center pl-4">
         <p className="mr-2 text-right font-mono text-th-fgd-2 md:text-base">
-          <FormatNumericValue value={value} />
+          {/* remove isUsd when api returns token amount rather than value */}
+          <FormatNumericValue value={value} isUsd />
         </p>
         <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
       </div>

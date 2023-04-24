@@ -7,7 +7,7 @@ import {
   getVoteRecordAddress,
 } from '@solana/spl-governance'
 import { VoteCountdown } from './VoteCountdown'
-import { MintInfo } from '@solana/spl-token'
+import { RawMint } from '@solana/spl-token'
 import VoteResults from './VoteResult'
 import QuorumProgress from './VoteProgress'
 import GovernanceStore from '@store/governanceStore'
@@ -28,6 +28,7 @@ import { PublicKey } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
 import Loading from '@components/shared/Loading'
 import { useTranslation } from 'next-i18next'
+import { resolveProposalDescription } from 'utils/governance/tools'
 
 enum PROCESSED_VOTE_TYPE {
   APPROVE,
@@ -40,7 +41,7 @@ const ProposalCard = ({
   mangoMint,
 }: {
   proposal: ProgramAccount<Proposal>
-  mangoMint: MintInfo
+  mangoMint: RawMint
 }) => {
   const { t } = useTranslation('governance')
   const connection = mangoStore((s) => s.connection)
@@ -60,10 +61,12 @@ const ProposalCard = ({
     null
   )
   const [isVoteCast, setIsVoteCast] = useState(false)
+  const [description, setDescription] = useState('')
 
   const governance =
     governances && governances[proposal.account.governance.toBase58()]
   const canVote = voter.voteWeight.cmp(new BN(1)) !== -1
+  const descriptionLink = proposal.account.descriptionLink
 
   //Approve 0, deny 1
   const vote = async (voteType: VoteKind) => {
@@ -159,6 +162,18 @@ const ProposalCard = ({
     }
   }, [proposal.pubkey.toBase58(), voter.tokenOwnerRecord?.pubkey.toBase58()])
 
+  useEffect(() => {
+    const handleResolveDescription = async () => {
+      const description = await resolveProposalDescription(descriptionLink!)
+      setDescription(description)
+    }
+    if (descriptionLink) {
+      handleResolveDescription()
+    } else {
+      setDescription('')
+    }
+  }, [descriptionLink])
+
   return governance ? (
     <div
       className="rounded-lg border border-th-bkg-3 p-4 md:p-6"
@@ -174,7 +189,7 @@ const ProposalCard = ({
               <ArrowTopRightOnSquareIcon className="mb-1 inline-block h-4 w-4 flex-shrink-0" />
             </a>
           </h2>
-          <p className="mb-2 md:mb-0">{proposal.account.descriptionLink}</p>
+          <p className="mb-2 md:mb-0">{description}</p>
         </div>
         <VoteCountdown
           proposal={proposal.account}

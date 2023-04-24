@@ -81,7 +81,7 @@ const AccountActions = () => {
             {({ open }) => (
               <>
                 <Popover.Button
-                  className={`default-transition w-full focus:outline-none`}
+                  className={`w-full focus:outline-none`}
                   as="div"
                 >
                   <Button

@@ -164,7 +164,7 @@ const SwapTokenChart = () => {
   )
   const swapHistory = mangoStore((s) => s.mangoAccount.swapHistory.data)
   const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
-  const [showSwaps, setShowSwaps] = useState(false)
+  const [showSwaps, setShowSwaps] = useState(true)
 
   const coingeckoDataQuery = useQuery(
     ['chart-data', baseTokenId, quoteTokenId, daysToShow],

@@ -2,12 +2,15 @@ import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import Tooltip from '@components/shared/Tooltip'
 import PerpSideBadge from '@components/trade/PerpSideBadge'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
+import { PublicKey } from '@solana/web3.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { PerpTradeActivity } from 'types'
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
+import { abbreviateAddress } from 'utils/formatting'
 import { getDecimalCount } from 'utils/numbers'
 import { formatFee } from './ActivityFeedTable'
 
@@ -39,6 +42,8 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
   const fee = isTaker ? taker_fee * notional : maker_fee * notional
 
   const totalPrice = (notional + fee) / quantity
+
+  const counterpartyPk = isTaker ? maker : taker
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -100,12 +105,15 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
           {t('activity:counterparty')}
         </p>
         <a
-          className="text-sm"
-          href={`/?address=${isTaker ? maker : taker}`}
+          className="flex items-center text-sm"
+          href={`/?address=${counterpartyPk}`}
           target="_blank"
           rel="noopener noreferrer"
         >
-          {t('activity:view-account')}
+          <span className="mr-1.5">
+            {abbreviateAddress(new PublicKey(counterpartyPk))}
+          </span>
+          <ArrowTopRightOnSquareIcon className="h-3 w-3" />
         </a>
       </div>
       <div className="col-span-1">
@@ -113,7 +121,7 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
           {t('transaction')}
         </p>
         <a
-          className="default-transition flex items-center"
+          className="flex items-center"
           href={`${preferredExplorer.url}${signature}`}
           target="_blank"
           rel="noopener noreferrer"

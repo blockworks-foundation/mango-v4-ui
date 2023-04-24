@@ -28,7 +28,7 @@ const TabUnderline = <T extends Values>({
       } md:-mt-2.5`}
     >
       <div
-        className={`default-transition absolute bottom-[-1px] left-0 h-0.5 ${
+        className={`absolute bottom-[-1px] left-0 h-0.5 ${
           activeValue === 'buy'
             ? 'bg-th-up'
             : activeValue === 'sell'
@@ -47,8 +47,8 @@ const TabUnderline = <T extends Values>({
         {values.map((value, i) => (
           <button
             onClick={() => onChange(value)}
-            className={`default-transition relative flex h-10 w-1/2 
-            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 md:h-auto md:rounded-none md:hover:opacity-100 ${
+            className={`relative flex h-10 w-1/2 
+            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 focus-visible:text-th-fgd-2  md:h-auto md:rounded-none md:hover:opacity-100 ${
               small ? 'text-sm' : 'text-sm lg:text-base'
             }
             ${
@@ -58,7 +58,7 @@ const TabUnderline = <T extends Values>({
                   : activeValue === 'sell'
                   ? 'text-th-down'
                   : 'text-th-active'
-                : 'text-th-fgd-4 hover:text-th-fgd-3'
+                : 'text-th-fgd-4 md:hover:text-th-fgd-3'
             }
           `}
             key={`${value}` + i}

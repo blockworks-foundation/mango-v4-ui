@@ -71,7 +71,7 @@ const CustomTooltip = ({
           <div className="mt-4 flex items-center justify-between">
             {stepIndex !== 0 ? (
               <button
-                className="default-transition h-8 rounded-md border border-th-fgd-4 px-3 font-bold text-th-fgd-3 focus:outline-none md:hover:border-th-fgd-3 md:hover:text-th-fgd-2"
+                className="h-8 rounded-md border border-th-fgd-4 px-3 font-bold text-th-fgd-3 focus:outline-none md:hover:border-th-fgd-3 md:hover:text-th-fgd-2"
                 onClick={() => prev()}
               >
                 Back
@@ -91,14 +91,14 @@ const CustomTooltip = ({
             </div>
             {stepIndex !== allSteps.length - 1 ? (
               <button
-                className="default-transition h-8 rounded-md bg-th-button px-3 font-bold text-th-fgd-1 focus:outline-none md:hover:bg-th-button-hover"
+                className="h-8 rounded-md bg-th-button px-3 font-bold text-th-fgd-1 focus:outline-none md:hover:bg-th-button-hover"
                 onClick={() => next()}
               >
                 Next
               </button>
             ) : (
               <button
-                className="default-transition h-8 rounded-md bg-th-button px-3 font-bold text-th-fgd-1 focus:outline-none md:hover:bg-th-button-hover"
+                className="h-8 rounded-md bg-th-button px-3 font-bold text-th-fgd-1 focus:outline-none md:hover:bg-th-button-hover"
                 onClick={onClose}
               >
                 Finish

@@ -69,16 +69,6 @@ const PerpMarketDetails = ({
 
   return (
     <div className="grid grid-cols-2">
-      {/* <div className="col-span-2 flex items-center border-b border-th-bkg-3 px-6 py-3">
-        <IconButton
-          className="mr-4"
-          onClick={() => setShowPerpDetails(null)}
-          size="small"
-        >
-          <ChevronLeftIcon className="h-5 w-5" />
-        </IconButton>
-        <h2 className="text-lg">{`${perpMarket.name} ${t('stats')}`}</h2>
-      </div> */}
       {marketStats?.length && lastStat ? (
         <>
           <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
@@ -138,6 +128,7 @@ const PerpMarketDetails = ({
               xKey="date_hour"
               yKey={'funding_rate_hourly'}
               yDecimals={5}
+              showZeroLine
             />
           </div>
           <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
@@ -154,6 +145,7 @@ const PerpMarketDetails = ({
               xKey="date_hour"
               yKey={'instantaneous_funding_rate'}
               yDecimals={5}
+              showZeroLine
             />
           </div>
         </>

@@ -13,7 +13,7 @@ import { LinkButton } from '../shared/Button'
 import ContentBox from '../shared/ContentBox'
 import Tooltip from '@components/shared/Tooltip'
 import { Bank, toUiDecimals } from '@blockworks-foundation/mango-v4'
-import { useRouter } from 'next/router'
+import { NextRouter, useRouter } from 'next/router'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -40,10 +40,15 @@ const TokenStats = () => {
     }
   }, [group])
 
-  const goToTokenPage = (bank: Bank) => {
-    router.push(`/token/${bank.name.split(' ')[0].toUpperCase()}`, undefined, {
-      shallow: true,
-    })
+  // const goToTokenPage = (bank: Bank) => {
+  //   router.push(`/token/${bank.name.split(' ')[0].toUpperCase()}`, undefined, {
+  //     shallow: true,
+  //   })
+  // }
+
+  const goToTokenPage = (token: string, router: NextRouter) => {
+    const query = { ...router.query, ['token']: token }
+    router.push({ pathname: router.pathname, query })
   }
 
   return group ? (
@@ -126,9 +131,14 @@ const TokenStats = () => {
 
                 return (
                   <TrBody
-                    className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                    className="md:hover:cursor-pointer md:hover:bg-th-bkg-2"
                     key={bank.name}
-                    onClick={() => goToTokenPage(bank)}
+                    onClick={() =>
+                      goToTokenPage(
+                        bank.name.split(' ')[0].toUpperCase(),
+                        router
+                      )
+                    }
                   >
                     <Td>
                       <div className="flex items-center">
@@ -396,7 +406,12 @@ const TokenStats = () => {
                           <div className="col-span-1">
                             <LinkButton
                               className="flex items-center"
-                              onClick={() => goToTokenPage(bank)}
+                              onClick={() =>
+                                goToTokenPage(
+                                  bank.name.split(' ')[0].toUpperCase(),
+                                  router
+                                )
+                              }
                             >
                               {t('token:token-details')}
                               <ChevronRightIcon className="ml-2 h-5 w-5" />

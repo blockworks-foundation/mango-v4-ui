@@ -8,7 +8,7 @@ import {
 } from '@solana/spl-governance'
 import BigNumber from 'bignumber.js'
 import dayjs from 'dayjs'
-import { MintInfo } from '@solana/spl-token'
+import { RawMint } from '@solana/spl-token'
 
 export const isInCoolOffTime = (
   proposal: Proposal | undefined,
@@ -38,7 +38,7 @@ export const isInCoolOffTime = (
 
 /** Returns max VoteWeight for given mint and max source */
 export function getMintMaxVoteWeight(
-  mint: MintInfo,
+  mint: RawMint,
   maxVoteWeightSource: MintMaxVoteWeightSource
 ) {
   if (maxVoteWeightSource.type === MintMaxVoteWeightSourceType.SupplyFraction) {

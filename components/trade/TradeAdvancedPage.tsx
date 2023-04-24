@@ -17,7 +17,7 @@ import FavoriteMarketsBar from './FavoriteMarketsBar'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { TRADE_LAYOUT_KEY } from 'utils/constants'
 
-type TradeLayout =
+export type TradeLayout =
   | 'chartLeft'
   | 'chartMiddleOBRight'
   | 'chartMiddleOBLeft'

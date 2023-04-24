@@ -1,12 +1,12 @@
 import { Proposal } from '@solana/spl-governance'
 import VoteResultsBar from './VoteResultBar'
 import { fmtTokenAmount } from 'utils/governance/tools'
-import { MintInfo } from '@solana/spl-token'
+import { RawMint } from '@solana/spl-token'
 import { useTranslation } from 'next-i18next'
 
 type VoteResultsProps = {
   proposal: Proposal
-  communityMint: MintInfo
+  communityMint: RawMint
 }
 
 const VoteResults = ({ proposal, communityMint }: VoteResultsProps) => {

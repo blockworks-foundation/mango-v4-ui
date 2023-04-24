@@ -1,4 +1,5 @@
 import TabButtons from '@components/shared/TabButtons'
+import TokenPage from '@components/token/TokenPage'
 import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -28,6 +29,7 @@ const StatsPage = () => {
   const fullWidthTabs = width ? width < breakpoints.lg : false
   const router = useRouter()
   const { market } = router.query
+  const { token } = router.query
 
   useEffect(() => {
     if (group && (!perpStats || !perpStats.length)) {
@@ -40,6 +42,8 @@ const StatsPage = () => {
   }, [])
   return market ? (
     <PerpStatsPage />
+  ) : token ? (
+    <TokenPage />
   ) : (
     <div className="pb-20 md:pb-16">
       <div className="border-b border-th-bkg-3">

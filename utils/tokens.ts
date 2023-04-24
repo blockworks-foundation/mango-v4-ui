@@ -1,6 +1,18 @@
 import { PublicKey, Connection } from '@solana/web3.js'
 import { TokenInstructions } from '@project-serum/serum'
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import {
+  getAssociatedTokenAddress,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
+import {
+  Metaplex,
+  Nft,
+  Sft,
+  SftWithToken,
+  NftWithToken,
+  Metadata,
+  JsonMetadata,
+} from '@metaplex-foundation/js'
 
 export class TokenAccount {
   publicKey!: PublicKey
@@ -24,6 +36,16 @@ export class TokenAccount {
     this.uiAmount = 0
     Object.assign(this, decoded)
   }
+}
+
+type RawNft = Nft | Sft | SftWithToken | NftWithToken
+type NftWithATA = RawNft & {
+  owner: null | PublicKey
+  tokenAccountAddress: null | PublicKey
+}
+
+function exists<T>(item: T | null | undefined): item is T {
+  return !!item
 }
 
 export async function getTokenAccountsByOwnerWithWrappedSol(
@@ -63,44 +85,65 @@ export async function getTokenAccountsByOwnerWithWrappedSol(
   return [solAccount].concat(tokenAccounts)
 }
 
-export const fetchNftsFromHolaplexIndexer = async (owner: PublicKey) => {
-  const result = await fetch('https://graph.holaplex.com/v1', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query: `
-        query nfts($owners: [PublicKey!]) {
-            nfts(
-              owners: $owners,
-               limit: 10000, offset: 0) {
-              name
-              mintAddress
-              address
-              image
-              updateAuthorityAddress
-              collection {
-                creators {
-                  verified
-                  address
-                }
-                mintAddress
-              }
-
-            }
-
-        }
-      `,
-      variables: {
-        owners: [owner.toBase58()],
-      },
-    }),
-  })
-
-  const body = await result.json()
-  return body.data
+const enhanceNFT = (nft: NftWithATA) => {
+  return {
+    image: nft.json?.image || '',
+    name: nft.json?.name || '',
+    address: nft.metadataAddress.toBase58(),
+  }
 }
 
-export const formatTokenSymbol = (symbol: string) =>
-  symbol === 'MSOL' ? 'mSOL' : symbol
+function loadNft(
+  nft: Metadata<JsonMetadata<string>> | Nft | Sft,
+  connection: Connection
+) {
+  const metaplex = new Metaplex(connection)
+
+  return Promise.race([
+    metaplex
+      .nfts()
+      // @ts-ignore
+      .load({ metadata: nft })
+      .catch((e) => {
+        console.error(e)
+        return null
+      }),
+  ])
+}
+
+export async function getNFTsByOwner(owner: PublicKey, connection: Connection) {
+  const metaplex = new Metaplex(connection)
+
+  const rawNfts = await metaplex.nfts().findAllByOwner({
+    owner,
+  })
+
+  const nfts = await Promise.all(
+    rawNfts.map((nft) => loadNft(nft, connection))
+  ).then((nfts) =>
+    Promise.all(
+      nfts.filter(exists).map(async (nft) => ({
+        ...nft,
+        owner,
+        tokenAccountAddress: await getAssociatedTokenAddress(
+          nft.mint.address,
+          owner,
+          true
+        ).catch((e) => {
+          console.error(e)
+          return null
+        }),
+      }))
+    )
+  )
+
+  return nfts.map(enhanceNFT)
+}
+
+export const formatTokenSymbol = (symbol: string) => {
+  if (symbol.toLowerCase().includes('portal')) {
+    const truncSymbol = symbol.split(' ')[0]
+    return truncSymbol === 'WBTC' ? 'wBTC' : truncSymbol
+  }
+  return symbol === 'MSOL' ? 'mSOL' : symbol
+}

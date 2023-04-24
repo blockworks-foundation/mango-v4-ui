@@ -42,7 +42,7 @@ const RoutesModal = ({
           return (
             <div
               key={index}
-              className={`default-transition mb-2 rounded border bg-th-bkg-3 hover:bg-th-bkg-4 ${
+              className={`mb-2 rounded border bg-th-bkg-3 hover:bg-th-bkg-4 ${
                 selected
                   ? 'border-th-active text-th-active hover:border-th-active'
                   : 'border-transparent text-th-fgd-1'
