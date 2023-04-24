@@ -75,25 +75,8 @@ const MangoPerpStatsCharts = () => {
 
   return (
     <>
-      {totalOpenInterestValues.length ? (
-        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
-          <DetailedAreaChart
-            data={totalOpenInterestValues}
-            daysToShow={oiDaysToShow}
-            setDaysToShow={setOiDaysToShow}
-            heightClass="h-64"
-            loading={loadingPerpStats}
-            loaderHeightClass="h-[350px]"
-            prefix="$"
-            tickFormat={(x) => `$${Math.floor(x)}`}
-            title={t('trade:open-interest')}
-            xKey="date"
-            yKey={'openInterest'}
-          />
-        </div>
-      ) : null}
       {totalFeeValues.length ? (
-        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
+        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:pl-6">
           <DetailedAreaChart
             data={totalFeeValues}
             daysToShow={feesDaysToShow}
@@ -106,6 +89,23 @@ const MangoPerpStatsCharts = () => {
             title="Perp Fees"
             xKey="date"
             yKey={'feeValue'}
+          />
+        </div>
+      ) : null}
+      {totalOpenInterestValues.length ? (
+        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r">
+          <DetailedAreaChart
+            data={totalOpenInterestValues}
+            daysToShow={oiDaysToShow}
+            setDaysToShow={setOiDaysToShow}
+            heightClass="h-64"
+            loading={loadingPerpStats}
+            loaderHeightClass="h-[350px]"
+            prefix="$"
+            tickFormat={(x) => `$${Math.floor(x)}`}
+            title={t('trade:open-interest')}
+            xKey="date"
+            yKey={'openInterest'}
           />
         </div>
       ) : null}
