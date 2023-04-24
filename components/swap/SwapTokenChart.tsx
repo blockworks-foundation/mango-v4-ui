@@ -201,7 +201,10 @@ const SwapTokenChart = () => {
       !outputBank
     )
       return []
-    const chartSymbols = [inputBank.name, outputBank.name]
+    const chartSymbols = [
+      formatTokenSymbol(inputBank.name),
+      formatTokenSymbol(outputBank.name),
+    ]
     return swapHistory
       .filter(
         (swap) =>
