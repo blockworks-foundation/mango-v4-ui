@@ -55,7 +55,7 @@ const MarketSelectDropdown = () => {
     <Popover>
       {({ open, close }) => (
         <div
-          className="relative -ml-2 flex flex-col overflow-visible"
+          className="relative flex flex-col overflow-visible md:-ml-2"
           id="trade-step-one"
         >
           <Popover.Button className="-ml-4 flex h-12 items-center justify-between px-4 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2">

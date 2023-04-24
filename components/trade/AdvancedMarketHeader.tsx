@@ -140,7 +140,7 @@ const AdvancedMarketHeader = ({
   return (
     <>
       <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
-        <div className="w-full px-4 md:w-auto md:px-6 md:py-0 lg:pb-0">
+        <div className="w-full pl-4 md:w-auto md:py-0 md:pl-6 lg:pb-0">
           <MarketSelectDropdown />
         </div>
         <div className="hide-scroll flex w-full items-center justify-between overflow-x-auto border-t border-th-bkg-3 py-2 px-5 md:border-t-0 md:py-0 md:px-0 md:pr-6">
