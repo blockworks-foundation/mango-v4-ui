@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import Decimal from 'decimal.js'
 
 const GroupSize = ({
   tickSize,
@@ -13,13 +14,20 @@ const GroupSize = ({
   onChange: (x: number) => void
   className?: string
 }) => {
+  const formatSize = useCallback(
+    (multiplier: number) => {
+      return new Decimal(tickSize).mul(multiplier).toNumber()
+    },
+    [tickSize]
+  )
+
   const sizes = useMemo(
     () => [
       tickSize,
-      tickSize * 5,
-      tickSize * 10,
-      tickSize * 50,
-      tickSize * 100,
+      formatSize(5),
+      formatSize(10),
+      formatSize(50),
+      formatSize(100),
     ],
     [tickSize]
   )
