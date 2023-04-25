@@ -1,25 +1,23 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchNotifications } from 'apis/notifications'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { fetchNotificationSettings } from 'apis/notificationSettings'
+import { useIsAuthorized } from './useIsAuthorized'
 
-//10min
-const refetchMs = 600000
-
-export function useNotifications() {
+export function useNotificationSettings() {
   const wallet = useWallet()
   const walletPubKey = wallet.publicKey?.toBase58()
   const token = NotificationCookieStore((s) => s.currentToken)
   const criteria = walletPubKey && token
+  const isAuth = useIsAuthorized()
 
   return useQuery(
-    ['notifications', criteria],
-    () => fetchNotifications(walletPubKey!, token!),
+    ['notificationSettings', criteria],
+    () => fetchNotificationSettings(walletPubKey!, token!),
     {
-      enabled: !!(walletPubKey && token),
-      staleTime: refetchMs,
+      enabled: !!isAuth,
       retry: 1,
-      refetchInterval: refetchMs,
+      staleTime: 86400000,
     }
   )
 }

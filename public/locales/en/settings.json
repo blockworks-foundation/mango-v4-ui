@@ -50,5 +50,8 @@
     "transaction-fail": "Transaction Fail",
     "transaction-success": "Transaction Success",
     "trade-chart": "Trade Chart",
-    "trading-view": "Trading View"
+    "trading-view": "Trading View",
+    "notifications": "Notifications",
+    "limit-order-filled": "Limit order filled",
+    "sign-to-notifications": "Sign to notifications center to change settings"
 }

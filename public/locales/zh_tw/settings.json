@@ -50,5 +50,8 @@
     "trade-layout": "交易佈局",
     "trading-view": "Trading View",
     "transaction-fail": "交易失敗",
-    "transaction-success": "交易成功"
+    "transaction-success": "交易成功",
+    "notifications": "通知",
+    "limit-order-filled": "限价单成交",
+    "sign-to-notifications": "登录通知中心以更改设置"
 }
