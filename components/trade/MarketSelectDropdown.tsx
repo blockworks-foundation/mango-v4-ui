@@ -13,6 +13,7 @@ import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
 import { useMemo } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 
 const MarketSelectDropdown = () => {
@@ -55,10 +56,10 @@ const MarketSelectDropdown = () => {
     <Popover>
       {({ open, close }) => (
         <div
-          className="relative -ml-2 flex flex-col overflow-visible"
+          className="relative flex flex-col overflow-visible md:-ml-2"
           id="trade-step-one"
         >
-          <Popover.Button className="default-transition -ml-4 flex h-12 items-center justify-between px-4 hover:text-th-active focus:bg-th-bkg-3">
+          <Popover.Button className="-ml-4 flex h-12 items-center justify-between px-4 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2">
             <div className="flex items-center">
               {selectedMarket ? <MarketLogos market={selectedMarket} /> : null}
               <div className="whitespace-nowrap text-xl font-bold text-th-fgd-1 md:text-base">
@@ -91,7 +92,7 @@ const MarketSelectDropdown = () => {
                       }}
                     >
                       <Link
-                        className="default-transition flex items-center hover:cursor-pointer focus:text-th-active focus:outline-none md:hover:text-th-fgd-3"
+                        className="flex items-center hover:cursor-pointer focus:outline-none focus-visible:text-th-active md:hover:text-th-fgd-3"
                         href={{
                           pathname: '/trade',
                           query: { name: m.name },
@@ -128,12 +129,25 @@ const MarketSelectDropdown = () => {
                             market.mint === m.serumMarketExternal.toString()
                         )
                       : null
-                    const bank = group?.getFirstBankByTokenIndex(
+                    const baseBank = group?.getFirstBankByTokenIndex(
                       m.baseTokenIndex
                     )
+                    const quoteBank = group?.getFirstBankByTokenIndex(
+                      m.quoteTokenIndex
+                    )
+                    const market = group?.getSerum3ExternalMarket(
+                      m.serumMarketExternal
+                    )
+                    let price
+                    if (baseBank && market && quoteBank) {
+                      price = floorToDecimal(
+                        baseBank.uiPrice / quoteBank.uiPrice,
+                        getDecimalCount(market.tickSize)
+                      ).toNumber()
+                    }
                     const change =
-                      birdeyeData && bank
-                        ? ((bank.uiPrice - birdeyeData.data[0].value) /
+                      birdeyeData && price
+                        ? ((price - birdeyeData.data[0].value) /
                             birdeyeData.data[0].value) *
                           100
                         : 0
@@ -146,7 +160,7 @@ const MarketSelectDropdown = () => {
                         }}
                       >
                         <Link
-                          className="default-transition flex items-center hover:cursor-pointer focus:text-th-active focus:outline-none md:hover:text-th-fgd-3"
+                          className="flex items-center hover:cursor-pointer focus:outline-none focus-visible:text-th-active md:hover:text-th-fgd-3"
                           href={{
                             pathname: '/trade',
                             query: { name: m.name },
@@ -158,7 +172,11 @@ const MarketSelectDropdown = () => {
                         </Link>
                         <div className="flex items-center space-x-3">
                           {!loadingPrices ? (
-                            <Change change={change} suffix="%" />
+                            change ? (
+                              <Change change={change} suffix="%" />
+                            ) : (
+                              <span className="text-th-fgd-3">–</span>
+                            )
                           ) : (
                             <SheenLoader className="mt-0.5">
                               <div className="h-3.5 w-12 bg-th-bkg-2" />

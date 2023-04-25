@@ -11,6 +11,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PublicKey } from '@solana/web3.js'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { formatTokenSymbol } from 'utils/tokens'
 
 // const generateSearchTerm = (item: Token, searchValue: string) => {
 //   const normalizedSearchValue = searchValue.toLowerCase()
@@ -62,7 +63,7 @@ const TokenItem = ({
     <div>
       <button
         key={address}
-        className={`default-transition flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:bg-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-2`}
+        className={`flex w-full cursor-pointer items-center justify-between rounded-md p-2 font-normal focus:outline-none focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2`}
         onClick={() => onSubmit(address)}
       >
         <div className="flex items-center">
@@ -72,7 +73,7 @@ const TokenItem = ({
           </picture>
           <div className="ml-2.5">
             <p className="text-left text-th-fgd-2">
-              {symbol || 'unknown'}
+              {bank?.name ? formatTokenSymbol(bank.name) : symbol || 'unknown'}
               {bank?.reduceOnly ? (
                 <span className="ml-1.5 text-xxs text-th-warning">
                   {t('reduce-only')}

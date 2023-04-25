@@ -13,7 +13,7 @@ const ActionsLinkButton = ({
 }) => {
   return (
     <LinkButton
-      className="w-full whitespace-nowrap text-left font-normal no-underline md:hover:text-th-fgd-1"
+      className="w-full whitespace-nowrap text-left font-normal"
       disabled={!mangoAccount}
       onClick={onClick}
     >

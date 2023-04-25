@@ -149,6 +149,7 @@ const PerpPositions = () => {
                           <p className="flex justify-end">
                             {isSelectedMarket ? (
                               <LinkButton
+                                className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
                                 onClick={() =>
                                   handlePositionClick(floorBasePosition, market)
                                 }
@@ -280,7 +281,7 @@ const PerpPositions = () => {
                           </span>
                         ) : (
                           <Link href={`/trade?name=${market.name}`}>
-                            <div className="default-transition flex items-center underline underline-offset-2 md:hover:text-th-fgd-3 md:hover:no-underline">
+                            <div className="flex items-center underline underline-offset-2 md:hover:text-th-fgd-3 md:hover:no-underline">
                               <span className="whitespace-nowrap">
                                 {market.name}
                               </span>
@@ -294,7 +295,7 @@ const PerpPositions = () => {
                           <span className="font-mono text-th-fgd-3">
                             {isSelectedMarket && asPath === '/trade' ? (
                               <LinkButton
-                                className="font-normal"
+                                className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
                                 onClick={() =>
                                   handlePositionClick(floorBasePosition, market)
                                 }

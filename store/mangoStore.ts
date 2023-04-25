@@ -21,7 +21,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
-import { Notification, notify } from '../utils/notifications'
+import { TransactionNotification, notify } from '../utils/notifications'
 import {
   getNFTsByOwner,
   getTokenAccountsByOwnerWithWrappedSol,
@@ -64,6 +64,7 @@ import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
 import {
   EntityId,
+  IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
 
@@ -149,6 +150,7 @@ export type MangoStore = {
     }
     swapHistory: {
       data: SwapHistoryItem[]
+      initialLoad: boolean
       loading: boolean
     }
     tradeHistory: {
@@ -158,8 +160,8 @@ export type MangoStore = {
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
-  notificationIdCounter: number
-  notifications: Array<Notification>
+  transactionNotificationIdCounter: number
+  transactionNotifications: Array<TransactionNotification>
   perpMarkets: PerpMarket[]
   perpStats: {
     loading: boolean
@@ -214,6 +216,7 @@ export type MangoStore = {
   tradingView: {
     stablePriceLine: EntityId | undefined
     orderLines: Map<string | BN, IOrderLineAdapter>
+    tradeExecutions: Map<string, IExecutionLineAdapter>
   }
   wallet: {
     tokens: TokenAccount[]
@@ -296,13 +299,13 @@ const mangoStore = create<MangoStore>()(
         spotBalances: {},
         interestTotals: { data: [], loading: false },
         performance: { data: [], loading: true },
-        swapHistory: { data: [], loading: true },
+        swapHistory: { data: [], loading: true, initialLoad: true },
         tradeHistory: { data: [], loading: true },
       },
       mangoAccounts: [],
       markets: undefined,
-      notificationIdCounter: 0,
-      notifications: [],
+      transactionNotificationIdCounter: 0,
+      transactionNotifications: [],
       perpMarkets: [],
       perpStats: {
         loading: false,
@@ -365,6 +368,7 @@ const mangoStore = create<MangoStore>()(
       tradingView: {
         stablePriceLine: undefined,
         orderLines: new Map(),
+        tradeExecutions: new Map(),
       },
       wallet: {
         tokens: [],
@@ -807,8 +811,13 @@ const mangoStore = create<MangoStore>()(
             } catch (e) {
               console.error('Unable to fetch swap history', e)
             } finally {
+              const notLoaded =
+                mangoStore.getState().mangoAccount.swapHistory.initialLoad
               set((state) => {
                 state.mangoAccount.swapHistory.loading = false
+                if (notLoaded) {
+                  state.mangoAccount.swapHistory.initialLoad = false
+                }
               })
             }
           }, timeout)

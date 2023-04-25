@@ -213,7 +213,7 @@ const ChartLayoutButton = ({
         tradeLayout === position
           ? 'border-th-active'
           : 'border-th-bkg-4 md:hover:border-th-fgd-4'
-      } p-0.5 focus:border-th-fgd-4`}
+      } p-0.5 focus-visible:border-th-fgd-4`}
       onClick={() => onClick(position)}
     >
       {icon}

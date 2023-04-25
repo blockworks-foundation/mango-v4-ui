@@ -204,7 +204,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         {submitting ? <Loading /> : <span>{t('trade:close-position')}</span>}
       </Button>
       <LinkButton
-        className="inline-flex w-full items-center justify-center text-th-fgd-1"
+        className="inline-flex w-full items-center justify-center"
         onClick={onClose}
       >
         {t('cancel')}

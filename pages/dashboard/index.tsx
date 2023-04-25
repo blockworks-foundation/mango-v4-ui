@@ -27,6 +27,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
     props: {
       ...(await serverSideTranslations(locale, [
         'common',
+        'notifications',
         'onboarding',
         'profile',
         'search',
@@ -111,7 +112,7 @@ const Dashboard: NextPage = () => {
                             <>
                               <Disclosure.Button
                                 aria-label="panel"
-                                className={`default-transition flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-4 ${
+                                className={`flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-4 ${
                                   open ? 'bg-th-bkg-4' : ''
                                 }`}
                               >
@@ -413,7 +414,7 @@ const Dashboard: NextPage = () => {
                           <>
                             <Disclosure.Button
                               aria-label="panel"
-                              className={`default-transition flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
+                              className={`flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
                                 open ? 'bg-th-bkg-2' : ''
                               }`}
                             >

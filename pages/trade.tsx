@@ -9,13 +9,14 @@ import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
-import { getDecimalCount } from 'utils/numbers'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
       ...(await serverSideTranslations(locale, [
         'common',
+        'notifications',
         'onboarding',
         'onboarding-tours',
         'profile',
@@ -36,8 +37,12 @@ const getOraclePriceForMarket = (
   let price: number
   if (mkt instanceof Serum3Market) {
     const baseBank = group.getFirstBankByTokenIndex(mkt.baseTokenIndex)
-
-    price = baseBank.uiPrice
+    const quoteBank = group.getFirstBankByTokenIndex(mkt.quoteTokenIndex)
+    const market = group.getSerum3ExternalMarket(mkt.serumMarketExternal)
+    price = floorToDecimal(
+      baseBank.uiPrice / quoteBank.uiPrice,
+      getDecimalCount(market.tickSize)
+    ).toNumber()
   } else if (mkt) {
     price = mkt._uiPrice
   } else {

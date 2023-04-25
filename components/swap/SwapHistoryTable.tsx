@@ -354,7 +354,7 @@ const SwapHistoryTable = () => {
                               {t('transaction')}
                             </p>
                             <a
-                              className="default-transition flex items-center text-th-fgd-1 hover:text-th-fgd-3"
+                              className="flex items-center text-th-fgd-1 hover:text-th-fgd-3"
                               href={`${preferredExplorer.url}${signature}`}
                               target="_blank"
                               rel="noopener noreferrer"

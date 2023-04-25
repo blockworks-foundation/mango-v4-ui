@@ -9,6 +9,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
 import ContentBox from '../shared/ContentBox'
@@ -50,6 +51,7 @@ interface DetailedAreaChartProps {
   xKey: string
   yDecimals?: number
   yKey: string
+  showZeroLine?: boolean
 }
 
 export const formatDateAxis = (date: string, days: number) => {
@@ -79,6 +81,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   xKey,
   yDecimals,
   yKey,
+  showZeroLine,
 }) => {
   const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
@@ -395,6 +398,13 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       }
                       tickLine={false}
                     />
+                    {showZeroLine ? (
+                      <ReferenceLine
+                        y={0}
+                        stroke="var(--fgd-4)"
+                        strokeDasharray="2 2"
+                      />
+                    ) : null}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

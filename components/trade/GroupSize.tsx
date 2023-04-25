@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import Decimal from 'decimal.js'
 
 const GroupSize = ({
   tickSize,
@@ -13,13 +14,20 @@ const GroupSize = ({
   onChange: (x: number) => void
   className?: string
 }) => {
+  const formatSize = useCallback(
+    (multiplier: number) => {
+      return new Decimal(tickSize).mul(multiplier).toNumber()
+    },
+    [tickSize]
+  )
+
   const sizes = useMemo(
     () => [
       tickSize,
-      tickSize * 5,
-      tickSize * 10,
-      tickSize * 50,
-      tickSize * 100,
+      formatSize(5),
+      formatSize(10),
+      formatSize(50),
+      formatSize(100),
     ],
     [tickSize]
   )
@@ -30,7 +38,7 @@ const GroupSize = ({
         {({ open }) => (
           <>
             <Listbox.Button
-              className={`default-transition flex h-6 items-center rounded bg-th-bkg-1 py-1 pl-1.5 font-normal text-th-fgd-2 hover:text-th-active focus:border-th-bkg-4 focus:bg-th-bkg-3 focus:outline-none`}
+              className={`flex h-6 items-center rounded bg-th-bkg-1 py-1 pl-1.5 font-normal text-th-fgd-2 hover:text-th-active focus:border-th-bkg-4 focus:bg-th-bkg-3 focus:outline-none`}
             >
               <div
                 className={`flex items-center justify-between font-mono text-xs leading-none`}
@@ -38,7 +46,7 @@ const GroupSize = ({
                 <span>{value}</span>
 
                 <ChevronDownIcon
-                  className={`default-transition ml-0.5 h-5 w-5 text-th-fgd-3 ${
+                  className={`ml-0.5 h-5 w-5 text-th-fgd-3 ${
                     open ? 'rotate-180 transform' : 'rotate-360 transform'
                   }`}
                 />
@@ -53,7 +61,7 @@ const GroupSize = ({
                   <Listbox.Option key={size} value={size}>
                     {({ selected }) => (
                       <div
-                        className={`default-transition text-right font-mono text-xs text-th-fgd-2 hover:cursor-pointer hover:text-th-active ${
+                        className={`text-right font-mono text-xs text-th-fgd-2 hover:cursor-pointer hover:text-th-active ${
                           selected && `text-th-active`
                         }`}
                       >

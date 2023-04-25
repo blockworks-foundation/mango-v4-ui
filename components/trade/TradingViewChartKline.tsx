@@ -260,7 +260,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
           {Object.keys(RES_NAME_TO_RES_VAL).map((key) => (
             <button
               className={clsx(
-                'default-transition px-2 md:hover:text-th-fgd-2',
+                'px-2 md:hover:text-th-fgd-2',
                 resolution === RES_NAME_TO_RES_VAL[key] && 'text-th-active'
               )}
               key={key}
@@ -270,7 +270,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
             </button>
           ))}
           <button
-            className="default-transition px-2 md:hover:text-th-fgd-2"
+            className="px-2 md:hover:text-th-fgd-2"
             onClick={() => setIsTechnicalModalOpen(true)}
           >
             Indicator
