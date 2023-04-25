@@ -115,11 +115,7 @@ const PerpFundingRate = () => {
       return selectedMarket.getInstantaneousFundingRateUi(bids, asks).toFixed(4)
     }
 
-    console.log(orderbook.bids.length, orderbook.asks.length)
     if (orderbook.asks.length && orderbook.bids.length) {
-      console.log(
-        getInstantaneousFundingRateL2(selectedMarket, orderbook).toFixed(4)
-      )
       return (
         getInstantaneousFundingRateL2(selectedMarket, orderbook) * 100
       ).toFixed(4)
