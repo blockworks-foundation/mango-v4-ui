@@ -377,10 +377,13 @@ const Orderbook = () => {
 
     if (useOrderbookFeed) {
       let hasConnected = false
-      const orderbookFeed = new OrderbookFeed(`wss://api.mngo.cloud/orderbook/v1/`, {
-        reconnectionIntervalMs: 5_000,
-        reconnectionMaxAttempts: 6,
-      })
+      const orderbookFeed = new OrderbookFeed(
+        `wss://api.mngo.cloud/orderbook/v1/`,
+        {
+          reconnectionIntervalMs: 5_000,
+          reconnectionMaxAttempts: 6,
+        }
+      )
       orderbookFeed.onConnect(() => {
         console.log('[OrderbookFeed] connected')
         hasConnected = true
