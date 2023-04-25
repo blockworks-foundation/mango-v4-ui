@@ -13,6 +13,7 @@ import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
 import { useMemo } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 
 const MarketSelectDropdown = () => {
@@ -128,12 +129,25 @@ const MarketSelectDropdown = () => {
                             market.mint === m.serumMarketExternal.toString()
                         )
                       : null
-                    const bank = group?.getFirstBankByTokenIndex(
+                    const baseBank = group?.getFirstBankByTokenIndex(
                       m.baseTokenIndex
                     )
+                    const quoteBank = group?.getFirstBankByTokenIndex(
+                      m.quoteTokenIndex
+                    )
+                    const market = group?.getSerum3ExternalMarket(
+                      m.serumMarketExternal
+                    )
+                    let price
+                    if (baseBank && market && quoteBank) {
+                      price = floorToDecimal(
+                        baseBank.uiPrice / quoteBank.uiPrice,
+                        getDecimalCount(market.tickSize)
+                      ).toNumber()
+                    }
                     const change =
-                      birdeyeData && bank
-                        ? ((bank.uiPrice - birdeyeData.data[0].value) /
+                      birdeyeData && price
+                        ? ((price - birdeyeData.data[0].value) /
                             birdeyeData.data[0].value) *
                           100
                         : 0
@@ -158,7 +172,11 @@ const MarketSelectDropdown = () => {
                         </Link>
                         <div className="flex items-center space-x-3">
                           {!loadingPrices ? (
-                            <Change change={change} suffix="%" />
+                            change ? (
+                              <Change change={change} suffix="%" />
+                            ) : (
+                              <span className="text-th-fgd-3">–</span>
+                            )
                           ) : (
                             <SheenLoader className="mt-0.5">
                               <div className="h-3.5 w-12 bg-th-bkg-2" />
