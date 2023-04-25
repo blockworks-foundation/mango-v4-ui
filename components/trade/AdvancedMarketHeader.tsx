@@ -8,6 +8,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import {
+  floorToDecimal,
   formatCurrencyValue,
   getDecimalCount,
   numberCompacter,
@@ -35,6 +36,7 @@ const AdvancedMarketHeader = ({
     serumOrPerpMarket,
     price: stalePrice,
     selectedMarket,
+    quoteBank,
   } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
   const connection = mangoStore((s) => s.connection)
@@ -50,6 +52,7 @@ const AdvancedMarketHeader = ({
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
+
     let marketOrBank: PerpMarket | Bank
     let decimals: number
     if (selectedMarket instanceof PerpMarket) {
@@ -79,8 +82,21 @@ const AdvancedMarketHeader = ({
           )
         marketOrBank._price = price
         marketOrBank._uiPrice = uiPrice
-        setPrice(uiPrice)
         marketOrBank._oracleLastUpdatedSlot = lastUpdatedSlot
+        if (selectedMarket instanceof PerpMarket) {
+          setPrice(uiPrice)
+        } else {
+          let price
+          if (quoteBank && serumOrPerpMarket) {
+            price = floorToDecimal(
+              uiPrice / quoteBank.uiPrice,
+              getDecimalCount(serumOrPerpMarket.tickSize)
+            ).toNumber()
+          } else {
+            price = 0
+          }
+          setPrice(price)
+        }
       },
       'processed'
     )
