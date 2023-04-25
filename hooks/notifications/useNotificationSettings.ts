@@ -8,8 +8,9 @@ export function useNotificationSettings() {
   const wallet = useWallet()
   const walletPubKey = wallet.publicKey?.toBase58()
   const token = NotificationCookieStore((s) => s.currentToken)
-  const criteria = walletPubKey && token
   const isAuth = useIsAuthorized()
+
+  const criteria = walletPubKey && token && isAuth
 
   return useQuery(
     ['notificationSettings', criteria],
