@@ -3,7 +3,6 @@ import { FillsFeed } from '@blockworks-foundation/mango-feeds'
 import { getNextBarTime } from './helpers'
 import mangoStore from '@store/mangoStore'
 
-let currentSubscription: string | undefined
 let subscriptionItem: any = {}
 
 const fillsFeed = new FillsFeed(`wss://api.mngo.cloud/fills/v1/`, {
@@ -18,7 +17,6 @@ fillsFeed.onDisconnect(() => {
   console.log('[FillsFeed] Disconnected, retrying...')
 })
 fillsFeed.onFill((update) => {
-  // TODO: handle revoked fills
   const marketName = mangoStore.getState().selectedMarket.name
   if (update.status == 'revoke' || update.marketName != marketName) {
     return
@@ -71,15 +69,14 @@ export function subscribeOnStream(
   if (!fillsFeed.connected()) {
     return
   }
-  console.log('[FillsFeed] subscribe ', subscriberUID)
+  console.log('[FillsFeed] subscribe', subscriberUID)
   fillsFeed.subscribe({ marketId: symbolInfo.address })
-  currentSubscription = subscriberUID
 }
 
 export function unsubscribeFromStream(subscriberUID: string) {
   setTimeout(() => {
     const marketAddress = subscriberUID.split('_')[0]
-    if (!fillsFeed.connected() || subscriberUID !== currentSubscription) {
+    if (!fillsFeed.connected()) {
       return
     }
     console.warn('[FillsFeed] unsubscribe', subscriberUID)

@@ -329,9 +329,9 @@ export default {
     }
   },
 
-  unsubscribeBars: (uid: string) => {
+  unsubscribeBars: (subscriberUID: string) => {
     if (marketType === 'perp') {
-      unsubscribeFromPerpStream(uid)
+      unsubscribeFromPerpStream(subscriberUID)
     } else {
       unsubscribeFromStream()
     }
