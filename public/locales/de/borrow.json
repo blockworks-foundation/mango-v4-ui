@@ -1,0 +1,11 @@
+{
+    "assets-to-borrow": "Zu leihende Vermögenswerte",
+    "available-to-borrow": "Verfügbar zum Ausleihen",
+    "borrowed-amount": "Ausgeliehener Betrag",
+    "connect-borrows": "Verbinde dich, um deine Ausleihen zu sehen",
+    "current-borrow-value": "Aktueller Ausleihwert",
+    "liability-weight-desc": "Die Haftungsquote trägt zum Wert der Haftung bei der Berechnung der Gesundheit deines Kontos bei.",
+    "no-borrows": "Keine Ausleihen",
+    "tooltip-available": "Der maximale Betrag, den du ausleihen kannst",
+    "your-borrows": "Deine Ausleihen"
+}

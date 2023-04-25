@@ -37,6 +37,7 @@ const LANGS = [
   { locale: 'en', name: 'english', description: 'english' },
   // { locale: 'ru', name: 'russian', description: 'russian' },
   // { locale: 'es', name: 'spanish', description: 'spanish' },
+  { locale: 'de', name: 'german', description: 'german' },
   {
     locale: 'zh_tw',
     name: 'chinese-traditional',
@@ -111,7 +112,7 @@ const DisplaySettings = () => {
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('settings:language')}</p>
-        <div className="w-full min-w-[220px] md:w-auto md:pl-4">
+        <div className="w-full min-w-[260px] md:w-auto md:pl-4">
           <ButtonGroup
             activeValue={savedLanguage}
             onChange={(l) => handleLangChange(l)}

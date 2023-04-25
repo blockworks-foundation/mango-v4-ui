@@ -1,0 +1,16 @@
+{
+    "assets": "Vermögenswerte",
+    "assets-liabilities": "Vermögenswerte & Verbindlichkeiten",
+    "liabilities": "Verbindlichkeiten",
+    "no-pnl-history": "Keine PnL Historie",
+    "pnl-chart": "PnL Diagramm",
+    "pnl-history": "PnL Historie",
+    "tooltip-free-collateral": "Der Betrag des Kapitals, das Sie für Trades und Kredite zur Verfügung haben. Wenn Ihr freies Kollateral $0 erreicht, können Sie nicht mehr handeln, leihen oder abheben.",
+    "tooltip-leverage": "Gesamtwert der Vermögenswerte geteilt durch den Kontoeigenkapitalwert",
+    "tooltip-pnl": "Der Betrag, den Ihr Konto an Gewinn oder Verlust verbucht hat",
+    "tooltip-total-collateral": "Gesamtwert des Kollaterals für Handel und Kreditaufnahme (einschließlich ungelöster PnL)",
+    "tooltip-total-funding": "Die Summe aus den erworbenen und gezahlten Finanzierungskosten der Dauerpositionen",
+    "tooltip-total-interest": "Der Wert der Zinserträge (Einzahlungen) minus der Zinszahlungen (Kredite)",
+    "total-funding-earned": "Insgesamt erworbene Finanzierungskosten",
+    "week-starting": "Woche beginnt am {{week}}"
+    }    

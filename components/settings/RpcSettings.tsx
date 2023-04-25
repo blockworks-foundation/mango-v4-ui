@@ -134,7 +134,7 @@ const RpcSettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">Priority Fee</p>
+        <p className="mb-2 md:mb-0">{t('priority-fee')}</p>
         <div className="w-full min-w-[220px] md:w-auto md:pl-4">
           <ButtonGroup
             activeValue={priorityFee.label}

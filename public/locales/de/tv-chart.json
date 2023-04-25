@@ -1,0 +1,15 @@
+{
+  "advanced-order": "Erweiterte Auftragsart",
+  "advanced-order-details": "Erweiterte Auftragsarten im Chart-Fenster können nur storniert werden. Wenn neue Bedingungen erforderlich sind, stornieren Sie diesen Auftrag und verwenden Sie das Handelsauftragsformular.",
+  "cancel-order": "Auftrag stornieren",
+  "cancel-order-details": "Stornieren Sie Ihren Auftrag für {{orderSide}} {{orderSize}} {{marketName}} zu {{orderPrice}}",
+  "modify-order": "Auftrag ändern",
+  "modify-order-details": "Ändern Sie Ihren {{marketName}} Auftrag von {{orderSide}} {{orderSize}} bei {{currentOrderPrice}} auf {{orderSide}} {{orderSize}} bei {{updatedOrderPrice}}",
+  "order-details": " ({{orderType}} {{orderSide}}), falls der Preis {{triggerCondition}} {{triggerPrice}} ist",
+  "outside-range": "Auftragspreis außerhalb des Bereichs",
+  "toggle-stable-price": "Stabiler Preis Linie umschalten",
+  "slippage-accept": "Verwenden Sie das Handelsauftragsformular, wenn Sie das potenzielle Slippage akzeptieren möchten.",
+  "slippage-warning": "{{updatedOrderPrice}} liegt mehr als 5% {{aboveBelow}} über dem aktuellen Marktpreis von {{selectedMarketPrice}}. Die Ausführung dieses Handels könnte erhebliche Slippage verursachen.",
+  "toggle-order-line": "Sichtbarkeit der Auftragslinie umschalten",
+  "toggle-trade-executions": "Handelsausführungen anzeigen. Beschränkt auf Ihre letzten 250 Trades in allen Märkten."
+}
