@@ -1,4 +1,4 @@
-import { Bank, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
 import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
@@ -7,20 +7,15 @@ import mangoStore from '@store/mangoStore'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
-import {
-  floorToDecimal,
-  formatCurrencyValue,
-  getDecimalCount,
-  numberCompacter,
-} from 'utils/numbers'
+import { numberCompacter } from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
-import { BorshAccountsCoder } from '@coral-xyz/anchor'
 import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 import SheenLoader from '@components/shared/SheenLoader'
 import usePrevious from '@components/shared/usePrevious'
 import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal.tsx'
 import useMangoGroup from 'hooks/useMangoGroup'
+import OraclePrice from './OraclePrice'
 
 const AdvancedMarketHeader = ({
   showChart,
@@ -36,76 +31,14 @@ const AdvancedMarketHeader = ({
     serumOrPerpMarket,
     price: stalePrice,
     selectedMarket,
-    quoteBank,
   } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
-  const connection = mangoStore((s) => s.connection)
-  const [price, setPrice] = useState(stalePrice)
+  const [price] = useState(stalePrice)
   const { data: birdeyePrices, isLoading: loadingPrices } =
     useBirdeyeMarketPrices()
   const previousMarketName = usePrevious(selectedMarketName)
   const [showMarketDetails, setShowMarketDetails] = useState(false)
   const { group } = useMangoGroup()
-
-  //subscribe to the market oracle account
-  useEffect(() => {
-    const client = mangoStore.getState().client
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
-
-    let marketOrBank: PerpMarket | Bank
-    let decimals: number
-    if (selectedMarket instanceof PerpMarket) {
-      marketOrBank = selectedMarket
-      decimals = selectedMarket.baseDecimals
-    } else {
-      const baseBank = group.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
-      )
-      marketOrBank = baseBank
-      decimals = group.getMintDecimals(baseBank.mint)
-    }
-
-    const coder = new BorshAccountsCoder(client.program.idl)
-    const subId = connection.onAccountChange(
-      marketOrBank.oracle,
-      async (info, _context) => {
-        // selectedMarket = mangoStore.getState().selectedMarket.current
-        // if (!(selectedMarket instanceof PerpMarket)) return
-        const { price, uiPrice, lastUpdatedSlot } =
-          await group.decodePriceFromOracleAi(
-            coder,
-            marketOrBank.oracle,
-            info,
-            decimals,
-            client
-          )
-        marketOrBank._price = price
-        marketOrBank._uiPrice = uiPrice
-        marketOrBank._oracleLastUpdatedSlot = lastUpdatedSlot
-        if (selectedMarket instanceof PerpMarket) {
-          setPrice(uiPrice)
-        } else {
-          let price
-          if (quoteBank && serumOrPerpMarket) {
-            price = floorToDecimal(
-              uiPrice / quoteBank.uiPrice,
-              getDecimalCount(serumOrPerpMarket.tickSize)
-            ).toNumber()
-          } else {
-            price = 0
-          }
-          setPrice(price)
-        }
-      },
-      'processed'
-    )
-    return () => {
-      if (typeof subId !== 'undefined') {
-        connection.removeAccountChangeListener(subId)
-      }
-    }
-  }, [connection, selectedMarket])
 
   useEffect(() => {
     if (group) {
@@ -161,24 +94,9 @@ const AdvancedMarketHeader = ({
         </div>
         <div className="hide-scroll flex w-full items-center justify-between overflow-x-auto border-t border-th-bkg-3 py-2 px-5 md:border-t-0 md:py-0 md:px-0 md:pr-6">
           <div className="flex items-center">
-            <div
-              id="trade-step-two"
-              className="flex-col whitespace-nowrap md:ml-6"
-            >
-              <div className="text-xs text-th-fgd-4">
-                {t('trade:oracle-price')}
-              </div>
-              <div className="font-mono text-xs text-th-fgd-2">
-                {price ? (
-                  `${formatCurrencyValue(
-                    price,
-                    getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
-                  )}`
-                ) : (
-                  <span className="text-th-fgd-4">–</span>
-                )}
-              </div>
-            </div>
+            <>
+              <OraclePrice />
+            </>
             <div className="ml-6 flex-col whitespace-nowrap">
               <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
               {!loadingPrices && !loadingPerpStats ? (
