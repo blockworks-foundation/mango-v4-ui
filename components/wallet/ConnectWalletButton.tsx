@@ -21,11 +21,11 @@ export const ConnectWalletButton: React.FC = () => {
   }, [displayedWallets, preselectedWalletName])
 
   return (
-    <div className="relative">
+    <div className="flex">
       <button
         onClick={handleConnect}
         disabled={!groupLoaded}
-        className="relative flex h-16 w-44 bg-th-bkg-3 py-2 text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-0 hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100 focus-visible:bg-th-bkg-4 disabled:cursor-wait disabled:opacity-25"
+        className="relative flex h-16 bg-th-bkg-3 py-2 text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-0 hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100 focus-visible:bg-th-bkg-4 disabled:cursor-wait disabled:opacity-25"
       >
         <div className="relative z-10 flex h-full items-center justify-center space-x-3 px-4">
           {connecting ? (
@@ -48,7 +48,7 @@ export const ConnectWalletButton: React.FC = () => {
             </div>
           )}
           <div className="text-left">
-            <div className="mb-1.5 flex font-display text-base leading-none text-th-fgd-1">
+            <div className="mb-1.5 flex font-display text-sm leading-none text-th-fgd-1">
               {t('connect')}
             </div>
 
@@ -58,9 +58,7 @@ export const ConnectWalletButton: React.FC = () => {
           </div>
         </div>
       </button>
-      <div className="absolute right-0 top-0 z-20 flex h-full">
-        <WalletSelect />
-      </div>
+      <WalletSelect />
     </div>
   )
 }
