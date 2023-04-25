@@ -46,7 +46,7 @@ const IconDropMenu = ({
                 : size === 'medium'
                 ? 'h-10 w-10'
                 : 'h-8 w-8'
-            } default-transition items-center justify-center rounded-full border border-th-button text-th-fgd-1 ${
+            } items-center justify-center rounded-full border border-th-button text-th-fgd-1 ${
               !open ? 'focus:border-th-fgd-2' : ''
             } md:hover:border-th-button-hover md:hover:text-th-fgd-1 ${
               disabled ? 'cursor-not-allowed opacity-60' : ''

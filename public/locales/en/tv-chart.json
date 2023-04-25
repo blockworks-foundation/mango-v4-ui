@@ -11,5 +11,5 @@
   "slippage-accept": "Use the trade order form if you wish to accept the potential slippage.",
   "slippage-warning": "{{updatedOrderPrice}} is greater than 5% {{aboveBelow}} the current market price of {{selectedMarketPrice}}. Executing this trade could incur significant slippage.",
   "toggle-order-line": "Toggle order line visibility",
-  "toggle-trade-executions": "Toggle trade execution visibility"
+  "toggle-trade-executions": "Show trade executions. Limited to your last 250 trades across all markets."
 }

@@ -41,14 +41,16 @@ const MangoPerpStatsCharts = () => {
       if (!hasDate) {
         a.push({
           date: c.date_hour,
-          feeValue: c.fees_accrued,
+          feeValue: c.total_fees,
         })
       } else {
-        hasDate.feeValue = hasDate.feeValue + c.fees_accrued
+        hasDate.feeValue = hasDate.feeValue + c.total_fees
       }
-      return a
+      return a.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      )
     }, [])
-    return values.reverse()
+    return values
   }, [perpStats])
 
   const totalOpenInterestValues = useMemo(() => {
@@ -64,9 +66,11 @@ const MangoPerpStatsCharts = () => {
         hasDate.openInterest =
           hasDate.openInterest + Math.floor(c.open_interest * c.price)
       }
-      return a
+      return a.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      )
     }, [])
-    return values.reverse()
+    return values
   }, [perpStats])
 
   return (

@@ -296,10 +296,10 @@ const AccountPage = () => {
           <div className="hide-scroll flex justify-center space-x-2 md:justify-start">
             {TABS.map((tab) => (
               <button
-                className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium focus:bg-th-bkg-3 md:hover:text-th-fgd-2 ${
+                className={`rounded-md py-1.5 px-2.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
                   activeTab === tab
-                    ? 'bg-th-bkg-3 text-th-active focus:text-th-active'
-                    : 'text-th-fgd-3 focus:text-th-fgd-1'
+                    ? 'bg-th-bkg-3 text-th-active md:hover:text-th-active'
+                    : 'text-th-fgd-3 md:hover:text-th-fgd-2'
                 }`}
                 onClick={() => setActiveTab(tab)}
                 key={tab}
@@ -522,7 +522,7 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 xl:col-span-1 xl:border-t-0">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 xl:col-span-1 xl:border-l xl:border-t-0">
           <div id="account-step-seven" className="flex flex-col items-start">
             <div className="flex w-full items-center justify-between">
               <Tooltip

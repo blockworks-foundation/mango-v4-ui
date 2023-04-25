@@ -149,7 +149,7 @@ const MangoAccountItem = ({
   const { mango_account_name, mango_account_pk, profile_name } = item
   return (
     <a
-      className="default-transition flex items-center justify-between rounded-md border border-th-bkg-3 p-4 md:hover:border-th-bkg-4"
+      className="flex items-center justify-between rounded-md border border-th-bkg-3 p-4 md:hover:border-th-bkg-4"
       href={`/?address=${mango_account_pk}`}
       rel="noopener noreferrer"
       target="_blank"
@@ -183,7 +183,7 @@ const WalletItem = ({ item }: { item: WalletItem }) => {
       {mango_accounts.length
         ? mango_accounts.map((a) => (
             <a
-              className="default-transition flex items-center justify-between rounded-md border border-th-bkg-3 p-4 md:hover:border-th-bkg-4"
+              className="flex items-center justify-between rounded-md border border-th-bkg-3 p-4 md:hover:border-th-bkg-4"
               href={`/?address=${a.mango_account_pk}`}
               rel="noopener noreferrer"
               target="_blank"

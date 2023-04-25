@@ -19,11 +19,10 @@ import TradeVolumeAlertModal, {
   DEFAULT_VOLUME_ALERT_SETTINGS,
 } from '@components/modals/TradeVolumeAlertModal'
 import dayjs from 'dayjs'
-import { isPerpFillEvent } from './TradeHistory'
 import ErrorBoundary from '@components/ErrorBoundary'
 import { useQuery } from '@tanstack/react-query'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
-import { EmptyObject, PerpTradeHistory } from 'types'
+import { EmptyObject, isPerpFillEvent, PerpTradeHistory } from 'types'
 import { Market } from '@project-serum/serum'
 
 const volumeAlertSound = new Howl({

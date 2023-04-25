@@ -1,11 +1,12 @@
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { formatYAxis } from 'utils/formatting'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { TokenStatsItem } from 'types'
+import useMangoGroup from 'hooks/useMangoGroup'
 const DetailedAreaChart = dynamic(
   () => import('@components/shared/DetailedAreaChart'),
   { ssr: false }
@@ -19,11 +20,20 @@ interface TotalValueItem {
 
 const TotalDepositBorrowCharts = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
+  const { group } = useMangoGroup()
   const tokenStats = mangoStore((s) => s.tokenStats.data)
+  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
   const banks = useBanksWithBalances()
+
+  useEffect(() => {
+    if (group && !initialStatsLoad) {
+      const actions = mangoStore.getState().actions
+      actions.fetchTokenStats()
+    }
+  }, [group, initialStatsLoad])
 
   const totalDepositBorrowValues = useMemo(() => {
     if (!tokenStats) return []
@@ -42,11 +52,13 @@ const TotalDepositBorrowCharts = () => {
           hasDate.borrowValue =
             hasDate.borrowValue + Math.floor(c.total_borrows * c.price)
         }
-        return a
+        return a.sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        )
       },
       []
     )
-    return values.reverse()
+    return values
   }, [tokenStats])
 
   const [currentTotalDepositValue, currentTotalBorrowValue] = useMemo(() => {

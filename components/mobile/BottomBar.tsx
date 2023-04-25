@@ -180,7 +180,7 @@ const MoreMenuItem = ({
   isExternal?: boolean
 }) => {
   const classNames =
-    'default-transition flex w-full items-center justify-between border-t border-th-bkg-4 px-2 py-4 text-th-fgd-2 hover:text-th-fgd-1'
+    'flex w-full items-center justify-between border-t border-th-bkg-4 px-2 py-4 text-th-fgd-2 hover:text-th-fgd-1'
   return isExternal ? (
     <a
       className={classNames}

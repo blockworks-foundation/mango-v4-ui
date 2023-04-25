@@ -6,7 +6,6 @@ import {
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { useEffect } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import { LinkButton } from '../shared/Button'
@@ -17,7 +16,6 @@ import { NextRouter, useRouter } from 'next/router'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
-import mangoStore from '@store/mangoStore'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
@@ -25,26 +23,12 @@ import Decimal from 'decimal.js'
 
 const TokenStats = () => {
   const { t } = useTranslation(['common', 'token'])
-  const actions = mangoStore.getState().actions
-  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
   const banks = useBanksWithBalances()
-
-  useEffect(() => {
-    if (group && !initialStatsLoad) {
-      actions.fetchTokenStats()
-    }
-  }, [group])
-
-  // const goToTokenPage = (bank: Bank) => {
-  //   router.push(`/token/${bank.name.split(' ')[0].toUpperCase()}`, undefined, {
-  //     shallow: true,
-  //   })
-  // }
 
   const goToTokenPage = (token: string, router: NextRouter) => {
     const query = { ...router.query, ['token']: token }
@@ -131,7 +115,7 @@ const TokenStats = () => {
 
                 return (
                   <TrBody
-                    className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                    className="md:hover:cursor-pointer md:hover:bg-th-bkg-2"
                     key={bank.name}
                     onClick={() =>
                       goToTokenPage(

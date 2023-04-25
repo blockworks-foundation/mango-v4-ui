@@ -98,6 +98,7 @@ const AdvancedTradeForm = () => {
     baseSymbol,
     quoteLogoURI,
     quoteSymbol,
+    serumOrPerpMarket,
   } = useSelectedMarket()
 
   const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
@@ -473,6 +474,11 @@ const AdvancedTradeForm = () => {
     connected ? handlePlaceOrder() : handleConnect()
   }
 
+  const disabled =
+    (connected && (!tradeForm.baseSize || !tradeForm.price)) ||
+    !serumOrPerpMarket ||
+    parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize
+
   return (
     <div>
       <div className="mt-1.5 px-2 md:mt-0 md:px-4 md:pt-5 lg:mt-5 lg:pt-0">
@@ -522,7 +528,7 @@ const AdvancedTradeForm = () => {
                   decimalScale={tickDecimals}
                   name="price"
                   id="price"
-                  className="default-transition flex w-full items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
+                  className="flex w-full items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:border-th-fgd-4 lg:text-base"
                   placeholder="0.00"
                   value={tradeForm.price}
                   onValueChange={handlePriceChange}
@@ -546,7 +552,7 @@ const AdvancedTradeForm = () => {
                 decimalScale={minOrderDecimals}
                 name="base"
                 id="base"
-                className="default-transition relative flex w-full items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:z-10 focus:border-th-fgd-4 focus:outline-none md:hover:z-10 md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
+                className="relative flex w-full items-center rounded-md rounded-b-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:z-10 focus:border-th-fgd-4 focus:outline-none md:hover:z-10 md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
                 placeholder="0.00"
                 value={tradeForm.baseSize}
                 onValueChange={handleBaseSizeChange}
@@ -587,13 +593,25 @@ const AdvancedTradeForm = () => {
                 decimalScale={tickDecimals}
                 name="quote"
                 id="quote"
-                className="default-transition -mt-[1px] flex w-full items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
+                className="-mt-[1px] flex w-full items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
                 placeholder="0.00"
                 value={tradeForm.quoteSize}
                 onValueChange={handleQuoteSizeChange}
               />
               <div className={INPUT_SUFFIX_CLASSNAMES}>{quoteSymbol}</div>
             </div>
+            {serumOrPerpMarket &&
+            tradeForm.baseSize &&
+            parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize ? (
+              <div className="mt-1">
+                <InlineNotification
+                  type="error"
+                  desc={`Min order size is ${minOrderSize} ${baseSymbol}`}
+                  hideBorder
+                  hidePadding
+                />
+              </div>
+            ) : null}
           </div>
         </div>
         <div className="mt-2 flex">
@@ -709,7 +727,7 @@ const AdvancedTradeForm = () => {
                   ? 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
                   : 'bg-th-down text-white md:hover:bg-th-down md:hover:brightness-90'
               }`}
-              disabled={connected && (!tradeForm.baseSize || !tradeForm.price)}
+              disabled={disabled}
               size="large"
               type="submit"
             >

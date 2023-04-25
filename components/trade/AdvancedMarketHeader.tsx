@@ -8,6 +8,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import {
+  floorToDecimal,
   formatCurrencyValue,
   getDecimalCount,
   numberCompacter,
@@ -35,6 +36,7 @@ const AdvancedMarketHeader = ({
     serumOrPerpMarket,
     price: stalePrice,
     selectedMarket,
+    quoteBank,
   } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
   const connection = mangoStore((s) => s.connection)
@@ -50,6 +52,7 @@ const AdvancedMarketHeader = ({
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
+
     let marketOrBank: PerpMarket | Bank
     let decimals: number
     if (selectedMarket instanceof PerpMarket) {
@@ -79,8 +82,21 @@ const AdvancedMarketHeader = ({
           )
         marketOrBank._price = price
         marketOrBank._uiPrice = uiPrice
-        setPrice(uiPrice)
         marketOrBank._oracleLastUpdatedSlot = lastUpdatedSlot
+        if (selectedMarket instanceof PerpMarket) {
+          setPrice(uiPrice)
+        } else {
+          let price
+          if (quoteBank && serumOrPerpMarket) {
+            price = floorToDecimal(
+              uiPrice / quoteBank.uiPrice,
+              getDecimalCount(serumOrPerpMarket.tickSize)
+            ).toNumber()
+          } else {
+            price = 0
+          }
+          setPrice(price)
+        }
       },
       'processed'
     )
@@ -140,7 +156,7 @@ const AdvancedMarketHeader = ({
   return (
     <>
       <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
-        <div className="w-full px-4 md:w-auto md:px-6 md:py-0 lg:pb-0">
+        <div className="w-full pl-4 md:w-auto md:py-0 md:pl-6 lg:pb-0">
           <MarketSelectDropdown />
         </div>
         <div className="hide-scroll flex w-full items-center justify-between overflow-x-auto border-t border-th-bkg-3 py-2 px-5 md:border-t-0 md:py-0 md:px-0 md:pr-6">
@@ -204,7 +220,7 @@ const AdvancedMarketHeader = ({
           <div className="ml-6 flex items-center space-x-4">
             {selectedMarket instanceof PerpMarket ? (
               <LinkButton
-                className="flex items-center whitespace-nowrap text-th-fgd-3 no-underline md:hover:text-th-fgd-4"
+                className="flex items-center whitespace-nowrap text-th-fgd-3"
                 onClick={() => setShowMarketDetails(true)}
               >
                 <InformationCircleIcon className="h-5 w-5 flex-shrink-0 md:mr-1.5 md:h-4 md:w-4" />
