@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchNotifications } from 'apis/notifications'
+import { fetchNotifications } from 'apis/notifications/notifications'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 

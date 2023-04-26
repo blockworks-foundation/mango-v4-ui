@@ -13,3 +13,12 @@ export const formatYAxis = (value: number) => {
     ? numberCompacter.format(value)
     : formatNumericValue(value, 4)
 }
+
+export const tryParse = (val: string) => {
+  try {
+    const json = JSON.parse(val)
+    return json
+  } catch (e) {
+    return val
+  }
+}

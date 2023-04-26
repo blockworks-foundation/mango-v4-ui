@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { fetchNotificationSettings } from 'apis/notificationSettings'
+import { fetchNotificationSettings } from 'apis/notifications/notificationSettings'
 import { useIsAuthorized } from './useIsAuthorized'
 
 export function useNotificationSettings() {
