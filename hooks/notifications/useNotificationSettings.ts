@@ -5,8 +5,8 @@ import { fetchNotificationSettings } from 'apis/notificationSettings'
 import { useIsAuthorized } from './useIsAuthorized'
 
 export function useNotificationSettings() {
-  const wallet = useWallet()
-  const walletPubKey = wallet.publicKey?.toBase58()
+  const { publicKey } = useWallet()
+  const walletPubKey = publicKey?.toBase58()
   const token = NotificationCookieStore((s) => s.currentToken)
   const isAuth = useIsAuthorized()
 
