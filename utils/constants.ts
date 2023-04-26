@@ -90,7 +90,6 @@ export const JUPITER_API_MAINNET = 'https://token.jup.ag/strict'
 
 export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'
 
-export const NOTIFICATION_API =
-  'https://https://notifications-api.herokuapp.com/'
+export const NOTIFICATION_API = 'https://notifications-api.herokuapp.com/'
 export const NOTIFICATION_API_WEBSOCKET =
-  'wss://https://notifications-api.herokuapp.com/ws'
+  'wss://notifications-api.herokuapp.com/ws'
