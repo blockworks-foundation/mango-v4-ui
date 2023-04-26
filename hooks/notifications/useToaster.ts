@@ -16,32 +16,19 @@ export function useToaster() {
   const criteria = publicKey?.toBase58() && token
 
   const [socket, setSocket] = useState<WebSocket | null>(null)
-  const [socketInterval, setSocketInterval] = useState<NodeJS.Timer | null>(
-    null
-  )
 
   useEffect(() => {
-    if (socket) {
-      socket.close()
-      setSocketInterval(null)
+    if (socket && socket?.readyState === socket?.OPEN) {
+      socket!.close(1000, 'hook')
     }
+
     let ws: WebSocket | null = null
-    if (isAuth && publicKey) {
+    if (isAuth && publicKey && token) {
       const notificationWs = new NotificationsWebSocket(
         token,
         publicKey.toBase58()
       ).connect()
       ws = notificationWs.ws!
-
-      ws.addEventListener('open', () => {
-        // Send a ping message to the server every 10 seconds
-        const interval = setInterval(() => {
-          if (ws?.readyState === ws?.OPEN) {
-            ws?.send('ping')
-          }
-        }, 30000)
-        setSocketInterval(interval)
-      })
 
       ws.addEventListener('message', (event) => {
         const data = tryParse(event.data)
@@ -67,21 +54,17 @@ export function useToaster() {
         }
       })
 
-      ws.addEventListener('close', () => {
-        if (socketInterval) {
-          setSocketInterval(null)
-        }
-      })
-
       setSocket(ws)
     }
 
     // Clean up the WebSocket connection on unmount
     return () => {
-      ws?.close()
-      socket?.close()
-      if (socketInterval) {
-        setSocketInterval(null)
+      if (ws?.readyState === ws?.OPEN) {
+        ws?.close(1000, 'hook')
+      }
+
+      if (socket?.readyState === socket?.OPEN) {
+        socket?.close(1000, 'hook')
       }
     }
   }, [isAuth, publicKey?.toBase58(), token])
