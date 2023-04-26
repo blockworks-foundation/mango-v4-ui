@@ -81,7 +81,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         />
         <meta
           name="description"
-          content="Mango Markets - Decentralised, cross-margin trading up to 10x leverage with lightning speed and near-zero fees."
+          content="A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure."
         />
         <link
           rel="apple-touch-icon"
@@ -140,12 +140,16 @@ const PageTitle = () => {
     if (selectedMarket instanceof PerpMarket) {
       return [selectedMarket, selectedMarket.uiPrice]
     } else {
-      const price = group.getFirstBankByTokenIndex(
+      const baseBank = group.getFirstBankByTokenIndex(
         selectedMarket.baseTokenIndex
-      ).uiPrice
+      )
+      const quoteBank = group.getFirstBankByTokenIndex(
+        selectedMarket.quoteTokenIndex
+      )
       const market = group.getSerum3ExternalMarket(
         selectedMarket.serumMarketExternal
       )
+      const price = baseBank.uiPrice / quoteBank.uiPrice
       return [market, price]
     }
   }, [selectedMarket, group])
