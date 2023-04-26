@@ -516,7 +516,7 @@ const AdvancedTradeForm = () => {
                     <Image alt="" width="20" height="20" src={quoteLogoURI} />
                   </div>
                 ) : (
-                  <div className="h-5 w-5 flex-shrink-0">
+                  <div className={INPUT_PREFIX_CLASSNAMES}>
                     <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
                   </div>
                 )}
@@ -581,7 +581,7 @@ const AdvancedTradeForm = () => {
                   <Image alt="" width="20" height="20" src={quoteLogoURI} />
                 </div>
               ) : (
-                <div className="h-5 w-5 flex-shrink-0">
+                <div className={INPUT_PREFIX_CLASSNAMES}>
                   <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
                 </div>
               )}
