@@ -139,9 +139,11 @@ const OraclePrice = () => {
           placement="bottom"
           content={
             <>
-              <div>This price is provided by {oracleProviderName}.</div>
+              <div>
+                {t('trade:price-provided-by')} {oracleProviderName}.
+              </div>
               <div className="mt-2">
-                Last updated{' '}
+                {t('trade:last-updated')}{' '}
                 {dayjs
                   .duration({
                     seconds: -((highestSlot - oracleLastUpdatedSlot) * 0.5),
@@ -151,9 +153,9 @@ const OraclePrice = () => {
               </div>
               {isStale ? (
                 <div className="mt-2 font-black">
-                  This oracle has not updated recently.
+                  {t('trade:oracle-not-updated')}
                   <br />
-                  Actions will fail for accounts with a position in this token.
+                  {t('trade:oracle-not-updated-warning')}
                 </div>
               ) : undefined}
             </>
