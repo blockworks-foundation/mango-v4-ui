@@ -2,6 +2,7 @@
   "mango": "Mango",
   "mango-stats": "Mango統計",
   "market": "市場",
+  "market-info": "Market Info",
   "max": "最多",
   "max-borrow": "最多借貸",
   "more": "更多",
@@ -10,6 +11,7 @@
   "new-account-failed": "開戶出錯",
   "new-account-success": "您的新帳戶準備好了😎",
   "new-version": "新版本出來了",
+  "no": "No",
   "optional": "可選",
   "outstanding-balance": "未結餘額",
   "perp": "合約",
@@ -74,5 +76,6 @@
   "withdraw": "取款",
   "withdraw-amount": "取款額",
   "list-token": "列表代币",
-  "vote": "投票"
+  "vote": "投票",
+  "yes": "Yes"
 }

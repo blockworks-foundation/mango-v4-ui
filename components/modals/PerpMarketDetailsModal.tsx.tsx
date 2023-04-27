@@ -4,6 +4,7 @@ import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
+// import Tooltip from '@components/shared/Tooltip'
 
 const PerpMarketDetailsModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation(['common', 'trade'])
@@ -26,18 +27,18 @@ const PerpMarketDetailsModal = ({ isOpen, onClose }: ModalProps) => {
           <p className="font-mono text-th-fgd-2">{selectedMarket.tickSize}</p>
         </div>
         <div className="flex justify-between">
-          <p>{t('trade:max-leverage')}</p>
+          <p>{t('trade:init-leverage')}</p>
           <p className="font-mono text-th-fgd-2">
-            {(1 / (selectedMarket.maintBaseLiabWeight.toNumber() - 1)).toFixed(
+            {(1 / (selectedMarket.initBaseLiabWeight.toNumber() - 1)).toFixed(
               2
             )}
             x
           </p>
         </div>
         <div className="flex justify-between">
-          <p>{t('trade:init-leverage')}</p>
+          <p>{t('trade:max-leverage')}</p>
           <p className="font-mono text-th-fgd-2">
-            {(1 / (selectedMarket.initBaseLiabWeight.toNumber() - 1)).toFixed(
+            {(1 / (selectedMarket.maintBaseLiabWeight.toNumber() - 1)).toFixed(
               2
             )}
             x
@@ -61,6 +62,14 @@ const PerpMarketDetailsModal = ({ isOpen, onClose }: ModalProps) => {
             {(100 * selectedMarket.maxFunding.toNumber()).toFixed(2)}%
           </p>
         </div>
+        {/* <div className="flex justify-between">
+          <Tooltip content={t('trade:tooltip-insured')}>
+            <p className="tooltip-underline">{t('trade:insured')}</p>
+          </Tooltip>
+          <p className="text-th-fgd-2">
+            {selectedMarket.groupInsuranceFund ? t('yes') : t('no')}
+          </p>
+        </div> */}
       </div>
       <Button className="mt-6 w-full" onClick={onClose}>
         {t('close')}
