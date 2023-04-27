@@ -102,11 +102,12 @@ const OraclePrice = () => {
           oracleWriteSlot,
           accountSlot
         )
-        const maxStalenessSlots = marketOrBank.oracleConfig.maxStalenessSlots.toNumber()
+        const maxStalenessSlots =
+          marketOrBank.oracleConfig.maxStalenessSlots.toNumber()
         setHighestSlot(highestSlot)
         setIsStale(
           maxStalenessSlots > 0 &&
-          highestSlot - lastUpdatedSlot > maxStalenessSlots
+            highestSlot - lastUpdatedSlot > maxStalenessSlots
         )
 
         if (selectedMarket instanceof PerpMarket) {
