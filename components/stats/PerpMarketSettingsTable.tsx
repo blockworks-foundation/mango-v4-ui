@@ -1,4 +1,3 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
@@ -8,39 +7,13 @@ import MarketLogos from '@components/trade/MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 // import Tooltip from '@components/shared/Tooltip'
-import { PerpStatsItem } from 'types'
-import { NextRouter, useRouter } from 'next/router'
 import { Disclosure, Transition } from '@headlessui/react'
-
-export const getOneDayPerpStats = (
-  stats: PerpStatsItem[] | null,
-  marketName: string
-) => {
-  return stats
-    ? stats
-        .filter((s) => s.perp_market === marketName)
-        .filter((f) => {
-          const seconds = 86400
-          const dataTime = new Date(f.date_hour).getTime() / 1000
-          const now = new Date().getTime() / 1000
-          const limit = now - seconds
-          return dataTime >= limit
-        })
-        .reverse()
-    : []
-}
-
-const goToPerpMarketDetails = (market: PerpMarket, router: NextRouter) => {
-  const query = { ...router.query, ['market']: market.name }
-  router.push({ pathname: router.pathname, query })
-}
 
 const PerpMarketSettingsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const router = useRouter()
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -84,11 +57,7 @@ const PerpMarketSettingsTable = () => {
               } = market
 
               return (
-                <TrBody
-                  className="md:hover:cursor-pointer md:hover:bg-th-bkg-2"
-                  key={publicKey.toString()}
-                  onClick={() => goToPerpMarketDetails(market, router)}
-                >
+                <TrBody key={publicKey.toString()}>
                   <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market} />
@@ -167,7 +136,9 @@ const PerpMarketSettingsTable = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <MarketLogos market={market} />
-                          <p className="whitespace-nowrap font-body">{name}</p>
+                          <p className="whitespace-nowrap text-th-fgd-1">
+                            {name}
+                          </p>
                         </div>
                         <ChevronDownIcon
                           className={`${
