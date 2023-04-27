@@ -380,6 +380,7 @@ const ListToken = () => {
     const registerTokenIx = await client!.program.methods
       .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
       .accounts({
+        admin: MANGO_DAO_WALLET,
         group: group!.publicKey,
         mint: new PublicKey(advForm.mintPk),
         oracle: new PublicKey(advForm.oraclePk),
