@@ -1,10 +1,10 @@
 import MangoPerpStatsCharts from './MangoPerpStatsCharts'
-import TotalDepositBorrowCharts from './TotalDepositBorrowCharts'
+import TokenStatsCharts from './TokenStatsCharts'
 
 const MangoStats = () => {
   return (
     <div className="grid grid-cols-2">
-      <TotalDepositBorrowCharts />
+      <TokenStatsCharts />
       <MangoPerpStatsCharts />
     </div>
   )
