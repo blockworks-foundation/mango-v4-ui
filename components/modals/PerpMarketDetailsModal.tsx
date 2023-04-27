@@ -3,7 +3,7 @@ import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
-import Tooltip from '@components/shared/Tooltip'
+// import Tooltip from '@components/shared/Tooltip'
 
 interface PerpMarketDetailsModalProps {
   market: PerpMarket | undefined
@@ -62,7 +62,8 @@ const PerpMarketDetailsModal = ({
             {(100 * market.maxFunding.toNumber()).toFixed(2)}%
           </p>
         </div>
-        <div className="flex justify-between">
+        {/* Uncomment when insurance fund is ready */}
+        {/* <div className="flex justify-between">
           <Tooltip
             content={t('trade:tooltip-insured', { tokenOrMarket: market.name })}
           >
@@ -73,7 +74,7 @@ const PerpMarketDetailsModal = ({
           <p className="text-th-fgd-2">
             {market.groupInsuranceFund ? t('yes') : t('no')}
           </p>
-        </div>
+        </div> */}
       </div>
       <Button className="mt-6 w-full" onClick={onClose}>
         {t('close')}

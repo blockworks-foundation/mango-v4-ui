@@ -4,9 +4,11 @@ import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
-import useMangoGroup from 'hooks/useMangoGroup'
-import { useMemo } from 'react'
-import Tooltip from '@components/shared/Tooltip'
+// import useMangoGroup from 'hooks/useMangoGroup'
+// import { useMemo } from 'react'
+// import Tooltip from '@components/shared/Tooltip'
+
+// Uncomment code when insurance fund is ready
 
 interface SpotMarketDetailsModalProps {
   market: Serum3Market | undefined
@@ -21,21 +23,21 @@ const SpotMarketDetailsModal = ({
 }: ModalCombinedProps) => {
   const { t } = useTranslation(['common', 'trade'])
   const { serumOrPerpMarket } = useSelectedMarket()
-  const { group } = useMangoGroup()
+  // const { group } = useMangoGroup()
 
-  const [baseBank, quoteBank] = useMemo(() => {
-    if (!group || !market) return [undefined, undefined]
-    const base = group.getFirstBankByTokenIndex(market.baseTokenIndex)
-    const quote = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
-    return [base, quote]
-  }, [group, market])
+  // const [baseBank, quoteBank] = useMemo(() => {
+  //   if (!group || !market) return [undefined, undefined]
+  //   const base = group.getFirstBankByTokenIndex(market.baseTokenIndex)
+  //   const quote = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
+  //   return [base, quote]
+  // }, [group, market])
 
-  const [baseMintInfo, quoteMintInfo] = useMemo(() => {
-    if (!baseBank || !quoteBank) return [undefined, undefined]
-    const base = group!.mintInfosMapByMint.get(baseBank.mint.toString())
-    const quote = group!.mintInfosMapByMint.get(quoteBank.mint.toString())
-    return [base, quote]
-  }, [baseBank, quoteBank])
+  // const [baseMintInfo, quoteMintInfo] = useMemo(() => {
+  //   if (!baseBank || !quoteBank) return [undefined, undefined]
+  //   const base = group!.mintInfosMapByMint.get(baseBank.mint.toString())
+  //   const quote = group!.mintInfosMapByMint.get(quoteBank.mint.toString())
+  //   return [base, quote]
+  // }, [baseBank, quoteBank])
 
   return market && serumOrPerpMarket ? (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -59,7 +61,7 @@ const SpotMarketDetailsModal = ({
           <p>{t('trade:max-leverage')}</p>
           <p className="font-mono text-th-fgd-2">5x</p>
         </div>
-        {baseMintInfo ? (
+        {/* {baseMintInfo ? (
           <div className="flex justify-between">
             <Tooltip
               content={t('trade:tooltip-insured', {
@@ -90,7 +92,7 @@ const SpotMarketDetailsModal = ({
               {quoteMintInfo.groupInsuranceFund ? t('yes') : t('no')}
             </p>
           </div>
-        ) : null}
+        ) : null} */}
       </div>
       <Button className="mt-6 w-full" onClick={onClose}>
         {t('close')}
