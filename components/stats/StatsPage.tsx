@@ -7,12 +7,11 @@ import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { breakpoints } from 'utils/theme'
 import MangoStats from './MangoStats'
-import PerpMarketsTable from './PerpMarketsTable'
+import PerpStats from './PerpStats'
 import PerpStatsPage from './PerpStatsPage'
 import SpotMarketsTable from './SpotMarketsTable'
 import TokenStats from './TokenStats'
 
-// const TABS = ['tokens', 'perp', 'spot', 'mango']
 const TABS = ['tokens', 'perp-markets', 'spot-markets', 'mango-stats']
 
 const StatsPage = () => {
@@ -62,7 +61,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
     case 'tokens':
       return <TokenStats />
     case 'perp-markets':
-      return <PerpMarketsTable />
+      return <PerpStats />
     case 'spot-markets':
       return <SpotMarketsTable />
     case 'mango-stats':

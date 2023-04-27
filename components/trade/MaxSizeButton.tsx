@@ -61,33 +61,33 @@ const MaxSizeButton = ({
     const set = mangoStore.getState().set
     set((state) => {
       if (side === 'buy') {
-        state.tradeForm.quoteSize = floorToDecimal(max, tickDecimals).toFixed()
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.baseSize = floorToDecimal(
-            max / oraclePrice,
-            minOrderDecimals
-          ).toFixed()
+          const baseSize = floorToDecimal(max / oraclePrice, minOrderDecimals)
+          const quoteSize = floorToDecimal(max, tickDecimals)
+          state.tradeForm.baseSize = baseSize.toFixed()
+          state.tradeForm.quoteSize = quoteSize.toFixed()
         } else {
-          state.tradeForm.baseSize = floorToDecimal(
+          const baseSize = floorToDecimal(
             max / parseFloat(price),
             minOrderDecimals
-          ).toFixed()
+          )
+          const quoteSize = floorToDecimal(baseSize.mul(price), tickDecimals)
+          state.tradeForm.baseSize = baseSize.toFixed()
+          state.tradeForm.quoteSize = quoteSize.toFixed()
         }
       } else {
-        state.tradeForm.baseSize = floorToDecimal(
-          max,
-          minOrderDecimals
-        ).toFixed()
+        const baseSize = floorToDecimal(max, minOrderDecimals)
         if (tradeType === 'Market' || !price) {
-          state.tradeForm.quoteSize = floorToDecimal(
-            max * oraclePrice,
+          const quoteSize = floorToDecimal(
+            baseSize.mul(oraclePrice),
             tickDecimals
-          ).toFixed()
+          )
+          state.tradeForm.baseSize = baseSize.toFixed()
+          state.tradeForm.quoteSize = quoteSize.toFixed()
         } else {
-          state.tradeForm.quoteSize = floorToDecimal(
-            max * parseFloat(price),
-            tickDecimals
-          ).toFixed()
+          const quoteSize = floorToDecimal(baseSize.mul(price), tickDecimals)
+          state.tradeForm.baseSize = baseSize.toFixed()
+          state.tradeForm.quoteSize = quoteSize.toFixed()
         }
       }
     })
