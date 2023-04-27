@@ -1,14 +1,10 @@
-import { useCookies } from 'hooks/notifications/useCookies'
 import { useNotifications } from 'hooks/notifications/useNotifications'
 import { useMemo, useState } from 'react'
 import NotificationsDrawer from './NotificationsDrawer'
-import { useToaster } from 'hooks/notifications/useToaster'
 import { BellIcon } from '@heroicons/react/20/solid'
 import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
 
 const NotificationsButton = () => {
-  useCookies()
-  useToaster()
   const { data, isFetching } = useNotifications()
   const isAuth = useIsAuthorized()
   const [showDraw, setShowDraw] = useState(false)

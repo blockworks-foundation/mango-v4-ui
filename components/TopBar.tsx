@@ -26,8 +26,12 @@ import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
+import { useCookies } from 'hooks/notifications/useCookies'
+import { useToaster } from 'hooks/notifications/useToaster'
 
 const TopBar = () => {
+  useCookies()
+  useToaster()
   const { t } = useTranslation('common')
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()

@@ -7,11 +7,14 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Notification } from 'apis/notifications/notifications'
 import { tryParse } from 'utils/formatting'
 import { NotificationsWebSocket } from 'apis/notifications/websocket'
+import usePrevious from '@components/shared/usePrevious'
 
 export function useToaster() {
   const isAuth = useIsAuthorized()
   const { publicKey } = useWallet()
   const token = NotificationCookieStore((s) => s.currentToken)
+  const prevToken = usePrevious(token)
+
   const queryClient = useQueryClient()
   const criteria = publicKey?.toBase58() && token
 
@@ -23,7 +26,7 @@ export function useToaster() {
     }
 
     let ws: WebSocket | null = null
-    if (isAuth && publicKey && token) {
+    if (isAuth && publicKey && token !== prevToken) {
       const notificationWs = new NotificationsWebSocket(
         token,
         publicKey.toBase58()

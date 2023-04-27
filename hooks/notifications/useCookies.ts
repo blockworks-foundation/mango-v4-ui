@@ -13,10 +13,15 @@ export function useCookies() {
   const wallet = useWallet()
   const updateCookie = NotificationCookieStore((s) => s.updateCookie)
   const removeCookie = NotificationCookieStore((s) => s.removeCookie)
+  const resetCurrentToken = NotificationCookieStore((s) => s.resetCurrentToken)
   const token = NotificationCookieStore((s) => s.currentToken)
   const { error } = useNotifications()
   const errorResp = error as Error
-
+  useEffect(() => {
+    if (!wallet.connected) {
+      resetCurrentToken()
+    }
+  }, [wallet.connected])
   useEffect(() => {
     updateCookie(wallet.publicKey?.toBase58())
   }, [wallet.publicKey?.toBase58()])
