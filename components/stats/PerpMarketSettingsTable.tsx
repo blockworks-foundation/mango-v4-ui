@@ -55,10 +55,13 @@ const PerpMarketSettingsTable = () => {
               <Th className="text-right">{t('trade:max-leverage')}</Th>
               <Th className="text-right">{t('fees')}</Th>
               <Th className="text-right">{t('trade:funding-limits')}</Th>
+              {/* Uncomment when insurance fund is ready */}
               {/* <Th className="text-right">
-                <Tooltip content={t('trade:tooltip-insured')}>
+                <Tooltip
+                  content={t('trade:tooltip-insured', { tokenOrMarket: '' })}
+                >
                   <span className="tooltip-underline">
-                    {t('trade:insured')}
+                    {t('trade:insured', { token: '' })}
                   </span>
                 </Tooltip>
               </Th> */}
@@ -248,11 +251,13 @@ const PerpMarketSettingsTable = () => {
                           </div>
                           {/* <div className="col-span-1">
                             <Tooltip
-                              content={t('trade:tooltip-insured')}
+                              content={t('trade:tooltip-insured', {
+                                tokenOrMarket: name,
+                              })}
                               placement="top-start"
                             >
                               <p className="tooltip-underline text-xs text-th-fgd-3">
-                                {t('trade:insured')}
+                                {t('trade:insured', { token: '' })}
                               </p>
                             </Tooltip>
                             <p className="font-mono text-th-fgd-1">
