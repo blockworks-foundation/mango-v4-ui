@@ -2,7 +2,7 @@
 import Change from '@components/shared/Change'
 import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
 import SheenLoader from '@components/shared/SheenLoader'
-import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
+import { getOneDayPerpStats } from '@components/stats/PerpMarketsInfoTable'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'

@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
-import SwapHistoryTable from '../swap/SwapHistoryTable'
-import TradeHistory from '@components/trade/TradeHistory'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
-import ActivityFeedTable from './ActivityFeedTable'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
+import PerpMarketsInfoTable from './PerpMarketsInfoTable'
+import PerpMarketSettingsTable from './PerpMarketSettingsTable'
 
-const TABS = ['activity:activity-feed', 'activity:swaps', 'activity:trades']
+export const TABS = ['overview', 'details']
 
-const HistoryTabs = () => {
-  const [activeTab, setActiveTab] = useState('activity:activity-feed')
+const PerpStats = () => {
+  const [activeTab, setActiveTab] = useState(TABS[0])
   const actions = mangoStore((s) => s.actions)
   const { mangoAccountAddress } = useMangoAccount()
 
@@ -33,15 +32,13 @@ const HistoryTabs = () => {
 
 const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
-    case 'activity:activity-feed':
-      return <ActivityFeedTable />
-    case 'activity:swaps':
-      return <SwapHistoryTable />
-    case 'activity:trades':
-      return <TradeHistory />
+    case TABS[0]:
+      return <PerpMarketsInfoTable />
+    case TABS[1]:
+      return <PerpMarketSettingsTable />
     default:
-      return <ActivityFeedTable />
+      return <PerpMarketsInfoTable />
   }
 }
 
-export default HistoryTabs
+export default PerpStats
