@@ -5,6 +5,8 @@ export class NotificationsWebSocket {
   token: string
   publicKey: string
   pingInterval: NodeJS.Timer | null
+  retryCount = 0
+  maxRetries = 2
 
   constructor(token: string, publicKey: string) {
     this.token = token
@@ -29,9 +31,21 @@ export class NotificationsWebSocket {
       this.pingInterval = interval
     })
 
-    this.ws.addEventListener('close', () => {
+    this.ws.addEventListener('close', (event: CloseEvent) => {
       console.log('Notifications WebSocket closed')
       this.handleClearSocketInterval()
+      //1000 close form clinet
+      //1008 unauthorized
+      if (
+        event.code !== 1000 &&
+        event.code !== 1008 &&
+        this.retryCount < this.maxRetries
+      ) {
+        this.retryCount++
+        setTimeout(() => {
+          this.connect()
+        }, 5000)
+      }
     })
 
     this.ws.addEventListener('error', (event) => {

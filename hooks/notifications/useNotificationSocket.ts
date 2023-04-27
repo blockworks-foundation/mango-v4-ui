@@ -8,7 +8,7 @@ import { Notification } from 'apis/notifications/notifications'
 import { tryParse } from 'utils/formatting'
 import { NotificationsWebSocket } from 'apis/notifications/websocket'
 
-export function useToaster() {
+export function useNotificationSocket() {
   const isAuth = useIsAuthorized()
   const { publicKey } = useWallet()
   const token = NotificationCookieStore((s) => s.currentToken)
