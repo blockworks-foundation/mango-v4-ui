@@ -7,7 +7,7 @@ import ContentBox from '../shared/ContentBox'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-// import Tooltip from '@components/shared/Tooltip'
+import Tooltip from '@components/shared/Tooltip'
 import { PerpStatsItem } from 'types'
 import { NextRouter, useRouter } from 'next/router'
 import { Disclosure, Transition } from '@headlessui/react'
@@ -55,13 +55,15 @@ const PerpMarketSettingsTable = () => {
               <Th className="text-right">{t('trade:max-leverage')}</Th>
               <Th className="text-right">{t('fees')}</Th>
               <Th className="text-right">{t('trade:funding-limits')}</Th>
-              {/* <Th className="text-right">
-                <Tooltip content={t('trade:tooltip-insured')}>
+              <Th className="text-right">
+                <Tooltip
+                  content={t('trade:tooltip-insured', { tokenOrMarket: '' })}
+                >
                   <span className="tooltip-underline">
-                    {t('trade:insured')}
+                    {t('trade:insured', { token: '' })}
                   </span>
                 </Tooltip>
-              </Th> */}
+              </Th>
             </TrHead>
           </thead>
           <tbody>
@@ -74,7 +76,7 @@ const PerpMarketSettingsTable = () => {
                 maintBaseLiabWeight,
                 makerFee,
                 takerFee,
-                // groupInsuranceFund,
+                groupInsuranceFund,
                 minFunding,
                 maxFunding,
                 publicKey,
@@ -128,11 +130,11 @@ const PerpMarketSettingsTable = () => {
                       {(100 * maxFunding.toNumber()).toFixed(2)}%
                     </p>
                   </Td>
-                  {/* <Td>
+                  <Td>
                     <p className="text-right">
                       {groupInsuranceFund ? t('yes') : t('no')}
                     </p>
-                  </Td> */}
+                  </Td>
                 </TrBody>
               )
             })}
@@ -149,7 +151,7 @@ const PerpMarketSettingsTable = () => {
               maintBaseLiabWeight,
               makerFee,
               takerFee,
-              // groupInsuranceFund,
+              groupInsuranceFund,
               minFunding,
               maxFunding,
               publicKey,
@@ -246,19 +248,21 @@ const PerpMarketSettingsTable = () => {
                               {(100 * maxFunding.toNumber()).toFixed(2)}%
                             </p>
                           </div>
-                          {/* <div className="col-span-1">
+                          <div className="col-span-1">
                             <Tooltip
-                              content={t('trade:tooltip-insured')}
+                              content={t('trade:tooltip-insured', {
+                                tokenOrMarket: name,
+                              })}
                               placement="top-start"
                             >
                               <p className="tooltip-underline text-xs text-th-fgd-3">
-                                {t('trade:insured')}
+                                {t('trade:insured', { token: '' })}
                               </p>
                             </Tooltip>
                             <p className="font-mono text-th-fgd-1">
                               {groupInsuranceFund ? t('yes') : t('no')}
                             </p>
-                          </div> */}
+                          </div>
                         </div>
                       </Disclosure.Panel>
                     </Transition>
