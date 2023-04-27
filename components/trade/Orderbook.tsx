@@ -29,6 +29,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
+import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -218,6 +219,7 @@ const Orderbook = () => {
   const [tickSize, setTickSize] = useState(0)
   const [showBids, setShowBids] = useState(true)
   const [showAsks, setShowAsks] = useState(true)
+  const [useOrderbookFeed, setUseOrderbookFeed] = useState(true)
 
   const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)
@@ -382,88 +384,201 @@ const Orderbook = () => {
     const market = getMarket()
     if (!group || !market) return
 
-    let bidSubscriptionId: number | undefined = undefined
-    let askSubscriptionId: number | undefined = undefined
-    const bidsPk = new PublicKey(bidAccountAddress)
-    if (bidsPk) {
-      connection
-        .getAccountInfoAndContext(bidsPk)
-        .then(({ context, value: info }) => {
-          if (!info) return
-          const decodedBook = decodeBook(client, market, info, 'bids')
-          set((state) => {
-            state.selectedMarket.lastSeenSlot.bids = context.slot
-            state.selectedMarket.bidsAccount = decodedBook
-            state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
-          })
+    if (useOrderbookFeed) {
+      let hasConnected = false
+      const orderbookFeed = new OrderbookFeed(
+        `wss://api.mngo.cloud/orderbook/v1/`,
+        {
+          reconnectionIntervalMs: 5_000,
+          reconnectionMaxAttempts: 6,
+        }
+      )
+      orderbookFeed.onConnect(() => {
+        console.log('[OrderbookFeed] connected')
+        hasConnected = true
+        orderbookFeed.subscribe({
+          marketId: market.publicKey.toBase58(),
         })
-      bidSubscriptionId = connection.onAccountChange(
-        bidsPk,
-        (info, context) => {
-          const lastSeenSlot =
-            mangoStore.getState().selectedMarket.lastSeenSlot.bids
-          if (context.slot > lastSeenSlot) {
-            const market = getMarket()
-            if (!market) return
-            const decodedBook = decodeBook(client, market, info, 'bids')
-            if (decodedBook instanceof BookSide) {
-              updatePerpMarketOnGroup(decodedBook, 'bids')
+      })
+
+      orderbookFeed.onDisconnect((reconnectionAttemptsExhausted) => {
+        // fallback to rpc if we couldn't reconnect or if we never connected
+        if (reconnectionAttemptsExhausted || !hasConnected) {
+          console.warn('[OrderbookFeed] disconnected')
+          setUseOrderbookFeed(false)
+        } else {
+          console.log('[OrderbookFeed] reconnecting...')
+        }
+      })
+
+      let lastWriteVersion = 0
+      orderbookFeed.onL2Update((update) => {
+        const selectedMarket = mangoStore.getState().selectedMarket
+        if (!selectedMarket) return
+
+        // ensure updates are applied in the correct order by checking slot and writeVersion
+        const lastSeenSlot =
+          update.side == 'bid'
+            ? mangoStore.getState().selectedMarket.lastSeenSlot.bids
+            : mangoStore.getState().selectedMarket.lastSeenSlot.asks
+        if (update.slot < lastSeenSlot) return
+        if (
+          update.slot == lastSeenSlot &&
+          update.writeVersion < lastWriteVersion
+        )
+          return
+        lastWriteVersion = update.writeVersion
+
+        const bookside =
+          update.side == 'bid'
+            ? selectedMarket.orderbook.bids
+            : selectedMarket.orderbook.asks
+        const new_bookside = Array.from(bookside)
+
+        for (const diff of update.update) {
+          // find existing level for each update
+          const levelIndex = new_bookside.findIndex(
+            (level) => level && level.length && level[0] === diff[0]
+          )
+          if (diff[1] > 0) {
+            // level being added or updated
+            if (levelIndex !== -1) {
+              new_bookside[levelIndex] = diff
+            } else {
+              // add new level and resort
+              new_bookside.push(diff)
+              new_bookside.sort((a, b) => {
+                return update.side == 'bid' ? b[0] - a[0] : a[0] - b[0]
+              })
             }
+          } else {
+            // level being removed if zero size
+            if (levelIndex !== -1) {
+              new_bookside.splice(levelIndex, 1)
+            } else {
+              console.warn('tried to remove missing level')
+            }
+          }
+        }
+        set((state) => {
+          if (update.side == 'bid') {
+            state.selectedMarket.bidsAccount = undefined
+            state.selectedMarket.orderbook.bids = new_bookside
+            state.selectedMarket.lastSeenSlot.bids = update.slot
+          } else {
+            state.selectedMarket.asksAccount = undefined
+            state.selectedMarket.orderbook.asks = new_bookside
+            state.selectedMarket.lastSeenSlot.asks = update.slot
+          }
+        })
+      })
+
+      orderbookFeed.onL2Checkpoint((checkpoint) => {
+        if (checkpoint.market !== market.publicKey.toBase58()) return
+        set((state) => {
+          state.selectedMarket.lastSeenSlot.bids = checkpoint.slot
+          state.selectedMarket.lastSeenSlot.asks = checkpoint.slot
+          state.selectedMarket.bidsAccount = undefined
+          state.selectedMarket.asksAccount = undefined
+          state.selectedMarket.orderbook.bids = checkpoint.bids
+          state.selectedMarket.orderbook.asks = checkpoint.asks
+        })
+      })
+      orderbookFeed.onStatus((update) => {
+        console.log('[OrderbookFeed] status', update)
+      })
+
+      return () => {
+        console.log('[OrderbookFeed] unsubscribe')
+        orderbookFeed.unsubscribe(market.publicKey.toBase58())
+      }
+    } else {
+      console.log('using rpc orderbook feed')
+
+      let bidSubscriptionId: number | undefined = undefined
+      let askSubscriptionId: number | undefined = undefined
+      const bidsPk = new PublicKey(bidAccountAddress)
+      if (bidsPk) {
+        connection
+          .getAccountInfoAndContext(bidsPk)
+          .then(({ context, value: info }) => {
+            if (!info) return
+            const decodedBook = decodeBook(client, market, info, 'bids')
             set((state) => {
+              state.selectedMarket.lastSeenSlot.bids = context.slot
               state.selectedMarket.bidsAccount = decodedBook
               state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
-              state.selectedMarket.lastSeenSlot.bids = context.slot
             })
-          }
-        },
-        'processed'
-      )
-    }
-
-    const asksPk = new PublicKey(askAccountAddress)
-    if (asksPk) {
-      connection
-        .getAccountInfoAndContext(asksPk)
-        .then(({ context, value: info }) => {
-          if (!info) return
-          const decodedBook = decodeBook(client, market, info, 'asks')
-          set((state) => {
-            state.selectedMarket.asksAccount = decodedBook
-            state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
-            state.selectedMarket.lastSeenSlot.asks = context.slot
           })
-        })
-      askSubscriptionId = connection.onAccountChange(
-        asksPk,
-        (info, context) => {
-          const lastSeenSlot =
-            mangoStore.getState().selectedMarket.lastSeenSlot.asks
-          if (context.slot > lastSeenSlot) {
-            const market = getMarket()
-            if (!market) return
-            const decodedBook = decodeBook(client, market, info, 'asks')
-            if (decodedBook instanceof BookSide) {
-              updatePerpMarketOnGroup(decodedBook, 'asks')
+        bidSubscriptionId = connection.onAccountChange(
+          bidsPk,
+          (info, context) => {
+            const lastSeenSlot =
+              mangoStore.getState().selectedMarket.lastSeenSlot.bids
+            if (context.slot > lastSeenSlot) {
+              const market = getMarket()
+              if (!market) return
+              const decodedBook = decodeBook(client, market, info, 'bids')
+              if (decodedBook instanceof BookSide) {
+                updatePerpMarketOnGroup(decodedBook, 'bids')
+              }
+              set((state) => {
+                state.selectedMarket.bidsAccount = decodedBook
+                state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+                state.selectedMarket.lastSeenSlot.bids = context.slot
+              })
             }
+          },
+          'processed'
+        )
+      }
+
+      const asksPk = new PublicKey(askAccountAddress)
+      if (asksPk) {
+        connection
+          .getAccountInfoAndContext(asksPk)
+          .then(({ context, value: info }) => {
+            if (!info) return
+            const decodedBook = decodeBook(client, market, info, 'asks')
             set((state) => {
               state.selectedMarket.asksAccount = decodedBook
               state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
               state.selectedMarket.lastSeenSlot.asks = context.slot
             })
-          }
-        },
-        'processed'
-      )
-    }
-    return () => {
-      if (typeof bidSubscriptionId !== 'undefined') {
-        connection.removeAccountChangeListener(bidSubscriptionId)
+          })
+        askSubscriptionId = connection.onAccountChange(
+          asksPk,
+          (info, context) => {
+            const lastSeenSlot =
+              mangoStore.getState().selectedMarket.lastSeenSlot.asks
+            if (context.slot > lastSeenSlot) {
+              const market = getMarket()
+              if (!market) return
+              const decodedBook = decodeBook(client, market, info, 'asks')
+              if (decodedBook instanceof BookSide) {
+                updatePerpMarketOnGroup(decodedBook, 'asks')
+              }
+              set((state) => {
+                state.selectedMarket.asksAccount = decodedBook
+                state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+                state.selectedMarket.lastSeenSlot.asks = context.slot
+              })
+            }
+          },
+          'processed'
+        )
       }
-      if (typeof askSubscriptionId !== 'undefined') {
-        connection.removeAccountChangeListener(askSubscriptionId)
+      return () => {
+        console.log('rpc orderbook unsubscribe')
+        if (typeof bidSubscriptionId !== 'undefined') {
+          connection.removeAccountChangeListener(bidSubscriptionId)
+        }
+        if (typeof askSubscriptionId !== 'undefined') {
+          connection.removeAccountChangeListener(askSubscriptionId)
+        }
       }
     }
-  }, [bidAccountAddress, askAccountAddress, connection])
+  }, [bidAccountAddress, askAccountAddress, connection, useOrderbookFeed])
 
   useEffect(() => {
     window.addEventListener('resize', verticallyCenterOrderbook)
@@ -698,7 +813,7 @@ const OrderbookRow = ({
   const formattedSize = useMemo(() => {
     return minOrderSize && !isNaN(size)
       ? floorToDecimal(size, getDecimalCount(minOrderSize))
-      : new Decimal(size)
+      : new Decimal(size ?? -1)
   }, [size, minOrderSize])
 
   const formattedPrice = useMemo(() => {

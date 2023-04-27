@@ -14,10 +14,10 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
-"@blockworks-foundation/mango-feeds@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-feeds/-/mango-feeds-0.1.5.tgz#c31132e4d71265e0cee4bd06acebd891001a0d5e"
-  integrity sha512-ZAiKoXk4ULy6/GBB8AIoI6sIAtgdqLNo1JzsweSaiYfhOFOMs4/BG0WGAk+hoRYjpzJMikzqR3Jw4Wn+stmVyw==
+"@blockworks-foundation/mango-feeds@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-feeds/-/mango-feeds-0.1.6.tgz#ae82a0f1cb131633b7edd76e2397cfd486cd21c0"
+  integrity sha512-vsulzORXp8Qyd74ogm809UxxiiL2Gr9UmcxHMeYpd8tohVHLcFF6+SGKmX/9ImSElBrw+zEKIzY5O50w/QM7mQ==
   dependencies:
     ws "^8.13.0"
 
@@ -8565,6 +8565,11 @@ webidl-conversions@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-3.0.1.tgz#24534275e2a7bc6be7bc86611cc16ae0a5654871"
   integrity sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==
+
+webpack-node-externals@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/webpack-node-externals/-/webpack-node-externals-3.0.0.tgz#1a3407c158d547a9feb4229a9e3385b7b60c9917"
+  integrity sha512-LnL6Z3GGDPht/AigwRh2dvL9PQPFQ8skEpVrWZXLWBYmqcaojHNN0onvHzie6rq7EWKrrBfPYqNEzTJgiwEQDQ==
 
 webrtc-adapter@^7.2.1:
   version "7.7.1"
