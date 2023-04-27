@@ -159,27 +159,35 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
     useBirdeyeMarketPrices()
   const { group } = useMangoGroup()
   const { theme } = useTheme()
-  const bank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
+  const baseBank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
+  const quoteBank = group?.getFirstBankByTokenIndex(market.quoteTokenIndex)
+  const serumMarket = group?.getSerum3ExternalMarket(market.serumMarketExternal)
+
+  const price = useMemo(() => {
+    if (!baseBank || !quoteBank || !serumMarket) return 0
+    return floorToDecimal(
+      baseBank.uiPrice / quoteBank.uiPrice,
+      getDecimalCount(serumMarket.tickSize)
+    ).toNumber()
+  }, [baseBank, quoteBank, serumMarket])
 
   const birdeyeData = useMemo(() => {
-    if (!loadingPrices && bank) {
+    if (!loadingPrices) {
       return birdeyePrices.find(
         (m) => m.mint === market.serumMarketExternal.toString()
       )
     }
     return null
-  }, [loadingPrices, bank])
+  }, [loadingPrices])
 
   const change = useMemo(() => {
-    if (birdeyeData && bank) {
+    if (birdeyeData && price) {
       return (
-        ((bank.uiPrice - birdeyeData.data[0].value) /
-          birdeyeData.data[0].value) *
-        100
+        ((price - birdeyeData.data[0].value) / birdeyeData.data[0].value) * 100
       )
     }
     return 0
-  }, [birdeyeData, bank])
+  }, [birdeyeData, price])
 
   const chartData = useMemo(() => {
     if (birdeyeData) {
@@ -197,13 +205,9 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
             <p className="text-th-fgd-1">{market.name}</p>
             <div className="flex items-center space-x-3">
               <p className="font-mono">
-                {bank?.uiPrice ? (
-                  <FormatNumericValue value={bank.uiPrice} isUsd />
-                ) : (
-                  '-'
-                )}
+                {price ? <FormatNumericValue value={price} isUsd /> : '-'}
               </p>
-              <Change change={change} suffix="%" />
+              {change ? <Change change={change} suffix="%" /> : '–'}
             </div>
           </div>
         </div>
@@ -213,7 +217,7 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
               <SimpleAreaChart
                 color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
                 data={chartData}
-                name={bank!.name}
+                name={baseBank!.name}
                 xKey="unixTime"
                 yKey="value"
               />

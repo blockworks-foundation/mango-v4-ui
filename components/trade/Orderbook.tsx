@@ -31,6 +31,13 @@ import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
 
+const sizeCompacter = Intl.NumberFormat('en', {
+  maximumFractionDigits: 6,
+  notation: 'compact',
+})
+
+const SHOW_EXPONENTIAL_THRESHOLD = 0.00001
+
 const getMarket = () => {
   const group = mangoStore.getState().group
   const selectedMarket = mangoStore.getState().selectedMarket.current
@@ -724,10 +731,12 @@ const Orderbook = () => {
             </div>
             <div className="col-span-1 text-right font-mono">
               {orderbookData?.spread
-                ? formatNumericValue(
-                    orderbookData.spread,
-                    market ? getDecimalCount(market.tickSize) : undefined
-                  )
+                ? orderbookData.spread < SHOW_EXPONENTIAL_THRESHOLD
+                  ? orderbookData.spread.toExponential()
+                  : formatNumericValue(
+                      orderbookData.spread,
+                      market ? getDecimalCount(market.tickSize) : undefined
+                    )
                 : null}
             </div>
           </div>
@@ -868,9 +877,10 @@ const OrderbookRow = ({
               className={`z-10 w-full text-right font-mono text-xs ${
                 hasOpenOrder ? 'text-th-active' : ''
               }`}
-              // onClick={handleSizeClick}
             >
-              {formattedSize.toFixed(minOrderSizeDecimals)}
+              {size >= 1000000
+                ? sizeCompacter.format(size)
+                : formattedSize.toFixed(minOrderSizeDecimals)}
             </div>
           </div>
           <div
@@ -878,7 +888,9 @@ const OrderbookRow = ({
             onClick={handlePriceClick}
           >
             <div className="w-full text-right font-mono text-xs">
-              {formattedPrice.toFixed(groupingDecimalCount)}
+              {price < SHOW_EXPONENTIAL_THRESHOLD
+                ? formattedPrice.toExponential()
+                : formattedPrice.toFixed(groupingDecimalCount)}
             </div>
           </div>
         </div>

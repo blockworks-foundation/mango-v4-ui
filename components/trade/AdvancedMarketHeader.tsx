@@ -1,7 +1,7 @@
 import { Bank, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
-import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
+import { getOneDayPerpStats } from '@components/stats/PerpMarketsInfoTable'
 import { ChartBarIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -19,8 +19,9 @@ import { BorshAccountsCoder } from '@coral-xyz/anchor'
 import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 import SheenLoader from '@components/shared/SheenLoader'
 import usePrevious from '@components/shared/usePrevious'
-import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal.tsx'
+import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal'
 import useMangoGroup from 'hooks/useMangoGroup'
+import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
 
 const AdvancedMarketHeader = ({
   showChart,
@@ -218,17 +219,15 @@ const AdvancedMarketHeader = ({
             ) : null}
           </div>
           <div className="ml-6 flex items-center space-x-4">
-            {selectedMarket instanceof PerpMarket ? (
-              <LinkButton
-                className="flex items-center whitespace-nowrap text-th-fgd-3"
-                onClick={() => setShowMarketDetails(true)}
-              >
-                <InformationCircleIcon className="h-5 w-5 flex-shrink-0 md:mr-1.5 md:h-4 md:w-4" />
-                <span className="hidden text-xs md:inline">
-                  {t('trade:market-details', { market: '' })}
-                </span>
-              </LinkButton>
-            ) : null}
+            <LinkButton
+              className="flex items-center whitespace-nowrap text-th-fgd-3"
+              onClick={() => setShowMarketDetails(true)}
+            >
+              <InformationCircleIcon className="h-5 w-5 flex-shrink-0 md:mr-1.5 md:h-4 md:w-4" />
+              <span className="hidden text-xs md:inline">
+                {t('trade:market-details', { market: '' })}
+              </span>
+            </LinkButton>
             {setShowChart ? (
               <IconButton
                 className={showChart ? 'text-th-active' : 'text-th-fgd-2'}
@@ -242,10 +241,19 @@ const AdvancedMarketHeader = ({
         </div>
       </div>
       {showMarketDetails ? (
-        <PerpMarketDetailsModal
-          isOpen={showMarketDetails}
-          onClose={() => setShowMarketDetails(false)}
-        />
+        selectedMarket instanceof PerpMarket ? (
+          <PerpMarketDetailsModal
+            isOpen={showMarketDetails}
+            onClose={() => setShowMarketDetails(false)}
+            market={selectedMarket}
+          />
+        ) : (
+          <SpotMarketDetailsModal
+            isOpen={showMarketDetails}
+            onClose={() => setShowMarketDetails(false)}
+            market={selectedMarket}
+          />
+        )
       ) : null}
     </>
   )
