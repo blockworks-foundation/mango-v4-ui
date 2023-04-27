@@ -19,7 +19,7 @@ import { BorshAccountsCoder } from '@coral-xyz/anchor'
 import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 import SheenLoader from '@components/shared/SheenLoader'
 import usePrevious from '@components/shared/usePrevious'
-import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal.tsx'
+import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal'
 import useMangoGroup from 'hooks/useMangoGroup'
 
 const AdvancedMarketHeader = ({
