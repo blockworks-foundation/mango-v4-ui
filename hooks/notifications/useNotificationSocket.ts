@@ -68,5 +68,5 @@ export function useNotificationSocket() {
         socket?.close(1000, 'hook')
       }
     }
-  }, [isAuth, publicKey?.toBase58(), token])
+  }, [isAuth, token])
 }
