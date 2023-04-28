@@ -104,7 +104,13 @@ const TradeSummary = ({
   }, [balanceBank, mangoAccount, tradeForm])
 
   const orderValue = useMemo(() => {
-    if (!quoteBank || !tradeForm.price || !tradeForm.baseSize) return 0
+    if (
+      !quoteBank ||
+      !tradeForm.price ||
+      !Number.isNaN(tradeForm.price) ||
+      !Number.isNaN(tradeForm.baseSize)
+    )
+      return 0
     const basePriceDecimal = new Decimal(tradeForm.price)
     const quotePriceDecimal = new Decimal(quoteBank.uiPrice)
     const sizeDecimal = new Decimal(tradeForm.baseSize)
