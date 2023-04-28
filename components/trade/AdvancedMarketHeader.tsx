@@ -34,7 +34,7 @@ const AdvancedMarketHeader = ({
     selectedMarket,
   } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
-  const [price] = useState(stalePrice)
+  const [changePrice, setChangePrice] = useState(stalePrice)
   const { data: birdeyePrices, isLoading: loadingPrices } =
     useBirdeyeMarketPrices()
   const previousMarketName = usePrevious(selectedMarketName)
@@ -62,7 +62,7 @@ const AdvancedMarketHeader = ({
 
   const change = useMemo(() => {
     if (
-      !price ||
+      !changePrice ||
       !serumOrPerpMarket ||
       selectedMarketName !== previousMarketName
     )
@@ -70,17 +70,19 @@ const AdvancedMarketHeader = ({
     if (serumOrPerpMarket instanceof PerpMarket) {
       const changeData = getOneDayPerpStats(perpStats, selectedMarketName)
       return changeData.length
-        ? ((price - changeData[0].price) / changeData[0].price) * 100
+        ? ((changePrice - changeData[0].price) / changeData[0].price) * 100
         : 0
     } else {
       if (!birdeyeData) return 0
       return (
-        ((price - birdeyeData.data[0].value) / birdeyeData.data[0].value) * 100
+        ((changePrice - birdeyeData.data[0].value) /
+          birdeyeData.data[0].value) *
+        100
       )
     }
   }, [
     birdeyeData,
-    price,
+    changePrice,
     serumOrPerpMarket,
     perpStats,
     previousMarketName,
@@ -96,7 +98,7 @@ const AdvancedMarketHeader = ({
         <div className="hide-scroll flex w-full items-center justify-between overflow-x-auto border-t border-th-bkg-3 py-2 px-5 md:border-t-0 md:py-0 md:px-0 md:pr-6">
           <div className="flex items-center">
             <>
-              <OraclePrice />
+              <OraclePrice setChangePrice={setChangePrice} />
             </>
             <div className="ml-6 flex-col whitespace-nowrap">
               <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>

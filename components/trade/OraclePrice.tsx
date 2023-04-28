@@ -22,7 +22,11 @@ import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
-const OraclePrice = () => {
+const OraclePrice = ({
+  setChangePrice,
+}: {
+  setChangePrice: (price: number) => void
+}) => {
   const {
     serumOrPerpMarket,
     price: stalePrice,
@@ -112,6 +116,7 @@ const OraclePrice = () => {
 
         if (selectedMarket instanceof PerpMarket) {
           setPrice(uiPrice)
+          setChangePrice(uiPrice)
         } else {
           let price
           if (quoteBank && serumOrPerpMarket) {
@@ -123,6 +128,7 @@ const OraclePrice = () => {
             price = 0
           }
           setPrice(price)
+          setChangePrice(price)
         }
       },
       'processed'
