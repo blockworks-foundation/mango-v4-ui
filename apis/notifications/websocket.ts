@@ -54,7 +54,6 @@ export class NotificationsWebSocket {
     return this
   }
   handleClearSocketInterval() {
-    console.log('clear interval')
     if (this.pingInterval) {
       clearInterval(this.pingInterval)
       this.pingInterval = null

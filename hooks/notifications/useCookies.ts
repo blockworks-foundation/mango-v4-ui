@@ -17,14 +17,16 @@ export function useCookies() {
   const token = NotificationCookieStore((s) => s.currentToken)
   const { error } = useNotifications()
   const errorResp = error as Error
-  useEffect(() => {
-    if (!wallet.connected) {
-      resetCurrentToken()
-    }
-  }, [wallet.connected])
+
   useEffect(() => {
     updateCookie(wallet.publicKey?.toBase58())
   }, [wallet.publicKey?.toBase58()])
+
+  useEffect(() => {
+    return () => {
+      resetCurrentToken()
+    }
+  }, [])
 
   useEffect(() => {
     if (errorResp?.status === 401 && wallet.publicKey && token) {
