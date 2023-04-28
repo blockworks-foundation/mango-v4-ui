@@ -1,5 +1,6 @@
 import AnimationSettings from './AnimationSettings'
 import DisplaySettings from './DisplaySettings'
+import NotificationSettings from './NotificationSettings'
 import PreferredExplorerSettings from './PreferredExplorerSettings'
 import RpcSettings from './RpcSettings'
 import SoundSettings from './SoundSettings'
@@ -18,6 +19,9 @@ const SettingsPage = () => {
       </div>
       <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-10 lg:col-start-2 xl:col-span-8 xl:col-start-3">
         <SoundSettings />
+      </div>
+      <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-10 lg:col-start-2 xl:col-span-8 xl:col-start-3">
+        <NotificationSettings />
       </div>
       <div className="col-span-12 pt-8 lg:col-span-10 lg:col-start-2 xl:col-span-8 xl:col-start-3">
         <PreferredExplorerSettings />

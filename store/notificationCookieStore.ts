@@ -8,6 +8,7 @@ type ICookieStore = {
   updateCookie: (wallet?: string) => void
   removeCookie: (wallet: string) => void
   setCookie: (wallet: string, token: string) => void
+  resetCurrentToken: () => void
 }
 
 const CookieStore = create<ICookieStore>((set, get) => ({
@@ -34,6 +35,12 @@ const CookieStore = create<ICookieStore>((set, get) => ({
     setWalletToken(wallet, token)
     set((state) => {
       state.currentToken = token
+    })
+  },
+  resetCurrentToken: async () => {
+    const set = get().set
+    set((state) => {
+      state.currentToken = ''
     })
   },
 }))

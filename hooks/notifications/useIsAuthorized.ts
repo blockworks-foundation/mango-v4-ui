@@ -3,13 +3,17 @@ import { useNotifications } from './useNotifications'
 import NotificationCookieStore from '@store/notificationCookieStore'
 
 export function useIsAuthorized() {
-  const wallet = useWallet()
+  const { publicKey, connected } = useWallet()
   const { error, isFetched, isLoading } = useNotifications()
-  const walletPubKey = wallet.publicKey?.toBase58()
   const token = NotificationCookieStore((s) => s.currentToken)
 
   const isAuthorized =
-    walletPubKey && token && !error && isFetched && !isLoading
+    publicKey?.toBase58() &&
+    token &&
+    !error &&
+    isFetched &&
+    !isLoading &&
+    connected
 
   return isAuthorized
 }

@@ -19,5 +19,5 @@ export const fetchNotifications = async (wallet: string, token: string) => {
   if (body.error) {
     throw { error: body.error, status: data.status }
   }
-  return body as Notification[]
+  return (body as Notification[]).sort((a, b) => b.id - a.id)
 }

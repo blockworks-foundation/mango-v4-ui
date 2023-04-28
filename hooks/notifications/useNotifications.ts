@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchNotifications } from 'apis/notifications'
+import { fetchNotifications } from 'apis/notifications/notifications'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 
@@ -7,10 +7,10 @@ import { useWallet } from '@solana/wallet-adapter-react'
 const refetchMs = 600000
 
 export function useNotifications() {
-  const wallet = useWallet()
-  const walletPubKey = wallet.publicKey?.toBase58()
+  const { publicKey } = useWallet()
+  const walletPubKey = publicKey?.toBase58()
   const token = NotificationCookieStore((s) => s.currentToken)
-  const criteria = `${walletPubKey}${token}`
+  const criteria = walletPubKey && token
 
   return useQuery(
     ['notifications', criteria],
