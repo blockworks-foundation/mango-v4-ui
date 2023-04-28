@@ -64,12 +64,10 @@ function getInstantaneousFundingRateL2(
     orderbook.bids,
     market.baseLotsToUi(market.impactQuantity)
   )
-  console.log(bid)
   const ask = getImpactPriceL2(
     orderbook.asks,
     market.baseLotsToUi(market.impactQuantity)
   )
-  console.log(ask)
   const indexPrice = market._uiPrice
 
   let funding
