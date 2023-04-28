@@ -10,7 +10,7 @@ type Error = {
 }
 
 export function useCookies() {
-  const { publicKey, disconnecting } = useWallet()
+  const { publicKey } = useWallet()
   const updateCookie = NotificationCookieStore((s) => s.updateCookie)
   const removeCookie = NotificationCookieStore((s) => s.removeCookie)
   const resetCurrentToken = NotificationCookieStore((s) => s.resetCurrentToken)
@@ -19,17 +19,15 @@ export function useCookies() {
   const errorResp = error as Error
 
   useEffect(() => {
-    updateCookie(publicKey?.toBase58())
-  }, [publicKey?.toBase58()])
-
-  useEffect(() => {
-    if (disconnecting) {
+    if (publicKey) {
+      updateCookie(publicKey?.toBase58())
+    } else {
       resetCurrentToken()
     }
     return () => {
       resetCurrentToken()
     }
-  }, [disconnecting])
+  }, [publicKey?.toBase58()])
 
   useEffect(() => {
     if (errorResp?.status === 401 && publicKey && token) {
