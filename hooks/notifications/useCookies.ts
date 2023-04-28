@@ -10,7 +10,7 @@ type Error = {
 }
 
 export function useCookies() {
-  const wallet = useWallet()
+  const { publicKey, disconnecting } = useWallet()
   const updateCookie = NotificationCookieStore((s) => s.updateCookie)
   const removeCookie = NotificationCookieStore((s) => s.removeCookie)
   const resetCurrentToken = NotificationCookieStore((s) => s.resetCurrentToken)
@@ -19,22 +19,25 @@ export function useCookies() {
   const errorResp = error as Error
 
   useEffect(() => {
-    updateCookie(wallet.publicKey?.toBase58())
-  }, [wallet.publicKey?.toBase58()])
+    updateCookie(publicKey?.toBase58())
+  }, [publicKey?.toBase58()])
 
   useEffect(() => {
+    if (disconnecting) {
+      resetCurrentToken()
+    }
     return () => {
       resetCurrentToken()
     }
-  }, [])
+  }, [disconnecting])
 
   useEffect(() => {
-    if (errorResp?.status === 401 && wallet.publicKey && token) {
-      removeCookie(wallet.publicKey?.toBase58())
+    if (errorResp?.status === 401 && publicKey && token) {
+      removeCookie(publicKey?.toBase58())
       notify({
         title: errorResp.error,
         type: 'error',
       })
     }
-  }, [errorResp, wallet.publicKey?.toBase58()])
+  }, [errorResp, publicKey?.toBase58()])
 }
