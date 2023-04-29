@@ -1,4 +1,3 @@
-import ActivityFilters from '@components/account/ActivityFilters'
 import { useTranslation } from 'next-i18next'
 
 const SecondaryTabBar = ({
@@ -12,7 +11,7 @@ const SecondaryTabBar = ({
 }) => {
   const { t } = useTranslation(['common', 'activity'])
   return (
-    <div className="relative flex h-14 items-center justify-between bg-th-bkg-2">
+    <div className="flex h-14 items-center justify-between bg-th-bkg-2">
       <div className="hide-scroll flex space-x-2 pl-4 md:pl-6">
         {tabs.map((tab) => (
           <button
@@ -28,7 +27,6 @@ const SecondaryTabBar = ({
           </button>
         ))}
       </div>
-      {activeTab === 'activity:activity-feed' ? <ActivityFilters /> : null}
     </div>
   )
 }

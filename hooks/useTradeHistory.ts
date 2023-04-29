@@ -58,7 +58,7 @@ const parseSerumEvent = (event: SerumEvent) => {
   }
 }
 
-const parseApiTradeHistory = (
+export const parseApiTradeHistory = (
   mangoAccountAddress: string,
   trade: SpotTradeHistory | PerpTradeHistory
 ) => {
@@ -166,12 +166,14 @@ const isTradeHistory = (
   return false
 }
 
-const fetchTradeHistory = async (
+export const fetchTradeHistory = async (
   mangoAccountAddress: string,
-  offset = 0
+  offset = 0,
+  limit?: number
 ): Promise<Array<PerpTradeHistory | SpotTradeHistory>> => {
+  const tradesLimit = limit ? limit : PAGINATION_PAGE_LENGTH
   const response = await fetch(
-    `${MANGO_DATA_API_URL}/stats/trade-history?mango-account=${mangoAccountAddress}&limit=${PAGINATION_PAGE_LENGTH}&offset=${offset}`
+    `${MANGO_DATA_API_URL}/stats/trade-history?mango-account=${mangoAccountAddress}&limit=${tradesLimit}&offset=${offset}`
   )
   const jsonResponse: null | EmptyObject | TradeHistoryApiResponseType[] =
     await response.json()

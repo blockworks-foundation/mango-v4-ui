@@ -230,7 +230,8 @@ export type MangoStore = {
     fetchActivityFeed: (
       mangoAccountPk: string,
       offset?: number,
-      params?: string
+      params?: string,
+      limit?: number
     ) => Promise<void>
     fetchAccountPerformance: (
       mangoAccountPk: string,
@@ -246,7 +247,8 @@ export type MangoStore = {
     fetchSwapHistory: (
       mangoAccountPk: string,
       timeout?: number,
-      offset?: number
+      offset?: number,
+      limit?: number
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
@@ -457,14 +459,15 @@ const mangoStore = create<MangoStore>()(
         fetchActivityFeed: async (
           mangoAccountPk: string,
           offset = 0,
-          params = ''
+          params = '',
+          limit = PAGINATION_PAGE_LENGTH
         ) => {
           const set = get().set
           const loadedFeed = mangoStore.getState().activityFeed.feed
 
           try {
             const response = await fetch(
-              `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}${
+              `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=${limit}${
                 params ? params : ''
               }`
             )
@@ -779,7 +782,8 @@ const mangoStore = create<MangoStore>()(
         fetchSwapHistory: async (
           mangoAccountPk: string,
           timeout = 0,
-          offset = 0
+          offset = 0,
+          limit = PAGINATION_PAGE_LENGTH
         ) => {
           const set = get().set
           const loadedSwapHistory =
@@ -788,7 +792,7 @@ const mangoStore = create<MangoStore>()(
           setTimeout(async () => {
             try {
               const history = await fetch(
-                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}`
+                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${limit}`
               )
               const parsedHistory = await history.json()
               const sortedHistory =

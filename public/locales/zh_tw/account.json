@@ -1,5 +1,6 @@
 {
     "assets": "資產",
+    "export": "Export {{dataType}}",
     "assets-liabilities": "資產和債務",
     "liabilities": "債務",
     "no-pnl-history": "無盈虧歷史",
