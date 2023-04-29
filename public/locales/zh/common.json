@@ -66,6 +66,7 @@
   "deposit-amount": "Deposit Amount",
   "deposit-more-sol": "Your SOL wallet balance is too low. Add more to pay for transactions",
   "deposit-rate": "Deposit APR",
+  "details": "Details",
   "disconnect": "Disconnect",
   "documentation": "Documentation",
   "edit": "Edit",
@@ -104,8 +105,10 @@
   "new-account-failed": "Failed to create account",
   "new-account-success": "Your new account is ready 😎",
   "new-version": "New version available",
+  "no": "No",
   "optional": "Optional",
   "outstanding-balance": "Outstanding Balance",
+  "overview": "Overview",
   "perp": "Perp",
   "perp-markets": "Perp Markets",
   "pnl": "PnL",
@@ -168,6 +171,7 @@
   "withdraw": "Withdraw",
   "withdraw-amount": "Withdraw Amount",
   "list-token": "List Token",
-  "vote": "Vote"
+  "vote": "Vote",
+  "yes": "Yes"
  }
  

@@ -150,6 +150,7 @@ export type MangoStore = {
     }
     swapHistory: {
       data: SwapHistoryItem[]
+      initialLoad: boolean
       loading: boolean
     }
     tradeHistory: {
@@ -300,7 +301,7 @@ const mangoStore = create<MangoStore>()(
         spotBalances: {},
         interestTotals: { data: [], loading: false },
         performance: { data: [], loading: true },
-        swapHistory: { data: [], loading: true },
+        swapHistory: { data: [], loading: true, initialLoad: true },
         tradeHistory: { data: [], loading: true },
       },
       mangoAccounts: [],
@@ -814,8 +815,13 @@ const mangoStore = create<MangoStore>()(
             } catch (e) {
               console.error('Unable to fetch swap history', e)
             } finally {
+              const notLoaded =
+                mangoStore.getState().mangoAccount.swapHistory.initialLoad
               set((state) => {
                 state.mangoAccount.swapHistory.loading = false
+                if (notLoaded) {
+                  state.mangoAccount.swapHistory.initialLoad = false
+                }
               })
             }
           }, timeout)

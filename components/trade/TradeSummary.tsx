@@ -9,6 +9,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthImpact from '@components/shared/HealthImpact'
 import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
+import Decimal from 'decimal.js'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
@@ -25,7 +26,7 @@ const TradeSummary = ({
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
   const tradeForm = mangoStore((s) => s.tradeForm)
-  const { selectedMarket } = useSelectedMarket()
+  const { selectedMarket, quoteBank } = useSelectedMarket()
 
   const maintProjectedHealth = useMemo(() => {
     if (!mangoAccount || !group) return 100
@@ -102,19 +103,29 @@ const TradeSummary = ({
     return borrowAmount
   }, [balanceBank, mangoAccount, tradeForm])
 
+  const orderValue = useMemo(() => {
+    if (
+      !quoteBank ||
+      !tradeForm.price ||
+      !Number.isNaN(tradeForm.price) ||
+      !Number.isNaN(tradeForm.baseSize)
+    )
+      return 0
+    const basePriceDecimal = new Decimal(tradeForm.price)
+    const quotePriceDecimal = new Decimal(quoteBank.uiPrice)
+    const sizeDecimal = new Decimal(tradeForm.baseSize)
+    return basePriceDecimal.mul(quotePriceDecimal).mul(sizeDecimal)
+  }, [quoteBank, tradeForm])
+
   return (
     <div className="space-y-2 px-3 md:px-4">
       <div className="flex justify-between text-xs">
         <p>{t('trade:order-value')}</p>
         <p className="text-th-fgd-2">
-          {Number(tradeForm.price) && Number(tradeForm.baseSize) ? (
-            <FormatNumericValue
-              value={Number(tradeForm.price) * Number(tradeForm.baseSize)}
-              decimals={2}
-              isUsd
-            />
+          {orderValue ? (
+            <FormatNumericValue value={orderValue} decimals={2} isUsd />
           ) : (
-            '0.00'
+            '–'
           )}
         </p>
       </div>

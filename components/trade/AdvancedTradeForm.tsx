@@ -98,6 +98,7 @@ const AdvancedTradeForm = () => {
     baseSymbol,
     quoteLogoURI,
     quoteSymbol,
+    serumOrPerpMarket,
   } = useSelectedMarket()
 
   const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
@@ -473,6 +474,11 @@ const AdvancedTradeForm = () => {
     connected ? handlePlaceOrder() : handleConnect()
   }
 
+  const disabled =
+    (connected && (!tradeForm.baseSize || !tradeForm.price)) ||
+    !serumOrPerpMarket ||
+    parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize
+
   return (
     <div>
       <div className="mt-1.5 px-2 md:mt-0 md:px-4 md:pt-5 lg:mt-5 lg:pt-0">
@@ -510,7 +516,7 @@ const AdvancedTradeForm = () => {
                     <Image alt="" width="20" height="20" src={quoteLogoURI} />
                   </div>
                 ) : (
-                  <div className="h-5 w-5 flex-shrink-0">
+                  <div className={INPUT_PREFIX_CLASSNAMES}>
                     <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
                   </div>
                 )}
@@ -575,7 +581,7 @@ const AdvancedTradeForm = () => {
                   <Image alt="" width="20" height="20" src={quoteLogoURI} />
                 </div>
               ) : (
-                <div className="h-5 w-5 flex-shrink-0">
+                <div className={INPUT_PREFIX_CLASSNAMES}>
                   <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
                 </div>
               )}
@@ -594,6 +600,18 @@ const AdvancedTradeForm = () => {
               />
               <div className={INPUT_SUFFIX_CLASSNAMES}>{quoteSymbol}</div>
             </div>
+            {serumOrPerpMarket &&
+            tradeForm.baseSize &&
+            parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize ? (
+              <div className="mt-1">
+                <InlineNotification
+                  type="error"
+                  desc={`Min order size is ${minOrderSize} ${baseSymbol}`}
+                  hideBorder
+                  hidePadding
+                />
+              </div>
+            ) : null}
           </div>
         </div>
         <div className="mt-2 flex">
@@ -709,7 +727,7 @@ const AdvancedTradeForm = () => {
                   ? 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
                   : 'bg-th-down text-white md:hover:bg-th-down md:hover:brightness-90'
               }`}
-              disabled={connected && (!tradeForm.baseSize || !tradeForm.price)}
+              disabled={disabled}
               size="large"
               type="submit"
             >

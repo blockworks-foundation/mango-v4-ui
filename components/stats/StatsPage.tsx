@@ -1,27 +1,21 @@
 import TabButtons from '@components/shared/TabButtons'
 import TokenPage from '@components/token/TokenPage'
 import mangoStore from '@store/mangoStore'
-import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useViewport } from 'hooks/useViewport'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo } from 'react'
-import { STATS_TAB_KEY } from 'utils/constants'
+import { useEffect, useMemo, useState } from 'react'
 import { breakpoints } from 'utils/theme'
 import MangoStats from './MangoStats'
-import PerpMarketsTable from './PerpMarketsTable'
+import PerpStats from './PerpStats'
 import PerpStatsPage from './PerpStatsPage'
 import SpotMarketsTable from './SpotMarketsTable'
 import TokenStats from './TokenStats'
 
-// const TABS = ['tokens', 'perp', 'spot', 'mango']
 const TABS = ['tokens', 'perp-markets', 'spot-markets', 'mango-stats']
 
 const StatsPage = () => {
-  const [activeTab, setActiveTab] = useLocalStorageState(
-    STATS_TAB_KEY,
-    'tokens'
-  )
+  const [activeTab, setActiveTab] = useState('tokens')
   const actions = mangoStore.getState().actions
   const perpStats = mangoStore((s) => s.perpStats.data)
   const { group } = useMangoGroup()
@@ -67,7 +61,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
     case 'tokens':
       return <TokenStats />
     case 'perp-markets':
-      return <PerpMarketsTable />
+      return <PerpStats />
     case 'spot-markets':
       return <SpotMarketsTable />
     case 'mango-stats':

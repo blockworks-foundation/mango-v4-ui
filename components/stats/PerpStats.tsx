@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
-import TokenMarketInfoTable from './TokenMarketInfoTable'
-import TokenSettingsTable from './TokenSettingsTable'
-import { TABS } from './PerpStats'
+import PerpMarketsInfoTable from './PerpMarketsInfoTable'
+import PerpMarketSettingsTable from './PerpMarketSettingsTable'
 
-const TokenStats = () => {
+export const TABS = ['overview', 'details']
+
+const PerpStats = () => {
   const [activeTab, setActiveTab] = useState(TABS[0])
   const actions = mangoStore((s) => s.actions)
   const { mangoAccountAddress } = useMangoAccount()
@@ -32,12 +33,12 @@ const TokenStats = () => {
 const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case TABS[0]:
-      return <TokenMarketInfoTable />
+      return <PerpMarketsInfoTable />
     case TABS[1]:
-      return <TokenSettingsTable />
+      return <PerpMarketSettingsTable />
     default:
-      return <TokenMarketInfoTable />
+      return <PerpMarketsInfoTable />
   }
 }
 
-export default TokenStats
+export default PerpStats

@@ -331,8 +331,7 @@ export default {
 
   unsubscribeBars: (subscriberUID: string) => {
     if (marketType === 'perp') {
-      const marketId = subscriptionIds.get(subscriberUID)
-      unsubscribeFromPerpStream(marketId)
+      unsubscribeFromPerpStream(subscriberUID)
     } else {
       unsubscribeFromStream()
     }

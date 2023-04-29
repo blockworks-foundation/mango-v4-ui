@@ -238,8 +238,8 @@ export default {
     )
   },
 
-  unsubscribeBars: () => {
-    unsubscribeFromStream('')
+  unsubscribeBars: (subscriberUID: any) => {
+    unsubscribeFromStream(subscriberUID)
   },
   closeSocket: () => {
     closeSocket()

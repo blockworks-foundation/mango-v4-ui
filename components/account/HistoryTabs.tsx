@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import SwapHistoryTable from '../swap/SwapHistoryTable'
 import TradeHistory from '@components/trade/TradeHistory'
-import { useTranslation } from 'next-i18next'
-import ActivityFilters from './ActivityFilters'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import ActivityFeedTable, {
@@ -25,23 +23,15 @@ import { fetchTradeHistory, parseApiTradeHistory } from 'hooks/useTradeHistory'
 import { PublicKey } from '@solana/web3.js'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import SecondaryTabBar from '@components/shared/SecondaryTabBar'
+import ActivityFilters from './ActivityFilters'
+import { useTranslation } from 'react-i18next'
 
-type ExportDataType =
-  | 'activity:activity-feed'
-  | 'activity:swaps'
-  | 'activity:trades'
-
-const TABS: ExportDataType[] = [
-  'activity:activity-feed',
-  'activity:swaps',
-  'activity:trades',
-]
+const TABS = ['activity:activity-feed', 'activity:swaps', 'activity:trades']
 
 const HistoryTabs = () => {
   const { t } = useTranslation(['common', 'account', 'activity', 'trade'])
-  const [activeTab, setActiveTab] = useState<ExportDataType>(
-    'activity:activity-feed'
-  )
+  const [activeTab, setActiveTab] = useState<string>('activity:activity-feed')
   const actions = mangoStore((s) => s.actions)
   const { mangoAccountAddress } = useMangoAccount()
   const { isUnownedAccount } = useUnownedAccount()
@@ -175,7 +165,7 @@ const HistoryTabs = () => {
     setLoadExportData(false)
   }
 
-  const handleExportData = (dataType: ExportDataType) => {
+  const handleExportData = (dataType: string) => {
     if (dataType === 'activity:activity-feed') {
       exportActivityDataToCSV()
     } else if (dataType === 'activity:swaps') {
@@ -187,23 +177,13 @@ const HistoryTabs = () => {
 
   return (
     <>
-      <div className="relative flex flex-col bg-th-bkg-2 sm:h-14 sm:flex-row sm:items-center sm:justify-between">
-        <div className="hide-scroll flex space-x-2 py-2 pl-4 md:py-0 md:pl-6">
-          {TABS.map((tab) => (
-            <button
-              className={`rounded-md py-1.5 px-2.5 text-sm font-medium focus-visible:bg-th-bkg-4 md:hover:bg-th-bkg-4 ${
-                activeTab === tab
-                  ? 'bg-th-bkg-4 text-th-active focus-visible:text-th-active'
-                  : 'text-th-fgd-3 focus-visible:text-th-fgd-1'
-              }`}
-              onClick={() => setActiveTab(tab)}
-              key={tab}
-            >
-              {t(tab)}
-            </button>
-          ))}
-        </div>
-        <div className=" flex items-center justify-end space-x-2 border-b border-th-bkg-3 bg-th-bkg-1 py-2 pr-4 sm:border-b-0 sm:bg-th-bkg-2 sm:py-0 md:pr-6">
+      <div className="relative">
+        <SecondaryTabBar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          tabs={TABS}
+        />
+        <div className="flex items-center justify-end space-x-2 border-b border-th-bkg-3 py-3 pr-4 sm:absolute sm:bottom-0 sm:top-0 sm:right-0 sm:border-b-0 sm:py-0 md:pr-6">
           {!isUnownedAccount ? (
             <LinkButton
               className="flex items-center font-normal no-underline"
