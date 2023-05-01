@@ -7,11 +7,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
 import { useEffect, useState } from 'react'
-import {
-  PerpMarket,
-  Bank,
-  OracleProvider,
-} from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Bank } from '@blockworks-foundation/mango-v4'
 import { BorshAccountsCoder } from '@coral-xyz/anchor'
 import {
   floorToDecimal,
@@ -21,6 +17,8 @@ import {
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import useOracleProvider from 'hooks/useOracleProvider'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 
 const OraclePrice = ({
   setChangePrice,
@@ -38,10 +36,10 @@ const OraclePrice = ({
 
   const connection = mangoStore((s) => s.connection)
   const [price, setPrice] = useState(stalePrice)
-  const [oracleProviderName, setOracleProviderName] = useState('Unknown')
   const [oracleLastUpdatedSlot, setOracleLastUpdatedSlot] = useState(0)
   const [highestSlot, setHighestSlot] = useState(0)
   const [isStale, setIsStale] = useState(false)
+  const { oracleProvider, oracleLinkPath } = useOracleProvider()
 
   const { t } = useTranslation(['common', 'trade'])
 
@@ -62,20 +60,6 @@ const OraclePrice = ({
       )
       marketOrBank = baseBank
       decimals = group.getMintDecimals(baseBank.mint)
-    }
-
-    switch (marketOrBank.oracleProvider) {
-      case OracleProvider.Pyth:
-        setOracleProviderName('Pyth')
-        break
-      case OracleProvider.Switchboard:
-        setOracleProviderName('Switchboard')
-        break
-      case OracleProvider.Stub:
-        setOracleProviderName('Stub')
-        break
-      default:
-        setOracleProviderName('Unknown')
     }
 
     const coder = new BorshAccountsCoder(client.program.idl)
@@ -147,8 +131,21 @@ const OraclePrice = ({
           placement="bottom"
           content={
             <>
-              <div>
-                {t('trade:price-provided-by')} {oracleProviderName}.
+              <div className="flex">
+                <span className="mr-1">{t('trade:price-provided-by')}</span>
+                {oracleLinkPath ? (
+                  <a
+                    href={oracleLinkPath}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center"
+                  >
+                    <span className="mr-1">{oracleProvider}</span>
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                  </a>
+                ) : (
+                  <span className="text-th-fgd-2">{oracleProvider}</span>
+                )}
               </div>
               <div className="mt-2">
                 {t('trade:last-updated')}{' '}

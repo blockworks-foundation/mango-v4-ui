@@ -4,6 +4,8 @@ import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
+import useOracleProvider from 'hooks/useOracleProvider'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 // import useMangoGroup from 'hooks/useMangoGroup'
 // import { useMemo } from 'react'
 // import Tooltip from '@components/shared/Tooltip'
@@ -23,6 +25,7 @@ const SpotMarketDetailsModal = ({
 }: ModalCombinedProps) => {
   const { t } = useTranslation(['common', 'trade'])
   const { serumOrPerpMarket } = useSelectedMarket()
+  const { oracleProvider, oracleLinkPath } = useOracleProvider()
   // const { group } = useMangoGroup()
 
   // const [baseBank, quoteBank] = useMemo(() => {
@@ -60,6 +63,22 @@ const SpotMarketDetailsModal = ({
         <div className="flex justify-between">
           <p>{t('trade:max-leverage')}</p>
           <p className="font-mono text-th-fgd-2">5x</p>
+        </div>
+        <div className="flex justify-between">
+          <p>{t('trade:oracle')}</p>
+          {oracleLinkPath ? (
+            <a
+              className="flex items-center"
+              href={oracleLinkPath}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="mr-1.5">{oracleProvider}</span>
+              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            </a>
+          ) : (
+            <p className="text-th-fgd-2">{oracleProvider}</p>
+          )}
         </div>
         {/* {baseMintInfo ? (
           <div className="flex justify-between">

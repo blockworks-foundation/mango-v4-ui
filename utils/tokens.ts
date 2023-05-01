@@ -142,8 +142,8 @@ export async function getNFTsByOwner(owner: PublicKey, connection: Connection) {
 
 export const formatTokenSymbol = (symbol: string) => {
   if (symbol.toLowerCase().includes('portal')) {
-    const truncSymbol = symbol.split(' ')[0]
-    return truncSymbol === 'WBTC' ? 'wBTC' : truncSymbol
+    const truncSymbol = symbol.split(' ')[0].toUpperCase()
+    return truncSymbol === 'WBTC' ? 'BTC' : truncSymbol
   }
   return symbol === 'MSOL' ? 'mSOL' : symbol
 }
