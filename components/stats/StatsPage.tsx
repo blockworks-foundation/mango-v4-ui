@@ -34,22 +34,26 @@ const StatsPage = () => {
   const tabsWithCount: [string, number][] = useMemo(() => {
     return TABS.map((t) => [t, 0])
   }, [])
-  return market ? (
-    <PerpStatsPage />
-  ) : token ? (
-    <TokenPage />
-  ) : (
+  return (
     <div className="pb-20 md:pb-16">
-      <div className="border-b border-th-bkg-3">
-        <TabButtons
-          activeValue={activeTab}
-          fillWidth={fullWidthTabs}
-          onChange={(v) => setActiveTab(v)}
-          showBorders
-          values={tabsWithCount}
-        />
-      </div>
-      <TabContent activeTab={activeTab} />
+      {market ? (
+        <PerpStatsPage />
+      ) : token ? (
+        <TokenPage />
+      ) : (
+        <>
+          <div className="border-b border-th-bkg-3">
+            <TabButtons
+              activeValue={activeTab}
+              fillWidth={fullWidthTabs}
+              onChange={(v) => setActiveTab(v)}
+              showBorders
+              values={tabsWithCount}
+            />
+          </div>
+          <TabContent activeTab={activeTab} />
+        </>
+      )}
     </div>
   )
 }

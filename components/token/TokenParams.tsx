@@ -1,42 +1,29 @@
 import {
   Bank,
   I80F48,
-  OracleProvider,
   toUiDecimals,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import Tooltip from '@components/shared/Tooltip'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
+import { BN } from '@project-serum/anchor'
+import { getOracleProvider } from 'hooks/useOracleProvider'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
-import { formatCurrencyValue, formatNumericValue } from 'utils/numbers'
+import { formatCurrencyValue } from 'utils/numbers'
 
 const TokenParams = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation(['common', 'activity', 'token'])
 
   const [oracleProvider, oracleLinkPath] = useMemo(() => {
-    switch (bank.oracleProvider) {
-      case OracleProvider.Pyth:
-        return [
-          'Pyth',
-          `https://pyth.network/price-feeds/crypto-${bank.name.toLowerCase()}-usd`,
-        ]
-      case OracleProvider.Switchboard:
-        return [
-          'Switchboard',
-          `https://switchboard.xyz/explorer/3/${bank.oracle.toString()}`,
-        ]
-      case OracleProvider.Stub:
-        return ['Stub', '']
-      default:
-        return ['Unknown', '']
-    }
+    if (!bank) return ['Unavaliable', '']
+    return getOracleProvider(bank)
   }, [bank])
 
   return (
     <div className="grid grid-cols-1 border-b border-th-bkg-3 md:grid-cols-2">
       <div className="col-span-1 border-b border-th-bkg-3 px-6 py-4 md:col-span-2">
-        <h2 className="text-base">{bank.name} Paramaters</h2>
+        <h2 className="text-base">{`${bank.name} ${t('token:parameters')}`}</h2>
       </div>
       <div className="col-span-1 px-6 py-4  md:border-r md:border-th-bkg-3">
         <div className="flex justify-between pb-4">
@@ -76,8 +63,8 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
           </p>
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
-          <Tooltip content={t('token:tooltip-borrow-upkeep-fee')}>
-            <p className="tooltip-underline">{t('token:borrow-upkeep-fee')}</p>
+          <Tooltip content={t('token:tooltip-borrow-upkeep-rate')}>
+            <p className="tooltip-underline">{t('token:borrow-upkeep-rate')}</p>
           </Tooltip>
           <p className="font-mono text-th-fgd-2">
             {(100 * bank.loanFeeRate.toNumber()).toFixed(2)}%
@@ -116,14 +103,25 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
       </div>
       <div className="col-span-1 px-6 pb-4 md:pt-4">
         <div className="flex justify-between pb-4">
+          <Tooltip content={t('token:tooltip-net-borrow-period')}>
+            <p className="tooltip-underline">{t('token:net-borrow-period')}</p>
+          </Tooltip>
+          <p className="font-mono text-th-fgd-2">
+            {bank.netBorrowLimitWindowSizeTs.div(new BN(3600)).toNumber()}hrs
+          </p>
+        </div>
+        <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <Tooltip content={t('token:tooltip-net-borrows-in-period')}>
             <p className="tooltip-underline">
               {t('token:net-borrows-in-period')}
             </p>
           </Tooltip>
           <p className="font-mono text-th-fgd-2">
-            {formatNumericValue(
-              toUiDecimalsForQuote(I80F48.fromI64(bank.netBorrowsInWindow))
+            {formatCurrencyValue(
+              toUiDecimalsForQuote(
+                I80F48.fromI64(bank.netBorrowsInWindow).toNumber() *
+                  bank.uiPrice
+              )
             )}
           </p>
         </div>
@@ -134,7 +132,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             </p>
           </Tooltip>
           <p className="font-mono text-th-fgd-2">
-            {formatNumericValue(
+            {formatCurrencyValue(
               toUiDecimals(bank.netBorrowLimitPerWindowQuote, 6)
             )}
           </p>
@@ -147,7 +145,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <p className="mr-1.5 text-th-fgd-2">{oracleProvider}</p>
+            <span className="mr-1.5">{oracleProvider}</span>
             <ArrowTopRightOnSquareIcon className="h-4 w-4" />
           </a>
         </div>
@@ -171,14 +169,6 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             {bank.oracleConfig.maxStalenessSlots.toNumber()}{' '}
             <span className="font-body text-th-fgd-4">Slots</span>
           </p>
-        </div>
-        <div className="flex justify-between border-t border-th-bkg-3 py-4">
-          <Tooltip content={t('token:tooltip-insurance-rate-curve')}>
-            <p className="tooltip-underline">
-              {t('token:insurance-rate-curve')}
-            </p>
-          </Tooltip>
-          <p className="font-mono text-th-fgd-2">?</p>
         </div>
       </div>
     </div>

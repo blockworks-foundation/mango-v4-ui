@@ -165,7 +165,7 @@ const CoingeckoStats = ({
         <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 md:col-span-2">
           <h2 className="text-base">{bank.name} Stats</h2>
         </div>
-        <div className="col-span-1 border-r border-th-bkg-3 px-6 py-4">
+        <div className="col-span-1 px-6 py-4 md:border-r md:border-th-bkg-3">
           <div className="flex justify-between pb-4">
             <p>{t('token:market-cap')}</p>
             <p className="font-mono text-th-fgd-2">

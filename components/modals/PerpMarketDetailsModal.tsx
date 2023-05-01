@@ -3,6 +3,8 @@ import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
+import useOracleProvider from 'hooks/useOracleProvider'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 // import Tooltip from '@components/shared/Tooltip'
 
 interface PerpMarketDetailsModalProps {
@@ -17,6 +19,9 @@ const PerpMarketDetailsModal = ({
   market,
 }: ModalCombinedProps) => {
   const { t } = useTranslation(['common', 'trade'])
+  const { oracleProvider, oracleLinkPath } = useOracleProvider()
+
+  console.log(oracleProvider, oracleLinkPath)
 
   return market ? (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -61,6 +66,22 @@ const PerpMarketDetailsModal = ({
             <span className="font-body text-th-fgd-3">to</span>{' '}
             {(100 * market.maxFunding.toNumber()).toFixed(2)}%
           </p>
+        </div>
+        <div className="flex justify-between">
+          <p>{t('trade:oracle')}</p>
+          {oracleLinkPath ? (
+            <a
+              className="flex items-center"
+              href={oracleLinkPath}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="mr-1.5">{oracleProvider}</span>
+              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            </a>
+          ) : (
+            <p className="text-th-fgd-2">{oracleProvider}</p>
+          )}
         </div>
         {/* Uncomment when insurance fund is ready */}
         {/* <div className="flex justify-between">

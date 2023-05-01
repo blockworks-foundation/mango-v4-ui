@@ -1,5 +1,6 @@
 import { Disclosure, Transition } from '@headlessui/react'
 import {
+  ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
@@ -14,9 +15,10 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import { getOracleProvider } from 'hooks/useOracleProvider'
 
 const TokenSettingsTable = () => {
-  const { t } = useTranslation(['common', 'activity', 'token'])
+  const { t } = useTranslation(['common', 'activity', 'token', 'trade'])
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
@@ -42,6 +44,7 @@ const TokenSettingsTable = () => {
                 </Th>
                 <Th className="text-right">{t('borrow-fee')}</Th>
                 <Th className="text-right">{t('activity:liquidation-fee')}</Th>
+                <Th className="text-right">{t('trade:oracle')}</Th>
                 {/* Uncomment when insurance fund is ready */}
                 {/* <Th className="text-right">
                   <Tooltip
@@ -64,6 +67,8 @@ const TokenSettingsTable = () => {
                     (t) => t.address === bank.mint.toString()
                   )?.logoURI
                 }
+
+                const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
 
                 // const mintInfo = group.mintInfosMapByMint.get(
                 //   bank.mint.toString()
@@ -108,6 +113,23 @@ const TokenSettingsTable = () => {
                         {(bank.liquidationFee.toNumber() * 100).toFixed(2)}%
                       </p>
                     </Td>
+                    <Td>
+                      {oracleLinkPath ? (
+                        <a
+                          className="flex items-center justify-end"
+                          href={oracleLinkPath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <span className="mr-1.5 font-body">
+                            {oracleProvider}
+                          </span>
+                          <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                        </a>
+                      ) : (
+                        <p className="text-right font-body">{oracleProvider}</p>
+                      )}
+                    </Td>
                     {/* <Td>
                       <p className="text-right">
                         {mintInfo?.groupInsuranceFund ? t('yes') : t('no')}
@@ -129,6 +151,7 @@ const TokenSettingsTable = () => {
                 (t) => t.address === bank.mint.toString()
               )?.logoURI
             }
+            const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
             // const mintInfo = group.mintInfosMapByMint.get(
             //   bank.mint.toString()
             // )
@@ -206,6 +229,26 @@ const TokenSettingsTable = () => {
                               )}
                               %
                             </p>
+                          </div>
+                          <div className="col-span-1">
+                            <p className="text-xs">{t('trade:oracle')}</p>
+                            {oracleLinkPath ? (
+                              <a
+                                className="flex items-center"
+                                href={oracleLinkPath}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <span className="mr-1.5 font-body">
+                                  {oracleProvider}
+                                </span>
+                                <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                              </a>
+                            ) : (
+                              <p className="text-right font-body">
+                                {oracleProvider}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </Disclosure.Panel>
