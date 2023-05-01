@@ -5,17 +5,23 @@ import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowTopRightOnSquareIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/20/solid'
 // import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
+import { getOracleProvider } from 'hooks/useOracleProvider'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const PerpMarketSettingsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const { group } = useMangoGroup()
 
-  return (
+  return group ? (
     <ContentBox hideBorder hidePadding>
       {showTableView ? (
         <Table>
@@ -28,6 +34,7 @@ const PerpMarketSettingsTable = () => {
               <Th className="text-right">{t('trade:max-leverage')}</Th>
               <Th className="text-right">{t('fees')}</Th>
               <Th className="text-right">{t('trade:funding-limits')}</Th>
+              <Th className="text-right">{t('trade:oracle')}</Th>
               {/* Uncomment when insurance fund is ready */}
               {/* <Th className="text-right">
                 <Tooltip
@@ -55,6 +62,11 @@ const PerpMarketSettingsTable = () => {
                 maxFunding,
                 publicKey,
               } = market
+
+              const [oracleProvider, oracleLinkPath] = getOracleProvider(
+                market,
+                group
+              )
 
               return (
                 <TrBody key={publicKey.toString()}>
@@ -100,6 +112,23 @@ const PerpMarketSettingsTable = () => {
                       {(100 * maxFunding.toNumber()).toFixed(2)}%
                     </p>
                   </Td>
+                  <Td>
+                    {oracleLinkPath ? (
+                      <a
+                        className="flex items-center justify-end"
+                        href={oracleLinkPath}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span className="mr-1.5 font-body">
+                          {oracleProvider}
+                        </span>
+                        <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                      </a>
+                    ) : (
+                      <p className="text-right font-body">{oracleProvider}</p>
+                    )}
+                  </Td>
                   {/* <Td>
                     <p className="text-right">
                       {groupInsuranceFund ? t('yes') : t('no')}
@@ -112,7 +141,7 @@ const PerpMarketSettingsTable = () => {
         </Table>
       ) : (
         <div className="border-b border-th-bkg-3">
-          {perpMarkets.map((market) => {
+          {perpMarkets.map((market, i) => {
             const {
               name,
               minOrderSize,
@@ -126,12 +155,18 @@ const PerpMarketSettingsTable = () => {
               maxFunding,
               publicKey,
             } = market
+            const [oracleProvider, oracleLinkPath] = getOracleProvider(
+              market,
+              group
+            )
             return (
               <Disclosure key={publicKey.toString()}>
                 {({ open }) => (
                   <>
                     <Disclosure.Button
-                      className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none`}
+                      className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none ${
+                        i === 0 ? 'border-t-0' : ''
+                      }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
@@ -220,6 +255,26 @@ const PerpMarketSettingsTable = () => {
                               {(100 * maxFunding.toNumber()).toFixed(2)}%
                             </p>
                           </div>
+                          <div className="col-span-1">
+                            <p className="text-xs">{t('trade:oracle')}</p>
+                            {oracleLinkPath ? (
+                              <a
+                                className="flex items-center"
+                                href={oracleLinkPath}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <span className="mr-1.5 font-body">
+                                  {oracleProvider}
+                                </span>
+                                <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                              </a>
+                            ) : (
+                              <p className="text-right font-body">
+                                {oracleProvider}
+                              </p>
+                            )}
+                          </div>
                           {/* <div className="col-span-1">
                             <Tooltip
                               content={t('trade:tooltip-insured', {
@@ -246,7 +301,7 @@ const PerpMarketSettingsTable = () => {
         </div>
       )}
     </ContentBox>
-  )
+  ) : null
 }
 
 export default PerpMarketSettingsTable
