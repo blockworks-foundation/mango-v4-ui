@@ -88,15 +88,23 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
           </Tooltip>
           <div className="flex space-x-2">
             <p className="font-mono text-th-fgd-2">
-              {formatCurrencyValue(
-                toUiDecimalsForQuote(bank.depositWeightScaleStartQuote)
-              )}
+              {bank.name === 'USDC'
+                ? `$${toUiDecimalsForQuote(
+                    bank.depositWeightScaleStartQuote
+                  ).toExponential(1)}`
+                : formatCurrencyValue(
+                    toUiDecimalsForQuote(bank.depositWeightScaleStartQuote)
+                  )}
             </p>
             <span className="text-th-fgd-4">|</span>
             <p className="font-mono text-th-fgd-2">
-              {formatCurrencyValue(
-                toUiDecimalsForQuote(bank.borrowWeightScaleStartQuote)
-              )}
+              {bank.name === 'USDC'
+                ? `$${toUiDecimalsForQuote(
+                    bank.depositWeightScaleStartQuote
+                  ).toExponential(1)}`
+                : formatCurrencyValue(
+                    toUiDecimalsForQuote(bank.borrowWeightScaleStartQuote)
+                  )}
             </p>
           </div>
         </div>
