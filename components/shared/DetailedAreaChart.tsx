@@ -7,7 +7,7 @@ import {
   Area,
   XAxis,
   YAxis,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts'
@@ -29,6 +29,7 @@ import { AxisDomain } from 'recharts/types/util/types'
 import { useTranslation } from 'next-i18next'
 import FormatNumericValue from './FormatNumericValue'
 import { ContentType } from 'recharts/types/component/Tooltip'
+import Tooltip from './Tooltip'
 
 dayjs.extend(relativeTime)
 
@@ -48,6 +49,7 @@ interface DetailedAreaChartProps {
   suffix?: string
   tickFormat?: (x: number) => string
   title?: string
+  tooltipContent?: string
   xKey: string
   yDecimals?: number
   yKey: string
@@ -78,6 +80,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   suffix = '',
   tickFormat,
   title,
+  tooltipContent,
   xKey,
   yDecimals,
   yKey,
@@ -135,6 +138,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     return 0
   }
 
+  const titleClasses = `${small ? 'text-sm' : 'mb-0.5 text-base'} text-th-fgd-3`
+
   return (
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
@@ -160,13 +165,18 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                   </IconButton>
                 ) : null}
                 <div>
-                  <p
-                    className={`${
-                      small ? 'text-sm' : 'mb-0.5 text-base'
-                    } text-th-fgd-3`}
-                  >
-                    {title}
-                  </p>
+                  {tooltipContent ? (
+                    <Tooltip content={tooltipContent}>
+                      <p
+                        className={`${titleClasses}
+                      tooltip-underline`}
+                      >
+                        {title}
+                      </p>
+                    </Tooltip>
+                  ) : (
+                    <p className={titleClasses}>{title}</p>
+                  )}
                   {mouseData ? (
                     <div>
                       <div
@@ -301,7 +311,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                   >
-                    <Tooltip
+                    <RechartsTooltip
                       cursor={{
                         strokeOpacity: 0.09,
                       }}

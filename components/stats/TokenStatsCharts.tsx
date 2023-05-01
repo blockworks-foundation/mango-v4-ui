@@ -154,6 +154,7 @@ const TokenStatsCharts = () => {
           prefix="$"
           tickFormat={(x) => `$${formatYAxis(x)}`}
           title={t('token:token-fees-collected')}
+          tooltipContent={t('token:tooltip-token-fees-collected')}
           xKey="date"
           yKey={'feesCollected'}
         />
