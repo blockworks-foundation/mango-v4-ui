@@ -414,7 +414,8 @@ const Orderbook = () => {
       let lastWriteVersion = 0
       orderbookFeed.onL2Update((update) => {
         const selectedMarket = mangoStore.getState().selectedMarket
-        if (!selectedMarket) return
+        if (!selectedMarket || !selectedMarket.current) return
+        if (update.market != selectedMarket.current.publicKey.toBase58()) return
 
         // ensure updates are applied in the correct order by checking slot and writeVersion
         const lastSeenSlot =
