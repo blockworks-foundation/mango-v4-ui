@@ -1,18 +1,16 @@
 import {
   Bank,
-  Group,
   OracleProvider,
   PerpMarket,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
+import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import { formatTokenSymbol } from 'utils/tokens'
-import useMangoGroup from './useMangoGroup'
 import useSelectedMarket from './useSelectedMarket'
 
 export const getOracleProvider = (
-  marketOrBank: PerpMarket | Serum3Market | Bank,
-  group: Group
+  marketOrBank: PerpMarket | Serum3Market | Bank
 ) => {
   let marketOrBase: PerpMarket | Bank
   let name: string
@@ -23,6 +21,8 @@ export const getOracleProvider = (
     marketOrBase = marketOrBank
     name = marketOrBank.name.split('-')[0]
   } else {
+    const group = mangoStore.getState().group
+    if (!group) return ['Unavailable', '']
     const baseBank = group.getFirstBankByTokenIndex(marketOrBank.baseTokenIndex)
     marketOrBase = baseBank
     name = formatTokenSymbol(baseBank.name)
@@ -50,12 +50,11 @@ export const getOracleProvider = (
 
 const useOracleProvider = () => {
   const { selectedMarket } = useSelectedMarket()
-  const { group } = useMangoGroup()
 
   const [oracleProvider, oracleLinkPath] = useMemo(() => {
-    if (!group || !selectedMarket) return ['', '']
-    return getOracleProvider(selectedMarket, group)
-  }, [group, selectedMarket])
+    if (!selectedMarket) return ['', '']
+    return getOracleProvider(selectedMarket)
+  }, [selectedMarket])
 
   return { oracleProvider, oracleLinkPath }
 }

@@ -12,16 +12,14 @@ import {
 // import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import { getOracleProvider } from 'hooks/useOracleProvider'
-import useMangoGroup from 'hooks/useMangoGroup'
 
 const PerpMarketSettingsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const { group } = useMangoGroup()
 
-  return group ? (
+  return (
     <ContentBox hideBorder hidePadding>
       {showTableView ? (
         <Table>
@@ -63,10 +61,7 @@ const PerpMarketSettingsTable = () => {
                 publicKey,
               } = market
 
-              const [oracleProvider, oracleLinkPath] = getOracleProvider(
-                market,
-                group
-              )
+              const [oracleProvider, oracleLinkPath] = getOracleProvider(market)
 
               return (
                 <TrBody key={publicKey.toString()}>
@@ -155,10 +150,7 @@ const PerpMarketSettingsTable = () => {
               maxFunding,
               publicKey,
             } = market
-            const [oracleProvider, oracleLinkPath] = getOracleProvider(
-              market,
-              group
-            )
+            const [oracleProvider, oracleLinkPath] = getOracleProvider(market)
             return (
               <Disclosure key={publicKey.toString()}>
                 {({ open }) => (
@@ -301,7 +293,7 @@ const PerpMarketSettingsTable = () => {
         </div>
       )}
     </ContentBox>
-  ) : null
+  )
 }
 
 export default PerpMarketSettingsTable

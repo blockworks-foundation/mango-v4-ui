@@ -68,10 +68,7 @@ const TokenSettingsTable = () => {
                   )?.logoURI
                 }
 
-                const [oracleProvider, oracleLinkPath] = getOracleProvider(
-                  bank,
-                  group
-                )
+                const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
 
                 // const mintInfo = group.mintInfosMapByMint.get(
                 //   bank.mint.toString()
@@ -154,10 +151,7 @@ const TokenSettingsTable = () => {
                 (t) => t.address === bank.mint.toString()
               )?.logoURI
             }
-            const [oracleProvider, oracleLinkPath] = getOracleProvider(
-              bank,
-              group
-            )
+            const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
             // const mintInfo = group.mintInfosMapByMint.get(
             //   bank.mint.toString()
             // )
