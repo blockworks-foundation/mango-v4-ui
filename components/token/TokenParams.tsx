@@ -119,8 +119,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
           <p className="font-mono text-th-fgd-2">
             {formatCurrencyValue(
               toUiDecimalsForQuote(
-                I80F48.fromI64(bank.netBorrowsInWindow).toNumber() *
-                  bank.uiPrice
+                I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price)
               )
             )}
           </p>
