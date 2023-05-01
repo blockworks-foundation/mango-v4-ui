@@ -196,7 +196,6 @@ const TokenList = () => {
                         <FormatNumericValue
                           value={bank.getBorrowRateUi()}
                           decimals={2}
-                          roundUp
                         />
                         %
                       </p>
@@ -351,7 +350,6 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                       <FormatNumericValue
                         value={tokenBank.getBorrowRateUi()}
                         decimals={2}
-                        roundUp
                       />
                       %
                     </span>
