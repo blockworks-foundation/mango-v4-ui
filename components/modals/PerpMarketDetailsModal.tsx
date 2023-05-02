@@ -85,7 +85,19 @@ const PerpMarketDetailsModal = ({
         </div>
         <div className="flex justify-between">
           <Tooltip
-            content={t('trade:tooltip-insured', { tokenOrMarket: market.name })}
+            content={
+              <div>
+                {t('trade:tooltip-insured', { tokenOrMarket: market.name })}
+                <a
+                  className="mt-2 flex items-center"
+                  href="https://docs.mango.markets/mango-markets/insurance-fund"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  Learn more
+                </a>
+              </div>
+            }
           >
             <p className="tooltip-underline">
               {t('trade:insured', { token: '' })}

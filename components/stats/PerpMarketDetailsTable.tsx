@@ -35,7 +35,19 @@ const PerpMarketDetailsTable = () => {
               <Th className="text-right">{t('trade:oracle')}</Th>
               <Th className="text-right">
                 <Tooltip
-                  content={t('trade:tooltip-insured', { tokenOrMarket: '' })}
+                  content={
+                    <div>
+                      {t('trade:tooltip-insured', { tokenOrMarket: '' })}
+                      <a
+                        className="mt-2 flex items-center"
+                        href="https://docs.mango.markets/mango-markets/insurance-fund"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        Learn more
+                      </a>
+                    </div>
+                  }
                 >
                   <span className="tooltip-underline">
                     {t('trade:insured', { token: '' })}
