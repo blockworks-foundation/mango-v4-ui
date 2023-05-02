@@ -140,8 +140,6 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
 
   const titleClasses = `${small ? 'text-sm' : 'mb-0.5 text-base'} text-th-fgd-3`
 
-  console.log(loading)
-
   return (
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
