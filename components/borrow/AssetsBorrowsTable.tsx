@@ -5,7 +5,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import { formatNumericValue } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
@@ -14,7 +14,6 @@ import Tooltip from '@components/shared/Tooltip'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
-import mangoStore from '@store/mangoStore'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
@@ -25,8 +24,6 @@ const AssetsBorrowsTable = () => {
   const { t } = useTranslation(['common', 'token'])
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [selectedToken, setSelectedToken] = useState('')
-  const actions = mangoStore.getState().actions
-  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
@@ -37,12 +34,6 @@ const AssetsBorrowsTable = () => {
     setSelectedToken(token)
     setShowBorrowModal(true)
   }, [])
-
-  useEffect(() => {
-    if (group && !initialStatsLoad) {
-      actions.fetchTokenStats()
-    }
-  }, [group])
 
   return (
     <>

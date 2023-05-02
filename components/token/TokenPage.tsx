@@ -173,7 +173,7 @@ const TokenPage = () => {
             </div>
             <ActionPanel bank={bank} />
           </div>
-          <ChartTabs token={bankName} />
+          <ChartTabs bank={bank} />
           <div className="flex items-center justify-center border-y border-th-bkg-3 px-6 py-4 text-center">
             <Tooltip
               content={'The percentage of deposits that have been lent out.'}
