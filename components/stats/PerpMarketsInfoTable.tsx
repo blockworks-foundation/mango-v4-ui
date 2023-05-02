@@ -8,7 +8,6 @@ import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
-import dynamic from 'next/dynamic'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import {
   formatFunding,
@@ -22,10 +21,7 @@ import { PerpStatsItem } from 'types'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { NextRouter, useRouter } from 'next/router'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-const SimpleAreaChart = dynamic(
-  () => import('@components/shared/SimpleAreaChart'),
-  { ssr: false }
-)
+import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 
 export const getOneDayPerpStats = (
   stats: PerpStatsItem[] | null,

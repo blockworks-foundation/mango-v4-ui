@@ -1,12 +1,8 @@
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
-import dynamic from 'next/dynamic'
 import mangoStore from '@store/mangoStore'
 import { PerpStatsItem } from 'types'
-const DetailedAreaChart = dynamic(
-  () => import('@components/shared/DetailedAreaChart'),
-  { ssr: false }
-)
+import DetailedAreaChart from '@components/shared/DetailedAreaChart'
 
 interface OiValueItem {
   date: string

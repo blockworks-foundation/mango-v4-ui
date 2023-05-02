@@ -8,11 +8,7 @@ import AccountActions from './AccountActions'
 import mangoStore from '@store/mangoStore'
 import { formatCurrencyValue } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
-import dynamic from 'next/dynamic'
-const SimpleAreaChart = dynamic(
-  () => import('@components/shared/SimpleAreaChart'),
-  { ssr: false }
-)
+import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../shared/Button'
@@ -44,16 +40,12 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthBar from './HealthBar'
-const AssetsLiabilities = dynamic(() => import('./AssetsLiabilities'), {
-  ssr: false,
-})
-
-const TABS = ['account-value', 'account:assets-liabilities']
+import AssetsLiabilities from './AssetsLiabilities'
 import { PerformanceDataItem, TotalAccountFundingItem } from 'types'
 import { useQuery } from '@tanstack/react-query'
-const FundingDetails = dynamic(() => import('./FundingDetails'), {
-  ssr: false,
-})
+import FundingDetails from './FundingDetails'
+
+const TABS = ['account-value', 'account:assets-liabilities']
 
 const fetchFundingTotals = async (mangoAccountPk: string) => {
   try {
