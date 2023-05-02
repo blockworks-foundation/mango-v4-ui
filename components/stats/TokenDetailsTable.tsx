@@ -45,8 +45,7 @@ const TokenSettingsTable = () => {
                 <Th className="text-right">{t('borrow-fee')}</Th>
                 <Th className="text-right">{t('activity:liquidation-fee')}</Th>
                 <Th className="text-right">{t('trade:oracle')}</Th>
-                {/* Uncomment when insurance fund is ready */}
-                {/* <Th className="text-right">
+                <Th className="text-right">
                   <Tooltip
                     content={t('trade:tooltip-insured', { tokenOrMarket: '' })}
                   >
@@ -54,7 +53,7 @@ const TokenSettingsTable = () => {
                       {t('trade:insured', { token: '' })}
                     </span>
                   </Tooltip>
-                </Th> */}
+                </Th>
               </TrHead>
             </thead>
             <tbody>
@@ -70,9 +69,9 @@ const TokenSettingsTable = () => {
 
                 const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
 
-                // const mintInfo = group.mintInfosMapByMint.get(
-                //   bank.mint.toString()
-                // )
+                const mintInfo = group.mintInfosMapByMint.get(
+                  bank.mint.toString()
+                )
 
                 return (
                   <TrBody key={bank.name}>
@@ -130,11 +129,11 @@ const TokenSettingsTable = () => {
                         <p className="text-right font-body">{oracleProvider}</p>
                       )}
                     </Td>
-                    {/* <Td>
+                    <Td>
                       <p className="text-right">
                         {mintInfo?.groupInsuranceFund ? t('yes') : t('no')}
                       </p>
-                    </Td> */}
+                    </Td>
                   </TrBody>
                 )
               })}

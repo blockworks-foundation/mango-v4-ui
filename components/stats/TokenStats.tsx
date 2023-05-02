@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
-import TokenMarketInfoTable from './TokenMarketInfoTable'
-import TokenSettingsTable from './TokenSettingsTable'
+import TokenOverviewTable from './TokenOverviewTable'
+import TokenDetailsTable from './TokenDetailsTable'
 import { TABS } from './PerpStats'
 
 const TokenStats = () => {
@@ -32,11 +32,11 @@ const TokenStats = () => {
 const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case TABS[0]:
-      return <TokenMarketInfoTable />
+      return <TokenOverviewTable />
     case TABS[1]:
-      return <TokenSettingsTable />
+      return <TokenDetailsTable />
     default:
-      return <TokenMarketInfoTable />
+      return <TokenOverviewTable />
   }
 }
 
