@@ -21,7 +21,7 @@ import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import Decimal from 'decimal.js'
 
-const TokenMarketInfoTable = () => {
+const TokenOverviewTable = () => {
   const { t } = useTranslation(['common', 'token'])
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
@@ -383,4 +383,4 @@ const TokenMarketInfoTable = () => {
   ) : null
 }
 
-export default TokenMarketInfoTable
+export default TokenOverviewTable

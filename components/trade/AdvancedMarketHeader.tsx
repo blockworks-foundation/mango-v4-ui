@@ -1,7 +1,7 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
-import { getOneDayPerpStats } from '@components/stats/PerpMarketsInfoTable'
+import { getOneDayPerpStats } from '@components/stats/PerpMarketsOverviewTable'
 import { ChartBarIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useSelectedMarket from 'hooks/useSelectedMarket'

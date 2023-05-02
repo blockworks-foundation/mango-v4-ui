@@ -5,7 +5,7 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
 import useOracleProvider from 'hooks/useOracleProvider'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
-// import Tooltip from '@components/shared/Tooltip'
+import Tooltip from '@components/shared/Tooltip'
 
 interface PerpMarketDetailsModalProps {
   market: PerpMarket | undefined
@@ -83,8 +83,7 @@ const PerpMarketDetailsModal = ({
             <p className="text-th-fgd-2">{oracleProvider}</p>
           )}
         </div>
-        {/* Uncomment when insurance fund is ready */}
-        {/* <div className="flex justify-between">
+        <div className="flex justify-between">
           <Tooltip
             content={t('trade:tooltip-insured', { tokenOrMarket: market.name })}
           >
@@ -95,7 +94,7 @@ const PerpMarketDetailsModal = ({
           <p className="text-th-fgd-2">
             {market.groupInsuranceFund ? t('yes') : t('no')}
           </p>
-        </div> */}
+        </div>
       </div>
       <Button className="mt-6 w-full" onClick={onClose}>
         {t('close')}

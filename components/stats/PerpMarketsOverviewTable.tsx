@@ -46,7 +46,7 @@ const goToPerpMarketDetails = (market: PerpMarket, router: NextRouter) => {
   router.push({ pathname: router.pathname, query })
 }
 
-const PerpMarketsTable = () => {
+const PerpMarketsOverviewTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
@@ -258,7 +258,7 @@ const PerpMarketsTable = () => {
   )
 }
 
-export default PerpMarketsTable
+export default PerpMarketsOverviewTable
 
 const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
   const { t } = useTranslation('common')

@@ -17,7 +17,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { getOracleProvider } from 'hooks/useOracleProvider'
 
-const TokenSettingsTable = () => {
+const TokenDetailsTable = () => {
   const { t } = useTranslation(['common', 'activity', 'token', 'trade'])
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
@@ -263,4 +263,4 @@ const TokenSettingsTable = () => {
   ) : null
 }
 
-export default TokenSettingsTable
+export default TokenDetailsTable
