@@ -1,6 +1,5 @@
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { formatYAxis } from 'utils/formatting'
@@ -8,10 +7,7 @@ import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { TokenStatsItem } from 'types'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
-const DetailedAreaChart = dynamic(
-  () => import('@components/shared/DetailedAreaChart'),
-  { ssr: false }
-)
+import DetailedAreaChart from '@components/shared/DetailedAreaChart'
 
 interface TotalValueItem {
   date: string

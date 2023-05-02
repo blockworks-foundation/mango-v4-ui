@@ -3,7 +3,6 @@ import SwapForm from './SwapForm'
 // import SwapOnboardingTour from '@components/tours/SwapOnboardingTour'
 // import { useWallet } from '@solana/wallet-adapter-react'
 import SwapInfoTabs from './SwapInfoTabs'
-import dynamic from 'next/dynamic'
 import SwapIntroModal from '@components/modals/SwapIntroModal'
 import { useLocalStorage } from '@solana/wallet-adapter-react'
 import { SHOW_SWAP_INTRO_MODAL } from 'utils/constants'
@@ -12,7 +11,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import mangoStore from '@store/mangoStore'
 // import useLocalStorageState from 'hooks/useLocalStorageState'
 // import { IS_ONBOARDED_KEY } from 'utils/constants'
-const SwapTokenChart = dynamic(() => import('./SwapTokenChart'), { ssr: false })
+import SwapTokenChart from './SwapTokenChart'
 
 const SwapPage = () => {
   const { mangoAccountAddress } = useMangoAccount()

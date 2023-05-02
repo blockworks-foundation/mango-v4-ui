@@ -1,13 +1,9 @@
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
-import dynamic from 'next/dynamic'
 import { formatYAxis } from 'utils/formatting'
 import { HourlyFundingChartData, PerformanceDataItem } from 'types'
 import { ContentType } from 'recharts/types/component/Tooltip'
-const DetailedAreaChart = dynamic(
-  () => import('@components/shared/DetailedAreaChart'),
-  { ssr: false }
-)
+import DetailedAreaChart from '@components/shared/DetailedAreaChart'
 
 const AccountChart = ({
   chartToShow,

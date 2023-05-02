@@ -11,11 +11,8 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
 import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
-import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
-const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
-  ssr: false,
-})
+import PriceChart from '@components/token/PriceChart'
 dayjs.extend(relativeTime)
 
 const DEFAULT_COINGECKO_VALUES = {

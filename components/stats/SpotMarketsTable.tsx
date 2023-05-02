@@ -9,16 +9,12 @@ import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
-import dynamic from 'next/dynamic'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
-const SimpleAreaChart = dynamic(
-  () => import('@components/shared/SimpleAreaChart'),
-  { ssr: false }
-)
+import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')

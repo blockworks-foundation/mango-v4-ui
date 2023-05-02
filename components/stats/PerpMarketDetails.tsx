@@ -1,17 +1,13 @@
 import mangoStore from '@store/mangoStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
-import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
 import { formatYAxis } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
 import { PerpStatsItem } from 'types'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
-const DetailedAreaChart = dynamic(
-  () => import('@components/shared/DetailedAreaChart'),
-  { ssr: false }
-)
+import DetailedAreaChart from '@components/shared/DetailedAreaChart'
 
 const PerpMarketDetails = ({
   marketStats,
