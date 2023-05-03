@@ -53,5 +53,6 @@
     "trading-view": "Trading View",
     "notifications": "Notifications",
     "limit-order-filled": "Limit order filled",
-    "sign-to-notifications": "Sign to notifications center to change settings"
+    "sign-to-notifications": "Sign to notifications center to change settings",
+    "orderbook-bandwidth-saving": "Orderbook Bandwidth Saving"
 }
