@@ -47,8 +47,28 @@ const TokenDetailsTable = () => {
                     </Tooltip>
                   </div>
                 </Th>
-                <Th className="text-right">{t('borrow-fee')}</Th>
-                <Th className="text-right">{t('activity:liquidation-fee')}</Th>
+                <Th>
+                  <div className="flex justify-end text-right">
+                    <Tooltip content={t('tooltip-borrow-fee')}>
+                      <span className="tooltip-underline">
+                        {t('borrow-fee')}
+                      </span>
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end text-right">
+                    <Tooltip
+                      content={t('token:tooltip-liquidation-fee', {
+                        symbol: t('tokens').toLowerCase(),
+                      })}
+                    >
+                      <span className="tooltip-underline">
+                        {t('activity:liquidation-fee')}
+                      </span>
+                    </Tooltip>
+                  </div>
+                </Th>
                 <Th className="text-right">{t('trade:oracle')}</Th>
                 <Th className="text-right">
                   <Tooltip

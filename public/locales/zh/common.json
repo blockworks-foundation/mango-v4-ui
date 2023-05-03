@@ -145,7 +145,7 @@
   "token": "Token",
   "tokens": "Tokens",
   "token-collateral-multiplier": "{{token}} Collateral Multiplier",
-  "tooltip-borrow-fee": "The fee for originating a loan.",
+  "tooltip-borrow-fee": "The fee for opening a new borrow.",
   "tooltip-borrow-rate": "The variable interest rate you'll pay on your borrowed balance",
   "tooltip-collateral-value": "The USD amount you can trade or borrow against",
   "total": "Total",

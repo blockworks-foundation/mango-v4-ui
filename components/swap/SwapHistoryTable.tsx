@@ -70,7 +70,13 @@ const SwapHistoryTable = () => {
               <Th className="text-left">{t('swap:received')}</Th>
               <Th className="text-right">{t('value')}</Th>
               <Th className="text-right">{t('borrow')}</Th>
-              <Th className="text-right">{t('borrow-fee')}</Th>
+              <Th>
+                <div className="flex justify-end text-right">
+                  <Tooltip content={t('tooltip-borrow-fee')}>
+                    <span className="tooltip-underline">{t('borrow-fee')}</span>
+                  </Tooltip>
+                </div>
+              </Th>
               <Th />
             </TrHead>
           </thead>

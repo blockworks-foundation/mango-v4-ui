@@ -145,7 +145,7 @@
   "token": "幣種",
   "token-collateral-multiplier": "{{token}}質押品乘數",
   "tokens": "幣種",
-  "tooltip-borrow-fee": "The fee for originating a loan.",
+  "tooltip-borrow-fee": "The fee for opening a new borrow.",
   "tooltip-borrow-rate": "您將為借入餘額支付的可變利率",
   "tooltip-collateral-value": "您可以交易或借入的美元金額",
   "total": "總計",
