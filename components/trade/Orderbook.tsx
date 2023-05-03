@@ -219,7 +219,7 @@ const Orderbook = () => {
   const [tickSize, setTickSize] = useState(0)
   const [showBids, setShowBids] = useState(true)
   const [showAsks, setShowAsks] = useState(true)
-  const [useOrderbookFeed, setUseOrderbookFeed] = useState(true)
+  const [useOrderbookFeed, setUseOrderbookFeed] = useState(false)
 
   const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)
