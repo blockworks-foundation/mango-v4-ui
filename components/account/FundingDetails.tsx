@@ -205,7 +205,7 @@ const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
 
   return (
     <FadeInFadeOut show={true}>
-      <ContentBox hideBorder hidePadding>
+      <ContentBox className="px-6 pt-4" hideBorder hidePadding>
         {loadingFunding || fetchingFunding ? (
           <SheenLoader className="flex flex-1">
             <div
@@ -214,12 +214,12 @@ const FundingDetails = ({ hideChart }: { hideChart: () => void }) => {
           </SheenLoader>
         ) : filteredData.length ? (
           <div>
-            <div className="flex items-end justify-between sm:items-center">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 md:space-x-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4 md:space-x-6">
                 <IconButton onClick={hideChart} size="medium">
                   <ArrowLeftIcon className="h-5 w-5" />
                 </IconButton>
-                <h2 className="mt-3 text-lg sm:mt-0">{t('funding')}</h2>
+                <h2 className="text-lg">{t('funding')}</h2>
               </div>
               <ChartRangeButtons
                 activeValue={daysToShow}
