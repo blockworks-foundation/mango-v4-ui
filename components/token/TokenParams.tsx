@@ -7,6 +7,7 @@ import {
 import Tooltip from '@components/shared/Tooltip'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import { BN } from '@project-serum/anchor'
+import mangoStore from '@store/mangoStore'
 import { getOracleProvider } from 'hooks/useOracleProvider'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
@@ -18,6 +19,12 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
   const [oracleProvider, oracleLinkPath] = useMemo(() => {
     if (!bank) return ['Unavaliable', '']
     return getOracleProvider(bank)
+  }, [bank])
+
+  const mintInfo = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!bank || !group) return
+    return group.mintInfosMapByMint.get(bank.mint.toString())
   }, [bank])
 
   return (
@@ -84,6 +91,20 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             {(bank.liquidationFee.toNumber() * 100).toFixed(2)}%
           </p>
         </div>
+        {mintInfo ? (
+          <div className="flex justify-between border-t border-th-bkg-3 py-4">
+            <Tooltip
+              content={t('trade:tooltip-insured', { tokenOrMarket: bank.name })}
+            >
+              <p className="tooltip-underline">
+                {t('trade:insured', { token: '' })}
+              </p>
+            </Tooltip>
+            <p className="text-th-fgd-2">
+              {mintInfo.groupInsuranceFund ? t('yes') : t('no')}
+            </p>
+          </div>
+        ) : null}
         <div className="flex justify-between border-y border-th-bkg-3 py-4 md:border-b-0">
           <Tooltip content={t('token:tooltip-deposit-borrow-scaling-start')}>
             <p className="tooltip-underline">

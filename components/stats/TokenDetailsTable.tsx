@@ -69,7 +69,6 @@ const TokenDetailsTable = () => {
                     </Tooltip>
                   </div>
                 </Th>
-                <Th className="text-right">{t('trade:oracle')}</Th>
                 <Th className="text-right">
                   <Tooltip
                     content={
@@ -91,6 +90,7 @@ const TokenDetailsTable = () => {
                     </span>
                   </Tooltip>
                 </Th>
+                <Th className="text-right">{t('trade:oracle')}</Th>
                 <Th />
               </TrHead>
             </thead>
@@ -160,6 +160,11 @@ const TokenDetailsTable = () => {
                       </p>
                     </Td>
                     <Td>
+                      <p className="text-right">
+                        {mintInfo?.groupInsuranceFund ? t('yes') : t('no')}
+                      </p>
+                    </Td>
+                    <Td>
                       {oracleLinkPath ? (
                         <a
                           className="flex items-center justify-end"
@@ -175,11 +180,6 @@ const TokenDetailsTable = () => {
                       ) : (
                         <p className="text-right font-body">{oracleProvider}</p>
                       )}
-                    </Td>
-                    <Td>
-                      <p className="text-right">
-                        {mintInfo?.groupInsuranceFund ? t('yes') : t('no')}
-                      </p>
                     </Td>
                     <Td>
                       <div className="flex justify-end">
@@ -244,7 +244,10 @@ const TokenDetailsTable = () => {
                       <Disclosure.Panel>
                         <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
                           <div className="col-span-1">
-                            <Tooltip content={t('asset-liability-weight-desc')}>
+                            <Tooltip
+                              content={t('asset-liability-weight-desc')}
+                              placement="top-start"
+                            >
                               <p className="tooltip-underline text-xs text-th-fgd-3">
                                 {t('asset-liability-weight')}
                               </p>
@@ -260,7 +263,14 @@ const TokenDetailsTable = () => {
                             </div>
                           </div>
                           <div className="col-span-1">
-                            <p className="text-xs">{t('borrow-fee')}</p>
+                            <Tooltip
+                              content={t('tooltip-borrow-fee')}
+                              placement="top-start"
+                            >
+                              <p className="tooltip-underline text-xs">
+                                {t('borrow-fee')}
+                              </p>
+                            </Tooltip>
                             <p className="font-mono text-th-fgd-1">
                               {(
                                 100 * bank.loanOriginationFeeRate.toNumber()
@@ -269,9 +279,16 @@ const TokenDetailsTable = () => {
                             </p>
                           </div>
                           <div className="col-span-1">
-                            <p className="text-xs">
-                              {t('activity:liquidation-fee')}
-                            </p>
+                            <Tooltip
+                              content={t('token:tooltip-liquidation-fee', {
+                                symbol: bank.name,
+                              })}
+                              placement="top-start"
+                            >
+                              <p className="tooltip-underline text-xs">
+                                {t('activity:liquidation-fee')}
+                              </p>
+                            </Tooltip>
                             <p className="font-mono text-th-fgd-1">
                               {(bank.liquidationFee.toNumber() * 100).toFixed(
                                 2
@@ -316,6 +333,7 @@ const TokenDetailsTable = () => {
                                   </a>
                                 </div>
                               }
+                              placement="top-start"
                             >
                               <span className="tooltip-underline text-xs">
                                 {t('trade:insured', { token: '' })}
