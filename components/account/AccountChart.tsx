@@ -28,7 +28,7 @@ const AccountChart = ({
   const chartData = useMemo(() => {
     if (!data.length) return []
     if (chartToShow === 'cumulative-interest-value') {
-      data.map((d) => ({
+      return data.map((d) => ({
         interest_value:
           d.borrow_interest_cumulative_usd + d.deposit_interest_cumulative_usd,
         time: d.time,
