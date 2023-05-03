@@ -14,6 +14,7 @@
     "maximum-cost": "最大成本",
     "minimum-received": "最小獲取",
     "no-history": "無換幣紀錄",
+    "no-swap-found": "查不到換幣",
     "output-reduce-only-warning": "{{symbol}}處於僅減少模式。換幣限於歸還借貸",
     "paid": "付出",
     "pay": "你將付出",
@@ -34,6 +35,5 @@
     "tooltip-borrow-balance": "您將使用您的 {{balance}} {{token}} 餘額並借入 {{borrowAmount}} {{token}} 來執行此交換。當前的 {{token}} 可變借貸利率為 {{rate}}%",
     "tooltip-borrow-no-balance": "您將借入 {{borrowAmount}} {{token}} 來執行此交換。當前的 {{token}} 可變借貸利率為 {{rate}}%",
     "tooltip-max-slippage": "如果價格下滑超過您的最大滑點，換幣交易將不會被執行",
-    "use-margin": "允許槓桿",
-    "no-swap-found": "查不到換幣"
+    "use-margin": "允許槓桿"
 }
