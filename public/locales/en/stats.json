@@ -1,3 +1,14 @@
 {
-    "perp-details": "{{market}} Stats"
+    "base-liquidation-fee": "Base Liquidation Fee",
+    "perp-details": "{{market}} Stats",
+    "pnl-liquidation-fee": "Positive PnL Liquidation Fee",
+    "settle-pnl-factor": "Settle PnL Factor",
+    "settle-pnl-limit-period": "Settle PnL Limit Period",
+    "tooltip-base-liquidation-fee": "",
+    "tooltip-funding-limits": "The minimum and maximum funding rates.",
+    "tooltip-init-leverage": "",
+    "tooltip-max-leverage": "",
+    "tooltip-pnl-liquidation-fee": "",
+    "tooltip-settle-pnl-factor": "",
+    "tooltip-settle-pnl-limit-period": ""
 }
