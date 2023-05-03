@@ -21,6 +21,11 @@ import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import Decimal from 'decimal.js'
 
+export const goToTokenPage = (token: string, router: NextRouter) => {
+  const query = { ...router.query, ['token']: token }
+  router.push({ pathname: router.pathname, query })
+}
+
 const TokenOverviewTable = () => {
   const { t } = useTranslation(['common', 'token'])
   const { group } = useMangoGroup()
@@ -29,11 +34,6 @@ const TokenOverviewTable = () => {
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
   const banks = useBanksWithBalances()
-
-  const goToTokenPage = (token: string, router: NextRouter) => {
-    const query = { ...router.query, ['token']: token }
-    router.push({ pathname: router.pathname, query })
-  }
 
   return group ? (
     <ContentBox hideBorder hidePadding>
@@ -365,7 +365,7 @@ const TokenOverviewTable = () => {
                                 )
                               }
                             >
-                              {t('token:token-details')}
+                              {t('token:token-stats', { token: bank.name })}
                               <ChevronRightIcon className="ml-2 h-5 w-5" />
                             </LinkButton>
                           </div>

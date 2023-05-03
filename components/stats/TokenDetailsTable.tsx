@@ -2,6 +2,7 @@ import { Disclosure, Transition } from '@headlessui/react'
 import {
   ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
@@ -16,6 +17,9 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { getOracleProvider } from 'hooks/useOracleProvider'
+import { useRouter } from 'next/router'
+import { goToTokenPage } from './TokenOverviewTable'
+import { LinkButton } from '@components/shared/Button'
 
 const TokenDetailsTable = () => {
   const { t } = useTranslation(['common', 'activity', 'token', 'trade'])
@@ -24,6 +28,7 @@ const TokenDetailsTable = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances()
+  const router = useRouter()
 
   return group ? (
     <ContentBox hideBorder hidePadding>
@@ -66,6 +71,7 @@ const TokenDetailsTable = () => {
                     </span>
                   </Tooltip>
                 </Th>
+                <Th />
               </TrHead>
             </thead>
             <tbody>
@@ -86,7 +92,16 @@ const TokenDetailsTable = () => {
                 )
 
                 return (
-                  <TrBody key={bank.name}>
+                  <TrBody
+                    className="md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                    key={bank.name}
+                    onClick={() =>
+                      goToTokenPage(
+                        bank.name.split(' ')[0].toUpperCase(),
+                        router
+                      )
+                    }
+                  >
                     <Td>
                       <div className="flex items-center">
                         <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -146,6 +161,11 @@ const TokenDetailsTable = () => {
                         {mintInfo?.groupInsuranceFund ? t('yes') : t('no')}
                       </p>
                     </Td>
+                    <Td>
+                      <div className="flex justify-end">
+                        <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+                      </div>
+                    </Td>
                   </TrBody>
                 )
               })}
@@ -163,9 +183,7 @@ const TokenDetailsTable = () => {
               )?.logoURI
             }
             const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
-            // const mintInfo = group.mintInfosMapByMint.get(
-            //   bank.mint.toString()
-            // )
+            const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
             return (
               <Disclosure key={bank.name}>
                 {({ open }) => (
@@ -260,6 +278,48 @@ const TokenDetailsTable = () => {
                                 {oracleProvider}
                               </p>
                             )}
+                          </div>
+                          <div className="col-span-1">
+                            <Tooltip
+                              content={
+                                <div>
+                                  {t('trade:tooltip-insured', {
+                                    tokenOrMarket: '',
+                                  })}
+                                  <a
+                                    className="mt-2 flex items-center"
+                                    href="https://docs.mango.markets/mango-markets/insurance-fund"
+                                    rel="noopener noreferrer"
+                                    target="_blank"
+                                  >
+                                    Learn more
+                                  </a>
+                                </div>
+                              }
+                            >
+                              <span className="tooltip-underline text-xs">
+                                {t('trade:insured', { token: '' })}
+                              </span>
+                            </Tooltip>
+                            <p className="font-mono text-th-fgd-1">
+                              {mintInfo?.groupInsuranceFund
+                                ? t('yes')
+                                : t('no')}
+                            </p>
+                          </div>
+                          <div className="col-span-1">
+                            <LinkButton
+                              className="flex items-center"
+                              onClick={() =>
+                                goToTokenPage(
+                                  bank.name.split(' ')[0].toUpperCase(),
+                                  router
+                                )
+                              }
+                            >
+                              {t('token:token-stats', { token: bank.name })}
+                              <ChevronRightIcon className="ml-2 h-5 w-5" />
+                            </LinkButton>
                           </div>
                         </div>
                       </Disclosure.Panel>

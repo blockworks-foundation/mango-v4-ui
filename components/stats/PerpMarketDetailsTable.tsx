@@ -8,16 +8,21 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import {
   ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import { getOracleProvider } from 'hooks/useOracleProvider'
+import { goToPerpMarketDetails } from './PerpMarketsOverviewTable'
+import { useRouter } from 'next/router'
+import { LinkButton } from '@components/shared/Button'
 
 const PerpMarketDetailsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+  const router = useRouter()
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -54,6 +59,7 @@ const PerpMarketDetailsTable = () => {
                   </span>
                 </Tooltip>
               </Th>
+              <Th />
             </TrHead>
           </thead>
           <tbody>
@@ -75,7 +81,11 @@ const PerpMarketDetailsTable = () => {
               const [oracleProvider, oracleLinkPath] = getOracleProvider(market)
 
               return (
-                <TrBody key={publicKey.toString()}>
+                <TrBody
+                  className="md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                  key={publicKey.toString()}
+                  onClick={() => goToPerpMarketDetails(market, router)}
+                >
                   <Td>
                     <div className="flex items-center">
                       <MarketLogos market={market} />
@@ -139,6 +149,11 @@ const PerpMarketDetailsTable = () => {
                     <p className="text-right">
                       {groupInsuranceFund ? t('yes') : t('no')}
                     </p>
+                  </Td>
+                  <Td>
+                    <div className="flex justify-end">
+                      <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+                    </div>
                   </Td>
                 </TrBody>
               )
@@ -292,6 +307,17 @@ const PerpMarketDetailsTable = () => {
                             <p className="font-mono text-th-fgd-1">
                               {groupInsuranceFund ? t('yes') : t('no')}
                             </p>
+                          </div>
+                          <div className="col-span-1">
+                            <LinkButton
+                              className="flex items-center"
+                              onClick={() =>
+                                goToPerpMarketDetails(market, router)
+                              }
+                            >
+                              {t('stats:perp-details', { market: market.name })}
+                              <ChevronRightIcon className="ml-2 h-5 w-5" />
+                            </LinkButton>
                           </div>
                         </div>
                       </Disclosure.Panel>

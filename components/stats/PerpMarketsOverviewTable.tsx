@@ -41,7 +41,10 @@ export const getOneDayPerpStats = (
     : []
 }
 
-const goToPerpMarketDetails = (market: PerpMarket, router: NextRouter) => {
+export const goToPerpMarketDetails = (
+  market: PerpMarket,
+  router: NextRouter
+) => {
   const query = { ...router.query, ['market']: market.name }
   router.push({ pathname: router.pathname, query })
 }
