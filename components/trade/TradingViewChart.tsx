@@ -77,7 +77,6 @@ const TradingViewChart = () => {
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
   const [headerReady, setHeaderReady] = useState(false)
-  const [spotOrPerp, setSpotOrPerp] = useState('spot')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
   const [showOrderLines, toggleShowOrderLines] = useState(
@@ -111,7 +110,6 @@ const TradingViewChart = () => {
       chartsStorageUrl: 'https://tv-backend-v4.herokuapp.com',
       chartsStorageApiVersion: '1.1' as AvailableSaveloadVersions,
       clientId: 'mango.markets',
-      userId: '',
       fullscreen: false,
       autosize: true,
       studiesOverrides: {
@@ -157,20 +155,6 @@ const TradingViewChart = () => {
       }
     }
   }, [selectedMarket, chartReady])
-
-  useEffect(() => {
-    if (
-      selectedMarketName?.toLowerCase().includes('perp') &&
-      spotOrPerp !== 'perp'
-    ) {
-      setSpotOrPerp('perp')
-    } else if (
-      !selectedMarketName?.toLowerCase().includes('perp') &&
-      spotOrPerp !== 'spot'
-    ) {
-      setSpotOrPerp('spot')
-    }
-  }, [selectedMarketName, spotOrPerp])
 
   useEffect(() => {
     if (showStablePrice !== showStablePriceLocalStorage) {
@@ -735,9 +719,13 @@ const TradingViewChart = () => {
           [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
         }
       })
+      const mkt = mangoStore.getState().selectedMarket.current
       const marketAddress =
-        mangoStore.getState().selectedMarket.current?.publicKey.toString() ||
+        (mkt instanceof Serum3Market
+          ? mkt?.serumMarketExternal.toString()
+          : mkt?.publicKey.toString()) ||
         '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
         symbol: marketAddress,
@@ -787,7 +775,7 @@ const TradingViewChart = () => {
         charts_storage_url: defaultProps.chartsStorageUrl,
         charts_storage_api_version: defaultProps.chartsStorageApiVersion,
         client_id: defaultProps.clientId,
-        user_id: userId ? userId : defaultProps.userId,
+        user_id: userId ? userId : undefined,
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,

@@ -212,7 +212,7 @@ export default {
       }
     }
     const ticker = mangoStore.getState().selectedMarket.name
-    console.log('ticker', ticker, mangoStore.getState().group)
+    console.log('ticker, symbolAddress', ticker, symbolAddress)
 
     const symbolInfo: SymbolInfo = {
       address: symbolItem.address,
