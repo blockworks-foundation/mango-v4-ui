@@ -153,6 +153,16 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
           </SheenLoader>
         ) : filteredData.length ? (
           <div className="relative">
+            {setDaysToShow ? (
+              <div className="mb-4 sm:absolute sm:-top-1 sm:right-0 sm:mb-0 sm:-mb-2 sm:flex sm:justify-end">
+                <ChartRangeButtons
+                  activeValue={daysToShow}
+                  names={['24H', '7D', '30D']}
+                  values={['1', '7', '30']}
+                  onChange={(v) => setDaysToShow(v)}
+                />
+              </div>
+            ) : null}
             <div className="flex items-start justify-between">
               <div className="flex flex-col md:flex-row md:items-start md:space-x-6">
                 {hideChart ? (
@@ -165,18 +175,20 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                   </IconButton>
                 ) : null}
                 <div>
-                  {tooltipContent ? (
-                    <Tooltip content={tooltipContent}>
-                      <p
-                        className={`${titleClasses}
+                  {title ? (
+                    tooltipContent ? (
+                      <Tooltip content={tooltipContent}>
+                        <p
+                          className={`${titleClasses}
                       tooltip-underline`}
-                      >
-                        {title}
-                      </p>
-                    </Tooltip>
-                  ) : (
-                    <p className={titleClasses}>{title}</p>
-                  )}
+                        >
+                          {title}
+                        </p>
+                      </Tooltip>
+                    ) : (
+                      <p className={titleClasses}>{title}</p>
+                    )
+                  ) : null}
                   {mouseData ? (
                     <div>
                       <div
@@ -294,16 +306,6 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
             <div
               className={`-mt-1 ${heightClass ? heightClass : 'h-96'} w-auto`}
             >
-              {setDaysToShow ? (
-                <div className="absolute -top-1 right-0 -mb-2 flex justify-end">
-                  <ChartRangeButtons
-                    activeValue={daysToShow}
-                    names={['24H', '7D', '30D']}
-                    values={['1', '7', '30']}
-                    onChange={(v) => setDaysToShow(v)}
-                  />
-                </div>
-              ) : null}
               <div className="-mx-6 mt-6 h-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
