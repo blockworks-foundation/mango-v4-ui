@@ -37,7 +37,9 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
               {bank.initAssetWeight.toFixed(2)}
             </p>
             <span className="text-th-fgd-4">|</span>
-            <p>{bank.initLiabWeight.toFixed(2)}</p>
+            <p className="font-mono text-th-fgd-2">
+              {bank.initLiabWeight.toFixed(2)}
+            </p>
           </div>
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
@@ -51,7 +53,9 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
               {bank.maintAssetWeight.toFixed(2)}
             </p>
             <span className="text-th-fgd-4">|</span>
-            <p>{bank.maintLiabWeight.toFixed(2)}</p>
+            <p className="font-mono text-th-fgd-2">
+              {bank.maintLiabWeight.toFixed(2)}
+            </p>
           </div>
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
