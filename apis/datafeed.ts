@@ -23,6 +23,7 @@ import {
   ResolutionString,
   SearchSymbolResultItem,
 } from '@public/charting_library'
+import { PublicKey } from '@solana/web3.js'
 
 export const SUPPORTED_RESOLUTIONS = [
   '1',
@@ -211,8 +212,19 @@ export default {
         symbol: '',
       }
     }
-    const ticker = mangoStore.getState().selectedMarket.name
-    console.log('ticker, symbolAddress', ticker, symbolAddress)
+    const group = mangoStore.getState().group
+    let ticker = mangoStore.getState().selectedMarket.name
+    if (group && symbolAddress) {
+      const serumMktName = group.getSerum3MarketByExternalMarket(
+        new PublicKey(symbolAddress)
+      )?.name
+      const perpMktName = Array.from(
+        group.perpMarketsMapByMarketIndex.values()
+      ).find(
+        (perpMarket) => perpMarket.publicKey.toString() === symbolAddress
+      )?.name
+      ticker = serumMktName || perpMktName || ticker
+    }
 
     const symbolInfo: SymbolInfo = {
       address: symbolItem.address,
