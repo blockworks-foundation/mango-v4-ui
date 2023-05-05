@@ -24,6 +24,7 @@ import {
   SearchSymbolResultItem,
 } from '@public/charting_library'
 import { PublicKey } from '@solana/web3.js'
+import { Group } from '@blockworks-foundation/mango-v4'
 
 export const SUPPORTED_RESOLUTIONS = [
   '1',
@@ -69,13 +70,33 @@ const configurationData = {
   exchanges: [],
 }
 
-// async function getAllSymbols() {
-//   const data = await makeApiRequest(
-//     'public/tokenlist?sort_by=v24hUSD&sort_type=desc&offset=0&limit=-1'
-//   )
+const getTickerFromMktAddress = (
+  group: Group,
+  symbolAddress: string
+): string | null => {
+  try {
+    const serumMkt = group.getSerum3MarketByExternalMarket(
+      new PublicKey(symbolAddress)
+    )
 
-//   return data.data.tokens
-// }
+    if (serumMkt) {
+      return serumMkt.name
+    }
+  } catch {
+    console.log('Address is not a serum market')
+  }
+
+  const perpMarkets = Array.from(group.perpMarketsMapByMarketIndex.values())
+  const perpMkt = perpMarkets.find(
+    (perpMarket) => perpMarket.publicKey.toString() === symbolAddress
+  )
+
+  if (perpMkt) {
+    return perpMkt.name
+  }
+
+  return null
+}
 
 let marketType: 'spot' | 'perp'
 
@@ -212,27 +233,15 @@ export default {
         symbol: '',
       }
     }
-    const group = mangoStore.getState().group
-    const spotMarkets = await mangoStore.getState().serumMarkets
-    const isSpotMarket = spotMarkets.find(
-      (market) =>
-        market.serumMarketExternal.toString() === symbolAddress ||
-        market.publicKey.toString() === symbolAddress
-    )
-    let ticker
+
+    const mangoStoreState = mangoStore.getState()
+    const group = mangoStoreState.group
+    let ticker = mangoStoreState.selectedMarket.name
+
     if (group && symbolAddress) {
-      if (isSpotMarket) {
-        const serumMktName = group.getSerum3MarketByExternalMarket(
-          new PublicKey(symbolAddress)
-        )?.name
-        ticker = serumMktName
-      } else {
-        const perpMktName = Array.from(
-          group.perpMarketsMapByMarketIndex.values()
-        ).find(
-          (perpMarket) => perpMarket.publicKey.toString() === symbolAddress
-        )?.name
-        ticker = perpMktName
+      const newTicker = getTickerFromMktAddress(group, symbolAddress)
+      if (newTicker) {
+        ticker = newTicker
       }
     }
 
