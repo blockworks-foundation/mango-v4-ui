@@ -213,23 +213,31 @@ export default {
       }
     }
     const group = mangoStore.getState().group
-    let ticker = mangoStore.getState().selectedMarket.name
+    const spotMarkets = mangoStore.getState().serumMarkets
+    const isSpotMarket = spotMarkets.find(
+      (market) => market.serumMarketExternal.toString() === symbolAddress
+    )
+    let ticker
     if (group && symbolAddress) {
-      const serumMktName = group.getSerum3MarketByExternalMarket(
-        new PublicKey(symbolAddress)
-      )?.name
-      const perpMktName = Array.from(
-        group.perpMarketsMapByMarketIndex.values()
-      ).find(
-        (perpMarket) => perpMarket.publicKey.toString() === symbolAddress
-      )?.name
-      ticker = serumMktName || perpMktName || ticker
+      if (isSpotMarket) {
+        const serumMktName = group.getSerum3MarketByExternalMarket(
+          new PublicKey(symbolAddress)
+        )?.name
+        ticker = serumMktName
+      } else {
+        const perpMktName = Array.from(
+          group.perpMarketsMapByMarketIndex.values()
+        ).find(
+          (perpMarket) => perpMarket.publicKey.toString() === symbolAddress
+        )?.name
+        ticker = perpMktName
+      }
     }
 
     const symbolInfo: SymbolInfo = {
       address: symbolItem.address,
       ticker: symbolItem.address,
-      name: symbolItem.symbol || symbolItem.address,
+      name: ticker || symbolItem.address,
       description: ticker || symbolItem.address,
       type: symbolItem.type,
       session: '24x7',
