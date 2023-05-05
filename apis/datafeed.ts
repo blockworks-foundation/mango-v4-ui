@@ -23,6 +23,8 @@ import {
   ResolutionString,
   SearchSymbolResultItem,
 } from '@public/charting_library'
+import { PublicKey } from '@solana/web3.js'
+import { Group } from '@blockworks-foundation/mango-v4'
 
 export const SUPPORTED_RESOLUTIONS = [
   '1',
@@ -68,13 +70,33 @@ const configurationData = {
   exchanges: [],
 }
 
-// async function getAllSymbols() {
-//   const data = await makeApiRequest(
-//     'public/tokenlist?sort_by=v24hUSD&sort_type=desc&offset=0&limit=-1'
-//   )
+const getTickerFromMktAddress = (
+  group: Group,
+  symbolAddress: string
+): string | null => {
+  try {
+    const serumMkt = group.getSerum3MarketByExternalMarket(
+      new PublicKey(symbolAddress)
+    )
 
-//   return data.data.tokens
-// }
+    if (serumMkt) {
+      return serumMkt.name
+    }
+  } catch {
+    console.log('Address is not a serum market')
+  }
+
+  const perpMarkets = Array.from(group.perpMarketsMapByMarketIndex.values())
+  const perpMkt = perpMarkets.find(
+    (perpMarket) => perpMarket.publicKey.toString() === symbolAddress
+  )
+
+  if (perpMkt) {
+    return perpMkt.name
+  }
+
+  return null
+}
 
 let marketType: 'spot' | 'perp'
 
@@ -211,13 +233,22 @@ export default {
         symbol: '',
       }
     }
-    const ticker = mangoStore.getState().selectedMarket.name
-    console.log('ticker', ticker, mangoStore.getState().group)
+
+    const mangoStoreState = mangoStore.getState()
+    const group = mangoStoreState.group
+    let ticker = mangoStoreState.selectedMarket.name
+
+    if (group && symbolAddress) {
+      const newTicker = getTickerFromMktAddress(group, symbolAddress)
+      if (newTicker) {
+        ticker = newTicker
+      }
+    }
 
     const symbolInfo: SymbolInfo = {
       address: symbolItem.address,
       ticker: symbolItem.address,
-      name: symbolItem.symbol || symbolItem.address,
+      name: ticker || symbolItem.address,
       description: ticker || symbolItem.address,
       type: symbolItem.type,
       session: '24x7',
@@ -277,7 +308,6 @@ export default {
           periodParams
         )
       }
-
       if (!bars || bars.length === 0) {
         // "noData" should be set if there is no data in the requested period.
         onHistoryCallback([], {

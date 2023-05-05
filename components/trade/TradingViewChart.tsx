@@ -7,6 +7,7 @@ import {
   ResolutionString,
   IOrderLineAdapter,
   EntityId,
+  AvailableSaveloadVersions,
   IExecutionLineAdapter,
   Direction,
 } from '@public/charting_library'
@@ -16,6 +17,7 @@ import {
   DEFAULT_MARKET_NAME,
   SHOW_ORDER_LINES_KEY,
   SHOW_STABLE_PRICE_KEY,
+  TV_USER_ID_KEY,
 } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
@@ -75,7 +77,6 @@ const TradingViewChart = () => {
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
   const [headerReady, setHeaderReady] = useState(false)
-  const [spotOrPerp, setSpotOrPerp] = useState('spot')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
   const [showOrderLines, toggleShowOrderLines] = useState(
@@ -93,6 +94,7 @@ const TradingViewChart = () => {
   const [showStablePrice, toggleShowStablePrice] = useState(
     showStablePriceLocalStorage
   )
+  const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
   const stablePrice = useStablePrice()
   const stablePriceLine = mangoStore((s) => s.tradingView.stablePriceLine)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
@@ -105,6 +107,9 @@ const TradingViewChart = () => {
       theme: 'Dark',
       container: 'tv_chart_container',
       libraryPath: '/charting_library/',
+      chartsStorageUrl: 'https://tv-backend-v4.herokuapp.com',
+      chartsStorageApiVersion: '1.1' as AvailableSaveloadVersions,
+      clientId: 'mango.markets',
       fullscreen: false,
       autosize: true,
       studiesOverrides: {
@@ -150,20 +155,6 @@ const TradingViewChart = () => {
       }
     }
   }, [selectedMarket, chartReady])
-
-  useEffect(() => {
-    if (
-      selectedMarketName?.toLowerCase().includes('perp') &&
-      spotOrPerp !== 'perp'
-    ) {
-      setSpotOrPerp('perp')
-    } else if (
-      !selectedMarketName?.toLowerCase().includes('perp') &&
-      spotOrPerp !== 'spot'
-    ) {
-      setSpotOrPerp('spot')
-    }
-  }, [selectedMarketName, spotOrPerp])
 
   useEffect(() => {
     if (showStablePrice !== showStablePriceLocalStorage) {
@@ -728,9 +719,13 @@ const TradingViewChart = () => {
           [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
         }
       })
+      const mkt = mangoStore.getState().selectedMarket.current
       const marketAddress =
-        mangoStore.getState().selectedMarket.current?.publicKey.toString() ||
+        (mkt instanceof Serum3Market
+          ? mkt?.serumMarketExternal.toString()
+          : mkt?.publicKey.toString()) ||
         '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
         symbol: marketAddress,
@@ -741,7 +736,10 @@ const TradingViewChart = () => {
           defaultProps.container as ChartingLibraryWidgetOptions['container'],
         library_path: defaultProps.libraryPath as string,
         locale: 'en',
-        enabled_features: ['hide_left_toolbar_by_default'],
+        enabled_features: [
+          'hide_left_toolbar_by_default',
+          // userId ? 'study_templates' : '',
+        ],
         disabled_features: [
           'use_localstorage_for_settings',
           'timeframes_toolbar',
@@ -755,7 +753,7 @@ const TradingViewChart = () => {
           'header_screenshot',
           // 'header_widget_dom_node',
           // 'header_widget',
-          'header_saveload',
+          !userId ? 'header_saveload' : '',
           'header_undo_redo',
           'header_interval_dialog_button',
           'show_interval_dialog_on_key_press',
@@ -774,6 +772,10 @@ const TradingViewChart = () => {
             }
           },
         },
+        charts_storage_url: defaultProps.chartsStorageUrl,
+        charts_storage_api_version: defaultProps.chartsStorageApiVersion,
+        client_id: defaultProps.clientId,
+        user_id: userId ? userId : undefined,
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,
@@ -801,7 +803,7 @@ const TradingViewChart = () => {
         setHeaderReady(true)
       })
     }
-  }, [theme, defaultProps, isMobile])
+  }, [theme, defaultProps, isMobile, userId])
 
   // draw custom buttons when chart is ready
   useEffect(() => {
