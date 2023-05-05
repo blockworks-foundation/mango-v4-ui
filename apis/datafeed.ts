@@ -213,9 +213,11 @@ export default {
       }
     }
     const group = mangoStore.getState().group
-    const spotMarkets = mangoStore.getState().serumMarkets
+    const spotMarkets = await mangoStore.getState().serumMarkets
     const isSpotMarket = spotMarkets.find(
-      (market) => market.serumMarketExternal.toString() === symbolAddress
+      (market) =>
+        market.serumMarketExternal.toString() === symbolAddress ||
+        market.publicKey.toString() === symbolAddress
     )
     let ticker
     if (group && symbolAddress) {
