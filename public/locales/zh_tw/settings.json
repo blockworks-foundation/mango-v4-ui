@@ -53,5 +53,6 @@
     "transaction-success": "交易成功",
     "notifications": "通知",
     "limit-order-filled": "限价单成交",
-    "sign-to-notifications": "登录通知中心以更改设置"
+    "sign-to-notifications": "登录通知中心以更改设置",
+    "orderbook-bandwidth-saving": "Orderbook Bandwidth Saving"
 }

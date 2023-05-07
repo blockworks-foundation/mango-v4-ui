@@ -10,7 +10,7 @@ import {
   formatNumericValue,
   getDecimalCount,
 } from 'utils/numbers'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY, USE_ORDERBOOK_FEED_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
 import { OrderbookL2 } from 'types'
@@ -219,7 +219,9 @@ const Orderbook = () => {
   const [tickSize, setTickSize] = useState(0)
   const [showBids, setShowBids] = useState(true)
   const [showAsks, setShowAsks] = useState(true)
-  const [useOrderbookFeed, setUseOrderbookFeed] = useState(false)
+  const [useOrderbookFeed, setUseOrderbookFeed] = useState(
+    localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true' ?? true
+  )
 
   const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)
@@ -414,7 +416,8 @@ const Orderbook = () => {
       let lastWriteVersion = 0
       orderbookFeed.onL2Update((update) => {
         const selectedMarket = mangoStore.getState().selectedMarket
-        if (!selectedMarket || !selectedMarket.current) return
+        if (!useOrderbookFeed || !selectedMarket || !selectedMarket.current)
+          return
         if (update.market != selectedMarket.current.publicKey.toBase58()) return
 
         // ensure updates are applied in the correct order by checking slot and writeVersion
@@ -475,7 +478,11 @@ const Orderbook = () => {
       })
 
       orderbookFeed.onL2Checkpoint((checkpoint) => {
-        if (checkpoint.market !== market.publicKey.toBase58()) return
+        if (
+          !useOrderbookFeed ||
+          checkpoint.market !== market.publicKey.toBase58()
+        )
+          return
         set((state) => {
           state.selectedMarket.lastSeenSlot.bids = checkpoint.slot
           state.selectedMarket.lastSeenSlot.asks = checkpoint.slot
