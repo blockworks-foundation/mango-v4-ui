@@ -1,4 +1,4 @@
-import DelegateModal from '@components/modals/governance/DelegateModal'
+import GovernanceDelegateModal from '@components/modals/governance/GovernanceDelegateModal'
 import Button from '@components/shared/Button'
 import GovernanceStore from '@store/governanceStore'
 import { useTranslation } from 'next-i18next'
@@ -22,10 +22,10 @@ const VotingPower = () => {
       >
         {t('use-delegate')}
       </Button>
-      <DelegateModal
+      <GovernanceDelegateModal
         isOpen={delegateModal}
         onClose={() => setDelegateModal(false)}
-      ></DelegateModal>
+      ></GovernanceDelegateModal>
       {t('your-votes')}{' '}
       <span className="font-mono text-th-fgd-2">
         {!loadingVoter

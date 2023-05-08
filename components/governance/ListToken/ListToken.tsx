@@ -89,7 +89,7 @@ const ListToken = () => {
   const loadingRealm = GovernanceStore((s) => s.loadingRealm)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const proposals = GovernanceStore((s) => s.proposals)
-  const fetchVoter = GovernanceStore((s) => s.fetchVoter)
+  const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
   const connectionContext = GovernanceStore((s) => s.connectionContext)
   const { t } = useTranslation(['governance'])
 
@@ -364,7 +364,7 @@ const ListToken = () => {
       return
     }
     if (!wallet?.publicKey || !vsrClient || !connectionContext) return
-    await fetchVoter(wallet.publicKey, vsrClient, connectionContext)
+    await getCurrentVotingPower(wallet.publicKey, vsrClient, connectionContext)
 
     if (voter.voteWeight.cmp(minVoterWeight) === -1) {
       notify({
