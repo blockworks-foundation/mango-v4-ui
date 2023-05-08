@@ -14,6 +14,7 @@ import {
 } from '@solana/spl-governance'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import produce from 'immer'
+import { tryParse } from 'utils/formatting'
 import {
   MANGO_GOVERNANCE_PROGRAM,
   MANGO_MINT,
@@ -98,13 +99,17 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
       connectionContext,
       MANGO_GOVERNANCE_PROGRAM
     )
-    const selectedDelegatePk = localStorage.getItem(
+
+    const unparsedSelectedDelegatePk = localStorage.getItem(
       `${wallet.toBase58()}${GOVERNANCE_DELEGATE_KEY}`
     )
+    const selectedDelegatePk: string = unparsedSelectedDelegatePk
+      ? tryParse(unparsedSelectedDelegatePk)
+      : ''
+
     const selectedDelegate = delegatedAccounts.find(
       (x) => x.pubkey.toBase58() === selectedDelegatePk
     )
-    console.log(selectedDelegatePk)
 
     if (selectedDelegatePk && selectedDelegate) {
       selectedWallet = selectedDelegate.account.governingTokenOwner
