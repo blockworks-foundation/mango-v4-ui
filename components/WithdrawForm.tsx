@@ -1,4 +1,4 @@
-import { HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType, toNative } from '@blockworks-foundation/mango-v4'
 import {
   ArrowUpTrayIcon,
   ExclamationCircleIcon,
@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 
 import mangoStore from '@store/mangoStore'
@@ -38,6 +38,10 @@ import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
+import { AccountRetriever } from '@blockworks-foundation/mango-v4/dist/types/src/client'
+import { AccountMeta, PublicKey } from '@solana/web3.js'
+import { BN } from '@project-serum/anchor'
+import Input from './forms/Input'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -59,6 +63,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const { connected } = useWallet()
   const { handleConnect } = useEnhancedWallet()
   const banks = useBanksWithBalances('maxWithdraw')
+  const [destinationAddress, setDestinationAddress] = useState('')
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -110,13 +115,37 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     if (!mangoAccount || !group || !bank) return
     setSubmitting(true)
     try {
-      const tx = await client.tokenWithdraw(
-        group,
-        mangoAccount,
-        bank.mint,
+      const nativeAmount = toNative(
         parseFloat(inputAmount),
-        false
+        group.getMintDecimals(bank.mint)
       )
+
+      const healthRemainingAccounts: PublicKey[] =
+        client.buildHealthRemainingAccounts(group, [mangoAccount], [bank], [])
+
+      const ix = await client.program.methods
+        .tokenWithdraw(new BN(nativeAmount), false)
+        .accounts({
+          group: group.publicKey,
+          account: mangoAccount.publicKey,
+          owner: mangoAccount.owner,
+          bank: bank.publicKey,
+          vault: bank.vault,
+          oracle: bank.oracle,
+          tokenAccount: new PublicKey(destinationAddress),
+        })
+        .remainingAccounts(
+          healthRemainingAccounts.map(
+            (pk) =>
+              ({
+                pubkey: pk,
+                isWritable: false,
+                isSigner: false,
+              } as AccountMeta)
+          )
+        )
+        .instruction()
+      const tx = await client.sendAndConfirmTransaction([ix])
       notify({
         title: 'Transaction confirmed',
         type: 'success',
@@ -241,6 +270,19 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   unit="%"
                 />
               </div>
+            </div>
+            <div className="pb-4 pt-4">
+              <Label text="Destination Token Account Address" />
+              <Input
+                type="text"
+                name="name"
+                id="name"
+                placeholder="e.g. Sweet Caroline"
+                value={destinationAddress}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setDestinationAddress(e.target.value)
+                }
+              />
             </div>
             {bank ? (
               <div className="my-6 space-y-1.5 border-y border-th-bkg-3 px-2 py-4">
