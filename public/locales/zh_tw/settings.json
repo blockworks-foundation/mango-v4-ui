@@ -20,11 +20,13 @@
     "high-contrast": "高對比度",
     "language": "語言",
     "light": "光",
+    "limit-order-filled": "限价单成交",
     "lychee": "荔枝",
     "mango": "芒果",
     "mango-classic": "芒果經典",
     "medium": "中",
     "notification-position": "通知位置",
+    "notifications": "通知",
     "number-scroll": "數字滑動",
     "olive": "橄欖",
     "orderbook-flash": "掛單薄閃光",
@@ -35,6 +37,7 @@
     "rpc-url": "輸入RPC URL",
     "russian": "Русский",
     "save": "存",
+    "sign-to-notifications": "登录通知中心以更改设置",
     "slider": "滑塊",
     "solana-beach": "Solana Beach",
     "solana-explorer": "Solana Explorer",
@@ -51,8 +54,6 @@
     "trade-layout": "交易佈局",
     "trading-view": "Trading View",
     "transaction-fail": "交易失敗",
-    "transaction-success": "交易成功",
-    "notifications": "通知",
-    "limit-order-filled": "限价单成交",
+    "transaction-success": "交易成功"
     "orderbook-bandwidth-saving": "Orderbook Bandwidth Saving"
 }

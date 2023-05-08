@@ -5,7 +5,7 @@
     "fees-paid-to": "繳給{{route}}的費用",
     "health-impact": "健康影響",
     "hide-fees": "隱藏費用",
-    "hide-swap-history": "Hide Swap History",
+    "hide-swap-history": "隱藏換幣紀錄",
     "input-reduce-only-warning": "{{symbol}}處於僅減少模式。您可以將餘額換成另一個幣種",
     "insufficient-balance": "{{symbol}}餘額不夠",
     "insufficient-collateral": "質押品不夠",
@@ -14,6 +14,7 @@
     "maximum-cost": "最大成本",
     "minimum-received": "最小獲取",
     "no-history": "無換幣紀錄",
+    "no-swap-found": "查不到換幣",
     "output-reduce-only-warning": "{{symbol}}處於僅減少模式。換幣限於歸還借貸",
     "paid": "付出",
     "pay": "你將付出",
@@ -24,7 +25,7 @@
     "received": "獲取",
     "review-swap": "檢視換幣",
     "show-fees": "顯示費用",
-    "show-swap-history": "Show Swap History – Prices shown are from CoinGecko and may not match your swap price",
+    "show-swap-history": "顯示換幣紀錄–價格來自CoinGecko而也許跟換幣價格不同",
     "slippage": "下滑",
     "swap-history": "換幣紀錄",
     "swap-into-1": "以你的質押品來借貸並進行高達5倍槓桿換幣。",
@@ -34,6 +35,5 @@
     "tooltip-borrow-balance": "您將使用您的 {{balance}} {{token}} 餘額並借入 {{borrowAmount}} {{token}} 來執行此交換。當前的 {{token}} 可變借貸利率為 {{rate}}%",
     "tooltip-borrow-no-balance": "您將借入 {{borrowAmount}} {{token}} 來執行此交換。當前的 {{token}} 可變借貸利率為 {{rate}}%",
     "tooltip-max-slippage": "如果價格下滑超過您的最大滑點，換幣交易將不會被執行",
-    "use-margin": "允許槓桿",
-    "no-swap-found": "查不到換幣"
+    "use-margin": "允許槓桿"
 }
