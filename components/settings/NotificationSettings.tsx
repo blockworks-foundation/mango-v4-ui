@@ -1,20 +1,22 @@
 import Switch from '@components/forms/Switch'
+import { createSolanaMessage } from '@components/notifications/NotificationsDrawer'
+import Button from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
+import { BellIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useHeaders } from 'hooks/notifications/useHeaders'
 import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
 import { useNotificationSettings } from 'hooks/notifications/useNotificationSettings'
 import { useTranslation } from 'next-i18next'
 import { NOTIFICATION_API } from 'utils/constants'
-
-export const INITIAL_SOUND_SETTINGS = {
-  'recent-trades': false,
-  'swap-success': false,
-  'transaction-success': false,
-  'transaction-fail': false,
-}
+import NotificationCookieStore from '@store/notificationCookieStore'
 
 const NotificationSettings = () => {
-  const { t } = useTranslation(['common', 'settings'])
+  const { t } = useTranslation(['common', 'notifications', 'settings'])
   const { data, refetch } = useNotificationSettings()
+  const { connected } = useWallet()
+  const wallet = useWallet()
+  const setCookie = NotificationCookieStore((s) => s.setCookie)
   const headers = useHeaders()
   const isAuth = useIsAuthorized()
 
@@ -53,12 +55,20 @@ const NotificationSettings = () => {
           />
         </div>
       ) : (
-        <div className="relative top-1/2 flex -translate-y-1/2 flex-col justify-center px-6 pb-20">
-          <div className="flex flex-col items-center justify-center text-center">
-            <h3 className="mb-1 text-base">
-              {t('settings:sign-to-notifications')}
-            </h3>
-          </div>
+        <div className="mb-8 rounded-lg border border-th-bkg-3 p-6">
+          {connected ? (
+            <div className="flex flex-col items-center">
+              <BellIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+              <p className="mb-4">{t('notifications:unauth-desc')}</p>
+              <Button onClick={() => createSolanaMessage(wallet, setCookie)}>
+                <div className="flex items-center">
+                  {t('notifications:sign-message')}
+                </div>
+              </Button>
+            </div>
+          ) : (
+            <ConnectEmptyState text={t('settings:connect-notifications')} />
+          )}
         </div>
       )}
     </>

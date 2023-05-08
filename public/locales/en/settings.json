@@ -12,6 +12,7 @@
     "chart-right": "Chart Right",
     "chinese": "简体中文",
     "chinese-traditional": "繁體中文",
+    "connect-notifications": "Connect to update your notification settings",
     "custom": "Custom",
     "dark": "Dark",
     "display": "Display",
@@ -52,6 +53,6 @@
     "trade-chart": "Trade Chart",
     "trading-view": "Trading View",
     "notifications": "Notifications",
-    "limit-order-filled": "Limit order filled",
-    "sign-to-notifications": "Sign to notifications center to change settings"
+    "limit-order-filled": "Limit Order Fills",
+    "orderbook-bandwidth-saving": "Orderbook Bandwidth Saving"
 }

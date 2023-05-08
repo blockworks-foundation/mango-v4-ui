@@ -16,6 +16,12 @@ import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 
+const MARKET_LINK_WRAPPER_CLASSES =
+  'flex items-center justify-between px-4 md:pl-6 md:pr-4'
+
+const MARKET_LINK_CLASSES =
+  'mr-2 -ml-3 flex w-full items-center justify-between rounded-md py-2 px-3 focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
+
 const MarketSelectDropdown = () => {
   const { t } = useTranslation('common')
   const { selectedMarket } = useSelectedMarket()
@@ -85,24 +91,24 @@ const MarketSelectDropdown = () => {
                     : 0
                   return (
                     <div
-                      className="flex items-center justify-between py-2 px-4 md:px-6"
+                      className={MARKET_LINK_WRAPPER_CLASSES}
                       key={m.publicKey.toString()}
                       onClick={() => {
                         close()
                       }}
                     >
                       <Link
-                        className="flex items-center hover:cursor-pointer focus:outline-none focus-visible:text-th-active md:hover:text-th-fgd-3"
+                        className={MARKET_LINK_CLASSES}
                         href={{
                           pathname: '/trade',
                           query: { name: m.name },
                         }}
                         shallow={true}
                       >
-                        <MarketLogos market={m} />
-                        <span>{m.name}</span>
-                      </Link>
-                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center">
+                          <MarketLogos market={m} />
+                          <span>{m.name}</span>
+                        </div>
                         {!loadingPerpStats ? (
                           <Change change={change} suffix="%" />
                         ) : (
@@ -110,8 +116,8 @@ const MarketSelectDropdown = () => {
                             <div className="h-3.5 w-12 bg-th-bkg-2" />
                           </SheenLoader>
                         )}
-                        <FavoriteMarketButton market={m} />
-                      </div>
+                      </Link>
+                      <FavoriteMarketButton market={m} />
                     </div>
                   )
                 })
@@ -153,24 +159,24 @@ const MarketSelectDropdown = () => {
                         : 0
                     return (
                       <div
-                        className="flex items-center justify-between py-2 px-4 md:px-6"
+                        className={MARKET_LINK_WRAPPER_CLASSES}
                         key={m.publicKey.toString()}
                         onClick={() => {
                           close()
                         }}
                       >
                         <Link
-                          className="flex items-center hover:cursor-pointer focus:outline-none focus-visible:text-th-active md:hover:text-th-fgd-3"
+                          className={MARKET_LINK_CLASSES}
                           href={{
                             pathname: '/trade',
                             query: { name: m.name },
                           }}
                           shallow={true}
                         >
-                          <MarketLogos market={m} />
-                          <span>{m.name}</span>
-                        </Link>
-                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center">
+                            <MarketLogos market={m} />
+                            <span>{m.name}</span>
+                          </div>
                           {!loadingPrices ? (
                             change ? (
                               <Change change={change} suffix="%" />
@@ -182,8 +188,8 @@ const MarketSelectDropdown = () => {
                               <div className="h-3.5 w-12 bg-th-bkg-2" />
                             </SheenLoader>
                           )}
-                          <FavoriteMarketButton market={m} />
-                        </div>
+                        </Link>
+                        <FavoriteMarketButton market={m} />
                       </div>
                     )
                   })}

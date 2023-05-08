@@ -8,7 +8,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { WalletContextState, useWallet } from '@solana/wallet-adapter-react'
 import { Payload, SIWS } from '@web3auth/sign-in-with-solana'
 import { useHeaders } from 'hooks/notifications/useHeaders'
 import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
@@ -19,6 +19,57 @@ import NotificationCookieStore from '@store/notificationCookieStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
+
+export const createSolanaMessage = (
+  wallet: WalletContextState,
+  setCookie: (wallet: string, token: string) => void
+) => {
+  const payload = new Payload()
+  payload.domain = window.location.host
+  payload.address = wallet.publicKey!.toString()
+  payload.uri = window.location.origin
+  payload.statement = 'Login to Mango Notifications Admin App'
+  payload.version = '1'
+  payload.chainId = 1
+
+  const message = new SIWS({ payload })
+
+  const messageText = message.prepareMessage()
+  const messageEncoded = new TextEncoder().encode(messageText)
+
+  wallet.signMessage!(messageEncoded)
+    .then(async (resp) => {
+      const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...payload,
+          signatureString: bs58.encode(resp),
+        }),
+      })
+      const body = await tokenResp.json()
+      const token = body.token
+      const error = body.error
+      if (error) {
+        notify({
+          type: 'error',
+          title: 'Error',
+          description: error,
+        })
+        return
+      }
+      setCookie(payload.address, token)
+    })
+    .catch((e) => {
+      notify({
+        type: 'error',
+        title: 'Error',
+        description: e.message ? e.message : `${e}`,
+      })
+    })
+}
 
 const NotificationsDrawer = ({
   isOpen,
@@ -109,54 +160,6 @@ const NotificationsDrawer = ({
     },
     [NOTIFICATION_API, headers]
   )
-
-  const createSolanaMessage = useCallback(() => {
-    const payload = new Payload()
-    payload.domain = window.location.host
-    payload.address = wallet.publicKey!.toString()
-    payload.uri = window.location.origin
-    payload.statement = 'Login to Mango Notifications Admin App'
-    payload.version = '1'
-    payload.chainId = 1
-
-    const message = new SIWS({ payload })
-
-    const messageText = message.prepareMessage()
-    const messageEncoded = new TextEncoder().encode(messageText)
-
-    wallet.signMessage!(messageEncoded)
-      .then(async (resp) => {
-        const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            ...payload,
-            signatureString: bs58.encode(resp),
-          }),
-        })
-        const body = await tokenResp.json()
-        const token = body.token
-        const error = body.error
-        if (error) {
-          notify({
-            type: 'error',
-            title: 'Error',
-            description: error,
-          })
-          return
-        }
-        setCookie(payload.address, token)
-      })
-      .catch((e) => {
-        notify({
-          type: 'error',
-          title: 'Error',
-          description: e.message ? e.message : `${e}`,
-        })
-      })
-  }, [window.location, wallet, NOTIFICATION_API])
 
   // Mark all notifications as seen when the inbox is opened
   useEffect(() => {
@@ -266,7 +269,10 @@ const NotificationsDrawer = ({
                   <InboxIcon className="mb-2 h-7 w-7 text-th-fgd-2" />
                   <h3 className="mb-1 text-base">{t('unauth-title')}</h3>
                   <p>{t('unauth-desc')}</p>
-                  <Button className="mt-6" onClick={createSolanaMessage}>
+                  <Button
+                    className="mt-6"
+                    onClick={() => createSolanaMessage(wallet, setCookie)}
+                  >
                     {t('sign-message')}
                   </Button>
                 </div>

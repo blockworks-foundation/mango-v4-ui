@@ -1,12 +1,17 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
 import Input from '@components/forms/Input'
 import Button from '@components/shared/Button'
+import Switch from '@components/forms/Switch'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
-import { PRIORITY_FEE_KEY, RPC_PROVIDER_KEY } from 'utils/constants'
+import {
+  PRIORITY_FEE_KEY,
+  RPC_PROVIDER_KEY,
+  USE_ORDERBOOK_FEED_KEY,
+} from 'utils/constants'
 
 const RPC_URLS = [
   {
@@ -42,6 +47,8 @@ const RpcSettings = () => {
     PRIORITY_FEE_KEY,
     DEFAULT_PRIORITY_FEE.value
   )
+  const [storedUseOrderbookFeed, setStoredUseOrderbookFeed] =
+    useLocalStorageState(USE_ORDERBOOK_FEED_KEY, true)
 
   const rpcEndpoint = useMemo(() => {
     return (
@@ -166,6 +173,13 @@ const RpcSettings = () => {
             </div>
           ) : null} */}
         </div>
+      </div>
+      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+        <p>{t('settings:orderbook-bandwidth-saving')}</p>
+        <Switch
+          checked={storedUseOrderbookFeed}
+          onChange={() => setStoredUseOrderbookFeed(!storedUseOrderbookFeed)}
+        />
       </div>
     </>
   )

@@ -70,6 +70,13 @@ const fetchFundingTotals = async (mangoAccountPk: string) => {
   }
 }
 
+export type ChartToShow =
+  | ''
+  | 'account-value'
+  | 'cumulative-interest-value'
+  | 'pnl'
+  | 'hourly-funding'
+
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
   const { connected } = useWallet()
@@ -84,13 +91,7 @@ const AccountPage = () => {
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
   )
-  const [chartToShow, setChartToShow] = useState<
-    | 'account-value'
-    | 'cumulative-interest-value'
-    | 'pnl'
-    | 'hourly-funding'
-    | ''
-  >('')
+  const [chartToShow, setChartToShow] = useState<ChartToShow>('')
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const [showPnlHistory, setShowPnlHistory] = useState<boolean>(false)
   const { theme } = useTheme()
@@ -205,7 +206,7 @@ const AccountPage = () => {
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
       return totalInterestData.reduce(
-        (a, c) => a + c.borrow_interest_usd * -1 + c.deposit_interest_usd,
+        (a, c) => a + c.borrow_interest_usd + c.deposit_interest_usd,
         0
       )
     }
@@ -672,10 +673,11 @@ const AccountPage = () => {
       ) : null}
     </>
   ) : (
-    <div className="p-6 pb-0">
+    <>
       {chartToShow === 'account-value' ? (
         <AccountChart
           chartToShow="account-value"
+          setChartToShow={setChartToShow}
           data={performanceData.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="account_equity"
@@ -683,6 +685,7 @@ const AccountPage = () => {
       ) : chartToShow === 'pnl' ? (
         <AccountChart
           chartToShow="pnl"
+          setChartToShow={setChartToShow}
           data={performanceData}
           hideChart={handleHideChart}
           yKey="pnl"
@@ -692,12 +695,13 @@ const AccountPage = () => {
       ) : (
         <AccountChart
           chartToShow="cumulative-interest-value"
+          setChartToShow={setChartToShow}
           data={performanceData}
           hideChart={handleHideChart}
           yKey="interest_value"
         />
       )}
-    </div>
+    </>
   )
 }
 
