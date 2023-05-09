@@ -183,7 +183,7 @@ const HistoryTabs = () => {
           setActiveTab={setActiveTab}
           tabs={TABS}
         />
-        <div className="flex items-center justify-end space-x-2 border-b border-th-bkg-3 py-3 pr-4 sm:absolute sm:bottom-0 sm:top-0 sm:right-0 sm:border-b-0 sm:py-0 md:pr-6">
+        <div className="flex w-full items-center justify-end border-b border-th-bkg-3 py-3 pr-4 sm:-mt-14 sm:h-14 sm:border-b-0 sm:py-0 md:pr-6">
           {!isUnownedAccount ? (
             <LinkButton
               className="flex items-center font-normal no-underline"

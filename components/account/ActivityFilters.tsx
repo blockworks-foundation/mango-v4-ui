@@ -125,14 +125,14 @@ const ActivityFilters = () => {
 
   return mangoAccountAddress ? (
     <Disclosure>
-      <div className="flex items-center">
+      <div className="flex items-center pl-2">
         {hasFilters ? (
           <Tooltip
             className="hidden md:block"
             content={t('activity:reset-filters')}
           >
             <IconButton
-              className={`${loadActivityFeed ? 'animate-spin' : ''}`}
+              className={`ml-2 ${loadActivityFeed ? 'animate-spin' : ''}`}
               onClick={() => handleResetFilters()}
               size="small"
             >
@@ -164,7 +164,7 @@ const ActivityFilters = () => {
       </div>
       {showFilters ? (
         <Disclosure.Panel
-          className="absolute top-[98px] left-0 z-10 w-full border-t border-th-bkg-3 bg-th-bkg-2 px-6 pb-6 shadow-md sm:top-14"
+          className="absolute top-[114px] left-0 z-10 w-full border-t border-th-bkg-3 bg-th-bkg-2 px-6 pb-6 shadow-md sm:top-14"
           static
         >
           <FiltersForm
