@@ -11,5 +11,5 @@
   "slippage-warning": "您的訂單價格({{updatedOrderPrice}})多餘5%{{aboveBelow}}市場價格({{selectedMarketPrice}})表是您也許遭受可觀的下滑。",
   "toggle-order-line": "切換訂單線可見性",
   "toggle-stable-price": "切換穩定價格線",
-  "toggle-trade-executions": "Show trade executions. Limited to your last 250 trades across all markets."
+  "toggle-trade-executions": "顯示成交。限於全部試場的最近250交易。"
 }
