@@ -12,6 +12,7 @@ import {
   RPC_PROVIDER_KEY,
   USE_ORDERBOOK_FEED_KEY,
 } from 'utils/constants'
+import Tooltip from '@components/shared/Tooltip'
 
 const RPC_URLS = [
   {
@@ -175,7 +176,16 @@ const RpcSettings = () => {
         </div>
       </div>
       <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <p>{t('settings:orderbook-bandwidth-saving')}</p>
+        <Tooltip
+          content={t('settings:tooltip-orderbook-bandwidth-saving')}
+          maxWidth="25rem"
+          placement="top-start"
+          delay={100}
+        >
+          <p className="tooltip-underline">
+            {t('settings:orderbook-bandwidth-saving')}
+          </p>
+        </Tooltip>
         <Switch
           checked={storedUseOrderbookFeed}
           onChange={() => setStoredUseOrderbookFeed(!storedUseOrderbookFeed)}
