@@ -55,5 +55,6 @@
     "trading-view": "Trading View",
     "transaction-fail": "交易失败",
     "transaction-success": "交易成功",
-    "orderbook-bandwidth-saving": "Orderbook Bandwidth Saving"
+    "orderbook-bandwidth-saving": "Orderbook Bandwidth Saving",
+    "tooltip-orderbook-bandwidth-saving": "Use an off-chain service for Orderbook updates to decrease data usage by ~1000x. Disable this if open orders are not highlighted in the book correctly."
 }

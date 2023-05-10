@@ -220,7 +220,9 @@ const Orderbook = () => {
   const [showBids, setShowBids] = useState(true)
   const [showAsks, setShowAsks] = useState(true)
   const [useOrderbookFeed, setUseOrderbookFeed] = useState(
-    localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true' ?? true
+    localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
+      ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
+      : true
   )
 
   const currentOrderbookData = useRef<OrderbookL2>()
@@ -235,6 +237,8 @@ const Orderbook = () => {
   const depthArray: number[] = useMemo(() => {
     return Array(depth).fill(0)
   }, [depth])
+
+  const orderbookFeed = useRef<OrderbookFeed | null>(null)
 
   useEffect(() => {
     if (market && market.tickSize !== tickSize) {
@@ -379,7 +383,6 @@ const Orderbook = () => {
 
   // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
-    console.log('setting up orderbook websockets')
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
@@ -387,23 +390,27 @@ const Orderbook = () => {
     if (!group || !market) return
 
     if (useOrderbookFeed) {
+      if (!orderbookFeed.current) {
+        orderbookFeed.current = new OrderbookFeed(
+          `wss://api.mngo.cloud/orderbook/v1/`,
+          {
+            reconnectionIntervalMs: 5_000,
+            reconnectionMaxAttempts: 6,
+          }
+        )
+      }
+
       let hasConnected = false
-      const orderbookFeed = new OrderbookFeed(
-        `wss://api.mngo.cloud/orderbook/v1/`,
-        {
-          reconnectionIntervalMs: 5_000,
-          reconnectionMaxAttempts: 6,
-        }
-      )
-      orderbookFeed.onConnect(() => {
+      orderbookFeed.current.onConnect(() => {
+        if (!orderbookFeed.current) return
         console.log('[OrderbookFeed] connected')
         hasConnected = true
-        orderbookFeed.subscribe({
+        orderbookFeed.current.subscribe({
           marketId: market.publicKey.toBase58(),
         })
       })
 
-      orderbookFeed.onDisconnect((reconnectionAttemptsExhausted) => {
+      orderbookFeed.current.onDisconnect((reconnectionAttemptsExhausted) => {
         // fallback to rpc if we couldn't reconnect or if we never connected
         if (reconnectionAttemptsExhausted || !hasConnected) {
           console.warn('[OrderbookFeed] disconnected')
@@ -414,7 +421,7 @@ const Orderbook = () => {
       })
 
       let lastWriteVersion = 0
-      orderbookFeed.onL2Update((update) => {
+      orderbookFeed.current.onL2Update((update) => {
         const selectedMarket = mangoStore.getState().selectedMarket
         if (!useOrderbookFeed || !selectedMarket || !selectedMarket.current)
           return
@@ -460,7 +467,7 @@ const Orderbook = () => {
             if (levelIndex !== -1) {
               new_bookside.splice(levelIndex, 1)
             } else {
-              console.warn('tried to remove missing level')
+              console.warn('[OrderbookFeed] tried to remove missing level')
             }
           }
         }
@@ -476,8 +483,7 @@ const Orderbook = () => {
           }
         })
       })
-
-      orderbookFeed.onL2Checkpoint((checkpoint) => {
+      orderbookFeed.current.onL2Checkpoint((checkpoint) => {
         if (
           !useOrderbookFeed ||
           checkpoint.market !== market.publicKey.toBase58()
@@ -492,16 +498,16 @@ const Orderbook = () => {
           state.selectedMarket.orderbook.asks = checkpoint.asks
         })
       })
-      orderbookFeed.onStatus((update) => {
-        console.log('[OrderbookFeed] status', update)
-      })
 
       return () => {
-        console.log('[OrderbookFeed] unsubscribe')
-        orderbookFeed.unsubscribe(market.publicKey.toBase58())
+        if (!orderbookFeed.current) return
+        console.log(
+          `[OrderbookFeed] unsubscribe ${market.publicKey.toBase58()}`
+        )
+        orderbookFeed.current.unsubscribe(market.publicKey.toBase58())
       }
     } else {
-      console.log('using rpc orderbook feed')
+      console.log(`[OrderbookRPC] subscribe ${market.publicKey.toBase58()}`)
 
       let bidSubscriptionId: number | undefined = undefined
       let askSubscriptionId: number | undefined = undefined
@@ -577,7 +583,7 @@ const Orderbook = () => {
         )
       }
       return () => {
-        console.log('rpc orderbook unsubscribe')
+        console.log(`[OrderbookRPC] unsubscribe ${market.publicKey.toBase58()}`)
         if (typeof bidSubscriptionId !== 'undefined') {
           connection.removeAccountChangeListener(bidSubscriptionId)
         }
@@ -587,6 +593,15 @@ const Orderbook = () => {
       }
     }
   }, [bidAccountAddress, askAccountAddress, connection, useOrderbookFeed])
+
+  useEffect(() => {
+    const market = getMarket()
+    if (!orderbookFeed.current || !market) return
+    console.log(`[OrderbookFeed] subscribe ${market.publicKey.toBase58()}`)
+    orderbookFeed.current.subscribe({
+      marketId: market.publicKey.toBase58(),
+    })
+  }, [bidAccountAddress])
 
   useEffect(() => {
     window.addEventListener('resize', verticallyCenterOrderbook)

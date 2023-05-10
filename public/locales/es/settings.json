@@ -54,5 +54,6 @@
     "trading-view": "Trading View",
     "notifications": "Notifications",
     "limit-order-filled": "Limit Order Fills",
-    "orderbook-bandwidth-saving": "Orderbook Bandwidth Saving"
+    "orderbook-bandwidth-saving": "Orderbook Bandwidth Saving",
+    "tooltip-orderbook-bandwidth-saving": "Use an off-chain service for Orderbook updates to decrease data usage by ~1000x. Disable this if open orders are not highlighted in the book correctly."
 }
