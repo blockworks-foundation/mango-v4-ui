@@ -33,7 +33,7 @@ const UnsettledTrades = ({
   const [settleMktAddress, setSettleMktAddress] = useState<string>('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const { mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
   const { isUnownedAccount } = useUnownedAccount()
 
@@ -214,7 +214,11 @@ const UnsettledTrades = ({
                 </Td>
                 <Td className="text-right font-mono">
                   <FormatNumericValue
-                    value={position.getUnsettledPnlUi(market)}
+                    value={position.getSettleablePnlUi(
+                      group,
+                      market,
+                      mangoAccount!
+                    )}
                     decimals={2}
                   />{' '}
                   <span className="font-body text-th-fgd-4">USDC</span>

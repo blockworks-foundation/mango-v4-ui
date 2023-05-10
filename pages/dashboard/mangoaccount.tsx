@@ -230,7 +230,7 @@ const Dashboard: NextPage = () => {
                     <KeyValuePair
                       label="Unsettled Funding"
                       value={`$${toUiDecimalsForQuote(
-                        perp.getUnsettledFunding(market)
+                        perp.getSettleablePnlUi(group, market, mangoAccount)
                       ).toFixed(6)}`}
                     />
                     <KeyValuePair

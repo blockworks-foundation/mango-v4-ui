@@ -39,7 +39,7 @@ const PerpPositions = () => {
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const { selectedMarket } = useSelectedMarket()
   const { connected } = useWallet()
-  const { mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { isUnownedAccount } = useUnownedAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -130,7 +130,11 @@ const PerpPositions = () => {
 
                     if (!basePosition) return null
 
-                    const unsettledPnl = position.getUnsettledPnlUi(market)
+                    const unsettledPnl = position.getSettleablePnlUi(
+                      group,
+                      market,
+                      mangoAccount!
+                    )
                     const cummulativePnl =
                       position.cumulativePnlOverPositionLifetimeUi(market)
 

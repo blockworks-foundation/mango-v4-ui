@@ -5,7 +5,7 @@ import useMangoGroup from './useMangoGroup'
 
 const useUnsettledPerpPositions = () => {
   const { group } = useMangoGroup()
-  const { mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
 
   const positions = useMemo(() => {
@@ -13,9 +13,9 @@ const useUnsettledPerpPositions = () => {
     return perpPositions.filter((p) => {
       const market = group?.getPerpMarketByMarketIndex(p.marketIndex)
       if (!market || !group) return false
-      return p.getUnsettledPnlUi(market) !== 0
+      return p.getSettleablePnlUi(group, market, mangoAccount!) !== 0
     })
-  }, [mangoAccountAddress, perpPositions, group])
+  }, [mangoAccount, mangoAccountAddress, perpPositions, group])
 
   return positions
 }
