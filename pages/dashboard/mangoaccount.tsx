@@ -10,6 +10,7 @@ import {
   PerpOrder,
 } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
+import { DashboardNavbar } from '.'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -19,19 +20,11 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
-const Dashboard: NextPage = () => {
+const MangoAccountDashboard: NextPage = () => {
   const { group } = useMangoGroup()
-  // const { mangoTokens } = useJupiterMints()
-  // const client = mangoStore(s => s.client)
   const { mangoAccount } = useMangoAccount()
   const client = mangoStore((s) => s.client)
   const [openOrders, setOpenOrders] = useState<Record<string, PerpOrder[]>>()
-
-  useEffect(() => {
-    if (mangoAccount) {
-      loadOpenOrders()
-    }
-  }, [mangoAccount])
 
   const loadOpenOrders = useCallback(async () => {
     if (!mangoAccount || !group) return
@@ -49,11 +42,18 @@ const Dashboard: NextPage = () => {
     setOpenOrders(openOrders)
   }, [mangoAccount, client, group])
 
+  useEffect(() => {
+    if (mangoAccount) {
+      loadOpenOrders()
+    }
+  }, [mangoAccount, loadOpenOrders])
+
   return (
     <div className="grid grid-cols-12">
-      <div className="col-span-12 border-b border-th-bkg-3 lg:col-span-8 lg:col-start-3 xl:col-span-6 xl:col-start-4">
+      <div className="col-span-12 lg:col-span-8 lg:col-start-3">
         <div className="p-8 pb-20 md:pb-16 lg:p-10">
           <h1>Dashboard</h1>
+          <DashboardNavbar />
           {group && mangoAccount ? (
             <div className="mt-4">
               <h2 className="mb-6">Mango Account</h2>
@@ -342,7 +342,7 @@ const Dashboard: NextPage = () => {
                 : null}
             </div>
           ) : (
-            'Loading'
+            <div className="m-4 flex items-center">Loading account data...</div>
           )}
         </div>
       </div>
@@ -365,4 +365,4 @@ const KeyValuePair = ({
   )
 }
 
-export default Dashboard
+export default MangoAccountDashboard
