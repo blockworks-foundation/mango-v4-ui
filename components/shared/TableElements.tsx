@@ -21,13 +21,17 @@ export const Th = ({
   children,
   className,
   id,
+  xBorder = false,
 }: {
   children?: ReactNode
   className?: string
   id?: string
+  xBorder?: boolean
 }) => (
   <th
-    className={`whitespace-nowrap px-2 py-3 text-xs font-normal text-th-fgd-3 first:pl-6 last:pr-6 xl:px-4 ${className}`}
+    className={`whitespace-nowrap px-2 py-3 text-xs font-normal text-th-fgd-3 first:pl-6 last:pr-6 xl:px-4 ${
+      xBorder ? 'border-x border-th-bkg-3' : ''
+    } ${className}`}
     id={id}
     scope="col"
   >
@@ -52,11 +56,17 @@ export const TrBody = ({
 export const Td = ({
   children,
   className,
+  xBorder = false,
 }: {
   children: ReactNode
   className?: string
+  xBorder?: boolean
 }) => (
-  <td className={`px-2 py-3 first:pl-6 last:pr-6 xl:px-4 ${className}`}>
+  <td
+    className={`px-2 py-3 first:pl-6 last:pr-6 xl:px-4 ${
+      xBorder ? 'border-x border-th-bkg-3' : ''
+    } ${className}`}
+  >
     {children}
   </td>
 )
