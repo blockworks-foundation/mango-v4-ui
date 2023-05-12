@@ -86,7 +86,6 @@ const SwapForm = () => {
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { mangoAccount } = useMangoAccount()
-  const { isDelegatedAccount } = useUnownedAccount()
   const { connected, publicKey } = useWallet()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
@@ -441,7 +440,6 @@ const SwapForm = () => {
               amountOut={
                 selectedRoute ? amountOutAsDecimal.toNumber() : undefined
               }
-              isDelegatedAccount={isDelegatedAccount}
             />
           ) : (
             <Button
@@ -457,7 +455,9 @@ const SwapForm = () => {
           {group && inputBank ? (
             <TokenVaultWarnings bank={inputBank} type="swap" />
           ) : null}
-          {inputBank && inputBank.reduceOnly ? (
+          {inputBank &&
+          inputBank.areBorrowsReduceOnly() &&
+          inputBank.areDepositsReduceOnly() ? (
             <div className="pb-4">
               <InlineNotification
                 type="warning"
@@ -467,7 +467,9 @@ const SwapForm = () => {
               />
             </div>
           ) : null}
-          {outputBank && outputBank.reduceOnly ? (
+          {outputBank &&
+          outputBank.areBorrowsReduceOnly() &&
+          outputBank.areDepositsReduceOnly() ? (
             <div className="pb-4">
               <InlineNotification
                 type="warning"
@@ -513,7 +515,6 @@ const SwapFormSubmitButton = ({
   selectedRoute,
   setShowConfirm,
   useMargin,
-  isDelegatedAccount,
 }: {
   amountIn: Decimal
   amountOut: number | undefined
@@ -522,7 +523,6 @@ const SwapFormSubmitButton = ({
   selectedRoute: RouteInfo | undefined | null
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
-  isDelegatedAccount: boolean
 }) => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
@@ -550,9 +550,7 @@ const SwapFormSubmitButton = ({
         disabled={disabled}
         size="large"
       >
-        {isDelegatedAccount ? (
-          <div>Swap Unavailable for Delegates</div>
-        ) : connected ? (
+        {connected ? (
           showInsufficientBalance ? (
             <div className="flex items-center">
               <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
