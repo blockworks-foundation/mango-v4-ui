@@ -1,7 +1,7 @@
 import ExplorerLink from '@components/shared/ExplorerLink'
 import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ChangeEvent, ReactNode, useCallback, useEffect, useState } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import useMangoAccount from 'hooks/useMangoAccount'
 import {
@@ -11,6 +11,10 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { DashboardNavbar } from '.'
+import Input from '@components/forms/Input'
+import Button from '@components/shared/Button'
+import { useRouter } from 'next/router'
+import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -25,6 +29,12 @@ const MangoAccountDashboard: NextPage = () => {
   const { mangoAccount } = useMangoAccount()
   const client = mangoStore((s) => s.client)
   const [openOrders, setOpenOrders] = useState<Record<string, PerpOrder[]>>()
+  const router = useRouter()
+  console.log('router.query', router.query)
+
+  const [searchString, setSearchString] = useState<string>(
+    router.query['address'] as string
+  )
 
   const loadOpenOrders = useCallback(async () => {
     if (!mangoAccount || !group) return
@@ -54,6 +64,30 @@ const MangoAccountDashboard: NextPage = () => {
         <div className="p-8 pb-20 md:pb-16 lg:p-10">
           <h1>Dashboard</h1>
           <DashboardNavbar />
+          <div className="">
+            <div className="flex space-x-2">
+              <Input
+                type="text"
+                name="search"
+                id="search"
+                value={searchString}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setSearchString(e.target.value)
+                }
+              />
+              <Button
+                className="flex items-center"
+                onClick={() =>
+                  router.push(`/dashboard/mangoaccount?address=${searchString}`)
+                }
+                disabled={!searchString}
+                size="large"
+              >
+                <MagnifyingGlassIcon className="mr-2 h-5 w-5" />
+                Search
+              </Button>
+            </div>
+          </div>
           {group && mangoAccount ? (
             <div className="mt-4">
               <h2 className="mb-6">Mango Account</h2>
