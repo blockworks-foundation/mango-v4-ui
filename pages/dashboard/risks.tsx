@@ -26,8 +26,8 @@ const RiskDashboard: NextPage = () => {
 
   return (
     <div className="grid grid-cols-12">
-      <div className="col-span-12 lg:col-span-8 lg:col-start-3">
-        <div className="p-8 pb-20 text-th-fgd-1 md:pb-16 lg:p-10">
+      <div className="col-span-12 xl:col-span-8 xl:col-start-3">
+        <div className="p-8 pb-20 text-th-fgd-1 md:pb-16 xl:p-10">
           <h1>Dashboard</h1>
           <DashboardNavbar />
           {group ? (
@@ -55,7 +55,7 @@ const RiskDashboard: NextPage = () => {
                       <Th xBorder className="text-right">
                         On-chain price
                       </Th>
-                      <Th xBorder className="text-left">
+                      <Th xBorder className="text-right">
                         Future price
                       </Th>
                       <Th xBorder className="text-right">
@@ -64,7 +64,7 @@ const RiskDashboard: NextPage = () => {
                       <Th xBorder className="text-right">
                         Liabs
                       </Th>
-                      <Th xBorder className="text-left">
+                      <Th xBorder className="text-right">
                         Liabs slippage
                       </Th>
                       <Th xBorder className="text-right">
@@ -77,7 +77,7 @@ const RiskDashboard: NextPage = () => {
                   </thead>
                   <tbody>
                     <TrBody>
-                      <Td xBorder className="text-right">
+                      <Td xBorder className="text-left">
                         Bonk
                       </Td>
                       <Td xBorder className="text-right">
@@ -131,7 +131,7 @@ const RiskDashboard: NextPage = () => {
                       <Th xBorder className="text-right">
                         On-chain price
                       </Th>
-                      <Th xBorder className="text-left">
+                      <Th xBorder className="text-right">
                         Future price
                       </Th>
                       <Th xBorder className="text-right">
@@ -140,7 +140,7 @@ const RiskDashboard: NextPage = () => {
                       <Th xBorder className="text-right">
                         Liabs
                       </Th>
-                      <Th xBorder className="text-left">
+                      <Th xBorder className="text-right">
                         Liabs slippage
                       </Th>
                       <Th xBorder className="text-right">
@@ -153,7 +153,7 @@ const RiskDashboard: NextPage = () => {
                   </thead>
                   <tbody>
                     <TrBody>
-                      <Td xBorder className="text-right">
+                      <Td xBorder className="text-left">
                         Bonk
                       </Td>
                       <Td xBorder className="text-right">
