@@ -59,6 +59,13 @@ const TokenItem = ({
     return group.getFirstBankByMint(new PublicKey(address))
   }, [address])
 
+  const isReduceOnly = useMemo(() => {
+    if (!bank) return false
+    const borrowsReduceOnly = bank.areBorrowsReduceOnly()
+    const depositsReduceOnly = bank.areDepositsReduceOnly()
+    return borrowsReduceOnly && depositsReduceOnly
+  }, [bank])
+
   return (
     <div>
       <button
@@ -74,7 +81,7 @@ const TokenItem = ({
           <div className="ml-2.5">
             <p className="text-left text-th-fgd-2">
               {bank?.name ? formatTokenSymbol(bank.name) : symbol || 'unknown'}
-              {bank?.reduceOnly ? (
+              {isReduceOnly ? (
                 <span className="ml-1.5 text-xxs text-th-warning">
                   {t('reduce-only')}
                 </span>
