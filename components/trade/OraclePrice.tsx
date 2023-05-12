@@ -1,7 +1,4 @@
-import {
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-} from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import Tooltip from '@components/shared/Tooltip'
 import { useTranslation } from 'next-i18next'
@@ -167,14 +164,12 @@ const OraclePrice = ({
           }
         >
           <div className="flex items-center">
-            <div className="text-xs text-th-fgd-4">
+            <div className="tooltip-underline mb-0.5 text-xs text-th-fgd-4">
               {t('trade:oracle-price')}
             </div>
             {isStale ? (
               <ExclamationTriangleIcon className="ml-1 h-4 w-4 text-th-warning" />
-            ) : (
-              <InformationCircleIcon className="ml-1 h-4 w-4 text-th-fgd-4" />
-            )}
+            ) : null}
           </div>
         </Tooltip>
         <div className="font-mono text-xs text-th-fgd-2">
