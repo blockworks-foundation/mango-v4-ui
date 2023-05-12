@@ -414,27 +414,36 @@ const AccountPage = () => {
                     The lower your account health is the more likely you are to
                     get liquidated when prices fluctuate.
                   </p>
-                  <p className="text-xs font-bold text-th-fgd-1">
-                    Your account health is {maintHealth}%
-                  </p>
-                  <p className="text-xs">
-                    <span className="font-bold text-th-fgd-1">Scenario:</span>{' '}
-                    If the prices of all your liabilities increase by{' '}
-                    {maintHealth}%, even for just a moment, some of your
-                    liabilities will be liquidated.
-                  </p>
-                  <p className="text-xs">
-                    <span className="font-bold text-th-fgd-1">Scenario:</span>{' '}
-                    If the value of your total collateral decreases by{' '}
-                    {((1 - 1 / ((maintHealth || 0) / 100 + 1)) * 100).toFixed(
-                      2
-                    )}
-                    % , some of your liabilities will be liquidated.
-                  </p>
-                  <p className="text-xs">
-                    These are examples. A combination of events can also lead to
-                    liquidation.
-                  </p>
+                  {maintHealth < 100 ? (
+                    <>
+                      <p className="text-xs font-bold text-th-fgd-1">
+                        Your account health is {maintHealth}%
+                      </p>
+                      <p className="text-xs">
+                        <span className="font-bold text-th-fgd-1">
+                          Scenario:
+                        </span>{' '}
+                        If the prices of all your liabilities increase by{' '}
+                        {maintHealth}%, even for just a moment, some of your
+                        liabilities will be liquidated.
+                      </p>
+                      <p className="text-xs">
+                        <span className="font-bold text-th-fgd-1">
+                          Scenario:
+                        </span>{' '}
+                        If the value of your total collateral decreases by{' '}
+                        {(
+                          (1 - 1 / ((maintHealth || 0) / 100 + 1)) *
+                          100
+                        ).toFixed(2)}
+                        % , some of your liabilities will be liquidated.
+                      </p>
+                      <p className="text-xs">
+                        These are examples. A combination of events can also
+                        lead to liquidation.
+                      </p>
+                    </>
+                  ) : null}
                 </div>
               }
             >
