@@ -1,5 +1,6 @@
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import Image from 'next/image'
+import { formatTokenSymbol } from 'utils/tokens'
 
 const TokenListButton = ({
   logoUri,
@@ -24,7 +25,7 @@ const TokenListButton = ({
         />
       </div>
       <div className="flex w-full items-center justify-between">
-        <div className="text-xl font-bold">{token}</div>
+        <div className="text-xl font-bold">{formatTokenSymbol(token)}</div>
         <ChevronDownIcon className="h-6 w-6" />
       </div>
     </button>
