@@ -83,14 +83,17 @@ const SpotSlider = ({
             : Number(s.tradeForm.price)
 
         if (s.tradeForm.side === 'buy') {
-          s.tradeForm.quoteSize = val
           if (Number(price)) {
-            s.tradeForm.baseSize = floorToDecimal(
+            const baseSize = floorToDecimal(
               parseFloat(val) / price,
               minOrderDecimals
-            ).toString()
+            )
+            const quoteSize = floorToDecimal(baseSize.mul(price), tickDecimals)
+            s.tradeForm.baseSize = baseSize.toFixed()
+            s.tradeForm.quoteSize = quoteSize.toFixed()
           } else {
             s.tradeForm.baseSize = ''
+            s.tradeForm.quoteSize = val
           }
         } else if (s.tradeForm.side === 'sell') {
           s.tradeForm.baseSize = val
@@ -98,7 +101,7 @@ const SpotSlider = ({
             s.tradeForm.quoteSize = floorToDecimal(
               parseFloat(val) * price,
               tickDecimals
-            ).toString()
+            ).toFixed()
           }
         }
       })
