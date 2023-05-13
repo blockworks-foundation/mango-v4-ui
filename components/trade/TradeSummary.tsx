@@ -15,6 +15,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import Slippage from './Slippage'
+import { floorToDecimal } from 'utils/numbers'
 
 const TradeSummary = ({
   mangoAccount,
@@ -107,14 +108,18 @@ const TradeSummary = ({
     if (
       !quoteBank ||
       !tradeForm.price ||
-      !Number.isNaN(tradeForm.price) ||
-      !Number.isNaN(tradeForm.baseSize)
+      !tradeForm.baseSize ||
+      Number.isNaN(tradeForm.price) ||
+      Number.isNaN(tradeForm.baseSize)
     )
       return 0
     const basePriceDecimal = new Decimal(tradeForm.price)
     const quotePriceDecimal = new Decimal(quoteBank.uiPrice)
     const sizeDecimal = new Decimal(tradeForm.baseSize)
-    return basePriceDecimal.mul(quotePriceDecimal).mul(sizeDecimal)
+    return floorToDecimal(
+      basePriceDecimal.mul(quotePriceDecimal).mul(sizeDecimal),
+      2
+    )
   }, [quoteBank, tradeForm])
 
   return (
@@ -122,11 +127,7 @@ const TradeSummary = ({
       <div className="flex justify-between text-xs">
         <p>{t('trade:order-value')}</p>
         <p className="text-th-fgd-2">
-          {orderValue ? (
-            <FormatNumericValue value={orderValue} decimals={2} isUsd />
-          ) : (
-            '–'
-          )}
+          {orderValue ? <FormatNumericValue value={orderValue} isUsd /> : '–'}
         </p>
       </div>
       <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
