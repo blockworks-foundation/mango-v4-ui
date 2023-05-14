@@ -93,7 +93,7 @@
   "liquidity": "Liquidity",
   "loading": "Loading",
   "loan-origination-fee": "Borrow Fee",
-  "loan-origination-fee-tooltip": "{{fee}} fee for opening a borrow.",
+  "loan-origination-fee-tooltip": "{{fee}} fee for opening a borrow",
   "mango": "Mango",
   "mango-stats": "Mango Stats",
   "market": "Market",
