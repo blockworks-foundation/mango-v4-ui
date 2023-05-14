@@ -63,11 +63,10 @@ const OraclePrice = ({
     }
 
     const coder = new BorshAccountsCoder(client.program.idl)
+    setPrice(stalePrice)
     const subId = connection.onAccountChange(
       marketOrBank.oracle,
       async (info, context) => {
-        // selectedMarket = mangoStore.getState().selectedMarket.current
-        // if (!(selectedMarket instanceof PerpMarket)) return
         const { price, uiPrice, lastUpdatedSlot } =
           await group.decodePriceFromOracleAi(
             coder,
@@ -122,7 +121,14 @@ const OraclePrice = ({
         connection.removeAccountChangeListener(subId)
       }
     }
-  }, [connection, selectedMarket])
+  }, [
+    connection,
+    selectedMarket,
+    serumOrPerpMarket,
+    setChangePrice,
+    quoteBank,
+    stalePrice,
+  ])
 
   return (
     <>
