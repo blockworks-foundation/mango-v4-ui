@@ -70,5 +70,7 @@
     "your-votes": "Your Votes:",
     "yes": "Yes",
     "no": "No",
-    "current-vote": "Current Vote:"
+    "current-vote": "Current Vote:",
+    "use-own-wallet": "Use own wallet",
+    "select-delegate": "Select delegate"
 }
