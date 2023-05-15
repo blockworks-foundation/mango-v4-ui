@@ -10,10 +10,13 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   ReferenceLine,
+  BarChart,
+  Bar,
+  Cell,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
-import ContentBox from '../shared/ContentBox'
-import SheenLoader from '../shared/SheenLoader'
+import ContentBox from './ContentBox'
+import SheenLoader from './SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from './Button'
@@ -33,7 +36,8 @@ import Tooltip from './Tooltip'
 
 dayjs.extend(relativeTime)
 
-interface DetailedAreaChartProps {
+interface DetailedAreaOrBarChartProps {
+  chartType?: 'area' | 'bar'
   customTooltip?: ContentType<number, string>
   data: any[]
   daysToShow?: string
@@ -64,7 +68,10 @@ export const formatDateAxis = (date: string, days: number) => {
   }
 }
 
-const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
+const DetailedAreaOrBarChart: FunctionComponent<
+  DetailedAreaOrBarChartProps
+> = ({
+  chartType = 'area',
   customTooltip,
   data,
   daysToShow = '1',
@@ -308,116 +315,219 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
             >
               <div className="-mx-6 mt-6 h-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={filteredData}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <RechartsTooltip
-                      cursor={{
-                        strokeOpacity: 0.09,
-                      }}
-                      content={customTooltip ? customTooltip : <></>}
-                    />
-                    <defs>
-                      <linearGradient
-                        id={`gradientArea-${title?.replace(/[^a-zA-Z]/g, '')}`}
-                        x1="0"
-                        y1={flipGradientCoords ? '1' : '0'}
-                        x2="0"
-                        y2={flipGradientCoords ? '0' : '1'}
-                      >
-                        <stop
-                          offset="0%"
-                          stopColor={
-                            calculateChartChange() >= 0
-                              ? COLORS.UP[theme]
-                              : COLORS.DOWN[theme]
-                          }
-                          stopOpacity={0.15}
-                        />
-                        <stop
-                          offset="99%"
-                          stopColor={
-                            calculateChartChange() >= 0
-                              ? COLORS.UP[theme]
-                              : COLORS.DOWN[theme]
-                          }
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <Area
-                      isAnimationActive={false}
-                      type="monotone"
-                      dataKey={yKey}
-                      stroke={
-                        calculateChartChange() >= 0
-                          ? COLORS.UP[theme]
-                          : COLORS.DOWN[theme]
-                      }
-                      strokeWidth={1.5}
-                      fill={`url(#gradientArea-${title?.replace(
-                        /[^a-zA-Z]/g,
-                        ''
-                      )})`}
-                    />
-                    <XAxis
-                      axisLine={false}
-                      dataKey={xKey}
-                      minTickGap={20}
-                      padding={{ left: 20, right: 20 }}
-                      tick={{
-                        fill: 'var(--fgd-4)',
-                        fontSize: 10,
-                      }}
-                      tickLine={false}
-                      tickFormatter={(d) =>
-                        formatDateAxis(d, parseInt(daysToShow))
-                      }
-                    />
-                    <YAxis
-                      axisLine={false}
-                      dataKey={yKey}
-                      minTickGap={20}
-                      type="number"
-                      domain={
-                        domain
-                          ? domain
-                          : ([dataMin, dataMax]) => {
-                              const difference = dataMax - dataMin
-
-                              if (difference < 0.01) {
-                                return [dataMin - 0.001, dataMax + 0.001]
-                              } else if (difference < 0.1) {
-                                return [dataMin - 0.01, dataMax + 0.01]
-                              } else if (difference < 1) {
-                                return [dataMin - 0.1, dataMax + 0.11]
-                              } else if (difference < 10) {
-                                return [dataMin - 1, dataMax + 1]
-                              } else {
-                                return [dataMin, dataMax]
-                              }
-                            }
-                      }
-                      padding={{ top: 20, bottom: 20 }}
-                      tick={{
-                        fill: 'var(--fgd-4)',
-                        fontSize: 10,
-                      }}
-                      tickFormatter={
-                        tickFormat ? (v) => tickFormat(v) : undefined
-                      }
-                      tickLine={false}
-                    />
-                    {showZeroLine ? (
-                      <ReferenceLine
-                        y={0}
-                        stroke="var(--fgd-4)"
-                        strokeDasharray="2 2"
+                  {chartType === 'area' ? (
+                    <AreaChart
+                      data={filteredData}
+                      onMouseMove={handleMouseMove}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <RechartsTooltip
+                        cursor={{
+                          strokeOpacity: 0.09,
+                        }}
+                        content={customTooltip ? customTooltip : <></>}
                       />
-                    ) : null}
-                  </AreaChart>
+                      <defs>
+                        <linearGradient
+                          id={`gradientArea-${title?.replace(
+                            /[^a-zA-Z]/g,
+                            ''
+                          )}`}
+                          x1="0"
+                          y1={flipGradientCoords ? '1' : '0'}
+                          x2="0"
+                          y2={flipGradientCoords ? '0' : '1'}
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor={
+                              calculateChartChange() >= 0
+                                ? COLORS.UP[theme]
+                                : COLORS.DOWN[theme]
+                            }
+                            stopOpacity={0.15}
+                          />
+                          <stop
+                            offset="99%"
+                            stopColor={
+                              calculateChartChange() >= 0
+                                ? COLORS.UP[theme]
+                                : COLORS.DOWN[theme]
+                            }
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <Area
+                        isAnimationActive={false}
+                        type="monotone"
+                        dataKey={yKey}
+                        stroke={
+                          calculateChartChange() >= 0
+                            ? COLORS.UP[theme]
+                            : COLORS.DOWN[theme]
+                        }
+                        strokeWidth={1.5}
+                        fill={`url(#gradientArea-${title?.replace(
+                          /[^a-zA-Z]/g,
+                          ''
+                        )})`}
+                      />
+                      <XAxis
+                        axisLine={false}
+                        dataKey={xKey}
+                        minTickGap={20}
+                        padding={{ left: 20, right: 20 }}
+                        tick={{
+                          fill: 'var(--fgd-4)',
+                          fontSize: 10,
+                        }}
+                        tickLine={false}
+                        tickFormatter={(d) =>
+                          formatDateAxis(d, parseInt(daysToShow))
+                        }
+                      />
+                      <YAxis
+                        axisLine={false}
+                        dataKey={yKey}
+                        minTickGap={20}
+                        type="number"
+                        domain={
+                          domain
+                            ? domain
+                            : ([dataMin, dataMax]) => {
+                                const difference = dataMax - dataMin
+
+                                if (difference < 0.01) {
+                                  return [dataMin - 0.001, dataMax + 0.001]
+                                } else if (difference < 0.1) {
+                                  return [dataMin - 0.01, dataMax + 0.01]
+                                } else if (difference < 1) {
+                                  return [dataMin - 0.1, dataMax + 0.11]
+                                } else if (difference < 10) {
+                                  return [dataMin - 1, dataMax + 1]
+                                } else {
+                                  return [dataMin, dataMax]
+                                }
+                              }
+                        }
+                        padding={{ top: 20, bottom: 20 }}
+                        tick={{
+                          fill: 'var(--fgd-4)',
+                          fontSize: 10,
+                        }}
+                        tickFormatter={
+                          tickFormat ? (v) => tickFormat(v) : undefined
+                        }
+                        tickLine={false}
+                      />
+                      {showZeroLine ? (
+                        <ReferenceLine
+                          y={0}
+                          stroke="var(--fgd-4)"
+                          strokeDasharray="2 2"
+                        />
+                      ) : null}
+                    </AreaChart>
+                  ) : (
+                    <BarChart
+                      data={filteredData}
+                      onMouseMove={handleMouseMove}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <RechartsTooltip
+                        cursor={{
+                          fill: 'var(--bkg-2)',
+                          opacity: 0.5,
+                        }}
+                        content={customTooltip ? customTooltip : <></>}
+                      />
+                      <defs>
+                        <linearGradient
+                          id="greenGradientBar"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor={COLORS.UP[theme]}
+                            stopOpacity={1}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor={COLORS.UP[theme]}
+                            stopOpacity={0.7}
+                          />
+                        </linearGradient>
+                        <linearGradient
+                          id="redGradientBar"
+                          x1="0"
+                          y1="1"
+                          x2="0"
+                          y2="0"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor={COLORS.DOWN[theme]}
+                            stopOpacity={1}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor={COLORS.DOWN[theme]}
+                            stopOpacity={0.7}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <Bar dataKey={yKey}>
+                        {filteredData.map((entry, index) => {
+                          return (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={
+                                entry[yKey] > 0
+                                  ? 'url(#greenGradientBar)'
+                                  : 'url(#redGradientBar)'
+                              }
+                            />
+                          )
+                        })}
+                      </Bar>
+                      <XAxis
+                        dataKey={xKey}
+                        axisLine={false}
+                        dy={10}
+                        minTickGap={20}
+                        padding={{ left: 20, right: 20 }}
+                        tick={{
+                          fill: 'var(--fgd-4)',
+                          fontSize: 10,
+                        }}
+                        tickLine={false}
+                        tickFormatter={(v) =>
+                          formatDateAxis(v, parseInt(daysToShow))
+                        }
+                      />
+                      <YAxis
+                        dataKey={yKey}
+                        interval="preserveStartEnd"
+                        axisLine={false}
+                        dx={-10}
+                        padding={{ top: 20, bottom: 20 }}
+                        tick={{
+                          fill: 'var(--fgd-4)',
+                          fontSize: 10,
+                        }}
+                        tickLine={false}
+                        tickFormatter={
+                          tickFormat ? (v) => tickFormat(v) : undefined
+                        }
+                        type="number"
+                      />
+                      <ReferenceLine y={0} stroke={COLORS.BKG4[theme]} />
+                    </BarChart>
+                  )}
                 </ResponsiveContainer>
               </div>
             </div>
@@ -439,4 +549,4 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   )
 }
 
-export default DetailedAreaChart
+export default DetailedAreaOrBarChart

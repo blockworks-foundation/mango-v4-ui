@@ -1,6 +1,7 @@
 {
     "activate-volume-alert": "开启交易量警报",
     "amount": "数量",
+    "average-funding": "Average Funding",
     "base": "基础",
     "book": "挂单薄",
     "buys": "买单",
@@ -20,7 +21,6 @@
     "grouping": "分组",
     "hide-asks": "隐藏要价",
     "hide-bids": "隐藏出价",
-    "hourly-funding": "1小时资金费",
     "in-orders": "在挂单中",
     "init-leverage": "初始杠杆",
     "instantaneous-funding": "瞬时资金费率",

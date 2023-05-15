@@ -23,7 +23,7 @@ import {
 } from 'recharts'
 import { useTheme } from 'next-themes'
 import { COLORS } from 'styles/colors'
-import { formatDateAxis } from '@components/shared/DetailedAreaChart'
+import { formatDateAxis } from '@components/shared/DetailedAreaOrBarChart'
 import { formatYAxis } from 'utils/formatting'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import { useTranslation } from 'next-i18next'
