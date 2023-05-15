@@ -8,7 +8,7 @@ import {
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from './icons/WalletIcon'
-import Button, { IconButton } from './shared/Button'
+import Button from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../utils/constants'
@@ -63,15 +63,20 @@ const TopBar = () => {
   }
 
   return (
-    <>
+    <div
+      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 ${
+        query.token || query.market ? '' : 'pl-4 md:pl-6'
+      }`}
+    >
       <div className="flex w-full items-center justify-between space-x-4">
         <span className="mb-0 flex items-center">
           {query.token || query.market ? (
-            <div className="mr-2 flex h-16 items-center border-r border-th-bkg-3 pr-4 md:mr-4 md:pr-6">
-              <IconButton onClick={() => router.back()} hideBg size="small">
-                <ArrowLeftIcon className="h-6 w-6" />
-              </IconButton>
-            </div>
+            <button
+              className="mr-4 flex h-16 w-16 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
+              onClick={() => router.back()}
+            >
+              <ArrowLeftIcon className="h-5 w-5" />
+            </button>
           ) : null}
           {connected ? (
             <div className="hidden md:block">
@@ -155,7 +160,7 @@ const TopBar = () => {
           onClose={() => setShowCreateAccountModal(false)}
         />
       ) : null}
-    </>
+    </div>
   )
 }
 
