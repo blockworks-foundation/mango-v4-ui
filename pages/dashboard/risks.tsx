@@ -111,7 +111,11 @@ const RiskDashboard: NextPage = () => {
                                     return (
                                       <Td
                                         xBorder
-                                        className="text-left"
+                                        className={
+                                          col.highlight
+                                            ? 'text-left text-th-warning'
+                                            : ''
+                                        }
                                         key={idx}
                                       >
                                         {formatValue(col.val)}
