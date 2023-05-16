@@ -19,7 +19,9 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 type TableData = {
   title: string
-  data: Array<Record<string, { val: string | number | PublicKey }>>
+  data: Array<
+    Record<string, { val: string | number | PublicKey; highlight: boolean }>
+  >
 }
 
 const formatValue = (val: string | number | PublicKey) => {
@@ -102,6 +104,7 @@ const RiskDashboard: NextPage = () => {
                                   (
                                     col: {
                                       val: string | number | PublicKey
+                                      highlight: boolean
                                     },
                                     idx: number
                                   ) => {
