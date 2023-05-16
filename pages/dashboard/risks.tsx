@@ -81,6 +81,13 @@ const RiskDashboard: NextPage = () => {
                                     colName.toLowerCase().includes('slippage')
                                       ? '(bps)'
                                       : ''}
+                                    {colName.toLowerCase().includes('assets') ||
+                                    colName.toLowerCase().includes('liabs') ||
+                                    colName.toLowerCase().includes('equity') ||
+                                    colName.toLowerCase().includes('price') ||
+                                    colName.toLowerCase().includes('position')
+                                      ? '($)'
+                                      : ''}
                                   </Th>
                                 )
                               }
