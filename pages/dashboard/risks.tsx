@@ -19,7 +19,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 type TableData = {
   title: string
-  data: Array<Record<string, string | number>>
+  data: Array<Record<string, { val: string | number | PublicKey }>>
 }
 
 const formatValue = (val: string | number | PublicKey) => {
@@ -93,7 +93,9 @@ const RiskDashboard: NextPage = () => {
                               <TrBody key={index}>
                                 {Object.values(rowData).map(
                                   (
-                                    colVal: string | number | PublicKey,
+                                    col: {
+                                      val: string | number | PublicKey
+                                    },
                                     idx: number
                                   ) => {
                                     return (
@@ -102,7 +104,7 @@ const RiskDashboard: NextPage = () => {
                                         className="text-left"
                                         key={idx}
                                       >
-                                        {formatValue(colVal)}
+                                        {formatValue(col.val)}
                                       </Td>
                                     )
                                   }
