@@ -76,7 +76,11 @@ const RiskDashboard: NextPage = () => {
                                     className="text-left"
                                     key={colName}
                                   >
-                                    {colName}
+                                    {colName}{' '}
+                                    {colName.toLowerCase().includes('fee') ||
+                                    colName.toLowerCase().includes('slippage')
+                                      ? '(bps)'
+                                      : ''}
                                   </Th>
                                 )
                               }
