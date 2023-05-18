@@ -1,7 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  CheckCircleIcon,
+  DocumentDuplicateIcon,
   ExclamationTriangleIcon,
   EyeIcon,
 } from '@heroicons/react/20/solid'
@@ -26,6 +28,8 @@ import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
+import Tooltip from './shared/Tooltip'
+import { copyToClipboard } from 'utils'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -34,6 +38,7 @@ const TopBar = () => {
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
   const [showUserSetup, setShowUserSetup] = useState(false)
+  const [copied, setCopied] = useState('')
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
@@ -61,6 +66,15 @@ const TopBar = () => {
       setShowCreateAccountModal(true)
     }
   }
+
+  const handleCopy = (text: string) => {
+    copyToClipboard(text)
+    setCopied(text)
+  }
+
+  useEffect(() => {
+    setTimeout(() => setCopied(''), 2000)
+  }, [copied])
 
   return (
     <div
@@ -94,9 +108,52 @@ const TopBar = () => {
                 <EyeIcon className="h-5 w-5 text-th-fgd-3" />
                 <span className="ml-2">
                   {t('unowned-helper', {
-                    accountPk: abbreviateAddress(mangoAccount.publicKey),
+                    accountPk: '',
                   })}
                 </span>
+                :
+                <Tooltip
+                  content={
+                    <>
+                      <p>{t('account')}</p>
+                      <button
+                        className="mb-2 flex items-center"
+                        onClick={() =>
+                          handleCopy(mangoAccount.publicKey.toString())
+                        }
+                      >
+                        <p className="mr-1.5 font-mono text-th-fgd-1">
+                          {abbreviateAddress(mangoAccount.publicKey)}
+                        </p>
+                        {copied === mangoAccount.publicKey.toString() ? (
+                          <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
+                        ) : (
+                          <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
+                        )}
+                      </button>
+                      <p>{t('wallet')}</p>
+                      <button
+                        className="flex items-center"
+                        onClick={() =>
+                          handleCopy(mangoAccount.owner.toString())
+                        }
+                      >
+                        <p className="mr-1.5 font-mono text-th-fgd-1">
+                          {abbreviateAddress(mangoAccount.owner)}
+                        </p>
+                        {copied === mangoAccount.owner.toString() ? (
+                          <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
+                        ) : (
+                          <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
+                        )}
+                      </button>
+                    </>
+                  }
+                >
+                  <span className="tooltip-underline ml-1 font-bold text-th-fgd-1">
+                    {mangoAccount.name}
+                  </span>
+                </Tooltip>
               </span>
             ) : (
               <span className="hidden items-center md:flex">
