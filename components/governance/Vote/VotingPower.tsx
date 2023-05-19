@@ -11,9 +11,9 @@ const VotingPower = () => {
 
   return (
     <p className="whitespace-no-wrap mb-0.5 mt-2 flex items-center">
-      <GovernanceDelegate></GovernanceDelegate>
-      <div className="ml-4 flex items-center">
-        {t('your-votes')}
+      <GovernanceDelegate />
+      <div className="ml-4 flex h-10 items-center rounded-full bg-th-bkg-2 px-4">
+        <span className="mr-1">{t('your-votes')}</span>
         <span className="font-mono text-th-fgd-2">
           {!loadingVoter
             ? fmtTokenAmount(voter.voteWeight, MANGO_MINT_DECIMALS)

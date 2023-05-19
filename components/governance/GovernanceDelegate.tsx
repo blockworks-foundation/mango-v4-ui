@@ -35,14 +35,14 @@ const GovernanceDelegate = () => {
     }
   }, [selectedDelegatePk])
 
-  return (
-    <div>
-      <p>{t('select-delegate')}</p>
+  return delegates.length ? (
+    <div className="flex items-center">
+      <p className="mr-2">{t('delegate')}</p>
       <Select
         value={
           currentDelegate
             ? abbreviateAddress(new PublicKey(currentDelegate))
-            : t('use-own-wallet')
+            : t('none')
         }
         onChange={(selected) => {
           setSelectedDelegatePk(selected)
@@ -51,7 +51,7 @@ const GovernanceDelegate = () => {
       >
         <Select.Option value={''}>
           <div className="flex w-full items-center justify-between">
-            {t('use-own-wallet')}
+            {t('none')}
           </div>
         </Select.Option>
         {delegates.map((x) => (
@@ -63,7 +63,7 @@ const GovernanceDelegate = () => {
         ))}
       </Select>
     </div>
-  )
+  ) : null
 }
 
 export default GovernanceDelegate
