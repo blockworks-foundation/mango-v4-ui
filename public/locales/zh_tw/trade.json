@@ -73,7 +73,7 @@
     "taker-fee": "吃單者費用",
     "tick-size": "波動單位",
     "tooltip-borrow-balance": "You'll use your {{balance}} {{token}} balance and borrow {{borrowAmount}} {{token}} to execute this trade. The current {{token}} variable borrow rate is {{rate}}%",
-    "tooltip-borrow-no-balance": "You'll borrow {{borrowAmount}} {{token}} to execute this trade. The current {{token}} variable borrow rate is {{rate}}%",
+    "tooltip-borrow-no-balance": "你將借{{borrowAmount}} {{token}}來成交。{{token}} 的可變的借貸利率為 {{rate}}%",
     "tooltip-enable-margin": "為此交易啟用保證金",
     "tooltip-ioc": "IOC交易若不吃單就會被取消。任何無法立刻成交的部分將被取消",
     "tooltip-insured": "如果發生破產，{{tokenOrMarket}}損失是否可以從保險基金中歸還",

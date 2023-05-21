@@ -1,9 +1,9 @@
 {
     "clear-all": "清除全部",
-    "empty-state-desc": "You're all up-to-date",
-    "empty-state-title": "Nothing to see here",
+    "empty-state-desc": "都處理好了",
+    "empty-state-title": "這裡沒什麼",
     "notifications": "通知",
-    "sign-message": "Sign Message",
-    "unauth-desc": "Sign with your wallet to start receiving notifications",
-    "unauth-title": "Notifications Inbox"
+    "sign-message": "簽署訊息",
+    "unauth-desc": "連接錢包而受到通知",
+    "unauth-title": "通知收件匣"
 }
