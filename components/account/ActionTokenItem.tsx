@@ -49,7 +49,7 @@ const ActionTokenItem = ({
             src={logoUri || `/icons/${name.toLowerCase()}.svg`}
           />
         </div>
-        <p className="text-th-fgd-1">{name}</p>
+        <p className="text-left text-th-fgd-1">{name}</p>
       </div>
       {showDepositRates ? (
         <div className="w-1/4 text-right font-mono">

@@ -1,21 +1,25 @@
 import { AnchorProvider, BN } from '@project-serum/anchor'
 import {
   getAllProposals,
+  getGovernanceAccounts,
   getProposal,
   getTokenOwnerRecord,
   getTokenOwnerRecordAddress,
   Governance,
   ProgramAccount,
   Proposal,
+  pubkeyFilter,
   Realm,
   TokenOwnerRecord,
 } from '@solana/spl-governance'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import produce from 'immer'
+import { tryParse } from 'utils/formatting'
 import {
   MANGO_GOVERNANCE_PROGRAM,
   MANGO_MINT,
   MANGO_REALM_PK,
+  GOVERNANCE_DELEGATE_KEY,
 } from 'utils/governance/constants'
 import { getDeposits } from 'utils/governance/fetch/deposits'
 import {
@@ -44,16 +48,22 @@ type IGovernanceStore = {
     voteWeight: BN
     tokenOwnerRecord: ProgramAccount<TokenOwnerRecord> | undefined | null
   }
+  delegates: ProgramAccount<TokenOwnerRecord>[]
   set: (x: (x: IGovernanceStore) => void) => void
   initConnection: (connection: Connection) => void
   initRealm: (connectionContext: ConnectionContext) => void
-  fetchVoter: (
+  getCurrentVotingPower: (
     wallet: PublicKey,
     vsrClient: VsrClient,
     connectionContext: ConnectionContext
   ) => void
   resetVoter: () => void
   updateProposals: (proposalPk: PublicKey) => void
+  fetchDelegatedAccounts: (
+    wallet: PublicKey,
+    connectionContext: ConnectionContext,
+    programId: PublicKey
+  ) => Promise<ProgramAccount<TokenOwnerRecord>[]>
 }
 
 const GovernanceStore = create<IGovernanceStore>((set, get) => ({
@@ -69,21 +79,47 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     voteWeight: new BN(0),
     tokenOwnerRecord: null,
   },
+  delegates: [],
   set: (fn) => set(produce(fn)),
-  fetchVoter: async (
+  getCurrentVotingPower: async (
     wallet: PublicKey,
     vsrClient: VsrClient,
     connectionContext: ConnectionContext
   ) => {
     const set = get().set
+    const fetchDelegatedAccounts = get().fetchDelegatedAccounts
+    let selectedWallet = wallet
+
     set((state) => {
       state.loadingVoter = true
     })
+
+    const delegatedAccounts = await fetchDelegatedAccounts(
+      selectedWallet,
+      connectionContext,
+      MANGO_GOVERNANCE_PROGRAM
+    )
+
+    const unparsedSelectedDelegatePk = localStorage.getItem(
+      `${wallet.toBase58()}${GOVERNANCE_DELEGATE_KEY}`
+    )
+    const selectedDelegatePk: string = unparsedSelectedDelegatePk
+      ? tryParse(unparsedSelectedDelegatePk)
+      : ''
+
+    const selectedDelegate = delegatedAccounts.find(
+      (x) => x.pubkey.toBase58() === selectedDelegatePk
+    )
+
+    if (selectedDelegatePk && selectedDelegate) {
+      selectedWallet = selectedDelegate.account.governingTokenOwner
+    }
+
     const tokenOwnerRecordPk = await getTokenOwnerRecordAddress(
       MANGO_GOVERNANCE_PROGRAM,
       MANGO_REALM_PK,
       MANGO_MINT,
-      wallet
+      selectedWallet
     )
     let tokenOwnerRecord: ProgramAccount<TokenOwnerRecord> | undefined | null =
       undefined
@@ -96,7 +132,7 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     } catch (e) {}
     const { votingPower } = await getDeposits({
       realmPk: MANGO_REALM_PK,
-      walletPk: wallet,
+      walletPk: selectedWallet,
       communityMintPk: MANGO_MINT,
       client: vsrClient,
       connection: connectionContext.current,
@@ -106,6 +142,23 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
       state.voter.tokenOwnerRecord = tokenOwnerRecord
       state.loadingVoter = false
     })
+  },
+  fetchDelegatedAccounts: async (wallet, connectionContext, programId) => {
+    const set = get().set
+    const governanceDelegateOffset = 122
+
+    const accounts = await getGovernanceAccounts(
+      connectionContext.current,
+      programId,
+      TokenOwnerRecord,
+      [pubkeyFilter(governanceDelegateOffset, wallet)!]
+    )
+    set((state) => {
+      state.delegates = accounts.filter((x) =>
+        x.account.realm.equals(MANGO_REALM_PK)
+      )
+    })
+    return accounts
   },
   resetVoter: () => {
     const set = get().set

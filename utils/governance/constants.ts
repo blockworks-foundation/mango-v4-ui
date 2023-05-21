@@ -32,3 +32,5 @@ export const MAINNET_PYTH_PROGRAM = new PublicKey(
 export const DEVNET_PYTH_PROGRAM = new PublicKey(
   'gSbePebfvPy7tRqimPoVecS2UsBvYv46ynrzWocc92s'
 )
+
+export const GOVERNANCE_DELEGATE_KEY = '-selected-delegate'

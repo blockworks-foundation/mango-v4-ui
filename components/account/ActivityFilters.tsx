@@ -52,7 +52,7 @@ const ActivityFilters = () => {
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(
     DEFAULT_ADVANCED_FILTERS
   )
-  const [params, setParams] = useState<string[]>(DEFAULT_PARAMS)
+  const [params, setParams] = useState<string[]>([])
   const { t } = useTranslation(['common', 'activity'])
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
   const [showFilters, setShowFilters] = useState(false)
@@ -114,7 +114,7 @@ const ActivityFilters = () => {
     if (mangoAccountAddress) {
       await actions.fetchActivityFeed(mangoAccountAddress)
       setAdvancedFilters(DEFAULT_ADVANCED_FILTERS)
-      setParams(DEFAULT_PARAMS)
+      setParams([])
     }
   }, [actions, mangoAccountAddress])
 

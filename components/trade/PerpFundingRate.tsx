@@ -9,6 +9,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
 import { OrderbookL2 } from 'types'
+import Link from 'next/link'
 
 const fetchFundingRate = async (groupPk: string | undefined) => {
   const res = await fetch(
@@ -139,14 +140,26 @@ const PerpFundingRate = () => {
               {typeof fundingRate === 'number' ? (
                 <div className="mt-2">
                   The 1hr rate as an APR is{' '}
-                  {formatFunding.format(fundingRate * 8760)}.
+                  <span className="font-mono text-th-fgd-2">
+                    {formatFunding.format(fundingRate * 8760)}
+                  </span>
                 </div>
               ) : null}
               {instantaneousRate ? (
-                <div className="mt-1">
-                  The latest instantaneous rate is {instantaneousRate}%
+                <div className="mt-2">
+                  The latest instantaneous rate is{' '}
+                  <span className="font-mono text-th-fgd-2">
+                    {instantaneousRate}%
+                  </span>
                 </div>
               ) : null}
+              <Link
+                className="mt-2 block"
+                href={`/stats?market=${selectedMarket?.name}`}
+                shallow={true}
+              >
+                View Chart
+              </Link>
             </>
           }
         >
