@@ -112,6 +112,7 @@ const ListMarket = () => {
           </div>
         </div>
       )}
+      {currentView === VIEWS.PROPS && <div></div>}
     </div>
   )
 }

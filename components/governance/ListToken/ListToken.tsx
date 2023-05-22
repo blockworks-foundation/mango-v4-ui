@@ -10,12 +10,10 @@ import {
   JUPITER_API_MAINNET,
   USDC_MINT,
 } from 'utils/constants'
-import { Keypair, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import { PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
-import { PythHttpClient } from '@pythnetwork/client'
 import {
-  MAINNET_PYTH_PROGRAM,
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
   MANGO_MINT_DECIMALS,
@@ -28,14 +26,9 @@ import {
 import BN from 'bn.js'
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import GovernanceStore from '@store/governanceStore'
-import { Market } from '@project-serum/serum'
 import { notify } from 'utils/notifications'
-import { fmtTokenAmount, tryGetPubKey } from 'utils/governance/tools'
 import { useTranslation } from 'next-i18next'
-import OnBoarding from '../OnBoarding'
 import { emptyPk } from 'utils/governance/accounts/vsrAccounts'
-import { AnchorProvider, Program } from '@project-serum/anchor'
-import EmptyWallet from 'utils/wallet'
 import Loading from '@components/shared/Loading'
 import ListTokenSuccess from './ListTokenSuccess'
 import InlineNotification from '@components/shared/InlineNotification'
@@ -44,6 +37,9 @@ import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { abbreviateAddress } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import useMangoGroup from 'hooks/useMangoGroup'
+import { getBestMarket, getOracle } from 'utils/governance/listingTools'
+import { fmtTokenAmount, tryGetPubKey } from 'utils/governance/tools'
+import OnBoarding from '../OnBoarding'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -161,8 +157,8 @@ const ListToken = () => {
   const getListingParams = async (tokenInfo: Token) => {
     setLoadingListingParams(true)
     const [oraclePk, marketPk] = await Promise.all([
-      getOracle(tokenInfo.symbol),
-      getBestMarket(mint),
+      getOracle({ tokenSymbol: tokenInfo.symbol, connection }),
+      getBestMarket({ tokenMint: mint, cluster: CLUSTER, connection }),
     ])
     const index = proposals ? Object.values(proposals).length : 0
 
@@ -216,135 +212,6 @@ const ListToken = () => {
     } catch (e) {
       notify({
         title: t('liquidity-check-error'),
-        description: `${e}`,
-        type: 'error',
-      })
-    }
-  }
-
-  const getOracle = async (tokenSymbol: string) => {
-    try {
-      let oraclePk = ''
-      const pythOracle = await getPythOracle(tokenSymbol)
-      if (pythOracle) {
-        oraclePk = pythOracle
-      } else {
-        const switchBoardOracle = await getSwitchBoardOracle(tokenSymbol)
-        oraclePk = switchBoardOracle
-      }
-
-      return oraclePk
-    } catch (e) {
-      notify({
-        title: t('oracle-not-found'),
-        description: `${e}`,
-        type: 'error',
-      })
-    }
-  }
-
-  const getPythOracle = async (tokenSymbol: string) => {
-    try {
-      const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
-      const pythAccounts = await pythClient.getData()
-      const product = pythAccounts.products.find(
-        (x) => x.base === tokenSymbol.toUpperCase()
-      )
-      return product?.price_account || ''
-    } catch (e) {
-      notify({
-        title: t('pyth-oracle-error'),
-        description: `${e}`,
-        type: 'error',
-      })
-      return ''
-    }
-  }
-
-  const getSwitchBoardOracle = async (tokenSymbol: string) => {
-    try {
-      const VS_TOKEN_SYMBOL = 'usd'
-      const SWITCHBOARD_PROGRAM_ID =
-        'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
-
-      const options = AnchorProvider.defaultOptions()
-      const provider = new AnchorProvider(
-        connection,
-        new EmptyWallet(Keypair.generate()),
-        options
-      )
-      const idl = await Program.fetchIdl(
-        new PublicKey(SWITCHBOARD_PROGRAM_ID),
-        provider
-      )
-      const switchboardProgram = new Program(
-        idl!,
-        new PublicKey(SWITCHBOARD_PROGRAM_ID),
-        provider
-      )
-
-      const allFeeds =
-        await switchboardProgram.account.aggregatorAccountData.all()
-
-      const feedNames = allFeeds.map((x) =>
-        String.fromCharCode(
-          ...[...(x.account.name as number[])].filter((x) => x)
-        )
-      )
-      const possibleFeedIndexes = feedNames.reduce(function (r, v, i) {
-        return r.concat(
-          v.toLowerCase().includes(tokenSymbol.toLowerCase()) &&
-            v.toLowerCase().includes(VS_TOKEN_SYMBOL)
-            ? i
-            : []
-        )
-      }, [] as number[])
-
-      const possibleFeeds = allFeeds.filter(
-        (x, i) => possibleFeedIndexes.includes(i) && x.account.isLocked
-      )
-      return possibleFeeds.length ? possibleFeeds[0].publicKey.toBase58() : ''
-    } catch (e) {
-      notify({
-        title: t('switch-oracle-error'),
-        description: `${e}`,
-        type: 'error',
-      })
-      return ''
-    }
-  }
-
-  const getBestMarket = async (tokenMint: string) => {
-    try {
-      const dexProgramPk = OPENBOOK_PROGRAM_ID[CLUSTER]
-
-      const markets = await Market.findAccountsByMints(
-        connection,
-        new PublicKey(tokenMint),
-        new PublicKey(USDC_MINT),
-        dexProgramPk
-      )
-      if (!markets.length) {
-        return undefined
-      }
-      if (markets.length === 1) {
-        return markets[0].publicKey
-      }
-      const marketsDataJsons = await Promise.all([
-        ...markets.map((x) =>
-          fetch(`/openSerumApi/market/${x.publicKey.toBase58()}`)
-        ),
-      ])
-      const marketsData = await Promise.all([
-        ...marketsDataJsons.map((x) => x.json()),
-      ])
-
-      const bestMarket = marketsData.sort((a, b) => b.volume24h - a.volume24h)
-
-      return new PublicKey(bestMarket[0].id)
-    } catch (e) {
-      notify({
-        title: t('openbook-market-not-found'),
         description: `${e}`,
         type: 'error',
       })
