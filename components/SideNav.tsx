@@ -151,6 +151,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 showTooltip={false}
               />
               <MenuItem
+                active={pathname === '/governance/listMarket'}
+                collapsed={false}
+                icon={<PlusCircleIcon className="h-5 w-5" />}
+                title={t('common:list-market')}
+                pagePath="/governance/listMarket"
+                hideIconBg
+                showTooltip={false}
+              />
+              <MenuItem
                 active={pathname === '/governance/vote'}
                 collapsed={false}
                 icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
