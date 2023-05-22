@@ -820,6 +820,13 @@ const TradingViewChart = () => {
               })
             },
           },
+          {
+            position: 'top',
+            text: '-',
+            click: function () {
+              return
+            },
+          },
         ]
       })
     }
