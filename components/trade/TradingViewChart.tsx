@@ -812,7 +812,7 @@ const TradingViewChart = () => {
         return [
           {
             position: 'top',
-            text: `Set Limit Price (${formatPrice(price)})`,
+            text: `Set limit price (${formatPrice(price)})`,
             click: function () {
               const set = mangoStore.getState().set
               set((s) => {
