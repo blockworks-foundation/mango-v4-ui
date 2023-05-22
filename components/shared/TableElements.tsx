@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { ReactNode } from 'react'
+import { ReactNode, forwardRef } from 'react'
 
 export const Table = ({
   children,
@@ -39,19 +39,28 @@ export const Th = ({
   </th>
 )
 
-export const TrBody = ({
-  children,
-  className,
-  onClick,
-}: {
+interface TrBodyProps {
   children: ReactNode
   className?: string
   onClick?: () => void
-}) => (
-  <tr className={`border-y border-th-bkg-3 ${className}`} onClick={onClick}>
-    {children}
-  </tr>
+}
+
+export const TrBody = forwardRef<HTMLTableRowElement, TrBodyProps>(
+  (props, ref) => {
+    const { children, className, onClick } = props
+    return (
+      <tr
+        className={`border-y border-th-bkg-3 ${className}`}
+        onClick={onClick}
+        ref={ref}
+      >
+        {children}
+      </tr>
+    )
+  }
 )
+
+TrBody.displayName = 'TrBody'
 
 export const Td = ({
   children,
