@@ -150,6 +150,7 @@ export const getBestMarket = async ({
       new PublicKey(quoteMint),
       dexProgramPk
     )
+    console.log(markets)
     if (!markets.length) {
       return undefined
     }

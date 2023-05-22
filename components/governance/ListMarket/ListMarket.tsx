@@ -3,9 +3,11 @@ import Select from '@components/forms/Select'
 import Button from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import { InformationCircleIcon } from '@heroicons/react/20/solid'
+import mangoStore, { CLUSTER } from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
+import { getBestMarket, getOracle } from 'utils/governance/listingTools'
 
 enum VIEWS {
   BASE_TOKEN,
@@ -16,6 +18,7 @@ enum VIEWS {
 const ListMarket = () => {
   const { t } = useTranslation(['governance'])
   const { group } = useMangoGroup()
+  const connection = mangoStore((s) => s.connection)
   const availableTokens = group ? [...group.banksMapByName.keys()] : []
 
   const [baseToken, setBaseToken] = useState<null | string>(null)
@@ -27,11 +30,34 @@ const ListMarket = () => {
     await handleGetMarketProps()
     setCurrentView(VIEWS.PROPS)
   }
-  const handleGetMarketProps = () => {
+  const handleGetMarketProps = useCallback(async () => {
+    if (!baseToken || !quoteToken || !group) {
+      return
+    }
+
+    const baseBank = group.banksMapByName.get(baseToken)
+    const quoteBank = group.banksMapByName.get(quoteToken)
+
+    if (!baseBank?.length || !quoteBank?.length) {
+      return
+    }
     setLoadingMarketProps(true)
-    console.log('123')
+    const [oraclePk, marketPk] = await Promise.all([
+      getOracle({
+        baseSymbol: baseToken,
+        quoteSymbol: quoteToken,
+        connection,
+      }),
+      getBestMarket({
+        baseMint: baseBank[0].mint.toBase58(),
+        quoteMint: quoteBank[0].mint.toBase58(),
+        cluster: CLUSTER,
+        connection,
+      }),
+    ])
+    console.log({ oraclePk, marketPk })
     setLoadingMarketProps(false)
-  }
+  }, [baseToken, quoteToken, connection])
 
   return (
     <div className="h-full">
