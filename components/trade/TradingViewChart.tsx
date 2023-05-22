@@ -805,6 +805,26 @@ const TradingViewChart = () => {
     }
   }, [theme, defaultProps, isMobile, userId])
 
+  // set a limit price from right click context menu
+  useEffect(() => {
+    if (chartReady && tvWidgetRef.current) {
+      tvWidgetRef.current.onContextMenu(function (unixtime, price) {
+        return [
+          {
+            position: 'top',
+            text: `Set Limit Price (${formatPrice(price)})`,
+            click: function () {
+              const set = mangoStore.getState().set
+              set((s) => {
+                s.tradeForm.price = price.toFixed(12)
+              })
+            },
+          },
+        ]
+      })
+    }
+  }, [chartReady, tvWidgetRef])
+
   // draw custom buttons when chart is ready
   useEffect(() => {
     if (
