@@ -43,9 +43,10 @@ const RiskDashboard: NextPage = () => {
     ['risks'],
     () => group && getRiskStats(client, group),
     {
-      cacheTime: 1000 * 60 * 10,
-      retry: 3,
-      refetchOnWindowFocus: true,
+      cacheTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60 * 5,
+      retry: 1,
+      refetchOnWindowFocus: false,
       enabled: !!group,
     }
   )
