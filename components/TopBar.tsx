@@ -151,7 +151,9 @@ const TopBar = () => {
                   }
                 >
                   <span className="tooltip-underline ml-1 font-bold text-th-fgd-1">
-                    {mangoAccount.name}
+                    {mangoAccount.name
+                      ? mangoAccount.name
+                      : abbreviateAddress(mangoAccount.publicKey)}
                   </span>
                 </Tooltip>
               </span>
