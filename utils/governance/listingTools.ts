@@ -6,23 +6,29 @@ import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
 import { Market } from '@project-serum/serum'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import EmptyWallet from 'utils/wallet'
-import { USDC_MINT } from 'utils/constants'
 
 export const getOracle = async ({
-  tokenSymbol,
+  baseSymbol,
+  quoteSymbol,
   connection,
 }: {
-  tokenSymbol: string
+  baseSymbol: string
+  quoteSymbol: string
   connection: Connection
 }) => {
   try {
     let oraclePk = ''
-    const pythOracle = await getPythOracle({ tokenSymbol, connection })
+    const pythOracle = await getPythOracle({
+      baseSymbol,
+      quoteSymbol,
+      connection,
+    })
     if (pythOracle) {
       oraclePk = pythOracle
     } else {
       const switchBoardOracle = await getSwitchBoardOracle({
-        tokenSymbol,
+        baseSymbol,
+        quoteSymbol,
         connection,
       })
       oraclePk = switchBoardOracle
@@ -39,17 +45,21 @@ export const getOracle = async ({
 }
 
 export const getPythOracle = async ({
-  tokenSymbol,
+  baseSymbol,
+  quoteSymbol,
   connection,
 }: {
-  tokenSymbol: string
+  baseSymbol: string
+  quoteSymbol: string
   connection: Connection
 }) => {
   try {
     const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
     const pythAccounts = await pythClient.getData()
     const product = pythAccounts.products.find(
-      (x) => x.base === tokenSymbol.toUpperCase()
+      (x) =>
+        x.base === baseSymbol.toUpperCase() &&
+        x.quote_currency === quoteSymbol.toUpperCase()
     )
     return product?.price_account || ''
   } catch (e) {
@@ -63,14 +73,15 @@ export const getPythOracle = async ({
 }
 
 export const getSwitchBoardOracle = async ({
-  tokenSymbol,
+  baseSymbol,
+  quoteSymbol,
   connection,
 }: {
-  tokenSymbol: string
+  baseSymbol: string
+  quoteSymbol: string
   connection: Connection
 }) => {
   try {
-    const VS_TOKEN_SYMBOL = 'usd'
     const SWITCHBOARD_PROGRAM_ID = 'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
 
     const options = AnchorProvider.defaultOptions()
@@ -95,10 +106,11 @@ export const getSwitchBoardOracle = async ({
     const feedNames = allFeeds.map((x) =>
       String.fromCharCode(...[...(x.account.name as number[])].filter((x) => x))
     )
+
     const possibleFeedIndexes = feedNames.reduce(function (r, v, i) {
       return r.concat(
-        v.toLowerCase().includes(tokenSymbol.toLowerCase()) &&
-          v.toLowerCase().includes(VS_TOKEN_SYMBOL)
+        v.toLowerCase().includes(baseSymbol.toLowerCase()) &&
+          v.toLowerCase().includes(quoteSymbol.toLowerCase())
           ? i
           : []
       )
@@ -119,11 +131,13 @@ export const getSwitchBoardOracle = async ({
 }
 
 export const getBestMarket = async ({
-  tokenMint,
+  baseMint,
+  quoteMint,
   cluster,
   connection,
 }: {
-  tokenMint: string
+  baseMint: string
+  quoteMint: string
   cluster: 'devnet' | 'mainnet-beta'
   connection: Connection
 }) => {
@@ -132,8 +146,8 @@ export const getBestMarket = async ({
 
     const markets = await Market.findAccountsByMints(
       connection,
-      new PublicKey(tokenMint),
-      new PublicKey(USDC_MINT),
+      new PublicKey(baseMint),
+      new PublicKey(quoteMint),
       dexProgramPk
     )
     if (!markets.length) {

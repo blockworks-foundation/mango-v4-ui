@@ -157,8 +157,17 @@ const ListToken = () => {
   const getListingParams = async (tokenInfo: Token) => {
     setLoadingListingParams(true)
     const [oraclePk, marketPk] = await Promise.all([
-      getOracle({ tokenSymbol: tokenInfo.symbol, connection }),
-      getBestMarket({ tokenMint: mint, cluster: CLUSTER, connection }),
+      getOracle({
+        baseSymbol: tokenInfo.symbol,
+        quoteSymbol: 'usd',
+        connection,
+      }),
+      getBestMarket({
+        baseMint: mint,
+        quoteMint: USDC_MINT,
+        cluster: CLUSTER,
+        connection,
+      }),
     ])
     const index = proposals ? Object.values(proposals).length : 0
 
