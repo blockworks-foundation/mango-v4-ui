@@ -7,12 +7,12 @@ export const formatNumericValue = (
 ): string => {
   const numberValue = Number(value)
   let formattedValue
-  if (numberValue > -0.0000000001 && numberValue < 0.000000001) {
-    formattedValue = '0'
-  } else if (decimals) {
+  if (decimals) {
     formattedValue = roundUp
       ? roundValue(numberValue, decimals, true)
       : roundValue(numberValue, decimals)
+  } else if (numberValue > -0.0000000001 && numberValue < 0.000000001) {
+    formattedValue = '0'
   } else if (Math.abs(numberValue) >= 1000) {
     formattedValue = roundUp
       ? roundValue(numberValue, 0, true)
