@@ -74,5 +74,8 @@
     "no": "No",
     "current-vote": "Current Vote:",
     "use-own-wallet": "Use own wallet",
-    "select-delegate": "Select delegate"
+    "select-delegate": "Select delegate",
+    "new-market-listing": "New Market Listing",
+    "before-you-list-market": "Before you propose listing a market on Mango:",
+    "before-listing-market-2": "New markets are approved by DAO vote. This takes 3 days"
 }
