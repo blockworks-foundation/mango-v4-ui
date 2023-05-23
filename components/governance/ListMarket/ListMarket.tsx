@@ -1,19 +1,47 @@
+import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
 import Select from '@components/forms/Select'
+import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketModal'
 import Button from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
-import { InformationCircleIcon } from '@heroicons/react/20/solid'
-import { INSTRUCTION_LAYOUT } from '@project-serum/serum/lib/instructions'
+import { Disclosure } from '@headlessui/react'
+import {
+  ChevronDownIcon,
+  ExclamationCircleIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/20/solid'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useState } from 'react'
-import { getBestMarket, getOracle } from 'utils/governance/listingTools'
+import { ChangeEvent, useCallback, useState } from 'react'
+import {
+  getBestMarket,
+  getOracle,
+  getQuoteSymbol,
+} from 'utils/governance/listingTools'
+
+type FormErrors = Partial<Record<keyof ListMarketForm, string>>
+
+type ListMarketForm = {
+  marketPk: string
+  oraclePk: string
+  openBookMarketExternalPk: string
+  proposalTitle: string
+  proposalDescription: string
+}
 
 enum VIEWS {
   BASE_TOKEN,
   PROPS,
   SUCCESS,
+}
+
+const defaultFormValues: ListMarketForm = {
+  marketPk: '',
+  oraclePk: '',
+  openBookMarketExternalPk: '',
+  proposalDescription: '',
+  proposalTitle: '',
 }
 
 const ListMarket = () => {
@@ -22,11 +50,38 @@ const ListMarket = () => {
   const connection = mangoStore((s) => s.connection)
   const availableTokens = group ? [...group.banksMapByName.keys()] : []
 
+  const [advForm, setAdvForm] = useState<ListMarketForm>({
+    ...defaultFormValues,
+  })
+  const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [baseToken, setBaseToken] = useState<null | string>(null)
   const [quoteToken, setQuoteToken] = useState<null | string>(null)
   const [loadingMarketProps, setLoadingMarketProps] = useState(false)
+  const [proposing, setProposing] = useState(false)
   const [currentView, setCurrentView] = useState(VIEWS.BASE_TOKEN)
+  const [marketPk, setMarketPk] = useState('')
+  const [oraclePk, setOraclePk] = useState('')
+  const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
 
+  const handleSetAdvForm = (propertyName: string, value: string | number) => {
+    setFormErrors({})
+    setAdvForm({ ...advForm, [propertyName]: value })
+  }
+  const openCreateOpenbookMarket = () => {
+    setCreateOpenbookMarket(true)
+  }
+  const goToHomePage = async () => {
+    setCurrentView(VIEWS.BASE_TOKEN)
+    setMarketPk('')
+    setOraclePk('')
+    setAdvForm({
+      ...defaultFormValues,
+    })
+  }
+  const handlePropose = async () => {
+    setProposing(true)
+    setProposing(false)
+  }
   const goToPropsPage = async () => {
     await handleGetMarketProps()
     setCurrentView(VIEWS.PROPS)
@@ -43,10 +98,10 @@ const ListMarket = () => {
       return
     }
     setLoadingMarketProps(true)
-    const [oraclePk, marketPk] = await Promise.all([
+    const [foundOraclePk, bestMarketPk] = await Promise.all([
       getOracle({
         baseSymbol: baseToken,
-        quoteSymbol: quoteToken,
+        quoteSymbol: getQuoteSymbol(quoteToken),
         connection,
       }),
       getBestMarket({
@@ -56,9 +111,10 @@ const ListMarket = () => {
         connection,
       }),
     ])
-    console.log(oraclePk, marketPk)
+    setMarketPk(bestMarketPk?.toBase58() || '')
+    setOraclePk(foundOraclePk || '')
     setLoadingMarketProps(false)
-  }, [baseToken, quoteToken, connection])
+  }, [baseToken, quoteToken, group, connection])
 
   return (
     <div className="h-full">
@@ -127,7 +183,7 @@ const ListMarket = () => {
             <Button
               className="float-right mt-6 flex w-36 items-center justify-center"
               onClick={goToPropsPage}
-              disabled={loadingMarketProps}
+              disabled={loadingMarketProps || !quoteToken || !baseToken}
               size="large"
             >
               {loadingMarketProps ? (
@@ -139,7 +195,177 @@ const ListMarket = () => {
           </div>
         </div>
       )}
-      {currentView === VIEWS.PROPS && <div></div>}
+      {currentView === VIEWS.PROPS && (
+        <div>
+          <div>
+            Oracle:{' '}
+            {oraclePk ? (
+              oraclePk
+            ) : (
+              <>
+                Oracle not found - <Button>Create oracle</Button>
+              </>
+            )}
+          </div>
+          <div>
+            Openbook Market:{' '}
+            {marketPk ? (
+              marketPk
+            ) : (
+              <>
+                Openbook market not found -{' '}
+                <Button onClick={openCreateOpenbookMarket}>
+                  Create openbook market
+                </Button>
+                {createOpenbookMarketModal && (
+                  <CreateOpenbookMarketModal
+                    quoteSymbol={quoteToken!}
+                    baseSymbol={baseToken!}
+                    isOpen={createOpenbookMarketModal}
+                    onClose={() => setCreateOpenbookMarket(false)}
+                  ></CreateOpenbookMarketModal>
+                )}
+              </>
+            )}
+          </div>
+          <div>
+            <Disclosure>
+              {({ open }) => (
+                <>
+                  <Disclosure.Button
+                    className={`mt-4 w-full rounded-md bg-th-bkg-2 p-4 md:hover:bg-th-bkg-3 ${
+                      open ? 'rounded-b-none' : ''
+                    }`}
+                  >
+                    <div
+                      className={`flex items-center justify-between ${
+                        Object.values(formErrors).length
+                          ? 'text-th-warning'
+                          : ''
+                      }`}
+                    >
+                      {t('adv-fields')}
+                      <ChevronDownIcon
+                        className={`h-5 w-5 text-th-fgd-3 ${
+                          open ? 'rotate-180' : 'rotate-360'
+                        }`}
+                      />
+                    </div>
+                  </Disclosure.Button>
+                  <Disclosure.Panel>
+                    <div className="space-y-4 rounded-md rounded-t-none bg-th-bkg-2 p-4">
+                      <div>
+                        <Label text={t('oracle')} />
+                        <Input
+                          hasError={formErrors.oraclePk !== undefined}
+                          type="text"
+                          value={advForm.oraclePk}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            handleSetAdvForm('oraclePk', e.target.value)
+                          }
+                        />
+                        {formErrors.oraclePk ? (
+                          <div className="mt-1.5 flex items-center space-x-1">
+                            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                            <p className="mb-0 text-xs text-th-down">
+                              {formErrors.oraclePk}
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
+                      <div>
+                        <Label text={t('openbook-market-external')} />
+                        <Input
+                          hasError={
+                            formErrors.openBookMarketExternalPk !== undefined
+                          }
+                          type="text"
+                          value={advForm.openBookMarketExternalPk.toString()}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            handleSetAdvForm(
+                              'openBookMarketExternalPk',
+                              e.target.value
+                            )
+                          }
+                        />
+                        {formErrors.openBookMarketExternalPk && (
+                          <div className="mt-1.5 flex items-center space-x-1">
+                            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                            <p className="mb-0 text-xs text-th-down">
+                              {formErrors.openBookMarketExternalPk}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Label text={t('proposal-title')} />
+                        <Input
+                          hasError={formErrors.proposalTitle !== undefined}
+                          type="text"
+                          value={advForm.proposalTitle.toString()}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            handleSetAdvForm('proposalTitle', e.target.value)
+                          }
+                        />
+                        {formErrors.proposalTitle && (
+                          <div className="mt-1.5 flex items-center space-x-1">
+                            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                            <p className="mb-0 text-xs text-th-down">
+                              {formErrors.proposalTitle}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Label text={t('proposal-des')} />
+                        <Input
+                          hasError={
+                            formErrors.proposalDescription !== undefined
+                          }
+                          type="text"
+                          value={advForm.proposalDescription.toString()}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            handleSetAdvForm(
+                              'proposalDescription',
+                              e.target.value
+                            )
+                          }
+                        />
+                        {formErrors.proposalDescription && (
+                          <div className="mt-1.5 flex items-center space-x-1">
+                            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                            <p className="mb-0 text-xs text-th-down">
+                              {formErrors.proposalDescription}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Disclosure.Panel>
+                </>
+              )}
+            </Disclosure>
+          </div>
+          <div>
+            <Button
+              className="float-left mt-6 flex w-36 items-center justify-center"
+              onClick={goToHomePage}
+              disabled={proposing}
+              size="large"
+            >
+              Back
+            </Button>
+            <Button
+              className="float-right mt-6 flex w-36 items-center justify-center"
+              onClick={handlePropose}
+              disabled={proposing}
+              size="large"
+            >
+              {proposing ? <Loading className="w-4"></Loading> : t('Propose')}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

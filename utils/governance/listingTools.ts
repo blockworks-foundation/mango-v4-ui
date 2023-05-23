@@ -150,7 +150,7 @@ export const getBestMarket = async ({
       new PublicKey(quoteMint),
       dexProgramPk
     )
-    console.log(markets)
+
     if (!markets.length) {
       return undefined
     }
@@ -178,16 +178,34 @@ export const getBestMarket = async ({
   }
 }
 
-export const calculateTradingParameters = (basePrice: number) => {
+export const calculateTradingParameters = (
+  basePrice: number,
+  quotePrice: number
+) => {
+  // Calculate the actual price (quote price/base price)
+  const actualPrice = quotePrice / basePrice
+
   // Minimum order: $1 worth of base, rounded down to the next 10^(-x)
   const minOrder =
     Math.floor((1 / basePrice) * Math.pow(10, 4)) / Math.pow(10, 4)
 
   // Price tick: e-4 of the current price, rounded down to the next 10^(-y)
-  const priceTick = Math.floor((basePrice * Math.pow(10, 4)) / Math.pow(10, 4))
+  const priceTick = Math.floor(
+    (actualPrice * Math.pow(10, 4)) / Math.pow(10, 4)
+  )
 
   return {
     minOrder: minOrder,
     priceTick: priceTick,
   }
+}
+
+export const getQuoteSymbol = (quoteTokenSymbol: string) => {
+  if (
+    quoteTokenSymbol.toLowerCase() === 'usdc' ||
+    quoteTokenSymbol.toLocaleLowerCase() === 'usdt'
+  ) {
+    return 'usd'
+  }
+  return quoteTokenSymbol
 }
