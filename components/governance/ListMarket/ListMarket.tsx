@@ -3,6 +3,7 @@ import Select from '@components/forms/Select'
 import Button from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import { InformationCircleIcon } from '@heroicons/react/20/solid'
+import { INSTRUCTION_LAYOUT } from '@project-serum/serum/lib/instructions'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
@@ -55,7 +56,7 @@ const ListMarket = () => {
         connection,
       }),
     ])
-    console.log({ oraclePk, marketPk })
+    console.log(oraclePk, marketPk)
     setLoadingMarketProps(false)
   }, [baseToken, quoteToken, connection])
 

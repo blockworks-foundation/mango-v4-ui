@@ -177,3 +177,17 @@ export const getBestMarket = async ({
     })
   }
 }
+
+export const calculateTradingParameters = (basePrice: number) => {
+  // Minimum order: $1 worth of base, rounded down to the next 10^(-x)
+  const minOrder =
+    Math.floor((1 / basePrice) * Math.pow(10, 4)) / Math.pow(10, 4)
+
+  // Price tick: e-4 of the current price, rounded down to the next 10^(-y)
+  const priceTick = Math.floor((basePrice * Math.pow(10, 4)) / Math.pow(10, 4))
+
+  return {
+    minOrder: minOrder,
+    priceTick: priceTick,
+  }
+}
