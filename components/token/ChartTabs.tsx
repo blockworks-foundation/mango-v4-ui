@@ -1,17 +1,14 @@
+import { Bank } from '@blockworks-foundation/mango-v4'
 import TabButtons from '@components/shared/TabButtons'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useState } from 'react'
 import { TokenStatsItem } from 'types'
 import { formatYAxis } from 'utils/formatting'
-const DetailedAreaChart = dynamic(
-  () => import('@components/shared/DetailedAreaChart'),
-  { ssr: false }
-)
+import DetailedAreaChart from '@components/shared/DetailedAreaChart'
 
-const ChartTabs = ({ token }: { token: string }) => {
+const ChartTabs = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation('token')
   const [activeDepositsTab, setActiveDepositsTab] = useState('token:deposits')
   const [activeBorrowsTab, setActiveBorrowsTab] = useState('token:borrows')
@@ -34,7 +31,7 @@ const ChartTabs = ({ token }: { token: string }) => {
   const statsHistory = useMemo(() => {
     if (!tokenStats?.length) return []
     return tokenStats.reduce((a: TokenStatsItem[], c: TokenStatsItem) => {
-      if (c.symbol === token) {
+      if (c.token_index === bank.tokenIndex) {
         const copy = { ...c }
         copy.deposit_apr = copy.deposit_apr * 100
         copy.borrow_apr = copy.borrow_apr * 100
@@ -45,22 +42,7 @@ const ChartTabs = ({ token }: { token: string }) => {
           new Date(a.date_hour).getTime() - new Date(b.date_hour).getTime()
       )
     }, [])
-  }, [tokenStats])
-
-  // const filterStats = (daysToShow: string) => {
-  //   if (!statsHistory.length) return []
-  //   if (daysToShow !== '30') {
-  //     const seconds = Number(daysToShow) * 86400
-  //     const data = statsHistory.filter((d) => {
-  //       const dataTime = new Date(d.date_hour).getTime() / 1000
-  //       const now = new Date().getTime() / 1000
-  //       const limit = now - seconds
-  //       return dataTime >= limit
-  //     })
-  //     return data
-  //   }
-  //   return statsHistory
-  // }
+  }, [tokenStats, bank])
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
@@ -87,7 +69,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 loading={loadingTokenStats}
                 small
                 tickFormat={(x) => formatYAxis(x)}
-                title={`${token} ${t('token:deposits')}`}
+                title={`${bank?.name} ${t('token:deposits')}`}
                 xKey="date_hour"
                 yKey={'total_deposits'}
               />
@@ -98,13 +80,12 @@ const ChartTabs = ({ token }: { token: string }) => {
                 setDaysToShow={setDepositRateDaysToShow}
                 heightClass="h-64"
                 loaderHeightClass="h-[334px]"
-                // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 hideChange
                 small
                 suffix="%"
                 tickFormat={(x) => `${x.toFixed(2)}%`}
-                title={`${token} ${t('token:deposit-rates')} APR`}
+                title={`${bank?.name} ${t('token:deposit-rates')} APR`}
                 xKey="date_hour"
                 yKey={'deposit_apr'}
               />
@@ -135,7 +116,7 @@ const ChartTabs = ({ token }: { token: string }) => {
                 loading={loadingTokenStats}
                 small
                 tickFormat={(x) => formatYAxis(x)}
-                title={`${token} ${t('token:borrows')}`}
+                title={`${bank?.name} ${t('token:borrows')}`}
                 xKey="date_hour"
                 yKey={'total_borrows'}
               />
@@ -146,13 +127,12 @@ const ChartTabs = ({ token }: { token: string }) => {
                 setDaysToShow={setBorrowRateDaysToShow}
                 heightClass="h-64"
                 loaderHeightClass="h-[334px]"
-                // domain={[0, 'dataMax']}
                 loading={loadingTokenStats}
                 small
                 hideChange
                 suffix="%"
                 tickFormat={(x) => `${x.toFixed(2)}%`}
-                title={`${token} ${t('token:borrow-rates')} APR`}
+                title={`${bank?.name} ${t('token:borrow-rates')} APR`}
                 xKey="date_hour"
                 yKey={'borrow_apr'}
               />

@@ -1,6 +1,6 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -14,6 +14,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
   const margin = mangoStore((s) => s.swap.margin)
   const slippage = mangoStore((s) => s.swap.slippage)
   const set = mangoStore((s) => s.set)
+  const focusRef = useRef<HTMLButtonElement>(null)
 
   const [showCustomSlippageForm, setShowCustomSlippageForm] = useState(false)
   const [inputValue, setInputValue] = useState(slippage.toString())
@@ -36,10 +37,21 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
     })
   }
 
+  useEffect(() => {
+    if (focusRef?.current) {
+      focusRef.current.focus()
+    }
+  }, [focusRef])
+
   return (
     <>
       <h3 className="mb-3">{t('settings')}</h3>
-      <IconButton className="absolute top-2 right-2" onClick={onClose} hideBg>
+      <IconButton
+        className="absolute top-2 right-2"
+        onClick={onClose}
+        hideBg
+        ref={focusRef}
+      >
         <XMarkIcon className="h-6 w-6" />
       </IconButton>
 

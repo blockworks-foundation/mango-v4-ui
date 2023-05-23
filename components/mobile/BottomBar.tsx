@@ -107,14 +107,14 @@ const MoreMenuPanel = ({
   const { t } = useTranslation(['common', 'search'])
   return (
     <div
-      className={`fixed bottom-0 z-30 h-[420px] w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
+      className={`fixed bottom-0 z-30 h-[calc(100%-32px)] w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
         showPanel ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
       <div className="flex justify-between py-4">
         <SolanaTps />
         <IconButton onClick={() => setShowPanel(false)} hideBg>
-          <XMarkIcon className="h-6 w-6" />
+          <XMarkIcon className="h-6 w-6 text-th-fgd-3" />
         </IconButton>
       </div>
       <div
@@ -147,6 +147,11 @@ const MoreMenuPanel = ({
           icon={<PlusCircleIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
+          title={t('common:vote')}
+          path="/governance/vote"
+          icon={<PlusCircleIcon className="h-5 w-5" />}
+        />
+        <MoreMenuItem
           title={t('learn')}
           path="https://docs.mango.markets/"
           icon={<LightBulbIcon className="h-5 w-5" />}
@@ -175,7 +180,7 @@ const MoreMenuItem = ({
   isExternal?: boolean
 }) => {
   const classNames =
-    'default-transition flex w-full items-center justify-between border-t border-th-bkg-4 px-2 py-4 text-th-fgd-2 hover:text-th-fgd-1'
+    'flex w-full items-center justify-between border-t border-th-bkg-4 px-2 py-4 text-th-fgd-2 hover:text-th-fgd-1'
   return isExternal ? (
     <a
       className={classNames}

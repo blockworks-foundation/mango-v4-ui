@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {
@@ -199,6 +200,7 @@ const SwapReviewRouteInfo = ({
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
+  const focusRef = useRef<HTMLButtonElement>(null)
 
   const inputTokenIconUri = useMemo(() => {
     return inputTokenInfo ? inputTokenInfo.logoURI : ''
@@ -210,6 +212,12 @@ const SwapReviewRouteInfo = ({
       10 ** outputTokenInfo.decimals
     )
   }, [selectedRoute, outputTokenInfo])
+
+  useEffect(() => {
+    if (focusRef?.current) {
+      focusRef.current.focus()
+    }
+  }, [focusRef])
 
   useEffect(() => {
     setCoingeckoPrices(EMPTY_COINGECKO_PRICES)
@@ -354,11 +362,12 @@ const SwapReviewRouteInfo = ({
           className="absolute top-4 left-4 mr-3 text-th-fgd-2"
           onClick={onClose}
           size="small"
+          ref={focusRef}
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
         <div className="flex justify-center bg-gradient-to-t from-th-bkg-1 to-th-bkg-2 p-6 pb-0">
-          <div className="mb-4 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
+          <div className="mb-3 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
             <div className="relative mb-2 w-[72px]">
               <Image alt="" width="40" height="40" src={inputTokenIconUri} />
               <div className="absolute right-0 top-0">
@@ -376,7 +385,7 @@ const SwapReviewRouteInfo = ({
                 <FormatNumericValue value={amountIn} />
               </span>{' '}
               {inputTokenInfo?.symbol}
-              <ArrowRightIcon className="mx-2 h-5 w-5 text-th-fgd-4" />
+              <ArrowRightIcon className="mx-2 h-5 w-5 text-th-fgd-2" />
               <span className="mr-1 font-mono text-th-fgd-1">
                 <FormatNumericValue value={amountOut} />
               </span>{' '}
@@ -415,7 +424,7 @@ const SwapReviewRouteInfo = ({
                   )}
                 </p>
                 <ArrowsRightLeftIcon
-                  className="default-transition ml-1 h-4 w-4 cursor-pointer text-th-fgd-2 hover:text-th-active"
+                  className="ml-1 h-4 w-4 cursor-pointer text-th-fgd-2 hover:text-th-active"
                   onClick={() => setSwapRate(!swapRate)}
                 />
               </div>
@@ -502,9 +511,7 @@ const SwapReviewRouteInfo = ({
                 </>
               }
             >
-              <span className="tooltip-underline">
-                {t('swap:price-impact')}
-              </span>
+              <p className="tooltip-underline">{t('swap:price-impact')}</p>
             </Tooltip>
             <p className="text-right font-mono text-sm text-th-fgd-2">
               {selectedRoute?.priceImpactPct * 100 < 0.1
@@ -513,39 +520,67 @@ const SwapReviewRouteInfo = ({
             </p>
           </div>
           {borrowAmount ? (
-            <div className="flex justify-between">
-              <Tooltip
-                content={
-                  balance
-                    ? t('swap:tooltip-borrow-balance', {
-                        balance: formatNumericValue(balance),
-                        borrowAmount: formatNumericValue(borrowAmount),
-                        token: inputTokenInfo?.symbol,
-                        rate: formatNumericValue(
-                          inputBank!.getBorrowRateUi(),
-                          2
-                        ),
-                      })
-                    : t('swap:tooltip-borrow-no-balance', {
-                        borrowAmount: formatNumericValue(borrowAmount),
-                        token: inputTokenInfo?.symbol,
-                        rate: formatNumericValue(
-                          inputBank!.getBorrowRateUi(),
-                          2
-                        ),
-                      })
-                }
-                delay={100}
-              >
-                <p className="tooltip-underline text-sm text-th-fgd-3">
-                  {t('borrow-amount')}
+            <>
+              <div className="flex justify-between">
+                <Tooltip
+                  content={
+                    balance
+                      ? t('swap:tooltip-borrow-balance', {
+                          balance: formatNumericValue(balance),
+                          borrowAmount: formatNumericValue(borrowAmount),
+                          token: inputTokenInfo?.symbol,
+                          rate: formatNumericValue(
+                            inputBank!.getBorrowRateUi(),
+                            2
+                          ),
+                        })
+                      : t('swap:tooltip-borrow-no-balance', {
+                          borrowAmount: formatNumericValue(borrowAmount),
+                          token: inputTokenInfo?.symbol,
+                          rate: formatNumericValue(
+                            inputBank!.getBorrowRateUi(),
+                            2
+                          ),
+                        })
+                  }
+                  delay={100}
+                >
+                  <p className="tooltip-underline">{t('borrow-amount')}</p>
+                </Tooltip>
+                <p className="text-right font-mono text-sm text-th-fgd-2">
+                  <FormatNumericValue value={borrowAmount} />{' '}
+                  <span className="font-body text-th-fgd-3">
+                    {inputTokenInfo?.symbol}
+                  </span>
                 </p>
-              </Tooltip>
-              <p className="text-right font-mono text-sm text-th-fgd-2">
-                ~<FormatNumericValue value={borrowAmount} />{' '}
-                <span className="font-body">{inputTokenInfo?.symbol}</span>
-              </p>
-            </div>
+              </div>
+              <div className="flex justify-between">
+                <Tooltip
+                  content={t('loan-origination-fee-tooltip', {
+                    fee: `${(
+                      inputBank!.loanOriginationFeeRate.toNumber() * 100
+                    ).toFixed(3)}%`,
+                  })}
+                  delay={100}
+                >
+                  <p className="tooltip-underline">
+                    {t('loan-origination-fee')}
+                  </p>
+                </Tooltip>
+                <p className="text-right font-mono text-th-fgd-2">
+                  <FormatNumericValue
+                    value={
+                      borrowAmount *
+                      inputBank!.loanOriginationFeeRate.toNumber()
+                    }
+                    decimals={inputBank!.mintDecimals}
+                  />{' '}
+                  <span className="font-body text-th-fgd-3">
+                    {inputBank!.name}
+                  </span>
+                </p>
+              </div>
+            </>
           ) : null}
         </div>
       </div>
@@ -570,8 +605,12 @@ const SwapReviewRouteInfo = ({
           <Disclosure>
             {({ open }) => (
               <>
-                <Disclosure.Button className="default-transition flex w-full items-center justify-between rounded-md p-3">
-                  <p>{open ? t('swap:hide-fees') : t('swap:show-fees')}</p>
+                <Disclosure.Button
+                  className={`flex w-full items-center justify-between rounded-md p-3 focus-visible:bg-th-bkg-3 ${
+                    open ? 'mb-2 rounded-b-none' : ''
+                  }`}
+                >
+                  <p>{t('swap:route-info')}</p>
                   <ChevronDownIcon
                     className={`${
                       open ? 'rotate-180' : 'rotate-360'
@@ -579,35 +618,6 @@ const SwapReviewRouteInfo = ({
                   />
                 </Disclosure.Button>
                 <Disclosure.Panel className="space-y-2 p-3 pt-0">
-                  {borrowAmount ? (
-                    <div className="flex justify-between">
-                      <Tooltip
-                        content={t('loan-origination-fee-tooltip', {
-                          fee: `${(
-                            inputBank!.loanOriginationFeeRate.toNumber() * 100
-                          ).toFixed(3)}%`,
-                        })}
-                        delay={100}
-                      >
-                        <p className="tooltip-underline">
-                          {t('loan-origination-fee')}
-                        </p>
-                      </Tooltip>
-                      <p className="text-right font-mono text-th-fgd-2">
-                        ~
-                        <FormatNumericValue
-                          value={
-                            borrowAmount *
-                            inputBank!.loanOriginationFeeRate.toNumber()
-                          }
-                          decimals={inputBank!.mintDecimals}
-                        />{' '}
-                        <span className="font-body text-th-fgd-4">
-                          {inputBank!.name}
-                        </span>
-                      </p>
-                    </div>
-                  ) : null}
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-th-fgd-3">
                       {t('swap:swap-route')}

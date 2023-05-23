@@ -1,6 +1,7 @@
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import useJupiterMints from './useJupiterMints'
 import useMangoGroup from './useMangoGroup'
 
@@ -19,8 +20,17 @@ export default function useSelectedMarket() {
       const baseBank = group.getFirstBankByTokenIndex(
         selectedMarket.baseTokenIndex
       )
+      const quoteBank = group.getFirstBankByTokenIndex(
+        selectedMarket.quoteTokenIndex
+      )
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal
+      )
 
-      return baseBank.uiPrice
+      return floorToDecimal(
+        baseBank.uiPrice / quoteBank.uiPrice,
+        getDecimalCount(market.tickSize)
+      ).toNumber()
     } else if (selectedMarket) {
       return selectedMarket._uiPrice
     } else return 0

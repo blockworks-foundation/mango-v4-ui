@@ -8,11 +8,7 @@ import AccountActions from './AccountActions'
 import mangoStore from '@store/mangoStore'
 import { formatCurrencyValue } from '../../utils/numbers'
 import FlipNumbers from 'react-flip-numbers'
-import dynamic from 'next/dynamic'
-const SimpleAreaChart = dynamic(
-  () => import('@components/shared/SimpleAreaChart'),
-  { ssr: false }
-)
+import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { COLORS } from '../../styles/colors'
 import { useTheme } from 'next-themes'
 import { IconButton } from '../shared/Button'
@@ -44,16 +40,12 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthBar from './HealthBar'
-const AssetsLiabilities = dynamic(() => import('./AssetsLiabilities'), {
-  ssr: false,
-})
-
-const TABS = ['account-value', 'account:assets-liabilities']
+import AssetsLiabilities from './AssetsLiabilities'
 import { PerformanceDataItem, TotalAccountFundingItem } from 'types'
 import { useQuery } from '@tanstack/react-query'
-const FundingDetails = dynamic(() => import('./FundingDetails'), {
-  ssr: false,
-})
+import FundingDetails from './FundingDetails'
+
+const TABS = ['account-value', 'account:assets-liabilities']
 
 const fetchFundingTotals = async (mangoAccountPk: string) => {
   try {
@@ -78,6 +70,13 @@ const fetchFundingTotals = async (mangoAccountPk: string) => {
   }
 }
 
+export type ChartToShow =
+  | ''
+  | 'account-value'
+  | 'cumulative-interest-value'
+  | 'pnl'
+  | 'hourly-funding'
+
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
   const { connected } = useWallet()
@@ -92,13 +91,7 @@ const AccountPage = () => {
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
   )
-  const [chartToShow, setChartToShow] = useState<
-    | 'account-value'
-    | 'cumulative-interest-value'
-    | 'pnl'
-    | 'hourly-funding'
-    | ''
-  >('')
+  const [chartToShow, setChartToShow] = useState<ChartToShow>('')
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const [showPnlHistory, setShowPnlHistory] = useState<boolean>(false)
   const { theme } = useTheme()
@@ -213,7 +206,7 @@ const AccountPage = () => {
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
       return totalInterestData.reduce(
-        (a, c) => a + c.borrow_interest_usd * -1 + c.deposit_interest_usd,
+        (a, c) => a + c.borrow_interest_usd + c.deposit_interest_usd,
         0
       )
     }
@@ -296,10 +289,10 @@ const AccountPage = () => {
           <div className="hide-scroll flex justify-center space-x-2 md:justify-start">
             {TABS.map((tab) => (
               <button
-                className={`default-transition rounded-md py-1.5 px-2.5 text-sm font-medium md:hover:text-th-fgd-2 ${
+                className={`rounded-md py-1.5 px-2.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
                   activeTab === tab
-                    ? 'bg-th-bkg-3 text-th-active'
-                    : 'text-th-fgd-3'
+                    ? 'bg-th-bkg-3 text-th-active md:hover:text-th-active'
+                    : 'text-th-fgd-3 md:hover:text-th-fgd-2'
                 }`}
                 onClick={() => setActiveTab(tab)}
                 key={tab}
@@ -421,27 +414,36 @@ const AccountPage = () => {
                     The lower your account health is the more likely you are to
                     get liquidated when prices fluctuate.
                   </p>
-                  <p className="text-xs font-bold text-th-fgd-1">
-                    Your account health is {maintHealth}%
-                  </p>
-                  <p className="text-xs">
-                    <span className="font-bold text-th-fgd-1">Scenario:</span>{' '}
-                    If the prices of all your liabilities increase by{' '}
-                    {maintHealth}%, even for just a moment, some of your
-                    liabilities will be liquidated.
-                  </p>
-                  <p className="text-xs">
-                    <span className="font-bold text-th-fgd-1">Scenario:</span>{' '}
-                    If the value of your total collateral decreases by{' '}
-                    {((1 - 1 / ((maintHealth || 0) / 100 + 1)) * 100).toFixed(
-                      2
-                    )}
-                    % , some of your liabilities will be liquidated.
-                  </p>
-                  <p className="text-xs">
-                    These are examples. A combination of events can also lead to
-                    liquidation.
-                  </p>
+                  {maintHealth < 100 ? (
+                    <>
+                      <p className="text-xs font-bold text-th-fgd-1">
+                        Your account health is {maintHealth}%
+                      </p>
+                      <p className="text-xs">
+                        <span className="font-bold text-th-fgd-1">
+                          Scenario:
+                        </span>{' '}
+                        If the prices of all your liabilities increase by{' '}
+                        {maintHealth}%, even for just a moment, some of your
+                        liabilities will be liquidated.
+                      </p>
+                      <p className="text-xs">
+                        <span className="font-bold text-th-fgd-1">
+                          Scenario:
+                        </span>{' '}
+                        If the value of your total collateral decreases by{' '}
+                        {(
+                          (1 - 1 / ((maintHealth || 0) / 100 + 1)) *
+                          100
+                        ).toFixed(2)}
+                        % , some of your liabilities will be liquidated.
+                      </p>
+                      <p className="text-xs">
+                        These are examples. A combination of events can also
+                        lead to liquidation.
+                      </p>
+                    </>
+                  ) : null}
                 </div>
               }
             >
@@ -522,7 +524,7 @@ const AccountPage = () => {
             </p>
           </div>
         </div>
-        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 xl:col-span-1 xl:border-t-0">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 xl:col-span-1 xl:border-l xl:border-t-0">
           <div id="account-step-seven" className="flex flex-col items-start">
             <div className="flex w-full items-center justify-between">
               <Tooltip
@@ -680,10 +682,11 @@ const AccountPage = () => {
       ) : null}
     </>
   ) : (
-    <div className="p-6 pb-0">
+    <>
       {chartToShow === 'account-value' ? (
         <AccountChart
           chartToShow="account-value"
+          setChartToShow={setChartToShow}
           data={performanceData.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="account_equity"
@@ -691,6 +694,7 @@ const AccountPage = () => {
       ) : chartToShow === 'pnl' ? (
         <AccountChart
           chartToShow="pnl"
+          setChartToShow={setChartToShow}
           data={performanceData}
           hideChart={handleHideChart}
           yKey="pnl"
@@ -700,12 +704,13 @@ const AccountPage = () => {
       ) : (
         <AccountChart
           chartToShow="cumulative-interest-value"
+          setChartToShow={setChartToShow}
           data={performanceData}
           hideChart={handleHideChart}
           yKey="interest_value"
         />
       )}
-    </div>
+    </>
   )
 }
 

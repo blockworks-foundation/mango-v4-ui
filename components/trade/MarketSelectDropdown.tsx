@@ -2,7 +2,7 @@
 import Change from '@components/shared/Change'
 import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
 import SheenLoader from '@components/shared/SheenLoader'
-import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
+import { getOneDayPerpStats } from '@components/stats/PerpMarketsOverviewTable'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
@@ -13,7 +13,14 @@ import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
 import { useMemo } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
+
+const MARKET_LINK_WRAPPER_CLASSES =
+  'flex items-center justify-between px-4 md:pl-6 md:pr-4'
+
+const MARKET_LINK_CLASSES =
+  'mr-2 -ml-3 flex w-full items-center justify-between rounded-md py-2 px-3 focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
 
 const MarketSelectDropdown = () => {
   const { t } = useTranslation('common')
@@ -55,10 +62,10 @@ const MarketSelectDropdown = () => {
     <Popover>
       {({ open, close }) => (
         <div
-          className="relative flex flex-col overflow-visible"
+          className="relative flex flex-col overflow-visible md:-ml-2"
           id="trade-step-one"
         >
-          <Popover.Button className="default-transition flex h-12 items-center justify-between hover:text-th-active">
+          <Popover.Button className="-ml-4 flex h-12 items-center justify-between px-4 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2">
             <div className="flex items-center">
               {selectedMarket ? <MarketLogos market={selectedMarket} /> : null}
               <div className="whitespace-nowrap text-xl font-bold text-th-fgd-1 md:text-base">
@@ -84,33 +91,24 @@ const MarketSelectDropdown = () => {
                     : 0
                   return (
                     <div
-                      className="flex items-center justify-between py-2 px-4 md:px-6"
+                      className={MARKET_LINK_WRAPPER_CLASSES}
                       key={m.publicKey.toString()}
                       onClick={() => {
                         close()
                       }}
                     >
                       <Link
+                        className={MARKET_LINK_CLASSES}
                         href={{
                           pathname: '/trade',
                           query: { name: m.name },
                         }}
                         shallow={true}
                       >
-                        <div className="default-transition flex items-center hover:cursor-pointer md:hover:text-th-fgd-3">
+                        <div className="flex items-center">
                           <MarketLogos market={m} />
-                          <span
-                            className={
-                              m.name === selectedMarket?.name
-                                ? 'text-th-active'
-                                : ''
-                            }
-                          >
-                            {m.name}
-                          </span>
+                          <span>{m.name}</span>
                         </div>
-                      </Link>
-                      <div className="flex items-center space-x-3">
                         {!loadingPerpStats ? (
                           <Change change={change} suffix="%" />
                         ) : (
@@ -118,8 +116,8 @@ const MarketSelectDropdown = () => {
                             <div className="h-3.5 w-12 bg-th-bkg-2" />
                           </SheenLoader>
                         )}
-                        <FavoriteMarketButton market={m} />
-                      </div>
+                      </Link>
+                      <FavoriteMarketButton market={m} />
                     </div>
                   )
                 })
@@ -137,53 +135,61 @@ const MarketSelectDropdown = () => {
                             market.mint === m.serumMarketExternal.toString()
                         )
                       : null
-                    const bank = group?.getFirstBankByTokenIndex(
+                    const baseBank = group?.getFirstBankByTokenIndex(
                       m.baseTokenIndex
                     )
+                    const quoteBank = group?.getFirstBankByTokenIndex(
+                      m.quoteTokenIndex
+                    )
+                    const market = group?.getSerum3ExternalMarket(
+                      m.serumMarketExternal
+                    )
+                    let price
+                    if (baseBank && market && quoteBank) {
+                      price = floorToDecimal(
+                        baseBank.uiPrice / quoteBank.uiPrice,
+                        getDecimalCount(market.tickSize)
+                      ).toNumber()
+                    }
                     const change =
-                      birdeyeData && bank
-                        ? ((bank.uiPrice - birdeyeData.data[0].value) /
+                      birdeyeData && price
+                        ? ((price - birdeyeData.data[0].value) /
                             birdeyeData.data[0].value) *
                           100
                         : 0
                     return (
                       <div
-                        className="flex items-center justify-between py-2 px-4 md:px-6"
+                        className={MARKET_LINK_WRAPPER_CLASSES}
                         key={m.publicKey.toString()}
                         onClick={() => {
                           close()
                         }}
                       >
                         <Link
+                          className={MARKET_LINK_CLASSES}
                           href={{
                             pathname: '/trade',
                             query: { name: m.name },
                           }}
                           shallow={true}
                         >
-                          <div className="default-transition flex items-center hover:cursor-pointer md:hover:text-th-fgd-3">
+                          <div className="flex items-center">
                             <MarketLogos market={m} />
-                            <span
-                              className={
-                                m.name === selectedMarket?.name
-                                  ? 'text-th-active'
-                                  : ''
-                              }
-                            >
-                              {m.name}
-                            </span>
+                            <span>{m.name}</span>
                           </div>
-                        </Link>
-                        <div className="flex items-center space-x-3">
                           {!loadingPrices ? (
-                            <Change change={change} suffix="%" />
+                            change ? (
+                              <Change change={change} suffix="%" />
+                            ) : (
+                              <span className="text-th-fgd-3">–</span>
+                            )
                           ) : (
                             <SheenLoader className="mt-0.5">
                               <div className="h-3.5 w-12 bg-th-bkg-2" />
                             </SheenLoader>
                           )}
-                          <FavoriteMarketButton market={m} />
-                        </div>
+                        </Link>
+                        <FavoriteMarketButton market={m} />
                       </div>
                     )
                   })}

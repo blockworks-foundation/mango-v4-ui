@@ -402,6 +402,8 @@ body {
 
 button {
   @apply default-transition tracking-wider focus:outline-none;
+  -webkit-font-feature-settings: 'zero' 1;
+  font-feature-settings: 'zero' 1;
 }
 
 svg {
@@ -416,7 +418,8 @@ svg {
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
   @apply font-bold text-th-fgd-1;
 }
 
@@ -445,6 +448,10 @@ a {
 }
 
 /* Forms */
+
+input {
+  @apply default-transition;
+}
 
 input::placeholder {
   @apply text-th-fgd-4;
@@ -543,7 +550,7 @@ table p {
 /* slider */
 
 input[type='range'] {
-  @apply h-1.5 appearance-none rounded bg-th-bkg-3 bg-gradient-to-r from-th-active to-th-active bg-no-repeat;
+  @apply default-transition h-1.5 appearance-none rounded bg-th-bkg-3 bg-gradient-to-r from-th-active to-th-active bg-no-repeat focus-visible:bg-th-bkg-4;
 }
 
 input[type='range']::-webkit-slider-thumb {

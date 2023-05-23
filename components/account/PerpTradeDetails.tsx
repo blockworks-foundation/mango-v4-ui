@@ -8,6 +8,7 @@ import PerpSideBadge from '@components/trade/PerpSideBadge'
 import { UsersIcon } from '@heroicons/react/20/solid'
 import { PublicKey } from '@solana/web3.js'
 import dayjs from 'dayjs'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useTranslation } from 'next-i18next'
@@ -50,6 +51,8 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
   const fee = isTaker ? taker_fee * notional : maker_fee * notional
 
   const totalPrice = (notional + fee) / quantity
+
+  const counterpartyPk = isTaker ? maker : taker
 
   return (
     <>
@@ -127,12 +130,15 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
               {t('activity:counterparty')}
             </p>
             <a
-              className="text-sm"
-              href={`/?address=${isTaker ? maker : taker}`}
+              className="flex items-center text-sm"
+              href={`/?address=${counterpartyPk}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              {t('activity:view-account')}
+              <span className="mr-1.5">
+                {abbreviateAddress(new PublicKey(counterpartyPk))}
+              </span>
+              <ArrowTopRightOnSquareIcon className="h-3 w-3" />
             </a>
           </div>
         ) : null}

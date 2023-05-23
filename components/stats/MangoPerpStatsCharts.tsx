@@ -1,12 +1,8 @@
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
-import dynamic from 'next/dynamic'
 import mangoStore from '@store/mangoStore'
 import { PerpStatsItem } from 'types'
-const DetailedAreaChart = dynamic(
-  () => import('@components/shared/DetailedAreaChart'),
-  { ssr: false }
-)
+import DetailedAreaChart from '@components/shared/DetailedAreaChart'
 
 interface OiValueItem {
   date: string
@@ -41,14 +37,16 @@ const MangoPerpStatsCharts = () => {
       if (!hasDate) {
         a.push({
           date: c.date_hour,
-          feeValue: c.fees_accrued,
+          feeValue: c.total_fees,
         })
       } else {
-        hasDate.feeValue = hasDate.feeValue + c.fees_accrued
+        hasDate.feeValue = hasDate.feeValue + c.total_fees
       }
-      return a
+      return a.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      )
     }, [])
-    return values.reverse()
+    return values
   }, [perpStats])
 
   const totalOpenInterestValues = useMemo(() => {
@@ -64,32 +62,17 @@ const MangoPerpStatsCharts = () => {
         hasDate.openInterest =
           hasDate.openInterest + Math.floor(c.open_interest * c.price)
       }
-      return a
+      return a.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      )
     }, [])
-    return values.reverse()
+    return values
   }, [perpStats])
 
   return (
     <>
-      {totalOpenInterestValues.length ? (
-        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1">
-          <DetailedAreaChart
-            data={totalOpenInterestValues}
-            daysToShow={oiDaysToShow}
-            setDaysToShow={setOiDaysToShow}
-            heightClass="h-64"
-            loading={loadingPerpStats}
-            loaderHeightClass="h-[350px]"
-            prefix="$"
-            tickFormat={(x) => `$${Math.floor(x)}`}
-            title={t('trade:open-interest')}
-            xKey="date"
-            yKey={'openInterest'}
-          />
-        </div>
-      ) : null}
       {totalFeeValues.length ? (
-        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-l md:pl-6">
+        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:pl-6">
           <DetailedAreaChart
             data={totalFeeValues}
             daysToShow={feesDaysToShow}
@@ -102,6 +85,23 @@ const MangoPerpStatsCharts = () => {
             title="Perp Fees"
             xKey="date"
             yKey={'feeValue'}
+          />
+        </div>
+      ) : null}
+      {totalOpenInterestValues.length ? (
+        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r">
+          <DetailedAreaChart
+            data={totalOpenInterestValues}
+            daysToShow={oiDaysToShow}
+            setDaysToShow={setOiDaysToShow}
+            heightClass="h-64"
+            loading={loadingPerpStats}
+            loaderHeightClass="h-[350px]"
+            prefix="$"
+            tickFormat={(x) => `$${Math.floor(x)}`}
+            title={t('trade:open-interest')}
+            xKey="date"
+            yKey={'openInterest'}
           />
         </div>
       ) : null}

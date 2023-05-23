@@ -33,7 +33,7 @@ export const formatFee = (value: number) => {
   })
 }
 
-const getFee = (activity: any, mangoAccountAddress: string) => {
+export const getFee = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let fee = { value: '0', symbol: '' }
   if (activity_type === 'swap') {
@@ -97,7 +97,10 @@ const getFee = (activity: any, mangoAccountAddress: string) => {
   return fee
 }
 
-const getCreditAndDebit = (activity: any, mangoAccountAddress: string) => {
+export const getCreditAndDebit = (
+  activity: any,
+  mangoAccountAddress: string
+) => {
   const { activity_type } = activity
   let credit = { value: '0', symbol: '' }
   let debit = { value: '0', symbol: '' }
@@ -208,7 +211,7 @@ const getCreditAndDebit = (activity: any, mangoAccountAddress: string) => {
   return { credit, debit }
 }
 
-const getValue = (activity: any, mangoAccountAddress: string) => {
+export const getValue = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
@@ -272,6 +275,8 @@ const ActivityFeedTable = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
+  console.log(activityFeed)
+
   const handleShowMore = useCallback(() => {
     const set = mangoStore.getState().set
     set((s) => {
@@ -317,100 +322,31 @@ const ActivityFeedTable = () => {
               const fee = getFee(activity, mangoAccountAddress)
               const isExpandable =
                 isLiquidationFeedItem(activity) || isPerpTradeFeedItem(activity)
-              return (
+              return isExpandable ? (
                 <Disclosure key={`${signature}${index}`}>
                   {({ open }) => (
                     <>
                       <Disclosure.Button
                         as={TrBody}
-                        className={`default-transition text-sm ${
-                          isExpandable
-                            ? 'cursor-pointer md:hover:bg-th-bkg-2'
-                            : 'pointer-events-none'
-                        }`}
+                        className="default-transition cursor-pointer text-sm md:hover:bg-th-bkg-2"
                       >
+                        <SharedTableBody
+                          activity_type={activity_type}
+                          amounts={amounts}
+                          block_datetime={block_datetime}
+                          isExpandable={true}
+                          isOpenbook={isOpenbook}
+                          fee={fee}
+                          value={value}
+                        />
                         <Td>
-                          <p className="font-body">
-                            {dayjs(block_datetime).format('ddd D MMM')}
-                          </p>
-                          <p className="text-xs text-th-fgd-3">
-                            {dayjs(block_datetime).format('h:mma')}
-                          </p>
-                        </Td>
-                        <Td className="text-right">
-                          {t(`activity:${activity_type}`)}
-                        </Td>
-                        <Td className="text-right font-mono">
-                          {amounts.credit.value}{' '}
-                          <span className="font-body text-th-fgd-3">
-                            {amounts.credit.symbol}
-                          </span>
-                        </Td>
-                        <Td className="text-right font-mono">
-                          {amounts.debit.value}{' '}
-                          <span className="font-body text-th-fgd-3">
-                            {amounts.debit.symbol}
-                          </span>
-                        </Td>
-                        <Td className="text-right font-mono">
-                          {fee.value}{' '}
-                          <span className="font-body text-th-fgd-3">
-                            {fee.symbol}
-                          </span>
-                        </Td>
-                        <Td
-                          className={`text-right font-mono ${
-                            activity_type === 'swap' ||
-                            isOpenbook ||
-                            isExpandable
-                              ? 'text-th-fgd-2'
-                              : value >= 0
-                              ? 'text-th-up'
-                              : 'text-th-down'
-                          }`}
-                        >
-                          {value > 0 &&
-                          activity_type !== 'swap' &&
-                          !isOpenbook &&
-                          !isExpandable
-                            ? '+'
-                            : ''}
-                          <FormatNumericValue value={value} isUsd />
-                        </Td>
-                        <Td>
-                          {!isExpandable ? (
-                            <div className="flex items-center justify-end">
-                              <Tooltip
-                                content={`View on ${t(
-                                  `settings:${preferredExplorer.name}`
-                                )}`}
-                                placement="top-end"
-                              >
-                                <a
-                                  href={`${preferredExplorer.url}${signature}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <div className="h-6 w-6">
-                                    <Image
-                                      alt=""
-                                      width="24"
-                                      height="24"
-                                      src={`/explorer-logos/${preferredExplorer.name}.png`}
-                                    />
-                                  </div>
-                                </a>
-                              </Tooltip>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-end">
-                              <ChevronDownIcon
-                                className={`h-6 w-6 text-th-fgd-3 ${
-                                  open ? 'rotate-180' : 'rotate-360'
-                                }`}
-                              />
-                            </div>
-                          )}
+                          <div className="flex items-center justify-end">
+                            <ChevronDownIcon
+                              className={`h-6 w-6 text-th-fgd-3 ${
+                                open ? 'rotate-180' : 'rotate-360'
+                              }`}
+                            />
+                          </div>
                         </Td>
                       </Disclosure.Button>
                       <Disclosure.Panel as={TrBody}>
@@ -427,6 +363,43 @@ const ActivityFeedTable = () => {
                     </>
                   )}
                 </Disclosure>
+              ) : (
+                <TrBody key={`${signature}${index}`}>
+                  <SharedTableBody
+                    activity_type={activity_type}
+                    amounts={amounts}
+                    block_datetime={block_datetime}
+                    isExpandable={false}
+                    isOpenbook={isOpenbook}
+                    fee={fee}
+                    value={value}
+                  />
+                  <Td>
+                    <div className="flex items-center justify-end">
+                      <Tooltip
+                        content={`View on ${t(
+                          `settings:${preferredExplorer.name}`
+                        )}`}
+                        placement="top-end"
+                      >
+                        <a
+                          href={`${preferredExplorer.url}${signature}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <div className="h-6 w-6">
+                            <Image
+                              alt=""
+                              width="24"
+                              height="24"
+                              src={`/explorer-logos/${preferredExplorer.name}.png`}
+                            />
+                          </div>
+                        </a>
+                      </Tooltip>
+                    </div>
+                  </Td>
+                </TrBody>
               )
             })}
           </tbody>
@@ -471,6 +444,68 @@ const ActivityFeedTable = () => {
 }
 
 export default ActivityFeedTable
+
+interface SharedTableBodyProps {
+  block_datetime: string
+  activity_type: string
+  amounts: {
+    credit: { value: string; symbol: string }
+    debit: { value: string; symbol: string }
+  }
+  isExpandable: boolean
+  fee: { value: string; symbol: string }
+  isOpenbook: boolean
+  value: number
+}
+
+const SharedTableBody = ({
+  block_datetime,
+  activity_type,
+  amounts,
+  isExpandable,
+  fee,
+  isOpenbook,
+  value,
+}: SharedTableBodyProps) => {
+  const { t } = useTranslation('activity')
+  return (
+    <>
+      <Td>
+        <p className="font-body">{dayjs(block_datetime).format('ddd D MMM')}</p>
+        <p className="text-xs text-th-fgd-3">
+          {dayjs(block_datetime).format('h:mma')}
+        </p>
+      </Td>
+      <Td className="text-right">{t(`activity:${activity_type}`)}</Td>
+      <Td className="text-right font-mono">
+        {amounts.credit.value}{' '}
+        <span className="font-body text-th-fgd-3">{amounts.credit.symbol}</span>
+      </Td>
+      <Td className="text-right font-mono">
+        {amounts.debit.value}{' '}
+        <span className="font-body text-th-fgd-3">{amounts.debit.symbol}</span>
+      </Td>
+      <Td className="text-right font-mono">
+        {fee.value}{' '}
+        <span className="font-body text-th-fgd-3">{fee.symbol}</span>
+      </Td>
+      <Td
+        className={`text-right font-mono ${
+          activity_type === 'swap' || isOpenbook || isExpandable
+            ? 'text-th-fgd-2'
+            : value >= 0
+            ? 'text-th-up'
+            : 'text-th-down'
+        }`}
+      >
+        {value > 0 && activity_type !== 'swap' && !isOpenbook && !isExpandable
+          ? '+'
+          : ''}
+        <FormatNumericValue value={value} isUsd />
+      </Td>
+    </>
+  )
+}
 
 const MobileActivityFeedItem = ({
   activity,

@@ -52,7 +52,7 @@ const ActivityFilters = () => {
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(
     DEFAULT_ADVANCED_FILTERS
   )
-  const [params, setParams] = useState<string[]>(DEFAULT_PARAMS)
+  const [params, setParams] = useState<string[]>([])
   const { t } = useTranslation(['common', 'activity'])
   const loadActivityFeed = mangoStore((s) => s.activityFeed.loading)
   const [showFilters, setShowFilters] = useState(false)
@@ -114,7 +114,7 @@ const ActivityFilters = () => {
     if (mangoAccountAddress) {
       await actions.fetchActivityFeed(mangoAccountAddress)
       setAdvancedFilters(DEFAULT_ADVANCED_FILTERS)
-      setParams(DEFAULT_PARAMS)
+      setParams([])
     }
   }, [actions, mangoAccountAddress])
 
@@ -125,14 +125,14 @@ const ActivityFilters = () => {
 
   return mangoAccountAddress ? (
     <Disclosure>
-      <div className="flex items-center">
+      <div className="flex items-center pl-2">
         {hasFilters ? (
           <Tooltip
             className="hidden md:block"
             content={t('activity:reset-filters')}
           >
             <IconButton
-              className={`${loadActivityFeed ? 'animate-spin' : ''}`}
+              className={`ml-2 ${loadActivityFeed ? 'animate-spin' : ''}`}
               onClick={() => handleResetFilters()}
               size="small"
             >
@@ -140,14 +140,16 @@ const ActivityFilters = () => {
             </IconButton>
           </Tooltip>
         ) : null}
-        <div
+        <button
           onClick={() => setShowFilters(!showFilters)}
-          role="button"
-          className={`default-transition mr-4 ml-3 rounded-md border border-th-button px-2 py-1.5 md:mr-6 md:hover:border-th-button-hover`}
+          className={`ml-3 rounded-md border border-th-button px-2 py-1.5 focus-visible:border-th-fgd-4 md:hover:border-th-button-hover`}
         >
-          <Disclosure.Button className="flex h-full w-full items-center justify-between">
+          <Disclosure.Button
+            as="div"
+            className="flex h-full w-full items-center justify-between"
+          >
             <div className="flex items-center space-x-2">
-              <AdjustmentsVerticalIcon className="hidden h-5 w-5 text-th-fgd-4 sm:block" />
+              <AdjustmentsVerticalIcon className="h-5 w-5 text-th-fgd-4" />
               <span className="text-sm font-medium text-th-fgd-1">
                 {t('activity:filter-results')}
               </span>
@@ -158,11 +160,11 @@ const ActivityFilters = () => {
               } ml-1.5 h-5 w-5 flex-shrink-0`}
             />
           </Disclosure.Button>
-        </div>
+        </button>
       </div>
       {showFilters ? (
         <Disclosure.Panel
-          className="absolute top-14 z-10 w-full border-t border-th-bkg-3 bg-th-bkg-2 px-6 pb-6 shadow-md"
+          className="absolute top-[114px] left-0 z-10 w-full border-t border-th-bkg-3 bg-th-bkg-2 px-6 pb-6 shadow-md sm:top-14"
           static
         >
           <FiltersForm

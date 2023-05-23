@@ -27,7 +27,7 @@ import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import WalletIcon from '../icons/WalletIcon'
-import ParticlesBackground from '../ParticlesBackground'
+// import ParticlesBackground from '../ParticlesBackground'
 // import EditNftProfilePic from '../profile/EditNftProfilePic'
 // import EditProfileForm from '../profile/EditProfileForm'
 import Button, { LinkButton } from '../shared/Button'
@@ -45,6 +45,7 @@ import { isMangoError } from 'types'
 import ColorBlur from '@components/ColorBlur'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ACCEPT_TERMS_KEY } from 'utils/constants'
+import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES } from '@components/BorrowForm'
 
 const UserSetupModal = ({
   isOpen,
@@ -208,25 +209,20 @@ const UserSetupModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} fullScreen disableOutsideClose>
       <div className="grid h-screen overflow-auto bg-th-bkg-1 text-left lg:grid-cols-2">
-        <img
-          className={`absolute -bottom-20 left-1/2 mt-8 h-auto -translate-x-1/2 sm:w-[60%] md:w-[410px] lg:left-auto lg:-right-10 lg:w-[55%] lg:-translate-x-0 xl:-bottom-40 ${
-            showSetupStep !== 0 ? 'hidden lg:block' : 'hidden sm:block'
-          }`}
-          src="/images/swap-trade@0.75x.png"
-          srcSet="/images/swap-trade@0.75x.png 1098x, /images/swap-trade@1x.png 1463w,
-          /images/swap-trade@2x.png 2926w"
-          sizes="(max-width: 1600px) 1098px, (max-width: 2500px) 1463px, 2926px"
-          alt="next"
+        <ColorBlur
+          width="66%"
+          height="300px"
+          className="-top-20 -left-20 bg-th-button opacity-10 brightness-125"
+        />
+        <ColorBlur
+          width="50%"
+          height="100%"
+          className="-bottom-20 -right-20 bg-th-bkg-1 opacity-30 mix-blend-multiply"
         />
         <img
           className={`absolute top-6 left-6 h-10 w-10 flex-shrink-0`}
           src="/logos/logo-mark.svg"
           alt="next"
-        />
-        <ColorBlur
-          width="66%"
-          height="300px"
-          className="-top-20 left-0 opacity-20 brightness-125"
         />
         <div className="absolute top-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
@@ -367,9 +363,7 @@ const UserSetupModal = ({
                       )}
                     </Button>
                     <LinkButton onClick={onClose}>
-                      <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
-                        {t('onboarding:skip')}
-                      </span>
+                      {t('onboarding:skip')}
                     </LinkButton>
                   </div>
                 </div>
@@ -429,7 +423,7 @@ const UserSetupModal = ({
                       allowNegative={false}
                       isNumericString={true}
                       decimalScale={tokenMax.decimals || 6}
-                      className="w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-input-border-hover focus:outline-none md:hover:border-th-input-border-hover"
+                      className={ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES}
                       placeholder="0.00"
                       value={depositAmount}
                       onValueChange={(e: NumberFormatValues) => {
@@ -512,9 +506,7 @@ const UserSetupModal = ({
                     )}
                   </Button>
                   <LinkButton onClick={onClose}>
-                    <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
-                      {t('onboarding:skip')}
-                    </span>
+                    {t('onboarding:skip')}
                   </LinkButton>
                 </UserSetupTransition>
                 <UserSetupTransition show={depositToken.length === 0}>
@@ -546,43 +538,16 @@ const UserSetupModal = ({
               </div>
             ) : null}
           </UserSetupTransition>
-          {/* <UserSetupTransition delay show={showSetupStep === 4}>
-            {showSetupStep === 4 ? (
-              <div className="relative">
-                <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
-                  {t('onboarding:your-profile')}
-                </h2>
-                <p className="text-base">{t('onboarding:profile-desc')}</p>
-                {!showEditProfilePic ? (
-                  <div className="mt-6 border-t border-th-bkg-3 pt-3">
-                    <EditProfileForm
-                      onFinish={onClose}
-                      onEditProfileImage={() => setShowEditProfilePic(true)}
-                      onboarding
-                    />
-                    <LinkButton className="mt-6" onClick={onClose}>
-                      <span className="default-transition text-th-fgd-4 underline md:hover:text-th-fgd-3 md:hover:no-underline">
-                        {t('onboarding:skip-finish')}
-                      </span>
-                    </LinkButton>
-                  </div>
-                ) : null}
-                <UserSetupTransition show={showEditProfilePic}>
-                  <div
-                    className="thin-scroll absolute mt-6 w-full overflow-auto border-t border-th-bkg-3 px-2 pt-6"
-                    style={{ height: 'calc(100vh - 360px)' }}
-                  >
-                    <EditNftProfilePic
-                      onClose={() => setShowEditProfilePic(false)}
-                    />
-                  </div>
-                </UserSetupTransition>
-              </div>
-            ) : null}
-          </UserSetupTransition> */}
         </div>
-        <div className="col-span-1 hidden h-screen lg:block">
-          <ParticlesBackground />
+        <div className="relative col-span-1 hidden h-screen lg:block">
+          {/* <ParticlesBackground /> */}
+          <img
+            className={`absolute left-1/2 top-1/2 h-auto w-[95%] max-w-[700px] -translate-x-1/2 -translate-y-1/2 ${
+              showSetupStep !== 0 ? 'hidden lg:block' : 'hidden sm:block'
+            }`}
+            src="/images/onboarding-image@1x.png"
+            alt="next"
+          />
         </div>
       </div>
     </Modal>

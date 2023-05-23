@@ -89,7 +89,7 @@ const ListToken = () => {
   const loadingRealm = GovernanceStore((s) => s.loadingRealm)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const proposals = GovernanceStore((s) => s.proposals)
-  const fetchVoterWeight = GovernanceStore((s) => s.fetchVoterWeight)
+  const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
   const connectionContext = GovernanceStore((s) => s.connectionContext)
   const { t } = useTranslation(['governance'])
 
@@ -364,7 +364,7 @@ const ListToken = () => {
       return
     }
     if (!wallet?.publicKey || !vsrClient || !connectionContext) return
-    await fetchVoterWeight(wallet.publicKey, vsrClient, connectionContext)
+    await getCurrentVotingPower(wallet.publicKey, vsrClient, connectionContext)
 
     if (voter.voteWeight.cmp(minVoterWeight) === -1) {
       notify({
@@ -380,6 +380,7 @@ const ListToken = () => {
     const registerTokenIx = await client!.program.methods
       .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
       .accounts({
+        admin: MANGO_DAO_WALLET,
         group: group!.publicKey,
         mint: new PublicKey(advForm.mintPk),
         oracle: new PublicKey(advForm.oraclePk),
@@ -613,7 +614,7 @@ const ListToken = () => {
                           <div>
                             <Label text={t('oracle')} />
                             <Input
-                              error={formErrors.oraclePk !== undefined}
+                              hasError={formErrors.oraclePk !== undefined}
                               type="text"
                               value={advForm.oraclePk}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -632,7 +633,7 @@ const ListToken = () => {
                           <div>
                             <Label text={t('token-index')} />
                             <Input
-                              error={formErrors.tokenIndex !== undefined}
+                              hasError={formErrors.tokenIndex !== undefined}
                               type="number"
                               value={advForm.tokenIndex.toString()}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -651,7 +652,7 @@ const ListToken = () => {
                           <div>
                             <Label text={t('openbook-market-external')} />
                             <Input
-                              error={
+                              hasError={
                                 formErrors.openBookMarketExternalPk !==
                                 undefined
                               }
@@ -676,7 +677,7 @@ const ListToken = () => {
                           <div>
                             <Label text={t('base-bank')} />
                             <Input
-                              error={formErrors.baseBankPk !== undefined}
+                              hasError={formErrors.baseBankPk !== undefined}
                               type="text"
                               value={advForm.baseBankPk.toString()}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -695,7 +696,7 @@ const ListToken = () => {
                           <div>
                             <Label text={t('quote-bank')} />
                             <Input
-                              error={formErrors.quoteBankPk !== undefined}
+                              hasError={formErrors.quoteBankPk !== undefined}
                               type="text"
                               value={advForm.quoteBankPk.toString()}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -714,7 +715,9 @@ const ListToken = () => {
                           <div>
                             <Label text={t('openbook-program')} />
                             <Input
-                              error={formErrors.openBookProgram !== undefined}
+                              hasError={
+                                formErrors.openBookProgram !== undefined
+                              }
                               type="text"
                               value={advForm.openBookProgram.toString()}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -736,7 +739,7 @@ const ListToken = () => {
                           <div>
                             <Label text={t('market-name')} />
                             <Input
-                              error={formErrors.marketName !== undefined}
+                              hasError={formErrors.marketName !== undefined}
                               type="text"
                               value={advForm.marketName.toString()}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -755,7 +758,7 @@ const ListToken = () => {
                           <div>
                             <Label text={t('proposal-title')} />
                             <Input
-                              error={formErrors.proposalTitle !== undefined}
+                              hasError={formErrors.proposalTitle !== undefined}
                               type="text"
                               value={advForm.proposalTitle.toString()}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -777,7 +780,7 @@ const ListToken = () => {
                           <div>
                             <Label text={t('proposal-des')} />
                             <Input
-                              error={
+                              hasError={
                                 formErrors.proposalDescription !== undefined
                               }
                               type="text"

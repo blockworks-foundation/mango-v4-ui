@@ -1,25 +1,22 @@
-import { Bank, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
-import { getOneDayPerpStats } from '@components/stats/PerpMarketsTable'
+import { getOneDayPerpStats } from '@components/stats/PerpMarketsOverviewTable'
 import { ChartBarIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
-import {
-  formatCurrencyValue,
-  getDecimalCount,
-  numberCompacter,
-} from 'utils/numbers'
+import { numberCompacter } from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
-import { BorshAccountsCoder } from '@coral-xyz/anchor'
 import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 import SheenLoader from '@components/shared/SheenLoader'
 import usePrevious from '@components/shared/usePrevious'
-import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal.tsx'
+import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal'
 import useMangoGroup from 'hooks/useMangoGroup'
+import OraclePrice from './OraclePrice'
+import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
 
 const AdvancedMarketHeader = ({
   showChart,
@@ -37,59 +34,12 @@ const AdvancedMarketHeader = ({
     selectedMarket,
   } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
-  const connection = mangoStore((s) => s.connection)
-  const [price, setPrice] = useState(stalePrice)
+  const [changePrice, setChangePrice] = useState(stalePrice)
   const { data: birdeyePrices, isLoading: loadingPrices } =
     useBirdeyeMarketPrices()
   const previousMarketName = usePrevious(selectedMarketName)
   const [showMarketDetails, setShowMarketDetails] = useState(false)
   const { group } = useMangoGroup()
-
-  //subscribe to the market oracle account
-  useEffect(() => {
-    const client = mangoStore.getState().client
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return
-    let marketOrBank: PerpMarket | Bank
-    let decimals: number
-    if (selectedMarket instanceof PerpMarket) {
-      marketOrBank = selectedMarket
-      decimals = selectedMarket.baseDecimals
-    } else {
-      const baseBank = group.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
-      )
-      marketOrBank = baseBank
-      decimals = group.getMintDecimals(baseBank.mint)
-    }
-
-    const coder = new BorshAccountsCoder(client.program.idl)
-    const subId = connection.onAccountChange(
-      marketOrBank.oracle,
-      async (info, _context) => {
-        // selectedMarket = mangoStore.getState().selectedMarket.current
-        // if (!(selectedMarket instanceof PerpMarket)) return
-        const { price, uiPrice, lastUpdatedSlot } =
-          await group.decodePriceFromOracleAi(
-            coder,
-            marketOrBank.oracle,
-            info,
-            decimals,
-            client
-          )
-        marketOrBank._price = price
-        marketOrBank._uiPrice = uiPrice
-        setPrice(uiPrice)
-        marketOrBank._oracleLastUpdatedSlot = lastUpdatedSlot
-      },
-      'processed'
-    )
-    return () => {
-      if (typeof subId !== 'undefined') {
-        connection.removeAccountChangeListener(subId)
-      }
-    }
-  }, [connection, selectedMarket])
 
   useEffect(() => {
     if (group) {
@@ -112,7 +62,7 @@ const AdvancedMarketHeader = ({
 
   const change = useMemo(() => {
     if (
-      !price ||
+      !changePrice ||
       !serumOrPerpMarket ||
       selectedMarketName !== previousMarketName
     )
@@ -120,17 +70,19 @@ const AdvancedMarketHeader = ({
     if (serumOrPerpMarket instanceof PerpMarket) {
       const changeData = getOneDayPerpStats(perpStats, selectedMarketName)
       return changeData.length
-        ? ((price - changeData[0].price) / changeData[0].price) * 100
+        ? ((changePrice - changeData[0].price) / changeData[0].price) * 100
         : 0
     } else {
       if (!birdeyeData) return 0
       return (
-        ((price - birdeyeData.data[0].value) / birdeyeData.data[0].value) * 100
+        ((changePrice - birdeyeData.data[0].value) /
+          birdeyeData.data[0].value) *
+        100
       )
     }
   }, [
     birdeyeData,
-    price,
+    changePrice,
     serumOrPerpMarket,
     perpStats,
     previousMarketName,
@@ -140,29 +92,14 @@ const AdvancedMarketHeader = ({
   return (
     <>
       <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
-        <div className="w-full px-4 md:w-auto md:px-6 md:py-0 lg:pb-0">
+        <div className="w-full pl-4 md:w-auto md:py-0 md:pl-6 lg:pb-0">
           <MarketSelectDropdown />
         </div>
         <div className="hide-scroll flex w-full items-center justify-between overflow-x-auto border-t border-th-bkg-3 py-2 px-5 md:border-t-0 md:py-0 md:px-0 md:pr-6">
           <div className="flex items-center">
-            <div
-              id="trade-step-two"
-              className="flex-col whitespace-nowrap md:ml-6"
-            >
-              <div className="text-xs text-th-fgd-4">
-                {t('trade:oracle-price')}
-              </div>
-              <div className="font-mono text-xs text-th-fgd-2">
-                {price ? (
-                  `${formatCurrencyValue(
-                    price,
-                    getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
-                  )}`
-                ) : (
-                  <span className="text-th-fgd-4">–</span>
-                )}
-              </div>
-            </div>
+            <>
+              <OraclePrice setChangePrice={setChangePrice} />
+            </>
             <div className="ml-6 flex-col whitespace-nowrap">
               <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
               {!loadingPrices && !loadingPerpStats ? (
@@ -175,12 +112,7 @@ const AdvancedMarketHeader = ({
             </div>
             {serumOrPerpMarket instanceof PerpMarket ? (
               <>
-                <div className="ml-6 flex-col whitespace-nowrap">
-                  <div className="text-xs text-th-fgd-4">
-                    {t('trade:funding-rate')}
-                  </div>
-                  <PerpFundingRate />
-                </div>
+                <PerpFundingRate />
                 <div className="ml-6 flex-col whitespace-nowrap text-xs">
                   <div className="text-th-fgd-4">
                     {t('trade:open-interest')}
@@ -207,17 +139,15 @@ const AdvancedMarketHeader = ({
             ) : null}
           </div>
           <div className="ml-6 flex items-center space-x-4">
-            {selectedMarket instanceof PerpMarket ? (
-              <LinkButton
-                className="flex items-center whitespace-nowrap text-th-fgd-3 no-underline md:hover:text-th-fgd-4"
-                onClick={() => setShowMarketDetails(true)}
-              >
-                <InformationCircleIcon className="h-5 w-5 flex-shrink-0 md:mr-1.5 md:h-4 md:w-4" />
-                <span className="hidden text-xs md:inline">
-                  {t('trade:market-details', { market: '' })}
-                </span>
-              </LinkButton>
-            ) : null}
+            <LinkButton
+              className="flex items-center whitespace-nowrap text-th-fgd-3"
+              onClick={() => setShowMarketDetails(true)}
+            >
+              <InformationCircleIcon className="h-5 w-5 flex-shrink-0 md:mr-1.5 md:h-4 md:w-4" />
+              <span className="hidden text-xs md:inline">
+                {t('trade:market-details', { market: '' })}
+              </span>
+            </LinkButton>
             {setShowChart ? (
               <IconButton
                 className={showChart ? 'text-th-active' : 'text-th-fgd-2'}
@@ -231,10 +161,19 @@ const AdvancedMarketHeader = ({
         </div>
       </div>
       {showMarketDetails ? (
-        <PerpMarketDetailsModal
-          isOpen={showMarketDetails}
-          onClose={() => setShowMarketDetails(false)}
-        />
+        selectedMarket instanceof PerpMarket ? (
+          <PerpMarketDetailsModal
+            isOpen={showMarketDetails}
+            onClose={() => setShowMarketDetails(false)}
+            market={selectedMarket}
+          />
+        ) : (
+          <SpotMarketDetailsModal
+            isOpen={showMarketDetails}
+            onClose={() => setShowMarketDetails(false)}
+            market={selectedMarket}
+          />
+        )
       ) : null}
     </>
   )

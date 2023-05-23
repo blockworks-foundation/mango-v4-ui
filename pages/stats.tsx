@@ -6,11 +6,14 @@ export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
       ...(await serverSideTranslations(locale, [
+        'activity',
         'common',
+        'notifications',
         'onboarding',
         'profile',
         'search',
         'settings',
+        'stats',
         'token',
         'trade',
       ])),

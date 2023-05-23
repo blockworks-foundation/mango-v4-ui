@@ -20,6 +20,8 @@ import CoingeckoStats from './CoingeckoStats'
 import { useQuery } from '@tanstack/react-query'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TopTokenAccounts from './TopTokenAccounts'
+import TokenParams from './TokenParams'
+import { formatTokenSymbol } from 'utils/tokens'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -135,7 +137,9 @@ const TokenPage = () => {
                 {coingeckoTokenInfo ? (
                   <h1 className="text-base font-normal">
                     {coingeckoTokenInfo.name}{' '}
-                    <span className="text-th-fgd-4">{bank.name}</span>
+                    <span className="text-th-fgd-4">
+                      {formatTokenSymbol(bank.name)}
+                    </span>
                   </h1>
                 ) : (
                   <h1 className="text-base font-normal">{bank.name}</h1>
@@ -172,7 +176,7 @@ const TokenPage = () => {
             </div>
             <ActionPanel bank={bank} />
           </div>
-          <ChartTabs token={bankName} />
+          <ChartTabs bank={bank} />
           <div className="flex items-center justify-center border-y border-th-bkg-3 px-6 py-4 text-center">
             <Tooltip
               content={'The percentage of deposits that have been lent out.'}
@@ -191,7 +195,7 @@ const TokenPage = () => {
               %
             </span>
           </div>
-          {bank ? <TopTokenAccounts bank={bank} /> : null}
+          <TopTokenAccounts bank={bank} />
           {coingeckoTokenInfo?.market_data ? (
             <CoingeckoStats
               bank={bank}
@@ -209,6 +213,7 @@ const TokenPage = () => {
               <p>No CoinGecko data...</p>
             </div>
           )}
+          <TokenParams bank={bank} />
         </>
       ) : loading ? (
         <div className="space-y-3 px-6 py-4">

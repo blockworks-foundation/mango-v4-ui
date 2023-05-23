@@ -7,6 +7,9 @@ import {
   ResolutionString,
   IOrderLineAdapter,
   EntityId,
+  AvailableSaveloadVersions,
+  IExecutionLineAdapter,
+  Direction,
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
@@ -14,6 +17,7 @@ import {
   DEFAULT_MARKET_NAME,
   SHOW_ORDER_LINES_KEY,
   SHOW_STABLE_PRICE_KEY,
+  TV_USER_ID_KEY,
 } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
@@ -36,8 +40,10 @@ import { BN } from '@project-serum/anchor'
 import Datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
 import useStablePrice from 'hooks/useStablePrice'
-import { isMangoError } from 'types'
+import { CombinedTradeHistory, isMangoError } from 'types'
 import { formatPrice } from 'apis/birdeye/helpers'
+import useTradeHistory from 'hooks/useTradeHistory'
+import dayjs from 'dayjs'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -71,18 +77,24 @@ const TradingViewChart = () => {
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
   const [headerReady, setHeaderReady] = useState(false)
-  const [spotOrPerp, setSpotOrPerp] = useState('spot')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
   const [showOrderLines, toggleShowOrderLines] = useState(
     showOrderLinesLocalStorage
   )
+  const tradeExecutions = mangoStore((s) => s.tradingView.tradeExecutions)
+  const { data: combinedTradeHistory, isLoading: loadingTradeHistory } =
+    useTradeHistory()
+  const [showTradeExecutions, toggleShowTradeExecutions] = useState(false)
+  const [cachedTradeHistory, setCachedTradeHistory] =
+    useState(combinedTradeHistory)
 
   const [showStablePriceLocalStorage, toggleShowStablePriceLocalStorage] =
     useLocalStorageState(SHOW_STABLE_PRICE_KEY, false)
   const [showStablePrice, toggleShowStablePrice] = useState(
     showStablePriceLocalStorage
   )
+  const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
   const stablePrice = useStablePrice()
   const stablePriceLine = mangoStore((s) => s.tradingView.stablePriceLine)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
@@ -95,6 +107,9 @@ const TradingViewChart = () => {
       theme: 'Dark',
       container: 'tv_chart_container',
       libraryPath: '/charting_library/',
+      chartsStorageUrl: 'https://tv-backend-v4.herokuapp.com',
+      chartsStorageApiVersion: '1.1' as AvailableSaveloadVersions,
+      clientId: 'mango.markets',
       fullscreen: false,
       autosize: true,
       studiesOverrides: {
@@ -140,20 +155,6 @@ const TradingViewChart = () => {
       }
     }
   }, [selectedMarket, chartReady])
-
-  useEffect(() => {
-    if (
-      selectedMarketName?.toLowerCase().includes('perp') &&
-      spotOrPerp !== 'perp'
-    ) {
-      setSpotOrPerp('perp')
-    } else if (
-      !selectedMarketName?.toLowerCase().includes('perp') &&
-      spotOrPerp !== 'spot'
-    ) {
-      setSpotOrPerp('spot')
-    }
-  }, [selectedMarketName, spotOrPerp])
 
   useEffect(() => {
     if (showStablePrice !== showStablePriceLocalStorage) {
@@ -615,6 +616,18 @@ const TradingViewChart = () => {
     [drawLinesForMarket, deleteLines, theme]
   )
 
+  const toggleTradeExecutions = useCallback(
+    (el: HTMLElement) => {
+      toggleShowTradeExecutions((prevState) => !prevState)
+      if (el.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
+        el.style.color = COLORS.FGD4[theme]
+      } else {
+        el.style.color = COLORS.ACTIVE[theme]
+      }
+    },
+    [theme]
+  )
+
   const createStablePriceButton = useCallback(() => {
     const toggleStablePrice = (button: HTMLElement) => {
       toggleShowStablePrice((prevState: boolean) => !prevState)
@@ -656,6 +669,21 @@ const TradingViewChart = () => {
     orderLinesButtonRef.current = button
   }, [t, toggleOrderLines, showOrderLinesLocalStorage, theme])
 
+  const createTEButton = useCallback(() => {
+    const button = tvWidgetRef?.current?.createButton()
+    if (!button) {
+      return
+    }
+    button.textContent = 'TE'
+    button.setAttribute('title', t('tv-chart:toggle-trade-executions'))
+    button.addEventListener('click', () => toggleTradeExecutions(button))
+    if (showTradeExecutions) {
+      button.style.color = COLORS.ACTIVE[theme]
+    } else {
+      button.style.color = COLORS.FGD4[theme]
+    }
+  }, [t, toggleTradeExecutions, showTradeExecutions, theme])
+
   useEffect(() => {
     if (window) {
       let chartStyleOverrides = {
@@ -691,9 +719,13 @@ const TradingViewChart = () => {
           [`mainSeriesProperties.${prop}.wickDownColor`]: COLORS.DOWN[theme],
         }
       })
+      const mkt = mangoStore.getState().selectedMarket.current
       const marketAddress =
-        mangoStore.getState().selectedMarket.current?.publicKey.toString() ||
+        (mkt instanceof Serum3Market
+          ? mkt?.serumMarketExternal.toString()
+          : mkt?.publicKey.toString()) ||
         '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
         symbol: marketAddress,
@@ -704,7 +736,10 @@ const TradingViewChart = () => {
           defaultProps.container as ChartingLibraryWidgetOptions['container'],
         library_path: defaultProps.libraryPath as string,
         locale: 'en',
-        enabled_features: ['hide_left_toolbar_by_default'],
+        enabled_features: [
+          'hide_left_toolbar_by_default',
+          // userId ? 'study_templates' : '',
+        ],
         disabled_features: [
           'use_localstorage_for_settings',
           'timeframes_toolbar',
@@ -718,7 +753,7 @@ const TradingViewChart = () => {
           'header_screenshot',
           // 'header_widget_dom_node',
           // 'header_widget',
-          'header_saveload',
+          !userId ? 'header_saveload' : '',
           'header_undo_redo',
           'header_interval_dialog_button',
           'show_interval_dialog_on_key_press',
@@ -737,6 +772,10 @@ const TradingViewChart = () => {
             }
           },
         },
+        charts_storage_url: defaultProps.chartsStorageUrl,
+        charts_storage_api_version: defaultProps.chartsStorageApiVersion,
+        client_id: defaultProps.clientId,
+        user_id: userId ? userId : undefined,
         fullscreen: defaultProps.fullscreen,
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,
@@ -764,7 +803,34 @@ const TradingViewChart = () => {
         setHeaderReady(true)
       })
     }
-  }, [theme, defaultProps, isMobile])
+  }, [theme, defaultProps, isMobile, userId])
+
+  // set a limit price from right click context menu
+  useEffect(() => {
+    if (chartReady && tvWidgetRef.current) {
+      tvWidgetRef.current.onContextMenu(function (unixtime, price) {
+        return [
+          {
+            position: 'top',
+            text: `Set limit price (${formatPrice(price)})`,
+            click: function () {
+              const set = mangoStore.getState().set
+              set((s) => {
+                s.tradeForm.price = price.toFixed(12)
+              })
+            },
+          },
+          {
+            position: 'top',
+            text: '-',
+            click: function () {
+              return
+            },
+          },
+        ]
+      })
+    }
+  }, [chartReady, tvWidgetRef])
 
   // draw custom buttons when chart is ready
   useEffect(() => {
@@ -775,9 +841,16 @@ const TradingViewChart = () => {
       !stablePriceButtonRef.current
     ) {
       createOLButton()
+      createTEButton()
       createStablePriceButton()
     }
-  }, [createOLButton, chartReady, createStablePriceButton, headerReady])
+  }, [
+    createOLButton,
+    createTEButton,
+    chartReady,
+    createStablePriceButton,
+    headerReady,
+  ])
 
   // update order lines if a user's open orders change
   useEffect(() => {
@@ -838,6 +911,93 @@ const TradingViewChart = () => {
     }
     return subscription
   }, [chartReady, showOrderLines, deleteLines, drawLinesForMarket])
+
+  const drawTradeExecutions = useCallback(
+    (trades: CombinedTradeHistory) => {
+      const newTradeExecutions = new Map()
+      const filteredTrades = trades
+        .filter((trade) => {
+          return trade.market.name === selectedMarketName
+        })
+        .slice()
+      for (let i = 0; i < filteredTrades.length; i++) {
+        const trade = filteredTrades[i]
+        try {
+          const arrowID = tvWidgetRef
+            .current!.chart()
+            .createExecutionShape()
+            .setTime(dayjs(trade.time).unix())
+            .setDirection(trade.side as Direction)
+            .setArrowHeight(6)
+            .setArrowColor(
+              trade.side === 'buy' ? COLORS.UP[theme] : COLORS.DOWN[theme]
+            )
+            .setTooltip(`${trade.size} at ${trade.price}`)
+          if (arrowID) {
+            try {
+              newTradeExecutions.set(`${trade.time}${i}`, arrowID)
+            } catch (error) {
+              console.log('could not set newTradeExecution')
+            }
+          } else {
+            console.log(
+              `Could not create execution shape for trade ${trade.time}${i}`
+            )
+          }
+        } catch (error) {
+          console.log(`could not draw arrow: ${error}`)
+        }
+      }
+      return newTradeExecutions
+    },
+    [selectedMarketName, theme]
+  )
+
+  const removeTradeExecutions = useCallback(
+    (tradeExecutions: Map<string, IExecutionLineAdapter>) => {
+      const set = mangoStore.getState().set
+      if (chartReady && tvWidgetRef?.current) {
+        for (const val of tradeExecutions.values()) {
+          try {
+            val.remove()
+          } catch (error) {
+            console.log(`arrow ${val} could not be removed`)
+          }
+        }
+      }
+      set((s) => {
+        s.tradingView.tradeExecutions = new Map()
+      })
+    },
+    [chartReady, tvWidgetRef?.current]
+  )
+
+  useEffect(() => {
+    if (!loadingTradeHistory && showTradeExecutions) {
+      setCachedTradeHistory(combinedTradeHistory)
+    }
+  }, [loadingTradeHistory, showTradeExecutions])
+
+  useEffect(() => {
+    if (cachedTradeHistory.length !== combinedTradeHistory.length) {
+      setCachedTradeHistory(combinedTradeHistory)
+    }
+  }, [combinedTradeHistory])
+
+  useEffect(() => {
+    removeTradeExecutions(tradeExecutions)
+    if (
+      showTradeExecutions &&
+      tvWidgetRef &&
+      tvWidgetRef.current &&
+      chartReady
+    ) {
+      const set = mangoStore.getState().set
+      set((s) => {
+        s.tradingView.tradeExecutions = drawTradeExecutions(cachedTradeHistory)
+      })
+    }
+  }, [cachedTradeHistory, selectedMarketName, showTradeExecutions])
 
   return (
     <div id={defaultProps.container as string} className="tradingview-chart" />

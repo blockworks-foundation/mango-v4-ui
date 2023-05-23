@@ -9,15 +9,12 @@ import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
 import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
-import dynamic from 'next/dynamic'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
-const SimpleAreaChart = dynamic(
-  () => import('@components/shared/SimpleAreaChart'),
-  { ssr: false }
-)
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
@@ -45,19 +42,31 @@ const SpotMarketsTable = () => {
             {serumMarkets
               .slice()
               .sort((a, b) => a.name.localeCompare(b.name))
-              .map((market) => {
-                const bank = group?.getFirstBankByTokenIndex(
-                  market.baseTokenIndex
+              .map((mkt) => {
+                const baseBank = group?.getFirstBankByTokenIndex(
+                  mkt.baseTokenIndex
                 )
-                const oraclePrice = bank?.uiPrice
+                const quoteBank = group?.getFirstBankByTokenIndex(
+                  mkt.quoteTokenIndex
+                )
+                const market = group?.getSerum3ExternalMarket(
+                  mkt.serumMarketExternal
+                )
+                let price
+                if (baseBank && market && quoteBank) {
+                  price = floorToDecimal(
+                    baseBank.uiPrice / quoteBank.uiPrice,
+                    getDecimalCount(market.tickSize)
+                  ).toNumber()
+                }
 
                 const birdeyeData = birdeyePrices.find(
-                  (m) => m.mint === market.serumMarketExternal.toString()
+                  (m) => m.mint === mkt.serumMarketExternal.toString()
                 )
 
                 const change =
-                  birdeyeData && oraclePrice
-                    ? ((oraclePrice - birdeyeData.data[0].value) /
+                  birdeyeData && price
+                    ? ((price - birdeyeData.data[0].value) /
                         birdeyeData.data[0].value) *
                       100
                     : 0
@@ -65,18 +74,18 @@ const SpotMarketsTable = () => {
                 const chartData = birdeyeData ? birdeyeData.data : undefined
 
                 return (
-                  <TrBody key={market.publicKey.toString()}>
+                  <TrBody key={mkt.publicKey.toString()}>
                     <Td>
                       <div className="flex items-center">
-                        <MarketLogos market={market} />
-                        <p className="font-body">{market.name}</p>
+                        <MarketLogos market={mkt} />
+                        <p className="font-body">{mkt.name}</p>
                       </div>
                     </Td>
                     <Td>
                       <div className="flex flex-col text-right">
                         <p>
-                          {oraclePrice ? (
-                            <FormatNumericValue value={oraclePrice} isUsd />
+                          {price ? (
+                            <FormatNumericValue value={price} isUsd />
                           ) : (
                             '–'
                           )}
@@ -94,13 +103,13 @@ const SpotMarketsTable = () => {
                                   : COLORS.DOWN[theme]
                               }
                               data={chartData}
-                              name={bank!.name}
+                              name={baseBank!.name}
                               xKey="unixTime"
                               yKey="value"
                             />
                           </div>
-                        ) : bank?.name === 'USDC' ||
-                          bank?.name === 'USDT' ? null : (
+                        ) : baseBank?.name === 'USDC' ||
+                          baseBank?.name === 'USDT' ? null : (
                           <p className="mb-0 text-th-fgd-4">
                             {t('unavailable')}
                           </p>
@@ -146,27 +155,35 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
     useBirdeyeMarketPrices()
   const { group } = useMangoGroup()
   const { theme } = useTheme()
-  const bank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
+  const baseBank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
+  const quoteBank = group?.getFirstBankByTokenIndex(market.quoteTokenIndex)
+  const serumMarket = group?.getSerum3ExternalMarket(market.serumMarketExternal)
+
+  const price = useMemo(() => {
+    if (!baseBank || !quoteBank || !serumMarket) return 0
+    return floorToDecimal(
+      baseBank.uiPrice / quoteBank.uiPrice,
+      getDecimalCount(serumMarket.tickSize)
+    ).toNumber()
+  }, [baseBank, quoteBank, serumMarket])
 
   const birdeyeData = useMemo(() => {
-    if (!loadingPrices && bank) {
+    if (!loadingPrices) {
       return birdeyePrices.find(
         (m) => m.mint === market.serumMarketExternal.toString()
       )
     }
     return null
-  }, [loadingPrices, bank])
+  }, [loadingPrices])
 
   const change = useMemo(() => {
-    if (birdeyeData && bank) {
+    if (birdeyeData && price) {
       return (
-        ((bank.uiPrice - birdeyeData.data[0].value) /
-          birdeyeData.data[0].value) *
-        100
+        ((price - birdeyeData.data[0].value) / birdeyeData.data[0].value) * 100
       )
     }
     return 0
-  }, [birdeyeData, bank])
+  }, [birdeyeData, price])
 
   const chartData = useMemo(() => {
     if (birdeyeData) {
@@ -184,13 +201,9 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
             <p className="text-th-fgd-1">{market.name}</p>
             <div className="flex items-center space-x-3">
               <p className="font-mono">
-                {bank?.uiPrice ? (
-                  <FormatNumericValue value={bank.uiPrice} isUsd />
-                ) : (
-                  '-'
-                )}
+                {price ? <FormatNumericValue value={price} isUsd /> : '-'}
               </p>
-              <Change change={change} suffix="%" />
+              {change ? <Change change={change} suffix="%" /> : '–'}
             </div>
           </div>
         </div>
@@ -200,7 +213,7 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
               <SimpleAreaChart
                 color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
                 data={chartData}
-                name={bank!.name}
+                name={baseBank!.name}
                 xKey="unixTime"
                 yKey="value"
               />

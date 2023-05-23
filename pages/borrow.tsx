@@ -8,6 +8,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
       ...(await serverSideTranslations(locale, [
         'borrow',
         'common',
+        'notifications',
         'onboarding',
         'profile',
         'search',

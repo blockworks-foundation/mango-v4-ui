@@ -1,5 +1,5 @@
 import { useTheme } from 'next-themes'
-import { FunctionComponent, ReactNode } from 'react'
+import { forwardRef, FunctionComponent, ReactNode, Ref } from 'react'
 
 interface AllButtonProps {
   onClick?: (e?: React.MouseEvent) => void
@@ -33,19 +33,19 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       disabled={disabled}
       className={`rounded-md ${
         secondary
-          ? 'border border-th-button md:hover:border-th-button-hover'
-          : 'bg-th-button md:hover:bg-th-button-hover'
+          ? 'border border-th-button focus-visible:border-th-fgd-4 md:hover:border-th-button-hover'
+          : 'bg-th-button focus-visible:border focus-visible:border-th-fgd-4 md:hover:bg-th-button-hover'
       } ${
         size === 'medium'
           ? 'h-10 px-4'
           : size === 'large'
           ? 'h-12 px-6'
           : 'h-8 px-3'
-      } default-transition font-display ${
+      } font-display ${
         theme === 'High Contrast' && !secondary
           ? 'text-th-bkg-1'
           : 'text-th-fgd-1'
-      } disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 ${className}`}
+      } disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
       type={type}
       {...props}
     >
@@ -57,19 +57,16 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
 interface IconButtonProps {
   hideBg?: boolean
   size?: 'small' | 'medium' | 'large'
+  ref?: Ref<HTMLButtonElement>
 }
 
 type IconButtonCombinedProps = AllButtonProps & IconButtonProps
 
-export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
-  children,
-  onClick,
-  disabled = false,
-  className,
-  hideBg,
-  size,
-  ...props
-}) => {
+export const IconButton = forwardRef<
+  HTMLButtonElement,
+  IconButtonCombinedProps
+>((props, ref) => {
+  const { children, onClick, disabled = false, className, hideBg, size } = props
   return (
     <button
       onClick={onClick}
@@ -82,18 +79,20 @@ export const IconButton: FunctionComponent<IconButtonCombinedProps> = ({
           : size === 'medium'
           ? 'h-10 w-10'
           : ''
-      } default-transition items-center justify-center rounded-full ${
+      } items-center justify-center rounded-full ${
         hideBg
           ? 'md:hover:text-th-active'
-          : 'border border-th-button md:hover:border-th-button-hover'
+          : 'border border-th-button focus-visible:border-th-fgd-3 md:hover:border-th-button-hover'
       } text-th-fgd-1 focus:outline-none disabled:cursor-not-allowed disabled:bg-th-bkg-4 
-      disabled:text-th-fgd-4 md:disabled:hover:text-th-fgd-4 ${className}`}
-      {...props}
+      disabled:text-th-fgd-4 md:disabled:hover:text-th-fgd-4 ${className} focus-visible:text-th-active`}
+      ref={ref}
     >
       {children}
     </button>
   )
-}
+})
+
+IconButton.displayName = 'IconButton'
 
 interface LinkButtonProps {
   icon?: ReactNode
@@ -113,9 +112,9 @@ export const LinkButton: FunctionComponent<LinkButtonCombinedProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`default-transition flex items-center border-0 font-bold ${
+      className={`flex items-center border-0 font-bold ${
         secondary ? 'text-th-active' : 'text-th-fgd-2'
-      } underline focus:outline-none disabled:cursor-not-allowed  disabled:opacity-50 md:hover:no-underline  ${className}`}
+      } rounded-sm focus-visible:text-th-active focus-visible:underline disabled:cursor-not-allowed disabled:opacity-50 ${className} md:hover:text-th-fgd-3`}
       {...props}
       type="button"
     >

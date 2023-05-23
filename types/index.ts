@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  ParsedFillEvent,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
 import { Event } from '@project-serum/serum/lib/queue'
+import { formatTradeHistory } from 'hooks/useTradeHistory'
 
 export type EmptyObject = { [K in keyof never]?: never }
 export interface OrderbookL2 {
@@ -54,6 +59,37 @@ export interface PerpTradeHistory {
   price: number
   quantity: number
   seq_num: number
+}
+
+export const isApiSpotTradeHistory = (
+  t: SpotTradeHistory | PerpTradeHistory
+): t is SpotTradeHistory => {
+  if ('open_orders' in t) return true
+  else return false
+}
+
+export type PerpFillEvent = ParsedFillEvent
+
+export type CombinedTradeHistory = ReturnType<typeof formatTradeHistory>
+
+export type CombinedTradeHistoryTypes =
+  | SpotTradeHistory
+  | PerpTradeHistory
+  | PerpFillEvent
+  | SerumEvent
+
+export const isSerumFillEvent = (
+  t: CombinedTradeHistoryTypes
+): t is SerumEvent => {
+  if ('eventFlags' in t) return true
+  else return false
+}
+
+export const isPerpFillEvent = (
+  t: CombinedTradeHistoryTypes
+): t is PerpFillEvent => {
+  if ('takerSide' in t) return true
+  else return false
 }
 
 export type SerumEvent = Modify<
@@ -261,11 +297,13 @@ export interface SwapHistoryItem {
 export interface NFT {
   address: string
   image: string
+  name: string
 }
 
 export interface PerpStatsItem {
   date_hour: string
   fees_accrued: number
+  fees_settled: number
   funding_rate_hourly: number
   instantaneous_funding_rate: number
   mango_group: string
@@ -274,6 +312,7 @@ export interface PerpStatsItem {
   perp_market: string
   price: number
   stable_price: number
+  total_fees: number
 }
 
 export type ActivityFeed = {
@@ -315,6 +354,13 @@ export interface TokenStatsItem {
   token_index: number
   total_borrows: number
   total_deposits: number
+}
+
+export interface MangoTokenStatsItem {
+  date: string
+  borrowValue: number
+  depositValue: number
+  feesCollected: number
 }
 
 export interface TradeForm {

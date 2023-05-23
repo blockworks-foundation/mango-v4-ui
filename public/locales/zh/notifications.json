@@ -1,0 +1,9 @@
+{
+    "clear-all": "Clear All",
+    "empty-state-desc": "You're all up-to-date",
+    "empty-state-title": "Nothing to see here",
+    "notifications": "Notifications",
+    "sign-message": "Sign Message",
+    "unauth-desc": "Sign with your wallet to start receiving notifications",
+    "unauth-title": "Notifications Inbox"
+}

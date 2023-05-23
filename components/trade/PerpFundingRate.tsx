@@ -1,11 +1,15 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
-// import { BookSide, PerpMarket } from '@blockworks-foundation/mango-v4'
-// import mangoStore from '@store/mangoStore'
+import { BookSide, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useMemo } from 'react'
 import { MANGO_DATA_API_URL } from 'utils/constants'
+import Tooltip from '@components/shared/Tooltip'
+import { useTranslation } from 'next-i18next'
+import mangoStore from '@store/mangoStore'
+import { OrderbookL2 } from 'types'
+import Link from 'next/link'
 
 const fetchFundingRate = async (groupPk: string | undefined) => {
   const res = await fetch(
@@ -36,12 +40,63 @@ export const formatFunding = Intl.NumberFormat('en', {
   style: 'percent',
 })
 
+function getImpactPriceL2(
+  bookside: number[][],
+  baseDepth: number
+): number | undefined {
+  let total = 0
+  for (const level of bookside) {
+    total += level[1]
+    if (total >= baseDepth) {
+      return level[0]
+    }
+  }
+  return undefined
+}
+
+function getInstantaneousFundingRateL2(
+  market: PerpMarket,
+  orderbook: OrderbookL2
+) {
+  const MIN_FUNDING = market.minFunding.toNumber()
+  const MAX_FUNDING = market.maxFunding.toNumber()
+
+  const bid = getImpactPriceL2(
+    orderbook.bids,
+    market.baseLotsToUi(market.impactQuantity)
+  )
+  const ask = getImpactPriceL2(
+    orderbook.asks,
+    market.baseLotsToUi(market.impactQuantity)
+  )
+  const indexPrice = market._uiPrice
+
+  let funding
+  if (bid !== undefined && ask !== undefined) {
+    const bookPrice = (bid + ask) / 2
+    funding = Math.min(
+      Math.max(bookPrice / indexPrice - 1, MIN_FUNDING),
+      MAX_FUNDING
+    )
+  } else if (bid !== undefined) {
+    funding = MAX_FUNDING
+  } else if (ask !== undefined) {
+    funding = MIN_FUNDING
+  } else {
+    funding = 0
+  }
+
+  return funding
+}
+
 const PerpFundingRate = () => {
   const { selectedMarket } = useSelectedMarket()
   const rate = usePerpFundingRate()
+  const { t } = useTranslation(['common', 'trade'])
 
-  // const bids = mangoStore((s) => s.selectedMarket.bidsAccount)
-  // const asks = mangoStore((s) => s.selectedMarket.asksAccount)
+  const bids = mangoStore((s) => s.selectedMarket.bidsAccount)
+  const asks = mangoStore((s) => s.selectedMarket.asksAccount)
+  const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
 
   const fundingRate = useMemo(() => {
     if (rate.isSuccess && selectedMarket instanceof PerpMarket) {
@@ -49,26 +104,81 @@ const PerpFundingRate = () => {
         (r) => r.market_index === selectedMarket.perpMarketIndex
       )
       const funding = marketRate?.funding_rate_hourly
-      return funding ? funding : undefined
+      return typeof funding === 'number' ? funding : undefined
     }
   }, [rate, selectedMarket])
 
+  const instantaneousRate = useMemo(() => {
+    if (!(selectedMarket instanceof PerpMarket)) return undefined
+    if (bids instanceof BookSide && asks instanceof BookSide) {
+      return selectedMarket.getInstantaneousFundingRateUi(bids, asks).toFixed(4)
+    }
+
+    if (orderbook.asks.length && orderbook.bids.length) {
+      return (
+        getInstantaneousFundingRateL2(selectedMarket, orderbook) * 100
+      ).toFixed(4)
+    }
+
+    return undefined
+  }, [orderbook, bids, asks, selectedMarket])
+
   return (
     <>
-      <div className="font-mono text-xs text-th-fgd-2">
-        {selectedMarket instanceof PerpMarket && fundingRate ? (
-          `${formatFunding.format(fundingRate)}`
-        ) : (
-          <span className="text-th-fgd-4">-</span>
-        )}
+      <div className="ml-6 flex-col whitespace-nowrap">
+        <Tooltip
+          content={
+            <>
+              <div>
+                Funding is paid continuously. The 1hr rate displayed is a
+                rolling average of the past 60 mins.
+              </div>
+              <div className="mt-2">
+                When positive, longs will pay shorts and when negative shorts
+                pay longs.
+              </div>
+              {typeof fundingRate === 'number' ? (
+                <div className="mt-2">
+                  The 1hr rate as an APR is{' '}
+                  <span className="font-mono text-th-fgd-2">
+                    {formatFunding.format(fundingRate * 8760)}
+                  </span>
+                </div>
+              ) : null}
+              {instantaneousRate ? (
+                <div className="mt-2">
+                  The latest instantaneous rate is{' '}
+                  <span className="font-mono text-th-fgd-2">
+                    {instantaneousRate}%
+                  </span>
+                </div>
+              ) : null}
+              <Link
+                className="mt-2 block"
+                href={`/stats?market=${selectedMarket?.name}`}
+                shallow={true}
+              >
+                View Chart
+              </Link>
+            </>
+          }
+        >
+          <div className="flex items-center">
+            <div className="text-xs text-th-fgd-4">
+              {t('trade:funding-rate')}
+            </div>
+            <InformationCircleIcon className="ml-1 h-4 w-4 text-th-fgd-4" />
+          </div>
+        </Tooltip>
+        <p className="font-mono text-xs text-th-fgd-2">
+          {selectedMarket instanceof PerpMarket &&
+          typeof fundingRate === 'number' ? (
+            <span>{formatFunding.format(fundingRate)}</span>
+          ) : (
+            <span className="text-th-fgd-4">-</span>
+          )}
+        </p>
       </div>
-      {/* <div className="font-mono text-xs text-th-fgd-2">
-        {selectedMarket instanceof PerpMarket &&
-        bids instanceof BookSide &&
-        asks instanceof BookSide
-          ? selectedMarket.getCurrentFundingRate(bids, asks)
-          : '-'}
-      </div> */}
     </>
   )
 }

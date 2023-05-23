@@ -13,6 +13,7 @@ export const useSpotMarketMax = (
   side: string,
   useMargin: boolean
 ) => {
+  const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const max = useMemo(() => {
     const group = mangoStore.getState().group
     if (!mangoAccount || !group || !selectedMarket) return 100
@@ -26,21 +27,27 @@ export const useSpotMarketMax = (
           group,
           selectedMarket.serumMarketExternal
         )
-        spotMax = mangoAccount.getTokenBalanceUi(
-          group.getFirstBankByTokenIndex(selectedMarket.quoteTokenIndex)
+        const bank = group.getFirstBankByTokenIndex(
+          selectedMarket.quoteTokenIndex
         )
+        const balance = mangoAccount.getTokenBalanceUi(bank)
+        const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+        spotMax = balance + unsettled
       } else {
         leverageMax = mangoAccount.getMaxBaseForSerum3AskUi(
           group,
           selectedMarket.serumMarketExternal
         )
-        spotMax = mangoAccount.getTokenBalanceUi(
-          group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+        const bank = group.getFirstBankByTokenIndex(
+          selectedMarket.baseTokenIndex
         )
+        const balance = mangoAccount.getTokenBalanceUi(bank)
+        const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+        spotMax = balance + unsettled
       }
       return useMargin ? leverageMax : Math.max(spotMax, 0)
     } catch (e) {
-      console.error('Error calculating max leverage: spot btn group: ', e)
+      console.error('Error calculating max size: ', e)
       return 0
     }
   }, [side, selectedMarket, mangoAccount, useMargin])
@@ -76,14 +83,17 @@ const SpotSlider = ({
             : Number(s.tradeForm.price)
 
         if (s.tradeForm.side === 'buy') {
-          s.tradeForm.quoteSize = val
           if (Number(price)) {
-            s.tradeForm.baseSize = floorToDecimal(
+            const baseSize = floorToDecimal(
               parseFloat(val) / price,
               minOrderDecimals
-            ).toString()
+            )
+            const quoteSize = floorToDecimal(baseSize.mul(price), tickDecimals)
+            s.tradeForm.baseSize = baseSize.toFixed()
+            s.tradeForm.quoteSize = quoteSize.toFixed()
           } else {
             s.tradeForm.baseSize = ''
+            s.tradeForm.quoteSize = val
           }
         } else if (s.tradeForm.side === 'sell') {
           s.tradeForm.baseSize = val
@@ -91,7 +101,7 @@ const SpotSlider = ({
             s.tradeForm.quoteSize = floorToDecimal(
               parseFloat(val) * price,
               tickDecimals
-            ).toString()
+            ).toFixed()
           }
         }
       })

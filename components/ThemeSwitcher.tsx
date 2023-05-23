@@ -15,7 +15,7 @@ const ThemeSwitcher = () => {
     >
       {THEMES.map((value) => (
         <LinkButton
-          className={`whitespace-nowrap font-normal no-underline md:hover:text-th-fgd-1 ${
+          className={`whitespace-nowrap font-normal ${
             t(value) === theme ? 'text-th-active' : ''
           }`}
           onClick={() => setTheme(t(value))}

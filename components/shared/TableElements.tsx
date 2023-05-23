@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { ReactNode } from 'react'
+import { ReactNode, forwardRef } from 'react'
 
 export const Table = ({
   children,
@@ -21,13 +21,17 @@ export const Th = ({
   children,
   className,
   id,
+  xBorder = false,
 }: {
   children?: ReactNode
   className?: string
   id?: string
+  xBorder?: boolean
 }) => (
   <th
-    className={`whitespace-nowrap px-2 py-3 text-xs font-normal text-th-fgd-3 first:pl-6 last:pr-6 xl:px-4 ${className}`}
+    className={`whitespace-nowrap px-2 py-3 text-xs font-normal text-th-fgd-3 first:pl-6 last:pr-6 xl:px-4 ${
+      xBorder ? 'border-x border-th-bkg-3' : ''
+    } ${className}`}
     id={id}
     scope="col"
   >
@@ -35,28 +39,43 @@ export const Th = ({
   </th>
 )
 
-export const TrBody = ({
-  children,
-  className,
-  onClick,
-}: {
+interface TrBodyProps {
   children: ReactNode
   className?: string
   onClick?: () => void
-}) => (
-  <tr className={`border-y border-th-bkg-3 ${className}`} onClick={onClick}>
-    {children}
-  </tr>
+}
+
+export const TrBody = forwardRef<HTMLTableRowElement, TrBodyProps>(
+  (props, ref) => {
+    const { children, className, onClick } = props
+    return (
+      <tr
+        className={`border-y border-th-bkg-3 ${className}`}
+        onClick={onClick}
+        ref={ref}
+      >
+        {children}
+      </tr>
+    )
+  }
 )
+
+TrBody.displayName = 'TrBody'
 
 export const Td = ({
   children,
   className,
+  xBorder = false,
 }: {
   children: ReactNode
   className?: string
+  xBorder?: boolean
 }) => (
-  <td className={`px-2 py-3 md:first:pl-6 md:last:pr-6 xl:px-4 ${className}`}>
+  <td
+    className={`px-2 py-3 first:pl-6 last:pr-6 xl:px-4 ${
+      xBorder ? 'border-x border-th-bkg-3' : ''
+    } ${className}`}
+  >
     {children}
   </td>
 )

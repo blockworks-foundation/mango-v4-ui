@@ -1,4 +1,3 @@
-import { MintInfo } from '@blockworks-foundation/mango-v4'
 import {
   getGovernanceAccounts,
   getRealm,
@@ -7,10 +6,8 @@ import {
   pubkeyFilter,
 } from '@solana/spl-governance'
 import { Connection, PublicKey } from '@solana/web3.js'
-import { getProposals } from './fetch/getProposals'
-import { ConnectionContext } from './types'
 import { TokenProgramAccount } from './accounts/vsrAccounts'
-import { u64, MintLayout } from '@solana/spl-token'
+import { MintLayout, RawMint } from '@solana/spl-token'
 import BN from 'bn.js'
 
 export async function fetchRealm({
@@ -43,25 +40,6 @@ export async function fetchGovernances({
   return governancesMap
 }
 
-export async function fetchProposals({
-  connectionContext,
-  programId,
-  governances,
-}: {
-  connectionContext: ConnectionContext
-  programId: PublicKey
-  governances: PublicKey[]
-}) {
-  const proposalsByGovernance = await getProposals(
-    governances,
-    connectionContext,
-    programId
-  )
-
-  const proposals = accountsToPubkeyMap(proposalsByGovernance.flatMap((p) => p))
-  return proposals
-}
-
 export function accountsToPubkeyMap<T>(accounts: ProgramAccount<T>[]) {
   return arrayToRecord(accounts, (a) => a.pubkey.toBase58())
 }
@@ -79,7 +57,7 @@ export function arrayToRecord<T>(
 export async function tryGetMint(
   connection: Connection,
   publicKey: PublicKey
-): Promise<TokenProgramAccount<MintInfo> | undefined> {
+): Promise<TokenProgramAccount<RawMint> | undefined> {
   try {
     const result = await connection.getAccountInfo(publicKey)
     const data = Buffer.from(result!.data)
@@ -97,22 +75,8 @@ export async function tryGetMint(
   }
 }
 
-export function parseMintAccountData(data: Buffer): MintInfo {
+export function parseMintAccountData(data: Buffer): RawMint {
   const mintInfo = MintLayout.decode(data)
-  if (mintInfo.mintAuthorityOption === 0) {
-    mintInfo.mintAuthority = null
-  } else {
-    mintInfo.mintAuthority = new PublicKey(mintInfo.mintAuthority)
-  }
-
-  mintInfo.supply = u64.fromBuffer(mintInfo.supply)
-  mintInfo.isInitialized = mintInfo.isInitialized != 0
-
-  if (mintInfo.freezeAuthorityOption === 0) {
-    mintInfo.freezeAuthority = null
-  } else {
-    mintInfo.freezeAuthority = new PublicKey(mintInfo.freezeAuthority)
-  }
   return mintInfo
 }
 
@@ -124,5 +88,54 @@ export const tryGetPubKey = (pubkey: string) => {
     return new PublicKey(pubkey)
   } catch (e) {
     return null
+  }
+}
+
+const urlRegex =
+  // eslint-disable-next-line
+  /(https:\/\/)(gist\.github.com\/)([\w\/]{1,39}\/)([\w]{1,32})/
+
+export async function fetchGistFile(gistUrl: string) {
+  const controller = new AbortController()
+  const pieces = gistUrl.match(urlRegex)
+  if (pieces) {
+    const justIdWithoutUser = pieces[4]
+    if (justIdWithoutUser) {
+      const apiUrl = 'https://api.github.com/gists/' + justIdWithoutUser
+      const apiResponse = await fetch(apiUrl, {
+        signal: controller.signal,
+      })
+      const jsonContent = await apiResponse.json()
+      if (apiResponse.status === 200) {
+        const nextUrlFileName = Object.keys(jsonContent['files'])[0]
+        const nextUrl = jsonContent['files'][nextUrlFileName]['raw_url']
+        if (nextUrl.startsWith('https://gist.githubusercontent.com/')) {
+          const fileResponse = await fetch(nextUrl, {
+            signal: controller.signal,
+          })
+          const body = await fileResponse.json()
+          //console.log('fetchGistFile file', gistUrl, fileResponse)
+          return body
+        }
+        return undefined
+      } else {
+        console.warn('could not fetchGistFile', {
+          gistUrl,
+          apiResponse: jsonContent,
+        })
+      }
+    }
+  }
+
+  return undefined
+}
+
+export async function resolveProposalDescription(descriptionLink: string) {
+  try {
+    const url = new URL(descriptionLink)
+    const desc = (await fetchGistFile(url.toString())) ?? descriptionLink
+    return desc
+  } catch {
+    return descriptionLink
   }
 }

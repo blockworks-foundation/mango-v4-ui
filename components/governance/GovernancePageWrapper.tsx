@@ -10,7 +10,8 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
   const connectionContext = GovernanceStore((s) => s.connectionContext)
   const initRealm = GovernanceStore((s) => s.initRealm)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
-  const fetchVoterWeight = GovernanceStore((s) => s.fetchVoterWeight)
+  const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
+  const resetVoter = GovernanceStore((s) => s.resetVoter)
   const realm = GovernanceStore((s) => s.realm)
   const connection = mangoStore((s) => s.connection)
 
@@ -32,7 +33,9 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
       connectionContext?.endpoint &&
       vsrClient?.program.programId.toBase58()
     ) {
-      fetchVoterWeight(publicKey, vsrClient, connectionContext)
+      getCurrentVotingPower(publicKey, vsrClient, connectionContext)
+    } else {
+      resetVoter()
     }
   }, [
     publicKey?.toBase58(),

@@ -11,11 +11,8 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
 import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
-import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
-const PriceChart = dynamic(() => import('@components/token/PriceChart'), {
-  ssr: false,
-})
+import PriceChart from '@components/token/PriceChart'
 dayjs.extend(relativeTime)
 
 const DEFAULT_COINGECKO_VALUES = {
@@ -75,7 +72,7 @@ const CoingeckoStats = ({
     isLoading: loadingBirdeyePrices,
     isFetching: fetchingBirdeyePrices,
   } = useQuery(
-    ['birdeye-token-prices', daysToShow, bank],
+    ['birdeye-token-prices', daysToShow, bank.mint],
     () => fetchBirdeyePrices(daysToShow, bank.mint.toString()),
     {
       cacheTime: 1000 * 60 * 15,
@@ -122,7 +119,7 @@ const CoingeckoStats = ({
             {coingeckoData.description.en.length > description.length ||
             showFullDesc ? (
               <span
-                className="default-transition ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
+                className="ml-4 flex cursor-pointer items-end font-normal underline hover:text-th-fgd-2 md:hover:no-underline"
                 onClick={() => setShowFullDesc(!showFullDesc)}
               >
                 {showFullDesc ? 'Less' : 'More'}
@@ -165,7 +162,7 @@ const CoingeckoStats = ({
         <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 md:col-span-2">
           <h2 className="text-base">{bank.name} Stats</h2>
         </div>
-        <div className="col-span-1 border-r border-th-bkg-3 px-6 py-4">
+        <div className="col-span-1 px-6 py-4 md:border-r md:border-th-bkg-3">
           <div className="flex justify-between pb-4">
             <p>{t('token:market-cap')}</p>
             <p className="font-mono text-th-fgd-2">

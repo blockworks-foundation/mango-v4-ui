@@ -7,8 +7,9 @@ import {
   Area,
   XAxis,
   YAxis,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
 import ContentBox from '../shared/ContentBox'
@@ -28,6 +29,7 @@ import { AxisDomain } from 'recharts/types/util/types'
 import { useTranslation } from 'next-i18next'
 import FormatNumericValue from './FormatNumericValue'
 import { ContentType } from 'recharts/types/component/Tooltip'
+import Tooltip from './Tooltip'
 
 dayjs.extend(relativeTime)
 
@@ -47,9 +49,11 @@ interface DetailedAreaChartProps {
   suffix?: string
   tickFormat?: (x: number) => string
   title?: string
+  tooltipContent?: string
   xKey: string
   yDecimals?: number
   yKey: string
+  showZeroLine?: boolean
 }
 
 export const formatDateAxis = (date: string, days: number) => {
@@ -76,9 +80,11 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
   suffix = '',
   tickFormat,
   title,
+  tooltipContent,
   xKey,
   yDecimals,
   yKey,
+  showZeroLine,
 }) => {
   const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
@@ -132,6 +138,8 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
     return 0
   }
 
+  const titleClasses = `${small ? 'text-sm' : 'mb-0.5 text-base'} text-th-fgd-3`
+
   return (
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
@@ -145,6 +153,16 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
           </SheenLoader>
         ) : filteredData.length ? (
           <div className="relative">
+            {setDaysToShow ? (
+              <div className="mb-4 sm:absolute sm:-top-1 sm:right-0 sm:mb-0 sm:-mb-2 sm:flex sm:justify-end">
+                <ChartRangeButtons
+                  activeValue={daysToShow}
+                  names={['24H', '7D', '30D']}
+                  values={['1', '7', '30']}
+                  onChange={(v) => setDaysToShow(v)}
+                />
+              </div>
+            ) : null}
             <div className="flex items-start justify-between">
               <div className="flex flex-col md:flex-row md:items-start md:space-x-6">
                 {hideChart ? (
@@ -157,13 +175,20 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                   </IconButton>
                 ) : null}
                 <div>
-                  <p
-                    className={`${
-                      small ? 'text-sm' : 'mb-0.5 text-base'
-                    } text-th-fgd-3`}
-                  >
-                    {title}
-                  </p>
+                  {title ? (
+                    tooltipContent ? (
+                      <Tooltip content={tooltipContent}>
+                        <p
+                          className={`${titleClasses}
+                      tooltip-underline`}
+                        >
+                          {title}
+                        </p>
+                      </Tooltip>
+                    ) : (
+                      <p className={titleClasses}>{title}</p>
+                    )
+                  ) : null}
                   {mouseData ? (
                     <div>
                       <div
@@ -281,16 +306,6 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
             <div
               className={`-mt-1 ${heightClass ? heightClass : 'h-96'} w-auto`}
             >
-              {setDaysToShow ? (
-                <div className="absolute -top-1 right-0 -mb-2 flex justify-end">
-                  <ChartRangeButtons
-                    activeValue={daysToShow}
-                    names={['24H', '7D', '30D']}
-                    values={['1', '7', '30']}
-                    onChange={(v) => setDaysToShow(v)}
-                  />
-                </div>
-              ) : null}
               <div className="-mx-6 mt-6 h-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
@@ -298,7 +313,7 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                   >
-                    <Tooltip
+                    <RechartsTooltip
                       cursor={{
                         strokeOpacity: 0.09,
                       }}
@@ -395,6 +410,13 @@ const DetailedAreaChart: FunctionComponent<DetailedAreaChartProps> = ({
                       }
                       tickLine={false}
                     />
+                    {showZeroLine ? (
+                      <ReferenceLine
+                        y={0}
+                        stroke="var(--fgd-4)"
+                        strokeDasharray="2 2"
+                      />
+                    ) : null}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

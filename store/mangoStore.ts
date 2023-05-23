@@ -21,9 +21,9 @@ import {
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
-import { Notification, notify } from '../utils/notifications'
+import { TransactionNotification, notify } from '../utils/notifications'
 import {
-  fetchNftsFromHolaplexIndexer,
+  getNFTsByOwner,
   getTokenAccountsByOwnerWithWrappedSol,
   TokenAccount,
 } from '../utils/tokens'
@@ -59,6 +59,7 @@ import {
   ProfileDetails,
   isSpotTradeFeedItem,
   isPerpTradeFeedItem,
+  MangoTokenStatsItem,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -66,6 +67,7 @@ import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
 import {
   EntityId,
+  IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
 import Decimal from 'decimal.js'
@@ -94,7 +96,7 @@ const ENDPOINTS = [
 const options = AnchorProvider.defaultOptions()
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
-const emptyWallet = new EmptyWallet(Keypair.generate())
+export const emptyWallet = new EmptyWallet(Keypair.generate())
 
 const initMangoClient = (
   provider: AnchorProvider,
@@ -152,6 +154,7 @@ export type MangoStore = {
     }
     swapHistory: {
       data: SwapHistoryItem[]
+      initialLoad: boolean
       loading: boolean
     }
     tradeHistory: {
@@ -161,8 +164,8 @@ export type MangoStore = {
   }
   mangoAccounts: MangoAccount[]
   markets: Serum3Market[] | undefined
-  notificationIdCounter: number
-  notifications: Array<Notification>
+  transactionNotificationIdCounter: number
+  transactionNotifications: Array<TransactionNotification>
   perpMarkets: PerpMarket[]
   perpStats: {
     loading: boolean
@@ -212,11 +215,13 @@ export type MangoStore = {
     initialLoad: boolean
     loading: boolean
     data: TokenStatsItem[] | null
+    mangoStats: MangoTokenStatsItem[]
   }
   tradeForm: TradeForm
   tradingView: {
     stablePriceLine: EntityId | undefined
     orderLines: Map<string | BN, IOrderLineAdapter>
+    tradeExecutions: Map<string, IExecutionLineAdapter>
   }
   wallet: {
     tokens: TokenAccount[]
@@ -230,7 +235,8 @@ export type MangoStore = {
     fetchActivityFeed: (
       mangoAccountPk: string,
       offset?: number,
-      params?: string
+      params?: string,
+      limit?: number
     ) => Promise<void>
     fetchAccountPerformance: (
       mangoAccountPk: string,
@@ -246,7 +252,8 @@ export type MangoStore = {
     fetchSwapHistory: (
       mangoAccountPk: string,
       timeout?: number,
-      offset?: number
+      offset?: number,
+      limit?: number
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
@@ -299,13 +306,13 @@ const mangoStore = create<MangoStore>()(
         spotBalances: {},
         interestTotals: { data: [], loading: false },
         performance: { data: [], loading: true },
-        swapHistory: { data: [], loading: true },
+        swapHistory: { data: [], loading: true, initialLoad: true },
         tradeHistory: { data: [], loading: true },
       },
       mangoAccounts: [],
       markets: undefined,
-      notificationIdCounter: 0,
-      notifications: [],
+      transactionNotificationIdCounter: 0,
+      transactionNotifications: [],
       perpMarkets: [],
       perpStats: {
         loading: false,
@@ -361,13 +368,15 @@ const mangoStore = create<MangoStore>()(
       },
       tokenStats: {
         initialLoad: false,
-        loading: false,
+        loading: true,
         data: [],
+        mangoStats: [],
       },
       tradeForm: DEFAULT_TRADE_FORM,
       tradingView: {
         stablePriceLine: undefined,
         orderLines: new Map(),
+        tradeExecutions: new Map(),
       },
       wallet: {
         tokens: [],
@@ -456,14 +465,15 @@ const mangoStore = create<MangoStore>()(
         fetchActivityFeed: async (
           mangoAccountPk: string,
           offset = 0,
-          params = ''
+          params = '',
+          limit = PAGINATION_PAGE_LENGTH
         ) => {
           const set = get().set
           const loadedFeed = mangoStore.getState().activityFeed.feed
 
           try {
             const response = await fetch(
-              `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}${
+              `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=${limit}${
                 params ? params : ''
               }`
             )
@@ -760,9 +770,9 @@ const mangoStore = create<MangoStore>()(
             state.wallet.nfts.loading = true
           })
           try {
-            const data = await fetchNftsFromHolaplexIndexer(ownerPk)
+            const nfts = await getNFTsByOwner(ownerPk, connection)
             set((state) => {
-              state.wallet.nfts.data = data.nfts
+              state.wallet.nfts.data = nfts
               state.wallet.nfts.loading = false
             })
           } catch (error) {
@@ -871,7 +881,8 @@ const mangoStore = create<MangoStore>()(
         fetchSwapHistory: async (
           mangoAccountPk: string,
           timeout = 0,
-          offset = 0
+          offset = 0,
+          limit = PAGINATION_PAGE_LENGTH
         ) => {
           const set = get().set
           const loadedSwapHistory =
@@ -880,7 +891,7 @@ const mangoStore = create<MangoStore>()(
           setTimeout(async () => {
             try {
               const history = await fetch(
-                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}`
+                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${limit}`
               )
               const parsedHistory = await history.json()
               const sortedHistory =
@@ -903,8 +914,13 @@ const mangoStore = create<MangoStore>()(
             } catch (e) {
               console.error('Unable to fetch swap history', e)
             } finally {
+              const notLoaded =
+                mangoStore.getState().mangoAccount.swapHistory.initialLoad
               set((state) => {
                 state.mangoAccount.swapHistory.loading = false
+                if (notLoaded) {
+                  state.mangoAccount.swapHistory.initialLoad = false
+                }
               })
             }
           }, timeout)
@@ -921,9 +937,47 @@ const mangoStore = create<MangoStore>()(
               `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`
             )
             const data = await response.json()
-
+            let mangoStats: MangoTokenStatsItem[] = []
+            if (data && data.length) {
+              mangoStats = data.reduce(
+                (a: MangoTokenStatsItem[], c: TokenStatsItem) => {
+                  const banks = Array.from(group.banksMapByMint)
+                    .map(([_mintAddress, banks]) => banks)
+                    .map((b) => b[0])
+                  const bank: Bank | undefined = banks.find(
+                    (b) => b.tokenIndex === c.token_index
+                  )
+                  const hasDate = a.find(
+                    (d: MangoTokenStatsItem) => d.date === c.date_hour
+                  )
+                  if (!hasDate) {
+                    a.push({
+                      date: c.date_hour,
+                      depositValue: Math.floor(c.total_deposits * c.price),
+                      borrowValue: Math.floor(c.total_borrows * c.price),
+                      feesCollected: c.collected_fees * bank!.uiPrice,
+                    })
+                  } else {
+                    hasDate.depositValue =
+                      hasDate.depositValue +
+                      Math.floor(c.total_deposits * c.price)
+                    hasDate.borrowValue =
+                      hasDate.borrowValue +
+                      Math.floor(c.total_borrows * c.price)
+                    hasDate.feesCollected =
+                      hasDate.feesCollected + c.collected_fees * bank!.uiPrice
+                  }
+                  return a.sort(
+                    (a, b) =>
+                      new Date(a.date).getTime() - new Date(b.date).getTime()
+                  )
+                },
+                []
+              )
+            }
             set((state) => {
               state.tokenStats.data = data
+              state.tokenStats.mangoStats = mangoStats
               state.tokenStats.initialLoad = true
               state.tokenStats.loading = false
             })

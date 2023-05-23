@@ -10,7 +10,7 @@ import {
   formatNumericValue,
   getDecimalCount,
 } from 'utils/numbers'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY, USE_ORDERBOOK_FEED_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
 import { OrderbookL2 } from 'types'
@@ -29,6 +29,14 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
+import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
+
+const sizeCompacter = Intl.NumberFormat('en', {
+  maximumFractionDigits: 6,
+  notation: 'compact',
+})
+
+const SHOW_EXPONENTIAL_THRESHOLD = 0.00001
 
 const getMarket = () => {
   const group = mangoStore.getState().group
@@ -189,7 +197,6 @@ const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
   }
 }
 
-const depth = 40
 type OrderbookData = {
   bids: cumOrderbookSide[]
   asks: cumOrderbookSide[]
@@ -212,16 +219,26 @@ const Orderbook = () => {
   const [tickSize, setTickSize] = useState(0)
   const [showBids, setShowBids] = useState(true)
   const [showAsks, setShowAsks] = useState(true)
+  const [useOrderbookFeed, setUseOrderbookFeed] = useState(
+    localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
+      ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
+      : true
+  )
 
   const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
 
-  const depthArray: number[] = useMemo(() => {
-    const bookDepth = !isMobile ? depth : 9
-    return Array(bookDepth).fill(0)
+  const depth = useMemo(() => {
+    return isMobile ? 9 : 40
   }, [isMobile])
+
+  const depthArray: number[] = useMemo(() => {
+    return Array(depth).fill(0)
+  }, [depth])
+
+  const orderbookFeed = useRef<OrderbookFeed | null>(null)
 
   useEffect(() => {
     if (market && market.tickSize !== tickSize) {
@@ -366,95 +383,225 @@ const Orderbook = () => {
 
   // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
-    console.log('setting up orderbook websockets')
     const set = mangoStore.getState().set
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const market = getMarket()
     if (!group || !market) return
 
-    let bidSubscriptionId: number | undefined = undefined
-    let askSubscriptionId: number | undefined = undefined
-    const bidsPk = new PublicKey(bidAccountAddress)
-    if (bidsPk) {
-      connection
-        .getAccountInfoAndContext(bidsPk)
-        .then(({ context, value: info }) => {
-          if (!info) return
-          const decodedBook = decodeBook(client, market, info, 'bids')
-          set((state) => {
-            state.selectedMarket.lastSeenSlot.bids = context.slot
-            state.selectedMarket.bidsAccount = decodedBook
-            state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
-          })
+    if (useOrderbookFeed) {
+      if (!orderbookFeed.current) {
+        orderbookFeed.current = new OrderbookFeed(
+          `wss://api.mngo.cloud/orderbook/v1/`,
+          {
+            reconnectionIntervalMs: 5_000,
+            reconnectionMaxAttempts: 6,
+          }
+        )
+      }
+
+      let hasConnected = false
+      orderbookFeed.current.onConnect(() => {
+        if (!orderbookFeed.current) return
+        console.log('[OrderbookFeed] connected')
+        hasConnected = true
+        orderbookFeed.current.subscribe({
+          marketId: market.publicKey.toBase58(),
         })
-      bidSubscriptionId = connection.onAccountChange(
-        bidsPk,
-        (info, context) => {
-          const lastSeenSlot =
-            mangoStore.getState().selectedMarket.lastSeenSlot.bids
-          if (context.slot > lastSeenSlot) {
-            const market = getMarket()
-            if (!market) return
-            const decodedBook = decodeBook(client, market, info, 'bids')
-            if (decodedBook instanceof BookSide) {
-              updatePerpMarketOnGroup(decodedBook, 'bids')
+      })
+
+      orderbookFeed.current.onDisconnect((reconnectionAttemptsExhausted) => {
+        // fallback to rpc if we couldn't reconnect or if we never connected
+        if (reconnectionAttemptsExhausted || !hasConnected) {
+          console.warn('[OrderbookFeed] disconnected')
+          setUseOrderbookFeed(false)
+        } else {
+          console.log('[OrderbookFeed] reconnecting...')
+        }
+      })
+
+      let lastWriteVersion = 0
+      orderbookFeed.current.onL2Update((update) => {
+        const selectedMarket = mangoStore.getState().selectedMarket
+        if (!useOrderbookFeed || !selectedMarket || !selectedMarket.current)
+          return
+        if (update.market != selectedMarket.current.publicKey.toBase58()) return
+
+        // ensure updates are applied in the correct order by checking slot and writeVersion
+        const lastSeenSlot =
+          update.side == 'bid'
+            ? mangoStore.getState().selectedMarket.lastSeenSlot.bids
+            : mangoStore.getState().selectedMarket.lastSeenSlot.asks
+        if (update.slot < lastSeenSlot) return
+        if (
+          update.slot == lastSeenSlot &&
+          update.writeVersion < lastWriteVersion
+        )
+          return
+        lastWriteVersion = update.writeVersion
+
+        const bookside =
+          update.side == 'bid'
+            ? selectedMarket.orderbook.bids
+            : selectedMarket.orderbook.asks
+        const new_bookside = Array.from(bookside)
+
+        for (const diff of update.update) {
+          // find existing level for each update
+          const levelIndex = new_bookside.findIndex(
+            (level) => level && level.length && level[0] === diff[0]
+          )
+          if (diff[1] > 0) {
+            // level being added or updated
+            if (levelIndex !== -1) {
+              new_bookside[levelIndex] = diff
+            } else {
+              // add new level and resort
+              new_bookside.push(diff)
+              new_bookside.sort((a, b) => {
+                return update.side == 'bid' ? b[0] - a[0] : a[0] - b[0]
+              })
             }
+          } else {
+            // level being removed if zero size
+            if (levelIndex !== -1) {
+              new_bookside.splice(levelIndex, 1)
+            } else {
+              console.warn('[OrderbookFeed] tried to remove missing level')
+            }
+          }
+        }
+        set((state) => {
+          if (update.side == 'bid') {
+            state.selectedMarket.bidsAccount = undefined
+            state.selectedMarket.orderbook.bids = new_bookside
+            state.selectedMarket.lastSeenSlot.bids = update.slot
+          } else {
+            state.selectedMarket.asksAccount = undefined
+            state.selectedMarket.orderbook.asks = new_bookside
+            state.selectedMarket.lastSeenSlot.asks = update.slot
+          }
+        })
+      })
+      orderbookFeed.current.onL2Checkpoint((checkpoint) => {
+        if (
+          !useOrderbookFeed ||
+          checkpoint.market !== market.publicKey.toBase58()
+        )
+          return
+        set((state) => {
+          state.selectedMarket.lastSeenSlot.bids = checkpoint.slot
+          state.selectedMarket.lastSeenSlot.asks = checkpoint.slot
+          state.selectedMarket.bidsAccount = undefined
+          state.selectedMarket.asksAccount = undefined
+          state.selectedMarket.orderbook.bids = checkpoint.bids
+          state.selectedMarket.orderbook.asks = checkpoint.asks
+        })
+      })
+
+      return () => {
+        if (!orderbookFeed.current) return
+        console.log(
+          `[OrderbookFeed] unsubscribe ${market.publicKey.toBase58()}`
+        )
+        orderbookFeed.current.unsubscribe(market.publicKey.toBase58())
+      }
+    } else {
+      console.log(`[OrderbookRPC] subscribe ${market.publicKey.toBase58()}`)
+
+      let bidSubscriptionId: number | undefined = undefined
+      let askSubscriptionId: number | undefined = undefined
+      const bidsPk = new PublicKey(bidAccountAddress)
+      if (bidsPk) {
+        connection
+          .getAccountInfoAndContext(bidsPk)
+          .then(({ context, value: info }) => {
+            if (!info) return
+            const decodedBook = decodeBook(client, market, info, 'bids')
             set((state) => {
+              state.selectedMarket.lastSeenSlot.bids = context.slot
               state.selectedMarket.bidsAccount = decodedBook
               state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
-              state.selectedMarket.lastSeenSlot.bids = context.slot
             })
-          }
-        },
-        'processed'
-      )
-    }
-
-    const asksPk = new PublicKey(askAccountAddress)
-    if (asksPk) {
-      connection
-        .getAccountInfoAndContext(asksPk)
-        .then(({ context, value: info }) => {
-          if (!info) return
-          const decodedBook = decodeBook(client, market, info, 'asks')
-          set((state) => {
-            state.selectedMarket.asksAccount = decodedBook
-            state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
-            state.selectedMarket.lastSeenSlot.asks = context.slot
           })
-        })
-      askSubscriptionId = connection.onAccountChange(
-        asksPk,
-        (info, context) => {
-          const lastSeenSlot =
-            mangoStore.getState().selectedMarket.lastSeenSlot.asks
-          if (context.slot > lastSeenSlot) {
-            const market = getMarket()
-            if (!market) return
-            const decodedBook = decodeBook(client, market, info, 'asks')
-            if (decodedBook instanceof BookSide) {
-              updatePerpMarketOnGroup(decodedBook, 'asks')
+        bidSubscriptionId = connection.onAccountChange(
+          bidsPk,
+          (info, context) => {
+            const lastSeenSlot =
+              mangoStore.getState().selectedMarket.lastSeenSlot.bids
+            if (context.slot > lastSeenSlot) {
+              const market = getMarket()
+              if (!market) return
+              const decodedBook = decodeBook(client, market, info, 'bids')
+              if (decodedBook instanceof BookSide) {
+                updatePerpMarketOnGroup(decodedBook, 'bids')
+              }
+              set((state) => {
+                state.selectedMarket.bidsAccount = decodedBook
+                state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+                state.selectedMarket.lastSeenSlot.bids = context.slot
+              })
             }
+          },
+          'processed'
+        )
+      }
+
+      const asksPk = new PublicKey(askAccountAddress)
+      if (asksPk) {
+        connection
+          .getAccountInfoAndContext(asksPk)
+          .then(({ context, value: info }) => {
+            if (!info) return
+            const decodedBook = decodeBook(client, market, info, 'asks')
             set((state) => {
               state.selectedMarket.asksAccount = decodedBook
               state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
               state.selectedMarket.lastSeenSlot.asks = context.slot
             })
-          }
-        },
-        'processed'
-      )
-    }
-    return () => {
-      if (typeof bidSubscriptionId !== 'undefined') {
-        connection.removeAccountChangeListener(bidSubscriptionId)
+          })
+        askSubscriptionId = connection.onAccountChange(
+          asksPk,
+          (info, context) => {
+            const lastSeenSlot =
+              mangoStore.getState().selectedMarket.lastSeenSlot.asks
+            if (context.slot > lastSeenSlot) {
+              const market = getMarket()
+              if (!market) return
+              const decodedBook = decodeBook(client, market, info, 'asks')
+              if (decodedBook instanceof BookSide) {
+                updatePerpMarketOnGroup(decodedBook, 'asks')
+              }
+              set((state) => {
+                state.selectedMarket.asksAccount = decodedBook
+                state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+                state.selectedMarket.lastSeenSlot.asks = context.slot
+              })
+            }
+          },
+          'processed'
+        )
       }
-      if (typeof askSubscriptionId !== 'undefined') {
-        connection.removeAccountChangeListener(askSubscriptionId)
+      return () => {
+        console.log(`[OrderbookRPC] unsubscribe ${market.publicKey.toBase58()}`)
+        if (typeof bidSubscriptionId !== 'undefined') {
+          connection.removeAccountChangeListener(bidSubscriptionId)
+        }
+        if (typeof askSubscriptionId !== 'undefined') {
+          connection.removeAccountChangeListener(askSubscriptionId)
+        }
       }
     }
-  }, [bidAccountAddress, askAccountAddress, connection])
+  }, [bidAccountAddress, askAccountAddress, connection, useOrderbookFeed])
+
+  useEffect(() => {
+    const market = getMarket()
+    if (!orderbookFeed.current || !market) return
+    console.log(`[OrderbookFeed] subscribe ${market.publicKey.toBase58()}`)
+    orderbookFeed.current.subscribe({
+      marketId: market.publicKey.toBase58(),
+    })
+  }, [bidAccountAddress])
 
   useEffect(() => {
     window.addEventListener('resize', verticallyCenterOrderbook)
@@ -488,42 +635,41 @@ const Orderbook = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-        <div id="trade-step-three" className="flex items-center space-x-1.5">
+        <div
+          id="trade-step-three"
+          className="hidden items-center space-x-1.5 md:flex"
+        >
           <Tooltip
-            className={`hidden md:block ${!showAsks ? 'md:hidden' : ''}`}
+            className={`${!showAsks ? 'hidden' : ''}`}
             content={t('trade:show-bids')}
             placement="bottom"
           >
             <button
               className={`rounded ${
                 showAsks ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
               onClick={() => toggleSides('bids')}
             >
               <OrderbookIcon className="h-4 w-4" side="buy" />
             </button>
           </Tooltip>
           <Tooltip
-            className={`hidden md:block ${!showBids ? 'md:hidden' : ''}`}
+            className={`${!showBids ? 'hidden' : ''}`}
             content={t('trade:show-asks')}
             placement="bottom"
           >
             <button
               className={`rounded ${
                 showBids ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } default-transition flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed`}
+              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
               onClick={() => toggleSides('asks')}
             >
               <OrderbookIcon className="h-4 w-4" side="sell" />
             </button>
           </Tooltip>
-          <Tooltip
-            className="hidden md:block"
-            content={'Reset and center orderbook'}
-            placement="bottom"
-          >
+          <Tooltip content={'Reset and center orderbook'} placement="bottom">
             <button
-              className="default-transition flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none disabled:cursor-not-allowed"
+              className="flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed"
               onClick={resetOrderbook}
             >
               <ArrowPathIcon className="h-4 w-4" />
@@ -531,20 +677,23 @@ const Orderbook = () => {
           </Tooltip>
         </div>
         {market ? (
-          <div id="trade-step-four">
-            <Tooltip
-              className="hidden md:block"
-              content={t('trade:grouping')}
-              placement="left"
-              delay={100}
-            >
-              <GroupSize
-                tickSize={market.tickSize}
-                onChange={onGroupSizeChange}
-                value={grouping}
-              />
-            </Tooltip>
-          </div>
+          <>
+            <p className="text-xs md:hidden">{t('trade:grouping')}:</p>
+            <div id="trade-step-four">
+              <Tooltip
+                className="hidden md:block"
+                content={t('trade:grouping')}
+                placement="left"
+                delay={100}
+              >
+                <GroupSize
+                  tickSize={market.tickSize}
+                  onChange={onGroupSizeChange}
+                  value={grouping}
+                />
+              </Tooltip>
+            </div>
+          </>
         ) : null}
       </div>
       <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">
@@ -605,10 +754,12 @@ const Orderbook = () => {
             </div>
             <div className="col-span-1 text-right font-mono">
               {orderbookData?.spread
-                ? formatNumericValue(
-                    orderbookData.spread,
-                    market ? getDecimalCount(market.tickSize) : undefined
-                  )
+                ? orderbookData.spread < SHOW_EXPONENTIAL_THRESHOLD
+                  ? orderbookData.spread.toExponential()
+                  : formatNumericValue(
+                      orderbookData.spread,
+                      market ? getDecimalCount(market.tickSize) : undefined
+                    )
                 : null}
             </div>
           </div>
@@ -685,7 +836,7 @@ const OrderbookRow = ({
   const formattedSize = useMemo(() => {
     return minOrderSize && !isNaN(size)
       ? floorToDecimal(size, getDecimalCount(minOrderSize))
-      : new Decimal(size)
+      : new Decimal(size ?? -1)
   }, [size, minOrderSize])
 
   const formattedPrice = useMemo(() => {
@@ -749,9 +900,10 @@ const OrderbookRow = ({
               className={`z-10 w-full text-right font-mono text-xs ${
                 hasOpenOrder ? 'text-th-active' : ''
               }`}
-              // onClick={handleSizeClick}
             >
-              {formattedSize.toFixed(minOrderSizeDecimals)}
+              {size >= 1000000
+                ? sizeCompacter.format(size)
+                : formattedSize.toFixed(minOrderSizeDecimals)}
             </div>
           </div>
           <div
@@ -759,7 +911,9 @@ const OrderbookRow = ({
             onClick={handlePriceClick}
           >
             <div className="w-full text-right font-mono text-xs">
-              {formattedPrice.toFixed(groupingDecimalCount)}
+              {price < SHOW_EXPONENTIAL_THRESHOLD
+                ? formattedPrice.toExponential()
+                : formattedPrice.toFixed(groupingDecimalCount)}
             </div>
           </div>
         </div>

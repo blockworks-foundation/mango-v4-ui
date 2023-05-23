@@ -59,7 +59,7 @@ const LeaderboardRow = ({
 
   return !loading ? (
     <a
-      className="default-transition flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
+      className="flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
       href={`/?address=${mango_account}`}
       rel="noopener noreferrer"
       target="_blank"
@@ -73,9 +73,7 @@ const LeaderboardRow = ({
           >
             {rank}
           </p>
-          {rank < 4 ? (
-            <MedalIcon className="absolute shadow-md" rank={rank} />
-          ) : null}
+          {rank < 4 ? <MedalIcon className="absolute" rank={rank} /> : null}
         </div>
         <ProfileImage
           imageSize={isMobile ? '32' : '40'}

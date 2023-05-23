@@ -34,17 +34,19 @@ const FavoriteMarketsBar = () => {
           market = group?.getSerum3MarketByName(mkt)
         }
         return (
-          <Link href={`/trade?name=${mkt}`} key={mkt} shallow={true}>
-            <div
-              className={`default-transition flex items-center whitespace-nowrap py-1 text-xs hover:text-th-active hover:opacity-100 ${
-                selectedMarket && selectedMarket.name === mkt
-                  ? 'text-th-active'
-                  : 'text-th-fgd-1 opacity-60'
-              }`}
-            >
-              {market ? <MarketLogos market={market} size="small" /> : null}
-              <span className="mb-0 mr-1.5 text-xs">{mkt}</span>
-              {/* {change24h ? (
+          <Link
+            className={`flex items-center whitespace-nowrap py-1 text-xs hover:text-th-active hover:opacity-100 focus-visible:text-th-fgd-1 focus-visible:opacity-100 focus-visible:outline-none ${
+              selectedMarket && selectedMarket.name === mkt
+                ? 'text-th-active'
+                : 'text-th-fgd-1 opacity-60'
+            }`}
+            href={`/trade?name=${mkt}`}
+            key={mkt}
+            shallow={true}
+          >
+            {market ? <MarketLogos market={market} size="small" /> : null}
+            <span className="mb-0 mr-1.5 text-xs">{mkt}</span>
+            {/* {change24h ? (
                 <div
                   className={`text-xs ${
                     change24h
@@ -57,7 +59,6 @@ const FavoriteMarketsBar = () => {
                   {`${(change24h * 100).toFixed(1)}%`}
                 </div>
               ) : null} */}
-            </div>
           </Link>
         )
       })}
