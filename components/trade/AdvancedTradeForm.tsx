@@ -725,7 +725,7 @@ const AdvancedTradeForm = () => {
                   ? ''
                   : tradeForm.side === 'buy'
                   ? 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
-                  : 'bg-th-down text-white md:hover:bg-th-down md:hover:brightness-90'
+                  : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
               }`}
               disabled={disabled}
               size="large"
