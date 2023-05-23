@@ -26,10 +26,7 @@ import { notify } from 'utils/notifications'
 import {
   PerpMarket,
   PerpOrder,
-  PerpOrderType,
   Serum3Market,
-  Serum3OrderType,
-  Serum3SelfTradeBehavior,
   Serum3Side,
 } from '@blockworks-foundation/mango-v4'
 import { Order } from '@project-serum/serum/lib/market'
@@ -44,6 +41,8 @@ import { CombinedTradeHistory, isMangoError } from 'types'
 import { formatPrice } from 'apis/birdeye/helpers'
 import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
+import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
+import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -77,6 +76,10 @@ const TradingViewChart = () => {
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
   const [headerReady, setHeaderReady] = useState(false)
+  const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | null>(
+    null
+  )
+  const [modifiedPrice, setModifiedPrice] = useState('')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
   const [showOrderLines, toggleShowOrderLines] = useState(
@@ -282,91 +285,6 @@ const TradingViewChart = () => {
     return [minOrderDecimals, tickSizeDecimals]
   }, [])
 
-  const findSerum3MarketPkInOpenOrders = useCallback(
-    (o: Order): string | undefined => {
-      const openOrders = mangoStore.getState().mangoAccount.openOrders
-      let foundedMarketPk: string | undefined = undefined
-      for (const [marketPk, orders] of Object.entries(openOrders)) {
-        for (const order of orders) {
-          if (order.orderId.eq(o.orderId)) {
-            foundedMarketPk = marketPk
-            break
-          }
-        }
-        if (foundedMarketPk) {
-          break
-        }
-      }
-      return foundedMarketPk
-    },
-    []
-  )
-
-  const modifyOrder = useCallback(
-    async (o: PerpOrder | Order, price: number) => {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const actions = mangoStore.getState().actions
-      const baseSize = o.size
-      if (!group || !mangoAccount) return
-      try {
-        let tx = ''
-        if (o instanceof PerpOrder) {
-          tx = await client.modifyPerpOrder(
-            group,
-            mangoAccount,
-            o.perpMarketIndex,
-            o.orderId,
-            o.side,
-            price,
-            Math.abs(baseSize),
-            undefined, // maxQuoteQuantity
-            Date.now(),
-            PerpOrderType.limit,
-            undefined,
-            undefined
-          )
-        } else {
-          const marketPk = findSerum3MarketPkInOpenOrders(o)
-          if (!marketPk) return
-          const market = group.getSerum3MarketByExternalMarket(
-            new PublicKey(marketPk)
-          )
-          tx = await client.modifySerum3Order(
-            group,
-            o.orderId,
-            mangoAccount,
-            market.serumMarketExternal,
-            o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-            price,
-            baseSize,
-            Serum3SelfTradeBehavior.decrementTake,
-            Serum3OrderType.limit,
-            Date.now(),
-            10
-          )
-        }
-        actions.fetchOpenOrders()
-        notify({
-          type: 'success',
-          title: 'Transaction successful',
-          txid: tx,
-        })
-      } catch (e) {
-        console.error('Error canceling', e)
-        if (!isMangoError(e)) return
-        notify({
-          title: 'Unable to modify order',
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
-      }
-    },
-    [findSerum3MarketPkInOpenOrders]
-  )
-
   const cancelSpotOrder = useCallback(
     async (o: Order) => {
       const client = mangoStore.getState().client
@@ -489,29 +407,10 @@ const TradingViewChart = () => {
                 },
               })
             } else {
-              tvWidgetRef.current?.showConfirmDialog({
-                title: t('tv-chart:modify-order'),
-                body: t('tv-chart:modify-order-details', {
-                  marketName: selectedMarketName,
-                  orderSize: orderSizeUi,
-                  orderSide: side.toUpperCase(),
-                  currentOrderPrice: formatNumericValue(
-                    currentOrderPrice,
-                    tickSizeDecimals
-                  ),
-                  updatedOrderPrice: formatNumericValue(
-                    updatedOrderPrice,
-                    tickSizeDecimals
-                  ),
-                }),
-                callback: (res) => {
-                  if (res) {
-                    modifyOrder(order, updatedOrderPrice)
-                  } else {
-                    this.setPrice(currentOrderPrice)
-                  }
-                },
-              })
+              setOrderToModify(order)
+              setModifiedPrice(
+                formatNumericValue(updatedOrderPrice, tickSizeDecimals)
+              )
             }
           })
           .onCancel(function () {
@@ -564,7 +463,6 @@ const TradingViewChart = () => {
     [
       cancelPerpOrder,
       cancelSpotOrder,
-      modifyOrder,
       selectedMarketName,
       t,
       theme,
@@ -615,6 +513,13 @@ const TradingViewChart = () => {
     },
     [drawLinesForMarket, deleteLines, theme]
   )
+
+  const closeModifyOrderModal = useCallback(() => {
+    const openOrders = mangoStore.getState().mangoAccount.openOrders
+    setOrderToModify(null)
+    deleteLines()
+    drawLinesForMarket(openOrders)
+  }, [deleteLines, drawLinesForMarket])
 
   const toggleTradeExecutions = useCallback(
     (el: HTMLElement) => {
@@ -1000,7 +905,20 @@ const TradingViewChart = () => {
   }, [cachedTradeHistory, selectedMarketName, showTradeExecutions])
 
   return (
-    <div id={defaultProps.container as string} className="tradingview-chart" />
+    <>
+      <div
+        id={defaultProps.container as string}
+        className="tradingview-chart"
+      />
+      {orderToModify ? (
+        <ModifyTvOrderModal
+          isOpen={!!orderToModify}
+          onClose={closeModifyOrderModal}
+          price={modifiedPrice}
+          order={orderToModify}
+        />
+      ) : null}
+    </>
   )
 }
 

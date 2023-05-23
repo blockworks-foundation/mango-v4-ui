@@ -42,7 +42,9 @@ import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 
-const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
+export const findSerum3MarketPkInOpenOrders = (
+  o: Order
+): string | undefined => {
   const openOrders = mangoStore.getState().mangoAccount.openOrders
   let foundedMarketPk: string | undefined = undefined
   for (const [marketPk, orders] of Object.entries(openOrders)) {

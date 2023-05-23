@@ -42,6 +42,7 @@
   "close-account-desc": "你确定吗? 关户就无法恢复",
   "closing-account": "正在关闭帐户...",
   "collateral-value": "质押品价值",
+  "confirm": "Confirm",
   "connect": "连接",
   "connect-balances": "连接而查看资产余额",
   "connect-helper": "连接来开始",
