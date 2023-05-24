@@ -366,10 +366,12 @@ const TradingViewChart = () => {
         typeof order.side === 'string'
           ? t(order.side)
           : 'bid' in order.side
-          ? t('buy')
-          : t('sell')
-      const isLong = side.toLowerCase() === 'buy'
-      const isShort = side.toLowerCase() === 'sell'
+          ? t('long')
+          : t('short')
+      const isLong =
+        side.toLowerCase() === 'buy' || side.toLowerCase() === 'long'
+      const isShort =
+        side.toLowerCase() === 'sell' || side.toLowerCase() === 'short'
       const [minOrderDecimals, tickSizeDecimals] = getOrderDecimals()
       const orderSizeUi: string = formatNumericValue(
         order.size,
