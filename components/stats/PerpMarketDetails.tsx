@@ -8,6 +8,7 @@ import { usePerpFundingRate } from '@components/trade/PerpFundingRate'
 import { PerpStatsItem } from 'types'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import DetailedAreaChart from '@components/shared/DetailedAreaChart'
+import PerpMarketParams from './PerpMarketParams'
 
 const PerpMarketDetails = ({
   marketStats,
@@ -146,6 +147,9 @@ const PerpMarketDetails = ({
           </div>
         </>
       ) : null}
+      <div className="col-span-2">
+        <PerpMarketParams market={perpMarket} />
+      </div>
     </div>
   )
 }
