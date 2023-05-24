@@ -165,10 +165,10 @@ export const getBestMarket = async ({
     const marketsData = await Promise.all([
       ...marketsDataJsons.map((x) => x.json()),
     ])
-
     const bestMarket = marketsData.sort((a, b) => b.volume24h - a.volume24h)
-    console.log(bestMarket)
-    return new PublicKey(bestMarket[0].id)
+    return bestMarket.length
+      ? new PublicKey(bestMarket[0].id)
+      : markets[0].publicKey
   } catch (e) {
     notify({
       title: 'Openbook market not found',
