@@ -14,17 +14,12 @@ import mangoStore, { CLUSTER } from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
-import {
-  getBestMarket,
-  getOracle,
-  getQuoteSymbol,
-} from 'utils/governance/listingTools'
+import { getBestMarket } from 'utils/governance/listingTools'
 
 type FormErrors = Partial<Record<keyof ListMarketForm, string>>
 
 type ListMarketForm = {
   marketPk: string
-  oraclePk: string
   openBookMarketExternalPk: string
   proposalTitle: string
   proposalDescription: string
@@ -38,7 +33,6 @@ enum VIEWS {
 
 const defaultFormValues: ListMarketForm = {
   marketPk: '',
-  oraclePk: '',
   openBookMarketExternalPk: '',
   proposalDescription: '',
   proposalTitle: '',
@@ -60,7 +54,6 @@ const ListMarket = () => {
   const [proposing, setProposing] = useState(false)
   const [currentView, setCurrentView] = useState(VIEWS.BASE_TOKEN)
   const [marketPk, setMarketPk] = useState('')
-  const [oraclePk, setOraclePk] = useState('')
   const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
@@ -73,7 +66,6 @@ const ListMarket = () => {
   const goToHomePage = async () => {
     setCurrentView(VIEWS.BASE_TOKEN)
     setMarketPk('')
-    setOraclePk('')
     setAdvForm({
       ...defaultFormValues,
     })
@@ -98,12 +90,7 @@ const ListMarket = () => {
       return
     }
     setLoadingMarketProps(true)
-    const [foundOraclePk, bestMarketPk] = await Promise.all([
-      getOracle({
-        baseSymbol: baseToken,
-        quoteSymbol: getQuoteSymbol(quoteToken),
-        connection,
-      }),
+    const [bestMarketPk] = await Promise.all([
       getBestMarket({
         baseMint: baseBank[0].mint.toBase58(),
         quoteMint: quoteBank[0].mint.toBase58(),
@@ -112,7 +99,6 @@ const ListMarket = () => {
       }),
     ])
     setMarketPk(bestMarketPk?.toBase58() || '')
-    setOraclePk(foundOraclePk || '')
     setLoadingMarketProps(false)
   }, [baseToken, quoteToken, group, connection])
 
@@ -198,16 +184,6 @@ const ListMarket = () => {
       {currentView === VIEWS.PROPS && (
         <div>
           <div>
-            Oracle:{' '}
-            {oraclePk ? (
-              oraclePk
-            ) : (
-              <>
-                Oracle not found - <Button>Create oracle</Button>
-              </>
-            )}
-          </div>
-          <div>
             Openbook Market:{' '}
             {marketPk ? (
               marketPk
@@ -254,25 +230,6 @@ const ListMarket = () => {
                   </Disclosure.Button>
                   <Disclosure.Panel>
                     <div className="space-y-4 rounded-md rounded-t-none bg-th-bkg-2 p-4">
-                      <div>
-                        <Label text={t('oracle')} />
-                        <Input
-                          hasError={formErrors.oraclePk !== undefined}
-                          type="text"
-                          value={advForm.oraclePk}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                            handleSetAdvForm('oraclePk', e.target.value)
-                          }
-                        />
-                        {formErrors.oraclePk ? (
-                          <div className="mt-1.5 flex items-center space-x-1">
-                            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-                            <p className="mb-0 text-xs text-th-down">
-                              {formErrors.oraclePk}
-                            </p>
-                          </div>
-                        ) : null}
-                      </div>
                       <div>
                         <Label text={t('openbook-market-external')} />
                         <Input
