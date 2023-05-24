@@ -234,14 +234,12 @@ export function calculateTradingParameters(
       quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals
     )
     const priceIncrementRelative = (priceIncrement * basePrice) / quotePrice
-
     if (priceIncrementRelative < MIN_PRICE_INCREMENT_RELATIVE) {
       break
     }
 
     quoteLotExponent--
   } while (quoteLotExponent > 0)
-
   return {
     minOrder: minOrderSize,
     priceTick: priceIncrement,
