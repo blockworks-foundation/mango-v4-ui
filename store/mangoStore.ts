@@ -216,7 +216,6 @@ export type MangoStore = {
   }
   tradeForm: TradeForm
   tradingView: {
-    stablePriceLine: EntityId | undefined
     orderLines: Map<string | BN, IOrderLineAdapter>
     tradeExecutions: Map<string, IExecutionLineAdapter>
   }
@@ -371,7 +370,6 @@ const mangoStore = create<MangoStore>()(
       },
       tradeForm: DEFAULT_TRADE_FORM,
       tradingView: {
-        stablePriceLine: undefined,
         orderLines: new Map(),
         tradeExecutions: new Map(),
       },

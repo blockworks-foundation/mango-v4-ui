@@ -6,7 +6,6 @@ import {
   IChartingLibraryWidget,
   ResolutionString,
   IOrderLineAdapter,
-  EntityId,
   AvailableSaveloadVersions,
   IExecutionLineAdapter,
   Direction,
@@ -16,7 +15,6 @@ import { useViewport } from 'hooks/useViewport'
 import {
   DEFAULT_MARKET_NAME,
   SHOW_ORDER_LINES_KEY,
-  SHOW_STABLE_PRICE_KEY,
   TV_USER_ID_KEY,
 } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
@@ -36,7 +34,6 @@ import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { BN } from '@project-serum/anchor'
 import Datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
-import useStablePrice from 'hooks/useStablePrice'
 import { CombinedTradeHistory, isMangoError } from 'types'
 import { formatPrice } from 'apis/birdeye/helpers'
 import useTradeHistory from 'hooks/useTradeHistory'
@@ -91,15 +88,7 @@ const TradingViewChart = () => {
   const [showTradeExecutions, toggleShowTradeExecutions] = useState(false)
   const [cachedTradeHistory, setCachedTradeHistory] =
     useState(combinedTradeHistory)
-
-  const [showStablePriceLocalStorage, toggleShowStablePriceLocalStorage] =
-    useLocalStorageState(SHOW_STABLE_PRICE_KEY, false)
-  const [showStablePrice, toggleShowStablePrice] = useState(
-    showStablePriceLocalStorage
-  )
   const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
-  const stablePrice = useStablePrice()
-  const stablePriceLine = mangoStore((s) => s.tradingView.stablePriceLine)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const isMobile = width ? width < breakpoints.sm : false
 
@@ -125,7 +114,6 @@ const TradingViewChart = () => {
   )
 
   const tvWidgetRef = useRef<IChartingLibraryWidget>()
-  const stablePriceButtonRef = useRef<HTMLElement>()
   const orderLinesButtonRef = useRef<HTMLElement>()
 
   const selectedMarketPk = useMemo(() => {
@@ -163,86 +151,6 @@ const TradingViewChart = () => {
       }
     }
   }, [chartReady, selectedMarketPk, showOrderLinesLocalStorage])
-
-  useEffect(() => {
-    if (showStablePrice !== showStablePriceLocalStorage) {
-      toggleShowStablePriceLocalStorage(showStablePrice)
-    }
-  }, [
-    showStablePrice,
-    showStablePriceLocalStorage,
-    toggleShowStablePriceLocalStorage,
-    theme,
-  ])
-
-  const drawStablePriceLine = useCallback(
-    (price: number) => {
-      if (!tvWidgetRef?.current?.chart()) return
-      const now = Date.now() / 1000
-      try {
-        const oldId = mangoStore.getState().tradingView.stablePriceLine
-        if (oldId) {
-          tvWidgetRef.current.chart().removeEntity(oldId)
-        }
-        const id = tvWidgetRef.current.chart().createShape(
-          { time: now, price: price },
-          {
-            shape: 'horizontal_line',
-            overrides: {
-              linecolor: COLORS.FGD4[theme],
-              linestyle: 1,
-              linewidth: 1,
-            },
-          }
-        )
-
-        if (id) {
-          return id
-        } else {
-          console.warn('failed to create stable price line')
-        }
-      } catch {
-        console.warn('failed to create stable price line')
-      }
-    },
-    [theme]
-  )
-
-  const removeStablePrice = useCallback((id: EntityId) => {
-    if (!tvWidgetRef?.current?.chart()) return
-    const set = mangoStore.getState().set
-
-    try {
-      tvWidgetRef.current.chart().removeEntity(id)
-    } catch (error) {
-      console.warn('stable price could not be removed')
-    }
-
-    set((s) => {
-      s.tradingView.stablePriceLine = undefined
-    })
-  }, [])
-
-  // remove stable price line when toggling off
-  useEffect(() => {
-    if (tvWidgetRef.current && chartReady) {
-      if (!showStablePrice && stablePriceLine) {
-        removeStablePrice(stablePriceLine)
-      }
-    }
-  }, [showStablePrice, chartReady, removeStablePrice, stablePriceLine])
-
-  // update stable price line when toggled on
-  useEffect(() => {
-    if (tvWidgetRef.current && chartReady) {
-      if (showStablePrice && stablePrice) {
-        const set = mangoStore.getState().set
-        set((s) => {
-          s.tradingView.stablePriceLine = drawStablePriceLine(stablePrice)
-        })
-      }
-    }
-  }, [stablePrice, chartReady, showStablePrice, drawStablePriceLine])
 
   useEffect(() => {
     if (showOrderLines !== showOrderLinesLocalStorage) {
@@ -540,31 +448,6 @@ const TradingViewChart = () => {
     [theme]
   )
 
-  const createStablePriceButton = useCallback(() => {
-    const toggleStablePrice = (button: HTMLElement) => {
-      toggleShowStablePrice((prevState: boolean) => !prevState)
-      if (button.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
-        button.style.color = COLORS.FGD4[theme]
-      } else {
-        button.style.color = COLORS.ACTIVE[theme]
-      }
-    }
-
-    const button = tvWidgetRef?.current?.createButton()
-    if (!button) {
-      return
-    }
-    button.textContent = 'SP'
-    button.setAttribute('title', t('tv-chart:toggle-stable-price'))
-    button.addEventListener('click', () => toggleStablePrice(button))
-    if (showStablePriceLocalStorage) {
-      button.style.color = COLORS.ACTIVE[theme]
-    } else {
-      button.style.color = COLORS.FGD4[theme]
-    }
-    stablePriceButtonRef.current = button
-  }, [theme, t, showStablePriceLocalStorage])
-
   const createOLButton = useCallback(() => {
     const button = tvWidgetRef?.current?.createButton()
     if (!button) {
@@ -746,23 +629,11 @@ const TradingViewChart = () => {
 
   // draw custom buttons when chart is ready
   useEffect(() => {
-    if (
-      chartReady &&
-      headerReady &&
-      !orderLinesButtonRef.current &&
-      !stablePriceButtonRef.current
-    ) {
+    if (chartReady && headerReady && !orderLinesButtonRef.current) {
       createOLButton()
       createTEButton()
-      createStablePriceButton()
     }
-  }, [
-    createOLButton,
-    createTEButton,
-    chartReady,
-    createStablePriceButton,
-    headerReady,
-  ])
+  }, [createOLButton, createTEButton, chartReady, headerReady])
 
   // update order lines if a user's open orders change
   useEffect(() => {
