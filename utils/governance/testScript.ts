@@ -76,17 +76,9 @@ export async function getTokenExcel(
             priceIncrementRelative: calcedParams.priceIncrementRelative,
             //serum market
             market_baseLotExponent: mangoParams
-              ? Math.log10(
-                  mangoParams?.baseSizeLotsToNumber(
-                    mangoParams.decoded.baseLotSize
-                  )
-                )
+              ? Math.log10(mangoParams.decoded.baseLotSize.toNumber())
               : mostUsedMarket
-              ? Math.log10(
-                  mostUsedMarket.baseSizeLotsToNumber(
-                    mostUsedMarket.decoded.baseLotSize
-                  )
-                )
+              ? Math.log10(mostUsedMarket.decoded.baseLotSize.toNumber())
               : '',
             market_minOrderSize: mangoParams
               ? mangoParams.minOrderSize
@@ -99,17 +91,9 @@ export async function getTokenExcel(
               ? mostUsedMarket.minOrderSize * baseToken.uiPrice
               : '',
             market_quoteLotExponent: mangoParams
-              ? Math.log10(
-                  mangoParams?.quoteSizeLotsToNumber(
-                    mangoParams.decoded.quoteLotSize
-                  )
-                )
+              ? Math.log10(mangoParams.decoded.quoteLotSize.toNumber())
               : mostUsedMarket
-              ? Math.log10(
-                  mostUsedMarket.quoteSizeLotsToNumber(
-                    mostUsedMarket.decoded.quoteLotSize
-                  )
-                )
+              ? Math.log10(mostUsedMarket.decoded.quoteLotSize.toNumber())
               : '',
             market_priceIncrement: mangoParams
               ? mangoParams.tickSize
