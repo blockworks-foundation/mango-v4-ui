@@ -128,7 +128,7 @@ const TradingViewChart = () => {
   const stablePriceButtonRef = useRef<HTMLElement>()
   const orderLinesButtonRef = useRef<HTMLElement>()
 
-  const selectedMarket = useMemo(() => {
+  const selectedMarketPk = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarketName)
       return '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
@@ -144,12 +144,17 @@ const TradingViewChart = () => {
 
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (tvWidgetRef.current && chartReady && selectedMarket && group) {
+    if (tvWidgetRef.current && chartReady && selectedMarketPk && group) {
       try {
         tvWidgetRef.current.setSymbol(
-          selectedMarket,
+          selectedMarketPk,
           tvWidgetRef.current.activeChart().resolution(),
           () => {
+            if (showOrderLinesLocalStorage) {
+              const openOrders = mangoStore.getState().mangoAccount.openOrders
+              deleteLines()
+              drawLinesForMarket(openOrders)
+            }
             return
           }
         )
@@ -157,7 +162,7 @@ const TradingViewChart = () => {
         console.warn('Trading View change symbol error: ', e)
       }
     }
-  }, [selectedMarket, chartReady])
+  }, [chartReady, selectedMarketPk, showOrderLinesLocalStorage])
 
   useEffect(() => {
     if (showStablePrice !== showStablePriceLocalStorage) {
@@ -817,7 +822,7 @@ const TradingViewChart = () => {
       )
     }
     return subscription
-  }, [chartReady, showOrderLines, deleteLines, drawLinesForMarket])
+  }, [chartReady, deleteLines, drawLinesForMarket, showOrderLines])
 
   const drawTradeExecutions = useCallback(
     (trades: CombinedTradeHistory) => {
