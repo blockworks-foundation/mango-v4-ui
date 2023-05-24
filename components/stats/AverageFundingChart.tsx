@@ -77,6 +77,7 @@ const AverageFundingChart = ({
       yKey="funding_rate_hourly"
       yDecimals={5}
       chartType="bar"
+      tooltipDateFormat={daysToShow === '30' ? 'DD MMM YY' : ''}
     />
   )
 }

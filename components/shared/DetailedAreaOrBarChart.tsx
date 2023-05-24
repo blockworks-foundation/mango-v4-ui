@@ -58,6 +58,7 @@ interface DetailedAreaOrBarChartProps {
   yDecimals?: number
   yKey: string
   showZeroLine?: boolean
+  tooltipDateFormat?: string
 }
 
 export const formatDateAxis = (date: string, days: number) => {
@@ -92,6 +93,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
   yDecimals,
   yKey,
   showZeroLine,
+  tooltipDateFormat,
 }) => {
   const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
@@ -244,7 +246,11 @@ const DetailedAreaOrBarChart: FunctionComponent<
                           small ? 'text-xs' : 'text-sm'
                         } text-th-fgd-4`}
                       >
-                        {dayjs(mouseData[xKey]).format('DD MMM YY, h:mma')}
+                        {dayjs(mouseData[xKey]).format(
+                          tooltipDateFormat
+                            ? tooltipDateFormat
+                            : 'DD MMM YY, h:mma'
+                        )}
                       </p>
                     </div>
                   ) : (
@@ -303,7 +309,11 @@ const DetailedAreaOrBarChart: FunctionComponent<
                       >
                         {dayjs(
                           filteredData[filteredData.length - 1][xKey]
-                        ).format('DD MMM YY, h:mma')}
+                        ).format(
+                          tooltipDateFormat
+                            ? tooltipDateFormat
+                            : 'DD MMM YY, h:mma'
+                        )}
                       </p>
                     </div>
                   )}
