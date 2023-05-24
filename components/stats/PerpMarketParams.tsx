@@ -49,7 +49,7 @@ const PerpMarketParams = ({ market }: { market: PerpMarket }) => {
           <p className="font-mono text-th-fgd-2">{tickSize}</p>
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
-          <Tooltip content={t('token:tooltip-init-asset-liability-weight')}>
+          <Tooltip content={t('stats:tooltip-init-asset-liability-weight')}>
             <p className="tooltip-underline">
               {t('token:init-asset-liability-weight')}
             </p>
@@ -65,7 +65,7 @@ const PerpMarketParams = ({ market }: { market: PerpMarket }) => {
           </div>
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
-          <Tooltip content={t('token:tooltip-maint-asset-liability-weight')}>
+          <Tooltip content={t('stats:tooltip-maint-asset-liability-weight')}>
             <p className="tooltip-underline">
               {t('token:maint-asset-liability-weight')}
             </p>
@@ -81,17 +81,7 @@ const PerpMarketParams = ({ market }: { market: PerpMarket }) => {
           </div>
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
-          <Tooltip content={t('stats:tooltip-init-leverage')}>
-            <p className="tooltip-underline">{t('trade:init-leverage')}</p>
-          </Tooltip>
-          <p className="font-mono text-th-fgd-2">
-            {(1 / (initBaseLiabWeight.toNumber() - 1)).toFixed(2)}x
-          </p>
-        </div>
-        <div className="flex justify-between border-t border-th-bkg-3 py-4">
-          <Tooltip content={t('stats:tooltip-max-leverage')}>
-            <p className="tooltip-underline">{t('trade:max-leverage')}</p>
-          </Tooltip>
+          <p>{t('trade:max-leverage')}</p>
           <p className="font-mono text-th-fgd-2">
             {(1 / (maintBaseLiabWeight.toNumber() - 1)).toFixed(2)}x
           </p>
@@ -200,20 +190,14 @@ const PerpMarketParams = ({ market }: { market: PerpMarket }) => {
           </p>
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
-          <Tooltip content={t('stats:tooltip-settle-pnl-limit-period')}>
-            <p className="tooltip-underline">
-              {t('stats:settle-pnl-limit-period')}
-            </p>
-          </Tooltip>
-          <p className="font-mono text-th-fgd-2">
-            {settlePnlLimitWindowSizeTs.toNumber() / 3600}h
-          </p>
-        </div>
-        <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <Tooltip content={t('stats:tooltip-settle-pnl-factor')}>
             <p className="tooltip-underline">{t('stats:settle-pnl-factor')}</p>
           </Tooltip>
-          <p className="font-mono text-th-fgd-2">{settlePnlLimitFactor}</p>
+          <p className="font-mono text-th-fgd-2">
+            {settlePnlLimitFactor}x{' '}
+            <span className="font-body text-th-fgd-4">per</span>{' '}
+            {settlePnlLimitWindowSizeTs.toNumber() / 3600}h
+          </p>
         </div>
       </div>
     </div>
