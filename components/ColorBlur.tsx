@@ -9,7 +9,7 @@ const ColorBlur = ({
 }) => {
   return (
     <div
-      className={`absolute rounded-full bg-th-button opacity-10 mix-blend-screen blur-3xl filter ${className}`}
+      className={`absolute rounded-full blur-3xl filter ${className}`}
       style={{ height: height, width: width }}
     />
   )

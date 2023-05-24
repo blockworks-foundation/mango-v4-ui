@@ -35,9 +35,9 @@ const PerpMarketDetailsTable = () => {
               <Th className="text-right">{t('trade:tick-size')}</Th>
               <Th className="text-right">{t('trade:init-leverage')}</Th>
               <Th className="text-right">{t('trade:max-leverage')}</Th>
-              <Th className="text-right">{t('fees')}</Th>
+              <Th className="text-right">{t('trade:maker-fee')}</Th>
+              <Th className="text-right">{t('trade:taker-fee')}</Th>
               <Th className="text-right">{t('trade:funding-limits')}</Th>
-              <Th className="text-right">{t('trade:oracle')}</Th>
               <Th className="text-right">
                 <Tooltip
                   content={
@@ -59,6 +59,7 @@ const PerpMarketDetailsTable = () => {
                   </span>
                 </Tooltip>
               </Th>
+              <Th className="text-right">{t('trade:oracle')}</Th>
               <Th />
             </TrHead>
           </thead>
@@ -110,15 +111,12 @@ const PerpMarketDetailsTable = () => {
                   </Td>
                   <Td>
                     <p className="text-right">
-                      {(100 * makerFee.toNumber()).toFixed(2)}%{' '}
-                      <span className="font-body text-th-fgd-3">
-                        {t('trade:maker')}
-                      </span>
-                      <span className="mx-1">|</span>
-                      {(100 * takerFee.toNumber()).toFixed(2)}%{' '}
-                      <span className="font-body text-th-fgd-3">
-                        {t('trade:taker')}
-                      </span>
+                      {(100 * makerFee.toNumber()).toFixed(2)}%
+                    </p>
+                  </Td>
+                  <Td>
+                    <p className="text-right">
+                      {(100 * takerFee.toNumber()).toFixed(2)}%
                     </p>
                   </Td>
                   <Td>
@@ -126,6 +124,11 @@ const PerpMarketDetailsTable = () => {
                       {(100 * minFunding.toNumber()).toFixed(2)}%{' '}
                       <span className="font-body text-th-fgd-3">to</span>{' '}
                       {(100 * maxFunding.toNumber()).toFixed(2)}%
+                    </p>
+                  </Td>
+                  <Td>
+                    <p className="text-right">
+                      {groupInsuranceFund ? t('yes') : t('no')}
                     </p>
                   </Td>
                   <Td>
@@ -144,11 +147,6 @@ const PerpMarketDetailsTable = () => {
                     ) : (
                       <p className="text-right font-body">{oracleProvider}</p>
                     )}
-                  </Td>
-                  <Td>
-                    <p className="text-right">
-                      {groupInsuranceFund ? t('yes') : t('no')}
-                    </p>
                   </Td>
                   <Td>
                     <div className="flex justify-end">

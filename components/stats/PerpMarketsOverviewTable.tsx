@@ -20,7 +20,6 @@ import Tooltip from '@components/shared/Tooltip'
 import { PerpStatsItem } from 'types'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { NextRouter, useRouter } from 'next/router'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 
 export const getOneDayPerpStats = (
@@ -189,13 +188,15 @@ const PerpMarketsOverviewTable = () => {
                   </Td>
                   <Td>
                     <div className="flex items-center justify-end">
-                      <p className="">{fundingRate}</p>
                       <Tooltip
                         content={
                           <>
                             {fundingRateApr ? (
                               <div className="">
-                                The 1hr rate as an APR is {fundingRateApr}.
+                                The 1hr rate as an APR is{' '}
+                                <span className="font-mono text-th-fgd-2">
+                                  {fundingRateApr}
+                                </span>
                               </div>
                             ) : null}
                             <div className="mt-2">
@@ -210,7 +211,7 @@ const PerpMarketsOverviewTable = () => {
                           </>
                         }
                       >
-                        <InformationCircleIcon className="ml-2 h-4 w-4" />
+                        <p className="tooltip-underline">{fundingRate}</p>
                       </Tooltip>
                     </div>
                   </Td>

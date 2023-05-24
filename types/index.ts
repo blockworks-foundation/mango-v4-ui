@@ -342,6 +342,13 @@ export interface TokenStatsItem {
   total_deposits: number
 }
 
+export interface MangoTokenStatsItem {
+  date: string
+  borrowValue: number
+  depositValue: number
+  feesCollected: number
+}
+
 export interface TradeForm {
   side: 'buy' | 'sell'
   price: string | undefined

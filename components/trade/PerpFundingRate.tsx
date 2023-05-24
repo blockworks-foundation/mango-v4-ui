@@ -1,5 +1,4 @@
 import { BookSide, PerpMarket } from '@blockworks-foundation/mango-v4'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -9,6 +8,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
 import { OrderbookL2 } from 'types'
+import Link from 'next/link'
 
 const fetchFundingRate = async (groupPk: string | undefined) => {
   const res = await fetch(
@@ -139,22 +139,34 @@ const PerpFundingRate = () => {
               {typeof fundingRate === 'number' ? (
                 <div className="mt-2">
                   The 1hr rate as an APR is{' '}
-                  {formatFunding.format(fundingRate * 8760)}.
+                  <span className="font-mono text-th-fgd-2">
+                    {formatFunding.format(fundingRate * 8760)}
+                  </span>
                 </div>
               ) : null}
               {instantaneousRate ? (
-                <div className="mt-1">
-                  The latest instantaneous rate is {instantaneousRate}%
+                <div className="mt-2">
+                  The latest instantaneous rate is{' '}
+                  <span className="font-mono text-th-fgd-2">
+                    {instantaneousRate}%
+                  </span>
                 </div>
               ) : null}
+              <Link
+                className="mt-2 block"
+                href={`/stats?market=${selectedMarket?.name}`}
+                shallow={true}
+              >
+                View Chart
+              </Link>
             </>
           }
         >
           <div className="flex items-center">
-            <div className="text-xs text-th-fgd-4">
+            <div className="tooltip-underline mb-0.5 text-xs text-th-fgd-4">
               {t('trade:funding-rate')}
             </div>
-            <InformationCircleIcon className="ml-1 h-4 w-4 text-th-fgd-4" />
+            {/* <InformationCircleIcon className="ml-1 h-4 w-4 text-th-fgd-4" /> */}
           </div>
         </Tooltip>
         <p className="font-mono text-xs text-th-fgd-2">

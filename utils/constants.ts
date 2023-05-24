@@ -31,6 +31,8 @@ export const SIZE_INPUT_UI_KEY = 'tradeFormUi-0.2'
 
 export const TRADE_CHECKBOXES_KEY = 'tradeCheckboxes-0.1'
 
+export const TV_USER_ID_KEY = 'tv-userId-0.1'
+
 export const GRID_LAYOUT_KEY = 'savedLayouts-0.2'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.2'
@@ -45,8 +47,6 @@ export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
-export const SHOW_STABLE_PRICE_KEY = 'showStablePriceKey-0.1'
-
 export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
 
 export const SHOW_SWAP_INTRO_MODAL = 'showSwapModal-0.1'
@@ -56,6 +56,8 @@ export const ACCEPT_TERMS_KEY = 'termsOfUseAccepted-0.1'
 export const TRADE_LAYOUT_KEY = 'tradeLayoutKey-0.1'
 
 export const STATS_TAB_KEY = 'activeStatsTab-0.1'
+
+export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [

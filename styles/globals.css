@@ -402,6 +402,8 @@ body {
 
 button {
   @apply default-transition tracking-wider focus:outline-none;
+  -webkit-font-feature-settings: 'zero' 1;
+  font-feature-settings: 'zero' 1;
 }
 
 svg {

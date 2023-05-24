@@ -457,7 +457,9 @@ const SwapForm = () => {
           {group && inputBank ? (
             <TokenVaultWarnings bank={inputBank} type="swap" />
           ) : null}
-          {inputBank && inputBank.reduceOnly ? (
+          {inputBank &&
+          inputBank.areBorrowsReduceOnly() &&
+          inputBank.areDepositsReduceOnly() ? (
             <div className="pb-4">
               <InlineNotification
                 type="warning"
@@ -467,7 +469,9 @@ const SwapForm = () => {
               />
             </div>
           ) : null}
-          {outputBank && outputBank.reduceOnly ? (
+          {outputBank &&
+          outputBank.areBorrowsReduceOnly() &&
+          outputBank.areDepositsReduceOnly() ? (
             <div className="pb-4">
               <InlineNotification
                 type="warning"
@@ -538,7 +542,8 @@ const SwapFormSubmitButton = ({
     (!amountIn.toNumber() ||
       showInsufficientBalance ||
       !amountOut ||
-      !selectedRoute)
+      !selectedRoute ||
+      isDelegatedAccount)
 
   const onClick = connected ? () => setShowConfirm(true) : handleConnect
 

@@ -57,6 +57,7 @@ import {
   NFT,
   TourSettings,
   ProfileDetails,
+  MangoTokenStatsItem,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -92,7 +93,7 @@ const ENDPOINTS = [
 const options = AnchorProvider.defaultOptions()
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
-const emptyWallet = new EmptyWallet(Keypair.generate())
+export const emptyWallet = new EmptyWallet(Keypair.generate())
 
 const initMangoClient = (
   provider: AnchorProvider,
@@ -211,10 +212,10 @@ export type MangoStore = {
     initialLoad: boolean
     loading: boolean
     data: TokenStatsItem[] | null
+    mangoStats: MangoTokenStatsItem[]
   }
   tradeForm: TradeForm
   tradingView: {
-    stablePriceLine: EntityId | undefined
     orderLines: Map<string | BN, IOrderLineAdapter>
     tradeExecutions: Map<string, IExecutionLineAdapter>
   }
@@ -363,12 +364,12 @@ const mangoStore = create<MangoStore>()(
       },
       tokenStats: {
         initialLoad: false,
-        loading: false,
+        loading: true,
         data: [],
+        mangoStats: [],
       },
       tradeForm: DEFAULT_TRADE_FORM,
       tradingView: {
-        stablePriceLine: undefined,
         orderLines: new Map(),
         tradeExecutions: new Map(),
       },
@@ -838,9 +839,47 @@ const mangoStore = create<MangoStore>()(
               `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`
             )
             const data = await response.json()
-
+            let mangoStats: MangoTokenStatsItem[] = []
+            if (data && data.length) {
+              mangoStats = data.reduce(
+                (a: MangoTokenStatsItem[], c: TokenStatsItem) => {
+                  const banks = Array.from(group.banksMapByMint)
+                    .map(([_mintAddress, banks]) => banks)
+                    .map((b) => b[0])
+                  const bank: Bank | undefined = banks.find(
+                    (b) => b.tokenIndex === c.token_index
+                  )
+                  const hasDate = a.find(
+                    (d: MangoTokenStatsItem) => d.date === c.date_hour
+                  )
+                  if (!hasDate) {
+                    a.push({
+                      date: c.date_hour,
+                      depositValue: Math.floor(c.total_deposits * c.price),
+                      borrowValue: Math.floor(c.total_borrows * c.price),
+                      feesCollected: c.collected_fees * bank!.uiPrice,
+                    })
+                  } else {
+                    hasDate.depositValue =
+                      hasDate.depositValue +
+                      Math.floor(c.total_deposits * c.price)
+                    hasDate.borrowValue =
+                      hasDate.borrowValue +
+                      Math.floor(c.total_borrows * c.price)
+                    hasDate.feesCollected =
+                      hasDate.feesCollected + c.collected_fees * bank!.uiPrice
+                  }
+                  return a.sort(
+                    (a, b) =>
+                      new Date(a.date).getTime() - new Date(b.date).getTime()
+                  )
+                },
+                []
+              )
+            }
             set((state) => {
               state.tokenStats.data = data
+              state.tokenStats.mangoStats = mangoStats
               state.tokenStats.initialLoad = true
               state.tokenStats.loading = false
             })

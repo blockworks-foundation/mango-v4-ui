@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import { notify } from 'utils/notifications'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { TV_USER_ID_KEY } from 'utils/constants'
 
 interface EnhancedWalletContextState {
   displayedWallets: Wallet[]
@@ -63,6 +64,8 @@ export default function EnhancedWalletProvider({
   const [preselectedWalletName, setPreselectedWalletName] =
     useLocalStorageState<string>('preselectedWalletName', '')
 
+  const [tvUserId, setTvUserId] = useLocalStorageState(TV_USER_ID_KEY, '')
+
   useEffect(() => {
     if (wallet) {
       setPreselectedWalletName(wallet.adapter.name)
@@ -102,6 +105,9 @@ export default function EnhancedWalletProvider({
       try {
         console.log('connecting')
         await connect()
+        if (!tvUserId && wallet.adapter.publicKey) {
+          setTvUserId(wallet.adapter.publicKey.toString())
+        }
       } catch (e) {
         // Error will be handled by WalletProvider#onError
         select(null)

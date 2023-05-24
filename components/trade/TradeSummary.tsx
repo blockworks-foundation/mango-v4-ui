@@ -3,7 +3,6 @@ import {
   MangoAccount,
   PerpMarket,
   Serum3Market,
-  toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthImpact from '@components/shared/HealthImpact'
@@ -15,6 +14,8 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import Slippage from './Slippage'
+import { floorToDecimal, formatNumericValue } from 'utils/numbers'
+import { formatTokenSymbol } from 'utils/tokens'
 
 const TradeSummary = ({
   mangoAccount,
@@ -88,8 +89,8 @@ const TradeSummary = ({
     }
   }, [group, selectedMarket, tradeForm.side])
 
-  const borrowAmount = useMemo(() => {
-    if (!balanceBank || !mangoAccount) return 0
+  const [balance, borrowAmount] = useMemo(() => {
+    if (!balanceBank || !mangoAccount) return [0, 0]
     let borrowAmount
     const balance = mangoAccount.getTokenDepositsUi(balanceBank)
     if (tradeForm.side === 'buy') {
@@ -100,21 +101,25 @@ const TradeSummary = ({
       borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
     }
 
-    return borrowAmount
+    return [balance, borrowAmount]
   }, [balanceBank, mangoAccount, tradeForm])
 
   const orderValue = useMemo(() => {
     if (
       !quoteBank ||
       !tradeForm.price ||
-      !Number.isNaN(tradeForm.price) ||
-      !Number.isNaN(tradeForm.baseSize)
+      !tradeForm.baseSize ||
+      Number.isNaN(tradeForm.price) ||
+      Number.isNaN(tradeForm.baseSize)
     )
       return 0
     const basePriceDecimal = new Decimal(tradeForm.price)
     const quotePriceDecimal = new Decimal(quoteBank.uiPrice)
     const sizeDecimal = new Decimal(tradeForm.baseSize)
-    return basePriceDecimal.mul(quotePriceDecimal).mul(sizeDecimal)
+    return floorToDecimal(
+      basePriceDecimal.mul(quotePriceDecimal).mul(sizeDecimal),
+      2
+    )
   }, [quoteBank, tradeForm])
 
   return (
@@ -122,39 +127,74 @@ const TradeSummary = ({
       <div className="flex justify-between text-xs">
         <p>{t('trade:order-value')}</p>
         <p className="text-th-fgd-2">
-          {orderValue ? (
-            <FormatNumericValue value={orderValue} decimals={2} isUsd />
-          ) : (
-            '–'
-          )}
+          {orderValue ? <FormatNumericValue value={orderValue} isUsd /> : '–'}
         </p>
       </div>
       <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
-      {borrowAmount ? (
-        <div className="flex justify-between text-xs">
-          <Tooltip
-            content={t('loan-origination-fee-tooltip', {
-              fee: `${(
-                balanceBank!.loanOriginationFeeRate.toNumber() * 100
-              ).toFixed(3)}%`,
-            })}
-            delay={100}
-          >
-            <p className="tooltip-underline">{t('loan-origination-fee')}</p>
-          </Tooltip>
-          <p className="text-right font-mono text-th-fgd-2">
-            ~
-            <FormatNumericValue
-              value={
-                borrowAmount * balanceBank!.loanOriginationFeeRate.toNumber()
+      {borrowAmount && balanceBank ? (
+        <>
+          <div className="flex justify-between text-xs">
+            <Tooltip
+              content={
+                balance
+                  ? t('trade:tooltip-borrow-balance', {
+                      balance: formatNumericValue(balance),
+                      borrowAmount: formatNumericValue(borrowAmount),
+                      token: formatTokenSymbol(balanceBank.name),
+                      rate: formatNumericValue(
+                        balanceBank.getBorrowRateUi(),
+                        2
+                      ),
+                    })
+                  : t('trade:tooltip-borrow-no-balance', {
+                      borrowAmount: formatNumericValue(borrowAmount),
+                      token: formatTokenSymbol(balanceBank.name),
+                      rate: formatNumericValue(
+                        balanceBank.getBorrowRateUi(),
+                        2
+                      ),
+                    })
               }
-              decimals={balanceBank!.mintDecimals}
-            />{' '}
-            <span className="font-body text-th-fgd-4">{balanceBank!.name}</span>
-          </p>
-        </div>
+              delay={100}
+            >
+              <p className="tooltip-underline">{t('borrow-amount')}</p>
+            </Tooltip>
+            <p className="text-right font-mono text-th-fgd-2">
+              <FormatNumericValue
+                value={borrowAmount}
+                decimals={balanceBank.mintDecimals}
+              />{' '}
+              <span className="font-body text-th-fgd-4">
+                {formatTokenSymbol(balanceBank.name)}
+              </span>
+            </p>
+          </div>
+          <div className="flex justify-between text-xs">
+            <Tooltip
+              content={t('loan-origination-fee-tooltip', {
+                fee: `${(
+                  balanceBank.loanOriginationFeeRate.toNumber() * 100
+                ).toFixed(3)}%`,
+              })}
+              delay={100}
+            >
+              <p className="tooltip-underline">{t('loan-origination-fee')}</p>
+            </Tooltip>
+            <p className="text-right font-mono text-th-fgd-2">
+              <FormatNumericValue
+                value={
+                  borrowAmount * balanceBank.loanOriginationFeeRate.toNumber()
+                }
+                decimals={balanceBank.mintDecimals}
+              />{' '}
+              <span className="font-body text-th-fgd-4">
+                {formatTokenSymbol(balanceBank.name)}
+              </span>
+            </p>
+          </div>
+        </>
       ) : null}
-      <div className="flex justify-between text-xs">
+      {/* <div className="flex justify-between text-xs">
         <Tooltip content="The amount of capital you have to use for trades and loans. When your free collateral reaches $0 you won't be able to trade, borrow or withdraw.">
           <p className="tooltip-underline">{t('free-collateral')}</p>
         </Tooltip>
@@ -171,7 +211,7 @@ const TradeSummary = ({
             '–'
           )}
         </p>
-      </div>
+      </div> */}
       <Slippage />
     </div>
   )

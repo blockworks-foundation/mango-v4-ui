@@ -15,10 +15,12 @@ const MaxSizeButton = ({
   minOrderDecimals,
   tickDecimals,
   useMargin,
+  large,
 }: {
   minOrderDecimals: number
   tickDecimals: number
   useMargin: boolean
+  large?: boolean
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
@@ -114,10 +116,12 @@ const MaxSizeButton = ({
 
   return (
     <div className="mb-2 mt-3 flex items-center justify-between">
-      <p className="text-xs text-th-fgd-3">{t('trade:size')}</p>
+      <p className={`${large ? 'text-sm' : 'text-xs'} text-th-fgd-3`}>
+        {t('trade:size')}
+      </p>
       <FadeInFadeOut show={!!price && !isUnownedAccount && connected}>
         <MaxAmountButton
-          className="text-xs"
+          className={large ? 'text-sm' : 'text-xs'}
           decimals={minOrderDecimals}
           label={t('max')}
           onClick={handleMax}

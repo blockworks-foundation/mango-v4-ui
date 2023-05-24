@@ -21,6 +21,8 @@ import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
 import Button from '@components/shared/Button'
 import BN from 'bn.js'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -56,9 +58,9 @@ const Dashboard: NextPage = () => {
       <div className="col-span-12 lg:col-span-8 lg:col-start-3">
         <div className="p-8 pb-20 md:pb-16 lg:p-10">
           <h1>Dashboard</h1>
+          <DashboardNavbar />
           {group ? (
             <div className="mt-4">
-              <h2 className="mb-2">Group</h2>
               <ExplorerLink
                 address={group?.publicKey.toString()}
                 anchorData
@@ -739,6 +741,55 @@ const VaultData = ({ bank }: { bank: Bank }) => {
         vault ? toUiDecimals(vault.amount.toNumber(), bank.mintDecimals) : '...'
       }
     />
+  )
+}
+
+export const DashboardNavbar = () => {
+  const { asPath } = useRouter()
+
+  return (
+    <div className="mt-4 mb-2 flex border border-th-bkg-3">
+      <div>
+        <Link href={'/dashboard'} shallow={true}>
+          <h4
+            className={`${
+              asPath === '/dashboard' ? 'bg-th-bkg-2 text-th-active' : ''
+            } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
+          >
+            Group
+          </h4>
+        </Link>
+      </div>
+      <div>
+        <Link href={'/dashboard/risks'} shallow={true}>
+          <h4
+            className={`${
+              asPath === '/dashboard/risks' ? 'bg-th-bkg-2 text-th-active' : ''
+            } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
+          >
+            Risks
+          </h4>
+        </Link>
+      </div>
+      <div>
+        <Link
+          href={
+            '/dashboard/mangoaccount?address=DNjtajTW6PZps3gCerWEPBRvu1vZPEieVEoqXFrXWn3k'
+          }
+          shallow={true}
+        >
+          <h4
+            className={`${
+              asPath.includes('/dashboard/mangoaccount')
+                ? 'bg-th-bkg-2 text-th-active'
+                : ''
+            } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
+          >
+            Mango Account
+          </h4>
+        </Link>
+      </div>
+    </div>
   )
 }
 
