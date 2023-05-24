@@ -76,6 +76,7 @@ const CreateOpenbookMarketModal = ({
       baseLotSize: 0,
     }
   }, [baseBank, quoteBank])
+  console.log(tradingParams)
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})

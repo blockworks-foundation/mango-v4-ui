@@ -1,3 +1,4 @@
+import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
 import Select from '@components/forms/Select'
@@ -15,6 +16,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { getBestMarket } from 'utils/governance/listingTools'
+import { getTokenExcel } from 'utils/governance/testScript'
 
 type FormErrors = Partial<Record<keyof ListMarketForm, string>>
 
@@ -105,6 +107,13 @@ const ListMarket = () => {
   return (
     <div className="h-full">
       <h1 className="mb-4 flex items-center">{t('new-market-listing')}</h1>
+      <Button
+        onClick={() =>
+          getTokenExcel(group, connection, OPENBOOK_PROGRAM_ID[CLUSTER])
+        }
+      >
+        Excel
+      </Button>
       {currentView === VIEWS.BASE_TOKEN && (
         <div className="mb-6">
           <h2 className="mb-2 text-lg">{t('before-you-list-market')}</h2>
