@@ -167,7 +167,7 @@ export const getBestMarket = async ({
     ])
 
     const bestMarket = marketsData.sort((a, b) => b.volume24h - a.volume24h)
-
+    console.log(bestMarket)
     return new PublicKey(bestMarket[0].id)
   } catch (e) {
     notify({
@@ -178,25 +178,73 @@ export const getBestMarket = async ({
   }
 }
 
-export const calculateTradingParameters = (
+// definitions:
+// baseLots = 10 ^ baseLotExponent
+// quoteLots = 10 ^ quoteLotExponent
+// minOrderSize = 10^(baseLotExponent - baseDecimals)
+// minOrderValue = basePrice * minOrderSize
+// priceIncrement =  10^(quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals)
+
+// derive: baseLotExponent <= max[ basePrice * minOrderSize  < 0.5] (start high -> go low until condition is met)
+// baseLotExponent = 20
+// While (baseLotExponent > 0):
+//     minOrderSize =  10^(baseLotExponent - baseDecimals)
+//     minOrderValue =  basePrice * minOrderSize
+//     if minOrderValue < 0.5:
+//         break;
+
+// Derive: quoteLotExponent <= max[ priceIncrement * basePrice / quotePrice < 0.0001 ]
+// quoteLotExponent = 20
+// While (quoteLotExponent > 0):
+//     priceIncrement =  10^(quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals)
+//         priceIncrementRelative =  priceIncrement * basePrice / quotePrice
+//     if priceIncrementRelative < 0.0002:
+//         break;
+
+export function calculateTradingParameters(
   basePrice: number,
-  quotePrice: number
-) => {
-  // Calculate the actual price (quote price/base price)
-  const actualPrice = quotePrice / basePrice
+  quotePrice: number,
+  baseDecimals: number,
+  quoteDecimals: number
+) {
+  const MAX_MIN_ORDER_VALUE = 0.5
+  const MIN_PRICE_INCREMENT_RELATIVE = 0.0002
 
-  // Minimum order: $1 worth of base, rounded down to the next 10^(-x)
-  const minOrder =
-    Math.floor((1 / basePrice) * Math.pow(10, 4)) / Math.pow(10, 4)
+  let minOrderSize = 0
+  let priceIncrement = 0
+  let baseLotExponent = 20
+  let quoteLotExponent = 20
 
-  // Price tick: e-4 of the current price, rounded down to the next 10^(-y)
-  const priceTick = Math.floor(
-    (actualPrice * Math.pow(10, 4)) / Math.pow(10, 4)
-  )
+  // Calculate minimum order size
+  do {
+    minOrderSize = Math.pow(10, baseLotExponent - baseDecimals)
+    const minOrderValue = basePrice * minOrderSize
+
+    if (minOrderValue < MAX_MIN_ORDER_VALUE) {
+      break
+    }
+
+    baseLotExponent--
+  } while (baseLotExponent > 0)
+
+  // Calculate price increment
+  do {
+    priceIncrement = Math.pow(
+      10,
+      quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals
+    )
+    const priceIncrementRelative = (priceIncrement * basePrice) / quotePrice
+
+    if (priceIncrementRelative < MIN_PRICE_INCREMENT_RELATIVE) {
+      break
+    }
+
+    quoteLotExponent--
+  } while (quoteLotExponent > 0)
 
   return {
-    minOrder: minOrder,
-    priceTick: priceTick,
+    minOrder: minOrderSize,
+    priceTick: priceIncrement,
   }
 }
 
