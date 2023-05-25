@@ -14,6 +14,7 @@ import { makeCreateOpenBookMarketInstructionSimple } from 'utils/governance/mark
 import { useWallet } from '@solana/wallet-adapter-react'
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js'
 import { MARKET_STATE_LAYOUT_V2 } from '@project-serum/serum'
+import { notify } from 'utils/notifications'
 
 type CreateObMarketForm = {
   programId: string
@@ -81,7 +82,6 @@ const CreateOpenbookMarketModal = ({
       priceIncrementRelative: 0,
     }
   }, [baseBank, quoteBank])
-  console.log(tradingParams)
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
@@ -92,50 +92,60 @@ const CreateOpenbookMarketModal = ({
     if (!wallet || !wallet.signAllTransactions) {
       return
     }
+    let sig = ''
     setCreating(true)
-    const ixObj = await makeCreateOpenBookMarketInstructionSimple({
-      connection,
-      wallet: wallet.publicKey!,
-      baseInfo: {
-        mint: baseBank!.mint,
-        decimals: baseBank!.mintDecimals,
-      },
-      quoteInfo: {
-        mint: quoteBank!.mint,
-        decimals: quoteBank!.mintDecimals,
-      },
-      lotSize: Number(form.minimumOrderSize),
-      tickSize: Number(form.minimumPriceTickSize),
-      dexProgramId: new PublicKey(form.programId),
-    })
+    try {
+      const ixObj = await makeCreateOpenBookMarketInstructionSimple({
+        connection,
+        wallet: wallet.publicKey!,
+        baseInfo: {
+          mint: baseBank!.mint,
+          decimals: baseBank!.mintDecimals,
+        },
+        quoteInfo: {
+          mint: quoteBank!.mint,
+          decimals: quoteBank!.mintDecimals,
+        },
+        lotSize: Number(form.minimumOrderSize),
+        tickSize: Number(form.minimumPriceTickSize),
+        dexProgramId: new PublicKey(form.programId),
+      })
 
-    const txChunks = ixObj.innerTransactions
-    const transactions: Transaction[] = []
-    const latestBlockhash = await connection.getLatestBlockhash('finalized')
-    for (const chunk of txChunks) {
-      const tx = new Transaction()
-      tx.add(...chunk.instructions)
-      tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
-      tx.recentBlockhash = latestBlockhash.blockhash
-      tx.feePayer = wallet.publicKey!
-      tx.sign(...chunk.signers)
-      transactions.push(tx)
-    }
-    const signedTransactions = await wallet.signAllTransactions(transactions)
-    console.log(signedTransactions)
-    for (const tx of signedTransactions) {
-      const rawTransaction = tx.serialize()
-      const address = await connection.sendRawTransaction(rawTransaction, {
-        skipPreflight: true,
+      const txChunks = ixObj.innerTransactions
+      const transactions: Transaction[] = []
+      const latestBlockhash = await connection.getLatestBlockhash('finalized')
+      for (const chunk of txChunks) {
+        const tx = new Transaction()
+        tx.add(...chunk.instructions)
+        tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
+        tx.recentBlockhash = latestBlockhash.blockhash
+        tx.feePayer = wallet.publicKey!
+        tx.sign(...chunk.signers)
+        transactions.push(tx)
+      }
+      const signedTransactions = await wallet.signAllTransactions(transactions)
+
+      for (const tx of signedTransactions) {
+        const rawTransaction = tx.serialize()
+        sig = await connection.sendRawTransaction(rawTransaction, {
+          skipPreflight: true,
+        })
+        await connection.confirmTransaction({
+          blockhash: latestBlockhash.blockhash,
+          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          signature: sig,
+        })
+      }
+    } catch (e) {
+      notify({
+        title: t('error-creating-market'),
+        description: `${e}`,
+        txid: sig,
+        type: 'error',
       })
-      const sig = await connection.confirmTransaction({
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-        signature: address,
-      })
-      console.log(sig)
     }
     setCreating(false)
+    onClose()
   }
 
   useEffect(() => {
@@ -155,7 +165,7 @@ const CreateOpenbookMarketModal = ({
 
   useEffect(() => {
     const getMinLamportsToCreateMarket = async () => {
-      const accountsSpace = 82522 + MARKET_STATE_LAYOUT_V2.span
+      const accountsSpace = 84522 + MARKET_STATE_LAYOUT_V2.span
       const minLamports = await connection.getMinimumBalanceForRentExemption(
         accountsSpace
       )

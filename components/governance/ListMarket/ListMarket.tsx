@@ -63,6 +63,10 @@ const ListMarket = () => {
   const openCreateOpenbookMarket = () => {
     setCreateOpenbookMarket(true)
   }
+  const closeCreateOpenBookMarketModal = async () => {
+    setCreateOpenbookMarket(false)
+    await handleGetMarketProps()
+  }
   const goToHomePage = async () => {
     setCurrentView(VIEWS.BASE_TOKEN)
     setMarketPk('')
@@ -198,7 +202,7 @@ const ListMarket = () => {
                     quoteSymbol={quoteToken!}
                     baseSymbol={baseToken!}
                     isOpen={createOpenbookMarketModal}
-                    onClose={() => setCreateOpenbookMarket(false)}
+                    onClose={closeCreateOpenBookMarketModal}
                   ></CreateOpenbookMarketModal>
                 )}
               </>
