@@ -15,7 +15,7 @@ const ListTokenPage = () => {
   const [listOptions, setListOption] = useState<LIST_OPTIONS | null>(null)
 
   return (
-    <div className="p-8 pb-20 md:pb-16 lg:p-10">
+    <div className="min-h-[calc(100vh-64px)] p-8 pb-20 md:pb-16 lg:p-10">
       <GovernancePageWrapper>
         <Button onClick={() => setListOption(LIST_OPTIONS.MARKET)}>
           List Market
