@@ -184,6 +184,7 @@ export const getBestMarket = async ({
 // minOrderSize = 10^(baseLotExponent - baseDecimals)
 // minOrderValue = basePrice * minOrderSize
 // priceIncrement =  10^(quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals)
+// priceIncrementRelative =  priceIncrement * quotePrice / basePrice
 
 // derive: baseLotExponent <= min[ basePrice * minOrderSize > 0.05]
 // baseLotExponent = 10
@@ -193,11 +194,11 @@ export const getBestMarket = async ({
 //     if minOrderValue > 0.05:
 //         break;
 
-// Derive: quoteLotExponent <= min[ priceIncrement * basePrice / quotePrice > 0.00005 ]
+// Derive: quoteLotExponent <= min[ priceIncrement * basePrice / quotePrice > 0.000025 ]
 // quoteLotExponent = 0
 // While (quoteLotExponent < 10):
 //     priceIncrement =  10^(quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals)
-//         priceIncrementRelative =  priceIncrement * basePrice / quotePrice
+//         priceIncrementRelative =  priceIncrement * quotePrice / basePrice
 //     if priceIncrementRelative > 0.00005:
 //         break;
 
@@ -208,7 +209,7 @@ export function calculateTradingParameters(
   quoteDecimals: number
 ) {
   const MAX_MIN_ORDER_VALUE = 0.05
-  const MIN_PRICE_INCREMENT_RELATIVE = 0.00005
+  const MIN_PRICE_INCREMENT_RELATIVE = 0.000025
 
   let minOrderSize = 0
   let priceIncrement = 0
@@ -235,7 +236,7 @@ export function calculateTradingParameters(
       10,
       quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals
     )
-    priceIncrementRelative = (priceIncrement * basePrice) / quotePrice
+    priceIncrementRelative = (priceIncrement * quotePrice) / basePrice
     if (priceIncrementRelative > MIN_PRICE_INCREMENT_RELATIVE) {
       break
     }
