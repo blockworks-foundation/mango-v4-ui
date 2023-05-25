@@ -140,7 +140,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             <p className="tooltip-underline">{t('token:net-borrow-period')}</p>
           </Tooltip>
           <p className="font-mono text-th-fgd-2">
-            {bank.netBorrowLimitWindowSizeTs.div(new BN(3600)).toNumber()}hrs
+            {bank.netBorrowLimitWindowSizeTs.div(new BN(3600)).toNumber()}h
           </p>
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">

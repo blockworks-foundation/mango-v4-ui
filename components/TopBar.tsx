@@ -1,14 +1,16 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  CheckCircleIcon,
+  DocumentDuplicateIcon,
   ExclamationTriangleIcon,
   EyeIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from './icons/WalletIcon'
-import Button, { IconButton } from './shared/Button'
+import Button from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../utils/constants'
@@ -26,6 +28,8 @@ import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
+import Tooltip from './shared/Tooltip'
+import { copyToClipboard } from 'utils'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -34,6 +38,7 @@ const TopBar = () => {
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
   const [showUserSetup, setShowUserSetup] = useState(false)
+  const [copied, setCopied] = useState('')
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
@@ -62,16 +67,30 @@ const TopBar = () => {
     }
   }
 
+  const handleCopy = (text: string) => {
+    copyToClipboard(text)
+    setCopied(text)
+  }
+
+  useEffect(() => {
+    setTimeout(() => setCopied(''), 2000)
+  }, [copied])
+
   return (
-    <>
+    <div
+      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 ${
+        query.token || query.market ? '' : 'pl-4 md:pl-6'
+      }`}
+    >
       <div className="flex w-full items-center justify-between space-x-4">
         <span className="mb-0 flex items-center">
           {query.token || query.market ? (
-            <div className="mr-2 flex h-16 items-center border-r border-th-bkg-3 pr-4 md:mr-4 md:pr-6">
-              <IconButton onClick={() => router.back()} hideBg size="small">
-                <ArrowLeftIcon className="h-6 w-6" />
-              </IconButton>
-            </div>
+            <button
+              className="mr-4 flex h-16 w-16 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
+              onClick={() => router.back()}
+            >
+              <ArrowLeftIcon className="h-5 w-5" />
+            </button>
           ) : null}
           {connected ? (
             <div className="hidden md:block">
@@ -89,9 +108,54 @@ const TopBar = () => {
                 <EyeIcon className="h-5 w-5 text-th-fgd-3" />
                 <span className="ml-2">
                   {t('unowned-helper', {
-                    accountPk: abbreviateAddress(mangoAccount.publicKey),
+                    accountPk: '',
                   })}
                 </span>
+                :
+                <Tooltip
+                  content={
+                    <>
+                      <p>{t('account')}</p>
+                      <button
+                        className="mb-2 flex items-center"
+                        onClick={() =>
+                          handleCopy(mangoAccount.publicKey.toString())
+                        }
+                      >
+                        <p className="mr-1.5 font-mono text-th-fgd-1">
+                          {abbreviateAddress(mangoAccount.publicKey)}
+                        </p>
+                        {copied === mangoAccount.publicKey.toString() ? (
+                          <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
+                        ) : (
+                          <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
+                        )}
+                      </button>
+                      <p>{t('wallet')}</p>
+                      <button
+                        className="flex items-center"
+                        onClick={() =>
+                          handleCopy(mangoAccount.owner.toString())
+                        }
+                      >
+                        <p className="mr-1.5 font-mono text-th-fgd-1">
+                          {abbreviateAddress(mangoAccount.owner)}
+                        </p>
+                        {copied === mangoAccount.owner.toString() ? (
+                          <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
+                        ) : (
+                          <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
+                        )}
+                      </button>
+                    </>
+                  }
+                >
+                  <span className="tooltip-underline ml-1 font-bold text-th-fgd-1">
+                    {mangoAccount.name
+                      ? mangoAccount.name
+                      : abbreviateAddress(mangoAccount.publicKey)}
+                  </span>
+                </Tooltip>
               </span>
             ) : (
               <span className="hidden items-center md:flex">
@@ -155,7 +219,7 @@ const TopBar = () => {
           onClose={() => setShowCreateAccountModal(false)}
         />
       ) : null}
-    </>
+    </div>
   )
 }
 

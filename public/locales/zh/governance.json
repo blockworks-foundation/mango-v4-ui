@@ -2,6 +2,8 @@
     "list-token": "List Token",
     "cancel": "Cancel",
     "connect-wallet": "Connect Wallet",
+    "delegate": "Delegate",
+    "none": "None",
     "on-boarding-title": "Looks like currently connected wallet doesn't have any MNGO deposited inside realms",
     "on-boarding-description": "Before you continue. Deposit at least {{amount}} MNGO into",
     "on-boarding-deposit-info": "Your MNGO will be locked for the duration of the proposal.",
@@ -70,5 +72,7 @@
     "your-votes": "Your Votes:",
     "yes": "Yes",
     "no": "No",
-    "current-vote": "Current Vote:"
+    "current-vote": "Current Vote:",
+    "use-own-wallet": "Use own wallet",
+    "select-delegate": "Select delegate"
 }

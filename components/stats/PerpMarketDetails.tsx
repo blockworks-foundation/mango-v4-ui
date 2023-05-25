@@ -11,6 +11,7 @@ import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import AverageFundingChart from './AverageFundingChart'
 
 const CHART_WRAPPER_CLASSES = 'col-span-2 border-b border-th-bkg-3 py-4 px-6'
+import PerpMarketParams from './PerpMarketParams'
 
 const PerpMarketDetails = ({
   marketStats,
@@ -156,6 +157,9 @@ const PerpMarketDetails = ({
           </div>
         </>
       ) : null}
+      <div className="col-span-2">
+        <PerpMarketParams market={perpMarket} />
+      </div>
     </div>
   )
 }

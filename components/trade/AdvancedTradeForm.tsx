@@ -70,7 +70,7 @@ const INPUT_SUFFIX_CLASSNAMES =
 const INPUT_PREFIX_CLASSNAMES =
   'absolute left-2 top-1/2 h-5 w-5 flex-shrink-0 -translate-y-1/2'
 
-const DEFAULT_CHECKBOX_SETTINGS = {
+export const DEFAULT_CHECKBOX_SETTINGS = {
   ioc: false,
   post: false,
   margin: false,
@@ -288,36 +288,18 @@ const AdvancedTradeForm = () => {
   )
 
   const [tickDecimals, tickSize] = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return [1, 0.1]
-    let tickSize: number
-    if (selectedMarket instanceof Serum3Market) {
-      const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
-      )
-      tickSize = market.tickSize
-    } else {
-      tickSize = selectedMarket.tickSize
-    }
+    if (!serumOrPerpMarket) return [1, 0.1]
+    const tickSize = serumOrPerpMarket.tickSize
     const tickDecimals = getDecimalCount(tickSize)
     return [tickDecimals, tickSize]
-  }, [selectedMarket])
+  }, [serumOrPerpMarket])
 
   const [minOrderDecimals, minOrderSize] = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket) return [1, 0.1]
-    let minOrderSize: number
-    if (selectedMarket instanceof Serum3Market) {
-      const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
-      )
-      minOrderSize = market.minOrderSize
-    } else {
-      minOrderSize = selectedMarket.minOrderSize
-    }
+    if (!serumOrPerpMarket) return [1, 0.1]
+    const minOrderSize = serumOrPerpMarket.minOrderSize
     const minOrderDecimals = getDecimalCount(minOrderSize)
     return [minOrderDecimals, minOrderSize]
-  }, [selectedMarket])
+  }, [serumOrPerpMarket])
 
   /*
    * Updates the limit price on page load
@@ -600,13 +582,16 @@ const AdvancedTradeForm = () => {
               />
               <div className={INPUT_SUFFIX_CLASSNAMES}>{quoteSymbol}</div>
             </div>
-            {serumOrPerpMarket &&
+            {minOrderSize &&
             tradeForm.baseSize &&
-            parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize ? (
+            parseFloat(tradeForm.baseSize) < minOrderSize ? (
               <div className="mt-1">
                 <InlineNotification
                   type="error"
-                  desc={`Min order size is ${minOrderSize} ${baseSymbol}`}
+                  desc={t('trade:min-order-size-error', {
+                    minSize: minOrderSize,
+                    symbol: baseSymbol,
+                  })}
                   hideBorder
                   hidePadding
                 />
@@ -725,7 +710,7 @@ const AdvancedTradeForm = () => {
                   ? ''
                   : tradeForm.side === 'buy'
                   ? 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
-                  : 'bg-th-down text-white md:hover:bg-th-down md:hover:brightness-90'
+                  : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
               }`}
               disabled={disabled}
               size="large"

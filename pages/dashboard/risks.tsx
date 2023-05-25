@@ -4,10 +4,15 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { DashboardNavbar } from '.'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { useQuery } from '@tanstack/react-query'
-import mangoStore from '@store/mangoStore'
-import { getRiskStats } from '@blockworks-foundation/mango-v4'
+import { emptyWallet } from '@store/mangoStore'
+import {
+  MANGO_V4_ID,
+  MangoClient,
+  getRiskStats,
+} from '@blockworks-foundation/mango-v4'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
+import { AnchorProvider, web3 } from '@project-serum/anchor'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -19,7 +24,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 type TableData = {
   title: string
-  data: Array<Record<string, string | number>>
+  data: Array<Record<string, string | number | PublicKey>>
 }
 
 const formatValue = (val: string | number | PublicKey) => {
@@ -35,15 +40,32 @@ const formatValue = (val: string | number | PublicKey) => {
 
 const RiskDashboard: NextPage = () => {
   const { group } = useMangoGroup()
-  const client = mangoStore((s) => s.client)
 
   const { data, isLoading, isFetching } = useQuery(
     ['risks'],
-    () => group && getRiskStats(client, group),
+    () => {
+      const provider = new AnchorProvider(
+        new web3.Connection(
+          'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+          'processed'
+        ),
+        emptyWallet,
+        AnchorProvider.defaultOptions()
+      )
+      const client = MangoClient.connect(
+        provider,
+        'mainnet-beta',
+        MANGO_V4_ID['mainnet-beta']
+      )
+      if (group) {
+        return getRiskStats(client, group)
+      }
+    },
     {
-      cacheTime: 1000 * 60 * 10,
-      retry: 3,
-      refetchOnWindowFocus: true,
+      cacheTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60 * 5,
+      retry: 1,
+      refetchOnWindowFocus: false,
       enabled: !!group,
     }
   )
@@ -76,7 +98,18 @@ const RiskDashboard: NextPage = () => {
                                     className="text-left"
                                     key={colName}
                                   >
-                                    {colName}
+                                    {colName}{' '}
+                                    {colName.toLowerCase().includes('fee') ||
+                                    colName.toLowerCase().includes('slippage')
+                                      ? '(bps)'
+                                      : ''}
+                                    {colName.toLowerCase().includes('assets') ||
+                                    colName.toLowerCase().includes('liabs') ||
+                                    colName.toLowerCase().includes('equity') ||
+                                    colName.toLowerCase().includes('price') ||
+                                    colName.toLowerCase().includes('position')
+                                      ? '($)'
+                                      : ''}
                                   </Th>
                                 )
                               }
@@ -85,20 +118,18 @@ const RiskDashboard: NextPage = () => {
                         </thead>
                         <tbody>
                           {table.data.map((rowData, index: number) => {
+                            console.log('rowData', Object.values(rowData))
+
                             return (
                               <TrBody key={index}>
                                 {Object.values(rowData).map(
                                   (
-                                    colVal: string | number | PublicKey,
+                                    val: string | number | PublicKey,
                                     idx: number
                                   ) => {
                                     return (
-                                      <Td
-                                        xBorder
-                                        className="text-left"
-                                        key={idx}
-                                      >
-                                        {formatValue(colVal)}
+                                      <Td xBorder className={''} key={idx}>
+                                        {formatValue(val)}
                                       </Td>
                                     )
                                   }

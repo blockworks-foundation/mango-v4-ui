@@ -7,12 +7,12 @@ import { RawMint } from '@solana/spl-token'
 import { MANGO_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import dynamic from 'next/dynamic'
-import { fmtTokenAmount, tryGetMint } from 'utils/governance/tools'
+import { tryGetMint } from 'utils/governance/tools'
 import { BN } from '@project-serum/anchor'
-import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 import { useTranslation } from 'next-i18next'
 import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import VotingPower from './VotingPower'
 
 const ProposalCard = dynamic(() => import('./ProposalCard'))
 const OnBoarding = dynamic(() => import('../OnBoarding'))
@@ -23,7 +23,6 @@ const Vote = () => {
   const governances = GovernanceStore((s) => s.governances)
   const proposals = GovernanceStore((s) => s.proposals)
   const loadingProposals = GovernanceStore((s) => s.loadingProposals)
-  const voter = GovernanceStore((s) => s.voter)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const loadingRealm = GovernanceStore((s) => s.loadingRealm)
 
@@ -62,16 +61,9 @@ const Vote = () => {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-end justify-between">
-        <h1 className="mr-4">{t('active-proposals')}</h1>
-        <p className="whitespace-no-wrap mb-0.5 mt-2">
-          {t('your-votes')}{' '}
-          <span className="font-mono text-th-fgd-2">
-            {!loadingVoter
-              ? fmtTokenAmount(voter.voteWeight, MANGO_MINT_DECIMALS)
-              : 0}
-          </span>
-        </p>
+      <div className="mb-4 flex flex-col items-center justify-between sm:flex-row">
+        <h1 className="mb-3 sm:mr-4 sm:mb-0">{t('active-proposals')}</h1>
+        <VotingPower />
       </div>
       {loadingProposals || loadingRealm ? (
         <div className="space-y-3">
