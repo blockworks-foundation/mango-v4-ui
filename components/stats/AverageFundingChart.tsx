@@ -6,7 +6,6 @@ import { useTranslation } from 'next-i18next'
 
 interface GroupedDataItem extends PerpStatsItem {
   intervalStartMillis: number
-  numHours: number
 }
 
 const AverageFundingChart = ({
@@ -37,20 +36,13 @@ const AverageFundingChart = ({
       ) {
         currentGroup = {
           ...obj,
-          numHours: 1,
           intervalStartMillis: intervalStartMillis,
         }
         currentGroup.funding_rate_hourly = obj.funding_rate_hourly * 100
         groupedData.push(currentGroup)
       } else {
         currentGroup.funding_rate_hourly += obj.funding_rate_hourly * 100
-        currentGroup.numHours++
       }
-    }
-    for (let i = 0; i < groupedData.length; i++) {
-      const group = groupedData[i]
-      const avgFunding = group.funding_rate_hourly / group.numHours
-      group.funding_rate_hourly = avgFunding
     }
     return groupedData
   }
