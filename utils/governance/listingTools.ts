@@ -244,6 +244,21 @@ export function calculateTradingParameters(
     quoteLotExponent++
   } while (quoteLotExponent < 10)
 
+  if (
+    quoteLotExponent === 0 &&
+    priceIncrementRelative > 0.001 &&
+    minOrderSize < 1
+  ) {
+    baseLotExponent = baseLotExponent + 1
+    minOrderSize = Math.pow(10, baseLotExponent - baseDecimals)
+    minOrderValue = basePrice * minOrderSize
+    priceIncrement = Math.pow(
+      10,
+      quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals
+    )
+    priceIncrementRelative = (priceIncrement * quotePrice) / basePrice
+  }
+
   return {
     minOrderValue: minOrderValue,
     baseLotExponent: baseLotExponent,
