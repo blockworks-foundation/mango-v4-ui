@@ -1,6 +1,7 @@
 {
     "activate-volume-alert": "Activate Volume Alert",
     "amount": "Amount",
+    "average-funding": "Average Funding",
     "base": "Base",
     "book": "Book",
     "buys": "Buys",
@@ -21,7 +22,6 @@
     "grouping": "Grouping",
     "hide-asks": "Hide Asks",
     "hide-bids": "Hide Bids",
-    "hourly-funding": "Average Hourly Funding",
     "in-orders": "In Orders",
     "init-leverage": "Init Leverage",
     "instantaneous-funding": "Instantaneous Funding Snapshot",

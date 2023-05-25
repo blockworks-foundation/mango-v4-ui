@@ -1,4 +1,4 @@
-import { formatDateAxis } from '@components/shared/DetailedAreaChart'
+import { formatDateAxis } from '@components/shared/DetailedAreaOrBarChart'
 import dayjs from 'dayjs'
 import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
 import { useTheme } from 'next-themes'
