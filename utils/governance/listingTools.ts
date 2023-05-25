@@ -185,20 +185,20 @@ export const getBestMarket = async ({
 // minOrderValue = basePrice * minOrderSize
 // priceIncrement =  10^(quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals)
 
-// derive: baseLotExponent <= max[ basePrice * minOrderSize  < 0.5] (start high -> go low until condition is met)
-// baseLotExponent = 20
-// While (baseLotExponent > 0):
+// derive: baseLotExponent <= min[ basePrice * minOrderSize > 0.05]
+// baseLotExponent = 10
+// While (baseLotExponent < 10):
 //     minOrderSize =  10^(baseLotExponent - baseDecimals)
 //     minOrderValue =  basePrice * minOrderSize
-//     if minOrderValue < 0.5:
+//     if minOrderValue > 0.05:
 //         break;
 
-// Derive: quoteLotExponent <= max[ priceIncrement * basePrice / quotePrice < 0.0001 ]
-// quoteLotExponent = 20
-// While (quoteLotExponent > 0):
+// Derive: quoteLotExponent <= min[ priceIncrement * basePrice / quotePrice > 0.00005 ]
+// quoteLotExponent = 0
+// While (quoteLotExponent < 10):
 //     priceIncrement =  10^(quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals)
 //         priceIncrementRelative =  priceIncrement * basePrice / quotePrice
-//     if priceIncrementRelative < 0.0002:
+//     if priceIncrementRelative > 0.00005:
 //         break;
 
 export function calculateTradingParameters(
