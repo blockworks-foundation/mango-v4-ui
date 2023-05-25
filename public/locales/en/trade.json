@@ -1,7 +1,7 @@
 {
     "activate-volume-alert": "Activate Volume Alert",
     "amount": "Amount",
-    "average-funding": "Average Funding",
+    "average-funding": "Average {{interval}} Funding",
     "base": "Base",
     "book": "Book",
     "buys": "Buys",

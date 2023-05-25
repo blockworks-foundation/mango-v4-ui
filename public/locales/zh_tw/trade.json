@@ -1,7 +1,7 @@
 {
     "activate-volume-alert": "開啟交易量警報",
     "amount": "數量",
-    "average-funding": "Average Funding",
+    "average-funding": "Average {{interval}} Funding",
     "base": "基礎",
     "book": "掛單薄",
     "buys": "買單",

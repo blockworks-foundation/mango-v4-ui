@@ -15,7 +15,7 @@ const AverageFundingChart = ({
   loading: boolean
   marketStats: PerpStatsItem[]
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'stats', 'trade'])
   const [daysToShow, setDaysToShow] = useState('30')
 
   const groupByHourlyInterval = (
@@ -47,12 +47,21 @@ const AverageFundingChart = ({
     return groupedData
   }
 
+  const [interval, intervalString] = useMemo(() => {
+    if (daysToShow === '30') {
+      return [24, 'stats:daily']
+    } else if (daysToShow === '7') {
+      return [6, 'stats:six-hourly']
+    } else {
+      return [1, 'stats:hourly']
+    }
+  }, [daysToShow])
+
   const chartData = useMemo(() => {
     if (!marketStats) return []
-    const interval = daysToShow === '30' ? 24 : daysToShow === '7' ? 6 : 1
     const groupedData = groupByHourlyInterval(marketStats, interval)
     return groupedData
-  }, [daysToShow, marketStats])
+  }, [daysToShow, interval, marketStats])
 
   return (
     <DetailedAreaOrBarChart
@@ -64,7 +73,7 @@ const AverageFundingChart = ({
       loaderHeightClass="h-[350px]"
       suffix="%"
       tickFormat={(x) => formatNumericValue(x, 4)}
-      title={t('trade:average-funding')}
+      title={t('trade:average-funding', { interval: t(intervalString) })}
       xKey="date_hour"
       yKey="funding_rate_hourly"
       yDecimals={5}
