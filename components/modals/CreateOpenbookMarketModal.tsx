@@ -155,7 +155,7 @@ const CreateOpenbookMarketModal = ({
 
   useEffect(() => {
     const getMinLamportsToCreateMarket = async () => {
-      const accountsSpace = 398714 + MARKET_STATE_LAYOUT_V2.span
+      const accountsSpace = 82522 + MARKET_STATE_LAYOUT_V2.span
       const minLamports = await connection.getMinimumBalanceForRentExemption(
         accountsSpace
       )
