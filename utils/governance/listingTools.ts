@@ -194,12 +194,12 @@ export const getBestMarket = async ({
 //     if minOrderValue > 0.05:
 //         break;
 
-// Derive: quoteLotExponent <= min[ priceIncrement * basePrice / quotePrice > 0.000025 ]
+// Derive: quoteLotExponent <= min[ priceIncrement * quotePrice / basePrice > 0.000025 ]
 // quoteLotExponent = 0
 // While (quoteLotExponent < 10):
 //     priceIncrement =  10^(quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals)
 //         priceIncrementRelative =  priceIncrement * quotePrice / basePrice
-//     if priceIncrementRelative > 0.00005:
+//     if priceIncrementRelative > 0.000025:
 //         break;
 
 export function calculateTradingParameters(
@@ -210,6 +210,7 @@ export function calculateTradingParameters(
 ) {
   const MAX_MIN_ORDER_VALUE = 0.05
   const MIN_PRICE_INCREMENT_RELATIVE = 0.000025
+  const EXPONENT_THRESHOLD = 10
 
   let minOrderSize = 0
   let priceIncrement = 0
@@ -228,7 +229,7 @@ export function calculateTradingParameters(
     }
 
     baseLotExponent++
-  } while (baseLotExponent < 10)
+  } while (baseLotExponent < EXPONENT_THRESHOLD)
 
   // Calculate price increment
   do {
@@ -242,8 +243,9 @@ export function calculateTradingParameters(
     }
 
     quoteLotExponent++
-  } while (quoteLotExponent < 10)
+  } while (quoteLotExponent < EXPONENT_THRESHOLD)
 
+  //exception override values in that case example eth/btc market
   if (
     quoteLotExponent === 0 &&
     priceIncrementRelative > 0.001 &&
@@ -260,11 +262,13 @@ export function calculateTradingParameters(
   }
 
   return {
+    baseLots: Math.pow(10, baseLotExponent),
+    quoteLots: Math.pow(10, quoteLotExponent),
     minOrderValue: minOrderValue,
     baseLotExponent: baseLotExponent,
     quoteLotExponent: quoteLotExponent,
-    minOrder: minOrderSize,
-    priceTick: priceIncrement,
+    minOrderSize: minOrderSize,
+    priceIncrement: priceIncrement,
     priceIncrementRelative: priceIncrementRelative,
   }
 }

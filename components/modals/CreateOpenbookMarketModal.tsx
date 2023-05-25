@@ -71,9 +71,14 @@ const CreateOpenbookMarketModal = ({
       )
     }
     return {
-      minOrder: 0,
-      priceTick: 0,
-      baseLotSize: 0,
+      baseLots: 0,
+      quoteLots: 0,
+      minOrderValue: 0,
+      baseLotExponent: 0,
+      quoteLotExponent: 0,
+      minOrderSize: 0,
+      priceIncrement: 0,
+      priceIncrementRelative: 0,
     }
   }, [baseBank, quoteBank])
   console.log(tradingParams)
@@ -138,14 +143,14 @@ const CreateOpenbookMarketModal = ({
       programId: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
       baseMint: baseBank?.mint.toBase58() || '',
       quoteMint: quoteBank?.mint.toBase58() || '',
-      minimumOrderSize: tradingParams.minOrder.toString(),
-      minimumPriceTickSize: tradingParams.priceTick.toString(),
+      minimumOrderSize: tradingParams.minOrderSize.toString(),
+      minimumPriceTickSize: tradingParams.priceIncrement.toString(),
     })
   }, [
     baseBank?.mint,
     quoteBank?.mint,
-    tradingParams.minOrder,
-    tradingParams.priceTick,
+    tradingParams.minOrderSize,
+    tradingParams.priceIncrement,
   ])
 
   useEffect(() => {
