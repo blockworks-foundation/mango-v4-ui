@@ -207,13 +207,13 @@ export function calculateTradingParameters(
   baseDecimals: number,
   quoteDecimals: number
 ) {
-  const MAX_MIN_ORDER_VALUE = 0.5
-  const MIN_PRICE_INCREMENT_RELATIVE = 0.0002
+  const MAX_MIN_ORDER_VALUE = 0.05
+  const MIN_PRICE_INCREMENT_RELATIVE = 0.00005
 
   let minOrderSize = 0
   let priceIncrement = 0
-  let baseLotExponent = 20
-  let quoteLotExponent = 20
+  let baseLotExponent = 0
+  let quoteLotExponent = 0
   let minOrderValue = 0
   let priceIncrementRelative = 0
 
@@ -222,12 +222,12 @@ export function calculateTradingParameters(
     minOrderSize = Math.pow(10, baseLotExponent - baseDecimals)
     minOrderValue = basePrice * minOrderSize
 
-    if (minOrderValue < MAX_MIN_ORDER_VALUE) {
+    if (minOrderValue > MAX_MIN_ORDER_VALUE) {
       break
     }
 
-    baseLotExponent--
-  } while (baseLotExponent > 0)
+    baseLotExponent++
+  } while (baseLotExponent < 10)
 
   // Calculate price increment
   do {
@@ -236,12 +236,13 @@ export function calculateTradingParameters(
       quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals
     )
     priceIncrementRelative = (priceIncrement * basePrice) / quotePrice
-    if (priceIncrementRelative < MIN_PRICE_INCREMENT_RELATIVE) {
+    if (priceIncrementRelative > MIN_PRICE_INCREMENT_RELATIVE) {
       break
     }
 
-    quoteLotExponent--
-  } while (quoteLotExponent > 0)
+    quoteLotExponent++
+  } while (quoteLotExponent < 10)
+
   return {
     minOrderValue: minOrderValue,
     baseLotExponent: baseLotExponent,

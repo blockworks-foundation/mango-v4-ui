@@ -15,6 +15,13 @@ export async function getTokenExcel(
   }
   const rows = []
   const tokens = [...group.banksMapByName.values()].flatMap((x) => x[0])
+  tokens.push({
+    mint: new PublicKey('BRUV9DjBeDZRamtWjhzQEH5roosnBApPhfqS1HQ23Xgy'),
+    uiPrice: 2.124e-9,
+    mintDecimals: 5,
+    name: 'BRUV',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any)
   for (const baseToken of tokens) {
     for (const quoteToken of tokens) {
       const baseMint = baseToken.mint
