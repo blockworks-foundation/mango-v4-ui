@@ -38,6 +38,7 @@
     "max-leverage": "Max Leverage",
     "min-order-size": "Min Order Size",
     "min-order-size-error": "Min order size is {{minSize}} {{symbol}}",
+    "more-details": "More Details",
     "no-balances": "No balances",
     "no-orders": "No open orders",
     "no-positions": "No perp positions",

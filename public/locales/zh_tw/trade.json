@@ -38,6 +38,7 @@
     "max-leverage": "最多槓桿",
     "min-order-size": "最小訂單量",
     "min-order-size-error": "Min order size is {{minSize}} {{symbol}}",
+    "more-details": "More Details",
     "no-balances": "您沒有餘額",
     "no-orders": "您沒有訂單",
     "no-positions": "您沒有持倉",

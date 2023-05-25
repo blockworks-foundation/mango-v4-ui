@@ -37,6 +37,7 @@
     "max-leverage": "最多杠杆",
     "min-order-size": "最小订单量",
     "min-order-size-error": "Min order size is {{minSize}} {{symbol}}",
+    "more-details": "More Details",
     "no-balances": "您没有余额",
     "no-orders": "您没有订单",
     "no-positions": "您没有持仓",

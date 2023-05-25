@@ -6,6 +6,7 @@ import Button from '@components/shared/Button'
 import useOracleProvider from 'hooks/useOracleProvider'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
+import { useRouter } from 'next/router'
 
 interface PerpMarketDetailsModalProps {
   market: PerpMarket | undefined
@@ -20,8 +21,11 @@ const PerpMarketDetailsModal = ({
 }: ModalCombinedProps) => {
   const { t } = useTranslation(['common', 'trade'])
   const { oracleProvider, oracleLinkPath } = useOracleProvider()
+  const router = useRouter()
 
-  console.log(oracleProvider, oracleLinkPath)
+  const goToPerpDetails = (marketName: string) => {
+    router.push(`/stats?market=${marketName}`, undefined, { shallow: true })
+  }
 
   return market ? (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -108,7 +112,13 @@ const PerpMarketDetailsModal = ({
           </p>
         </div>
       </div>
-      <Button className="mt-6 w-full" onClick={onClose}>
+      <Button
+        className="mt-6 w-full"
+        onClick={() => goToPerpDetails(market.name)}
+      >
+        {t('trade:more-details')}
+      </Button>
+      <Button className="mt-3 w-full" onClick={onClose} secondary>
         {t('close')}
       </Button>
     </Modal>
