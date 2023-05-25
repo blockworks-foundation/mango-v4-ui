@@ -148,11 +148,6 @@ const MoreMenuPanel = ({
           icon={<PlusCircleIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
-          title={t('common:list-market')}
-          path="/governance/listMarket"
-          icon={<PlusCircleIcon className="h-5 w-5" />}
-        />
-        <MoreMenuItem
           title={t('common:vote')}
           path="/governance/vote"
           icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
