@@ -2,7 +2,9 @@
 import { makeApiRequest, parseResolution } from './birdeye/helpers'
 import {
   makeApiRequest as makePerpApiRequest,
+  makeSpotApiRequest,
   parseResolution as parsePerpResolution,
+  parseResolutionSpot,
 } from './mngo/helpers'
 import {
   closeSocket,
@@ -143,6 +145,64 @@ export const queryPerpBars = async (
         },
       ]
       previousBar = bar
+    }
+  }
+  return bars
+}
+
+export const querySpotBars = async (
+  marketName: string,
+  resolution: typeof SUPPORTED_RESOLUTIONS[number],
+  periodParams: {
+    firstDataRequest: boolean
+    from: number
+    to: number
+  }
+): Promise<Bar[]> => {
+  console.log(marketName, resolution)
+  const { from, to } = periodParams
+  const urlParameters = {
+    market_name: marketName,
+    resolution: parseResolutionSpot(resolution),
+    from: from,
+    to: to,
+  }
+  const query = Object.keys(urlParameters)
+    .map(
+      (name: string) =>
+        `${name}=${encodeURIComponent((urlParameters as any)[name])}`
+    )
+    .join('&')
+
+  const data = await makeSpotApiRequest(`/candles?${query}`)
+  if (!data.s || data.s != 'ok' || data.time.length === 0) {
+    return []
+  }
+  // {
+  //   "s": "ok",
+  //   "time": [1651189320, 1651189380],
+  //   "close": [1.2090027797967196, 1.2083083698526025],
+  //   "open": [1.2090027797967196, 1.208549999864772],
+  //   "high": [1.2090027797967196, 1.208549999864772],
+  //   "low": [1.2090027797967196, 1.208055029856041],
+  //   "volume": [0, 0]
+  // }
+  let bars: Bar[] = []
+  for (let i = 0; i < data.time.length; i++) {
+    if (data.time[i] >= from && data.time[i] < to) {
+      const timestamp = data.time[i] * 1000
+      bars = [
+        ...bars,
+        {
+          time: timestamp,
+          low: data.low[i],
+          high: data.high[i],
+          open: data.open[i],
+          close: data.close[i],
+          volume: data.volume[i],
+          timestamp,
+        },
+      ]
     }
   }
   return bars
@@ -302,8 +362,9 @@ export default {
         )
       } else {
         marketType = 'spot'
-        bars = await queryBirdeyeBars(
-          symbolInfo.address,
+        console.log(symbolInfo)
+        bars = await querySpotBars(
+          symbolInfo.name,
           resolution as any,
           periodParams
         )
