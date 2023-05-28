@@ -1,3 +1,4 @@
+import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
 import Select from '@components/forms/Select'
@@ -10,11 +11,20 @@ import {
   ExclamationCircleIcon,
   InformationCircleIcon,
 } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { PublicKey } from '@solana/web3.js'
+import GovernanceStore from '@store/governanceStore'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useState } from 'react'
+import {
+  MANGO_DAO_WALLET,
+  MANGO_DAO_WALLET_GOVERNANCE,
+} from 'utils/governance/constants'
+import { createProposal } from 'utils/governance/instructions/createProposal'
 import { getBestMarket } from 'utils/governance/listingTools'
+import { notify } from 'utils/notifications'
 
 type FormErrors = Partial<Record<keyof ListMarketForm, string>>
 
@@ -39,10 +49,15 @@ const defaultFormValues: ListMarketForm = {
 }
 
 const ListMarket = () => {
+  const wallet = useWallet()
   const { t } = useTranslation(['governance'])
   const { group } = useMangoGroup()
   const connection = mangoStore((s) => s.connection)
   const availableTokens = group ? [...group.banksMapByName.keys()] : []
+  const client = mangoStore((s) => s.client)
+  const voter = GovernanceStore((s) => s.voter)
+  const vsrClient = GovernanceStore((s) => s.vsrClient)
+  const proposals = GovernanceStore((s) => s.proposals)
 
   const [advForm, setAdvForm] = useState<ListMarketForm>({
     ...defaultFormValues,
@@ -55,6 +70,10 @@ const ListMarket = () => {
   const [currentView, setCurrentView] = useState(VIEWS.BASE_TOKEN)
   const [marketPk, setMarketPk] = useState('')
   const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
+  const baseBank =
+    group && baseToken ? group.banksMapByName.get(baseToken) : null
+  const quoteBank =
+    group && quoteToken ? group.banksMapByName.get(quoteToken) : null
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
@@ -63,9 +82,9 @@ const ListMarket = () => {
   const openCreateOpenbookMarket = () => {
     setCreateOpenbookMarket(true)
   }
-  const closeCreateOpenBookMarketModal = async () => {
+  const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
-    await handleGetMarketProps()
+    handleGetMarketProps()
   }
   const goToHomePage = async () => {
     setCurrentView(VIEWS.BASE_TOKEN)
@@ -74,22 +93,71 @@ const ListMarket = () => {
       ...defaultFormValues,
     })
   }
-  const handlePropose = async () => {
+  const handlePropose = useCallback(async () => {
     setProposing(true)
+    const index = proposals ? Object.values(proposals).length : 0
+
+    const proposalTx = []
+    const registerMarketix = await client!.program.methods
+      .serum3RegisterMarket(
+        Number(index),
+        `${baseToken?.toUpperCase()}/${quoteToken?.toUpperCase()}`
+      )
+      .accounts({
+        group: group!.publicKey,
+        admin: MANGO_DAO_WALLET,
+        serumProgram: OPENBOOK_PROGRAM_ID[CLUSTER],
+        serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
+        baseBank: baseBank![0]!.publicKey,
+        quoteBank: quoteBank![0]!.publicKey,
+        payer: MANGO_DAO_WALLET,
+      })
+      .instruction()
+    proposalTx.push(registerMarketix)
+
+    const walletSigner = wallet as never
+    try {
+      const proposalAddress = await createProposal(
+        connection,
+        walletSigner,
+        MANGO_DAO_WALLET_GOVERNANCE,
+        voter.tokenOwnerRecord!,
+        advForm.proposalTitle,
+        advForm.proposalDescription,
+        index,
+        proposalTx,
+        vsrClient!
+      )
+      console.log(proposalAddress)
+    } catch (e) {
+      notify({
+        title: t('error-proposal-creation'),
+        description: `${e}`,
+        type: 'error',
+      })
+    }
     setProposing(false)
-  }
+  }, [
+    advForm,
+    baseBank,
+    baseToken,
+    client,
+    connection,
+    group,
+    proposals,
+    quoteBank,
+    quoteToken,
+    t,
+    voter.tokenOwnerRecord,
+    vsrClient,
+    wallet,
+  ])
+
   const goToPropsPage = async () => {
     await handleGetMarketProps()
     setCurrentView(VIEWS.PROPS)
   }
   const handleGetMarketProps = useCallback(async () => {
-    if (!baseToken || !quoteToken || !group) {
-      return
-    }
-
-    const baseBank = group.banksMapByName.get(baseToken)
-    const quoteBank = group.banksMapByName.get(quoteToken)
-
     if (!baseBank?.length || !quoteBank?.length) {
       return
     }
@@ -104,7 +172,7 @@ const ListMarket = () => {
     ])
     setMarketPk(bestMarketPk?.toBase58() || '')
     setLoadingMarketProps(false)
-  }, [baseToken, quoteToken, group, connection])
+  }, [baseBank, quoteBank, connection])
 
   return (
     <div className="h-full">
