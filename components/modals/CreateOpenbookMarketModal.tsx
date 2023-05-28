@@ -136,6 +136,11 @@ const CreateOpenbookMarketModal = ({
           signature: sig,
         })
       }
+      onClose()
+      notify({
+        title: t('market-created-successful'),
+        type: 'success',
+      })
     } catch (e) {
       notify({
         title: t('error-creating-market'),
@@ -145,7 +150,6 @@ const CreateOpenbookMarketModal = ({
       })
     }
     setCreating(false)
-    onClose()
   }
 
   useEffect(() => {
@@ -179,80 +183,82 @@ const CreateOpenbookMarketModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <p>Creating market will cost at least {solNeededToCreateMarket} sol</p>
-      <div>
-        <Label text={t('open-book-market-id')} />
-        <Input
-          hasError={formErrors.programId !== undefined}
-          type="text"
-          disabled={true}
-          value={form.programId.toString()}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            handleSetAdvForm('programId', e.target.value)
-          }
-        />
-      </div>
-      <div>
-        <Label text={t('base-mint')} />
-        <Input
-          hasError={formErrors.baseMint !== undefined}
-          type="text"
-          disabled={true}
-          value={form.baseMint.toString()}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            handleSetAdvForm('baseMint', e.target.value)
-          }
-        />
-      </div>
-      <div>
-        <Label text={t('quote-mint')} />
-        <Input
-          disabled={true}
-          hasError={formErrors.quoteMint !== undefined}
-          type="text"
-          value={form.quoteMint.toString()}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            handleSetAdvForm('quoteMint', e.target.value)
-          }
-        />
-      </div>
-      <div>
-        <Label text={t('min-order')} />
-        <Input
-          hasError={formErrors.minimumOrderSize !== undefined}
-          type="text"
-          value={form.minimumOrderSize.toString()}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            handleSetAdvForm('minimumOrderSize', e.target.value)
-          }
-        />
-        {formErrors.minimumOrderSize && (
-          <div className="mt-1.5 flex items-center space-x-1">
-            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-            <p className="mb-0 text-xs text-th-down">
-              {formErrors.minimumOrderSize}
-            </p>
-          </div>
-        )}
-      </div>
-      <div>
-        <Label text={t('price-tick')} />
-        <Input
-          hasError={formErrors.minimumPriceTickSize !== undefined}
-          type="text"
-          value={form.minimumPriceTickSize.toString()}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            handleSetAdvForm('minimumPriceTickSize', e.target.value)
-          }
-        />
-        {formErrors.minimumPriceTickSize && (
-          <div className="mt-1.5 flex items-center space-x-1">
-            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-            <p className="mb-0 text-xs text-th-down">
-              {formErrors.minimumPriceTickSize}
-            </p>
-          </div>
-        )}
+      <div className="space-y-4">
+        <p>Creating market will cost at least {solNeededToCreateMarket} SOL</p>
+        <div>
+          <Label text={t('open-book-market-id')} />
+          <Input
+            hasError={formErrors.programId !== undefined}
+            type="text"
+            disabled={true}
+            value={form.programId.toString()}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleSetAdvForm('programId', e.target.value)
+            }
+          />
+        </div>
+        <div>
+          <Label text={t('base-mint')} />
+          <Input
+            hasError={formErrors.baseMint !== undefined}
+            type="text"
+            disabled={true}
+            value={form.baseMint.toString()}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleSetAdvForm('baseMint', e.target.value)
+            }
+          />
+        </div>
+        <div>
+          <Label text={t('quote-mint')} />
+          <Input
+            disabled={true}
+            hasError={formErrors.quoteMint !== undefined}
+            type="text"
+            value={form.quoteMint.toString()}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleSetAdvForm('quoteMint', e.target.value)
+            }
+          />
+        </div>
+        <div>
+          <Label text={t('min-order')} />
+          <Input
+            hasError={formErrors.minimumOrderSize !== undefined}
+            type="text"
+            value={form.minimumOrderSize.toString()}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleSetAdvForm('minimumOrderSize', e.target.value)
+            }
+          />
+          {formErrors.minimumOrderSize && (
+            <div className="mt-1.5 flex items-center space-x-1">
+              <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+              <p className="mb-0 text-xs text-th-down">
+                {formErrors.minimumOrderSize}
+              </p>
+            </div>
+          )}
+        </div>
+        <div>
+          <Label text={t('price-tick')} />
+          <Input
+            hasError={formErrors.minimumPriceTickSize !== undefined}
+            type="text"
+            value={form.minimumPriceTickSize.toString()}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleSetAdvForm('minimumPriceTickSize', e.target.value)
+            }
+          />
+          {formErrors.minimumPriceTickSize && (
+            <div className="mt-1.5 flex items-center space-x-1">
+              <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+              <p className="mb-0 text-xs text-th-down">
+                {formErrors.minimumPriceTickSize}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
       <div>
         <Button

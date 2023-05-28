@@ -25,6 +25,7 @@ import {
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import { getBestMarket } from 'utils/governance/listingTools'
 import { notify } from 'utils/notifications'
+import ListTokenSuccess from '../ListToken/ListTokenSuccess'
 
 type FormErrors = Partial<Record<keyof ListMarketForm, string>>
 
@@ -58,12 +59,14 @@ const ListMarket = () => {
   const availableTokens = group ? [...group.banksMapByName.keys()] : []
   const client = mangoStore((s) => s.client)
   const voter = GovernanceStore((s) => s.voter)
+
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
 
   const [advForm, setAdvForm] = useState<ListMarketForm>({
     ...defaultFormValues,
   })
+  const [proposalPk, setProposalPk] = useState<string | null>(null)
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [baseToken, setBaseToken] = useState<null | string>(null)
   const [quoteToken, setQuoteToken] = useState<null | string>(null)
@@ -92,6 +95,7 @@ const ListMarket = () => {
   const goToHomePage = async () => {
     setCurrentView(VIEWS.BASE_TOKEN)
     setMarketPk('')
+    setProposalPk('')
     setAdvForm({
       ...defaultFormValues,
     })
@@ -99,8 +103,8 @@ const ListMarket = () => {
   const handlePropose = useCallback(async () => {
     setProposing(true)
     const index = proposals ? Object.values(proposals).length : 0
-
     const proposalTx = []
+
     const registerMarketix = await client!.program.methods
       .serum3RegisterMarket(advForm.marketIndex, advForm.marketName)
       .accounts({
@@ -113,6 +117,7 @@ const ListMarket = () => {
         payer: MANGO_DAO_WALLET,
       })
       .instruction()
+
     proposalTx.push(registerMarketix)
 
     const walletSigner = wallet as never
@@ -128,7 +133,8 @@ const ListMarket = () => {
         proposalTx,
         vsrClient!
       )
-      console.log(proposalAddress)
+      setProposalPk(proposalAddress.toBase58())
+      setCurrentView(VIEWS.SUCCESS)
     } catch (e) {
       notify({
         title: t('error-proposal-creation'),
@@ -146,7 +152,7 @@ const ListMarket = () => {
     proposals,
     quoteBank,
     t,
-    voter.tokenOwnerRecord,
+    voter,
     vsrClient,
     wallet,
   ])
@@ -173,13 +179,6 @@ const ListMarket = () => {
   }, [baseBank, quoteBank, connection])
 
   useEffect(() => {
-    setAdvForm((prevForm) => ({
-      ...prevForm,
-      openBookMarketExternalPk: marketPk,
-    }))
-  }, [marketPk])
-
-  useEffect(() => {
     const index = proposals ? Object.values(proposals).length : 0
 
     setAdvForm((prevForm) => ({
@@ -187,12 +186,19 @@ const ListMarket = () => {
       marketIndex: Number(index),
       marketName: marketName,
       proposalTitle: `List market ${marketName}`,
+      openBookMarketExternalPk: marketPk,
     }))
-  }, [marketName, proposals])
+  }, [marketName, proposals, marketPk])
 
   return (
     <div className="h-full">
       <h1 className="mb-4 flex items-center">{t('new-market-listing')}</h1>
+      {proposalPk && currentView === VIEWS.SUCCESS && (
+        <ListTokenSuccess
+          proposalPk={proposalPk}
+          token={advForm?.marketName}
+        ></ListTokenSuccess>
+      )}
       {currentView === VIEWS.BASE_TOKEN && (
         <div className="mb-6">
           <h2 className="mb-2 text-lg">{t('before-you-list-market')}</h2>
@@ -223,15 +229,13 @@ const ListMarket = () => {
                 onChange={(token) => setBaseToken(token)}
                 className="w-full"
               >
-                {availableTokens
-                  .filter((x) => x !== quoteToken)
-                  .map((token) => (
-                    <Select.Option key={token} value={token}>
-                      <div className="flex w-full items-center justify-between">
-                        {token}
-                      </div>
-                    </Select.Option>
-                  ))}
+                {availableTokens.map((token) => (
+                  <Select.Option key={token} value={token}>
+                    <div className="flex w-full items-center justify-between">
+                      {token}
+                    </div>
+                  </Select.Option>
+                ))}
               </Select>
             </div>
             <div className="pb-4">
@@ -241,15 +245,13 @@ const ListMarket = () => {
                 onChange={(token) => setQuoteToken(token)}
                 className="w-full"
               >
-                {availableTokens
-                  .filter((x) => x !== baseToken)
-                  .map((token) => (
-                    <Select.Option key={token} value={token}>
-                      <div className="flex w-full items-center justify-between">
-                        {token}
-                      </div>
-                    </Select.Option>
-                  ))}
+                {availableTokens.map((token) => (
+                  <Select.Option key={token} value={token}>
+                    <div className="flex w-full items-center justify-between">
+                      {token}
+                    </div>
+                  </Select.Option>
+                ))}
               </Select>
             </div>
           </div>

@@ -74,5 +74,19 @@
     "no": "No",
     "current-vote": "Current Vote:",
     "use-own-wallet": "Use own wallet",
-    "select-delegate": "Select delegate"
+    "select-delegate": "Select delegate",
+    "new-market-listing": "New Market Listing",
+    "before-you-list-market": "Before you propose listing a market on Mango:",
+    "before-listing-market-2": "New markets are approved by DAO vote. This takes 3 days",
+    "base-token": "Base token",
+    "quote-token": "Quote token",
+    "market-index": "Market index",
+    "creating-market-will-cost": "Creating market will cost at least",
+    "open-book-market-id": "Openbook market id",
+    "base-mint": "Base mint",
+    "quote-mint": "Quote mint",
+    "min-order": "Min order",
+    "price-tick": "Price tick",
+    "market-created-successful": "Market created successful",
+    "error-creating-market": "Error during market creation"
 }

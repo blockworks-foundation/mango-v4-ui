@@ -53,7 +53,10 @@ export const createProposal = async (
   const useDenyOption = true
 
   const { updateVoterWeightRecordIx, voterWeightPk } =
-    await updateVoterWeightRecord(client, walletPk)
+    await updateVoterWeightRecord(
+      client,
+      tokenOwnerRecord.account.governingTokenOwner
+    )
   instructions.push(updateVoterWeightRecordIx)
 
   const proposalAddress = await withCreateProposal(
