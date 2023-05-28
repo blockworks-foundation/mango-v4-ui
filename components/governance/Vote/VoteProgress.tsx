@@ -1,8 +1,5 @@
 import Tooltip from '@components/shared/Tooltip'
-import {
-  CheckCircleIcon,
-  InformationCircleIcon,
-} from '@heroicons/react/20/solid'
+import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import { Governance, ProgramAccount, Proposal } from '@solana/spl-governance'
 import { RawMint } from '@solana/spl-token'
 import GovernanceStore from '@store/governanceStore'
@@ -55,9 +52,10 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
       <div className="flex items-center">
         <div className="w-full">
           <div className="flex items-center">
-            <p className="text-fgd-2 mb-0 mr-1.5">{t('approval-q')}</p>
             <Tooltip content={t('quorum-description')}>
-              <InformationCircleIcon className="text-fgd-2 h-5 w-5 cursor-help" />
+              <p className="tooltip-underline text-fgd-2 mb-0 mr-1.5">
+                {t('approval-q')}
+              </p>
             </Tooltip>
           </div>
           {typeof yesVoteProgress !== 'undefined' && yesVoteProgress < 100 ? (
@@ -70,7 +68,7 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
             } required`}</p>
           ) : (
             <div className="flex items-center">
-              <CheckCircleIcon className="text-green mr-1.5 h-5 w-5 flex-shrink-0" />
+              <CheckCircleIcon className="mr-1.5 h-4 w-4 flex-shrink-0 text-th-success" />
               <p className="text-fgd-1 mb-0 font-bold">
                 {t('required-approval-achieved')}
               </p>

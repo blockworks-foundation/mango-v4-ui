@@ -5,6 +5,7 @@ import { BellIcon } from '@heroicons/react/20/solid'
 import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
 import { useCookies } from 'hooks/notifications/useCookies'
 import { useNotificationSocket } from 'hooks/notifications/useNotificationSocket'
+import { formatNumericValue } from 'utils/numbers'
 
 const NotificationsButton = () => {
   useCookies()
@@ -35,12 +36,9 @@ const NotificationsButton = () => {
         <BellIcon className="h-5 w-5" />
         <span className="sr-only">Notifications</span>
         {notificationCount !== 0 ? (
-          <div className="absolute top-4 right-4">
-            <span className="relative flex h-3.5 w-3.5 items-center justify-center">
-              <span className="absolute inline-flex h-3.5 w-3.5 animate-ping rounded-full bg-th-down opacity-75"></span>
-              <span className="relative flex h-3.5 w-3.5 items-center justify-center rounded-full bg-th-down text-xxs font-bold text-th-fgd-1">
-                {notificationCount}
-              </span>
+          <div className="absolute top-4 left-8">
+            <span className="relative flex h-3.5 w-max items-center justify-center rounded-full bg-th-down px-1 text-xxs font-bold text-white">
+              {formatNumericValue(notificationCount)}
             </span>
           </div>
         ) : null}

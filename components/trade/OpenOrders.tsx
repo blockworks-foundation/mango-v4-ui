@@ -42,7 +42,9 @@ import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 
-const findSerum3MarketPkInOpenOrders = (o: Order): string | undefined => {
+export const findSerum3MarketPkInOpenOrders = (
+  o: Order
+): string | undefined => {
   const openOrders = mangoStore.getState().mangoAccount.openOrders
   let foundedMarketPk: string | undefined = undefined
   for (const [marketPk, orders] of Object.entries(openOrders)) {
@@ -267,7 +269,6 @@ const OpenOrders = () => {
                 let tickSize: number
                 let minOrderSize: number
                 let expiryTimestamp: number | undefined
-                let side: string
                 if (o instanceof PerpOrder) {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
                   tickSize = market.tickSize
@@ -276,7 +277,6 @@ const OpenOrders = () => {
                     o.expiryTimestamp === U64_MAX_BN
                       ? 0
                       : o.expiryTimestamp.toNumber()
-                  side = 'bid' in o.side ? 'buy' : 'sell'
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
@@ -286,7 +286,6 @@ const OpenOrders = () => {
                   )
                   tickSize = serumMarket.tickSize
                   minOrderSize = serumMarket.minOrderSize
-                  side = o.side
                 }
                 return (
                   <TrBody
@@ -297,7 +296,13 @@ const OpenOrders = () => {
                       <TableMarketName market={market} />
                     </Td>
                     <Td className="w-[16.67%] text-right">
-                      <SideBadge side={side} />
+                      {o instanceof PerpOrder ? (
+                        <PerpSideBadge
+                          basePosition={'bid' in o.side ? 1 : -1}
+                        />
+                      ) : (
+                        <SideBadge side={o.side} />
+                      )}
                     </Td>
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>

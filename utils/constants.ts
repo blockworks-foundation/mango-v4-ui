@@ -47,8 +47,6 @@ export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
-export const SHOW_STABLE_PRICE_KEY = 'showStablePriceKey-0.1'
-
 export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
 
 export const SHOW_SWAP_INTRO_MODAL = 'showSwapModal-0.1'

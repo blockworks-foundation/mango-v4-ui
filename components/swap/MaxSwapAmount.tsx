@@ -28,7 +28,8 @@ const MaxSwapAmount = ({
 
   return (
     <div className="flex flex-wrap justify-end pl-6 text-xs">
-      {tokenMax.lt(amountWithBorrow) ? (
+      {tokenMax.lt(amountWithBorrow) ||
+      (tokenMax.eq(amountWithBorrow) && !useMargin) ? (
         <MaxAmountButton
           className="mb-0.5"
           decimals={decimals}

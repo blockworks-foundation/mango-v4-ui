@@ -45,6 +45,9 @@ export const getTokenInMax = (
     }
   }
 
+  const inputReduceOnly = inputBank.areBorrowsReduceOnly()
+  const outputReduceOnly = outputBank.areDepositsReduceOnly()
+
   const inputTokenBalance = new Decimal(
     mangoAccount.getTokenBalanceUi(inputBank)
   )
@@ -54,8 +57,8 @@ export const getTokenInMax = (
   )
 
   const maxAmountWithoutMargin =
-    (inputTokenBalance.gt(0) && !outputBank.reduceOnly) ||
-    (outputBank.reduceOnly && outputTokenBalance.lt(0))
+    (inputTokenBalance.gt(0) && !outputReduceOnly) ||
+    (outputReduceOnly && outputTokenBalance.lt(0))
       ? inputTokenBalance
       : new Decimal(0)
 
@@ -66,8 +69,7 @@ export const getTokenInMax = (
   )
 
   const maxUiAmountWithBorrow =
-    outputBank.reduceOnly &&
-    (outputTokenBalance.gt(0) || outputTokenBalance.eq(0))
+    outputReduceOnly && (outputTokenBalance.gt(0) || outputTokenBalance.eq(0))
       ? new Decimal(0)
       : rawMaxUiAmountWithBorrow > 0
       ? floorToDecimal(rawMaxUiAmountWithBorrow, inputBank.mintDecimals)
@@ -92,7 +94,7 @@ export const getTokenInMax = (
         maxUiAmountWithBorrow
       )
 
-  const maxAmountWithBorrow = inputBank.reduceOnly
+  const maxAmountWithBorrow = inputReduceOnly
     ? Decimal.min(maxAmountWithoutMargin, inputBankVaultBalance)
     : Decimal.min(maxUiAmountWithBorrow, inputBankVaultBalance)
 

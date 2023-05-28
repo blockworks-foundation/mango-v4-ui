@@ -93,7 +93,7 @@ const ENDPOINTS = [
 const options = AnchorProvider.defaultOptions()
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
-const emptyWallet = new EmptyWallet(Keypair.generate())
+export const emptyWallet = new EmptyWallet(Keypair.generate())
 
 const initMangoClient = (
   provider: AnchorProvider,
@@ -216,7 +216,6 @@ export type MangoStore = {
   }
   tradeForm: TradeForm
   tradingView: {
-    stablePriceLine: EntityId | undefined
     orderLines: Map<string | BN, IOrderLineAdapter>
     tradeExecutions: Map<string, IExecutionLineAdapter>
   }
@@ -371,7 +370,6 @@ const mangoStore = create<MangoStore>()(
       },
       tradeForm: DEFAULT_TRADE_FORM,
       tradingView: {
-        stablePriceLine: undefined,
         orderLines: new Map(),
         tradeExecutions: new Map(),
       },

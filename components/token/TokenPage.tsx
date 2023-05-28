@@ -21,6 +21,7 @@ import { useQuery } from '@tanstack/react-query'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TopTokenAccounts from './TopTokenAccounts'
 import TokenParams from './TokenParams'
+import { formatTokenSymbol } from 'utils/tokens'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -136,7 +137,9 @@ const TokenPage = () => {
                 {coingeckoTokenInfo ? (
                   <h1 className="text-base font-normal">
                     {coingeckoTokenInfo.name}{' '}
-                    <span className="text-th-fgd-4">{bank.name}</span>
+                    <span className="text-th-fgd-4">
+                      {formatTokenSymbol(bank.name)}
+                    </span>
                   </h1>
                 ) : (
                   <h1 className="text-base font-normal">{bank.name}</h1>

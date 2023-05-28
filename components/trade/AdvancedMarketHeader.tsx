@@ -101,7 +101,9 @@ const AdvancedMarketHeader = ({
               <OraclePrice setChangePrice={setChangePrice} />
             </>
             <div className="ml-6 flex-col whitespace-nowrap">
-              <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
+              <div className="mb-0.5 text-xs text-th-fgd-4">
+                {t('rolling-change')}
+              </div>
               {!loadingPrices && !loadingPerpStats ? (
                 <Change change={change} size="small" suffix="%" />
               ) : (
@@ -114,7 +116,7 @@ const AdvancedMarketHeader = ({
               <>
                 <PerpFundingRate />
                 <div className="ml-6 flex-col whitespace-nowrap text-xs">
-                  <div className="text-th-fgd-4">
+                  <div className="mb-0.5 text-th-fgd-4 ">
                     {t('trade:open-interest')}
                   </div>
                   <span className="font-mono">

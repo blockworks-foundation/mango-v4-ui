@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { formatYAxis } from 'utils/formatting'
 import { HourlyFundingChartData, PerformanceDataItem } from 'types'
 import { ContentType } from 'recharts/types/component/Tooltip'
-import DetailedAreaChart from '@components/shared/DetailedAreaChart'
+import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import { ChartToShow } from './AccountPage'
 import { IconButton } from '@components/shared/Button'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
@@ -73,7 +73,7 @@ const AccountChart = ({
         </div>
       </div>
       <div className="px-6 pt-4">
-        <DetailedAreaChart
+        <DetailedAreaOrBarChart
           customTooltip={customTooltip}
           data={chartData}
           daysToShow={daysToShow}

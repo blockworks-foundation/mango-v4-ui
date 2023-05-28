@@ -6,7 +6,7 @@ import { formatYAxis } from 'utils/formatting'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
-import DetailedAreaChart from '@components/shared/DetailedAreaChart'
+import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 
 const TokenStatsCharts = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -49,7 +49,7 @@ const TokenStatsCharts = () => {
   return (
     <>
       <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r">
-        <DetailedAreaChart
+        <DetailedAreaOrBarChart
           data={mangoStats.concat([
             {
               date: dayjs().toISOString(),
@@ -71,7 +71,7 @@ const TokenStatsCharts = () => {
         />
       </div>
       <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:pl-6">
-        <DetailedAreaChart
+        <DetailedAreaOrBarChart
           data={mangoStats.concat([
             {
               date: dayjs().toISOString(),
@@ -93,7 +93,7 @@ const TokenStatsCharts = () => {
         />
       </div>
       <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r md:pl-6">
-        <DetailedAreaChart
+        <DetailedAreaOrBarChart
           data={mangoStats.concat([
             {
               date: dayjs().toISOString(),

@@ -189,7 +189,7 @@ const ProposalCard = ({
               <ArrowTopRightOnSquareIcon className="mb-1 inline-block h-4 w-4 flex-shrink-0" />
             </a>
           </h2>
-          <p className="mb-2 md:mb-0">{description}</p>
+          <p className="mb-2 break-all md:mb-0">{description}</p>
         </div>
         <VoteCountdown
           proposal={proposal.account}

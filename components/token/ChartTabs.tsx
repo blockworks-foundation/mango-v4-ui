@@ -6,7 +6,7 @@ import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import { TokenStatsItem } from 'types'
 import { formatYAxis } from 'utils/formatting'
-import DetailedAreaChart from '@components/shared/DetailedAreaChart'
+import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 
 const ChartTabs = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation('token')
@@ -59,7 +59,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
           />
           <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeDepositsTab === 'token:deposits' ? (
-              <DetailedAreaChart
+              <DetailedAreaOrBarChart
                 data={statsHistory}
                 daysToShow={depositDaysToShow}
                 setDaysToShow={setDepositDaysToShow}
@@ -74,7 +74,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                 yKey={'total_deposits'}
               />
             ) : (
-              <DetailedAreaChart
+              <DetailedAreaOrBarChart
                 data={statsHistory}
                 daysToShow={depositRateDaysToShow}
                 setDaysToShow={setDepositRateDaysToShow}
@@ -106,7 +106,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
           />
           <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeBorrowsTab === 'token:borrows' ? (
-              <DetailedAreaChart
+              <DetailedAreaOrBarChart
                 data={statsHistory}
                 daysToShow={borrowDaysToShow}
                 setDaysToShow={setBorrowDaysToShow}
@@ -121,7 +121,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                 yKey={'total_borrows'}
               />
             ) : (
-              <DetailedAreaChart
+              <DetailedAreaOrBarChart
                 data={statsHistory}
                 daysToShow={borrowRateDaysToShow}
                 setDaysToShow={setBorrowRateDaysToShow}

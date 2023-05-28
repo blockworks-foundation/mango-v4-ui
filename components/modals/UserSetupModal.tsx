@@ -27,7 +27,7 @@ import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
 import WalletIcon from '../icons/WalletIcon'
-import ParticlesBackground from '../ParticlesBackground'
+// import ParticlesBackground from '../ParticlesBackground'
 // import EditNftProfilePic from '../profile/EditNftProfilePic'
 // import EditProfileForm from '../profile/EditProfileForm'
 import Button, { LinkButton } from '../shared/Button'
@@ -209,25 +209,20 @@ const UserSetupModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} fullScreen disableOutsideClose>
       <div className="grid h-screen overflow-auto bg-th-bkg-1 text-left lg:grid-cols-2">
-        <img
-          className={`absolute -bottom-20 left-1/2 mt-8 h-auto -translate-x-1/2 sm:w-[60%] md:w-[410px] lg:left-auto lg:-right-10 lg:w-[55%] lg:-translate-x-0 xl:-bottom-40 ${
-            showSetupStep !== 0 ? 'hidden lg:block' : 'hidden sm:block'
-          }`}
-          src="/images/swap-trade@0.75x.png"
-          srcSet="/images/swap-trade@0.75x.png 1098x, /images/swap-trade@1x.png 1463w,
-          /images/swap-trade@2x.png 2926w"
-          sizes="(max-width: 1600px) 1098px, (max-width: 2500px) 1463px, 2926px"
-          alt="next"
+        <ColorBlur
+          width="66%"
+          height="300px"
+          className="-top-20 -left-20 bg-th-button opacity-10 brightness-125"
+        />
+        <ColorBlur
+          width="50%"
+          height="100%"
+          className="-bottom-20 -right-20 bg-th-bkg-1 opacity-30 mix-blend-multiply"
         />
         <img
           className={`absolute top-6 left-6 h-10 w-10 flex-shrink-0`}
           src="/logos/logo-mark.svg"
           alt="next"
-        />
-        <ColorBlur
-          width="66%"
-          height="300px"
-          className="-top-20 left-0 opacity-20 brightness-125"
         />
         <div className="absolute top-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
@@ -544,8 +539,15 @@ const UserSetupModal = ({
             ) : null}
           </UserSetupTransition>
         </div>
-        <div className="col-span-1 hidden h-screen lg:block">
-          <ParticlesBackground />
+        <div className="relative col-span-1 hidden h-screen lg:block">
+          {/* <ParticlesBackground /> */}
+          <img
+            className={`absolute left-1/2 top-1/2 h-auto w-[95%] max-w-[700px] -translate-x-1/2 -translate-y-1/2 ${
+              showSetupStep !== 0 ? 'hidden lg:block' : 'hidden sm:block'
+            }`}
+            src="/images/onboarding-image@1x.png"
+            alt="next"
+          />
         </div>
       </div>
     </Modal>
