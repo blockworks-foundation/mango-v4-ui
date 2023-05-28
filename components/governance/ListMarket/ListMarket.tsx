@@ -17,7 +17,7 @@ import GovernanceStore from '@store/governanceStore'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import { ChangeEvent, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import {
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
@@ -29,10 +29,11 @@ import { notify } from 'utils/notifications'
 type FormErrors = Partial<Record<keyof ListMarketForm, string>>
 
 type ListMarketForm = {
-  marketPk: string
   openBookMarketExternalPk: string
   proposalTitle: string
   proposalDescription: string
+  marketIndex: number
+  marketName: string
 }
 
 enum VIEWS {
@@ -42,10 +43,11 @@ enum VIEWS {
 }
 
 const defaultFormValues: ListMarketForm = {
-  marketPk: '',
   openBookMarketExternalPk: '',
   proposalDescription: '',
   proposalTitle: '',
+  marketIndex: 0,
+  marketName: '',
 }
 
 const ListMarket = () => {
@@ -67,13 +69,14 @@ const ListMarket = () => {
   const [quoteToken, setQuoteToken] = useState<null | string>(null)
   const [loadingMarketProps, setLoadingMarketProps] = useState(false)
   const [proposing, setProposing] = useState(false)
-  const [currentView, setCurrentView] = useState(VIEWS.BASE_TOKEN)
   const [marketPk, setMarketPk] = useState('')
+  const [currentView, setCurrentView] = useState(VIEWS.BASE_TOKEN)
   const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
   const baseBank =
     group && baseToken ? group.banksMapByName.get(baseToken) : null
   const quoteBank =
     group && quoteToken ? group.banksMapByName.get(quoteToken) : null
+  const marketName = `${baseToken?.toUpperCase()}/${quoteToken?.toUpperCase()}`
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
@@ -99,10 +102,7 @@ const ListMarket = () => {
 
     const proposalTx = []
     const registerMarketix = await client!.program.methods
-      .serum3RegisterMarket(
-        Number(index),
-        `${baseToken?.toUpperCase()}/${quoteToken?.toUpperCase()}`
-      )
+      .serum3RegisterMarket(advForm.marketIndex, advForm.marketName)
       .accounts({
         group: group!.publicKey,
         admin: MANGO_DAO_WALLET,
@@ -140,13 +140,11 @@ const ListMarket = () => {
   }, [
     advForm,
     baseBank,
-    baseToken,
     client,
     connection,
     group,
     proposals,
     quoteBank,
-    quoteToken,
     t,
     voter.tokenOwnerRecord,
     vsrClient,
@@ -173,6 +171,24 @@ const ListMarket = () => {
     setMarketPk(bestMarketPk?.toBase58() || '')
     setLoadingMarketProps(false)
   }, [baseBank, quoteBank, connection])
+
+  useEffect(() => {
+    setAdvForm((prevForm) => ({
+      ...prevForm,
+      openBookMarketExternalPk: marketPk,
+    }))
+  }, [marketPk])
+
+  useEffect(() => {
+    const index = proposals ? Object.values(proposals).length : 0
+
+    setAdvForm((prevForm) => ({
+      ...prevForm,
+      marketIndex: Number(index),
+      marketName: marketName,
+      proposalTitle: `List market ${marketName}`,
+    }))
+  }, [marketName, proposals])
 
   return (
     <div className="h-full">
@@ -302,6 +318,44 @@ const ListMarket = () => {
                   </Disclosure.Button>
                   <Disclosure.Panel>
                     <div className="space-y-4 rounded-md rounded-t-none bg-th-bkg-2 p-4">
+                      <div>
+                        <Label text={t('market-name')} />
+                        <Input
+                          hasError={formErrors.marketName !== undefined}
+                          type="text"
+                          value={advForm.marketName.toString()}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            handleSetAdvForm('marketName', e.target.value)
+                          }
+                        />
+                        {formErrors.marketName && (
+                          <div className="mt-1.5 flex items-center space-x-1">
+                            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                            <p className="mb-0 text-xs text-th-down">
+                              {formErrors.marketName}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Label text={t('market-index')} />
+                        <Input
+                          hasError={formErrors.marketIndex !== undefined}
+                          type="text"
+                          value={advForm.marketIndex.toString()}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            handleSetAdvForm('marketIndex', e.target.value)
+                          }
+                        />
+                        {formErrors.marketIndex && (
+                          <div className="mt-1.5 flex items-center space-x-1">
+                            <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                            <p className="mb-0 text-xs text-th-down">
+                              {formErrors.marketIndex}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                       <div>
                         <Label text={t('openbook-market-external')} />
                         <Input
