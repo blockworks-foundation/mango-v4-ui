@@ -143,8 +143,8 @@ const MoreMenuPanel = ({
           icon={<MagnifyingGlassIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
-          title={t('common:list-token')}
-          path="/governance/list-token"
+          title={t('common:list-market-token')}
+          path="/governance/list-market-or-token"
           icon={<PlusCircleIcon className="h-5 w-5" />}
         />
         <MoreMenuItem

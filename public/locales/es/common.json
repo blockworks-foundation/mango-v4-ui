@@ -172,7 +172,7 @@
   "wallet-disconnected": "Disconnected from wallet",
   "withdraw": "Withdraw",
   "withdraw-amount": "Withdraw Amount",
-  "list-token": "List Token",
+  "list-market-token": "List Market/Token",
   "vote": "Vote",
   "yes": "Yes",
   "list-market": "List Market"
