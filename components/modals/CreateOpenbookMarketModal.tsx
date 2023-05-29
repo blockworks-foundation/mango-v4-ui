@@ -3,11 +3,9 @@ import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
 import useMangoGroup from 'hooks/useMangoGroup'
-import { ChangeEvent, useEffect, useMemo, useState } from 'react'
-import { calculateTradingParameters } from 'utils/governance/listingTools'
+import { ChangeEvent, useEffect, useState } from 'react'
 import Label from '@components/forms/Label'
 import Input from '@components/forms/Input'
-import { ExclamationCircleIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Button from '@components/shared/Button'
 import { makeCreateOpenBookMarketInstructionSimple } from 'utils/governance/market/createOpenBookMarket'
@@ -15,6 +13,8 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js'
 import { MARKET_STATE_LAYOUT_V2 } from '@project-serum/serum'
 import { notify } from 'utils/notifications'
+import InlineNotification from '@components/shared/InlineNotification'
+import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 
 type CreateObMarketForm = {
   programId: string
@@ -22,6 +22,17 @@ type CreateObMarketForm = {
   quoteMint: string
   minimumOrderSize: string
   minimumPriceTickSize: string
+}
+
+type TradingParams = {
+  baseLots: number
+  quoteLots: number
+  minOrderValue: number
+  baseLotExponent: number
+  quoteLotExponent: number
+  minOrderSize: number
+  priceIncrement: number
+  priceIncrementRelative: number
 }
 
 type FormErrors = Partial<Record<keyof CreateObMarketForm, string>>
@@ -37,6 +48,7 @@ const defaultFormValues: CreateObMarketForm = {
 type CreateOpenbookMarketModalProps = {
   quoteSymbol: string
   baseSymbol: string
+  tradingParams: TradingParams
 }
 
 const CreateOpenbookMarketModal = ({
@@ -44,10 +56,12 @@ const CreateOpenbookMarketModal = ({
   onClose,
   quoteSymbol,
   baseSymbol,
+  tradingParams,
 }: ModalProps & CreateOpenbookMarketModalProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
   const wallet = useWallet()
+  const { handleConnect } = useEnhancedWallet()
   const { group } = useMangoGroup()
 
   const [form, setForm] = useState({ ...defaultFormValues })
@@ -61,27 +75,6 @@ const CreateOpenbookMarketModal = ({
   const quoteBank = group?.banksMapByName.get(quoteSymbol)?.length
     ? group.banksMapByName.get(quoteSymbol)![0]
     : null
-
-  const tradingParams = useMemo(() => {
-    if (baseBank && quoteBank) {
-      return calculateTradingParameters(
-        baseBank.uiPrice,
-        quoteBank.uiPrice,
-        baseBank.mintDecimals,
-        quoteBank.mintDecimals
-      )
-    }
-    return {
-      baseLots: 0,
-      quoteLots: 0,
-      minOrderValue: 0,
-      baseLotExponent: 0,
-      quoteLotExponent: 0,
-      minOrderSize: 0,
-      priceIncrement: 0,
-      priceIncrementRelative: 0,
-    }
-  }, [baseBank, quoteBank])
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
@@ -184,7 +177,12 @@ const CreateOpenbookMarketModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="space-y-4">
-        <p>Creating market will cost at least {solNeededToCreateMarket} SOL</p>
+        <div className="text-center">
+          <h2 className="mb-1">{t('create-openbook')}</h2>
+          <p>
+            {t('create-market-sol-cost', { cost: solNeededToCreateMarket })}
+          </p>
+        </div>
         <div>
           <Label text={t('open-book-market-id')} />
           <Input
@@ -231,14 +229,16 @@ const CreateOpenbookMarketModal = ({
               handleSetAdvForm('minimumOrderSize', e.target.value)
             }
           />
-          {formErrors.minimumOrderSize && (
-            <div className="mt-1.5 flex items-center space-x-1">
-              <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-              <p className="mb-0 text-xs text-th-down">
-                {formErrors.minimumOrderSize}
-              </p>
+          {formErrors.minimumOrderSize ? (
+            <div className="mt-1">
+              <InlineNotification
+                hideBorder
+                hidePadding
+                type="error"
+                desc={formErrors.minimumOrderSize}
+              />
             </div>
-          )}
+          ) : null}
         </div>
         <div>
           <Label text={t('price-tick')} />
@@ -251,25 +251,31 @@ const CreateOpenbookMarketModal = ({
             }
           />
           {formErrors.minimumPriceTickSize && (
-            <div className="mt-1.5 flex items-center space-x-1">
-              <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-              <p className="mb-0 text-xs text-th-down">
-                {formErrors.minimumPriceTickSize}
-              </p>
+            <div className="mt-1">
+              <InlineNotification
+                hideBorder
+                hidePadding
+                type="error"
+                desc={formErrors.minimumPriceTickSize}
+              />
             </div>
           )}
         </div>
       </div>
-      <div>
+      {wallet.connected ? (
         <Button
-          className="float-right mt-6 flex w-36 items-center justify-center"
+          className="mt-6 w-full"
           onClick={handleCreate}
           disabled={creating}
           size="large"
         >
-          Create
+          {t('create')}
         </Button>
-      </div>
+      ) : (
+        <Button className="mt-6 w-full" onClick={handleConnect} size="large">
+          {t('connect-wallet')}
+        </Button>
+      )}
     </Modal>
   )
 }

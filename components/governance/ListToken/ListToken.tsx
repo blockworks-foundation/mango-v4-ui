@@ -1,6 +1,6 @@
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
-import Button from '@components/shared/Button'
+import Button, { IconButton } from '@components/shared/Button'
 import { ChangeEvent, useEffect, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
@@ -19,9 +19,9 @@ import {
   MANGO_MINT_DECIMALS,
 } from 'utils/governance/constants'
 import {
+  ArrowLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
-  InformationCircleIcon,
 } from '@heroicons/react/20/solid'
 import BN from 'bn.js'
 import { createProposal } from 'utils/governance/instructions/createProposal'
@@ -73,7 +73,7 @@ const defaultTokenListFormValues: TokenListForm = {
   proposalDescription: '',
 }
 
-const ListToken = () => {
+const ListToken = ({ goBack }: { goBack: () => void }) => {
   const wallet = useWallet()
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
@@ -347,10 +347,16 @@ const ListToken = () => {
 
   return (
     <div>
-      <h1 className="mb-4 flex items-center">{t('new-listing')}</h1>
+      <div className="mb-6 flex items-center">
+        <IconButton className="mr-4" onClick={goBack} size="medium">
+          <ArrowLeftIcon className="h-5 w-5" />
+        </IconButton>
+        <h1 className="flex items-center">{t('new-listing')}</h1>
+      </div>
+      <OnBoarding />
       {!currentTokenInfo ? (
         <>
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <h2 className="mb-2 text-lg">{t('before-you-list')}</h2>
             <ul>
               <li className="mb-2 flex items-center text-base">
@@ -388,7 +394,7 @@ const ListToken = () => {
                 {t('before-listing-4')}
               </li>
             </ul>
-          </div>
+          </div> */}
           <div>
             <Label text={t('token-mint')} />
             <div className="max-w-[460px]">
@@ -710,13 +716,20 @@ const ListToken = () => {
                   />
                 </div>
               ) : null}
-              <OnBoarding />
               <div className="mt-6 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                <Button secondary onClick={cancel} size="large">
+                  {t('cancel')}
+                </Button>
                 {wallet.connected ? (
                   <Button
                     className="flex w-full items-center justify-center sm:w-44"
                     onClick={propose}
-                    disabled={loadingRealm || loadingVoter}
+                    disabled={
+                      loadingRealm ||
+                      loadingVoter ||
+                      (!advForm.openBookMarketExternalPk &&
+                        !loadingListingParams)
+                    }
                     size="large"
                   >
                     {loadingListingParams ||
@@ -733,9 +746,6 @@ const ListToken = () => {
                     {t('connect-wallet')}
                   </Button>
                 )}
-                <Button secondary onClick={cancel} size="large">
-                  {t('cancel')}
-                </Button>
               </div>
             </>
           )}

@@ -142,11 +142,11 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 showTooltip={false}
               />
               <MenuItem
-                active={pathname === '/governance/listToken'}
+                active={pathname === '/governance/list-token'}
                 collapsed={false}
                 icon={<PlusCircleIcon className="h-5 w-5" />}
                 title={t('common:list-token')}
-                pagePath="/governance/listToken"
+                pagePath="/governance/list-token"
                 hideIconBg
                 showTooltip={false}
               />
