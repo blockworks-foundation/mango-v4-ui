@@ -31,6 +31,7 @@ import { formatTokenSymbol } from 'utils/tokens'
 import OnBoarding from '../OnBoarding'
 import { calculateTradingParameters } from 'utils/governance/listingTools'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
+import { tryGetPubKey } from 'utils/governance/tools'
 
 type FormErrors = Partial<Record<keyof ListMarketForm, string>>
 
@@ -109,6 +110,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
     handleGetMarketProps()
   }
   const goToHomePage = async () => {
+    setFormErrors({})
     setCurrentView(VIEWS.BASE_TOKEN)
     setMarketPk('')
     setProposalPk('')
@@ -116,7 +118,47 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
       ...defaultFormValues,
     })
   }
+
+  const isFormValid = useCallback(
+    (advForm: ListMarketForm) => {
+      const invalidFields: FormErrors = {}
+      setFormErrors({})
+      const pubkeyFields: (keyof ListMarketForm)[] = [
+        'openBookMarketExternalPk',
+      ]
+      const numberFields: (keyof ListMarketForm)[] = ['marketIndex']
+      const textFields: (keyof ListMarketForm)[] = [
+        'marketName',
+        'proposalTitle',
+      ]
+
+      for (const key of pubkeyFields) {
+        if (!tryGetPubKey(advForm[key] as string)) {
+          invalidFields[key] = t('invalid-pk')
+        }
+      }
+      for (const key of numberFields) {
+        if (isNaN(advForm[key] as number) || advForm[key] === '') {
+          invalidFields[key] = t('invalid-num')
+        }
+      }
+      for (const key of textFields) {
+        if (!advForm[key]) {
+          invalidFields[key] = t('field-req')
+        }
+      }
+      if (Object.keys(invalidFields).length) {
+        setFormErrors(invalidFields)
+      }
+      return invalidFields
+    },
+    [t]
+  )
   const handlePropose = useCallback(async () => {
+    const invalidFields = isFormValid(advForm)
+    if (Object.keys(invalidFields).length) {
+      return
+    }
     setProposing(true)
     const index = proposals ? Object.values(proposals).length : 0
     const proposalTx = []
@@ -165,10 +207,11 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
     client,
     connection,
     group,
+    isFormValid,
     proposals,
     quoteBank,
     t,
-    voter,
+    voter.tokenOwnerRecord,
     vsrClient,
     wallet,
   ])
@@ -401,7 +444,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                         <Label text={t('market-index')} />
                         <Input
                           hasError={formErrors.marketIndex !== undefined}
-                          type="text"
+                          type="number"
                           value={advForm.marketIndex.toString()}
                           onChange={(e: ChangeEvent<HTMLInputElement>) =>
                             handleSetAdvForm('marketIndex', e.target.value)
