@@ -97,5 +97,6 @@
     "create-openbook": "Create Openbook Market",
     "create-market-sol-cost": "The transaction cost for listing on Openbook is ~{{cost}} SOL",
     "no-openbook-found": "An Openbook market is required for {{market}}",
-    "no-openbook-found-desc": "Create an Openbook market to propose listing"
+    "no-openbook-found-desc": "Create an Openbook market to propose listing",
+    "market-pair": "Market Pair"
 }

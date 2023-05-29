@@ -144,7 +144,7 @@ const MoreMenuPanel = ({
         />
         <MoreMenuItem
           title={t('common:list-market-token')}
-          path="/governance/list-market-or-token"
+          path="/governance/list"
           icon={<PlusCircleIcon className="h-5 w-5" />}
         />
         <MoreMenuItem

@@ -243,7 +243,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
         <div className="mb-6">
           <div className="rounded-lg border border-th-bkg-3 px-4 pt-6 pb-2">
             <h2 className="mb-3 px-2 text-base">
-              {t('market-name')}{' '}
+              {t('market-pair')}{' '}
               {baseToken && quoteToken
                 ? `- ${formatTokenSymbol(baseToken)}/${formatTokenSymbol(
                     quoteToken
