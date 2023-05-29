@@ -81,10 +81,10 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
   const [marketPk, setMarketPk] = useState('')
   const [currentView, setCurrentView] = useState(VIEWS.BASE_TOKEN)
   const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
-  const baseBank =
-    group && baseToken ? group.banksMapByName.get(baseToken)![0] : null
-  const quoteBank =
-    group && quoteToken ? group.banksMapByName.get(quoteToken)![0] : null
+  const baseBanks = baseToken ? group?.banksMapByName.get(baseToken) : null
+  const quoteBanks = quoteToken ? group?.banksMapByName.get(quoteToken) : null
+  const baseBank = baseBanks?.length ? baseBanks[0] : null
+  const quoteBank = quoteBanks?.length ? quoteBanks[0] : null
   const marketName = `${baseToken?.toUpperCase()}/${quoteToken?.toUpperCase()}`
 
   const [baseTokens, quoteTokens] = useMemo(() => {
