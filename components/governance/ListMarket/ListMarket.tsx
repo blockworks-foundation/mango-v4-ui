@@ -233,7 +233,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
         <IconButton className="mr-4" onClick={goBack} size="medium">
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
-        <h1 className="flex items-center">{t('new-market-listing')}</h1>
+        <h1 className="flex items-center">{t('list-spot-market')}</h1>
       </div>
       <OnBoarding />
       {proposalPk && currentView === VIEWS.SUCCESS ? (

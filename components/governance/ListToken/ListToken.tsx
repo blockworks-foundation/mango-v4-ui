@@ -351,7 +351,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         <IconButton className="mr-4" onClick={goBack} size="medium">
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
-        <h1 className="flex items-center">{t('new-listing')}</h1>
+        <h1 className="flex items-center">{t('list-token')}</h1>
       </div>
       <OnBoarding />
       {!currentTokenInfo ? (
