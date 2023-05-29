@@ -1,15 +1,11 @@
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
 import Button, { IconButton } from '@components/shared/Button'
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
-import {
-  JUPITER_API_DEVNET,
-  JUPITER_API_MAINNET,
-  USDC_MINT,
-} from 'utils/constants'
+import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
 import { PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
@@ -42,6 +38,7 @@ import { fmtTokenAmount, tryGetPubKey } from 'utils/governance/tools'
 import OnBoarding from '../OnBoarding'
 import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketModal'
 import { calculateTradingParameters } from 'utils/governance/listingTools'
+import useJupiterMints from 'hooks/useJupiterMints'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -77,6 +74,7 @@ const defaultTokenListFormValues: TokenListForm = {
 
 const ListToken = ({ goBack }: { goBack: () => void }) => {
   const wallet = useWallet()
+  const { jupiterTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
   const { group } = useMangoGroup()
@@ -95,17 +93,17 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     ...defaultTokenListFormValues,
   })
   const [loadingListingParams, setLoadingListingParams] = useState(false)
-  const [tokenList, setTokenList] = useState<Token[]>([])
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [priceImpact, setPriceImpact] = useState<number>(0)
   const [currentTokenInfo, setCurrentTokenInfo] = useState<
     Token | null | undefined
   >(null)
+  const [baseTokenPrice, setBaseTokenPrice] = useState<number>(0)
   const [proposalPk, setProposalPk] = useState<string | null>(null)
   const [mint, setMint] = useState('')
   const [creatingProposal, setCreatingProposal] = useState(false)
   const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
-  const quoteBank = group!.getFirstBankByMint(new PublicKey(USDC_MINT))
+  const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
     () =>
       governances
@@ -118,11 +116,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
     : 0
   const tradingParams = useMemo(() => {
-    if (quoteBank) {
+    if (quoteBank && currentTokenInfo) {
       return calculateTradingParameters(
-        0,
+        baseTokenPrice,
         quoteBank.uiPrice,
-        0,
+        currentTokenInfo.decimals,
         quoteBank.mintDecimals
       )
     }
@@ -136,51 +134,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       priceIncrement: 0,
       priceIncrementRelative: 0,
     }
-  }, [quoteBank])
+  }, [quoteBank, currentTokenInfo, baseTokenPrice])
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
     setAdvForm({ ...advForm, [propertyName]: value })
   }
-
-  const handleTokenFind = async () => {
-    cancel()
-    if (!tryGetPubKey(mint)) {
-      notify({
-        title: t('enter-valid-token-mint'),
-        type: 'error',
-      })
-      return
-    }
-    let currentTokenList: Token[] = tokenList
-    if (!tokenList.length) {
-      currentTokenList = await getTokenList()
-      setTokenList(currentTokenList)
-    }
-    const tokenInfo = currentTokenList.find((x) => x.address === mint)
-    setCurrentTokenInfo(tokenInfo)
-    if (tokenInfo) {
-      handleLiqudityCheck(new PublicKey(mint))
-      getListingParams(tokenInfo)
-    }
-  }
-
-  const getTokenList = useCallback(async () => {
-    try {
-      const url =
-        CLUSTER === 'devnet' ? JUPITER_API_DEVNET : JUPITER_API_MAINNET
-      const response = await fetch(url)
-      const data: Token[] = await response.json()
-      return data
-    } catch (e) {
-      notify({
-        title: t('cant-find-token-for-mint'),
-        description: `${e}`,
-        type: 'error',
-      })
-      return []
-    }
-  }, [t])
 
   const getListingParams = useCallback(
     async (tokenInfo: Token) => {
@@ -260,6 +219,28 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     },
     [t, wallet.publicKey]
   )
+
+  const handleTokenFind = useCallback(async () => {
+    cancel()
+    if (!tryGetPubKey(mint)) {
+      notify({
+        title: t('enter-valid-token-mint'),
+        type: 'error',
+      })
+      return
+    }
+    const tokenInfo = jupiterTokens.find((x) => x.address === mint)
+    const priceInfo = await (
+      await fetch(`${JUPITER_PRICE_API_MAINNET}/price?ids=${mint}`)
+    ).json()
+
+    setBaseTokenPrice(priceInfo.data[mint].price)
+    setCurrentTokenInfo(tokenInfo)
+    if (tokenInfo) {
+      handleLiqudityCheck(new PublicKey(mint))
+      getListingParams(tokenInfo)
+    }
+  }, [getListingParams, handleLiqudityCheck, jupiterTokens, mint, t])
 
   const cancel = () => {
     setCurrentTokenInfo(null)
@@ -399,10 +380,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
   }
-
-  useEffect(() => {
-    setTokenList([])
-  }, [])
 
   return (
     <div>
@@ -736,8 +713,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                   </div>
                   {createOpenbookMarketModal ? (
                     <CreateOpenbookMarketModal
-                      quoteSymbol={''}
-                      baseSymbol={''}
+                      quoteMint={quoteBank?.mint.toBase58() || ''}
+                      baseMint={currentTokenInfo?.name || ''}
+                      baseDecimals={currentTokenInfo.decimals}
+                      quoteDecimals={quoteBank?.mintDecimals || 0}
                       isOpen={createOpenbookMarketModal}
                       onClose={closeCreateOpenBookMarketModal}
                       tradingParams={tradingParams}
