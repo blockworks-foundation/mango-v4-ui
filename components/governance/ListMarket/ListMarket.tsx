@@ -81,10 +81,10 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
   const [marketPk, setMarketPk] = useState('')
   const [currentView, setCurrentView] = useState(VIEWS.BASE_TOKEN)
   const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
-  const baseBank =
-    group && baseToken ? group.banksMapByName.get(baseToken) : null
-  const quoteBank =
-    group && quoteToken ? group.banksMapByName.get(quoteToken) : null
+  const baseBanks = baseToken ? group?.banksMapByName.get(baseToken) : null
+  const quoteBanks = quoteToken ? group?.banksMapByName.get(quoteToken) : null
+  const baseBank = baseBanks?.length ? baseBanks[0] : null
+  const quoteBank = quoteBanks?.length ? quoteBanks[0] : null
   const marketName = `${baseToken?.toUpperCase()}/${quoteToken?.toUpperCase()}`
 
   const [baseTokens, quoteTokens] = useMemo(() => {
@@ -170,8 +170,8 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
         admin: MANGO_DAO_WALLET,
         serumProgram: OPENBOOK_PROGRAM_ID[CLUSTER],
         serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
-        baseBank: baseBank![0]!.publicKey,
-        quoteBank: quoteBank![0]!.publicKey,
+        baseBank: baseBank!.publicKey,
+        quoteBank: quoteBank!.publicKey,
         payer: MANGO_DAO_WALLET,
       })
       .instruction()
@@ -221,14 +221,14 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
     setCurrentView(VIEWS.PROPS)
   }
   const handleGetMarketProps = useCallback(async () => {
-    if (!baseBank?.length || !quoteBank?.length) {
+    if (!baseBank || !quoteBank) {
       return
     }
     setLoadingMarketProps(true)
     const [bestMarketPk] = await Promise.all([
       getBestMarket({
-        baseMint: baseBank[0].mint.toBase58(),
-        quoteMint: quoteBank[0].mint.toBase58(),
+        baseMint: baseBank.mint.toBase58(),
+        quoteMint: quoteBank.mint.toBase58(),
         cluster: CLUSTER,
         connection,
       }),
@@ -252,10 +252,10 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
   const tradingParams = useMemo(() => {
     if (baseBank && quoteBank) {
       return calculateTradingParameters(
-        baseBank[0].uiPrice,
-        quoteBank[0].uiPrice,
-        baseBank[0].mintDecimals,
-        quoteBank[0].mintDecimals
+        baseBank.uiPrice,
+        quoteBank.uiPrice,
+        baseBank.mintDecimals,
+        quoteBank.mintDecimals
       )
     }
     return {
