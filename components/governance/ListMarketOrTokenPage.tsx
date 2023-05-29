@@ -14,7 +14,7 @@ enum LIST_OPTIONS {
 }
 
 const BUTTON_WRAPPER_CLASSES =
-  'col-span-2 rounded-md border border-th-bkg-3 md:col-span-1 p-6'
+  'col-span-2 rounded-lg border border-th-bkg-3 md:col-span-1 p-6'
 
 const ListMarketOrTokenPage = () => {
   const { t } = useTranslation(['governance'])
