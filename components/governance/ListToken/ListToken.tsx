@@ -40,6 +40,8 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { getBestMarket, getOracle } from 'utils/governance/listingTools'
 import { fmtTokenAmount, tryGetPubKey } from 'utils/governance/tools'
 import OnBoarding from '../OnBoarding'
+import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketModal'
+import { calculateTradingParameters } from 'utils/governance/listingTools'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -102,6 +104,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [proposalPk, setProposalPk] = useState<string | null>(null)
   const [mint, setMint] = useState('')
   const [creatingProposal, setCreatingProposal] = useState(false)
+  const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
+  const quoteBank = group!.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
     () =>
       governances
@@ -113,6 +117,26 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const mintVoterWeightNumber = governances
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
     : 0
+  const tradingParams = useMemo(() => {
+    if (quoteBank) {
+      return calculateTradingParameters(
+        0,
+        quoteBank.uiPrice,
+        0,
+        quoteBank.mintDecimals
+      )
+    }
+    return {
+      baseLots: 0,
+      quoteLots: 0,
+      minOrderValue: 0,
+      baseLotExponent: 0,
+      quoteLotExponent: 0,
+      minOrderSize: 0,
+      priceIncrement: 0,
+      priceIncrementRelative: 0,
+    }
+  }, [quoteBank])
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
@@ -372,6 +396,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     wallet,
   ])
 
+  const closeCreateOpenBookMarketModal = () => {
+    setCreateOpenbookMarket(false)
+  }
+
   useEffect(() => {
     setTokenList([])
   }, [])
@@ -387,45 +415,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       <OnBoarding />
       {!currentTokenInfo ? (
         <>
-          {/* <div className="mb-6">
-            <h2 className="mb-2 text-lg">{t('before-you-list')}</h2>
-            <ul>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                <span>
-                  {t('before-listing-1')}{' '}
-                  <a
-                    href="https://dao.mango.markets"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    {t('mango-governance')}
-                  </a>
-                </span>
-              </li>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                <span>
-                  {t('before-listing-2')}{' '}
-                  <a
-                    href="https://raydium.io/create-market"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    {t('openbook-market')}
-                  </a>
-                </span>
-              </li>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                {t('before-listing-3')}
-              </li>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                {t('before-listing-4')}
-              </li>
-            </ul>
-          </div> */}
           <div>
             <Label text={t('token-mint')} />
             <div className="max-w-[460px]">
@@ -729,23 +718,32 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 </div>
               ) : null}
               {!advForm.openBookMarketExternalPk && !loadingListingParams ? (
-                <div className="mb-4">
-                  <InlineNotification
-                    desc={
-                      <div>
-                        <a
-                          href="https://raydium.io/create-market"
-                          rel="noopener noreferrer"
-                          target="_blank"
-                          className="underline"
-                        >
-                          {t('cant-list-no-openbook-market')}
-                        </a>
-                      </div>
-                    }
-                    type="error"
-                  />
-                </div>
+                <>
+                  <div className="mb-4">
+                    <InlineNotification
+                      desc={
+                        <div>
+                          <a
+                            onClick={() => setCreateOpenbookMarket(true)}
+                            className="cursor-pointer underline"
+                          >
+                            {t('cant-list-no-openbook-market')}
+                          </a>
+                        </div>
+                      }
+                      type="error"
+                    />
+                  </div>
+                  {createOpenbookMarketModal ? (
+                    <CreateOpenbookMarketModal
+                      quoteSymbol={''}
+                      baseSymbol={''}
+                      isOpen={createOpenbookMarketModal}
+                      onClose={closeCreateOpenBookMarketModal}
+                      tradingParams={tradingParams}
+                    />
+                  ) : null}
+                </>
               ) : null}
               <div className="mt-6 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
                 <Button secondary onClick={cancel} size="large">
