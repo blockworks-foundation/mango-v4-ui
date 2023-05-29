@@ -233,7 +233,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     const priceInfo = await (
       await fetch(`${JUPITER_PRICE_API_MAINNET}/price?ids=${mint}`)
     ).json()
-
     setBaseTokenPrice(priceInfo.data[mint].price)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
@@ -379,6 +378,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
+    if (currentTokenInfo) {
+      getListingParams(currentTokenInfo)
+    }
   }
 
   return (
@@ -714,7 +716,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                   {createOpenbookMarketModal ? (
                     <CreateOpenbookMarketModal
                       quoteMint={quoteBank?.mint.toBase58() || ''}
-                      baseMint={currentTokenInfo?.name || ''}
+                      baseMint={currentTokenInfo?.address || ''}
                       baseDecimals={currentTokenInfo.decimals}
                       quoteDecimals={quoteBank?.mintDecimals || 0}
                       isOpen={createOpenbookMarketModal}
