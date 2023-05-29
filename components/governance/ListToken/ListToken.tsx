@@ -1,7 +1,7 @@
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
 import Button, { IconButton } from '@components/shared/Button'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
@@ -102,10 +102,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [proposalPk, setProposalPk] = useState<string | null>(null)
   const [mint, setMint] = useState('')
   const [creatingProposal, setCreatingProposal] = useState(false)
-  const minVoterWeight = governances
-    ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
-        .minCommunityTokensToCreateProposal
-    : new BN(0)
+  const minVoterWeight = useMemo(
+    () =>
+      governances
+        ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
+            .minCommunityTokensToCreateProposal
+        : new BN(0),
+    [governances]
+  )
   const mintVoterWeightNumber = governances
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
     : 0
@@ -137,7 +141,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
   }
 
-  const getTokenList = async () => {
+  const getTokenList = useCallback(async () => {
     try {
       const url =
         CLUSTER === 'devnet' ? JUPITER_API_DEVNET : JUPITER_API_MAINNET
@@ -152,80 +156,86 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       return []
     }
-  }
+  }, [t])
 
-  const getListingParams = async (tokenInfo: Token) => {
-    setLoadingListingParams(true)
-    const [oraclePk, marketPk] = await Promise.all([
-      getOracle({
-        baseSymbol: tokenInfo.symbol,
-        quoteSymbol: 'usd',
-        connection,
-      }),
-      getBestMarket({
-        baseMint: mint,
-        quoteMint: USDC_MINT,
-        cluster: CLUSTER,
-        connection,
-      }),
-    ])
-    const index = proposals ? Object.values(proposals).length : 0
+  const getListingParams = useCallback(
+    async (tokenInfo: Token) => {
+      setLoadingListingParams(true)
+      const [oraclePk, marketPk] = await Promise.all([
+        getOracle({
+          baseSymbol: tokenInfo.symbol,
+          quoteSymbol: 'usd',
+          connection,
+        }),
+        getBestMarket({
+          baseMint: mint,
+          quoteMint: USDC_MINT,
+          cluster: CLUSTER,
+          connection,
+        }),
+      ])
+      const index = proposals ? Object.values(proposals).length : 0
 
-    const bankNum = 0
+      const bankNum = 0
 
-    const [baseBank] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from('Bank'),
-        group!.publicKey.toBuffer(),
-        new BN(index).toArrayLike(Buffer, 'le', 2),
-        new BN(bankNum).toArrayLike(Buffer, 'le', 4),
-      ],
-      client.programId
-    )
-    setAdvForm({
-      ...advForm,
-      oraclePk: oraclePk || '',
-      mintPk: mint,
-      name: tokenInfo.symbol,
-      tokenIndex: index,
-      openBookProgram: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
-      marketName: `${tokenInfo.symbol}/USDC`,
-      baseBankPk: baseBank.toBase58(),
-      quoteBankPk: group!
-        .getFirstBankByMint(new PublicKey(USDC_MINT))
-        .publicKey.toBase58(),
-      marketIndex: index,
-      openBookMarketExternalPk: marketPk?.toBase58() || '',
-      proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
-    })
-    setLoadingListingParams(false)
-  }
-
-  const handleLiqudityCheck = async (tokenMint: PublicKey) => {
-    try {
-      //we check price impact on token for 10k USDC
-      const USDC_AMOUNT = 10000000000
-      const SLIPPAGE_BPS = 50
-      const MODE = 'ExactIn'
-      const FEE = 0
-      const { bestRoute } = await handleGetRoutes(
-        USDC_MINT,
-        tokenMint.toBase58(),
-        USDC_AMOUNT,
-        SLIPPAGE_BPS,
-        MODE,
-        FEE,
-        wallet.publicKey ? wallet.publicKey?.toBase58() : emptyPk
+      const [baseBank] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('Bank'),
+          group!.publicKey.toBuffer(),
+          new BN(index).toArrayLike(Buffer, 'le', 2),
+          new BN(bankNum).toArrayLike(Buffer, 'le', 4),
+        ],
+        client.programId
       )
-      setPriceImpact(bestRoute ? bestRoute.priceImpactPct * 100 : 100)
-    } catch (e) {
-      notify({
-        title: t('liquidity-check-error'),
-        description: `${e}`,
-        type: 'error',
+      setAdvForm({
+        ...advForm,
+        oraclePk: oraclePk || '',
+        mintPk: mint,
+        name: tokenInfo.symbol,
+        tokenIndex: index,
+        openBookProgram: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
+        marketName: `${tokenInfo.symbol}/USDC`,
+        baseBankPk: baseBank.toBase58(),
+        quoteBankPk: group!
+          .getFirstBankByMint(new PublicKey(USDC_MINT))
+          .publicKey.toBase58(),
+        marketIndex: index,
+        openBookMarketExternalPk: marketPk?.toBase58() || '',
+        proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
       })
-    }
-  }
+      setLoadingListingParams(false)
+    },
+    [advForm, client.programId, connection, group, mint, proposals]
+  )
+
+  const handleLiqudityCheck = useCallback(
+    async (tokenMint: PublicKey) => {
+      try {
+        //we check price impact on token for 10k USDC
+        const USDC_AMOUNT = 10000000000
+        const SLIPPAGE_BPS = 50
+        const MODE = 'ExactIn'
+        const FEE = 0
+        const { bestRoute } = await handleGetRoutes(
+          USDC_MINT,
+          tokenMint.toBase58(),
+          USDC_AMOUNT,
+          SLIPPAGE_BPS,
+          MODE,
+          FEE,
+          wallet.publicKey ? wallet.publicKey?.toBase58() : emptyPk
+        )
+        setPriceImpact(bestRoute ? bestRoute.priceImpactPct * 100 : 100)
+      } catch (e) {
+        notify({
+          title: t('liquidity-check-error'),
+          description: `${e}`,
+          type: 'error',
+        })
+      }
+    },
+    [t, wallet.publicKey]
+  )
 
   const cancel = () => {
     setCurrentTokenInfo(null)
@@ -234,7 +244,47 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setProposalPk(null)
   }
 
-  const propose = async () => {
+  const isFormValid = useCallback(
+    (advForm: TokenListForm) => {
+      const invalidFields: FormErrors = {}
+      setFormErrors({})
+      const pubkeyFields: (keyof TokenListForm)[] = [
+        'openBookProgram',
+        'quoteBankPk',
+        'baseBankPk',
+        'openBookMarketExternalPk',
+        'oraclePk',
+      ]
+      const numberFields: (keyof TokenListForm)[] = ['tokenIndex']
+      const textFields: (keyof TokenListForm)[] = [
+        'marketName',
+        'proposalTitle',
+      ]
+
+      for (const key of pubkeyFields) {
+        if (!tryGetPubKey(advForm[key] as string)) {
+          invalidFields[key] = t('invalid-pk')
+        }
+      }
+      for (const key of numberFields) {
+        if (isNaN(advForm[key] as number) || advForm[key] === '') {
+          invalidFields[key] = t('invalid-num')
+        }
+      }
+      for (const key of textFields) {
+        if (!advForm[key]) {
+          invalidFields[key] = t('field-req')
+        }
+      }
+      if (Object.keys(invalidFields).length) {
+        setFormErrors(invalidFields)
+      }
+      return invalidFields
+    },
+    [t]
+  )
+
+  const propose = useCallback(async () => {
     const invalidFields = isFormValid(advForm)
     if (Object.keys(invalidFields).length) {
       return
@@ -305,45 +355,26 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
 
     setCreatingProposal(false)
-  }
-
-  const isFormValid = (advForm: TokenListForm) => {
-    const invalidFields: FormErrors = {}
-    setFormErrors({})
-    const pubkeyFields: (keyof TokenListForm)[] = [
-      'openBookProgram',
-      'quoteBankPk',
-      'baseBankPk',
-      'openBookMarketExternalPk',
-      'oraclePk',
-    ]
-    const numberFields: (keyof TokenListForm)[] = ['tokenIndex']
-    const textFields: (keyof TokenListForm)[] = ['marketName', 'proposalTitle']
-
-    for (const key of pubkeyFields) {
-      if (!tryGetPubKey(advForm[key] as string)) {
-        invalidFields[key] = t('invalid-pk')
-      }
-    }
-    for (const key of numberFields) {
-      if (isNaN(advForm[key] as number) || advForm[key] === '') {
-        invalidFields[key] = t('invalid-num')
-      }
-    }
-    for (const key of textFields) {
-      if (!advForm[key]) {
-        invalidFields[key] = t('field-req')
-      }
-    }
-    if (Object.keys(invalidFields).length) {
-      setFormErrors(invalidFields)
-    }
-    return invalidFields
-  }
+  }, [
+    advForm,
+    client,
+    connection,
+    connectionContext,
+    getCurrentVotingPower,
+    group,
+    isFormValid,
+    minVoterWeight,
+    mintVoterWeightNumber,
+    t,
+    voter.tokenOwnerRecord,
+    voter.voteWeight,
+    vsrClient,
+    wallet,
+  ])
 
   useEffect(() => {
     setTokenList([])
-  }, [CLUSTER])
+  }, [])
 
   return (
     <div>
