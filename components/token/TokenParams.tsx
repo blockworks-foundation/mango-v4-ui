@@ -171,15 +171,19 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <p>{t('token:oracle')}</p>
-          <a
-            className="flex items-center"
-            href={oracleLinkPath}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className="mr-1.5">{oracleProvider}</span>
-            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-          </a>
+          {oracleLinkPath ? (
+            <a
+              className="flex items-center"
+              href={oracleLinkPath}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="mr-1.5">{oracleProvider}</span>
+              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            </a>
+          ) : (
+            <p className="text-th-fgd-2">{oracleProvider}</p>
+          )}
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <Tooltip content={t('token:tooltip-oracle-confidence')}>
