@@ -30,7 +30,7 @@ import { notify } from 'utils/notifications'
 import { useTranslation } from 'next-i18next'
 import { emptyPk } from 'utils/governance/accounts/vsrAccounts'
 import Loading from '@components/shared/Loading'
-import ListTokenSuccess from './ListTokenSuccess'
+import ListingSuccess from '../ListingSuccess'
 import InlineNotification from '@components/shared/InlineNotification'
 import { Disclosure } from '@headlessui/react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
@@ -387,45 +387,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       <OnBoarding />
       {!currentTokenInfo ? (
         <>
-          {/* <div className="mb-6">
-            <h2 className="mb-2 text-lg">{t('before-you-list')}</h2>
-            <ul>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                <span>
-                  {t('before-listing-1')}{' '}
-                  <a
-                    href="https://dao.mango.markets"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    {t('mango-governance')}
-                  </a>
-                </span>
-              </li>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                <span>
-                  {t('before-listing-2')}{' '}
-                  <a
-                    href="https://raydium.io/create-market"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    {t('openbook-market')}
-                  </a>
-                </span>
-              </li>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                {t('before-listing-3')}
-              </li>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                {t('before-listing-4')}
-              </li>
-            </ul>
-          </div> */}
           <div>
             <Label text={t('token-mint')} />
             <div className="max-w-[460px]">
@@ -457,10 +418,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       ) : (
         <>
           {proposalPk ? (
-            <ListTokenSuccess
+            <ListingSuccess
               proposalPk={proposalPk}
               token={currentTokenInfo?.name}
-            ></ListTokenSuccess>
+            />
           ) : (
             <>
               <div className="rounded-md bg-th-bkg-2 p-4">
