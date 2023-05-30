@@ -98,7 +98,7 @@ const TopBar = () => {
             </div>
           ) : null}
           <img
-            className="mr-4 h-8 w-auto md:hidden"
+            className="h-8 w-8 md:hidden"
             src="/logos/logo-mark.svg"
             alt="next"
           />
@@ -175,11 +175,16 @@ const TopBar = () => {
           </div>
         ) : null}
         <div className="flex items-center">
-          {isUnownedAccount || (!connected && isMobile) ? null : (
+          {isUnownedAccount || (!connected && isMobile) ? null : isMobile ? (
+            <button
+              onClick={() => handleDepositWithdrawModal('deposit')}
+              className="h-16 border-l border-th-bkg-3 px-6 font-display text-th-fgd-1"
+            >{`${t('deposit')} / ${t('withdraw')}`}</button>
+          ) : (
             <Button
               onClick={() => handleDepositWithdrawModal('deposit')}
               secondary
-              className="mx-4"
+              className="mr-4"
             >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           )}
           {connected ? (
