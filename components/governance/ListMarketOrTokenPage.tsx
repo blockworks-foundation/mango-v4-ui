@@ -5,6 +5,8 @@ import Button from '@components/shared/Button'
 import ListMarket from './ListMarket/ListMarket'
 import { useTranslation } from 'next-i18next'
 import { InformationCircleIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 
 const ListToken = dynamic(() => import('./ListToken/ListToken'))
 
@@ -18,6 +20,7 @@ const BUTTON_WRAPPER_CLASSES =
 
 const ListMarketOrTokenPage = () => {
   const { t } = useTranslation(['governance'])
+  const { connected } = useWallet()
   const [listOptions, setListOption] = useState<LIST_OPTIONS | null>(null)
 
   return (
@@ -44,19 +47,6 @@ const ListMarketOrTokenPage = () => {
                   </a>
                 </span>
               </li>
-              {/* <li className="mb-2 flex items-center text-base">
-            <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-            <span>
-              {t('before-listing-2')}{' '}
-              <a
-                href="https://raydium.io/create-market"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                {t('openbook-market')}
-              </a>
-            </span>
-          </li> */}
               <li className="mb-2 flex items-center text-base">
                 <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
                 {t('before-listing-3')}
@@ -66,30 +56,36 @@ const ListMarketOrTokenPage = () => {
                 {t('before-listing-4')}
               </li>
             </ul>
-            <div className="grid grid-cols-2 gap-6">
-              <div className={BUTTON_WRAPPER_CLASSES}>
-                <img
-                  src="/images/list-market.png"
-                  className="mb-2 h-10 w-auto"
-                />
-                <h2 className="mb-2">{t('list-spot-market')}</h2>
-                <p className="mb-4">{t('list-spot-market-desc')}</p>
-                <Button onClick={() => setListOption(LIST_OPTIONS.MARKET)}>
-                  {t('list-spot-market')}
-                </Button>
+            {connected ? (
+              <div className="grid grid-cols-2 gap-6">
+                <div className={BUTTON_WRAPPER_CLASSES}>
+                  <img
+                    src="/images/list-market.png"
+                    className="mb-2 h-10 w-auto"
+                  />
+                  <h2 className="mb-2">{t('list-spot-market')}</h2>
+                  <p className="mb-4">{t('list-spot-market-desc')}</p>
+                  <Button onClick={() => setListOption(LIST_OPTIONS.MARKET)}>
+                    {t('list-spot-market')}
+                  </Button>
+                </div>
+                <div className={BUTTON_WRAPPER_CLASSES}>
+                  <img
+                    src="/images/list-token.png"
+                    className="mb-2 h-10 w-auto"
+                  />
+                  <h2 className="mb-2">{t('list-token')}</h2>
+                  <p className="mb-4">{t('list-token-desc')}</p>
+                  <Button onClick={() => setListOption(LIST_OPTIONS.TOKEN)}>
+                    {t('list-token')}
+                  </Button>
+                </div>
               </div>
-              <div className={BUTTON_WRAPPER_CLASSES}>
-                <img
-                  src="/images/list-token.png"
-                  className="mb-2 h-10 w-auto"
-                />
-                <h2 className="mb-2">{t('list-token')}</h2>
-                <p className="mb-4">{t('list-token-desc')}</p>
-                <Button onClick={() => setListOption(LIST_OPTIONS.TOKEN)}>
-                  {t('list-token')}
-                </Button>
+            ) : (
+              <div className="rounded-lg border border-th-bkg-3 p-6">
+                <ConnectEmptyState text={t('connect-to-list')} />
               </div>
-            </div>
+            )}
           </>
         )}
       </GovernancePageWrapper>
