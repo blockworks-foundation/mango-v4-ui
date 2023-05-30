@@ -98,7 +98,7 @@ const TopBar = () => {
             </div>
           ) : null}
           <img
-            className="h-8 w-8 md:hidden"
+            className="mr-4 h-8 w-8 flex-shrink-0 md:hidden"
             src="/logos/logo-mark.svg"
             alt="next"
           />
@@ -178,7 +178,7 @@ const TopBar = () => {
           {isUnownedAccount || (!connected && isMobile) ? null : isMobile ? (
             <button
               onClick={() => handleDepositWithdrawModal('deposit')}
-              className="h-16 border-l border-th-bkg-3 px-6 font-display text-th-fgd-1"
+              className="h-16 border-l border-th-bkg-3 px-4 font-display text-th-fgd-1"
             >{`${t('deposit')} / ${t('withdraw')}`}</button>
           ) : (
             <Button
