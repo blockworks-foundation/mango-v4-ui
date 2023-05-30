@@ -17,6 +17,7 @@ import {
   MagnifyingGlassIcon,
   BanknotesIcon,
   PlusCircleIcon,
+  ArchiveBoxArrowDownIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 import LeaderboardIcon from '@components/icons/LeaderboardIcon'
@@ -142,14 +143,14 @@ const MoreMenuPanel = ({
           icon={<MagnifyingGlassIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
-          title={t('common:list-token')}
-          path="/governance/listToken"
+          title={t('common:list-market-token')}
+          path="/governance/list"
           icon={<PlusCircleIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
           title={t('common:vote')}
           path="/governance/vote"
-          icon={<PlusCircleIcon className="h-5 w-5" />}
+          icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
         />
         <MoreMenuItem
           title={t('learn')}

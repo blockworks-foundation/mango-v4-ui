@@ -92,6 +92,7 @@
   "leverage": "杠杆",
   "liability-weight": "债务权重",
   "liquidity": "流动性",
+  "list-market": "List Market",
   "loading": "加载中",
   "loan-origination-fee": "借贷费用",
   "loan-origination-fee-tooltip": "执行借贷费用是{{fee}}。",
@@ -173,7 +174,7 @@
   "wallet-disconnected": "已断开钱包连接",
   "withdraw": "取款",
   "withdraw-amount": "取款额",
-  "list-token": "列表代币",
+  "list-market-token": "List Market/Token",
   "vote": "投票",
   "yes": "是"
  }

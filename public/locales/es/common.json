@@ -92,6 +92,7 @@
   "leverage": "Leverage",
   "liability-weight": "Liability Weight",
   "liquidity": "Liquidity",
+  "list-market": "List Market",
   "loading": "Loading",
   "loan-origination-fee": "Borrow Fee",
   "loan-origination-fee-tooltip": "{{fee}} fee for opening a borrow",
@@ -173,7 +174,7 @@
   "wallet-disconnected": "Disconnected from wallet",
   "withdraw": "Withdraw",
   "withdraw-amount": "Withdraw Amount",
-  "list-token": "List Token",
+  "list-market-token": "List Market/Token",
   "vote": "Vote",
   "yes": "Yes"
  }
