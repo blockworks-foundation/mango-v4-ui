@@ -373,3 +373,14 @@ export function isMangoError(error: unknown): error is MangoError {
     typeof (error as Record<string, unknown>).message === 'string'
   )
 }
+
+export type TickerData = {
+  base_currency: string
+  base_volume: string
+  high: string
+  last_price: string
+  low: string
+  target_currency: string
+  target_volume: string
+  ticker_id: string
+}

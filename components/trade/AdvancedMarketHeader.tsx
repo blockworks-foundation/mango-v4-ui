@@ -18,23 +18,12 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import OraclePrice from './OraclePrice'
 import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
 import { useQuery } from '@tanstack/react-query'
+import { MANGO_DATA_OPENBOOK_URL } from 'utils/constants'
+import { TickerData } from 'types'
 
-type TickerData = {
-  base_currency: string
-  base_volume: string
-  high: string
-  last_price: string
-  low: string
-  target_currency: string
-  target_volume: string
-  ticker_id: string
-}
-
-const fetchSpotVolume = async () => {
+export const fetchSpotVolume = async () => {
   try {
-    const data = await fetch(
-      'https://api.mngo.cloud/openbook/v1/coingecko/tickers'
-    )
+    const data = await fetch(`${MANGO_DATA_OPENBOOK_URL}/coingecko/tickers`)
     const res = await data.json()
     return res
   } catch (e) {
