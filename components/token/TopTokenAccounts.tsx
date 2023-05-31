@@ -170,7 +170,11 @@ const LeaderboardRow = ({
       target="_blank"
     >
       <div className="flex items-center space-x-3">
-        <div className="relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-th-bkg-3 md:mr-2">
+        <div
+          className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
+            rank < 4 ? '' : 'bg-th-bkg-3'
+          } md:mr-2`}
+        >
           <p
             className={`relative z-10 font-bold ${
               rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-3'
