@@ -1,4 +1,5 @@
 {
+    "24h-volume": "24h Volume",
     "activate-volume-alert": "开启交易量警报",
     "amount": "数量",
     "average-funding": "Average {{interval}} Funding",

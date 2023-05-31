@@ -1,4 +1,4 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
 import { getOneDayPerpStats } from '@components/stats/PerpMarketsOverviewTable'
@@ -17,6 +17,30 @@ import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal'
 import useMangoGroup from 'hooks/useMangoGroup'
 import OraclePrice from './OraclePrice'
 import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
+import { useQuery } from '@tanstack/react-query'
+
+type TickerData = {
+  base_currency: string
+  base_volume: string
+  high: string
+  last_price: string
+  low: string
+  target_currency: string
+  target_volume: string
+  ticker_id: string
+}
+
+const fetchSpotVolume = async () => {
+  try {
+    const data = await fetch(
+      'https://api.mngo.cloud/openbook/v1/coingecko/tickers'
+    )
+    const res = await data.json()
+    return res
+  } catch (e) {
+    console.log('Failed to fetch spot volume data', e)
+  }
+}
 
 const AdvancedMarketHeader = ({
   showChart,
@@ -40,6 +64,25 @@ const AdvancedMarketHeader = ({
   const previousMarketName = usePrevious(selectedMarketName)
   const [showMarketDetails, setShowMarketDetails] = useState(false)
   const { group } = useMangoGroup()
+
+  const {
+    data: spotVolumeData,
+    isLoading: loadingSpotVolume,
+    isFetching: fetchingSpotVolume,
+  } = useQuery(['spot-volume', selectedMarketName], () => fetchSpotVolume(), {
+    cacheTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60,
+    retry: 3,
+    refetchOnWindowFocus: false,
+    enabled: selectedMarket instanceof Serum3Market,
+  })
+
+  const spotMarketVolume = useMemo(() => {
+    if (!spotVolumeData || !spotVolumeData.length) return
+    return spotVolumeData.find(
+      (mkt: TickerData) => mkt.ticker_id === selectedMarketName
+    )
+  }, [selectedMarketName, spotVolumeData])
 
   useEffect(() => {
     if (group) {
@@ -138,7 +181,29 @@ const AdvancedMarketHeader = ({
                   </span>
                 </div>
               </>
-            ) : null}
+            ) : (
+              <div className="ml-6 flex-col whitespace-nowrap text-xs">
+                <div className="mb-0.5 text-th-fgd-4 ">
+                  {t('trade:24h-volume')}
+                </div>
+                {!loadingSpotVolume && !fetchingSpotVolume ? (
+                  spotMarketVolume ? (
+                    <span className="font-mono">
+                      {numberCompacter.format(spotMarketVolume.target_volume)}{' '}
+                      <span className="font-body text-th-fgd-4">
+                        {selectedMarketName.split('/')[1]}
+                      </span>
+                    </span>
+                  ) : (
+                    '-'
+                  )
+                ) : (
+                  <SheenLoader className="mt-0.5">
+                    <div className="h-3.5 w-12 bg-th-bkg-2" />
+                  </SheenLoader>
+                )}
+              </div>
+            )}
           </div>
           <div className="ml-6 flex items-center space-x-4">
             <LinkButton
