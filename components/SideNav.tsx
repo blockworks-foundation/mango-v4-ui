@@ -37,6 +37,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { mangoAccount } = useMangoAccount()
   const router = useRouter()
   const { pathname } = router
+  const { theme } = useTheme()
 
   return (
     <div
@@ -53,11 +54,19 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               } pb-1 pt-2 pl-4`}
             >
               <div className={`flex flex-shrink-0 cursor-pointer items-center`}>
-                <img
-                  className={`h-8 w-8 flex-shrink-0`}
-                  src="/logos/logo-mark.svg"
-                  alt="next"
-                />
+                {theme !== 'Bonk' ? (
+                  <img
+                    className={`h-8 w-8 flex-shrink-0`}
+                    src="/logos/logo-mark.svg"
+                    alt="next"
+                  />
+                ) : (
+                  <img
+                    className={`h-9 w-9 flex-shrink-0`}
+                    src="/images/bonk-logo.png"
+                    alt="next"
+                  />
+                )}
                 <Transition
                   show={!collapsed}
                   as={Fragment}

@@ -575,7 +575,10 @@ const TradingViewChart = () => {
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,
         theme:
-          theme === 'Light' || theme === 'Banana' || theme === 'Lychee'
+          theme === 'Light' ||
+          theme === 'Banana' ||
+          theme === 'Lychee' ||
+          theme === 'Bonk'
             ? 'Light'
             : 'Dark',
         custom_css_url: '/styles/tradingview.css',

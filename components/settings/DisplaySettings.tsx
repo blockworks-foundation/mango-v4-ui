@@ -46,6 +46,7 @@ const LANGS = [
 ]
 
 export const THEMES = [
+  'bonk',
   'light',
   'medium',
   'dark',

@@ -30,6 +30,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
 import Tooltip from './shared/Tooltip'
 import { copyToClipboard } from 'utils'
+import { useTheme } from 'next-themes'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -48,6 +49,7 @@ const TopBar = () => {
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
   const { isUnownedAccount } = useUnownedAccount()
+  const { theme } = useTheme()
 
   const handleCloseSetup = useCallback(() => {
     setShowUserSetup(false)
@@ -97,11 +99,19 @@ const TopBar = () => {
               <SolanaTps />
             </div>
           ) : null}
-          <img
-            className="mr-4 h-8 w-8 flex-shrink-0 md:hidden"
-            src="/logos/logo-mark.svg"
-            alt="next"
-          />
+          {theme !== 'Bonk' ? (
+            <img
+              className="mr-4 h-8 w-8 flex-shrink-0 md:hidden"
+              src="/logos/logo-mark.svg"
+              alt="next"
+            />
+          ) : (
+            <img
+              className="mr-4 h-8 w-8 flex-shrink-0 md:hidden"
+              src="/images/bonk-logo.png"
+              alt="next"
+            />
+          )}
           {!connected ? (
             mangoAccount ? (
               <span className="hidden items-center md:flex">
