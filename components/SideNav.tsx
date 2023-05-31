@@ -51,7 +51,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             <div
               className={`h-14 items-center transition-all duration-300 ease-in-out ${
                 collapsed ? '' : 'justify-start'
-              } pb-1 pt-2 pl-4`}
+              } pb-1 pt-2 ${theme === 'Bonk' ? 'pl-3' : 'pl-4'}`}
             >
               <div className={`flex flex-shrink-0 cursor-pointer items-center`}>
                 {theme !== 'Bonk' ? (

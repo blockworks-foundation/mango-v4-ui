@@ -107,7 +107,7 @@ const TopBar = () => {
             />
           ) : (
             <img
-              className="mr-4 h-8 w-8 flex-shrink-0 md:hidden"
+              className="mr-4 h-10 w-10 flex-shrink-0 md:hidden"
               src="/images/bonk-logo.png"
               alt="next"
             />
