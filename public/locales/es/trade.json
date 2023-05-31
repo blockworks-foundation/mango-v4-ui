@@ -1,4 +1,5 @@
 {
+    "24h-volume": "24h Volume",
     "activate-volume-alert": "Activate Volume Alert",
     "amount": "Amount",
     "average-funding": "Average {{interval}} Funding",
