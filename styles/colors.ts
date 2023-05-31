@@ -49,7 +49,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Banana: '#e6df99',
     Lychee: '#eaaeb2',
     Olive: '#656049',
-    Bonk: '#916618',
+    Bonk: '#DDA131',
   },
   FGD4: {
     'Mango Classic': '#9189ae',

@@ -490,6 +490,7 @@ const TradingViewChart = () => {
         'paneProperties.legendProperties.showStudyTitles': false,
         'scalesProperties.showStudyLastValue': false,
         'scalesProperties.fontSize': 11,
+        'scalesProperties.lineColor': COLORS.BKG4[theme],
       }
 
       const mainSeriesProperties = [

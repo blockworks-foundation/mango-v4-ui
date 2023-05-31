@@ -56,6 +56,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { isMangoError } from 'types'
 import InlineNotification from '@components/shared/InlineNotification'
+import { useTheme } from 'next-themes'
 
 const set = mangoStore.getState().set
 
@@ -100,6 +101,7 @@ const AdvancedTradeForm = () => {
     quoteSymbol,
     serumOrPerpMarket,
   } = useSelectedMarket()
+  const { theme } = useTheme()
 
   const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
     set((s) => {
@@ -709,7 +711,9 @@ const AdvancedTradeForm = () => {
                 !connected
                   ? ''
                   : tradeForm.side === 'buy'
-                  ? 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
+                  ? `bg-th-up-dark md:hover:bg-th-up-dark md:hover:brightness-90 ${
+                      theme === 'Bonk' ? 'text-th-active' : 'text-white'
+                    }`
                   : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
               }`}
               disabled={disabled}
