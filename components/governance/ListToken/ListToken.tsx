@@ -19,7 +19,6 @@ import {
   ChevronDownIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
-import BN from 'bn.js'
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import GovernanceStore from '@store/governanceStore'
 import { notify } from 'utils/notifications'
@@ -39,6 +38,8 @@ import OnBoarding from '../OnBoarding'
 import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketModal'
 import { calculateTradingParameters } from 'utils/governance/listingTools'
 import useJupiterMints from 'hooks/useJupiterMints'
+import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOracleModal'
+import { BN } from '@project-serum/anchor'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -111,7 +112,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             .minCommunityTokensToCreateProposal
         : new BN(0),
     [governances]
-  )
+  ) as BN
   const mintVoterWeightNumber = governances
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
     : 0
@@ -694,6 +695,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     desc={t('cant-list-oracle-not-found')}
                     type="error"
                   />
+                  <CreateSwitchboardOracleModal
+                    isOpen={true}
+                    onClose={() => null}
+                  ></CreateSwitchboardOracleModal>
                 </div>
               ) : null}
               {!advForm.openBookMarketExternalPk && !loadingListingParams ? (
