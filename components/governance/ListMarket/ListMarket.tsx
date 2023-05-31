@@ -26,7 +26,7 @@ import {
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import { getBestMarket } from 'utils/governance/listingTools'
 import { notify } from 'utils/notifications'
-import ListTokenSuccess from '../ListToken/ListTokenSuccess'
+import ListingSuccess from '../ListingSuccess'
 import { formatTokenSymbol } from 'utils/tokens'
 import OnBoarding from '../OnBoarding'
 import { calculateTradingParameters } from 'utils/governance/listingTools'
@@ -280,7 +280,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
       </div>
       <OnBoarding />
       {proposalPk && currentView === VIEWS.SUCCESS ? (
-        <ListTokenSuccess proposalPk={proposalPk} token={advForm?.marketName} />
+        <ListingSuccess proposalPk={proposalPk} token={advForm?.marketName} />
       ) : null}
       {currentView === VIEWS.BASE_TOKEN ? (
         <div className="mb-6">
@@ -294,7 +294,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                 : null}
             </h2>
             <div className="flex flex-wrap">
-              <div className="w-1/2 px-2 pb-4">
+              <div className="w-full px-2 pb-4 md:w-1/2">
                 <Label text={t('base-token')} />
                 <Select
                   value={baseToken}
@@ -310,7 +310,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                   ))}
                 </Select>
               </div>
-              <div className="w-1/2 px-2 pb-4">
+              <div className="w-full px-2 pb-4 md:w-1/2">
                 <Label text={t('quote-token')} />
                 <Select
                   value={quoteToken}
@@ -330,7 +330,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
           </div>
           <div>
             <Button
-              className="float-right mt-6 flex w-36 items-center justify-center"
+              className="mt-6"
               onClick={goToPropsPage}
               disabled={loadingMarketProps || !quoteToken || !baseToken}
               size="large"

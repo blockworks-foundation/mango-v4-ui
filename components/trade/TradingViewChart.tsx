@@ -6,7 +6,6 @@ import {
   IChartingLibraryWidget,
   ResolutionString,
   IOrderLineAdapter,
-  EntityId,
   AvailableSaveloadVersions,
   IExecutionLineAdapter,
   Direction,
@@ -16,7 +15,6 @@ import { useViewport } from 'hooks/useViewport'
 import {
   DEFAULT_MARKET_NAME,
   SHOW_ORDER_LINES_KEY,
-  SHOW_STABLE_PRICE_KEY,
   TV_USER_ID_KEY,
 } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
@@ -26,10 +24,7 @@ import { notify } from 'utils/notifications'
 import {
   PerpMarket,
   PerpOrder,
-  PerpOrderType,
   Serum3Market,
-  Serum3OrderType,
-  Serum3SelfTradeBehavior,
   Serum3Side,
 } from '@blockworks-foundation/mango-v4'
 import { Order } from '@project-serum/serum/lib/market'
@@ -39,11 +34,12 @@ import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { BN } from '@project-serum/anchor'
 import Datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
-import useStablePrice from 'hooks/useStablePrice'
 import { CombinedTradeHistory, isMangoError } from 'types'
 import { formatPrice } from 'apis/birdeye/helpers'
 import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
+import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
+import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -77,6 +73,10 @@ const TradingViewChart = () => {
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
   const [headerReady, setHeaderReady] = useState(false)
+  const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | null>(
+    null
+  )
+  const [modifiedPrice, setModifiedPrice] = useState('')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
   const [showOrderLines, toggleShowOrderLines] = useState(
@@ -88,15 +88,7 @@ const TradingViewChart = () => {
   const [showTradeExecutions, toggleShowTradeExecutions] = useState(false)
   const [cachedTradeHistory, setCachedTradeHistory] =
     useState(combinedTradeHistory)
-
-  const [showStablePriceLocalStorage, toggleShowStablePriceLocalStorage] =
-    useLocalStorageState(SHOW_STABLE_PRICE_KEY, false)
-  const [showStablePrice, toggleShowStablePrice] = useState(
-    showStablePriceLocalStorage
-  )
   const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
-  const stablePrice = useStablePrice()
-  const stablePriceLine = mangoStore((s) => s.tradingView.stablePriceLine)
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const isMobile = width ? width < breakpoints.sm : false
 
@@ -122,10 +114,9 @@ const TradingViewChart = () => {
   )
 
   const tvWidgetRef = useRef<IChartingLibraryWidget>()
-  const stablePriceButtonRef = useRef<HTMLElement>()
   const orderLinesButtonRef = useRef<HTMLElement>()
 
-  const selectedMarket = useMemo(() => {
+  const selectedMarketPk = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarketName)
       return '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
@@ -141,12 +132,17 @@ const TradingViewChart = () => {
 
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (tvWidgetRef.current && chartReady && selectedMarket && group) {
+    if (tvWidgetRef.current && chartReady && selectedMarketPk && group) {
       try {
         tvWidgetRef.current.setSymbol(
-          selectedMarket,
+          selectedMarketPk,
           tvWidgetRef.current.activeChart().resolution(),
           () => {
+            if (showOrderLinesLocalStorage) {
+              const openOrders = mangoStore.getState().mangoAccount.openOrders
+              deleteLines()
+              drawLinesForMarket(openOrders)
+            }
             return
           }
         )
@@ -154,87 +150,7 @@ const TradingViewChart = () => {
         console.warn('Trading View change symbol error: ', e)
       }
     }
-  }, [selectedMarket, chartReady])
-
-  useEffect(() => {
-    if (showStablePrice !== showStablePriceLocalStorage) {
-      toggleShowStablePriceLocalStorage(showStablePrice)
-    }
-  }, [
-    showStablePrice,
-    showStablePriceLocalStorage,
-    toggleShowStablePriceLocalStorage,
-    theme,
-  ])
-
-  const drawStablePriceLine = useCallback(
-    (price: number) => {
-      if (!tvWidgetRef?.current?.chart()) return
-      const now = Date.now() / 1000
-      try {
-        const oldId = mangoStore.getState().tradingView.stablePriceLine
-        if (oldId) {
-          tvWidgetRef.current.chart().removeEntity(oldId)
-        }
-        const id = tvWidgetRef.current.chart().createShape(
-          { time: now, price: price },
-          {
-            shape: 'horizontal_line',
-            overrides: {
-              linecolor: COLORS.FGD4[theme],
-              linestyle: 1,
-              linewidth: 1,
-            },
-          }
-        )
-
-        if (id) {
-          return id
-        } else {
-          console.warn('failed to create stable price line')
-        }
-      } catch {
-        console.warn('failed to create stable price line')
-      }
-    },
-    [theme]
-  )
-
-  const removeStablePrice = useCallback((id: EntityId) => {
-    if (!tvWidgetRef?.current?.chart()) return
-    const set = mangoStore.getState().set
-
-    try {
-      tvWidgetRef.current.chart().removeEntity(id)
-    } catch (error) {
-      console.warn('stable price could not be removed')
-    }
-
-    set((s) => {
-      s.tradingView.stablePriceLine = undefined
-    })
-  }, [])
-
-  // remove stable price line when toggling off
-  useEffect(() => {
-    if (tvWidgetRef.current && chartReady) {
-      if (!showStablePrice && stablePriceLine) {
-        removeStablePrice(stablePriceLine)
-      }
-    }
-  }, [showStablePrice, chartReady, removeStablePrice, stablePriceLine])
-
-  // update stable price line when toggled on
-  useEffect(() => {
-    if (tvWidgetRef.current && chartReady) {
-      if (showStablePrice && stablePrice) {
-        const set = mangoStore.getState().set
-        set((s) => {
-          s.tradingView.stablePriceLine = drawStablePriceLine(stablePrice)
-        })
-      }
-    }
-  }, [stablePrice, chartReady, showStablePrice, drawStablePriceLine])
+  }, [chartReady, selectedMarketPk, showOrderLinesLocalStorage])
 
   useEffect(() => {
     if (showOrderLines !== showOrderLinesLocalStorage) {
@@ -281,91 +197,6 @@ const TradingViewChart = () => {
     }
     return [minOrderDecimals, tickSizeDecimals]
   }, [])
-
-  const findSerum3MarketPkInOpenOrders = useCallback(
-    (o: Order): string | undefined => {
-      const openOrders = mangoStore.getState().mangoAccount.openOrders
-      let foundedMarketPk: string | undefined = undefined
-      for (const [marketPk, orders] of Object.entries(openOrders)) {
-        for (const order of orders) {
-          if (order.orderId.eq(o.orderId)) {
-            foundedMarketPk = marketPk
-            break
-          }
-        }
-        if (foundedMarketPk) {
-          break
-        }
-      }
-      return foundedMarketPk
-    },
-    []
-  )
-
-  const modifyOrder = useCallback(
-    async (o: PerpOrder | Order, price: number) => {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const actions = mangoStore.getState().actions
-      const baseSize = o.size
-      if (!group || !mangoAccount) return
-      try {
-        let tx = ''
-        if (o instanceof PerpOrder) {
-          tx = await client.modifyPerpOrder(
-            group,
-            mangoAccount,
-            o.perpMarketIndex,
-            o.orderId,
-            o.side,
-            price,
-            Math.abs(baseSize),
-            undefined, // maxQuoteQuantity
-            Date.now(),
-            PerpOrderType.limit,
-            undefined,
-            undefined
-          )
-        } else {
-          const marketPk = findSerum3MarketPkInOpenOrders(o)
-          if (!marketPk) return
-          const market = group.getSerum3MarketByExternalMarket(
-            new PublicKey(marketPk)
-          )
-          tx = await client.modifySerum3Order(
-            group,
-            o.orderId,
-            mangoAccount,
-            market.serumMarketExternal,
-            o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-            price,
-            baseSize,
-            Serum3SelfTradeBehavior.decrementTake,
-            Serum3OrderType.limit,
-            Date.now(),
-            10
-          )
-        }
-        actions.fetchOpenOrders()
-        notify({
-          type: 'success',
-          title: 'Transaction successful',
-          txid: tx,
-        })
-      } catch (e) {
-        console.error('Error canceling', e)
-        if (!isMangoError(e)) return
-        notify({
-          title: 'Unable to modify order',
-          description: e.message,
-          txid: e.txid,
-          type: 'error',
-        })
-      }
-    },
-    [findSerum3MarketPkInOpenOrders]
-  )
 
   const cancelSpotOrder = useCallback(
     async (o: Order) => {
@@ -448,10 +279,12 @@ const TradingViewChart = () => {
         typeof order.side === 'string'
           ? t(order.side)
           : 'bid' in order.side
-          ? t('buy')
-          : t('sell')
-      const isLong = side.toLowerCase() === 'buy'
-      const isShort = side.toLowerCase() === 'sell'
+          ? t('long')
+          : t('short')
+      const isLong =
+        side.toLowerCase() === 'buy' || side.toLowerCase() === 'long'
+      const isShort =
+        side.toLowerCase() === 'sell' || side.toLowerCase() === 'short'
       const [minOrderDecimals, tickSizeDecimals] = getOrderDecimals()
       const orderSizeUi: string = formatNumericValue(
         order.size,
@@ -489,29 +322,10 @@ const TradingViewChart = () => {
                 },
               })
             } else {
-              tvWidgetRef.current?.showConfirmDialog({
-                title: t('tv-chart:modify-order'),
-                body: t('tv-chart:modify-order-details', {
-                  marketName: selectedMarketName,
-                  orderSize: orderSizeUi,
-                  orderSide: side.toUpperCase(),
-                  currentOrderPrice: formatNumericValue(
-                    currentOrderPrice,
-                    tickSizeDecimals
-                  ),
-                  updatedOrderPrice: formatNumericValue(
-                    updatedOrderPrice,
-                    tickSizeDecimals
-                  ),
-                }),
-                callback: (res) => {
-                  if (res) {
-                    modifyOrder(order, updatedOrderPrice)
-                  } else {
-                    this.setPrice(currentOrderPrice)
-                  }
-                },
-              })
+              setOrderToModify(order)
+              setModifiedPrice(
+                formatNumericValue(updatedOrderPrice, tickSizeDecimals)
+              )
             }
           })
           .onCancel(function () {
@@ -564,7 +378,6 @@ const TradingViewChart = () => {
     [
       cancelPerpOrder,
       cancelSpotOrder,
-      modifyOrder,
       selectedMarketName,
       t,
       theme,
@@ -616,6 +429,13 @@ const TradingViewChart = () => {
     [drawLinesForMarket, deleteLines, theme]
   )
 
+  const closeModifyOrderModal = useCallback(() => {
+    const openOrders = mangoStore.getState().mangoAccount.openOrders
+    setOrderToModify(null)
+    deleteLines()
+    drawLinesForMarket(openOrders)
+  }, [deleteLines, drawLinesForMarket])
+
   const toggleTradeExecutions = useCallback(
     (el: HTMLElement) => {
       toggleShowTradeExecutions((prevState) => !prevState)
@@ -627,31 +447,6 @@ const TradingViewChart = () => {
     },
     [theme]
   )
-
-  const createStablePriceButton = useCallback(() => {
-    const toggleStablePrice = (button: HTMLElement) => {
-      toggleShowStablePrice((prevState: boolean) => !prevState)
-      if (button.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
-        button.style.color = COLORS.FGD4[theme]
-      } else {
-        button.style.color = COLORS.ACTIVE[theme]
-      }
-    }
-
-    const button = tvWidgetRef?.current?.createButton()
-    if (!button) {
-      return
-    }
-    button.textContent = 'SP'
-    button.setAttribute('title', t('tv-chart:toggle-stable-price'))
-    button.addEventListener('click', () => toggleStablePrice(button))
-    if (showStablePriceLocalStorage) {
-      button.style.color = COLORS.ACTIVE[theme]
-    } else {
-      button.style.color = COLORS.FGD4[theme]
-    }
-    stablePriceButtonRef.current = button
-  }, [theme, t, showStablePriceLocalStorage])
 
   const createOLButton = useCallback(() => {
     const button = tvWidgetRef?.current?.createButton()
@@ -805,25 +600,40 @@ const TradingViewChart = () => {
     }
   }, [theme, defaultProps, isMobile, userId])
 
+  // set a limit price from right click context menu
+  useEffect(() => {
+    if (chartReady && tvWidgetRef.current) {
+      tvWidgetRef.current.onContextMenu(function (unixtime, price) {
+        return [
+          {
+            position: 'top',
+            text: `Set limit price (${formatPrice(price)})`,
+            click: function () {
+              const set = mangoStore.getState().set
+              set((s) => {
+                s.tradeForm.price = price.toFixed(12)
+              })
+            },
+          },
+          {
+            position: 'top',
+            text: '-',
+            click: function () {
+              return
+            },
+          },
+        ]
+      })
+    }
+  }, [chartReady, tvWidgetRef])
+
   // draw custom buttons when chart is ready
   useEffect(() => {
-    if (
-      chartReady &&
-      headerReady &&
-      !orderLinesButtonRef.current &&
-      !stablePriceButtonRef.current
-    ) {
+    if (chartReady && headerReady && !orderLinesButtonRef.current) {
       createOLButton()
       createTEButton()
-      createStablePriceButton()
     }
-  }, [
-    createOLButton,
-    createTEButton,
-    chartReady,
-    createStablePriceButton,
-    headerReady,
-  ])
+  }, [createOLButton, createTEButton, chartReady, headerReady])
 
   // update order lines if a user's open orders change
   useEffect(() => {
@@ -883,7 +693,7 @@ const TradingViewChart = () => {
       )
     }
     return subscription
-  }, [chartReady, showOrderLines, deleteLines, drawLinesForMarket])
+  }, [chartReady, deleteLines, drawLinesForMarket, showOrderLines])
 
   const drawTradeExecutions = useCallback(
     (trades: CombinedTradeHistory) => {
@@ -973,7 +783,20 @@ const TradingViewChart = () => {
   }, [cachedTradeHistory, selectedMarketName, showTradeExecutions])
 
   return (
-    <div id={defaultProps.container as string} className="tradingview-chart" />
+    <>
+      <div
+        id={defaultProps.container as string}
+        className="tradingview-chart"
+      />
+      {orderToModify ? (
+        <ModifyTvOrderModal
+          isOpen={!!orderToModify}
+          onClose={closeModifyOrderModal}
+          price={modifiedPrice}
+          order={orderToModify}
+        />
+      ) : null}
+    </>
   )
 }
 

@@ -42,6 +42,7 @@
   "close-account-desc": "Are you sure? Closing your account is irreversible",
   "closing-account": "Closing your account...",
   "collateral-value": "Collateral Value",
+  "confirm": "Confirm",
   "connect": "Connect",
   "connect-balances": "Connect to view your balances",
   "connect-helper": "Connect to get started",

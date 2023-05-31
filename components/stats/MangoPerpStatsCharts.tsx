@@ -2,7 +2,7 @@ import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import { PerpStatsItem } from 'types'
-import DetailedAreaChart from '@components/shared/DetailedAreaChart'
+import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 
 interface OiValueItem {
   date: string
@@ -73,7 +73,7 @@ const MangoPerpStatsCharts = () => {
     <>
       {totalFeeValues.length ? (
         <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:pl-6">
-          <DetailedAreaChart
+          <DetailedAreaOrBarChart
             data={totalFeeValues}
             daysToShow={feesDaysToShow}
             setDaysToShow={setFeesDaysToShow}
@@ -90,7 +90,7 @@ const MangoPerpStatsCharts = () => {
       ) : null}
       {totalOpenInterestValues.length ? (
         <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r">
-          <DetailedAreaChart
+          <DetailedAreaOrBarChart
             data={totalOpenInterestValues}
             daysToShow={oiDaysToShow}
             setDaysToShow={setOiDaysToShow}

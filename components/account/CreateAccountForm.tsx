@@ -114,7 +114,9 @@ const CreateAccountForm = ({
           {handleBack ? <div className="h-5 w-5" /> : null}
         </div>
         {isFirstAccount ? (
-          <p className="mt-1">You need a Mango Account to get started.</p>
+          <p className="mt-1 text-center">
+            You need a Mango Account to get started.
+          </p>
         ) : null}
         <div className="pt-4">
           <Label optional text={t('account-name')} />

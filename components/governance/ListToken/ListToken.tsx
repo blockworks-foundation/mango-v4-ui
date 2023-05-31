@@ -26,7 +26,7 @@ import { notify } from 'utils/notifications'
 import { useTranslation } from 'next-i18next'
 import { emptyPk } from 'utils/governance/accounts/vsrAccounts'
 import Loading from '@components/shared/Loading'
-import ListTokenSuccess from './ListTokenSuccess'
+import ListingSuccess from '../ListingSuccess'
 import InlineNotification from '@components/shared/InlineNotification'
 import { Disclosure } from '@headlessui/react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
@@ -425,10 +425,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       ) : (
         <>
           {proposalPk ? (
-            <ListTokenSuccess
+            <ListingSuccess
               proposalPk={proposalPk}
               token={currentTokenInfo?.name}
-            ></ListTokenSuccess>
+            />
           ) : (
             <>
               <div className="rounded-md bg-th-bkg-2 p-4">

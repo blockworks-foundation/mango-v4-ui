@@ -1,4 +1,4 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import Change from '@components/shared/Change'
 import { getOneDayPerpStats } from '@components/stats/PerpMarketsOverviewTable'
@@ -17,6 +17,19 @@ import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal'
 import useMangoGroup from 'hooks/useMangoGroup'
 import OraclePrice from './OraclePrice'
 import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
+import { useQuery } from '@tanstack/react-query'
+import { MANGO_DATA_OPENBOOK_URL } from 'utils/constants'
+import { TickerData } from 'types'
+
+export const fetchSpotVolume = async () => {
+  try {
+    const data = await fetch(`${MANGO_DATA_OPENBOOK_URL}/coingecko/tickers`)
+    const res = await data.json()
+    return res
+  } catch (e) {
+    console.log('Failed to fetch spot volume data', e)
+  }
+}
 
 const AdvancedMarketHeader = ({
   showChart,
@@ -40,6 +53,25 @@ const AdvancedMarketHeader = ({
   const previousMarketName = usePrevious(selectedMarketName)
   const [showMarketDetails, setShowMarketDetails] = useState(false)
   const { group } = useMangoGroup()
+
+  const {
+    data: spotVolumeData,
+    isLoading: loadingSpotVolume,
+    isFetching: fetchingSpotVolume,
+  } = useQuery(['spot-volume', selectedMarketName], () => fetchSpotVolume(), {
+    cacheTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60,
+    retry: 3,
+    refetchOnWindowFocus: false,
+    enabled: selectedMarket instanceof Serum3Market,
+  })
+
+  const spotMarketVolume = useMemo(() => {
+    if (!spotVolumeData || !spotVolumeData.length) return
+    return spotVolumeData.find(
+      (mkt: TickerData) => mkt.ticker_id === selectedMarketName
+    )
+  }, [selectedMarketName, spotVolumeData])
 
   useEffect(() => {
     if (group) {
@@ -101,7 +133,9 @@ const AdvancedMarketHeader = ({
               <OraclePrice setChangePrice={setChangePrice} />
             </>
             <div className="ml-6 flex-col whitespace-nowrap">
-              <div className="text-xs text-th-fgd-4">{t('rolling-change')}</div>
+              <div className="mb-0.5 text-xs text-th-fgd-4">
+                {t('rolling-change')}
+              </div>
               {!loadingPrices && !loadingPerpStats ? (
                 <Change change={change} size="small" suffix="%" />
               ) : (
@@ -114,7 +148,7 @@ const AdvancedMarketHeader = ({
               <>
                 <PerpFundingRate />
                 <div className="ml-6 flex-col whitespace-nowrap text-xs">
-                  <div className="text-th-fgd-4">
+                  <div className="mb-0.5 text-th-fgd-4 ">
                     {t('trade:open-interest')}
                   </div>
                   <span className="font-mono">
@@ -136,7 +170,29 @@ const AdvancedMarketHeader = ({
                   </span>
                 </div>
               </>
-            ) : null}
+            ) : (
+              <div className="ml-6 flex-col whitespace-nowrap text-xs">
+                <div className="mb-0.5 text-th-fgd-4 ">
+                  {t('trade:24h-volume')}
+                </div>
+                {!loadingSpotVolume && !fetchingSpotVolume ? (
+                  spotMarketVolume ? (
+                    <span className="font-mono">
+                      {numberCompacter.format(spotMarketVolume.target_volume)}{' '}
+                      <span className="font-body text-th-fgd-4">
+                        {selectedMarketName.split('/')[1]}
+                      </span>
+                    </span>
+                  ) : (
+                    '-'
+                  )
+                ) : (
+                  <SheenLoader className="mt-0.5">
+                    <div className="h-3.5 w-12 bg-th-bkg-2" />
+                  </SheenLoader>
+                )}
+              </div>
+            )}
           </div>
           <div className="ml-6 flex items-center space-x-4">
             <LinkButton
