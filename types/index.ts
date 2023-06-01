@@ -286,6 +286,7 @@ export interface NFT {
 }
 
 export interface PerpStatsItem {
+  base_volume: number
   date_hour: string
   fees_accrued: number
   fees_settled: number
@@ -296,6 +297,7 @@ export interface PerpStatsItem {
   open_interest: number
   perp_market: string
   price: number
+  quote_volume: number
   stable_price: number
   total_fees: number
 }

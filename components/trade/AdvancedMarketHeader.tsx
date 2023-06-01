@@ -92,6 +92,17 @@ const AdvancedMarketHeader = ({
     )
   }, [birdeyePrices, selectedMarket])
 
+  const oneDayPerpStats = useMemo(() => {
+    if (
+      !perpStats ||
+      !perpStats.length ||
+      !selectedMarketName ||
+      !selectedMarketName.includes('PERP')
+    )
+      return []
+    return getOneDayPerpStats(perpStats, selectedMarketName)
+  }, [perpStats, selectedMarketName])
+
   const change = useMemo(() => {
     if (
       !changePrice ||
@@ -100,9 +111,10 @@ const AdvancedMarketHeader = ({
     )
       return 0
     if (serumOrPerpMarket instanceof PerpMarket) {
-      const changeData = getOneDayPerpStats(perpStats, selectedMarketName)
-      return changeData.length
-        ? ((changePrice - changeData[0].price) / changeData[0].price) * 100
+      return oneDayPerpStats.length
+        ? ((changePrice - oneDayPerpStats[0].price) /
+            oneDayPerpStats[0].price) *
+            100
         : 0
     } else {
       if (!birdeyeData) return 0
@@ -116,10 +128,15 @@ const AdvancedMarketHeader = ({
     birdeyeData,
     changePrice,
     serumOrPerpMarket,
-    perpStats,
+    oneDayPerpStats,
     previousMarketName,
     selectedMarketName,
   ])
+
+  const perpVolume = useMemo(() => {
+    if (!oneDayPerpStats.length) return
+    return oneDayPerpStats.reduce((a, c) => a + c.quote_volume, 0)
+  }, [oneDayPerpStats])
 
   return (
     <>
@@ -146,6 +163,18 @@ const AdvancedMarketHeader = ({
             </div>
             {serumOrPerpMarket instanceof PerpMarket ? (
               <>
+                <div className="ml-6 flex-col whitespace-nowrap text-xs">
+                  <div className="mb-0.5 text-th-fgd-4 ">
+                    {t('trade:24h-volume')}
+                  </div>
+                  {perpVolume ? (
+                    <span className="font-mono">
+                      ${numberCompacter.format(perpVolume)}{' '}
+                    </span>
+                  ) : (
+                    '-'
+                  )}
+                </div>
                 <PerpFundingRate />
                 <div className="ml-6 flex-col whitespace-nowrap text-xs">
                   <div className="mb-0.5 text-th-fgd-4 ">
@@ -179,7 +208,7 @@ const AdvancedMarketHeader = ({
                   spotMarketVolume ? (
                     <span className="font-mono">
                       {numberCompacter.format(spotMarketVolume.target_volume)}{' '}
-                      <span className="font-body text-th-fgd-4">
+                      <span className="font-body text-th-fgd-3">
                         {selectedMarketName.split('/')[1]}
                       </span>
                     </span>
