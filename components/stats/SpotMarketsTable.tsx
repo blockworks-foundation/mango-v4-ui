@@ -328,38 +328,5 @@ const MobileSpotMarketItem = ({
         </>
       )}
     </Disclosure>
-    // <div className="border-b border-th-bkg-3 px-6 py-4">
-    //   <div className="flex items-center justify-between">
-    //     <div className="flex items-center">
-    //       <MarketLogos market={market} />
-    //       <div>
-    //         <p className="text-th-fgd-1">{market.name}</p>
-    //         <div className="flex items-center space-x-3">
-    // <p className="font-mono">
-    //   {price ? <FormatNumericValue value={price} isUsd /> : '-'}
-    // </p>
-    //           {change ? <Change change={change} suffix="%" /> : '–'}
-    //         </div>
-    //       </div>
-    //     </div>
-    // {!loadingPrices ? (
-    //   chartData !== undefined ? (
-    //     <div className="h-10 w-24">
-    //       <SimpleAreaChart
-    //         color={change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-    //         data={chartData}
-    //         name={baseBank!.name}
-    //         xKey="unixTime"
-    //         yKey="value"
-    //       />
-    //     </div>
-    //   ) : (
-    //     <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-    //   )
-    // ) : (
-    //   <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
-    // )}
-    //   </div>
-    // </div>
   )
 }
