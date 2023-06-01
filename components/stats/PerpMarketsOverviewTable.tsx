@@ -79,7 +79,7 @@ const PerpMarketsOverviewTable = () => {
                 </Tooltip>
               </Th>
               <Th className="text-right">{t('rolling-change')}</Th>
-              <Th className="text-right">{t('trade:24h-volume')}</Th>
+              {/* <Th className="text-right">{t('trade:24h-volume')}</Th> */}
               <Th className="text-right">{t('trade:funding-rate')}</Th>
               <Th className="text-right">{t('trade:open-interest')}</Th>
               <Th />
@@ -96,9 +96,9 @@ const PerpMarketsOverviewTable = () => {
                   100
                 : 0
 
-              const volume = marketStats.length
-                ? marketStats.reduce((a, c) => a + c.quote_volume, 0)
-                : 0
+              // const volume = marketStats.length
+              //   ? marketStats.reduce((a, c) => a + c.quote_volume, 0)
+              //   : 0
 
               let fundingRate
               let fundingRateApr
@@ -198,13 +198,13 @@ const PerpMarketsOverviewTable = () => {
                       <Change change={change} suffix="%" />
                     </div>
                   </Td>
-                  <Td>
+                  {/* <Td>
                     <div className="flex flex-col text-right">
                       <p>
                         {volume ? `$${numberCompacter.format(volume)}` : '-'}
                       </p>
                     </div>
-                  </Td>
+                  </Td> */}
                   <Td>
                     <div className="flex items-center justify-end">
                       <Tooltip
@@ -291,9 +291,9 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
     ? ((market.uiPrice - marketStats[0].price) / marketStats[0].price) * 100
     : 0
 
-  const volume = marketStats.length
-    ? marketStats.reduce((a, c) => a + c.quote_volume, 0)
-    : 0
+  // const volume = marketStats.length
+  //   ? marketStats.reduce((a, c) => a + c.quote_volume, 0)
+  //   : 0
 
   const openInterest = market.baseLotsToUi(market.openInterest)
 
@@ -373,7 +373,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
                     <FormatNumericValue value={market.uiPrice} isUsd />
                   </p>
                 </div>
-                <div className="col-span-1">
+                {/* <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:24h-volume')}
                   </p>
@@ -384,7 +384,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
                       '–'
                     )}
                   </p>
-                </div>
+                </div> */}
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:funding-rate')}
