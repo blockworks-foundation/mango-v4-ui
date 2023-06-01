@@ -193,7 +193,7 @@ const TopBar = () => {
               <AccountsButton />
               <ConnectedMenu />
             </div>
-          ) : isOnboarded ? (
+          ) : isOnboarded || router.asPath === '/swap' ? (
             <ConnectWalletButton />
           ) : (
             <button

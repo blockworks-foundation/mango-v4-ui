@@ -85,7 +85,7 @@ const SwapForm = () => {
   } = mangoStore((s) => s.swap)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { isDelegatedAccount } = useUnownedAccount()
   const { connected, publicKey } = useWallet()
 
@@ -274,10 +274,19 @@ const SwapForm = () => {
     )
   }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
 
+  // set margin to false if no account
+  useEffect(() => {
+    if (connected && !mangoAccount) {
+      set((s) => {
+        s.swap.margin = false
+      })
+    }
+  }, [connected, mangoAccount])
+
   return (
     <ContentBox
       hidePadding
-      className="relative overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
+      className="relative h-full overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
     >
       <div>
         <Transition
@@ -482,9 +491,11 @@ const SwapForm = () => {
             </div>
           ) : null}
           <div className="space-y-2">
-            <div id="swap-step-four">
-              <HealthImpact maintProjectedHealth={maintProjectedHealth} />
-            </div>
+            {mangoAccountAddress ? (
+              <div id="swap-step-four">
+                <HealthImpact maintProjectedHealth={maintProjectedHealth} />
+              </div>
+            ) : null}
             <div className="flex items-center justify-between">
               <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>
               <div className="flex items-center space-x-1">

@@ -26,6 +26,7 @@ import {
   ArrowsRightLeftIcon,
   ArrowRightIcon,
   ChevronDownIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
@@ -45,6 +46,10 @@ import RoutesModal from './RoutesModal'
 import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
+import { ModalProps } from 'types/modal'
+import Modal from '@components/shared/Modal'
+import InlineNotification from '@components/shared/InlineNotification'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -187,8 +192,11 @@ const SwapReviewRouteInfo = ({
   setSelectedRoute,
 }: JupiterRouteInfoProps) => {
   const { t } = useTranslation(['common', 'trade'])
+  const { mangoAccountAddress } = useMangoAccount()
   const slippage = mangoStore((s) => s.swap.slippage)
   const [showRoutesModal, setShowRoutesModal] = useState<boolean>(false)
+  const [showCreateAccountModal, setShowCreateAccountModal] =
+    useState<boolean>(false)
   const [swapRate, setSwapRate] = useState<boolean>(false)
   const [feeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -587,7 +595,11 @@ const SwapReviewRouteInfo = ({
       <div className="p-6">
         <div className="mb-4 flex items-center justify-center">
           <Button
-            onClick={onSwap}
+            onClick={
+              mangoAccountAddress
+                ? onSwap
+                : () => setShowCreateAccountModal(true)
+            }
             className="flex w-full items-center justify-center text-base"
             size="large"
           >
@@ -707,8 +719,62 @@ const SwapReviewRouteInfo = ({
           outputTokenInfo={outputTokenInfo}
         />
       ) : null}
+      {showCreateAccountModal ? (
+        <CreateAccountInfoModal
+          isOpen={showCreateAccountModal}
+          onClose={() => setShowCreateAccountModal(false)}
+          createAccountAndSwap={() => console.log('function needed')}
+          outputTokenName={outputTokenInfo?.symbol}
+        />
+      ) : null}
     </div>
   ) : null
 }
 
 export default React.memo(SwapReviewRouteInfo)
+
+type CreateAccountInfoModalProps = {
+  outputTokenName: string | undefined
+  createAccountAndSwap: () => void
+}
+
+const CreateAccountInfoModal = ({
+  isOpen,
+  onClose,
+  createAccountAndSwap,
+  outputTokenName,
+}: ModalProps & CreateAccountInfoModalProps) => {
+  const { t } = useTranslation(['common', 'swap'])
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <>
+        <h2 className="mb-2 text-center">Let&apos;s get you set up</h2>
+        <ul className="mb-4">
+          <ListItem desc="We'll create a Mango Account for you with this swap." />
+          <ListItem
+            desc={`Your ${outputTokenName} will be credited to your account (not your wallet) on execution.`}
+          />
+          <ListItem desc="It will earn interest automatically and can be withdrawn at any time 😎" />
+          <ListItem desc="Future swaps will use your Mango Account balances and you'll be able to swap on margin." />
+        </ul>
+        <InlineNotification type="info" desc={t('insufficient-sol')} />
+        <Button
+          className="mt-6 w-full text-base"
+          onClick={() => createAccountAndSwap()}
+          size="large"
+        >
+          Create Account & Swap
+        </Button>
+      </>
+    </Modal>
+  )
+}
+
+const ListItem = ({ desc }: { desc: string }) => {
+  return (
+    <li className="mt-3 flex items-start">
+      <CheckCircleIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-th-up " />
+      {desc}
+    </li>
+  )
+}

@@ -165,7 +165,6 @@ const SwapFormTokenList = ({
     if (
       mangoTokens?.length &&
       group &&
-      mangoAccount &&
       outputBank &&
       inputBank &&
       type === 'input'

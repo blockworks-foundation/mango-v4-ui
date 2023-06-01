@@ -44,7 +44,7 @@ const SwapPage = () => {
           <SwapInfoTabs />
         </div>
       </div>
-      {showSwapIntro ? (
+      {showSwapIntro && mangoAccountAddress ? (
         <SwapIntroModal
           isOpen={showSwapIntro}
           onClose={() => setShowSwapIntro(false)}
