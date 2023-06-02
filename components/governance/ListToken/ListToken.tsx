@@ -8,7 +8,7 @@ import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
 import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
 import { PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
+import { OPENBOOK_PROGRAM_ID, RouteInfo } from '@blockworks-foundation/mango-v4'
 import {
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
@@ -104,6 +104,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [mint, setMint] = useState('')
   const [creatingProposal, setCreatingProposal] = useState(false)
   const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
+  const [orcaPoolAddress, setOrcaPoolAddress] = useState('')
+  const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
+  const [oracleModalOpen, setOracleModalOpen] = useState(false)
+
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
     () =>
@@ -200,7 +204,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         const SLIPPAGE_BPS = 50
         const MODE = 'ExactIn'
         const FEE = 0
-        const { bestRoute } = await handleGetRoutes(
+        const { bestRoute, routes } = await handleGetRoutes(
           USDC_MINT,
           tokenMint.toBase58(),
           USDC_AMOUNT,
@@ -210,6 +214,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           wallet.publicKey ? wallet.publicKey?.toBase58() : emptyPk
         )
         setPriceImpact(bestRoute ? bestRoute.priceImpactPct * 100 : 100)
+        handleGetPoolParams(routes)
       } catch (e) {
         notify({
           title: t('liquidity-check-error'),
@@ -220,6 +225,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     },
     [t, wallet.publicKey]
   )
+
+  const handleGetPoolParams = (routes: never[] | RouteInfo[]) => {
+    const marketInfos = routes.flatMap((x) => x.marketInfos)
+    const orcaPool = marketInfos.find((x) => x.label === 'Orca')
+    const raydiumPool = marketInfos.find((x) => x.label === 'Raydium')
+    setOrcaPoolAddress(orcaPool?.id || '')
+    setRaydiumPoolAddress(raydiumPool?.id || '')
+  }
 
   const handleTokenFind = useCallback(async () => {
     cancel()
@@ -234,7 +247,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     const priceInfo = await (
       await fetch(`${JUPITER_PRICE_API_MAINNET}/price?ids=${mint}`)
     ).json()
-    setBaseTokenPrice(priceInfo.data[mint].price)
+    setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
       handleLiqudityCheck(new PublicKey(mint))
@@ -379,6 +392,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
+    if (currentTokenInfo) {
+      getListingParams(currentTokenInfo)
+    }
+  }
+  const closeCreateOracleModal = () => {
+    setOracleModalOpen(false)
     if (currentTokenInfo) {
       getListingParams(currentTokenInfo)
     }
@@ -689,48 +708,70 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                   )}
                 </Disclosure>
               </div>
-              {!advForm.oraclePk && !loadingListingParams ? (
-                <div className="my-4">
-                  <InlineNotification
-                    desc={t('cant-list-oracle-not-found')}
-                    type="error"
-                  />
-                  <CreateSwitchboardOracleModal
-                    isOpen={true}
-                    onClose={() => null}
-                  ></CreateSwitchboardOracleModal>
-                </div>
-              ) : null}
-              {!advForm.openBookMarketExternalPk && !loadingListingParams ? (
-                <>
-                  <div className="mb-4">
+              <ol className="list-decimal pl-4">
+                {!advForm.openBookMarketExternalPk && !loadingListingParams ? (
+                  <li className="pl-2">
+                    <div className="mb-4">
+                      <InlineNotification
+                        desc={
+                          <div>
+                            <a
+                              onClick={() => setCreateOpenbookMarket(true)}
+                              className="cursor-pointer underline"
+                            >
+                              {t('cant-list-no-openbook-market')}
+                            </a>
+                          </div>
+                        }
+                        type="error"
+                      />
+                    </div>
+                    {createOpenbookMarketModal ? (
+                      <CreateOpenbookMarketModal
+                        quoteMint={quoteBank?.mint.toBase58() || ''}
+                        baseMint={currentTokenInfo?.address || ''}
+                        baseDecimals={currentTokenInfo.decimals}
+                        quoteDecimals={quoteBank?.mintDecimals || 0}
+                        isOpen={createOpenbookMarketModal}
+                        onClose={closeCreateOpenBookMarketModal}
+                        tradingParams={tradingParams}
+                      />
+                    ) : null}
+                  </li>
+                ) : null}
+                {!advForm.oraclePk && !loadingListingParams ? (
+                  <li
+                    className={`my-4 pl-2 ${
+                      !advForm.openBookMarketExternalPk
+                        ? 'disabled pointer-events-none opacity-60'
+                        : ''
+                    }`}
+                  >
                     <InlineNotification
                       desc={
                         <div>
                           <a
-                            onClick={() => setCreateOpenbookMarket(true)}
+                            onClick={() => setOracleModalOpen(true)}
                             className="cursor-pointer underline"
                           >
-                            {t('cant-list-no-openbook-market')}
+                            {t('cant-list-oracle-not-found')}
                           </a>
                         </div>
                       }
                       type="error"
                     />
-                  </div>
-                  {createOpenbookMarketModal ? (
-                    <CreateOpenbookMarketModal
-                      quoteMint={quoteBank?.mint.toBase58() || ''}
-                      baseMint={currentTokenInfo?.address || ''}
-                      baseDecimals={currentTokenInfo.decimals}
-                      quoteDecimals={quoteBank?.mintDecimals || 0}
-                      isOpen={createOpenbookMarketModal}
-                      onClose={closeCreateOpenBookMarketModal}
-                      tradingParams={tradingParams}
-                    />
-                  ) : null}
-                </>
-              ) : null}
+                    <CreateSwitchboardOracleModal
+                      orcaPoolAddress={orcaPoolAddress}
+                      raydiumPoolAddress={raydiumPoolAddress}
+                      baseTokenName={currentTokenInfo.symbol}
+                      baseTokenPk={currentTokenInfo.address}
+                      openbookMarketPk={advForm.openBookMarketExternalPk}
+                      isOpen={oracleModalOpen}
+                      onClose={closeCreateOracleModal}
+                    ></CreateSwitchboardOracleModal>
+                  </li>
+                ) : null}
+              </ol>
               <div className="mt-6 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
                 <Button secondary onClick={cancel} size="large">
                   {t('cancel')}

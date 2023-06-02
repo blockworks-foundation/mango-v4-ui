@@ -2,43 +2,75 @@ import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { QueueAccount, SwitchboardProgram } from '@switchboard-xyz/solana.js'
+import {
+  CrankAccount,
+  LeaseAccount,
+  QueueAccount,
+  SwitchboardProgram,
+} from '@switchboard-xyz/solana.js'
 import { OracleJob } from '@switchboard-xyz/common'
 import Button from '@components/shared/Button'
+import { MANGO_DAO_WALLET } from 'utils/governance/constants'
+import { USDC_MINT } from 'utils/constants'
+import { Transaction } from '@solana/web3.js'
+import { chunk } from 'lodash'
+import { BN } from '@project-serum/anchor'
 
-const CreateSwitchboardOracleModal = ({ isOpen, onClose }: ModalProps) => {
+const SWITCHBOARD_PERMISSIONLESS_QUE =
+  '5JYwqvKkqp35w8Nq3ba4z1WYUeJQ1rB36V8XvaGp6zn1'
+const SWITCHBOARD_PERMISSIONLESS_CRANK =
+  'BKtF8yyQsj3Ft6jb2nkfpEKzARZVdGgdEPs6mFmZNmbA'
+
+type BaseProps = ModalProps & {
+  openbookMarketPk: string
+  baseTokenPk: string
+  baseTokenName: string
+}
+
+type RaydiumProps = BaseProps & {
+  raydiumPoolAddress: string
+  orcaPoolAddress?: string
+}
+
+type OrcaProps = BaseProps & {
+  raydiumPoolAddress?: string
+  orcaPoolAddress: string
+}
+
+const CreateSwitchboardOracleModal = ({
+  isOpen,
+  onClose,
+  openbookMarketPk,
+  baseTokenPk,
+  baseTokenName,
+  raydiumPoolAddress,
+  orcaPoolAddress,
+}: RaydiumProps | OrcaProps) => {
   const connection = mangoStore((s) => s.connection)
   const wallet = useWallet()
-  const baseTokenName = ''
-  const quoteTokenName = ''
+  const quoteTokenName = 'USDC'
 
   const create = async () => {
     const payer = wallet!.publicKey!
+    const poolPropertyName = orcaPoolAddress
+      ? 'orcaPoolAddress'
+      : 'raydiumPoolAddress'
+    const poolAddress = orcaPoolAddress ? orcaPoolAddress : raydiumPoolAddress
 
     const program = await SwitchboardProgram.load(CLUSTER, connection)
-    const [queueAccount, txObject] = await QueueAccount.createInstructions(
-      program,
-      payer,
-      {
-        queueSize: 8,
-        reward: 0,
-        minStake: 0,
-        oracleTimeout: 180,
-        slashingEnabled: false,
-        unpermissionedFeeds: true,
-        unpermissionedVrf: true,
-        enableBufferRelayers: false,
-      }
+
+    const [[queueAccount, queueData], [crankAccount]] = await Promise.all([
+      QueueAccount.load(program, SWITCHBOARD_PERMISSIONLESS_QUE),
+      CrankAccount.load(program, SWITCHBOARD_PERMISSIONLESS_CRANK),
+    ])
+    console.log(queueData.reward.toNumber())
+    const solCost = LeaseAccount.estimatedLeaseTimeRemaining(
+      6,
+      300,
+      queueData.reward,
+      2.6
     )
-
-    const [crankAccount, crankInit] =
-      await queueAccount.createCrankInstructions(payer, {
-        maxRows: 1000,
-      })
-
-    const [, txArray] = await queueAccount.createOracleInstructions(payer, {
-      queueAuthorityPubkey: wallet!.publicKey!,
-    })
+    console.log(solCost)
 
     const [aggregatorAccount, txArray1] =
       await queueAccount.createFeedInstructions(payer, {
@@ -47,7 +79,7 @@ const CreateSwitchboardOracleModal = ({ isOpen, onClose }: ModalProps) => {
         minRequiredOracleResults: 3,
         minRequiredJobResults: 2,
         minUpdateDelaySeconds: 300,
-        queueAuthorityPubkey: wallet!.publicKey!,
+        withdrawAuthority: MANGO_DAO_WALLET,
         crankDataBuffer: crankAccount.dataBuffer?.publicKey,
         crankPubkey: crankAccount.publicKey,
         fundAmount: 0,
@@ -77,10 +109,8 @@ const CreateSwitchboardOracleModal = ({ isOpen, onClose }: ModalProps) => {
                               tasks: [
                                 {
                                   jupiterSwapTask: {
-                                    inTokenAddress:
-                                      'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-                                    outTokenAddress:
-                                      'xxxxa1sKNGwFtw2kFn8XauW9xq8hBZ5kVtcSesTT9fW',
+                                    inTokenAddress: USDC_MINT,
+                                    outTokenAddress: { baseTokenPk },
                                     baseAmountString: '100',
                                   },
                                 },
@@ -92,8 +122,7 @@ const CreateSwitchboardOracleModal = ({ isOpen, onClose }: ModalProps) => {
                       onFailure: [
                         {
                           lpExchangeRateTask: {
-                            orcaPoolAddress:
-                              '7yJ4gMRJhEoCR48aPE3EAWRmCoygakik81ZS1sajaTnE',
+                            [poolPropertyName]: { poolAddress },
                           },
                         },
                       ],
@@ -115,7 +144,7 @@ const CreateSwitchboardOracleModal = ({ isOpen, onClose }: ModalProps) => {
                           cacheTask: {
                             cacheItems: [
                               {
-                                variableName: 'DUAL_QTY',
+                                variableName: 'IN_TOKEN_QTY',
                                 job: {
                                   tasks: [
                                     {
@@ -129,8 +158,9 @@ const CreateSwitchboardOracleModal = ({ isOpen, onClose }: ModalProps) => {
                                           tasks: [
                                             {
                                               serumSwapTask: {
-                                                serumPoolAddress:
-                                                  'H6rrYK3SUHF2eguZCyJxnSBMJqjXhUtuaki6PHiutvum',
+                                                serumPoolAddress: {
+                                                  openbookMarketPk,
+                                                },
                                               },
                                             },
                                           ],
@@ -145,24 +175,21 @@ const CreateSwitchboardOracleModal = ({ isOpen, onClose }: ModalProps) => {
                         },
                         {
                           jupiterSwapTask: {
-                            inTokenAddress:
-                              'DUALa4FC2yREwZ59PHeu1un4wis36vHRv5hWVBmzykCJ',
-                            outTokenAddress:
-                              'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-                            baseAmountString: '${DUAL_QTY}',
+                            inTokenAddress: { baseTokenPk },
+                            outTokenAddress: USDC_MINT,
+                            baseAmountString: '${IN_TOKEN_QTY}',
                           },
                         },
                         {
                           divideTask: {
-                            big: '${DUAL_QTY}',
+                            big: '${IN_TOKEN_QTY}',
                           },
                         },
                       ],
                       onFailure: [
                         {
                           lpExchangeRateTask: {
-                            orcaPoolAddress:
-                              '7yJ4gMRJhEoCR48aPE3EAWRmCoygakik81ZS1sajaTnE',
+                            [poolPropertyName]: { poolAddress },
                           },
                         },
                       ],
@@ -176,8 +203,33 @@ const CreateSwitchboardOracleModal = ({ isOpen, onClose }: ModalProps) => {
       })
     const lockTx = aggregatorAccount.lockInstruction(payer, {})
 
-    const txes = [txObject, crankInit, ...txArray, ...txArray1, lockTx]
-    console.log(txes)
+    const txChunks = chunk([...txArray1, lockTx], 1)
+    const transactions: Transaction[] = []
+    const latestBlockhash = await connection.getLatestBlockhash('finalized')
+    for (const chunk of txChunks) {
+      const tx = new Transaction()
+      const singers = [...chunk.flatMap((x) => x.signers)]
+      tx.add(...chunk.flatMap((x) => x.ixns))
+      tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
+      tx.recentBlockhash = latestBlockhash.blockhash
+      tx.feePayer = payer
+      if (singers.length) {
+        tx.sign(...singers)
+      }
+      transactions.push(tx)
+    }
+    const signedTransactions = await wallet.signAllTransactions!(transactions)
+    for (const tx of signedTransactions) {
+      const rawTransaction = tx.serialize()
+      const address = await connection.sendRawTransaction(rawTransaction, {
+        skipPreflight: true,
+      })
+      await connection.confirmTransaction({
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+        signature: address,
+      })
+    }
   }
 
   return (

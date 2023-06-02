@@ -2007,16 +2007,17 @@
   dependencies:
     tslib "^2.4.0"
 
-"@switchboard-xyz/common@^2.2.0":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@switchboard-xyz/common/-/common-2.2.1.tgz#9cbebaefdc87d2c0484fdb4233cc2f53e1ed178b"
-  integrity sha512-fhRMMDbP5FG88vGWExshEMMZ++ceGauHs85HIOjWYLfNs7IHHtDyFTfF0Bo0JrgqDHxGcPXHhECIBV+PlEARAw==
+"@switchboard-xyz/common@^2.2.3":
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/@switchboard-xyz/common/-/common-2.2.3.tgz#f4d39cea8cea9354ad369f749462fa37152c4ec9"
+  integrity sha512-E4NQf9aXdOiul+sySAbFPAW9k0qz4wRTfqrU7cEa8nRIvUkg6VIZ+5JfajHv/VfK9UOD+6ZfMBxq2+dHkiz9zw==
   dependencies:
     "@solana/web3.js" "^1.66.2"
     "@types/big.js" "^6.1.6"
     "@types/bn.js" "^5.1.1"
     big.js "^6.2.1"
     bn.js "^5.2.1"
+    bs58 "^5.0.0"
     decimal.js "^10.4.3"
     protobufjs "^7.2.3"
     yaml "^2.2.1"
@@ -2029,16 +2030,16 @@
     "@project-serum/anchor" "^0.24.2"
     big.js "^6.1.1"
 
-"@switchboard-xyz/solana.js@2.1.16":
-  version "2.1.16"
-  resolved "https://registry.yarnpkg.com/@switchboard-xyz/solana.js/-/solana.js-2.1.16.tgz#1410ac5472d063e0175903f675b0eed2b117aa04"
-  integrity sha512-xsrVFK6elF+JFu3/yrdIHl+bvfU2876d2wzHf0ODoLh3gdP3dVOEAf6J9BEGYwkMtw3G8FdSM1yjRKe32fpIng==
+"@switchboard-xyz/solana.js@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@switchboard-xyz/solana.js/-/solana.js-2.2.0.tgz#5108cfbbf0ca6e48297ae8c6e8c11f39e04ac32a"
+  integrity sha512-UzAyKDY1wq1UO50PsKc/6huF6xYX/3B5kA0lmEnZMb+5L6M3YtDckbxk6mD4kG7J0curvvX6Alu9cO6uGqnI3A==
   dependencies:
     "@coral-xyz/anchor" "^0.27.0"
     "@coral-xyz/borsh" "^0.27.0"
     "@solana/spl-token" "^0.3.6"
     "@solana/web3.js" "^1.73.0"
-    "@switchboard-xyz/common" "^2.2.0"
+    "@switchboard-xyz/common" "^2.2.3"
     dotenv "^16.0.3"
     lodash "^4.17.21"
 
