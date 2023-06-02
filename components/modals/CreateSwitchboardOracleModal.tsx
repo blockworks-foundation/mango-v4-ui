@@ -85,9 +85,10 @@ const CreateSwitchboardOracleModal = ({
           minRequiredJobResults: 2,
           minUpdateDelaySeconds: 300,
           withdrawAuthority: MANGO_DAO_WALLET,
+          authority: MANGO_DAO_WALLET,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: 0.1,
+          fundAmount: 2.6,
           enable: true,
           basePriorityFee: 0,
           disableCrank: false,
@@ -115,7 +116,7 @@ const CreateSwitchboardOracleModal = ({
                                   {
                                     jupiterSwapTask: {
                                       inTokenAddress: USDC_MINT,
-                                      outTokenAddress: { baseTokenPk },
+                                      outTokenAddress: baseTokenPk,
                                       baseAmountString: '100',
                                     },
                                   },
@@ -127,7 +128,7 @@ const CreateSwitchboardOracleModal = ({
                         onFailure: [
                           {
                             lpExchangeRateTask: {
-                              [poolPropertyName]: { poolAddress },
+                              [poolPropertyName]: poolAddress,
                             },
                           },
                         ],
@@ -163,9 +164,8 @@ const CreateSwitchboardOracleModal = ({
                                             tasks: [
                                               {
                                                 serumSwapTask: {
-                                                  serumPoolAddress: {
+                                                  serumPoolAddress:
                                                     openbookMarketPk,
-                                                  },
                                                 },
                                               },
                                             ],
@@ -180,7 +180,7 @@ const CreateSwitchboardOracleModal = ({
                           },
                           {
                             jupiterSwapTask: {
-                              inTokenAddress: { baseTokenPk },
+                              inTokenAddress: baseTokenPk,
                               outTokenAddress: USDC_MINT,
                               baseAmountString: '${IN_TOKEN_QTY}',
                             },
@@ -194,7 +194,7 @@ const CreateSwitchboardOracleModal = ({
                         onFailure: [
                           {
                             lpExchangeRateTask: {
-                              [poolPropertyName]: { poolAddress },
+                              [poolPropertyName]: poolAddress,
                             },
                           },
                         ],
