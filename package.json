@@ -114,6 +114,7 @@
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-torus>@toruslabs/solana-embed>@toruslabs/openlogin-jrpc>@toruslabs/openlogin-utils>keccak": true,
       "@metaplex-foundation/js>@bundlr-network/client>arbundles>secp256k1": true,
       "@metaplex-foundation/js>@bundlr-network/client>arbundles>keccak": true,
+      "@switchboard-xyz/solana.js>@switchboard-xyz/common>protobufjs": true,
       "@solana/web3.js>bigint-buffer": false,
       "@solana/web3.js>rpc-websockets>bufferutil": true,
       "@solana/web3.js>rpc-websockets>utf-8-validate": true,
