@@ -80,9 +80,11 @@ const TopBar = () => {
 
   return (
     <div
-      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 ${
-        query.token || query.market ? '' : 'pl-4 md:pl-6'
-      }`}
+      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 ${
+        theme === 'Bonk'
+          ? `bg-th-bkg-1 bg-[url('/images/bonk-tile.png')]`
+          : 'bg-th-bkg-1'
+      } ${query.token || query.market ? '' : 'pl-4 md:pl-6'}`}
     >
       <div className="flex w-full items-center justify-between md:space-x-4">
         <span className="mb-0 flex items-center">

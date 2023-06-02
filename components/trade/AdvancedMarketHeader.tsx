@@ -18,6 +18,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import OraclePrice from './OraclePrice'
 import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
 import { useQuery } from '@tanstack/react-query'
+import { useTheme } from 'next-themes'
 
 type TickerData = {
   base_currency: string
@@ -50,6 +51,7 @@ const AdvancedMarketHeader = ({
   setShowChart?: (x: boolean) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
+  const { theme } = useTheme()
   const perpStats = mangoStore((s) => s.perpStats.data)
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const {
@@ -134,7 +136,11 @@ const AdvancedMarketHeader = ({
 
   return (
     <>
-      <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
+      <div
+        className={`flex flex-col md:h-12 md:flex-row md:items-center ${
+          theme === 'Bonk' ? 'bg-th-bkg-2' : 'bg-th-bkg-1'
+        }`}
+      >
         <div className="w-full pl-4 md:w-auto md:py-0 md:pl-6 lg:pb-0">
           <MarketSelectDropdown />
         </div>

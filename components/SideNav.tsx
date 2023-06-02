@@ -43,17 +43,23 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     <div
       className={`transition-all duration-300 ${
         collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
-      } border-r border-th-bkg-3 bg-th-bkg-1`}
+      } border-r border-th-bkg-3 ${
+        theme === 'Bonk'
+          ? `bg-th-bkg-1 bg-[url('/images/bonk-tile.png')] bg-repeat`
+          : 'bg-th-bkg-1'
+      }`}
     >
       <div className="flex min-h-screen flex-col justify-between">
-        <div className="my-2">
+        <div className="mb-2">
           <Link href={'/'} shallow={true} passHref legacyBehavior>
             <div
-              className={`h-14 items-center transition-all duration-300 ease-in-out ${
+              className={`items-center transition-all duration-300 ease-in-out ${
                 collapsed ? '' : 'justify-start'
-              } pb-1 pt-2 ${theme === 'Bonk' ? 'pl-3' : 'pl-4'}`}
+              } pb-1 ${theme === 'Bonk' ? 'pl-3' : 'pl-4'}`}
             >
-              <div className={`flex flex-shrink-0 cursor-pointer items-center`}>
+              <div
+                className={`flex h-16 flex-shrink-0 cursor-pointer items-center bg-th-bkg-1`}
+              >
                 {theme !== 'Bonk' ? (
                   <img
                     className={`h-8 w-8 flex-shrink-0`}
@@ -62,7 +68,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   />
                 ) : (
                   <img
-                    className={`h-9 w-9 flex-shrink-0`}
+                    className={`h-10 w-10 flex-shrink-0`}
                     src="/images/bonk-logo.png"
                     alt="next"
                   />
@@ -77,8 +83,12 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <span className="ml-3 font-display text-lg text-th-fgd-1">
-                    Mango
+                  <span
+                    className={`${
+                      theme !== 'Bonk' ? 'ml-3' : 'ml-2'
+                    } font-display text-lg text-th-fgd-1`}
+                  >
+                    {theme !== 'Bonk' ? 'Mango' : 'Bongo'}
                   </span>
                 </Transition>
               </div>
@@ -284,7 +294,11 @@ const MenuItem = ({
                   hideIconBg
                     ? ''
                     : `flex h-8 w-8 items-center justify-center rounded-full ${
-                        theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                        theme === 'Light'
+                          ? 'bg-th-bkg-2'
+                          : theme === 'Bonk'
+                          ? 'bg-th-button'
+                          : 'bg-th-bkg-3'
                       }`
                 }
               >
@@ -346,7 +360,11 @@ export const ExpandableMenuItem = ({
             hideIconBg
               ? ''
               : `flex h-8 w-8 items-center justify-center rounded-full ${
-                  theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                  theme === 'Light'
+                    ? 'bg-th-bkg-2'
+                    : theme === 'Bonk'
+                    ? 'bg-th-button'
+                    : 'bg-th-bkg-3'
                 }`
           } ${
             alignBottom
@@ -394,7 +412,9 @@ export const ExpandableMenuItem = ({
                 className={
                   hideIconBg
                     ? ''
-                    : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
+                    : `flex h-8 w-8 items-center justify-center rounded-full ${
+                        theme === 'Bonk' ? 'bg-th-button' : 'bg-th-bkg-3'
+                      }`
                 }
               >
                 {icon}

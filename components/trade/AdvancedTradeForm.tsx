@@ -711,10 +711,16 @@ const AdvancedTradeForm = () => {
                 !connected
                   ? ''
                   : tradeForm.side === 'buy'
-                  ? `bg-th-up-dark md:hover:bg-th-up-dark md:hover:brightness-90 ${
-                      theme === 'Bonk' ? 'text-th-active' : 'text-white'
+                  ? `bg-th-up-dark md:hover:bg-th-up-dark ${
+                      theme === 'Bonk'
+                        ? 'bonk-buy-button'
+                        : 'text-white md:hover:brightness-90'
                     }`
-                  : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
+                  : `bg-th-down-dark text-white ${
+                      theme === 'Bonk'
+                        ? ''
+                        : 'md:hover:bg-th-down-dark md:hover:brightness-90'
+                    }`
               }`}
               disabled={disabled}
               size="large"

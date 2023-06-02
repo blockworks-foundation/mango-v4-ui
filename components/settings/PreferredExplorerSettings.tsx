@@ -23,7 +23,7 @@ const PreferredExplorerSettings = () => {
       <div className="space-y-2">
         {EXPLORERS.map((ex) => (
           <button
-            className="flex w-full items-center justify-between rounded-md bg-th-bkg-2 p-4 hover:bg-th-bkg-3"
+            className="flex w-full items-center justify-between rounded-md border border-th-bkg-4 p-4 hover:border-th-fgd-4"
             onClick={() => setPreferredExplorer(ex)}
             key={ex.name}
           >

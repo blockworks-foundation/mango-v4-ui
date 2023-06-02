@@ -394,8 +394,8 @@ module.exports = {
         },
         'bonk-theme': {
           active: {
-            DEFAULT: 'hsl(43, 53%, 13%)',
-            dark: 'hsl(43, 53%, 8%)',
+            DEFAULT: '#000',
+            dark: '#000',
           },
           button: {
             DEFAULT: 'hsl(12, 50%, 45%)',
@@ -414,16 +414,16 @@ module.exports = {
           },
           up: {
             DEFAULT: 'hsl(52, 95%, 64%)',
-            dark: 'hsl(52, 95%, 59%)',
-            muted: 'hsl(52, 55%, 59%)',
+            dark: 'hsl(52, 95%, 44%)',
+            muted: 'hsl(52, 55%, 54%)',
           },
           error: 'hsl(359, 62%, 47%)',
           success: 'hsl(52, 95%, 64%)',
-          warning: 'hsl(359, 62%, 67%)',
+          warning: 'hsl(24, 100%, 43%)',
           'bkg-1': 'hsl(24, 85%, 56%)',
           'bkg-2': 'hsl(30, 84%, 47%)',
           'bkg-3': 'hsl(39, 72%, 63%)',
-          'bkg-4': 'hsl(39, 72%, 53%)',
+          'bkg-4': 'hsl(39, 72%, 68%)',
           'fgd-1': 'hsl(52, 93%, 99%)',
           'fgd-2': 'hsl(52, 85%, 93%)',
           'fgd-3': 'hsl(52, 80%, 87%)',

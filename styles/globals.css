@@ -678,3 +678,39 @@ input[type='range']::-webkit-slider-runnable-track {
 #tsparticles {
   @apply absolute h-screen w-full;
 }
+
+/* bonk button */
+
+.bonk-button {
+  @apply relative flex items-center justify-center bg-th-button text-th-fgd-1 transition-none;
+  box-shadow: 0 6px var(--button-hover);
+}
+
+.bonk-button:hover {
+  background-color: var(--button);
+  box-shadow: 0 4px var(--button-hover);
+  top: 2px;
+}
+
+.bonk-button:active {
+  box-shadow: 0 0 var(--button-hover);
+  top: 6px;
+}
+
+/* bonk buy button */
+
+.bonk-buy-button {
+  @apply relative flex items-center justify-center bg-th-up text-th-active transition-none;
+  box-shadow: 0 6px var(--up-dark);
+}
+
+.bonk-buy-button:hover {
+  background-color: var(--up) !important;
+  box-shadow: 0 4px var(--up-dark);
+  top: 2px;
+}
+
+.bonk-buy-button:active {
+  box-shadow: 0 0 var(--up-dark);
+  top: 6px;
+}

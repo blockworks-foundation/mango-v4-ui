@@ -32,7 +32,9 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={`rounded-md ${
-        secondary
+        theme === 'Bonk'
+          ? 'bonk-button'
+          : secondary
           ? 'border border-th-button focus-visible:border-th-fgd-4 md:hover:border-th-button-hover'
           : 'bg-th-button focus-visible:border focus-visible:border-th-fgd-4 md:hover:bg-th-button-hover'
       } ${
