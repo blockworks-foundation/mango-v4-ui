@@ -1,6 +1,8 @@
 {
     "confirm-swap": "确定换币",
     "connect-swap": "连接来查换币纪录",
+    "disabled": "Disabled",
+    "enabled": "Enabled",
     "est-liq-price": "预计清算价格",
     "fees-paid-to": "缴给{{route}}的费用",
     "health-impact": "健康影响",
@@ -9,6 +11,7 @@
     "input-reduce-only-warning": "{{symbol}}处于仅减少模式。您可以将余额换成另一个币种",
     "insufficient-balance": "{{symbol}}余额不够",
     "insufficient-collateral": "质押品不够",
+    "margin": "Margin",
     "margin-swap": "杠杆换币",
     "max-slippage": "最多下滑",
     "maximum-cost": "最大成本",
@@ -35,6 +38,7 @@
     "swap-route": "换币路线",
     "tooltip-borrow-balance": "您将使用您的 {{balance}} {{token}} 余额并借入 {{borrowAmount}} {{token}} 来执行此交换。当前的 {{token}} 可变借贷利率为 {{rate}}%",
     "tooltip-borrow-no-balance": "您将借入 {{borrowAmount}} {{token}} 来执行此交换。当前的 {{token}} 可变借贷利率为 {{rate}}%",
+    "tooltip-margin": "When margin is enabled you can add leverage to your swaps. Borrows are opened automatically if a swap exceeds your balance.",
     "tooltip-max-slippage": "如果价格下滑超过您的最大滑点，换币交易将不会被执行",
     "use-margin": "允许杠杆"
 }
