@@ -42,6 +42,7 @@
   "close-account-desc": "你確定嗎? 關戶就無法恢復",
   "closing-account": "正在關閉帳戶...",
   "collateral-value": "質押品價值",
+  "confirm": "Confirm",
   "connect": "連接",
   "connect-balances": "連接而查看資產餘額",
   "connect-helper": "連接來開始",
@@ -91,6 +92,7 @@
   "leverage": "槓桿",
   "liability-weight": "債務權重",
   "liquidity": "流動性",
+  "list-market": "List Market",
   "loading": "加載中",
   "loan-origination-fee": "借貸費用",
   "loan-origination-fee-tooltip": "執行借貸費用是{{fee}}。",
@@ -172,7 +174,7 @@
   "wallet-disconnected": "已斷開錢包連接",
   "withdraw": "取款",
   "withdraw-amount": "取款額",
-  "list-token": "列表代币",
+  "list-market-token": "List Market/Token",
   "vote": "投票",
   "yes": "是"
 }

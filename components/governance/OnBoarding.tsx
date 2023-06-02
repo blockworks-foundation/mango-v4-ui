@@ -15,6 +15,7 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
   const { t } = useTranslation(['governance'])
   const governances = GovernanceStore((s) => s.governances)
   const voter = GovernanceStore((s) => s.voter)
+  const loadingVoter = GovernanceStore((s) => s.loadingVoter)
 
   const minVoterWeight = minVotes
     ? minVotes
@@ -26,7 +27,8 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
     : 0
 
-  return voter.voteWeight.cmp(minVoterWeight) !== -1 || !connected ? null : (
+  return voter.voteWeight.cmp(minVoterWeight) !== -1 ||
+    !connected ? null : !loadingVoter ? (
     <div className="mb-6">
       <InlineNotification
         type="error"
@@ -47,7 +49,7 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
         desc={t('on-boarding-deposit-info')}
       />
     </div>
-  )
+  ) : null
 }
 
 export default OnBoarding

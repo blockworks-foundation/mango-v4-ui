@@ -43,7 +43,10 @@ export async function castVote(
   )
 
   const { updateVoterWeightRecordIx, voterWeightPk } =
-    await updateVoterWeightRecord(vsrClient, walletPubkey)
+    await updateVoterWeightRecord(
+      vsrClient,
+      tokenOwnerRecord.account.governingTokenOwner
+    )
   instructions.push(updateVoterWeightRecordIx)
 
   // It is not clear that defining these extraneous fields, `deny` and `veto`, is actually necessary.
@@ -97,7 +100,10 @@ export async function castVote(
 
   if (message) {
     const { updateVoterWeightRecordIx, voterWeightPk } =
-      await updateVoterWeightRecord(vsrClient, walletPubkey)
+      await updateVoterWeightRecord(
+        vsrClient,
+        tokenOwnerRecord.account.governingTokenOwner
+      )
     instructions.push(updateVoterWeightRecordIx)
 
     await withPostChatMessage(

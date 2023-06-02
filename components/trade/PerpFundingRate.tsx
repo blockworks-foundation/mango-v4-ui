@@ -1,5 +1,4 @@
 import { BookSide, PerpMarket } from '@blockworks-foundation/mango-v4'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -164,10 +163,10 @@ const PerpFundingRate = () => {
           }
         >
           <div className="flex items-center">
-            <div className="text-xs text-th-fgd-4">
+            <div className="tooltip-underline mb-0.5 text-xs text-th-fgd-4">
               {t('trade:funding-rate')}
             </div>
-            <InformationCircleIcon className="ml-1 h-4 w-4 text-th-fgd-4" />
+            {/* <InformationCircleIcon className="ml-1 h-4 w-4 text-th-fgd-4" /> */}
           </div>
         </Tooltip>
         <p className="font-mono text-xs text-th-fgd-2">

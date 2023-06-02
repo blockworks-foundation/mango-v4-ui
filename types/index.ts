@@ -286,6 +286,7 @@ export interface NFT {
 }
 
 export interface PerpStatsItem {
+  base_volume: number
   date_hour: string
   fees_accrued: number
   fees_settled: number
@@ -296,6 +297,7 @@ export interface PerpStatsItem {
   open_interest: number
   perp_market: string
   price: number
+  quote_volume: number
   stable_price: number
   total_fees: number
 }
@@ -372,4 +374,15 @@ export function isMangoError(error: unknown): error is MangoError {
     'txid' in error &&
     typeof (error as Record<string, unknown>).message === 'string'
   )
+}
+
+export type TickerData = {
+  base_currency: string
+  base_volume: string
+  high: string
+  last_price: string
+  low: string
+  target_currency: string
+  target_volume: string
+  ticker_id: string
 }

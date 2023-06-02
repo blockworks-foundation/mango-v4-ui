@@ -362,7 +362,7 @@ const ActivityFeedTable = () => {
                   )}
                 </Disclosure>
               ) : (
-                <TrBody>
+                <TrBody key={`${signature}${index}`}>
                   <SharedTableBody
                     activity_type={activity_type}
                     amounts={amounts}

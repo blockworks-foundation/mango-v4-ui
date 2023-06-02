@@ -68,6 +68,24 @@
   --tv-color-toolbar-toggle-button-background-active-hover: var(--primary);
 }
 
+/* market name title */
+
+[data-name="legend-source-title"] {
+  color: var(--text)!important;
+}
+
+/* market name hover */
+
+.chart-widget__top--themed-dark .withAction-OYqjX7Sg .titleWrapper-OYqjX7Sg {
+  background-color: var(--bkg-dark);
+}
+
+/* ohlcv labels */
+
+.chart-widget__top--themed-dark .series-OYqjX7Sg .valueItem-OYqjX7Sg .valueTitle-OYqjX7Sg {
+  color: var(--text);
+}
+
 /* light theme */
 
 html .chart-page .chart-container-border {
@@ -165,7 +183,6 @@ html .container-3Ywm3-oo.selected-3Ywm3-oo.highlighted-3Ywm3-oo.dark-3Ywm3-oo {
 html .container-3Ywm3-oo:not(.disabled-3Ywm3-oo):hover.selected-3Ywm3-oo {
   background-color: var(--bkg-light);
 }
-
 
 /* dark theme */
 
