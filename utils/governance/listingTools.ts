@@ -2,7 +2,7 @@ import { AnchorProvider, Program } from '@project-serum/anchor'
 import { PythHttpClient } from '@pythnetwork/client'
 import { notify } from 'utils/notifications'
 import { MAINNET_PYTH_PROGRAM } from './constants'
-import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
+import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import { Market } from '@project-serum/serum'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import EmptyWallet from 'utils/wallet'
@@ -281,4 +281,77 @@ export const getQuoteSymbol = (quoteTokenSymbol: string) => {
     return 'usd'
   }
   return quoteTokenSymbol
+}
+
+const listingBase = {
+  maxStalenessSlots: 120,
+  oracleConfFilter: 0.1,
+  adjustmentFactor: 0.004,
+  util0: 0.5,
+  rate0: 0.018,
+  util1: 0.8,
+  rate1: 0.005,
+  maxRate: 0.8,
+  loanFeeRate: 0.1,
+  loanOriginationFeeRate: 0.001,
+  maintAssetWeight: 0.9,
+  initAssetWeight: 0.8,
+  maintLiabWeight: 1.1,
+  initLiabWeight: 1.2,
+  liquidationFee: 0.05,
+  minVaultToDepositsRatio: 0.2,
+  netBorrowLimitWindowSizeTs: 24 * 60 * 60,
+  netBorrowLimitPerWindowQuote: toNative(50000, 6).toNumber(),
+}
+
+export const LISTING_PRESETS: {
+  [key: string]: typeof listingBase & { name: string }
+} = {
+  //Price impact $100,000 < 1%
+  PREMIUM: {
+    ...listingBase,
+    name: 'Premium',
+  },
+  //Price impact $20,000 < 1%
+  MID: {
+    ...listingBase,
+    util0: 0.5,
+    rate0: 0.0052,
+    util1: 0.8,
+    rate1: 0.1446,
+    maxRate: 1.4456,
+    maintAssetWeight: 0.75,
+    initAssetWeight: 0.5,
+    maintLiabWeight: 1.2,
+    initLiabWeight: 1.4,
+    liquidationFee: 0.1,
+    netBorrowLimitPerWindowQuote: toNative(20000, 6).toNumber(),
+    name: 'Mid',
+  },
+  //Price impact $5,000 < 1%
+  MEME: {
+    ...listingBase,
+    maxStalenessSlots: -1,
+    loanOriginationFeeRate: 0.002,
+    maintAssetWeight: 0,
+    initAssetWeight: 0,
+    maintLiabWeight: 1.25,
+    initLiabWeight: 1.5,
+    liquidationFee: 0.125,
+    netBorrowLimitPerWindowQuote: toNative(5000, 6).toNumber(),
+    name: 'Meme',
+  },
+  //Price impact $1,000 < 1%
+  SHIT: {
+    ...listingBase,
+    maxStalenessSlots: -1,
+    loanOriginationFeeRate: 0.002,
+    maintAssetWeight: 0,
+    initAssetWeight: 0,
+    maintLiabWeight: 1.4,
+    initLiabWeight: 1.8,
+    liquidationFee: 0.2,
+    netBorrowLimitPerWindowQuote: toNative(1000, 6).toNumber(),
+    name: 'Shit',
+  },
 }

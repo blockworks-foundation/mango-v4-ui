@@ -29,7 +29,7 @@
     "invalid-num": "Invalid Number",
     "invalid-pk": "Invalid Public Key",
     "liquidity-check-error": "Error during liquidity check",
-    "liquidity-warning": "Low liquidity. Price impact of {{priceImpactPct}}% on a 10k USDC swap.",
+    "liquidity-warning": "Low liquidity. Price impact of {{priceImpactPct}}% on a 20k USDC swap.",
     "list-spot-market": "List Spot Market",
     "list-spot-market-desc": "Create a market pair from tokens listed on Mango",
     "list-token": "List Token",
