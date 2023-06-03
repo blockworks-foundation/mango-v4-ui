@@ -304,6 +304,14 @@ const listingBase = {
   netBorrowLimitPerWindowQuote: toNative(50000, 6).toNumber(),
 }
 
+const secondTierRates = {
+  util0: 0.5,
+  rate0: 0.0052,
+  util1: 0.8,
+  rate1: 0.1446,
+  maxRate: 1.4456,
+}
+
 export const LISTING_PRESETS: {
   [key: string]: typeof listingBase & { name: string }
 } = {
@@ -315,11 +323,7 @@ export const LISTING_PRESETS: {
   //Price impact $20,000 < 1%
   MID: {
     ...listingBase,
-    util0: 0.5,
-    rate0: 0.0052,
-    util1: 0.8,
-    rate1: 0.1446,
-    maxRate: 1.4456,
+    ...secondTierRates,
     maintAssetWeight: 0.75,
     initAssetWeight: 0.5,
     maintLiabWeight: 1.2,
@@ -331,6 +335,7 @@ export const LISTING_PRESETS: {
   //Price impact $5,000 < 1%
   MEME: {
     ...listingBase,
+    ...secondTierRates,
     maxStalenessSlots: null,
     loanOriginationFeeRate: 0.002,
     maintAssetWeight: 0,
@@ -344,6 +349,7 @@ export const LISTING_PRESETS: {
   //Price impact $1,000 < 1%
   SHIT: {
     ...listingBase,
+    ...secondTierRates,
     maxStalenessSlots: null,
     loanOriginationFeeRate: 0.002,
     maintAssetWeight: 0,
