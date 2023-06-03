@@ -98,5 +98,6 @@
     "your-votes": "Your Votes:",
     "create-switch-oracle": "Create switchboard oracle for",
     "estimated-oracle-cost": "Estimated cost with funding oracle for ~6 months 2.8 SOL",
-    "create-oracle": "Create oracle"
+    "create-oracle": "Create oracle",
+    "tier": "Tier"
 }

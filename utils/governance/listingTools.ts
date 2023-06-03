@@ -284,7 +284,7 @@ export const getQuoteSymbol = (quoteTokenSymbol: string) => {
 }
 
 const listingBase = {
-  maxStalenessSlots: 120,
+  maxStalenessSlots: 120 as number | null,
   oracleConfFilter: 0.1,
   adjustmentFactor: 0.004,
   util0: 0.5,
@@ -331,7 +331,7 @@ export const LISTING_PRESETS: {
   //Price impact $5,000 < 1%
   MEME: {
     ...listingBase,
-    maxStalenessSlots: -1,
+    maxStalenessSlots: null,
     loanOriginationFeeRate: 0.002,
     maintAssetWeight: 0,
     initAssetWeight: 0,
@@ -344,7 +344,7 @@ export const LISTING_PRESETS: {
   //Price impact $1,000 < 1%
   SHIT: {
     ...listingBase,
-    maxStalenessSlots: -1,
+    maxStalenessSlots: null,
     loanOriginationFeeRate: 0.002,
     maintAssetWeight: 0,
     initAssetWeight: 0,
@@ -354,4 +354,13 @@ export const LISTING_PRESETS: {
     netBorrowLimitPerWindowQuote: toNative(1000, 6).toNumber(),
     name: 'Shit',
   },
+}
+
+export const coinTiersToNames: {
+  [key: string]: string
+} = {
+  PREMIUM: 'Blue Chip',
+  MID: 'Mid-wit',
+  MEME: 'Meme',
+  SHIT: 'Shit Coin',
 }

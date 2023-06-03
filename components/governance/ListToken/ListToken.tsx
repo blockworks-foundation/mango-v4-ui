@@ -38,6 +38,7 @@ import { formatNumericValue } from 'utils/numbers'
 import useMangoGroup from 'hooks/useMangoGroup'
 import {
   LISTING_PRESETS,
+  coinTiersToNames,
   getBestMarket,
   getOracle,
 } from 'utils/governance/listingTools'
@@ -117,7 +118,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
   const [coinTier, setCoinTier] = useState('')
   const tierPreset = useMemo(() => {
-    return LISTING_PRESETS[coinTier]
+    return LISTING_PRESETS[coinTier] || {}
   }, [coinTier])
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
@@ -386,7 +387,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         advForm.name,
         {
           confFilter: Number(tierPreset.oracleConfFilter),
-          maxStalenessSlots: Number(tierPreset.maxStalenessSlots),
+          maxStalenessSlots: tierPreset.maxStalenessSlots,
         },
         {
           adjustmentFactor: Number(tierPreset.adjustmentFactor),
@@ -468,6 +469,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     minVoterWeight,
     mintVoterWeightNumber,
     t,
+    tierPreset,
     voter.tokenOwnerRecord,
     voter.voteWeight,
     vsrClient,
@@ -550,6 +552,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 <div className="mb-2 flex items-center justify-between">
                   <p>{t('symbol')}</p>
                   <p className="text-th-fgd-2">{currentTokenInfo?.symbol}</p>
+                </div>
+                <div className="mb-2 flex items-center justify-between">
+                  <p>{t('tier')}</p>
+                  <p className="text-th-fgd-2">{coinTiersToNames[coinTier]}</p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
