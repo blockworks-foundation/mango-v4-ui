@@ -8,13 +8,22 @@ import { useCallback, useEffect, useState } from 'react'
 import BounceLoader from '../shared/BounceLoader'
 import {
   MangoAccount,
+  PerpMarketIndex,
+  PerpPosition,
+  Serum3Orders,
+  TokenIndex,
   TokenPosition,
+  U64_MAX_BN,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/20/solid'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'
 import { formatCurrencyValue } from 'utils/numbers'
+import { cloneDeep } from 'lodash'
+import { TransactionInstruction } from '@solana/web3.js'
+import { MarketIndex } from '@blockworks-foundation/mango-v4/dist/types/src/accounts/serum3'
+import { AnchorProvider } from '@project-serum/anchor'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation(['close-account'])
@@ -46,7 +55,70 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     if (!mangoAccount || !group) return
     setLoading(true)
     try {
-      const tx = await client.emptyAndCloseMangoAccount(group, mangoAccount)
+      const clonedMangoAccount = cloneDeep(mangoAccount)
+      const closeOosInstructions: TransactionInstruction[] = []
+      const closePpsInstructions: TransactionInstruction[] = []
+      const closeTpsInstructions: TransactionInstruction[] = []
+      const closeActInstructions: TransactionInstruction[] = []
+
+      for (const serum3Account of clonedMangoAccount.serum3Active()) {
+        const serum3Market = group.serum3MarketsMapByMarketIndex.get(
+          serum3Account.marketIndex
+        )!
+
+        const closeOOIx = await client.serum3CloseOpenOrdersIx(
+          group,
+          clonedMangoAccount,
+          serum3Market.serumMarketExternal
+        )
+        closeOosInstructions.push(closeOOIx)
+        serum3Account.marketIndex =
+          Serum3Orders.Serum3MarketIndexUnset as MarketIndex
+      }
+
+      await client.sendAndConfirmTransaction(closeOosInstructions)
+
+      for (const pp of clonedMangoAccount.perpActive()) {
+        const perpMarketIndex = pp.marketIndex
+        const deactivatingPositionIx = await client.perpDeactivatePositionIx(
+          group,
+          clonedMangoAccount,
+          perpMarketIndex
+        )
+        closePpsInstructions.push(deactivatingPositionIx)
+        pp.marketIndex = PerpPosition.PerpMarketIndexUnset as PerpMarketIndex
+      }
+
+      await client.sendAndConfirmTransaction(closePpsInstructions)
+
+      for (const tp of clonedMangoAccount.tokensActive()) {
+        const bank = group.getFirstBankByTokenIndex(tp.tokenIndex)
+        const withdrawIx = await client.tokenWithdrawNativeIx(
+          group,
+          clonedMangoAccount,
+          bank.mint,
+          U64_MAX_BN,
+          false
+        )
+        closeTpsInstructions.push(...withdrawIx)
+        tp.tokenIndex = TokenPosition.TokenIndexUnset as TokenIndex
+      }
+
+      await client.sendAndConfirmTransaction(closeTpsInstructions)
+
+      const closeIx = await client.program.methods
+        .accountClose(false)
+        .accounts({
+          group: group.publicKey,
+          account: clonedMangoAccount.publicKey,
+          owner: (client.program.provider as AnchorProvider).wallet.publicKey,
+          solDestination: clonedMangoAccount.owner,
+        })
+        .instruction()
+      closeActInstructions.push(closeIx)
+
+      const tx = await client.sendAndConfirmTransaction(closeActInstructions)
+
       if (tx) {
         const newMangoAccounts = mangoAccounts.filter(
           (ma) => !ma.publicKey.equals(mangoAccount.publicKey)

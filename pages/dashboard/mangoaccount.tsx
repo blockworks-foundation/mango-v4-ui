@@ -188,6 +188,10 @@ const MangoAccountDashboard: NextPage = () => {
                       label="Value at oracle price"
                       value={`$${token.balanceUi(bank) * bank.uiPrice}`}
                     />
+                    <KeyValuePair
+                      label="In use count"
+                      value={token.inUseCount}
+                    />
                   </div>
                 )
               })}
