@@ -305,9 +305,7 @@ const listingBase = {
 }
 
 const secondTierRates = {
-  util0: 0.5,
   rate0: 0.052,
-  util1: 0.8,
   rate1: 0.1446,
   maxRate: 1.4456,
 }
