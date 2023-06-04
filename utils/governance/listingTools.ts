@@ -290,7 +290,7 @@ const listingBase = {
   util0: 0.5,
   rate0: 0.018,
   util1: 0.8,
-  rate1: 0.005,
+  rate1: 0.05,
   maxRate: 0.8,
   loanFeeRate: 0.1,
   loanOriginationFeeRate: 0.001,
@@ -306,7 +306,7 @@ const listingBase = {
 
 const secondTierRates = {
   util0: 0.5,
-  rate0: 0.0052,
+  rate0: 0.052,
   util1: 0.8,
   rate1: 0.1446,
   maxRate: 1.4456,
