@@ -117,6 +117,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
   const [coinTier, setCoinTier] = useState('')
+  const isMidOrPremium = coinTier === 'PREMIUM' || coinTier === 'MID'
   const tierPreset = useMemo(() => {
     return LISTING_PRESETS[coinTier] || {}
   }, [coinTier])
@@ -891,12 +892,16 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     <InlineNotification
                       desc={
                         <div>
-                          <a
-                            onClick={() => setOracleModalOpen(true)}
-                            className="cursor-pointer underline"
-                          >
-                            {t('cant-list-oracle-not-found')}
-                          </a>
+                          {!isMidOrPremium ? (
+                            <a
+                              onClick={() => setOracleModalOpen(true)}
+                              className="cursor-pointer underline"
+                            >
+                              {t('cant-list-oracle-not-found-switch')}
+                            </a>
+                          ) : (
+                            t('cant-list-oracle-not-found-pyth')
+                          )}
                         </div>
                       }
                       type="error"
