@@ -6,7 +6,7 @@ import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
 import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
-import { PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
   OPENBOOK_PROGRAM_ID,
@@ -379,6 +379,15 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       return
     }
 
+    const [mintInfoPk] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from('MintInfo'),
+        group!.publicKey.toBuffer(),
+        new PublicKey(advForm.mintPk).toBuffer(),
+      ],
+      client.programId
+    )
+
     const proposalTx = []
 
     const registerTokenIx = await client!.program.methods
@@ -417,8 +426,50 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         rent: SYSVAR_RENT_PUBKEY,
       })
       .instruction()
-
     proposalTx.push(registerTokenIx)
+
+    const editIx = await client!.program.methods
+      .tokenEdit(
+        null,
+        null,
+        false,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        tierPreset.borrowWeightScale,
+        tierPreset.depositWeightScale,
+        false,
+        false,
+        tierPreset.reduceOnly,
+        null,
+        null
+      )
+      .accounts({
+        oracle: new PublicKey(advForm.oraclePk),
+        admin: MANGO_DAO_WALLET,
+        group: group!.publicKey,
+        mintInfo: mintInfoPk,
+      })
+      .remainingAccounts([
+        {
+          pubkey: new PublicKey(advForm.baseBankPk),
+          isWritable: true,
+          isSigner: false,
+        } as AccountMeta,
+      ])
+      .instruction()
+    proposalTx.push(editIx)
 
     const registerMarketix = await client!.program.methods
       .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
