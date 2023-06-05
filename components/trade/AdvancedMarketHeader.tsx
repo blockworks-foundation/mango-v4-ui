@@ -135,7 +135,10 @@ const AdvancedMarketHeader = ({
 
   const perpVolume = useMemo(() => {
     if (!oneDayPerpStats.length) return
-    return oneDayPerpStats.reduce((a, c) => a + c.quote_volume, 0)
+    return (
+      oneDayPerpStats[oneDayPerpStats.length - 1].cumulative_quote_volume -
+      oneDayPerpStats[0].cumulative_quote_volume
+    )
   }, [oneDayPerpStats])
 
   return (

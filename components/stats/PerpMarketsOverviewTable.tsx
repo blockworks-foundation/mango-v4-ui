@@ -97,7 +97,8 @@ const PerpMarketsOverviewTable = () => {
                 : 0
 
               const volume = marketStats.length
-                ? marketStats.reduce((a, c) => a + c.quote_volume, 0)
+                ? marketStats[marketStats.length - 1].cumulative_quote_volume -
+                  marketStats[0].cumulative_quote_volume
                 : 0
 
               let fundingRate
@@ -292,7 +293,8 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
     : 0
 
   const volume = marketStats.length
-    ? marketStats.reduce((a, c) => a + c.quote_volume, 0)
+    ? marketStats[marketStats.length - 1].cumulative_quote_volume -
+      marketStats[0].cumulative_quote_volume
     : 0
 
   const openInterest = market.baseLotsToUi(market.openInterest)
