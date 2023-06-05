@@ -88,7 +88,7 @@ const CreateSwitchboardOracleModal = ({
           authority: MANGO_DAO_WALLET,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: 2.6,
+          fundAmount: 15,
           enable: true,
           basePriorityFee: 0,
           disableCrank: false,
