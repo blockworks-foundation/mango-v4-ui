@@ -459,7 +459,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         tierPreset.depositWeightScale,
         false,
         false,
-        tierPreset.reduceOnly,
+        null,
         null,
         null
       )

@@ -307,7 +307,6 @@ const listingBase = {
   insuranceFound: true,
   borrowWeightScale: toNative(250000, 6).toNumber(),
   depositWeightScale: toNative(250000, 6).toNumber(),
-  reduceOnly: 0,
 }
 
 const secondTierRates = {
