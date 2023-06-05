@@ -302,7 +302,7 @@ const listingBase = {
   minVaultToDepositsRatio: 0.2,
   netBorrowLimitWindowSizeTs: 24 * 60 * 60,
   netBorrowLimitPerWindowQuote: toNative(50000, 6).toNumber(),
-  insuranceFound: false,
+  insuranceFound: true,
   borrowWeightScale: toNative(250000, 6).toNumber(),
   depositWeightScale: toNative(250000, 6).toNumber(),
   reduceOnly: 0,
@@ -335,6 +335,7 @@ export const LISTING_PRESETS: {
     name: 'Mid',
     borrowWeightScale: toNative(50000, 6).toNumber(),
     depositWeightScale: toNative(50000, 6).toNumber(),
+    insuranceFound: false,
   },
   //Price impact $5,000 < 1%
   MEME: {
@@ -350,6 +351,7 @@ export const LISTING_PRESETS: {
     netBorrowLimitPerWindowQuote: toNative(5000, 6).toNumber(),
     borrowWeightScale: toNative(20000, 6).toNumber(),
     depositWeightScale: toNative(20000, 6).toNumber(),
+    insuranceFound: false,
     name: 'Meme',
   },
   //Price impact $1,000 < 1%
@@ -366,6 +368,7 @@ export const LISTING_PRESETS: {
     netBorrowLimitPerWindowQuote: toNative(1000, 6).toNumber(),
     borrowWeightScale: toNative(5000, 6).toNumber(),
     depositWeightScale: toNative(5000, 6).toNumber(),
+    insuranceFound: false,
     name: 'Shit',
   },
 }

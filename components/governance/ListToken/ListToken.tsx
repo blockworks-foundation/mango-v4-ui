@@ -432,7 +432,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       .tokenEdit(
         null,
         null,
-        false,
+        tierPreset.insuranceFound,
         null,
         null,
         null,
