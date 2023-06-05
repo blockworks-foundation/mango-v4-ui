@@ -302,6 +302,8 @@ export interface PerpStatsItem {
   total_fees: number
 }
 
+export type GroupedDataItem = PerpStatsItem & Record<string, any>
+
 export type ActivityFeed = {
   activity_type: string
   block_datetime: string
