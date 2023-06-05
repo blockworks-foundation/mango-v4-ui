@@ -49,6 +49,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           : 'bg-th-bkg-1'
       }`}
     >
+      {theme === 'Bonk' && !collapsed ? (
+        <img
+          className={`absolute bottom-16 h-auto w-full flex-shrink-0`}
+          src="/images/mango-inu.png"
+          alt="next"
+        />
+      ) : null}
       <div className="flex min-h-screen flex-col justify-between">
         <div className="mb-2">
           <Link href={'/'} shallow={true} passHref legacyBehavior>
@@ -208,7 +215,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             </ExpandableMenuItem>
           </div>
         </div>
-        <div className="border-t border-th-bkg-3">
+        <div className="z-10 border-t border-th-bkg-3 bg-th-bkg-1">
           <ExpandableMenuItem
             collapsed={collapsed}
             icon={
