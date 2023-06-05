@@ -8,7 +8,8 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import AverageFundingChart from './AverageFundingChart'
 
-const CHART_WRAPPER_CLASSES = 'col-span-2 border-b border-th-bkg-3 py-4 px-6'
+const CHART_WRAPPER_CLASSES =
+  'col-span-2 lg:col-span-1 border-b border-th-bkg-3 py-4 px-6'
 import PerpMarketParams from './PerpMarketParams'
 import PerpVolumeChart from './PerpVolumeChart'
 
@@ -33,7 +34,7 @@ const PerpMarketDetails = ({
     <div className="grid grid-cols-2">
       {marketStats?.length && lastStat ? (
         <>
-          <div className={CHART_WRAPPER_CLASSES}>
+          <div className={`${CHART_WRAPPER_CLASSES} lg:border-r`}>
             <PerpVolumeChart
               loading={loadingPerpStats}
               marketStats={marketStats}
@@ -61,7 +62,7 @@ const PerpMarketDetails = ({
               yKey={'open_interest'}
             />
           </div>
-          <div className={CHART_WRAPPER_CLASSES}>
+          <div className={`${CHART_WRAPPER_CLASSES} lg:border-r`}>
             <AverageFundingChart
               loading={loadingPerpStats}
               marketStats={marketStats}
