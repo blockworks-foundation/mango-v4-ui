@@ -595,7 +595,7 @@ const AccountPage = () => {
                   {t('total-interest-earned')}
                 </p>
               </Tooltip>
-              {Math.abs(interestTotalValue) > 1 && mangoAccountAddress ? (
+              {mangoAccountAddress && Math.abs(interestTotalValue) >= 2 ? (
                 <Tooltip
                   className="hidden md:block"
                   content="Cumulative Interest Chart"
@@ -638,7 +638,7 @@ const AccountPage = () => {
                 {t('account:total-funding-earned')}
               </p>
             </Tooltip>
-            {mangoAccountAddress ? (
+            {mangoAccountAddress && Math.abs(fundingTotalValue) >= 2 ? (
               <Tooltip
                 className="hidden md:block"
                 content="Funding Chart"
