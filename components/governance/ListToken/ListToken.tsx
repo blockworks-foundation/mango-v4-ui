@@ -118,9 +118,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
   const [coinTier, setCoinTier] = useState('')
   const isMidOrPremium = coinTier === 'PREMIUM' || coinTier === 'MID'
-  const tierPreset = useMemo(() => {
-    return LISTING_PRESETS[coinTier] || {}
-  }, [coinTier])
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
@@ -154,6 +151,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       priceIncrementRelative: 0,
     }
   }, [quoteBank, currentTokenInfo, baseTokenPrice])
+  const tierPreset = useMemo(() => {
+    return LISTING_PRESETS[coinTier] || {}
+  }, [coinTier])
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
@@ -161,13 +161,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   }
 
   const getListingParams = useCallback(
-    async (tokenInfo: Token) => {
+    async (tokenInfo: Token, isMidOrPremium: boolean) => {
       setLoadingListingParams(true)
       const [oraclePk, marketPk] = await Promise.all([
         getOracle({
           baseSymbol: tokenInfo.symbol,
           quoteSymbol: 'usd',
           connection,
+          pythOnly: isMidOrPremium,
         }),
         getBestMarket({
           baseMint: mint,
@@ -275,6 +276,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         setCoinTier(tier)
         setPriceImpact(mid.bestRoute ? mid.bestRoute.priceImpactPct * 100 : 100)
         handleGetPoolParams(mid.routes)
+        return tier
       } catch (e) {
         notify({
           title: t('liquidity-check-error'),
@@ -310,8 +312,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
-      handleLiqudityCheck(new PublicKey(mint))
-      getListingParams(tokenInfo)
+      const tier = await handleLiqudityCheck(new PublicKey(mint))
+      const isMidOrPremium = tier === 'PREMIUM' || tier === 'MID'
+      getListingParams(tokenInfo, isMidOrPremium)
     }
   }, [getListingParams, handleLiqudityCheck, jupiterTokens, mint, t])
 
@@ -320,6 +323,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setPriceImpact(0)
     setAdvForm({ ...defaultTokenListFormValues })
     setProposalPk(null)
+    setOrcaPoolAddress('')
+    setRaydiumPoolAddress('')
+    setCoinTier('')
+    setBaseTokenPrice(0)
   }
 
   const isFormValid = useCallback(
@@ -531,13 +538,13 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
     if (currentTokenInfo) {
-      getListingParams(currentTokenInfo)
+      getListingParams(currentTokenInfo, isMidOrPremium)
     }
   }
   const closeCreateOracleModal = () => {
     setOracleModalOpen(false)
     if (currentTokenInfo) {
-      getListingParams(currentTokenInfo)
+      getListingParams(currentTokenInfo, isMidOrPremium)
     }
   }
 
@@ -851,7 +858,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 </Disclosure>
               </div>
               <ol className="list-decimal pl-4">
-                {!advForm.openBookMarketExternalPk && !loadingListingParams ? (
+                {!advForm.openBookMarketExternalPk &&
+                coinTier &&
+                !loadingListingParams ? (
                   <li className="pl-2">
                     <div className="mb-4">
                       <InlineNotification
@@ -881,7 +890,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     ) : null}
                   </li>
                 ) : null}
-                {!advForm.oraclePk && !loadingListingParams ? (
+                {!advForm.oraclePk && coinTier && !loadingListingParams ? (
                   <li
                     className={`my-4 pl-2 ${
                       !advForm.openBookMarketExternalPk

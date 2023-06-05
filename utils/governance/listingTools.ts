@@ -11,10 +11,12 @@ export const getOracle = async ({
   baseSymbol,
   quoteSymbol,
   connection,
+  pythOnly = false,
 }: {
   baseSymbol: string
   quoteSymbol: string
   connection: Connection
+  pythOnly?: boolean
 }) => {
   try {
     let oraclePk = ''
@@ -25,7 +27,7 @@ export const getOracle = async ({
     })
     if (pythOracle) {
       oraclePk = pythOracle
-    } else {
+    } else if (!pythOnly) {
       const switchBoardOracle = await getSwitchBoardOracle({
         baseSymbol,
         quoteSymbol,
