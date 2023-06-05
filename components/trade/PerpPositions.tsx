@@ -89,9 +89,17 @@ const PerpPositions = () => {
 
   if (!group) return null
 
-  const openPerpPositions = Object.values(perpPositions).filter((p) =>
-    p.basePositionLots.toNumber()
-  )
+  const openPerpPositions = Object.values(perpPositions)
+    .filter((p) => p.basePositionLots.toNumber())
+    .sort((a, b) => {
+      const aMarket = group.getPerpMarketByMarketIndex(a.marketIndex)
+      const bMarket = group.getPerpMarketByMarketIndex(b.marketIndex)
+      const aBasePosition = a.getBasePositionUi(aMarket)
+      const bBasePosition = b.getBasePositionUi(bMarket)
+      const aNotional = aBasePosition * aMarket._uiPrice
+      const bNotional = bBasePosition * bMarket._uiPrice
+      return Math.abs(bNotional) - Math.abs(aNotional)
+    })
 
   return (
     <>
