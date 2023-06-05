@@ -59,14 +59,15 @@ const PerpPositions = () => {
       )
     }
     const newSide = positionSize > 0 ? 'sell' : 'buy'
+    const baseSize = Math.abs(positionSize)
     const quoteSize = floorToDecimal(
-      positionSize * price,
+      baseSize * price,
       getDecimalCount(market.tickSize)
     )
 
     set((s) => {
       s.tradeForm.side = newSide
-      s.tradeForm.baseSize = positionSize.toString()
+      s.tradeForm.baseSize = baseSize.toString()
       s.tradeForm.quoteSize = quoteSize.toString()
     })
   }
