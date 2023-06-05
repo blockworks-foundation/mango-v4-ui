@@ -8,7 +8,7 @@ import {
 import { Connection, PublicKey } from '@solana/web3.js'
 import { TokenProgramAccount } from './accounts/vsrAccounts'
 import { MintLayout, RawMint } from '@solana/spl-token'
-import BN from 'bn.js'
+import { BN } from '@project-serum/anchor'
 
 export async function fetchRealm({
   connection,

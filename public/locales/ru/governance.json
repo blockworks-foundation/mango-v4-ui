@@ -95,5 +95,8 @@
     "what-happens-next-3": "{{token}} will be listed on Mango automatically on execution.",
     "yes": "Yes",
     "yes-votes": "Yes Votes",
-    "your-votes": "Your Votes:"
+    "your-votes": "Your Votes:",
+    "create-switch-oracle": "Create switchboard oracle for",
+    "estimated-oracle-cost": "Estimated cost with funding oracle for ~6 months 2.8 SOL",
+    "create-oracle": "Create oracle"
 }
