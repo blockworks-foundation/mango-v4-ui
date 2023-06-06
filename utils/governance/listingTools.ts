@@ -290,11 +290,11 @@ const listingBase = {
   oracleConfFilter: 0.1,
   adjustmentFactor: 0.004,
   util0: 0.5,
-  rate0: 0.018,
+  rate0: 0.052,
   util1: 0.8,
-  rate1: 0.05,
-  maxRate: 0.8,
-  loanFeeRate: 0.1,
+  rate1: 0.1446,
+  maxRate: 1.4456,
+  loanFeeRate: 0.005,
   loanOriginationFeeRate: 0.001,
   maintAssetWeight: 0.9,
   initAssetWeight: 0.8,
@@ -309,12 +309,6 @@ const listingBase = {
   depositWeightScale: toNative(250000, 6).toNumber(),
 }
 
-const secondTierRates = {
-  rate0: 0.052,
-  rate1: 0.1446,
-  maxRate: 1.4456,
-}
-
 export const LISTING_PRESETS: {
   [key: string]: typeof listingBase & { name: string }
 } = {
@@ -326,7 +320,6 @@ export const LISTING_PRESETS: {
   //Price impact $20,000 < 1%
   MID: {
     ...listingBase,
-    ...secondTierRates,
     maintAssetWeight: 0.75,
     initAssetWeight: 0.5,
     maintLiabWeight: 1.2,
@@ -341,7 +334,6 @@ export const LISTING_PRESETS: {
   //Price impact $5,000 < 1%
   MEME: {
     ...listingBase,
-    ...secondTierRates,
     maxStalenessSlots: 800,
     loanOriginationFeeRate: 0.002,
     maintAssetWeight: 0,
@@ -358,7 +350,6 @@ export const LISTING_PRESETS: {
   //Price impact $1,000 < 1%
   SHIT: {
     ...listingBase,
-    ...secondTierRates,
     maxStalenessSlots: 800,
     loanOriginationFeeRate: 0.002,
     maintAssetWeight: 0,
