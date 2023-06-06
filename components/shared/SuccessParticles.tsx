@@ -3,6 +3,7 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import mangoStore from '@store/mangoStore'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { useTheme } from 'next-themes'
 import { useEffect, useMemo } from 'react'
 import Particles from 'react-tsparticles'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
@@ -10,6 +11,7 @@ import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 const SuccessParticles = () => {
   const { mangoTokens } = useJupiterMints()
   const showForSwap = mangoStore((s) => s.successAnimation.swap)
+  const showForTheme = mangoStore((s) => s.successAnimation.theme)
   const showForTrade = mangoStore((s) => s.successAnimation.trade)
   const tradeType = mangoStore((s) => s.tradeForm.tradeType)
   const set = mangoStore((s) => s.set)
@@ -17,6 +19,7 @@ const SuccessParticles = () => {
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS
   )
+  const { theme } = useTheme()
 
   const tokenLogo = useMemo(() => {
     if (!mangoTokens.length) return ''
@@ -41,7 +44,12 @@ const SuccessParticles = () => {
         )
       }
     }
-  }, [mangoTokens, showForSwap, showForTrade])
+    if (showForTheme) {
+      return theme === 'Bonk'
+        ? '/images/themes/bonk/bonk-animation-logo.png'
+        : null
+    }
+  }, [mangoTokens, showForSwap, showForTheme, showForTrade, theme])
 
   useEffect(() => {
     if (showForSwap) {
@@ -53,6 +61,15 @@ const SuccessParticles = () => {
         8000
       )
     }
+    if (showForTheme) {
+      setTimeout(
+        () =>
+          set((s) => {
+            s.successAnimation.theme = false
+          }),
+        6000
+      )
+    }
     if (showForTrade) {
       setTimeout(
         () =>
@@ -62,11 +79,11 @@ const SuccessParticles = () => {
         8000
       )
     }
-  }, [showForSwap, showForTrade])
+  }, [showForSwap, showForTheme, showForTrade])
 
-  return animationSettings['swap-success'] &&
+  return (animationSettings['swap-success'] || showForTheme) &&
     tokenLogo &&
-    (showForSwap || showForTrade) ? (
+    (showForSwap || showForTrade || showForTheme) ? (
     <Particles
       id="tsparticles"
       options={{

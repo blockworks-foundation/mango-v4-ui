@@ -82,7 +82,7 @@ const TopBar = () => {
     <div
       className={`flex h-16 items-center justify-between border-b border-th-bkg-3 ${
         theme === 'Bonk'
-          ? `bg-th-bkg-1 bg-[url('/images/bonk-tile.png')]`
+          ? `bg-th-bkg-1 bg-[url('/images/themes/bonk/bonk-tile.png')]`
           : 'bg-th-bkg-1'
       } ${query.token || query.market ? '' : 'pl-4 md:pl-6'}`}
     >
@@ -110,7 +110,7 @@ const TopBar = () => {
           ) : (
             <img
               className="mr-4 h-10 w-10 flex-shrink-0 md:hidden"
-              src="/images/bonk-logo.png"
+              src="/images/themes/bonk/bonk-logo.png"
               alt="next"
             />
           )}

@@ -39,20 +39,28 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { pathname } = router
   const { theme } = useTheme()
 
+  const playAnimation = () => {
+    const set = mangoStore.getState().set
+    set((s) => {
+      s.successAnimation.theme = true
+    })
+  }
+
   return (
     <div
       className={`transition-all duration-300 ${
         collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
       } border-r border-th-bkg-3 ${
         theme === 'Bonk'
-          ? `bg-th-bkg-1 bg-[url('/images/bonk-tile.png')] bg-repeat`
+          ? `bg-th-bkg-1 bg-[url('/images/themes/bonk/bonk-tile.png')] bg-repeat`
           : 'bg-th-bkg-1'
       }`}
     >
       {theme === 'Bonk' && !collapsed ? (
         <img
           className={`absolute bottom-16 h-auto w-full flex-shrink-0`}
-          src="/images/mango-inu.png"
+          onClick={() => playAnimation()}
+          src="/images/themes/bonk/sidenav-image.png"
           alt="next"
         />
       ) : null}
@@ -76,7 +84,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 ) : (
                   <img
                     className={`h-10 w-10 flex-shrink-0`}
-                    src="/images/bonk-logo.png"
+                    src="/images/themes/bonk/bonk-logo.png"
                     alt="next"
                   />
                 )}

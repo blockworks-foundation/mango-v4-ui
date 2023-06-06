@@ -194,6 +194,7 @@ export type MangoStore = {
   }
   successAnimation: {
     swap: boolean
+    theme: boolean
     trade: boolean
   }
   swap: {
@@ -349,6 +350,7 @@ const mangoStore = create<MangoStore>()(
       },
       successAnimation: {
         swap: false,
+        theme: false,
         trade: false,
       },
       swap: {
