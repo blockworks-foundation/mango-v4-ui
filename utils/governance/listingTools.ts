@@ -342,7 +342,7 @@ export const LISTING_PRESETS: {
   MEME: {
     ...listingBase,
     ...secondTierRates,
-    maxStalenessSlots: null,
+    maxStalenessSlots: 800,
     loanOriginationFeeRate: 0.002,
     maintAssetWeight: 0,
     initAssetWeight: 0,
@@ -359,7 +359,7 @@ export const LISTING_PRESETS: {
   SHIT: {
     ...listingBase,
     ...secondTierRates,
-    maxStalenessSlots: null,
+    maxStalenessSlots: 800,
     loanOriginationFeeRate: 0.002,
     maintAssetWeight: 0,
     initAssetWeight: 0,
