@@ -126,7 +126,7 @@ const SpotMarketsTable = () => {
                                   : COLORS.DOWN[theme]
                               }
                               data={chartData}
-                              name={baseBank!.name}
+                              name={baseBank!.name + quoteBank!.name}
                               xKey="unixTime"
                               yKey="value"
                             />
@@ -270,7 +270,7 @@ const MobileSpotMarketItem = ({
                           change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
                         }
                         data={chartData}
-                        name={baseBank!.name}
+                        name={baseBank!.name + quoteBank!.name}
                         xKey="unixTime"
                         yKey="value"
                       />
