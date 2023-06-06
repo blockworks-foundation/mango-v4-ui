@@ -220,7 +220,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         const walletForCheck = wallet.publicKey
           ? wallet.publicKey?.toBase58()
           : emptyPk
-        const shitCoinIdx = 3
 
         const TIERS = ['PREMIUM', 'MID', 'MEME', 'SHIT']
         const swaps = await Promise.all([
@@ -270,9 +269,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (x) =>
             x.bestRoute?.priceImpactPct && x.bestRoute?.priceImpactPct * 100 < 1
         )
-        const tierIdx: number =
-          indexForTierFromSwaps > -1 ? indexForTierFromSwaps : shitCoinIdx
-        const tier = TIERS[tierIdx]
+        const tier =
+          indexForTierFromSwaps > -1
+            ? TIERS[indexForTierFromSwaps]
+            : 'UNTRUSTED'
         setCoinTier(tier)
         setPriceImpact(mid.bestRoute ? mid.bestRoute.priceImpactPct * 100 : 100)
         handleGetPoolParams(mid.routes)
@@ -397,87 +397,100 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     )
 
     const proposalTx = []
+    if (Object.keys(tierPreset).length) {
+      const registerTokenIx = await client!.program.methods
+        .tokenRegister(
+          Number(advForm.tokenIndex),
+          advForm.name,
+          {
+            confFilter: Number(tierPreset.oracleConfFilter),
+            maxStalenessSlots: tierPreset.maxStalenessSlots,
+          },
+          {
+            adjustmentFactor: Number(tierPreset.adjustmentFactor),
+            util0: Number(tierPreset.util0),
+            rate0: Number(tierPreset.rate0),
+            util1: Number(tierPreset.util1),
+            rate1: Number(tierPreset.rate1),
+            maxRate: Number(tierPreset.maxRate),
+          },
+          Number(tierPreset.loanFeeRate),
+          Number(tierPreset.loanOriginationFeeRate),
+          Number(tierPreset.maintAssetWeight),
+          Number(tierPreset.initAssetWeight),
+          Number(tierPreset.maintLiabWeight),
+          Number(tierPreset.initLiabWeight),
+          Number(tierPreset.liquidationFee),
+          Number(tierPreset.minVaultToDepositsRatio),
+          new BN(tierPreset.netBorrowLimitWindowSizeTs),
+          new BN(tierPreset.netBorrowLimitPerWindowQuote)
+        )
+        .accounts({
+          admin: MANGO_DAO_WALLET,
+          group: group!.publicKey,
+          mint: new PublicKey(advForm.mintPk),
+          oracle: new PublicKey(advForm.oraclePk),
+          payer: MANGO_DAO_WALLET,
+          rent: SYSVAR_RENT_PUBKEY,
+        })
+        .instruction()
+      proposalTx.push(registerTokenIx)
 
-    const registerTokenIx = await client!.program.methods
-      .tokenRegister(
-        Number(advForm.tokenIndex),
-        advForm.name,
-        {
-          confFilter: Number(tierPreset.oracleConfFilter),
-          maxStalenessSlots: tierPreset.maxStalenessSlots,
-        },
-        {
-          adjustmentFactor: Number(tierPreset.adjustmentFactor),
-          util0: Number(tierPreset.util0),
-          rate0: Number(tierPreset.rate0),
-          util1: Number(tierPreset.util1),
-          rate1: Number(tierPreset.rate1),
-          maxRate: Number(tierPreset.maxRate),
-        },
-        Number(tierPreset.loanFeeRate),
-        Number(tierPreset.loanOriginationFeeRate),
-        Number(tierPreset.maintAssetWeight),
-        Number(tierPreset.initAssetWeight),
-        Number(tierPreset.maintLiabWeight),
-        Number(tierPreset.initLiabWeight),
-        Number(tierPreset.liquidationFee),
-        Number(tierPreset.minVaultToDepositsRatio),
-        new BN(tierPreset.netBorrowLimitWindowSizeTs),
-        new BN(tierPreset.netBorrowLimitPerWindowQuote)
-      )
-      .accounts({
-        admin: MANGO_DAO_WALLET,
-        group: group!.publicKey,
-        mint: new PublicKey(advForm.mintPk),
-        oracle: new PublicKey(advForm.oraclePk),
-        payer: MANGO_DAO_WALLET,
-        rent: SYSVAR_RENT_PUBKEY,
-      })
-      .instruction()
-    proposalTx.push(registerTokenIx)
-
-    const editIx = await client!.program.methods
-      .tokenEdit(
-        null,
-        null,
-        tierPreset.insuranceFound ? null : false,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        tierPreset.borrowWeightScale,
-        tierPreset.depositWeightScale,
-        false,
-        false,
-        null,
-        null,
-        null
-      )
-      .accounts({
-        oracle: new PublicKey(advForm.oraclePk),
-        admin: MANGO_DAO_WALLET,
-        group: group!.publicKey,
-        mintInfo: mintInfoPk,
-      })
-      .remainingAccounts([
-        {
-          pubkey: new PublicKey(advForm.baseBankPk),
-          isWritable: true,
-          isSigner: false,
-        } as AccountMeta,
-      ])
-      .instruction()
-    proposalTx.push(editIx)
+      const editIx = await client!.program.methods
+        .tokenEdit(
+          null,
+          null,
+          tierPreset.insuranceFound ? null : false,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          tierPreset.borrowWeightScale,
+          tierPreset.depositWeightScale,
+          false,
+          false,
+          null,
+          null,
+          null
+        )
+        .accounts({
+          oracle: new PublicKey(advForm.oraclePk),
+          admin: MANGO_DAO_WALLET,
+          group: group!.publicKey,
+          mintInfo: mintInfoPk,
+        })
+        .remainingAccounts([
+          {
+            pubkey: new PublicKey(advForm.baseBankPk),
+            isWritable: true,
+            isSigner: false,
+          } as AccountMeta,
+        ])
+        .instruction()
+      proposalTx.push(editIx)
+    } else {
+      await client!.program.methods
+        .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
+        .accounts({
+          mint: new PublicKey(advForm.mintPk),
+          payer: MANGO_DAO_WALLET,
+          rent: SYSVAR_RENT_PUBKEY,
+          oracle: new PublicKey(advForm.oraclePk),
+          admin: MANGO_DAO_WALLET,
+          group: group!.publicKey,
+        })
+        .instruction()
+    }
 
     const registerMarketix = await client!.program.methods
       .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)

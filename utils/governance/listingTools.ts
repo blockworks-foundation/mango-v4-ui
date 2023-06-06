@@ -372,4 +372,5 @@ export const coinTiersToNames: {
   MID: 'Mid-wit',
   MEME: 'Meme',
   SHIT: 'Shit Coin',
+  UNTRUSTED: 'Untrusted',
 }
