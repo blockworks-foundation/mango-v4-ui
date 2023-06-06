@@ -166,9 +166,12 @@ const AccountPage = () => {
     setShowPnlHistory(false)
   }
 
-  const accountValue = useMemo(() => {
-    if (!group || !mangoAccount) return 0.0
-    return toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber())
+  const [accountPnl, accountValue] = useMemo(() => {
+    if (!group || !mangoAccount) return [0, 0]
+    return [
+      toUiDecimalsForQuote(mangoAccount.getPnl(group).toNumber()),
+      toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber()),
+    ]
   }, [group, mangoAccount])
 
   const leverage = useMemo(() => {
@@ -184,13 +187,12 @@ const AccountPage = () => {
     }
   }, [mangoAccount, group, accountValue])
 
-  const [accountPnl, accountValueChange, oneDayPnlChange] = useMemo(() => {
+  const [accountValueChange, oneDayPnlChange] = useMemo(() => {
     if (
       accountValue &&
       oneDayPerformanceData.length &&
       performanceData.length
     ) {
-      const accountPnl = performanceData[performanceData.length - 1].pnl
       const accountValueChange =
         accountValue - oneDayPerformanceData[0].account_equity
       const startDayPnl = oneDayPerformanceData[0].pnl
@@ -198,9 +200,9 @@ const AccountPage = () => {
         oneDayPerformanceData[oneDayPerformanceData.length - 1].pnl
       const oneDayPnlChange = endDayPnl - startDayPnl
 
-      return [accountPnl, accountValueChange, oneDayPnlChange]
+      return [accountValueChange, oneDayPnlChange]
     }
-    return [0, 0, 0]
+    return [0, 0]
   }, [accountValue, oneDayPerformanceData, performanceData])
 
   const interestTotalValue = useMemo(() => {
@@ -275,12 +277,12 @@ const AccountPage = () => {
           latestDataItem.borrow_interest_cumulative_usd,
         deposit_interest_cumulative_usd:
           latestDataItem.deposit_interest_cumulative_usd,
-        pnl: latestDataItem.pnl,
+        pnl: accountPnl,
         spot_value: latestDataItem.spot_value,
         transfer_balance: latestDataItem.transfer_balance,
       },
     ]
-  }, [accountValue, performanceData])
+  }, [accountPnl, accountValue, performanceData])
 
   return !chartToShow ? (
     <>
@@ -695,7 +697,7 @@ const AccountPage = () => {
         <AccountChart
           chartToShow="pnl"
           setChartToShow={setChartToShow}
-          data={performanceData}
+          data={performanceData.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="pnl"
         />
