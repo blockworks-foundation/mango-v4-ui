@@ -49,7 +49,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   return (
     <div
       className={`transition-all duration-300 ${
-        collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
+        collapsed ? 'w-[64px]' : 'w-[200px]'
       } border-r border-th-bkg-3 ${
         theme === 'Bonk'
           ? `bg-th-bkg-1 bg-[url('/images/themes/bonk/bonk-tile.png')] bg-repeat`

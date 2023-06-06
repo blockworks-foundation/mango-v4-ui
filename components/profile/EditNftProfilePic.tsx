@@ -35,10 +35,10 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   const profile = mangoStore((s) => s.profile.details)
 
   useEffect(() => {
-    if (publicKey) {
+    if (connection && publicKey) {
       actions.fetchNfts(connection, publicKey)
     }
-  }, [publicKey])
+  }, [connection, publicKey])
 
   useEffect(() => {
     if (profile?.profile_image_url) {

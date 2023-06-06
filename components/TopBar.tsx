@@ -84,7 +84,7 @@ const TopBar = () => {
         theme === 'Bonk'
           ? `bg-th-bkg-1 bg-[url('/images/themes/bonk/bonk-tile.png')]`
           : 'bg-th-bkg-1'
-      } ${query.token || query.market ? '' : 'pl-4 md:pl-6'}`}
+      }`}
     >
       <div className="flex w-full items-center justify-between md:space-x-4">
         <span className="mb-0 flex items-center">
@@ -97,7 +97,7 @@ const TopBar = () => {
             </button>
           ) : null}
           {connected ? (
-            <div className="hidden md:block">
+            <div className="hidden h-[63px] bg-th-bkg-1 md:flex md:items-center md:pl-6 md:pr-8">
               <SolanaTps />
             </div>
           ) : null}
@@ -200,7 +200,7 @@ const TopBar = () => {
             >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           )}
           {connected ? (
-            <div className="flex items-center">
+            <div className="flex h-[63px] items-center bg-th-bkg-1">
               <NotificationsButton />
               <AccountsButton />
               <ConnectedMenu />

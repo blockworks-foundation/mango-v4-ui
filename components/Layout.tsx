@@ -26,7 +26,7 @@ import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
 import { useTheme } from 'next-themes'
 
-const sideBarAnimationDuration = 500
+const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {
@@ -118,7 +118,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         {/* note: overflow-x-hidden below prevents position sticky from working in activity feed  */}
         <div
           className={`w-full overflow-x-hidden transition-all duration-${sideBarAnimationDuration} ease-in-out ${
-            isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-48 xl:pl-52'
+            isCollapsed ? 'md:pl-[64px]' : 'pl-[200px]'
           }`}
         >
           <TopBar />

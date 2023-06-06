@@ -7,7 +7,7 @@ import ChartOnRight from '@components/icons/ChartOnRight'
 import Tooltip from '@components/shared/Tooltip'
 import { TradeLayout } from '@components/trade/TradeAdvancedPage'
 // import dayjs from 'dayjs'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 // import { useRouter } from 'next/router'
 // import { useCallback } from 'react'
 import dayjs from 'dayjs'
@@ -22,6 +22,8 @@ import {
   TRADE_CHART_UI_KEY,
   TRADE_LAYOUT_KEY,
 } from 'utils/constants'
+import mangoStore from '@store/mangoStore'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -62,6 +64,12 @@ export const THEMES = [
 const DisplaySettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, setTheme } = useTheme()
+  const nfts = mangoStore((s) => s.wallet.nfts.data)
+  // const nftsLoading = mangoStore((s) => s.wallet.nfts.loading)
+  const connection = mangoStore((s) => s.connection)
+  const actions = mangoStore.getState().actions
+  const { publicKey } = useWallet()
+
   const [savedLanguage, setSavedLanguage] = useLocalStorageState(
     'language',
     'en'
@@ -81,6 +89,15 @@ const DisplaySettings = () => {
     'trading-view'
   )
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
+
+  useEffect(() => {
+    if (connection && publicKey) {
+      actions.fetchNfts(connection, publicKey)
+    }
+  }, [connection, publicKey])
+
+  // use collectionAddress to enable nft skins?
+  console.log(nfts)
 
   const handleLangChange = useCallback(
     (l: string) => {
