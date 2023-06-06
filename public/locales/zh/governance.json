@@ -11,7 +11,8 @@
     "before-listing-4": "New markets and tokens are approved by DAO vote. This takes 3 days",
     "cancel": "Cancel",
     "cant-find-token-for-mint": "Can't find token for given mint",
-    "cant-list-oracle-not-found": "Oracle not found. Create a Pyth/Switchboard oracle before continuing.",
+    "cant-list-oracle-not-found-pyth": "Oracle not found. Create a Pyth oracle before continuing.",
+    "cant-list-oracle-not-found-switch": "Oracle not found. Create a Switchboard oracle before continuing.",
     "cant-list-no-openbook-market": "Openbook market not found. Create an Openbook market before continuing.",
     "connect-to-list": "Connect to list a spot market or token",
     "connect-wallet": "Connect Wallet",
@@ -29,7 +30,7 @@
     "invalid-num": "Invalid Number",
     "invalid-pk": "Invalid Public Key",
     "liquidity-check-error": "Error during liquidity check",
-    "liquidity-warning": "Low liquidity. Price impact of {{priceImpactPct}}% on a 10k USDC swap.",
+    "liquidity-warning": "Low liquidity. Price impact of {{priceImpactPct}}% on a 20k USDC swap.",
     "list-spot-market": "List Spot Market",
     "list-spot-market-desc": "Create a market pair from tokens listed on Mango",
     "list-token": "List Token",
@@ -98,5 +99,6 @@
     "your-votes": "Your Votes:",
     "create-switch-oracle": "Create switchboard oracle for",
     "estimated-oracle-cost": "Estimated cost with funding oracle for ~6 months 2.8 SOL",
-    "create-oracle": "Create oracle"
+    "create-oracle": "Create oracle",
+    "tier": "Tier"
 }

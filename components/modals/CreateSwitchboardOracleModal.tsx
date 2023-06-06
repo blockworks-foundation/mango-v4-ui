@@ -85,14 +85,14 @@ const CreateSwitchboardOracleModal = ({
           minRequiredJobResults: 2,
           minUpdateDelaySeconds: 300,
           withdrawAuthority: MANGO_DAO_WALLET,
-          authority: MANGO_DAO_WALLET,
+          authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
           fundAmount: 2.6,
-          enable: true,
           basePriorityFee: 0,
           disableCrank: false,
           maxPriorityFeeMultiplier: 0,
+          varianceThreshold: 0.5,
           priorityFeeBump: 0,
           priorityFeeBumpPeriod: 0,
           jobs: [
@@ -208,8 +208,11 @@ const CreateSwitchboardOracleModal = ({
         })
 
       const lockTx = aggregatorAccount.lockInstruction(payer, {})
+      const transferAuthIx = aggregatorAccount.setAuthorityInstruction(payer, {
+        newAuthority: MANGO_DAO_WALLET,
+      })
 
-      const txChunks = chunk([...txArray1, lockTx], 1)
+      const txChunks = chunk([...txArray1, lockTx, transferAuthIx], 1)
       const transactions: Transaction[] = []
       const latestBlockhash = await connection.getLatestBlockhash('finalized')
       for (const chunk of txChunks) {
