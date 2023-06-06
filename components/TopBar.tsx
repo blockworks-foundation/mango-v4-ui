@@ -116,7 +116,7 @@ const TopBar = () => {
           )}
           {!connected ? (
             mangoAccount ? (
-              <span className="hidden items-center md:flex">
+              <span className="hidden items-center md:flex md:pl-6">
                 <EyeIcon className="h-5 w-5 text-th-fgd-3" />
                 <span className="ml-2">
                   {t('unowned-helper', {
@@ -170,7 +170,7 @@ const TopBar = () => {
                 </Tooltip>
               </span>
             ) : (
-              <span className="hidden items-center md:flex">
+              <span className="hidden items-center md:flex md:pl-6">
                 <WalletIcon className="h-5 w-5 text-th-fgd-3" />
                 <span className="ml-2">{t('connect-helper')}</span>
                 <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
