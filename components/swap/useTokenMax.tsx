@@ -8,6 +8,8 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { PublicKey } from '@solana/web3.js'
 import { walletBalanceForToken } from '@components/DepositForm'
 
+const MIN_SOL_BALANCE = 0.01
+
 export const getMaxWithdrawForBank = (
   group: Group,
   bank: Bank,
@@ -63,11 +65,14 @@ export const getTokenInMax = (
       outputBank.mint
     )
   } else {
-    const walletBalance = walletBalanceForToken(
+    let walletBalance = walletBalanceForToken(
       walletTokens,
       inputBank.name
     ).maxAmount
-    inputTokenBalance = new Decimal(walletBalance)
+    if (inputBank.name === 'SOL') {
+      walletBalance = walletBalance - MIN_SOL_BALANCE
+    }
+    inputTokenBalance = new Decimal(walletBalance > 0 ? walletBalance : 0)
     outputTokenBalance = new Decimal(0)
     rawMaxUiAmountWithBorrow = walletBalance
   }
@@ -136,6 +141,12 @@ export const useTokenMax = (useMargin = true): TokenMaxResults => {
         decimals: 6,
       }
     const balanceDetails = walletBalanceForToken(walletTokens, inputBank.name)
+    if (inputBank.name === 'SOL') {
+      balanceDetails.maxAmount =
+        balanceDetails.maxAmount > MIN_SOL_BALANCE
+          ? balanceDetails.maxAmount - MIN_SOL_BALANCE
+          : 0
+    }
     const balance = floorToDecimal(
       balanceDetails.maxAmount,
       balanceDetails.maxDecimals
