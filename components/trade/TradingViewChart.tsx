@@ -1,4 +1,11 @@
-import { useEffect, useRef, useMemo, useState, useCallback } from 'react'
+import {
+  useEffect,
+  useRef,
+  useMemo,
+  useState,
+  useCallback,
+  Fragment,
+} from 'react'
 import { useTheme } from 'next-themes'
 import {
   widget,
@@ -40,6 +47,7 @@ import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
 import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
 import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
+import { Transition } from '@headlessui/react'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -498,7 +506,7 @@ const TradingViewChart = () => {
     if (!button) {
       return
     }
-    button.textContent = '?'
+    button.textContent = theme.toUpperCase()
     button.addEventListener('click', () => toggleThemeEasterEgg(button))
     if (showThemeEasterEgg) {
       button.style.color = COLORS.ACTIVE[theme]
@@ -816,18 +824,25 @@ const TradingViewChart = () => {
 
   return (
     <>
-      {/* <div className="no-repeat h-full w-full bg-[url('/images/themes/bonk/tv-chart-image.png')] bg-auto bg-right-top bg-no-repeat"> */}
-      {showThemeEasterEgg ? (
+      <Transition
+        show={showThemeEasterEgg}
+        as={Fragment}
+        enter="transition ease-in duration-500"
+        enterFrom="scale-0 opacity-0"
+        enterTo="scale-100 rotate-[-370deg] opacity-100"
+        leave="transition ease-out duration-500"
+        leaveFrom="scale-100 opacity-100"
+        leaveTo="scale-0 opacity-0"
+      >
         <img
-          className="absolute top-8 right-14 h-auto w-48"
+          className="absolute top-8 right-20 h-auto w-36"
           src="/images/themes/bonk/tv-chart-image.png"
         />
-      ) : null}
+      </Transition>
       <div
         id={defaultProps.container as string}
         className="tradingview-chart"
       />
-      {/* </div> */}
       {orderToModify ? (
         <ModifyTvOrderModal
           isOpen={!!orderToModify}

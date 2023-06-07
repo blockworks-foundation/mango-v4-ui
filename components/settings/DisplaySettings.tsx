@@ -22,9 +22,8 @@ import {
   TRADE_CHART_UI_KEY,
   TRADE_LAYOUT_KEY,
 } from 'utils/constants'
-import mangoStore, { DEFAULT_THEME_DATA } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { ThemeData } from 'types'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -62,19 +61,6 @@ export const THEMES = [
   'olive',
 ]
 
-const BONK_META_DATA: ThemeData = {
-  buttonStyle: 'raised',
-  logoPath: '/images/themes/bonk/bonk-logo.png',
-  platformName: 'Bongo',
-  rainAnimationImagePath: '/images/themes/bonk/bonk-animation-logo.png',
-  sideImagePath: '/images/themes/bonk/sidenav-image.png',
-  sideTilePath: '/images/themes/bonk/bonk-tile.png',
-  topTilePath: '/images/themes/bonk/bonk-tile.png',
-  tvChartTheme: 'Light',
-  tvImagePath: '/images/themes/bonk/tv-chart-image.png',
-  useGradientBg: true,
-}
-
 const DisplaySettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, setTheme } = useTheme()
@@ -110,21 +96,7 @@ const DisplaySettings = () => {
     }
   }, [connection, publicKey])
 
-  // set nft skin data to store and localStorage (move this to theme selection). will need to use localStorage for page reloads
-  useEffect(() => {
-    const set = mangoStore.getState().set
-    if (theme === 'Bonk') {
-      set((s) => {
-        s.themeData = BONK_META_DATA
-      })
-    } else {
-      set((s) => {
-        s.themeData = DEFAULT_THEME_DATA
-      })
-    }
-  }, [theme])
-
-  // use collectionAddress to enable nft skins?
+  // use collectionAddress to enable nft skins? push theme name (theme name should come from the nft) to THEMES
   console.log(nfts)
 
   const handleLangChange = useCallback(

@@ -68,19 +68,7 @@ import {
   IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
-
-export const DEFAULT_THEME_DATA: ThemeData = {
-  buttonStyle: 'flat',
-  logoPath: '/logos/logo-mark.svg',
-  platformName: 'Mango',
-  rainAnimationImagePath: '',
-  sideImagePath: '',
-  sideTilePath: '',
-  topTilePath: '',
-  tvChartTheme: 'Dark',
-  tvImagePath: '',
-  useGradientBg: false,
-}
+import { nftThemeMeta } from 'utils/theme'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -378,7 +366,7 @@ const mangoStore = create<MangoStore>()(
         amountIn: '',
         amountOut: '',
       },
-      themeData: DEFAULT_THEME_DATA,
+      themeData: nftThemeMeta.default,
       tokenStats: {
         initialLoad: false,
         loading: true,

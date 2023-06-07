@@ -9,7 +9,7 @@ import {
 } from 'react'
 import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from '../hooks/useViewport'
-import { breakpoints } from '../utils/theme'
+import { breakpoints, nftThemeMeta } from '../utils/theme'
 import mangoStore from '@store/mangoStore'
 import BottomBar from './mobile/BottomBar'
 import BounceLoader from './shared/BounceLoader'
@@ -24,6 +24,7 @@ import useInterval from './shared/useInterval'
 import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
+import { useTheme } from 'next-themes'
 
 const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -31,6 +32,7 @@ const termsLastUpdated = 1679441610978
 const Layout = ({ children }: { children: ReactNode }) => {
   const { connected } = useWallet()
   const themeData = mangoStore((s) => s.themeData)
+  const { theme } = useTheme()
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
@@ -69,6 +71,19 @@ const Layout = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     particlesInit()
   }, [])
+
+  useEffect(() => {
+    const set = mangoStore.getState().set
+    if (nftThemeMeta[theme]) {
+      set((s) => {
+        s.themeData = nftThemeMeta[theme]
+      })
+    } else {
+      set((s) => {
+        s.themeData = nftThemeMeta.default
+      })
+    }
+  }, [theme])
 
   const showTermsOfUse = useMemo(() => {
     return (!acceptTerms || acceptTerms < termsLastUpdated) && connected
