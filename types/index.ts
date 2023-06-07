@@ -360,6 +360,19 @@ export interface TradeForm {
   reduceOnly: boolean
 }
 
+export interface ThemeData {
+  buttonStyle: 'flat' | 'raised'
+  logoPath: string
+  platformName: string
+  rainAnimationImagePath: string
+  sideImagePath: string
+  sideTilePath: string
+  topTilePath: string
+  tvChartTheme: 'Light' | 'Dark'
+  tvImagePath: string
+  useGradientBg: boolean
+}
+
 export interface MangoError extends Error {
   txid: string
 }

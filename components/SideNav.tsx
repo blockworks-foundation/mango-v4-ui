@@ -34,10 +34,10 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
   const { connected } = useWallet()
   const group = mangoStore.getState().group
+  const themeData = mangoStore((s) => s.themeData)
   const { mangoAccount } = useMangoAccount()
   const router = useRouter()
   const { pathname } = router
-  const { theme } = useTheme()
 
   const playAnimation = () => {
     const set = mangoStore.getState().set
@@ -50,17 +50,14 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     <div
       className={`transition-all duration-300 ${
         collapsed ? 'w-[64px]' : 'w-[200px]'
-      } border-r border-th-bkg-3 ${
-        theme === 'Bonk'
-          ? `bg-th-bkg-1 bg-[url('/images/themes/bonk/bonk-tile.png')] bg-repeat`
-          : 'bg-th-bkg-1'
-      }`}
+      } border-r border-th-bkg-3 bg-th-bkg-1 bg-repeat`}
+      style={{ backgroundImage: `url(${themeData.sideTilePath})` }}
     >
-      {theme === 'Bonk' && !collapsed ? (
+      {themeData.sideImagePath && !collapsed ? (
         <img
           className={`absolute bottom-16 h-auto w-full flex-shrink-0`}
           onClick={() => playAnimation()}
-          src="/images/themes/bonk/sidenav-image.png"
+          src={themeData.sideImagePath}
           alt="next"
         />
       ) : null}
@@ -70,24 +67,16 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             <div
               className={`items-center transition-all duration-300 ease-in-out ${
                 collapsed ? '' : 'justify-start'
-              } pb-1 ${theme === 'Bonk' ? 'pl-3' : 'pl-4'}`}
+              } pb-1 pl-3`}
             >
               <div
                 className={`flex h-16 flex-shrink-0 cursor-pointer items-center bg-th-bkg-1`}
               >
-                {theme !== 'Bonk' ? (
-                  <img
-                    className={`h-8 w-8 flex-shrink-0`}
-                    src="/logos/logo-mark.svg"
-                    alt="next"
-                  />
-                ) : (
-                  <img
-                    className={`h-10 w-10 flex-shrink-0`}
-                    src="/images/themes/bonk/bonk-logo.png"
-                    alt="next"
-                  />
-                )}
+                <img
+                  className={`h-9 w-9 flex-shrink-0`}
+                  src={themeData.logoPath}
+                  alt="logo"
+                />
                 <Transition
                   show={!collapsed}
                   as={Fragment}
@@ -98,12 +87,8 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <span
-                    className={`${
-                      theme !== 'Bonk' ? 'ml-3' : 'ml-2'
-                    } font-display text-lg text-th-fgd-1`}
-                  >
-                    {theme !== 'Bonk' ? 'Mango' : 'Bongo'}
+                  <span className={`ml-3 font-display text-lg text-th-fgd-1`}>
+                    {themeData.platformName}
                   </span>
                 </Transition>
               </div>
@@ -309,11 +294,7 @@ const MenuItem = ({
                   hideIconBg
                     ? ''
                     : `flex h-8 w-8 items-center justify-center rounded-full ${
-                        theme === 'Light'
-                          ? 'bg-th-bkg-2'
-                          : theme === 'Bonk'
-                          ? 'bg-th-button'
-                          : 'bg-th-bkg-3'
+                        theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
                       }`
                 }
               >
@@ -375,11 +356,7 @@ export const ExpandableMenuItem = ({
             hideIconBg
               ? ''
               : `flex h-8 w-8 items-center justify-center rounded-full ${
-                  theme === 'Light'
-                    ? 'bg-th-bkg-2'
-                    : theme === 'Bonk'
-                    ? 'bg-th-button'
-                    : 'bg-th-bkg-3'
+                  theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
                 }`
           } ${
             alignBottom
@@ -427,9 +404,7 @@ export const ExpandableMenuItem = ({
                 className={
                   hideIconBg
                     ? ''
-                    : `flex h-8 w-8 items-center justify-center rounded-full ${
-                        theme === 'Bonk' ? 'bg-th-button' : 'bg-th-bkg-3'
-                      }`
+                    : 'flex h-8 w-8 items-center justify-center rounded-full bg-th-bkg-3'
                 }
               >
                 {icon}

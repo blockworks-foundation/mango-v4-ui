@@ -56,7 +56,6 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { isMangoError } from 'types'
 import InlineNotification from '@components/shared/InlineNotification'
-import { useTheme } from 'next-themes'
 
 const set = mangoStore.getState().set
 
@@ -81,6 +80,7 @@ const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
+  const themeData = mangoStore((s) => s.themeData)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
@@ -101,7 +101,6 @@ const AdvancedTradeForm = () => {
     quoteSymbol,
     serumOrPerpMarket,
   } = useSelectedMarket()
-  const { theme } = useTheme()
 
   const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
     set((s) => {
@@ -712,12 +711,12 @@ const AdvancedTradeForm = () => {
                   ? ''
                   : tradeForm.side === 'buy'
                   ? `bg-th-up-dark md:hover:bg-th-up-dark ${
-                      theme === 'Bonk'
-                        ? 'bonk-buy-button'
+                      themeData.buttonStyle === 'raised'
+                        ? 'raised-buy-button'
                         : 'text-white md:hover:brightness-90'
                     }`
                   : `bg-th-down-dark text-white ${
-                      theme === 'Bonk'
+                      themeData.buttonStyle === 'raised'
                         ? ''
                         : 'md:hover:bg-th-down-dark md:hover:brightness-90'
                     }`

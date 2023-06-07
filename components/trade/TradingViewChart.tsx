@@ -83,6 +83,7 @@ const TradingViewChart = () => {
     showOrderLinesLocalStorage
   )
   const tradeExecutions = mangoStore((s) => s.tradingView.tradeExecutions)
+  const themeData = mangoStore((s) => s.themeData)
   const { data: combinedTradeHistory, isLoading: loadingTradeHistory } =
     useTradeHistory()
   const [showTradeExecutions, toggleShowTradeExecutions] = useState(false)
@@ -576,12 +577,9 @@ const TradingViewChart = () => {
         autosize: defaultProps.autosize,
         studies_overrides: defaultProps.studiesOverrides,
         theme:
-          theme === 'Light' ||
-          theme === 'Banana' ||
-          theme === 'Lychee' ||
-          theme === 'Bonk'
+          theme === 'Light' || theme === 'Banana' || theme === 'Lychee'
             ? 'Light'
-            : 'Dark',
+            : themeData.tvChartTheme,
         custom_css_url: '/styles/tradingview.css',
         loading_screen: {
           backgroundColor: COLORS.BKG1[theme],

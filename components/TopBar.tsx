@@ -30,12 +30,13 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
 import Tooltip from './shared/Tooltip'
 import { copyToClipboard } from 'utils'
-import { useTheme } from 'next-themes'
+import mangoStore from '@store/mangoStore'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
+  const themeData = mangoStore((s) => s.themeData)
   const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
   const [showUserSetup, setShowUserSetup] = useState(false)
@@ -49,7 +50,6 @@ const TopBar = () => {
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
   const { isUnownedAccount } = useUnownedAccount()
-  const { theme } = useTheme()
 
   const handleCloseSetup = useCallback(() => {
     setShowUserSetup(false)
@@ -80,11 +80,8 @@ const TopBar = () => {
 
   return (
     <div
-      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 ${
-        theme === 'Bonk'
-          ? `bg-th-bkg-1 bg-[url('/images/themes/bonk/bonk-tile.png')]`
-          : 'bg-th-bkg-1'
-      }`}
+      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1`}
+      style={{ backgroundImage: `url(${themeData.topTilePath})` }}
     >
       <div className="flex w-full items-center justify-between md:space-x-4">
         <span className="mb-0 flex items-center">
@@ -101,19 +98,11 @@ const TopBar = () => {
               <SolanaTps />
             </div>
           ) : null}
-          {theme !== 'Bonk' ? (
-            <img
-              className="mr-4 h-8 w-8 flex-shrink-0 md:hidden"
-              src="/logos/logo-mark.svg"
-              alt="next"
-            />
-          ) : (
-            <img
-              className="mr-4 h-10 w-10 flex-shrink-0 md:hidden"
-              src="/images/themes/bonk/bonk-logo.png"
-              alt="next"
-            />
-          )}
+          <img
+            className="mr-4 h-9 w-9 flex-shrink-0 md:hidden"
+            src={themeData.logoPath}
+            alt="logo"
+          />
           {!connected ? (
             mangoAccount ? (
               <span className="hidden items-center md:flex md:pl-6">

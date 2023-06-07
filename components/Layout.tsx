@@ -24,14 +24,13 @@ import useInterval from './shared/useInterval'
 import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
-import { useTheme } from 'next-themes'
 
 const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const { connected } = useWallet()
-  const { theme } = useTheme()
+  const themeData = mangoStore((s) => s.themeData)
   const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
@@ -87,7 +86,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
       ) : null}
       <div
         className={`min-h-screen flex-grow ${
-          theme !== 'Bonk'
+          !themeData.useGradientBg
             ? 'bg-th-bkg-1'
             : 'bg-gradient-to-b from-th-bkg-1 to-th-bkg-2'
         } text-th-fgd-2 transition-all`}

@@ -14,6 +14,7 @@ const SuccessParticles = () => {
   const showForTheme = mangoStore((s) => s.successAnimation.theme)
   const showForTrade = mangoStore((s) => s.successAnimation.trade)
   const tradeType = mangoStore((s) => s.tradeForm.tradeType)
+  const themeData = mangoStore((s) => s.themeData)
   const set = mangoStore((s) => s.set)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -45,9 +46,7 @@ const SuccessParticles = () => {
       }
     }
     if (showForTheme) {
-      return theme === 'Bonk'
-        ? '/images/themes/bonk/bonk-animation-logo.png'
-        : null
+      return themeData.rainAnimationImagePath
     }
   }, [mangoTokens, showForSwap, showForTheme, showForTrade, theme])
 

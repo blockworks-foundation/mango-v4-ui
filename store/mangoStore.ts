@@ -58,16 +58,29 @@ import {
   TourSettings,
   ProfileDetails,
   MangoTokenStatsItem,
+  ThemeData,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
 import {
-  EntityId,
   IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
+
+export const DEFAULT_THEME_DATA: ThemeData = {
+  buttonStyle: 'flat',
+  logoPath: '/logos/logo-mark.svg',
+  platformName: 'Mango',
+  rainAnimationImagePath: '',
+  sideImagePath: '',
+  sideTilePath: '',
+  topTilePath: '',
+  tvChartTheme: 'Dark',
+  tvImagePath: '',
+  useGradientBg: false,
+}
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -209,6 +222,7 @@ export type MangoStore = {
     amountOut: string
   }
   set: (x: (x: MangoStore) => void) => void
+  themeData: ThemeData
   tokenStats: {
     initialLoad: boolean
     loading: boolean
@@ -364,6 +378,7 @@ const mangoStore = create<MangoStore>()(
         amountIn: '',
         amountOut: '',
       },
+      themeData: DEFAULT_THEME_DATA,
       tokenStats: {
         initialLoad: false,
         loading: true,
