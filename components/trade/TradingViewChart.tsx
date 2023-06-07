@@ -87,6 +87,7 @@ const TradingViewChart = () => {
   const { data: combinedTradeHistory, isLoading: loadingTradeHistory } =
     useTradeHistory()
   const [showTradeExecutions, toggleShowTradeExecutions] = useState(false)
+  const [showThemeEasterEgg, toggleShowThemeEasterEgg] = useState(false)
   const [cachedTradeHistory, setCachedTradeHistory] =
     useState(combinedTradeHistory)
   const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
@@ -449,6 +450,18 @@ const TradingViewChart = () => {
     [theme]
   )
 
+  const toggleThemeEasterEgg = useCallback(
+    (el: HTMLElement) => {
+      toggleShowThemeEasterEgg((prevState) => !prevState)
+      if (el.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
+        el.style.color = COLORS.FGD4[theme]
+      } else {
+        el.style.color = COLORS.ACTIVE[theme]
+      }
+    },
+    [theme]
+  )
+
   const createOLButton = useCallback(() => {
     const button = tvWidgetRef?.current?.createButton()
     if (!button) {
@@ -479,6 +492,20 @@ const TradingViewChart = () => {
       button.style.color = COLORS.FGD4[theme]
     }
   }, [t, toggleTradeExecutions, showTradeExecutions, theme])
+
+  const createEasterEggButton = useCallback(() => {
+    const button = tvWidgetRef?.current?.createButton()
+    if (!button) {
+      return
+    }
+    button.textContent = '?'
+    button.addEventListener('click', () => toggleThemeEasterEgg(button))
+    if (showThemeEasterEgg) {
+      button.style.color = COLORS.ACTIVE[theme]
+    } else {
+      button.style.color = COLORS.FGD4[theme]
+    }
+  }, [toggleThemeEasterEgg, showTradeExecutions, theme])
 
   useEffect(() => {
     if (window) {
@@ -600,7 +627,7 @@ const TradingViewChart = () => {
         setHeaderReady(true)
       })
     }
-  }, [theme, defaultProps, isMobile, userId])
+  }, [theme, themeData, defaultProps, isMobile, userId])
 
   // set a limit price from right click context menu
   useEffect(() => {
@@ -634,8 +661,11 @@ const TradingViewChart = () => {
     if (chartReady && headerReady && !orderLinesButtonRef.current) {
       createOLButton()
       createTEButton()
+      if (themeData.tvImagePath) {
+        createEasterEggButton()
+      }
     }
-  }, [createOLButton, createTEButton, chartReady, headerReady])
+  }, [createOLButton, createTEButton, chartReady, headerReady, themeData])
 
   // update order lines if a user's open orders change
   useEffect(() => {
@@ -786,10 +816,18 @@ const TradingViewChart = () => {
 
   return (
     <>
+      {/* <div className="no-repeat h-full w-full bg-[url('/images/themes/bonk/tv-chart-image.png')] bg-auto bg-right-top bg-no-repeat"> */}
+      {showThemeEasterEgg ? (
+        <img
+          className="absolute top-8 right-14 h-auto w-48"
+          src="/images/themes/bonk/tv-chart-image.png"
+        />
+      ) : null}
       <div
         id={defaultProps.container as string}
         className="tradingview-chart"
       />
+      {/* </div> */}
       {orderToModify ? (
         <ModifyTvOrderModal
           isOpen={!!orderToModify}

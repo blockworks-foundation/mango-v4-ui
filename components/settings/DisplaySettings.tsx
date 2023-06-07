@@ -71,7 +71,7 @@ const BONK_META_DATA: ThemeData = {
   sideTilePath: '/images/themes/bonk/bonk-tile.png',
   topTilePath: '/images/themes/bonk/bonk-tile.png',
   tvChartTheme: 'Light',
-  tvImagePath: '',
+  tvImagePath: '/images/themes/bonk/tv-chart-image.png',
   useGradientBg: true,
 }
 
