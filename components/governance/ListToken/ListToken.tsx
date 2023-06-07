@@ -382,7 +382,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     )
 
     const proposalTx = []
-    console.log(tierPreset)
+
     if (Object.keys(tierPreset).length) {
       const registerTokenIx = await client!.program.methods
         .tokenRegister(
