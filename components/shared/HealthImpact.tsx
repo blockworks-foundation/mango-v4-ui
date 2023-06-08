@@ -60,7 +60,7 @@ const HealthImpact = ({
         </span> */}
         </div>
       ) : (
-        <span className="text-xs">–</span>
+        <span className="text-xs text-th-fgd-2">–</span>
       )}
     </div>
   )

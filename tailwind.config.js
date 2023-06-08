@@ -5,9 +5,9 @@ module.exports = {
   ],
   theme: {
     fontFamily: {
-      display: ['TT Commons Expanded, sans-serif'],
-      body: 'TT Commons, sans-serif',
-      mono: ['TT Mono, mono'],
+      display: ['var(--font-display)'],
+      body: ['var(--font-body)'],
+      mono: ['var(--font-mono)'],
     },
     extend: {
       animation: {
