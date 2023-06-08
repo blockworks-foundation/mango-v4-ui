@@ -6,13 +6,6 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <link
-            rel="preload"
-            href="/fonts/TT_Commons_Pro_Expanded_DemiBold.woff2"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-          />
           <Script
             src="/datafeeds/udf/dist/bundle.js"
             strategy="beforeInteractive"

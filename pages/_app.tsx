@@ -35,6 +35,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
 import { THEME_KEY } from 'utils/constants'
+import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
 
 // Do not add hooks to this component that will cause unnecessary rerenders
 // Top level state hydrating/updating should go in MangoProvider
@@ -114,9 +115,13 @@ function MyApp({ Component, pageProps }: AppProps) {
               >
                 <ViewportProvider>
                   <PageTitle />
-                  <Layout>
-                    <Component {...pageProps} />
-                  </Layout>
+                  <main
+                    className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable} font-sans`}
+                  >
+                    <Layout>
+                      <Component {...pageProps} />
+                    </Layout>
+                  </main>
                 </ViewportProvider>
                 <TransactionNotification />
               </ThemeProvider>
