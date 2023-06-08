@@ -309,8 +309,17 @@ const listingBase = {
   depositWeightScale: toNative(250000, 6).toNumber(),
 }
 
+export type LISTING_PRESETS_KEYS =
+  | 'PREMIUM'
+  | 'MID'
+  | 'MEME'
+  | 'SHIT'
+  | 'UNTRUSTED'
+
 export const LISTING_PRESETS: {
-  [key: string]: typeof listingBase & { name: string }
+  [key in LISTING_PRESETS_KEYS]:
+    | (typeof listingBase & { name: string })
+    | Record<string, never>
 } = {
   //Price impact $100,000 < 1%
   PREMIUM: {
@@ -363,13 +372,15 @@ export const LISTING_PRESETS: {
     insuranceFound: false,
     name: 'Shit',
   },
+  UNTRUSTED: {},
 }
 
 export const coinTiersToNames: {
-  [key: string]: string
+  [key in LISTING_PRESETS_KEYS]: string
 } = {
   PREMIUM: 'Blue Chip',
   MID: 'Mid-wit',
   MEME: 'Meme',
   SHIT: 'Shit Coin',
+  UNTRUSTED: 'Untrusted',
 }
