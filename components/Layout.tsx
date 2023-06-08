@@ -26,7 +26,7 @@ import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
 import { useTheme } from 'next-themes'
 
-const sideBarAnimationDuration = 300
+export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {

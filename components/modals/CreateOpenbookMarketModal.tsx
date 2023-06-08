@@ -2,7 +2,6 @@ import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { ChangeEvent, useEffect, useState } from 'react'
 import Label from '@components/forms/Label'
 import Input from '@components/forms/Input'
@@ -46,35 +45,31 @@ const defaultFormValues: CreateObMarketForm = {
 }
 
 type CreateOpenbookMarketModalProps = {
-  quoteSymbol: string
-  baseSymbol: string
+  baseMint: string
+  baseDecimals: number
+  quoteMint: string
+  quoteDecimals: number
   tradingParams: TradingParams
 }
 
 const CreateOpenbookMarketModal = ({
   isOpen,
   onClose,
-  quoteSymbol,
-  baseSymbol,
+  baseMint,
+  baseDecimals,
+  quoteMint,
+  quoteDecimals,
   tradingParams,
 }: ModalProps & CreateOpenbookMarketModalProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
   const wallet = useWallet()
   const { handleConnect } = useEnhancedWallet()
-  const { group } = useMangoGroup()
 
   const [form, setForm] = useState({ ...defaultFormValues })
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [creating, setCreating] = useState(false)
   const [solNeededToCreateMarket, setSolNeededToCreateMarket] = useState(0)
-
-  const baseBank = group?.banksMapByName.get(baseSymbol)?.length
-    ? group.banksMapByName.get(baseSymbol)![0]
-    : null
-  const quoteBank = group?.banksMapByName.get(quoteSymbol)?.length
-    ? group.banksMapByName.get(quoteSymbol)![0]
-    : null
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
@@ -92,12 +87,12 @@ const CreateOpenbookMarketModal = ({
         connection,
         wallet: wallet.publicKey!,
         baseInfo: {
-          mint: baseBank!.mint,
-          decimals: baseBank!.mintDecimals,
+          mint: new PublicKey(baseMint),
+          decimals: baseDecimals,
         },
         quoteInfo: {
-          mint: quoteBank!.mint,
-          decimals: quoteBank!.mintDecimals,
+          mint: new PublicKey(quoteMint),
+          decimals: quoteDecimals,
         },
         lotSize: Number(form.minimumOrderSize),
         tickSize: Number(form.minimumPriceTickSize),
@@ -148,14 +143,14 @@ const CreateOpenbookMarketModal = ({
   useEffect(() => {
     setForm({
       programId: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
-      baseMint: baseBank?.mint.toBase58() || '',
-      quoteMint: quoteBank?.mint.toBase58() || '',
+      baseMint: baseMint || '',
+      quoteMint: quoteMint || '',
       minimumOrderSize: tradingParams.minOrderSize.toString(),
       minimumPriceTickSize: tradingParams.priceIncrement.toString(),
     })
   }, [
-    baseBank?.mint,
-    quoteBank?.mint,
+    baseMint,
+    quoteMint,
     tradingParams.minOrderSize,
     tradingParams.priceIncrement,
   ])

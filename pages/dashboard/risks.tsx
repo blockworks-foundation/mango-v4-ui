@@ -22,13 +22,18 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
+type TableRow = {
+  val: string | number | PublicKey
+  highlight: boolean
+}
+
 type TableData = {
   title: string
-  data: Array<Record<string, string | number | PublicKey>>
+  data: Array<Record<string, TableRow>>
 }
 
 const formatValue = (val: string | number | PublicKey) => {
-  if (val instanceof PublicKey) {
+  if (val instanceof PublicKey || typeof val === 'object') {
     return val.toString()
   }
   if (typeof val === 'string') {
@@ -41,7 +46,7 @@ const formatValue = (val: string | number | PublicKey) => {
 const RiskDashboard: NextPage = () => {
   const { group } = useMangoGroup()
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data } = useQuery(
     ['risks'],
     () => {
       const provider = new AnchorProvider(
@@ -64,13 +69,13 @@ const RiskDashboard: NextPage = () => {
     {
       cacheTime: 1000 * 60 * 5,
       staleTime: 1000 * 60 * 5,
-      retry: 1,
+      retry: 0,
       refetchOnWindowFocus: false,
       enabled: !!group,
     }
   )
 
-  console.log('resp', isLoading, isFetching, data)
+  console.log('resp', data)
 
   return (
     <div className="grid grid-cols-12">
@@ -82,6 +87,8 @@ const RiskDashboard: NextPage = () => {
             <div className="mt-4">
               {Object.entries(data).map(
                 ([tableType, table]: [string, TableData]) => {
+                  console.log('table', table)
+                  if (!table?.data?.length) return null
                   return (
                     <div className="mt-12" key={tableType}>
                       <div className="mb-4">
@@ -118,18 +125,19 @@ const RiskDashboard: NextPage = () => {
                         </thead>
                         <tbody>
                           {table.data.map((rowData, index: number) => {
-                            console.log('rowData', Object.values(rowData))
-
                             return (
                               <TrBody key={index}>
                                 {Object.values(rowData).map(
-                                  (
-                                    val: string | number | PublicKey,
-                                    idx: number
-                                  ) => {
+                                  (val, idx: number) => {
                                     return (
-                                      <Td xBorder className={''} key={idx}>
-                                        {formatValue(val)}
+                                      <Td
+                                        xBorder
+                                        className={`${
+                                          val?.highlight ? 'bg-th-bkg-2' : ''
+                                        }`}
+                                        key={idx}
+                                      >
+                                        {formatValue(val?.val)}
                                       </Td>
                                     )
                                   }

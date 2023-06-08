@@ -5,7 +5,6 @@ import {
   Cog8ToothIcon,
   ExclamationCircleIcon,
   LinkIcon,
-  PencilIcon,
 } from '@heroicons/react/20/solid'
 import NumberFormat, {
   NumberFormatValues,
@@ -20,7 +19,7 @@ import useDebounce from '../shared/useDebounce'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
-import Button, { IconButton } from '../shared/Button'
+import Button, { IconButton, LinkButton } from '../shared/Button'
 import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useQuoteRoutes from './useQuoteRoutes'
@@ -48,6 +47,7 @@ import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import Tooltip from '@components/shared/Tooltip'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -486,19 +486,26 @@ const SwapForm = () => {
               <HealthImpact maintProjectedHealth={maintProjectedHealth} />
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>
-              <div className="flex items-center space-x-1">
-                <p className="text-right font-mono text-sm text-th-fgd-2">
-                  {slippage}%
+              <Tooltip content={t('swap:tooltip-margin')}>
+                <p className="tooltip-underline text-sm text-th-fgd-3">
+                  {t('swap:margin')}
                 </p>
-                <IconButton
-                  className="text-th-fgd-3"
-                  hideBg
-                  onClick={() => setShowSettings(true)}
-                >
-                  <PencilIcon className="ml-2 h-4 w-4" />
-                </IconButton>
-              </div>
+              </Tooltip>
+              <LinkButton
+                className="text-right text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
+                onClick={() => setShowSettings(true)}
+              >
+                {useMargin ? t('swap:enabled') : t('swap:disabled')}
+              </LinkButton>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>
+              <LinkButton
+                className="text-right font-mono text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
+                onClick={() => setShowSettings(true)}
+              >
+                {slippage}%
+              </LinkButton>
             </div>
           </div>
         </div>

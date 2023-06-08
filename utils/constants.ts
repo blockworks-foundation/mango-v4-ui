@@ -76,6 +76,8 @@ export const MANGO_ROUTER_API_URL = 'https://api.mngo.cloud/router/v1'
 
 export const MANGO_DATA_API_URL = 'https://api.mngo.cloud/data/v4'
 
+export const MANGO_DATA_OPENBOOK_URL = 'https://api.mngo.cloud/openbook/v1'
+
 export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
 export const MIN_SOL_BALANCE = 0.001
@@ -92,6 +94,11 @@ export const JUPITER_API_MAINNET = 'https://token.jup.ag/strict'
 
 export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'
 
+export const JUPITER_PRICE_API_MAINNET = 'https://price.jup.ag/v4/'
+
 export const NOTIFICATION_API = 'https://notifications-api.herokuapp.com/'
 export const NOTIFICATION_API_WEBSOCKET =
   'wss://notifications-api.herokuapp.com/ws'
+
+export const SWITCHBOARD_PROGRAM_ID =
+  'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'

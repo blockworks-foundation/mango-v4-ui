@@ -18,23 +18,12 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import OraclePrice from './OraclePrice'
 import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
 import { useQuery } from '@tanstack/react-query'
+import { MANGO_DATA_OPENBOOK_URL } from 'utils/constants'
+import { TickerData } from 'types'
 
-type TickerData = {
-  base_currency: string
-  base_volume: string
-  high: string
-  last_price: string
-  low: string
-  target_currency: string
-  target_volume: string
-  ticker_id: string
-}
-
-const fetchSpotVolume = async () => {
+export const fetchSpotVolume = async () => {
   try {
-    const data = await fetch(
-      'https://api.mngo.cloud/openbook/v1/coingecko/tickers'
-    )
+    const data = await fetch(`${MANGO_DATA_OPENBOOK_URL}/coingecko/tickers`)
     const res = await data.json()
     return res
   } catch (e) {
@@ -103,6 +92,17 @@ const AdvancedMarketHeader = ({
     )
   }, [birdeyePrices, selectedMarket])
 
+  const oneDayPerpStats = useMemo(() => {
+    if (
+      !perpStats ||
+      !perpStats.length ||
+      !selectedMarketName ||
+      !selectedMarketName.includes('PERP')
+    )
+      return []
+    return getOneDayPerpStats(perpStats, selectedMarketName)
+  }, [perpStats, selectedMarketName])
+
   const change = useMemo(() => {
     if (
       !changePrice ||
@@ -111,9 +111,10 @@ const AdvancedMarketHeader = ({
     )
       return 0
     if (serumOrPerpMarket instanceof PerpMarket) {
-      const changeData = getOneDayPerpStats(perpStats, selectedMarketName)
-      return changeData.length
-        ? ((changePrice - changeData[0].price) / changeData[0].price) * 100
+      return oneDayPerpStats.length
+        ? ((changePrice - oneDayPerpStats[0].price) /
+            oneDayPerpStats[0].price) *
+            100
         : 0
     } else {
       if (!birdeyeData) return 0
@@ -127,10 +128,18 @@ const AdvancedMarketHeader = ({
     birdeyeData,
     changePrice,
     serumOrPerpMarket,
-    perpStats,
+    oneDayPerpStats,
     previousMarketName,
     selectedMarketName,
   ])
+
+  const perpVolume = useMemo(() => {
+    if (!oneDayPerpStats.length) return
+    return (
+      oneDayPerpStats[oneDayPerpStats.length - 1].cumulative_quote_volume -
+      oneDayPerpStats[0].cumulative_quote_volume
+    )
+  }, [oneDayPerpStats])
 
   return (
     <>
@@ -159,6 +168,18 @@ const AdvancedMarketHeader = ({
             </div>
             {serumOrPerpMarket instanceof PerpMarket ? (
               <>
+                <div className="ml-6 flex-col whitespace-nowrap text-xs">
+                  <div className="mb-0.5 text-th-fgd-4 ">
+                    {t('trade:24h-volume')}
+                  </div>
+                  {perpVolume ? (
+                    <span className="font-mono">
+                      ${numberCompacter.format(perpVolume)}{' '}
+                    </span>
+                  ) : (
+                    '-'
+                  )}
+                </div>
                 <PerpFundingRate />
                 <div className="ml-6 flex-col whitespace-nowrap text-xs">
                   <div className="mb-0.5 text-th-fgd-4 ">
@@ -192,7 +213,7 @@ const AdvancedMarketHeader = ({
                   spotMarketVolume ? (
                     <span className="font-mono">
                       {numberCompacter.format(spotMarketVolume.target_volume)}{' '}
-                      <span className="font-body text-th-fgd-4">
+                      <span className="font-body text-th-fgd-3">
                         {selectedMarketName.split('/')[1]}
                       </span>
                     </span>
