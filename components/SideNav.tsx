@@ -342,6 +342,7 @@ export const ExpandableMenuItem = ({
   title: string | ReactNode
 }) => {
   const { theme } = useTheme()
+  const themeData = mangoStore((s) => s.themeData)
 
   return collapsed ? (
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
@@ -439,7 +440,11 @@ export const ExpandableMenuItem = ({
             leaveFrom="opacity-100 max-h-80"
             leaveTo="opacity-0 max-h-0"
           >
-            <Disclosure.Panel className="w-full overflow-hidden">
+            <Disclosure.Panel
+              className={`w-full overflow-hidden ${
+                themeData.sideImagePath ? 'z-10 bg-th-bkg-1 py-2' : ''
+              }`}
+            >
               <div className={`${!alignBottom ? 'ml-1.5' : ''}`}>
                 {children}
               </div>
