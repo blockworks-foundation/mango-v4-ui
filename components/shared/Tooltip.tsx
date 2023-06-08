@@ -1,6 +1,7 @@
 import React, { HTMLAttributes, ReactNode } from 'react'
 import Tippy, { TippyProps } from '@tippyjs/react'
 import 'tippy.js/animations/scale.css'
+import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
 
 type TooltipProps = {
   content: ReactNode
@@ -33,7 +34,7 @@ const Tooltip = ({
         content={
           content ? (
             <div
-              className={`rounded-md bg-th-bkg-2 p-3 text-xs leading-4 text-th-fgd-3 outline-none focus:outline-none ${className}`}
+              className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable} font-sans rounded-md bg-th-bkg-2 p-3 font-body text-xs leading-4 text-th-fgd-3 outline-none focus:outline-none ${className}`}
               style={{ boxShadow: '0px 0px 8px 0px rgba(0,0,0,0.25)' }}
             >
               {content}
