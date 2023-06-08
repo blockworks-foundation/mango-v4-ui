@@ -1,5 +1,6 @@
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/20/solid'
+import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
 
 type ModalProps = {
   children: React.ReactNode
@@ -41,7 +42,9 @@ function Modal({
         }`}
       >
         <Dialog.Panel
-          className={`h-full w-full bg-th-bkg-1 ${
+          className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${
+            ttCommonsMono.variable
+          } font-sans h-full w-full bg-th-bkg-1 font-body ${
             fullScreen
               ? ''
               : 'p-4 pt-6 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
