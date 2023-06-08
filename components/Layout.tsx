@@ -25,12 +25,6 @@ import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
 import { useTheme } from 'next-themes'
-import {
-  cherryBombOne,
-  ttCommons,
-  ttCommonsExpanded,
-  ttCommonsMono,
-} from 'utils/fonts'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -97,7 +91,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   return (
     <main
-      className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable} ${cherryBombOne.variable} font-sans`}
+      className={`${themeData.fonts.body.variable} ${themeData.fonts.display.variable} ${themeData.fonts.mono.variable} font-sans`}
     >
       <div className="fixed z-30">
         <SuccessParticles />

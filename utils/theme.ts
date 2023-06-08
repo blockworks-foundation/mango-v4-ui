@@ -1,4 +1,11 @@
 import { ThemeData } from 'types'
+import {
+  nunitoBody,
+  nunitoDisplay,
+  ttCommons,
+  ttCommonsExpanded,
+  ttCommonsMono,
+} from './fonts'
 
 export const breakpoints = {
   sm: 640,
@@ -27,6 +34,7 @@ type NftThemeMeta = {
 export const nftThemeMeta: NftThemeMeta = {
   default: {
     buttonStyle: 'flat',
+    fonts: { body: ttCommons, display: ttCommonsExpanded, mono: ttCommonsMono },
     logoPath: '/logos/logo-mark.svg',
     platformName: 'Mango',
     rainAnimationImagePath: '',
@@ -39,6 +47,7 @@ export const nftThemeMeta: NftThemeMeta = {
   },
   Bonk: {
     buttonStyle: 'raised',
+    fonts: { body: nunitoBody, display: nunitoDisplay, mono: ttCommonsMono },
     logoPath: '/images/themes/bonk/bonk-logo.png',
     platformName: 'Bongo',
     rainAnimationImagePath: '/images/themes/bonk/bonk-animation-logo.png',

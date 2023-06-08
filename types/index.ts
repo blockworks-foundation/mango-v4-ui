@@ -5,6 +5,7 @@ import {
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
+import { NextFontWithVariable } from '@next/font'
 import { Event } from '@project-serum/serum/lib/queue'
 import { formatTradeHistory } from 'hooks/useTradeHistory'
 
@@ -366,6 +367,11 @@ export interface TradeForm {
 
 export interface ThemeData {
   buttonStyle: 'flat' | 'raised'
+  fonts: {
+    body: NextFontWithVariable
+    display: NextFontWithVariable
+    mono: NextFontWithVariable
+  }
   logoPath: string
   platformName: string
   rainAnimationImagePath: string

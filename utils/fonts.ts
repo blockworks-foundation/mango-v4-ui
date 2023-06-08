@@ -1,4 +1,14 @@
 import localFont from '@next/font/local'
+import { Nunito } from '@next/font/google'
+
+// this font should be used as the mono variant for all themes
+
+export const ttCommonsMono = localFont({
+  src: '../fonts/TT_Commons_Pro_Mono_Medium.woff2',
+  variable: '--font-mono',
+})
+
+// default themes
 
 export const ttCommons = localFont({
   src: [
@@ -26,13 +36,15 @@ export const ttCommonsExpanded = localFont({
   variable: '--font-display',
 })
 
-export const ttCommonsMono = localFont({
-  src: '../fonts/TT_Commons_Pro_Mono_Medium.woff2',
-  variable: '--font-mono',
+// bonk skin
+
+export const nunitoDisplay = Nunito({
+  weight: '900',
+  subsets: ['latin'],
+  variable: '--font-display',
 })
 
-// bonk theme
-export const cherryBombOne = localFont({
-  src: '../fonts/CherryBombOne-Regular.woff2',
-  variable: '--font-display',
+export const nunitoBody = Nunito({
+  subsets: ['latin'],
+  variable: '--font-body',
 })

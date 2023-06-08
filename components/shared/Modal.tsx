@@ -1,6 +1,6 @@
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/20/solid'
-import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
+import mangoStore from '@store/mangoStore'
 
 type ModalProps = {
   children: React.ReactNode
@@ -19,6 +19,8 @@ function Modal({
   onClose,
   hideClose,
 }: ModalProps) {
+  const themeData = mangoStore((s) => s.themeData)
+
   const handleClose = () => {
     if (disableOutsideClose) return
     onClose()
@@ -42,8 +44,10 @@ function Modal({
         }`}
       >
         <Dialog.Panel
-          className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${
-            ttCommonsMono.variable
+          className={`${themeData.fonts.body.variable} ${
+            themeData.fonts.display.variable
+          } ${
+            themeData.fonts.mono.variable
           } font-sans h-full w-full bg-th-bkg-1 font-body ${
             fullScreen
               ? ''
