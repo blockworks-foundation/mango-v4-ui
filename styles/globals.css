@@ -396,10 +396,14 @@ th {
 
 /* Base */
 
-main {
+body {
   @apply font-body text-sm tracking-wider;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+main {
+  @apply font-body;
 }
 
 button {
