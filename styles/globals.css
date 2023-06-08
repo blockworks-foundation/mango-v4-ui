@@ -101,9 +101,6 @@ th {
   --error: theme('colors.light-theme.error');
   --success: theme('colors.light-theme.success');
   --warning: theme('colors.light-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 [data-theme='Dark'] {
@@ -133,9 +130,6 @@ th {
   --error: theme('colors.dark-theme.error');
   --success: theme('colors.dark-theme.success');
   --warning: theme('colors.dark-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 [data-theme='Mango Classic'] {
@@ -165,9 +159,6 @@ th {
   --error: theme('colors.mango-classic-theme.error');
   --success: theme('colors.mango-classic-theme.success');
   --warning: theme('colors.mango-classic-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 [data-theme='Medium'] {
@@ -197,9 +188,6 @@ th {
   --error: theme('colors.medium-theme.error');
   --success: theme('colors.medium-theme.success');
   --warning: theme('colors.medium-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 [data-theme='High Contrast'] {
@@ -229,9 +217,6 @@ th {
   --error: theme('colors.high-contrast-theme.error');
   --success: theme('colors.high-contrast-theme.success');
   --warning: theme('colors.high-contrast-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 [data-theme='Blueberry'] {
@@ -261,9 +246,6 @@ th {
   --error: theme('colors.blueberry-theme.error');
   --success: theme('colors.blueberry-theme.success');
   --warning: theme('colors.blueberry-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 [data-theme='Banana'] {
@@ -293,9 +275,6 @@ th {
   --error: theme('colors.banana-theme.error');
   --success: theme('colors.banana-theme.success');
   --warning: theme('colors.banana-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 [data-theme='Olive'] {
@@ -325,9 +304,6 @@ th {
   --error: theme('colors.olive-theme.error');
   --success: theme('colors.olive-theme.success');
   --warning: theme('colors.olive-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 [data-theme='Lychee'] {
@@ -357,9 +333,6 @@ th {
   --error: theme('colors.lychee-theme.error');
   --success: theme('colors.lychee-theme.success');
   --warning: theme('colors.lychee-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 [data-theme='Avocado'] {
@@ -389,9 +362,6 @@ th {
   --error: theme('colors.avocado-theme.error');
   --success: theme('colors.avocado-theme.success');
   --warning: theme('colors.avocado-theme.warning');
-  --font-body: 'var(--font-body)';
-  --font-display: 'var(--font-display)';
-  --font-mono: 'var(--font-mono)';
 }
 
 /* Base */
