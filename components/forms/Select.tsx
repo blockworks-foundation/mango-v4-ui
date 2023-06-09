@@ -38,7 +38,7 @@ const Select = ({
                   <span className="text-th-fgd-3">{placeholder}</span>
                 )}
                 <ChevronDownIcon
-                  className={`h-5 w-5 flex-shrink-0 text-th-fgd-3 ${
+                  className={`ml-1 h-5 w-5 flex-shrink-0 text-th-fgd-3 ${
                     open ? 'rotate-180' : 'rotate-360'
                   }`}
                 />

@@ -1,16 +1,21 @@
+import Select from '@components/forms/Select'
 import Button, { LinkButton } from '@components/shared/Button'
 import { Disclosure } from '@headlessui/react'
 import { ChevronDownIcon, ClockIcon } from '@heroicons/react/20/solid'
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
+import { useState } from 'react'
+
+const tiers = ['Seed', 'Mango', 'Whale', 'Bot']
 
 const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
+  const [showClaim] = useState(true)
   return (
     <>
       <div className="bg-[url('/images/rewards/madlad-tile.png')]">
-        <div className="mx-auto flex max-w-[1140px] flex-col items-center p-8 lg:flex-row lg:px-10 lg:py-14">
-          <div className="mb-6 h-[180px] w-[180px] flex-shrink-0 lg:mr-10 lg:mb-0 lg:h-[260px] lg:w-[260px]">
+        <div className="mx-auto flex max-w-[1140px] flex-col items-center p-8 lg:flex-row lg:p-10">
+          <div className="mb-6 h-[180px] w-[180px] flex-shrink-0 lg:mr-10 lg:mb-0 lg:h-[220px] lg:w-[220px]">
             <Image
               className="rounded-lg shadow-lg"
               src="/images/rewards/madlad.png"
@@ -29,14 +34,16 @@ const RewardsPage = () => {
           <div className="flex flex-col items-center lg:items-start">
             <Badge
               label="Season 1"
-              borderColor="var(--fgd-3)"
-              shadowColor="var(--fgd-3)"
+              borderColor="var(--active)"
+              shadowColor="var(--active)"
             />
-            <p className="my-2 bg-gradient-to-b from-th-active to-th-down bg-clip-text font-display text-2xl text-transparent">
+            {/* <p className="mt-2 bg-gradient-to-b from-th-active to-th-down bg-clip-text font-display text-2xl text-transparent">
               Mango Mints
-            </p>
-            <h1 className="mb-3 text-5xl">Win amazing prizes every week.</h1>
-            <p className="mb-4 text-lg">
+            </p> */}
+            <h1 className="my-2 text-center text-4xl lg:text-left">
+              Win amazing prizes every week.
+            </h1>
+            <p className="mb-4 text-center text-lg lg:text-left">
               Earn points by performing actions on Mango. More points equals
               more chances to win.
             </p>
@@ -44,6 +51,17 @@ const RewardsPage = () => {
           </div>
         </div>
       </div>
+      {showClaim ? <Claim /> : <Season />}
+    </>
+  )
+}
+
+export default RewardsPage
+
+const Season = () => {
+  const [topAccountsTier, setTopAccountsTier] = useState('Seed')
+  return (
+    <>
       <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
         <ClockIcon className="mr-2 h-5 w-5 text-th-active" />
         <p className="text-base text-th-fgd-2">
@@ -117,11 +135,18 @@ const RewardsPage = () => {
           <div className="rounded-lg border border-th-bkg-3 p-4">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="">Top Accounts</h2>
-              <Badge
-                label="Seed"
-                shadowColor="var(--fgd-3)"
-                borderColor="var(--fgd-3)"
-              />
+              <Select
+                value={topAccountsTier}
+                onChange={(tier) => setTopAccountsTier(tier)}
+              >
+                {tiers.map((tier) => (
+                  <Select.Option key={tier} value={tier}>
+                    <div className="flex w-full items-center justify-between">
+                      {tier}
+                    </div>
+                  </Select.Option>
+                ))}
+              </Select>
             </div>
             <div className="border-b border-th-bkg-3">
               <div className="flex items-center justify-between border-t border-th-bkg-3 p-3">
@@ -170,7 +195,65 @@ const RewardsPage = () => {
   )
 }
 
-export default RewardsPage
+const Claim = () => {
+  return (
+    <>
+      <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
+        <ClockIcon className="mr-2 h-5 w-5 text-th-active" />
+        <p className="text-base text-th-fgd-2">
+          Season 1 claim ends in:{' '}
+          <span className="font-bold text-th-fgd-1">24 hours</span>
+        </p>
+      </div>
+      <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 lg:gap-6 lg:p-10">
+        <div className="col-span-12">
+          <div className="mb-6 text-center md:mb-12">
+            <h2 className="mb-2 text-5xl">Congratulations!</h2>
+            <p className="text-lg">You earnt 3 boxes in Season 1</p>
+          </div>
+          <div className="flex flex-col space-y-2 md:flex-row md:items-center md:justify-center md:space-x-6 md:space-y-0">
+            <div className="flex w-full flex-col items-center rounded-lg border border-th-bkg-3 p-6 md:w-1/3">
+              <Image
+                className="md:-mt-10"
+                src="/images/rewards/cube.png"
+                width={140}
+                height={140}
+                alt="Reward"
+              />
+              <Button className="mt-8" size="large">
+                Open Box
+              </Button>
+            </div>
+            <div className="flex w-full flex-col items-center rounded-lg border border-th-bkg-3 p-6 md:w-1/3">
+              <Image
+                className="md:-mt-10"
+                src="/images/rewards/cube.png"
+                width={140}
+                height={140}
+                alt="Reward"
+              />
+              <Button className="mt-8" size="large">
+                Open Box
+              </Button>
+            </div>
+            <div className="flex w-full flex-col items-center rounded-lg border border-th-bkg-3 p-6 md:w-1/3">
+              <Image
+                className="md:-mt-10"
+                src="/images/rewards/cube.png"
+                width={140}
+                height={140}
+                alt="Reward"
+              />
+              <Button className="mt-8" size="large">
+                Open Box
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
 
 const RewardsTierCard = ({
   name,
