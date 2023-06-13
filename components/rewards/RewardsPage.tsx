@@ -16,15 +16,17 @@ import Image from 'next/image'
 import { ReactNode, useState } from 'react'
 import Particles from 'react-tsparticles'
 import { ModalProps } from 'types/modal'
+import Leaderboards from './Leaderboards'
 
-const tiers = ['Seed', 'Mango', 'Whale', 'Bot']
+export const tiers = ['Seed', 'Mango', 'Whale', 'Bot']
 
 const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
   const [showClaim] = useState(true)
   const [showHowItWorks, setShowHowItWorks] = useState(false)
   const [isWhitelisted, setIsWhitelisted] = useState(false)
-  return (
+  const [showLeaderboards, setShowLeaderboards] = useState('')
+  return !showLeaderboards ? (
     <>
       <div className="bg-[url('/images/rewards/madlad-tile.png')]">
         <div className="mx-auto flex max-w-[1140px] flex-col items-center p-8 lg:flex-row lg:p-10">
@@ -70,7 +72,11 @@ const RewardsPage = () => {
           </div>
         </div>
       </div>
-      {showClaim ? <Claim /> : <Season />}
+      {!showClaim ? (
+        <Claim />
+      ) : (
+        <Season showLeaderboard={setShowLeaderboards} />
+      )}
       {showHowItWorks ? (
         <HowItWorksModal
           isOpen={showHowItWorks}
@@ -84,12 +90,21 @@ const RewardsPage = () => {
         />
       ) : null}
     </>
+  ) : (
+    <Leaderboards
+      leaderboard={showLeaderboards}
+      goBack={() => setShowLeaderboards('')}
+    />
   )
 }
 
 export default RewardsPage
 
-const Season = () => {
+const Season = ({
+  showLeaderboard,
+}: {
+  showLeaderboard: (x: string) => void
+}) => {
   const [topAccountsTier, setTopAccountsTier] = useState('Seed')
   return (
     <>
@@ -105,25 +120,29 @@ const Season = () => {
           <h2 className="mb-4">Rewards Tiers</h2>
           <div className="mb-6 space-y-2">
             <RewardsTierCard
-              icon={<AcornIcon className="h-5 w-5 text-th-fgd-2" />}
+              icon={<AcornIcon className="h-8 w-8 text-th-fgd-2" />}
               name="Seed"
               desc="New participants or you missed the previous season"
+              showLeaderboard={showLeaderboard}
               status="Qualified"
             />
             <RewardsTierCard
-              icon={<MangoIcon className="h-6 w-6 text-th-fgd-2" />}
+              icon={<MangoIcon className="h-8 w-8 text-th-fgd-2" />}
               name="Mango"
               desc="Average swap/trade value less than $1,000"
+              showLeaderboard={showLeaderboard}
             />
             <RewardsTierCard
-              icon={<WhaleIcon className="h-7 w-7 text-th-fgd-2" />}
+              icon={<WhaleIcon className="h-8 w-8 text-th-fgd-2" />}
               name="Whale"
               desc="Average swap/trade value greater than $1,000"
+              showLeaderboard={showLeaderboard}
             />
             <RewardsTierCard
-              icon={<RobotIcon className="h-6 w-6 text-th-fgd-2" />}
+              icon={<RobotIcon className="h-8 w-8 text-th-fgd-2" />}
               name="Bot"
               desc="All bots"
+              showLeaderboard={showLeaderboard}
             />
           </div>
           <h2 className="mb-4">FAQs</h2>
@@ -325,18 +344,23 @@ const Claim = () => {
 }
 
 const RewardsTierCard = ({
+  desc,
   icon,
   name,
-  desc,
+  showLeaderboard,
   status,
 }: {
+  desc: string
   icon: ReactNode
   name: string
-  desc: string
+  showLeaderboard: (x: string) => void
   status?: string
 }) => {
   return (
-    <button className="w-full rounded-lg border border-th-bkg-3 p-4 text-left focus:outline-none md:hover:border-th-fgd-4">
+    <button
+      className="w-full rounded-lg border border-th-bkg-3 p-4 text-left focus:outline-none md:hover:border-th-fgd-4"
+      onClick={() => showLeaderboard(name)}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-th-bkg-2 to-th-bkg-4">
@@ -362,7 +386,7 @@ const RewardsTierCard = ({
   )
 }
 
-const Badge = ({
+export const Badge = ({
   label,
   fillColor,
   shadowColor,
