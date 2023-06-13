@@ -31,6 +31,7 @@ const RewardsPage = () => {
           <div className="mb-6 h-[180px] w-[180px] flex-shrink-0 lg:mr-10 lg:mb-0 lg:h-[220px] lg:w-[220px]">
             <Image
               className="rounded-lg shadow-lg"
+              priority
               src="/images/rewards/madlad.png"
               width={260}
               height={260}
@@ -56,7 +57,7 @@ const RewardsPage = () => {
             <h1 className="my-2 text-center text-4xl lg:text-left">
               Win amazing prizes every week.
             </h1>
-            <p className="mb-4 text-center text-lg lg:text-left">
+            <p className="mb-4 text-center text-lg leading-snug lg:text-left">
               Earn points by performing actions on Mango. More points equals
               more chances to win.
             </p>
@@ -69,7 +70,7 @@ const RewardsPage = () => {
           </div>
         </div>
       </div>
-      {!showClaim ? <Claim /> : <Season />}
+      {showClaim ? <Claim /> : <Season />}
       {showHowItWorks ? (
         <HowItWorksModal
           isOpen={showHowItWorks}
@@ -264,6 +265,7 @@ const Claim = () => {
                 width={140}
                 height={140}
                 alt="Reward"
+                style={{ width: 'auto', maxWidth: '140px' }}
               />
               <Button className="mt-8" size="large">
                 Open Box
@@ -276,6 +278,7 @@ const Claim = () => {
                 width={140}
                 height={140}
                 alt="Reward"
+                style={{ width: 'auto', maxWidth: '140px' }}
               />
               <Button
                 className="mt-8"
@@ -292,6 +295,7 @@ const Claim = () => {
                 width={140}
                 height={140}
                 alt="Reward"
+                style={{ width: 'auto', maxWidth: '140px' }}
               />
               <Button
                 className="mt-8"
