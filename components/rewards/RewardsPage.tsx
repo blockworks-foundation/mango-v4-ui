@@ -1,11 +1,19 @@
 import Select from '@components/forms/Select'
+import AcornIcon from '@components/icons/AcornIcon'
+import MangoIcon from '@components/icons/MangoIcon'
+import RobotIcon from '@components/icons/RobotIcon'
+import WhaleIcon from '@components/icons/WhaleIcon'
 import Button, { LinkButton } from '@components/shared/Button'
 import Modal from '@components/shared/Modal'
 import { Disclosure } from '@headlessui/react'
-import { ChevronDownIcon, ClockIcon } from '@heroicons/react/20/solid'
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ClockIcon,
+} from '@heroicons/react/20/solid'
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { useState } from 'react'
+import { ReactNode, useState } from 'react'
 import Particles from 'react-tsparticles'
 import { ModalProps } from 'types/modal'
 
@@ -89,13 +97,26 @@ const Season = () => {
           <h2 className="mb-4">Rewards Tiers</h2>
           <div className="mb-6 space-y-2">
             <RewardsTierCard
+              icon={<AcornIcon className="h-5 w-5 text-th-fgd-2" />}
               name="Seed"
-              desc="Blah blah blah"
+              desc="New participants or you missed the previous season"
               status="Qualified"
             />
-            <RewardsTierCard name="Mango" desc="Blah blah blah" />
-            <RewardsTierCard name="Whale" desc="Blah blah blah" />
-            <RewardsTierCard name="Bot" desc="Blah blah blah" />
+            <RewardsTierCard
+              icon={<MangoIcon className="h-6 w-6 text-th-fgd-2" />}
+              name="Mango"
+              desc="Average swap/trade value less than $1,000"
+            />
+            <RewardsTierCard
+              icon={<WhaleIcon className="h-7 w-7 text-th-fgd-2" />}
+              name="Whale"
+              desc="Average swap/trade value greater than $1,000"
+            />
+            <RewardsTierCard
+              icon={<RobotIcon className="h-6 w-6 text-th-fgd-2" />}
+              name="Bot"
+              desc="All bots"
+            />
           </div>
           <h2 className="mb-4">FAQs</h2>
           <div className="border-b border-th-bkg-3">
@@ -293,35 +314,40 @@ const Claim = () => {
 }
 
 const RewardsTierCard = ({
+  icon,
   name,
-  //   imagePath,
   desc,
   status,
 }: {
+  icon: ReactNode
   name: string
-  //   imagePath: string
   desc: string
   status?: string
 }) => {
   return (
-    <div className="rounded-lg border border-th-bkg-3 p-4">
+    <button className="w-full rounded-lg border border-th-bkg-3 p-4 text-left focus:outline-none md:hover:border-th-fgd-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <div className="mr-4 h-14 w-14 rounded-full bg-th-bkg-2"></div>
+          <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-th-bkg-2 to-th-bkg-4">
+            {icon}
+          </div>
           <div>
             <h3>{name}</h3>
             <p>{desc}</p>
           </div>
         </div>
-        {status ? (
-          <Badge
-            label={status}
-            borderColor="var(--success)"
-            shadowColor="var(--success)"
-          />
-        ) : null}
+        <div className="flex items-center pl-4">
+          {status ? (
+            <Badge
+              label={status}
+              borderColor="var(--success)"
+              shadowColor="var(--success)"
+            />
+          ) : null}
+          <ChevronRightIcon className="ml-4 h-6 w-6 text-th-fgd-3" />
+        </div>
       </div>
-    </div>
+    </button>
   )
 }
 
@@ -486,7 +512,9 @@ const HowItWorksModal = ({ isOpen, onClose }: ModalProps) => {
         onClose={onClose}
         panelClassNames="max-h-[540px] thin-scroll overflow-auto"
       >
-        <h2 className="mb-2 text-center">How it works</h2>
+        <h2 className="mb-2 text-center" tabIndex={0}>
+          How it works
+        </h2>
         <p className="mb-4 text-base">
           Mango Mints is a weekly rewards program with amazing prizes. Anyone
           can participate simply by performing actions on Mango.
