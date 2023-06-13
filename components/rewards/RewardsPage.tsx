@@ -14,6 +14,7 @@ const tiers = ['Seed', 'Mango', 'Whale', 'Bot']
 const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
   const [showClaim] = useState(true)
+  const [showHowItWorks, setShowHowItWorks] = useState(false)
   return (
     <>
       <div className="bg-[url('/images/rewards/madlad-tile.png')]">
@@ -50,11 +51,22 @@ const RewardsPage = () => {
               Earn points by performing actions on Mango. More points equals
               more chances to win.
             </p>
-            <LinkButton className="text-lg">How it Works</LinkButton>
+            <LinkButton
+              className="text-lg"
+              onClick={() => setShowHowItWorks(true)}
+            >
+              How it Works
+            </LinkButton>
           </div>
         </div>
       </div>
-      {showClaim ? <Claim /> : <Season />}
+      {!showClaim ? <Claim /> : <Season />}
+      {showHowItWorks ? (
+        <HowItWorksModal
+          isOpen={showHowItWorks}
+          onClose={() => setShowHowItWorks(false)}
+        />
+      ) : null}
     </>
   )
 }
@@ -458,6 +470,73 @@ const ClaimLossModal = ({ isOpen, onClose }: ModalProps) => {
           <h2 className="mb-2">Better luck next time</h2>
           <p className="text-lg">This box is empty</p>
         </div>
+        <Button className="w-full" onClick={onClose} size="large">
+          Close
+        </Button>
+      </Modal>
+    </>
+  )
+}
+
+const HowItWorksModal = ({ isOpen, onClose }: ModalProps) => {
+  return (
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        panelClassNames="max-h-[540px] thin-scroll overflow-auto"
+      >
+        <h2 className="mb-2 text-center">How it works</h2>
+        <p className="mb-4 text-base">
+          Mango Mints is a weekly rewards program with amazing prizes. Anyone
+          can participate simply by performing actions on Mango.
+        </p>
+        <ol className="ml-6 mb-6 list-outside list-decimal space-y-2">
+          <li>
+            Each weekly cycle is called a Season and each Season has two
+            periods.
+          </li>
+          <li>
+            This first period is about earning points and runs from midnight
+            Sunday UTC to midnight Friday UTC. The second period is allocated to
+            claim prizes and runs from midnight Friday UTC to midnight Sunday
+            UTC.
+          </li>
+          <li>
+            Points are earned by performing actions on Mango. Actions may
+            include trading, swapping, placing orders and other transactions on
+            Mango. You&apos;ll know when you earn points but the formula is not
+            public.
+          </li>
+          <li>
+            There are 4 rewards tiers. Everyone starts in the Seed tier. After
+            your first Season is completed you&apos;ll be promoted to either the
+            Mango or Whale tier (depending on the average notional value of your
+            swaps/trades). If you miss a Season you&apos;ll be relegated to the
+            Seed tier. Bots are automatically assigned to the Bots tier.
+          </li>
+          <li>
+            At the end of each Season Loot Boxes are distributed based on the
+            amount of points earned relative to the other participants in your
+            tier. Boxes are not guaranteed to contain a prize but the more you
+            get, the more chances you have to win a prize.
+          </li>
+          <li>
+            During the claim period you can come back to this page and open your
+            loot boxes. Unclaimed prizes will be rolled over to the next Season.
+          </li>
+          <li>
+            Feel free to reach out to us on{' '}
+            <a
+              href="https://discord.gg/2uwjsBc5yw"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Discord
+            </a>{' '}
+            with questions.
+          </li>
+        </ol>
         <Button className="w-full" onClick={onClose} size="large">
           Close
         </Button>
