@@ -25,6 +25,8 @@ import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
 import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
+import PromoBanner from './rewards/PromoBanner'
+import { useRouter } from 'next/router'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -41,6 +43,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
     ''
   )
   const { width } = useViewport()
+  const { asPath } = useRouter()
 
   useEffect(() => {
     if (width < breakpoints.lg) {
@@ -117,6 +120,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           }`}
         >
           <TopBar />
+          {asPath !== '/rewards' ? <PromoBanner /> : null}
           {children}
         </div>
         <DeployRefreshManager />

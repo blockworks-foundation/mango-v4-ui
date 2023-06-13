@@ -23,6 +23,7 @@ const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
   const [showClaim] = useState(true)
   const [showHowItWorks, setShowHowItWorks] = useState(false)
+  const [isWhitelisted, setIsWhitelisted] = useState(false)
   return (
     <>
       <div className="bg-[url('/images/rewards/madlad-tile.png')]">
@@ -73,6 +74,12 @@ const RewardsPage = () => {
         <HowItWorksModal
           isOpen={showHowItWorks}
           onClose={() => setShowHowItWorks(false)}
+        />
+      ) : null}
+      {!isWhitelisted ? (
+        <WhitelistWalletModal
+          isOpen={!isWhitelisted}
+          onClose={() => setIsWhitelisted(true)}
         />
       ) : null}
     </>
@@ -567,6 +574,26 @@ const HowItWorksModal = ({ isOpen, onClose }: ModalProps) => {
         </ol>
         <Button className="w-full" onClick={onClose} size="large">
           Close
+        </Button>
+      </Modal>
+    </>
+  )
+}
+
+const WhitelistWalletModal = ({ isOpen, onClose }: ModalProps) => {
+  return (
+    <>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <div className="mb-6 text-center">
+          <h2 className="mb-2">Whitelist Wallet</h2>
+          <p className="text-lg">
+            Wallets are required to be verified with your Discord account to
+            participate in Mango Mints. We are doing this as a sybil prevention
+            mechanism.
+          </p>
+        </div>
+        <Button className="w-full" onClick={onClose} size="large">
+          Whitelist Wallet
         </Button>
       </Modal>
     </>
