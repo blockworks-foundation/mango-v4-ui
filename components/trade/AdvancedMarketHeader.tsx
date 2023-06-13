@@ -133,10 +133,13 @@ const AdvancedMarketHeader = ({
     selectedMarketName,
   ])
 
-  // const perpVolume = useMemo(() => {
-  //   if (!oneDayPerpStats.length) return
-  //   return oneDayPerpStats.reduce((a, c) => a + c.quote_volume, 0)
-  // }, [oneDayPerpStats])
+  const perpVolume = useMemo(() => {
+    if (!oneDayPerpStats.length) return
+    return (
+      oneDayPerpStats[oneDayPerpStats.length - 1].cumulative_quote_volume -
+      oneDayPerpStats[0].cumulative_quote_volume
+    )
+  }, [oneDayPerpStats])
 
   return (
     <>
@@ -163,7 +166,7 @@ const AdvancedMarketHeader = ({
             </div>
             {serumOrPerpMarket instanceof PerpMarket ? (
               <>
-                {/* <div className="ml-6 flex-col whitespace-nowrap text-xs">
+                <div className="ml-6 flex-col whitespace-nowrap text-xs">
                   <div className="mb-0.5 text-th-fgd-4 ">
                     {t('trade:24h-volume')}
                   </div>
@@ -174,7 +177,7 @@ const AdvancedMarketHeader = ({
                   ) : (
                     '-'
                   )}
-                </div> */}
+                </div>
                 <PerpFundingRate />
                 <div className="ml-6 flex-col whitespace-nowrap text-xs">
                   <div className="mb-0.5 text-th-fgd-4 ">

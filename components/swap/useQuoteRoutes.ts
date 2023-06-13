@@ -111,30 +111,43 @@ export const handleGetRoutes = async (
   slippage = 50,
   swapMode = 'ExactIn',
   feeBps = 0,
-  wallet: string | undefined | null
+  wallet: string | undefined | null,
+  mode: 'ALL' | 'JUPITER' | 'MANGO' = 'ALL'
 ) => {
   try {
     wallet ||= PublicKey.default.toBase58()
+    const mangoRoute = fetchMangoRoutes(
+      inputMint,
+      outputMint,
+      amount,
+      slippage,
+      swapMode,
+      feeBps,
+      wallet
+    )
+    const jupiterRoute = fetchJupiterRoutes(
+      inputMint,
+      outputMint,
+      amount,
+      slippage,
+      swapMode,
+      feeBps
+    )
 
-    const results = await Promise.allSettled([
-      fetchMangoRoutes(
-        inputMint,
-        outputMint,
-        amount,
-        slippage,
-        swapMode,
-        feeBps,
-        wallet
-      ),
-      fetchJupiterRoutes(
-        inputMint,
-        outputMint,
-        amount,
-        slippage,
-        swapMode,
-        feeBps
-      ),
-    ])
+    const routes = []
+    if (mode == 'ALL') {
+      routes.push(mangoRoute)
+      routes.push(jupiterRoute)
+    }
+
+    if (mode === 'MANGO') {
+      routes.push(mangoRoute)
+    }
+    if (mode === 'JUPITER') {
+      routes.push(jupiterRoute)
+    }
+
+    const results = await Promise.allSettled(routes)
     const responses = results
       .filter((x) => x.status === 'fulfilled' && x.value.bestRoute !== null)
       .map((x) => (x as any).value)

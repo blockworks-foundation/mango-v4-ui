@@ -1,4 +1,3 @@
-import mangoStore from '@store/mangoStore'
 import {
   HealthType,
   toUiDecimalsForQuote,
@@ -35,10 +34,12 @@ const MangoAccountSummary = () => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
 
-  const [accountValue, freeCollateral, health] = useMemo(() => {
-    if (!group || !mangoAccount) return [0, 0, 0]
+  const [accountPnl, accountValue, freeCollateral, health] = useMemo(() => {
+    if (!group || !mangoAccount) return [0, 0, 0, 0]
+    const accountPnl = toUiDecimalsForQuote(
+      mangoAccount.getPnl(group).toNumber()
+    )
     const accountValue = toUiDecimalsForQuote(
       mangoAccount.getEquity(group).toNumber()
     )
@@ -46,7 +47,7 @@ const MangoAccountSummary = () => {
       mangoAccount.getCollateralValue(group).toNumber()
     )
     const health = mangoAccount.getHealthRatioUi(group, HealthType.maint)
-    return [accountValue, freeCollateral, health]
+    return [accountPnl, accountValue, freeCollateral, health]
   }, [group, mangoAccount])
 
   const leverage = useMemo(() => {
@@ -62,18 +63,13 @@ const MangoAccountSummary = () => {
     }
   }, [mangoAccount, group, accountValue])
 
-  const pnl = useMemo(() => {
-    if (!performanceData.length) return 0
-    return performanceData[performanceData.length - 1].pnl
-  }, [performanceData])
-
   return (
     <div className="space-y-2">
       <SummaryItem label={t('account-value')} value={accountValue} isUsd />
       <SummaryItem label={t('health')} value={health} suffix="%" />
       <SummaryItem label={t('free-collateral')} value={freeCollateral} isUsd />
       <SummaryItem label={t('leverage')} value={leverage} suffix="x" />
-      <SummaryItem label={t('pnl')} value={pnl} isUsd />
+      <SummaryItem label={t('pnl')} value={accountPnl} isUsd />
     </div>
   )
 }

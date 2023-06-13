@@ -286,7 +286,8 @@ export interface NFT {
 }
 
 export interface PerpStatsItem {
-  base_volume: number
+  cumulative_base_volume: number
+  cumulative_quote_volume: number
   date_hour: string
   fees_accrued: number
   fees_settled: number
@@ -297,10 +298,11 @@ export interface PerpStatsItem {
   open_interest: number
   perp_market: string
   price: number
-  quote_volume: number
   stable_price: number
   total_fees: number
 }
+
+export type GroupedDataItem = PerpStatsItem & Record<string, any>
 
 export type ActivityFeed = {
   activity_type: string

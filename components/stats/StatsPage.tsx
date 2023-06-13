@@ -42,7 +42,7 @@ const StatsPage = () => {
         <TokenPage />
       ) : (
         <>
-          <div className="border-b border-th-bkg-3">
+          <div className="hide-scroll overflow-x-auto border-b border-th-bkg-3">
             <TabButtons
               activeValue={activeTab}
               fillWidth={fullWidthTabs}

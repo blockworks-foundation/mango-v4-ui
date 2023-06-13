@@ -13,7 +13,8 @@
     "cancel": "取消",
     "cant-find-token-for-mint": "Can't find token for given mint",
     "cant-list-no-openbook-market": "找不到Openbook市場. Create an Openbook market before continuing.",
-    "cant-list-oracle-not-found": "找不到語言機. Create a Pyth/Switchboard oracle before continuing.",
+    "cant-list-oracle-not-found-pyth": "找不到語言機. Create a Pyth oracle before continuing.",
+    "cant-list-oracle-not-found-switch": "找不到語言機. Create a Switchboard oracle before continuing.",
     "connect-to-list": "Connect to list a spot market or token",
     "connect-wallet": "連接錢包",
     "create": "Create",
@@ -30,7 +31,7 @@
     "invalid-num": "無效的數字",
     "invalid-pk": "Invalid PublicKey",
     "liquidity-check-error": "Error during liquidity check",
-    "liquidity-warning": "流動性很低。 Price impact of {{priceImpactPct}}% on a 10k USDC swap.",
+    "liquidity-warning": "流動性很低。 Price impact of {{priceImpactPct}}% on a 20k USDC swap.",
     "list-spot-market": "List Spot Market",
     "list-spot-market-desc": "Create a market pair from tokens listed on Mango",
     "list-token": "列出幣種",
@@ -96,5 +97,9 @@
     "what-happens-next-3": "{{token}} will be listed on Mango automatically on execution.",
     "yes": "是",
     "yes-votes": "贊成票",
-    "your-votes": "你的票:"
+    "your-votes": "你的票:",
+    "create-switch-oracle": "Create switchboard oracle for",
+    "estimated-oracle-cost": "Estimated cost with funding oracle for ~6 months 2.8 SOL",
+    "create-oracle": "Create oracle",
+    "tier": "Tier"
 }

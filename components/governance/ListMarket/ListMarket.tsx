@@ -364,8 +364,10 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
               </div>
               {createOpenbookMarketModal ? (
                 <CreateOpenbookMarketModal
-                  quoteSymbol={quoteToken!}
-                  baseSymbol={baseToken!}
+                  quoteDecimals={quoteBank?.mintDecimals || 0}
+                  quoteMint={quoteBank?.mint.toBase58() || ''}
+                  baseDecimals={baseBank?.mintDecimals || 0}
+                  baseMint={baseBank?.mint.toBase58() || ''}
                   isOpen={createOpenbookMarketModal}
                   onClose={closeCreateOpenBookMarketModal}
                   tradingParams={tradingParams}

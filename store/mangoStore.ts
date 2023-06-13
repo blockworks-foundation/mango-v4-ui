@@ -64,7 +64,6 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
 import {
-  EntityId,
   IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
@@ -524,7 +523,9 @@ const mangoStore = create<MangoStore>()(
               .filter(
                 (p) =>
                   p.publicKey.toString() !==
-                  '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+                    '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw' &&
+                  p.publicKey.toString() !==
+                    'GcMimCLCU8aQhUpZwB5dWTQDxkTzuMy8uKQfujjYjz4b'
               )
               .sort((a, b) => a.name.localeCompare(b.name))
 

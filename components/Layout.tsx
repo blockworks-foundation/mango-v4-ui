@@ -24,8 +24,9 @@ import useInterval from './shared/useInterval'
 import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
+import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
 
-const sideBarAnimationDuration = 500
+export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {
@@ -74,7 +75,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
   }, [acceptTerms, connected])
 
   return (
-    <>
+    <main
+      className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable} font-sans`}
+    >
       <div className="fixed z-30">
         <SuccessParticles />
       </div>
@@ -124,7 +127,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           onClose={() => setAcceptTerms(Date.now())}
         />
       ) : null}
-    </>
+    </main>
   )
 }
 
