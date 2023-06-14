@@ -118,6 +118,7 @@
   "quantity": "数量",
   "rate": "利率(APR)",
   "rates": "利率(APR)",
+  "refresh-data": "Manually refresh data",
   "remove": "删除",
   "remove-delegate": "铲除委托",
   "repay": "归还",
