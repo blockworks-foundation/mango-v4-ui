@@ -22,6 +22,9 @@ const MARKET_LINK_WRAPPER_CLASSES =
 const MARKET_LINK_CLASSES =
   'mr-2 -ml-3 flex w-full items-center justify-between rounded-md py-2 px-3 focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
 
+const MARKET_LINK_DISABLED_CLASSES =
+  'mr-2 -ml-3 flex w-full items-center justify-between rounded-md py-2 px-3 md:hover:cursor-not-allowed'
+
 const MarketSelectDropdown = () => {
   const { t } = useTranslation('common')
   const { selectedMarket } = useSelectedMarket()
@@ -41,7 +44,9 @@ const MarketSelectDropdown = () => {
           p.publicKey.toString() !==
           '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
       )
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .sort((a, b) =>
+        a.oracleLastUpdatedSlot != 0 ? -1 : a.name.localeCompare(b.name)
+      )
   }, [allPerpMarkets])
 
   // const spotBaseTokens: string[] = useMemo(() => {
@@ -83,6 +88,7 @@ const MarketSelectDropdown = () => {
             {perpMarkets?.length
               ? perpMarkets.map((m) => {
                   const changeData = getOneDayPerpStats(perpStats, m.name)
+                  const isComingSoon = m.oracleLastUpdatedSlot == 0
 
                   const change = changeData.length
                     ? ((m.uiPrice - changeData[0].price) /
@@ -94,30 +100,44 @@ const MarketSelectDropdown = () => {
                       className={MARKET_LINK_WRAPPER_CLASSES}
                       key={m.publicKey.toString()}
                       onClick={() => {
-                        close()
+                        if (!isComingSoon) close()
                       }}
                     >
-                      <Link
-                        className={MARKET_LINK_CLASSES}
-                        href={{
-                          pathname: '/trade',
-                          query: { name: m.name },
-                        }}
-                        shallow={true}
-                      >
-                        <div className="flex items-center">
-                          <MarketLogos market={m} />
-                          <span>{m.name}</span>
-                        </div>
-                        {!loadingPerpStats ? (
-                          <Change change={change} suffix="%" />
-                        ) : (
-                          <SheenLoader className="mt-0.5">
-                            <div className="h-3.5 w-12 bg-th-bkg-2" />
-                          </SheenLoader>
-                        )}
-                      </Link>
-                      <FavoriteMarketButton market={m} />
+                      {!isComingSoon ? (
+                        <>
+                          <Link
+                            className={MARKET_LINK_CLASSES}
+                            href={{
+                              pathname: '/trade',
+                              query: { name: m.name },
+                            }}
+                            shallow={true}
+                          >
+                            <div className="flex items-center">
+                              <MarketLogos market={m} />
+                              <span>{m.name}</span>
+                            </div>
+                            {!loadingPerpStats ? (
+                              <Change change={change} suffix="%" />
+                            ) : (
+                              <SheenLoader className="mt-0.5">
+                                <div className="h-3.5 w-12 bg-th-bkg-2" />
+                              </SheenLoader>
+                            )}
+                          </Link>
+                          <FavoriteMarketButton market={m} />
+                        </>
+                      ) : (
+                        <span className={MARKET_LINK_DISABLED_CLASSES}>
+                          <div className="flex items-center">
+                            <MarketLogos market={m} />
+                            <span>{m.name}</span>
+                          </div>
+                          <div className="mr-4 flex items-center space-x-1.5 text-xs uppercase">
+                            {t('soon')}&trade;
+                          </div>
+                        </span>
+                      )}
                     </div>
                   )
                 })

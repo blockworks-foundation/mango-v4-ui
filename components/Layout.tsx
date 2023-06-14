@@ -24,8 +24,9 @@ import useInterval from './shared/useInterval'
 import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
+import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
 
-const sideBarAnimationDuration = 500
+export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {
@@ -42,7 +43,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const { width } = useViewport()
 
   useEffect(() => {
-    if (width < breakpoints.lg) {
+    if (width < breakpoints.xl) {
       setIsCollapsed(true)
     }
   }, [width])
@@ -74,7 +75,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
   }, [acceptTerms, connected])
 
   return (
-    <>
+    <main
+      className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable} font-sans`}
+    >
       <div className="fixed z-30">
         <SuccessParticles />
       </div>
@@ -90,7 +93,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
         <div className="fixed z-20 hidden h-screen md:block">
           <button
-            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 lg:block"
+            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 xl:block"
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
@@ -124,7 +127,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           onClose={() => setAcceptTerms(Date.now())}
         />
       ) : null}
-    </>
+    </main>
   )
 }
 

@@ -20,8 +20,11 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
   const minVoterWeight = minVotes
     ? minVotes
     : governances
-    ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
-        .minCommunityTokensToCreateProposal
+    ? new BN(
+        governances[
+          MANGO_DAO_WALLET_GOVERNANCE.toBase58()
+        ].account.config.minCommunityTokensToCreateProposal.toString()
+      )
     : new BN(0)
   const mintVoterWeightNumber = governances
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)

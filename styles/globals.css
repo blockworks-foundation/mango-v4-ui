@@ -2,34 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'TT Mono';
-  src: url('/fonts/TT_Commons_Pro_Mono_Medium.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'TT Commons Expanded';
-  src: url('/fonts/TT_Commons_Pro_Expanded_DemiBold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'TT Commons';
-  font-weight: normal;
-  src: url('/fonts/TT_Commons_Pro_Normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'TT Commons';
-  font-weight: medium;
-  src: url('/fonts/TT_Commons_Pro_Medium.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'TT Commons';
-  font-weight: bold;
-  src: url('/fonts/TT_Commons_Pro_DemiBold.woff2') format('woff2');
-}
-
 /* Reset */
 
 html,
@@ -398,6 +370,10 @@ body {
   @apply font-body text-sm tracking-wider;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+main {
+  @apply font-body;
 }
 
 button {
