@@ -122,7 +122,7 @@ const Season = ({
             <RewardsTierCard
               icon={<AcornIcon className="h-8 w-8 text-th-fgd-2" />}
               name="Seed"
-              desc="New participants or you missed the previous season"
+              desc="All new participants start here"
               showLeaderboard={showLeaderboard}
               status="Qualified"
             />
