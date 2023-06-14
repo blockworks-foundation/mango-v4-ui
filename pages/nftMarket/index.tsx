@@ -1,11 +1,11 @@
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
-import Input from '@components/forms/Input'
+import SellNftModal from '@components/nftMarket/SellNftModal'
 import Button from '@components/shared/Button'
-import { Listing, token } from '@metaplex-foundation/js'
+import { Listing } from '@metaplex-foundation/js'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Keypair, PublicKey } from '@solana/web3.js'
 import metaplexStore from '@store/metaplexStore'
 import { useAuctionHouse, useListings } from 'hooks/market/useAuctionHouse'
+import useMetaplex from 'hooks/useMetaplex'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useState } from 'react'
@@ -29,37 +29,13 @@ export async function getStaticProps({ locale }: { locale: string }) {
 }
 
 const Market: NextPage = () => {
+  useMetaplex()
   const wallet = useWallet()
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data: auctionHouse } = useAuctionHouse()
   const { data: listings } = useListings()
-  const [mintToList, setMintToList] = useState('')
 
-  const feeAccount = Keypair.generate()
-  const treasuryAccount = Keypair.generate()
-  const auctionMint = new PublicKey(
-    'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr'
-  )
-  const treasuryWalletWithAuctionMint = new PublicKey(
-    '6TSTn1diScs6wWHFoazfqLZmkToZ7ZgHFf3M3yj2UH4Y'
-  )
-
-  const createAuctionHouse = async () => {
-    const auctionHouseSettingsObj = {
-      treasuryMint: auctionMint,
-      sellerFeeBasisPoints: 160,
-      auctioneerAuthority: wallet.publicKey!,
-      auctionHouseFeeAccount: feeAccount,
-      auctionHouseTreasury: treasuryAccount,
-      feeWithdrawalDestination: treasuryWalletWithAuctionMint,
-      treasuryWithdrawalDestination: treasuryWalletWithAuctionMint,
-      requireSignOff: false,
-      canChangeSalePrice: false,
-    }
-    await metaplex!.auctionHouse().create({
-      ...auctionHouseSettingsObj,
-    })
-  }
+  const [sellNftModal, setSellNftModal] = useState(false)
 
   const cancelListing = async (listing: Listing) => {
     await metaplex!.auctionHouse().cancelListing({
@@ -68,15 +44,7 @@ const Market: NextPage = () => {
     })
   }
 
-  const listAsset = async () => {
-    await metaplex!.auctionHouse().list({
-      auctionHouse: auctionHouse!, // A model of the Auction House related to this listing
-      mintAccount: new PublicKey(mintToList), // The mint account to create a listing for, used to find the metadata
-      price: token(2, 6), // The listing price
-    })
-  }
-
-  const bidOnAsset = async (listing: Listing) => {
+  const buyAsset = async (listing: Listing) => {
     await metaplex!.auctionHouse().buy({
       auctionHouse: auctionHouse!,
       listing,
@@ -86,16 +54,13 @@ const Market: NextPage = () => {
   return (
     <div className="flex">
       <div className="mr-5">
-        Mint to list
-        <Input
-          type="text"
-          onChange={(e) => setMintToList(e.target.value)}
-          value={mintToList}
-        ></Input>
-        <button onClick={listAsset}>List</button>
-      </div>
-      <div>
-        <button onClick={createAuctionHouse}>create</button>
+        <Button onClick={() => setSellNftModal(true)}>Sell</Button>
+        {sellNftModal && (
+          <SellNftModal
+            isOpen={sellNftModal}
+            onClose={() => setSellNftModal(false)}
+          ></SellNftModal>
+        )}
       </div>
       <div className="flex p-4">
         {listings?.map((x, idx) => (
@@ -106,14 +71,14 @@ const Market: NextPage = () => {
                 x.price.basisPoints.toNumber(),
                 MANGO_MINT_DECIMALS
               )}
-              {' USDC'}
+              {' MNGO'}
               {wallet.publicKey && x.sellerAddress.equals(wallet.publicKey) && (
                 <Button onClick={() => cancelListing(x)}>Cancel</Button>
               )}
             </div>
             <img src={x.asset.json?.image}></img>
             <div>
-              <Button onClick={() => bidOnAsset(x)}>Buy</Button>
+              <Button onClick={() => buyAsset(x)}>Buy</Button>
             </div>
           </div>
         ))}
@@ -123,3 +88,29 @@ const Market: NextPage = () => {
 }
 
 export default Market
+
+//TODO move to governance
+//   const feeAccount = Keypair.generate()
+//   const treasuryAccount = Keypair.generate()
+//   const auctionMint = new PublicKey(
+//     'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr'
+//   )
+//   const treasuryWalletWithAuctionMint = new PublicKey(
+//     '6TSTn1diScs6wWHFoazfqLZmkToZ7ZgHFf3M3yj2UH4Y'
+//   )
+//   const createAuctionHouse = async () => {
+//     const auctionHouseSettingsObj = {
+//       treasuryMint: auctionMint,
+//       sellerFeeBasisPoints: 160,
+//       auctioneerAuthority: wallet.publicKey!,
+//       auctionHouseFeeAccount: feeAccount,
+//       auctionHouseTreasury: treasuryAccount,
+//       feeWithdrawalDestination: treasuryWalletWithAuctionMint,
+//       treasuryWithdrawalDestination: treasuryWalletWithAuctionMint,
+//       requireSignOff: false,
+//       canChangeSalePrice: false,
+//     }
+//     await metaplex!.auctionHouse().create({
+//       ...auctionHouseSettingsObj,
+//     })
+//   }

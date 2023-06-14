@@ -11,7 +11,9 @@ export default function useMetaplex() {
 
   useEffect(() => {
     let meta = new Metaplex(connection)
-    meta = meta.use(walletAdapterIdentity(wallet))
+    if (wallet?.publicKey) {
+      meta = meta.use(walletAdapterIdentity(wallet))
+    }
     setMetaplexInstance(meta)
   }, [connection, setMetaplexInstance, wallet])
 }

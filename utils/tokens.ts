@@ -90,6 +90,7 @@ const enhanceNFT = (nft: NftWithATA) => {
     image: nft.json?.image || '',
     name: nft.json?.name || '',
     address: nft.metadataAddress.toBase58(),
+    mint: nft.mint.address.toBase58(),
   }
 }
 

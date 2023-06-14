@@ -5,7 +5,6 @@ import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
-import useMetaplex from 'hooks/useMetaplex'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -15,7 +14,6 @@ const HydrateStore = () => {
   const { name: marketName } = router.query
   const { mangoAccountPk, mangoAccountAddress } = useMangoAccount()
   const connection = mangoStore((s) => s.connection)
-  useMetaplex()
 
   useEffect(() => {
     if (marketName && typeof marketName === 'string') {
