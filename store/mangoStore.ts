@@ -523,9 +523,7 @@ const mangoStore = create<MangoStore>()(
               .filter(
                 (p) =>
                   p.publicKey.toString() !==
-                    '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw' &&
-                  p.publicKey.toString() !==
-                    'GcMimCLCU8aQhUpZwB5dWTQDxkTzuMy8uKQfujjYjz4b'
+                  '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
               )
               .sort((a, b) => a.name.localeCompare(b.name))
 
