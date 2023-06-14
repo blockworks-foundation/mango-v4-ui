@@ -96,7 +96,7 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
           </div>
         )}
         <div className="flex flex-col">
-          <Label text="Min price in MNGO (Item will be immediately sold for this price)"></Label>
+          <Label text="Min MNGO price - If someone bids this price, the item will be immediately sold at that price."></Label>
           <Input
             className="mb-2"
             type="number"
