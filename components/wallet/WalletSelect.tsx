@@ -2,11 +2,9 @@ import React, { Fragment } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Popover, Transition } from '@headlessui/react'
 import { useEnhancedWallet } from './EnhancedWalletProvider'
-import useMangoGroup from 'hooks/useMangoGroup'
 
 const WalletSelect = () => {
   const { displayedWallets, handleSelect } = useEnhancedWallet()
-  const { group } = useMangoGroup()
 
   return (
     <Popover>
@@ -14,7 +12,6 @@ const WalletSelect = () => {
         <>
           <Popover.Button
             className={`flex h-16 w-10 cursor-pointer items-center justify-center rounded-none border-l border-th-bkg-4 bg-th-bkg-3 text-th-fgd-3 hover:brightness-[1.1] focus:outline-none focus-visible:bg-th-bkg-4 disabled:opacity-25`}
-            disabled={!group}
           >
             <ChevronDownIcon
               className={`h-6 w-6 ${open ? 'rotate-180' : 'rotate-360'}`}

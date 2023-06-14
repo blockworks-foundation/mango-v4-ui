@@ -90,7 +90,7 @@ const ENDPOINTS = [
 ]
 
 const options = AnchorProvider.defaultOptions()
-export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
+export const CLUSTER: 'mainnet-beta' | 'devnet' = 'devnet'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
 export const emptyWallet = new EmptyWallet(Keypair.generate())
 
@@ -263,7 +263,7 @@ const mangoStore = create<MangoStore>()(
   subscribeWithSelector((_set, get) => {
     let rpcUrl = ENDPOINT.url
 
-    if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
+    if (typeof window !== 'undefined' && CLUSTER === 'devnet') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
       rpcUrl = urlFromLocalStorage
         ? JSON.parse(urlFromLocalStorage).value

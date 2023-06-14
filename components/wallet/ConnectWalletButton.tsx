@@ -2,7 +2,6 @@ import React, { useMemo } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletSelect from './WalletSelect'
-import mangoStore from '@store/mangoStore'
 import Loading from '../shared/Loading'
 import { useEnhancedWallet } from './EnhancedWalletProvider'
 
@@ -10,7 +9,6 @@ export const ConnectWalletButton: React.FC = () => {
   const { connecting, wallet } = useWallet()
   const { displayedWallets, handleConnect, preselectedWalletName } =
     useEnhancedWallet()
-  const groupLoaded = mangoStore((s) => s.groupLoaded)
   const { t } = useTranslation('common')
 
   const selectedWallet = useMemo(() => {
@@ -24,7 +22,6 @@ export const ConnectWalletButton: React.FC = () => {
     <div className="flex">
       <button
         onClick={handleConnect}
-        disabled={!groupLoaded}
         className="relative flex h-16 bg-th-bkg-3 py-2 text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-0 hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100 focus-visible:bg-th-bkg-4 disabled:cursor-wait disabled:opacity-25"
       >
         <div className="relative z-10 flex h-full items-center justify-center space-x-3 px-4">
