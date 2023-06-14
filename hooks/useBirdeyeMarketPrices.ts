@@ -1,4 +1,4 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import { Group, Serum3Market } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import { makeApiRequest } from 'apis/birdeye/helpers'
@@ -10,17 +10,20 @@ export interface BirdeyePriceResponse {
 }
 
 const fetchBirdeyePrices = async (
-  spotMarkets: Serum3Market[]
+  spotMarkets: Serum3Market[],
+  group: Group | undefined
 ): Promise<{ data: BirdeyePriceResponse[]; mint: string }[]> => {
-  const mints = spotMarkets.map((market) =>
-    market.serumMarketExternal.toString()
-  )
+  const mints = spotMarkets.map((market) => {
+    const baseBank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
+    return baseBank?.mint.toString()
+  })
 
   const promises = []
   const queryEnd = Math.floor(Date.now() / 1000)
   const queryStart = queryEnd - 86400
   for (const mint of mints) {
-    const query = `defi/history_price?address=${mint}&address_type=pair&type=30m&time_from=${queryStart}&time_to=${queryEnd}`
+    if (!mint) continue
+    const query = `defi/history_price?address=${mint}&address_type=token&type=30m&time_from=${queryStart}&time_to=${queryEnd}`
     promises.push(makeApiRequest(query))
   }
 
@@ -37,9 +40,10 @@ const fetchBirdeyePrices = async (
 
 export const useBirdeyeMarketPrices = () => {
   const spotMarkets = mangoStore((s) => s.serumMarkets)
+  const group = mangoStore((s) => s.group)
   const res = useQuery(
     ['birdeye-market-prices'],
-    () => fetchBirdeyePrices(spotMarkets),
+    () => fetchBirdeyePrices(spotMarkets, group),
     {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 10,

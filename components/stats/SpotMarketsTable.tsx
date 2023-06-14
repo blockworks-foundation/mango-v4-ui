@@ -84,7 +84,7 @@ const SpotMarketsTable = () => {
                 }
 
                 const birdeyeData = birdeyePrices.find(
-                  (m) => m.mint === mkt.serumMarketExternal.toString()
+                  (m) => m.mint === baseBank?.mint.toString()
                 )
 
                 const change =
@@ -217,9 +217,7 @@ const MobileSpotMarketItem = ({
 
   const birdeyeData = useMemo(() => {
     if (!loadingPrices) {
-      return birdeyePrices.find(
-        (m) => m.mint === market.serumMarketExternal.toString()
-      )
+      return birdeyePrices.find((m) => m.mint === baseBank?.mint.toString())
     }
     return null
   }, [loadingPrices])

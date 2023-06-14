@@ -149,15 +149,14 @@ const MarketSelectDropdown = () => {
                   .map((x) => x)
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((m) => {
-                    const birdeyeData = birdeyePrices?.length
-                      ? birdeyePrices.find(
-                          (market) =>
-                            market.mint === m.serumMarketExternal.toString()
-                        )
-                      : null
                     const baseBank = group?.getFirstBankByTokenIndex(
                       m.baseTokenIndex
                     )
+                    const birdeyeData = birdeyePrices?.length
+                      ? birdeyePrices.find(
+                          (prices) => prices.mint === baseBank?.mint.toString()
+                        )
+                      : null
                     const quoteBank = group?.getFirstBankByTokenIndex(
                       m.quoteTokenIndex
                     )

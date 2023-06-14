@@ -87,9 +87,11 @@ const AdvancedMarketHeader = ({
       selectedMarket instanceof PerpMarket
     )
       return
-    return birdeyePrices.find(
-      (m) => m.mint === selectedMarket.serumMarketExternal.toString()
+
+    const baseBank = group?.getFirstBankByTokenIndex(
+      selectedMarket.baseTokenIndex
     )
+    return birdeyePrices.find((m) => m.mint === baseBank?.mint.toString())
   }, [birdeyePrices, selectedMarket])
 
   const oneDayPerpStats = useMemo(() => {
