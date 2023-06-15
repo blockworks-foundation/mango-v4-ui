@@ -79,6 +79,8 @@ const SwapForm = () => {
   const [showConfirm, setShowConfirm] = useState(false)
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [activeTab, setActiveTab] = useState('swap')
+  const [limitPrice, setLimitPrice] = useState('')
+  const [triggerPrice, setTriggerPrice] = useState('')
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
@@ -185,6 +187,22 @@ const SwapForm = () => {
       setAmountInFormValue(e.value)
     },
     [swapMode, setAmountInFormValue]
+  )
+
+  const handleLimitPrice = useCallback(
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
+      setLimitPrice(e.value)
+    },
+    [setLimitPrice]
+  )
+
+  const handleTriggerPrice = useCallback(
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
+      setTriggerPrice(e.value)
+    },
+    [setTriggerPrice]
   )
 
   const handleAmountOutChange = useCallback(
@@ -411,28 +429,28 @@ const SwapForm = () => {
                   ))}
                 </Select>
               </div>
-              <div className="col-span-1">
-                <p className="mb-2 text-th-fgd-2">
-                  {orderType === 'trade:limit'
-                    ? t('trade:limit-price')
-                    : t('trade:trigger-price')}
-                </p>
-                <NumberFormat
-                  inputMode="decimal"
-                  thousandSeparator=","
-                  allowNegative={false}
-                  isNumericString={true}
-                  decimalScale={inputBank?.mintDecimals || 6}
-                  name="amountIn"
-                  id="amountIn"
-                  className="h-10 w-full rounded-lg bg-th-input-bkg p-3 text-right font-mono text-sm text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:bg-th-bkg-3"
-                  placeholder="0.00"
-                  value={amountInFormValue}
-                  onValueChange={handleAmountInChange}
-                  isAllowed={withValueLimit}
-                />
-              </div>
-              {orderType === 'trade:stop-limit' ? (
+              {orderType !== 'trade:limit' ? (
+                <div className="col-span-1">
+                  <p className="mb-2 text-th-fgd-2">
+                    {t('trade:trigger-price')}
+                  </p>
+                  <NumberFormat
+                    inputMode="decimal"
+                    thousandSeparator=","
+                    allowNegative={false}
+                    isNumericString={true}
+                    decimalScale={outputBank?.mintDecimals || 6}
+                    name="triggerPrice"
+                    id="triggerPrice"
+                    className="h-10 w-full rounded-lg bg-th-input-bkg p-3 text-right font-mono text-sm text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:bg-th-bkg-3"
+                    placeholder="0.00"
+                    value={triggerPrice}
+                    onValueChange={handleTriggerPrice}
+                    isAllowed={withValueLimit}
+                  />
+                </div>
+              ) : null}
+              {orderType !== 'trade:stop-market' ? (
                 <div className="col-span-1">
                   <p className="mb-2 text-th-fgd-2">{t('trade:limit-price')}</p>
                   <NumberFormat
@@ -440,13 +458,13 @@ const SwapForm = () => {
                     thousandSeparator=","
                     allowNegative={false}
                     isNumericString={true}
-                    decimalScale={inputBank?.mintDecimals || 6}
-                    name="amountIn"
-                    id="amountIn"
+                    decimalScale={outputBank?.mintDecimals || 6}
+                    name="limitPrice"
+                    id="limitPrice"
                     className="h-10 w-full rounded-lg bg-th-input-bkg p-3 text-right font-mono text-sm text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:bg-th-bkg-3"
                     placeholder="0.00"
-                    value={amountInFormValue}
-                    onValueChange={handleAmountInChange}
+                    value={limitPrice}
+                    onValueChange={handleLimitPrice}
                     isAllowed={withValueLimit}
                   />
                 </div>

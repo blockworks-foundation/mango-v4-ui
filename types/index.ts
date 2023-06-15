@@ -358,7 +358,8 @@ export interface TradeForm {
   price: string | undefined
   baseSize: string
   quoteSize: string
-  tradeType: 'Market' | 'Limit'
+  tradeType: 'market' | 'trade:limit' | 'trade:stop-limit' | 'trade:stop-market'
+  triggerPrice?: string
   postOnly: boolean
   ioc: boolean
   reduceOnly: boolean

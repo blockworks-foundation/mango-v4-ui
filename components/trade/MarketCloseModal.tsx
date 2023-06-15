@@ -139,7 +139,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
 
         const maxSlippage = 0.025
         // const perpOrderType =
-        //   tradeForm.tradeType === 'Market'
+        //   tradeForm.tradeType === 'market'
         //     ? PerpOrderType.market
         //     : tradeForm.ioc
         //     ? PerpOrderType.immediateOrCancel

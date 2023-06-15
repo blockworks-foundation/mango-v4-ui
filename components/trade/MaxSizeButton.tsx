@@ -63,7 +63,7 @@ const MaxSizeButton = ({
     const set = mangoStore.getState().set
     set((state) => {
       if (side === 'buy') {
-        if (tradeType === 'Market' || !price) {
+        if (tradeType === 'market' || !price) {
           const baseSize = floorToDecimal(max / oraclePrice, minOrderDecimals)
           const quoteSize = floorToDecimal(max, tickDecimals)
           state.tradeForm.baseSize = baseSize.toFixed()
@@ -79,7 +79,7 @@ const MaxSizeButton = ({
         }
       } else {
         const baseSize = floorToDecimal(max, minOrderDecimals)
-        if (tradeType === 'Market' || !price) {
+        if (tradeType === 'market' || !price) {
           const quoteSize = floorToDecimal(
             baseSize.mul(oraclePrice),
             tickDecimals
@@ -106,7 +106,7 @@ const MaxSizeButton = ({
 
   const maxAmount = useMemo(() => {
     const max = selectedMarket instanceof Serum3Market ? spotMax : perpMax || 0
-    const tradePrice = tradeType === 'Market' ? oraclePrice : Number(price)
+    const tradePrice = tradeType === 'market' ? oraclePrice : Number(price)
     if (side === 'buy') {
       return max / tradePrice
     } else {

@@ -1,10 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { ReactNode } from 'react'
+import { TradeForm } from 'types'
 
-interface SelectProps {
-  value: string | ReactNode
-  onChange: (x: string) => void
+type Values = TradeForm['tradeType'] | ReactNode
+
+interface SelectProps<T extends Values> {
+  value: T | string
+  onChange: (x: T) => void
   children: ReactNode
   className?: string
   buttonClassName?: string
@@ -13,7 +17,7 @@ interface SelectProps {
   disabled?: boolean
 }
 
-const Select = ({
+const Select = <T extends Values>({
   value,
   onChange,
   children,
@@ -22,7 +26,7 @@ const Select = ({
   dropdownPanelClassName,
   placeholder = 'Select',
   disabled = false,
-}: SelectProps) => {
+}: SelectProps<T>) => {
   return (
     <div className={`relative ${className}`}>
       <Listbox value={value} onChange={onChange} disabled={disabled}>
@@ -40,7 +44,7 @@ const Select = ({
                   <span className="text-th-fgd-3">{placeholder}</span>
                 )}
                 <ChevronDownIcon
-                  className={`h-5 w-5 flex-shrink-0 text-th-fgd-3 ${
+                  className={`h-5 w-5 flex-shrink-0 text-th-fgd-2 ${
                     open ? 'rotate-180' : 'rotate-360'
                   }`}
                 />

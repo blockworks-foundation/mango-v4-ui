@@ -236,7 +236,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
       if (!group || !selectedMarket) return
 
       let price: number
-      if (tradeForm.tradeType === 'Market') {
+      if (tradeForm.tradeType === 'market') {
         const orderbook = mangoStore.getState().selectedMarket.orderbook
         const side =
           (balance > 0 && type === 'quote') || (balance < 0 && type === 'base')

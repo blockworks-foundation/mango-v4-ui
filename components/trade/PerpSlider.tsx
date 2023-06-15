@@ -55,7 +55,7 @@ const PerpSlider = ({
 
       set((s) => {
         const price =
-          s.tradeForm.tradeType === 'Market'
+          s.tradeForm.tradeType === 'market'
             ? marketPrice
             : Number(s.tradeForm.price)
 
