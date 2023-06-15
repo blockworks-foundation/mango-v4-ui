@@ -73,6 +73,8 @@
     "size": "數量",
     "spread": "差價",
     "stable-price": "穩定價格",
+    "stop-limit": "Stop Limit",
+    "stop-market": "Stop Market",
     "taker": "吃單者",
     "tick-size": "波動單位",
     "tooltip-borrow-balance": "You'll use your {{balance}} {{token}} balance and borrow {{borrowAmount}} {{token}} to execute this trade. The current {{token}} variable borrow rate is {{rate}}%",
@@ -87,6 +89,7 @@
     "trade-sounds-tooltip": "為每筆新交易播放警報聲音",
     "trades": "交易",
     "tweet-position": "分享至Twitter",
+    "trigger-price": "Trigger Price",
     "unsettled": "未結清",
     "volume-alert": "交易量警報",
     "volume-alert-desc": "交易量超過警報設定時播放聲音"

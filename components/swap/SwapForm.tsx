@@ -48,6 +48,8 @@ import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import Tooltip from '@components/shared/Tooltip'
+import TabUnderline from '@components/shared/TabUnderline'
+import Select from '@components/forms/Select'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -57,9 +59,15 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
 }
 
 const NUMBER_FORMAT_CLASSNAMES =
-  'w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:border-th-fgd-4'
+  'w-full rounded-lg rounded-l-none h-[54px] border-l border-th-bkg-2 bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:outline-none md:hover:border-th-input-border-hover focus-visible:bg-th-bkg-3'
 
 const set = mangoStore.getState().set
+
+export const ORDER_TYPES = [
+  'trade:limit',
+  'trade:stop-market',
+  'trade:stop-limit',
+]
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
@@ -69,6 +77,8 @@ const SwapForm = () => {
   const [showTokenSelect, setShowTokenSelect] = useState<'input' | 'output'>()
   const [showSettings, setShowSettings] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [orderType, setOrderType] = useState(ORDER_TYPES[0])
+  const [activeTab, setActiveTab] = useState('swap')
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
@@ -277,7 +287,7 @@ const SwapForm = () => {
   return (
     <ContentBox
       hidePadding
-      className="relative overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
+      className="relative overflow-hidden border-x-0 bg-th-bkg-1 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
     >
       <div>
         <Transition
@@ -320,7 +330,14 @@ const SwapForm = () => {
         >
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
-        <div className="relative p-6 pt-10">
+        <div className="relative p-6">
+          <div className="mb-6">
+            <TabUnderline
+              activeValue={activeTab}
+              values={['swap', 'trade:limit']}
+              onChange={(v) => setActiveTab(v)}
+            />
+          </div>
           <div className="absolute right-4 top-4">
             <IconButton
               className="text-th-fgd-3"
@@ -330,16 +347,21 @@ const SwapForm = () => {
               <Cog8ToothIcon className="h-5 w-5" />
             </IconButton>
           </div>
-          <div className="mb-2 flex items-end justify-between">
-            <p className="text-th-fgd-2 lg:text-base">{t('swap:pay')}</p>
-            {!isUnownedAccount ? (
-              <MaxSwapAmount
-                useMargin={useMargin}
-                setAmountIn={(v) => setAmountInFormValue(v, true)}
-              />
-            ) : null}
-          </div>
-          <div className="mb-3 grid grid-cols-2" id="swap-step-two">
+          <div
+            className={`grid grid-cols-2 ${
+              activeTab === 'trade:limit' ? 'rounded-t-xl' : 'rounded-xl'
+            } bg-th-bkg-2 p-3`}
+            id="swap-step-two"
+          >
+            <div className="col-span-2 mb-2 flex items-center justify-between">
+              <p className="text-th-fgd-2">{t('sell')}</p>
+              {!isUnownedAccount ? (
+                <MaxSwapAmount
+                  useMargin={useMargin}
+                  setAmountIn={(v) => setAmountInFormValue(v, true)}
+                />
+              ) : null}
+            </div>
             <div className="col-span-1">
               <TokenSelect
                 bank={
@@ -350,7 +372,7 @@ const SwapForm = () => {
                 type="input"
               />
             </div>
-            <div className="col-span-1 flex h-[54px]">
+            <div className="col-span-1">
               <NumberFormat
                 inputMode="decimal"
                 thousandSeparator=","
@@ -367,9 +389,73 @@ const SwapForm = () => {
               />
             </div>
           </div>
-          <div className="-mb-2 flex justify-center">
+          {activeTab === 'trade:limit' ? (
+            <div
+              className={`grid ${
+                orderType === 'trade:stop-limit' ? 'grid-cols-3' : 'grid-cols-2'
+              } gap-2 rounded-b-xl bg-th-bkg-2 p-3 pt-1`}
+              id="swap-step-two"
+            >
+              <div className="col-span-1">
+                <p className="mb-2 text-th-fgd-2">{t('trade:order-type')}</p>
+                <Select
+                  value={t(orderType)}
+                  onChange={(type) => setOrderType(type)}
+                  className="w-full"
+                  buttonClassName="ring-0 rounded-t-lg rounded-b-lg"
+                >
+                  {ORDER_TYPES.map((type) => (
+                    <Select.Option key={type} value={type}>
+                      {t(type)}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </div>
+              <div className="col-span-1">
+                <p className="mb-2 text-th-fgd-2">
+                  {orderType === 'trade:limit'
+                    ? t('trade:limit-price')
+                    : t('trade:trigger-price')}
+                </p>
+                <NumberFormat
+                  inputMode="decimal"
+                  thousandSeparator=","
+                  allowNegative={false}
+                  isNumericString={true}
+                  decimalScale={inputBank?.mintDecimals || 6}
+                  name="amountIn"
+                  id="amountIn"
+                  className="h-10 w-full rounded-lg bg-th-input-bkg p-3 text-right font-mono text-sm text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:bg-th-bkg-3"
+                  placeholder="0.00"
+                  value={amountInFormValue}
+                  onValueChange={handleAmountInChange}
+                  isAllowed={withValueLimit}
+                />
+              </div>
+              {orderType === 'trade:stop-limit' ? (
+                <div className="col-span-1">
+                  <p className="mb-2 text-th-fgd-2">{t('trade:limit-price')}</p>
+                  <NumberFormat
+                    inputMode="decimal"
+                    thousandSeparator=","
+                    allowNegative={false}
+                    isNumericString={true}
+                    decimalScale={inputBank?.mintDecimals || 6}
+                    name="amountIn"
+                    id="amountIn"
+                    className="h-10 w-full rounded-lg bg-th-input-bkg p-3 text-right font-mono text-sm text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:bg-th-bkg-3"
+                    placeholder="0.00"
+                    value={amountInFormValue}
+                    onValueChange={handleAmountInChange}
+                    isAllowed={withValueLimit}
+                  />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          <div className="my-2 flex justify-center">
             <button
-              className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 focus-visible:border-th-fgd-4 md:hover:text-th-active"
+              className="rounded-full border border-th-fgd-4 p-1.5 text-th-fgd-3 focus-visible:border-th-active md:hover:border-th-active md:hover:text-th-active"
               onClick={handleSwitchTokens}
             >
               <ArrowDownIcon
@@ -382,8 +468,11 @@ const SwapForm = () => {
               />
             </button>
           </div>
-          <p className="mb-2 text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
-          <div id="swap-step-three" className="mb-3 grid grid-cols-2">
+          <div
+            id="swap-step-three"
+            className="mb-3 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3"
+          >
+            <p className="col-span-2 mb-2 text-th-fgd-2">{t('buy')}</p>
             <div className="col-span-1">
               <TokenSelect
                 bank={
@@ -394,7 +483,7 @@ const SwapForm = () => {
                 type="output"
               />
             </div>
-            <div className="col-span-1 flex h-[54px]">
+            <div className="col-span-1">
               {loadingSwapDetails ? (
                 <div className="flex w-full items-center justify-center rounded-l-none rounded-r-lg border border-th-input-border bg-th-bkg-2">
                   <Loading />

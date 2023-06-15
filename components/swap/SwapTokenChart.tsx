@@ -390,7 +390,7 @@ const SwapTokenChart = () => {
               )}
             </div>
           </div>
-          <div className="mt-2 h-40 w-auto md:h-72">
+          <div className="mt-2 h-40 w-auto md:h-96">
             <div className="absolute top-[2px] right-0 -mb-2 flex items-center justify-end space-x-4">
               <Tooltip
                 content={

@@ -7,6 +7,7 @@ interface SelectProps {
   onChange: (x: string) => void
   children: ReactNode
   className?: string
+  buttonClassName?: string
   dropdownPanelClassName?: string
   placeholder?: string
   disabled?: boolean
@@ -17,6 +18,7 @@ const Select = ({
   onChange,
   children,
   className,
+  buttonClassName,
   dropdownPanelClassName,
   placeholder = 'Select',
   disabled = false,
@@ -27,7 +29,7 @@ const Select = ({
         {({ open }) => (
           <>
             <Listbox.Button
-              className={`h-full w-full rounded-md bg-th-input-bkg py-2.5 font-normal ring-1 ring-inset ring-th-input-border focus:outline-none focus-visible:ring-th-fgd-4 md:hover:ring-th-input-border-hover`}
+              className={`h-full w-full rounded-md bg-th-input-bkg py-2.5 font-normal ring-1 ring-inset ring-th-input-border focus:outline-none focus-visible:ring-th-fgd-4 md:hover:ring-th-input-border-hover ${buttonClassName}`}
             >
               <div
                 className={`flex items-center justify-between space-x-2 px-3 text-th-fgd-1`}
