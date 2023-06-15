@@ -1,4 +1,4 @@
-import { U64_MAX_BN } from '@blockworks-foundation/mango-v4'
+import { Bank, U64_MAX_BN } from '@blockworks-foundation/mango-v4'
 import {
   PerpMarket,
   PerpOrder,
@@ -269,6 +269,7 @@ const OpenOrders = () => {
                 let tickSize: number
                 let minOrderSize: number
                 let expiryTimestamp: number | undefined
+                let value: number
                 if (o instanceof PerpOrder) {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
                   tickSize = market.tickSize
@@ -277,6 +278,7 @@ const OpenOrders = () => {
                     o.expiryTimestamp === U64_MAX_BN
                       ? 0
                       : o.expiryTimestamp.toNumber()
+                  value = o.size * o.price
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
@@ -284,8 +286,12 @@ const OpenOrders = () => {
                   const serumMarket = group.getSerum3ExternalMarket(
                     market.serumMarketExternal
                   )
+                  const quoteBank = group.getFirstBankByTokenIndex(
+                    market.quoteTokenIndex
+                  )
                   tickSize = serumMarket.tickSize
                   minOrderSize = serumMarket.minOrderSize
+                  value = o.size * o.price * quoteBank.uiPrice
                 }
                 return (
                   <TrBody
@@ -345,7 +351,7 @@ const OpenOrders = () => {
                       </>
                     )}
                     <Td className="w-[16.67%] text-right font-mono">
-                      <FormatNumericValue value={o.size * o.price} isUsd />
+                      <FormatNumericValue value={value} isUsd />
                       {expiryTimestamp ? (
                         <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
                           expiryTimestamp * 1000
@@ -419,6 +425,7 @@ const OpenOrders = () => {
             let market: PerpMarket | Serum3Market
             let tickSize: number
             let minOrderSize: number
+            let quoteBank: Bank | undefined
             if (o instanceof PerpOrder) {
               market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
               tickSize = market.tickSize
@@ -430,6 +437,8 @@ const OpenOrders = () => {
               const serumMarket = group.getSerum3ExternalMarket(
                 market.serumMarketExternal
               )
+
+              quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
               tickSize = serumMarket.tickSize
               minOrderSize = serumMarket.minOrderSize
             }
@@ -479,7 +488,13 @@ const OpenOrders = () => {
                             <FormatNumericValue
                               value={o.price}
                               decimals={getDecimalCount(tickSize)}
-                            />
+                              isUsd={quoteBank?.name === 'USDC'}
+                            />{' '}
+                            {quoteBank && quoteBank.name !== 'USDC' ? (
+                              <span className="font-body text-th-fgd-3">
+                                {quoteBank.name}
+                              </span>
+                            ) : null}
                           </span>
                         </p>
                       </div>
