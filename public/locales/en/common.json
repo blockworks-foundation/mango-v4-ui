@@ -118,6 +118,7 @@
   "quantity": "Quantity",
   "rate": "Rate (APR)",
   "rates": "Rates (APR)",
+  "refresh-data": "Manually refresh data",
   "remove": "Remove",
   "remove-delegate": "Remove Delegate",
   "repay": "Repay",

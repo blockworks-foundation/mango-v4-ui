@@ -20,6 +20,9 @@ import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
 import { useQuery } from '@tanstack/react-query'
 import { MANGO_DATA_OPENBOOK_URL } from 'utils/constants'
 import { TickerData } from 'types'
+import ManualRefresh from '@components/shared/ManualRefresh'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 export const fetchSpotVolume = async () => {
   try {
@@ -53,6 +56,8 @@ const AdvancedMarketHeader = ({
   const previousMarketName = usePrevious(selectedMarketName)
   const [showMarketDetails, setShowMarketDetails] = useState(false)
   const { group } = useMangoGroup()
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
 
   const {
     data: spotVolumeData,
@@ -227,6 +232,10 @@ const AdvancedMarketHeader = ({
             )}
           </div>
           <div className="ml-6 flex items-center space-x-4">
+            <ManualRefresh
+              hideBg={isMobile}
+              size={isMobile ? undefined : 'small'}
+            />
             <LinkButton
               className="flex items-center whitespace-nowrap text-th-fgd-3"
               onClick={() => setShowMarketDetails(true)}
