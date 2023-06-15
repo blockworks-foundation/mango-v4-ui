@@ -15,6 +15,7 @@ import { useMemo } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
+import SoonBadge from '@components/shared/SoonBadge'
 
 const MARKET_LINK_WRAPPER_CLASSES =
   'flex items-center justify-between px-4 md:pl-6 md:pr-4'
@@ -131,10 +132,8 @@ const MarketSelectDropdown = () => {
                         <span className={MARKET_LINK_DISABLED_CLASSES}>
                           <div className="flex items-center">
                             <MarketLogos market={m} />
-                            <span>{m.name}</span>
-                          </div>
-                          <div className="mr-4 flex items-center space-x-1.5 text-xs uppercase">
-                            {t('soon')}&trade;
+                            <span className="mr-2">{m.name}</span>
+                            <SoonBadge />
                           </div>
                         </span>
                       )}
