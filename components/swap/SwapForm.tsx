@@ -86,7 +86,6 @@ const SwapForm = () => {
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { mangoAccount } = useMangoAccount()
-  const { isDelegatedAccount } = useUnownedAccount()
   const { connected, publicKey } = useWallet()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
@@ -441,7 +440,6 @@ const SwapForm = () => {
               amountOut={
                 selectedRoute ? amountOutAsDecimal.toNumber() : undefined
               }
-              isDelegatedAccount={isDelegatedAccount}
             />
           ) : (
             <Button
@@ -524,7 +522,6 @@ const SwapFormSubmitButton = ({
   selectedRoute,
   setShowConfirm,
   useMargin,
-  isDelegatedAccount,
 }: {
   amountIn: Decimal
   amountOut: number | undefined
@@ -533,7 +530,6 @@ const SwapFormSubmitButton = ({
   selectedRoute: RouteInfo | undefined | null
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
-  isDelegatedAccount: boolean
 }) => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
@@ -549,8 +545,7 @@ const SwapFormSubmitButton = ({
     (!amountIn.toNumber() ||
       showInsufficientBalance ||
       !amountOut ||
-      !selectedRoute ||
-      isDelegatedAccount)
+      !selectedRoute)
 
   const onClick = connected ? () => setShowConfirm(true) : handleConnect
 
@@ -562,9 +557,7 @@ const SwapFormSubmitButton = ({
         disabled={disabled}
         size="large"
       >
-        {isDelegatedAccount ? (
-          <div>Swap Unavailable for Delegates</div>
-        ) : connected ? (
+        {connected ? (
           showInsufficientBalance ? (
             <div className="flex items-center">
               <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
