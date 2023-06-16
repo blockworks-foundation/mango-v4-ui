@@ -403,6 +403,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                 </ul>
                 <Label className="mb-2" text={t('market-name')} />
                 <Input
+                  className="max-w-[320px]"
                   hasError={formErrors.marketName !== undefined}
                   type="text"
                   value={advForm.marketName.toString()}
