@@ -7,7 +7,7 @@ import Button from '@components/shared/Button'
 import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 import { Listing, token } from '@metaplex-foundation/js'
 import metaplexStore from '@store/metaplexStore'
-import { useAuctionHouse } from 'hooks/market/useAuctionHouse'
+import { useAuctionHouse, useBids } from 'hooks/market/useAuctionHouse'
 import { ImgWithLoader } from '@components/ImgWithLoader'
 
 type ListingModalProps = {
@@ -17,6 +17,7 @@ type ListingModalProps = {
 const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data: auctionHouse } = useAuctionHouse()
+  const { refetch } = useBids()
 
   const [bidPrice, setBidPrice] = useState('')
 
@@ -27,6 +28,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
       mintAccount: listing.asset.mint.address,
     })
     onClose()
+    refetch()
   }, [auctionHouse, bidPrice, listing.asset.mint.address, metaplex, onClose])
 
   return (
