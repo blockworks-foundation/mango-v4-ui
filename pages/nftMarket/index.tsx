@@ -1,13 +1,18 @@
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import Select from '@components/forms/Select'
 import BidNftModal from '@components/nftMarket/BidNftModal'
+import AssetBidsModal from '@components/nftMarket/AssetBidsModal'
 import MyBidsModal from '@components/nftMarket/MyBidsModal'
 import SellNftModal from '@components/nftMarket/SellNftModal'
 import Button from '@components/shared/Button'
 import { Listing } from '@metaplex-foundation/js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import metaplexStore from '@store/metaplexStore'
-import { useAuctionHouse, useListings } from 'hooks/market/useAuctionHouse'
+import {
+  useAuctionHouse,
+  useBids,
+  useListings,
+} from 'hooks/market/useAuctionHouse'
 import useMetaplex from 'hooks/useMetaplex'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
@@ -40,11 +45,14 @@ const Market: NextPage = () => {
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data: auctionHouse } = useAuctionHouse()
   const { data: listings } = useListings()
+  const { data: bids } = useBids()
 
   const [bidListing, setBidListing] = useState<null | Listing>(null)
+  const [assetBidsListing, setAssetBidsListing] = useState<null | Listing>(null)
   const [currentFilter, setCurrentFilter] = useState(ALL_FILTER)
   const [sellNftModal, setSellNftModal] = useState(false)
   const [myBidsModal, setMyBidsModal] = useState(false)
+  const [asssetBidsModal, setAssetBidsModal] = useState(false)
   const [bidNftModal, setBidNftModal] = useState(false)
 
   const cancelListing = async (listing: Listing) => {
@@ -68,6 +76,14 @@ const Market: NextPage = () => {
   const closeBidModal = () => {
     setBidNftModal(false)
     setBidListing(null)
+  }
+  const openBidsModal = (listing: Listing) => {
+    setAssetBidsModal(true)
+    setAssetBidsListing(listing)
+  }
+  const closeBidsModal = () => {
+    setAssetBidsModal(false)
+    setAssetBidsListing(null)
   }
 
   return (
@@ -99,6 +115,13 @@ const Market: NextPage = () => {
             isOpen={myBidsModal}
             onClose={() => setMyBidsModal(false)}
           ></MyBidsModal>
+        )}
+        {asssetBidsModal && assetBidsListing && (
+          <AssetBidsModal
+            listing={assetBidsListing}
+            isOpen={asssetBidsModal}
+            onClose={closeBidsModal}
+          ></AssetBidsModal>
         )}
       </div>
       <div className="flex p-4">
@@ -132,7 +155,15 @@ const Market: NextPage = () => {
                   <Button onClick={() => cancelListing(x)}>
                     Cancel Listing
                   </Button>
-                  <Button onClick={() => cancelListing(x)}>Bids</Button>
+                  <Button onClick={() => openBidsModal(x)}>
+                    Bids (
+                    {
+                      bids?.filter((bid) =>
+                        bid.metadataAddress.equals(x.asset.metadataAddress)
+                      ).length
+                    }
+                    )
+                  </Button>
                 </>
               )}
             </div>
