@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import {
   fetchAuctionHouse,
   fetchFilteredListing,
+  fetchFilteredBids,
 } from 'apis/market/auctionHouse'
 import metaplexStore from '@store/metaplexStore'
-import { LazyListing } from '@metaplex-foundation/js'
+import { Bid, LazyBid, LazyListing } from '@metaplex-foundation/js'
 
 //10min
 const refetchMs = 600000
@@ -66,6 +67,50 @@ export function useListings() {
 
   return useQuery(['listings', criteria], () => loadMetadatas(lazyListings!), {
     enabled: !!(metaplex && lazyListings),
+    staleTime: refetchMs,
+    retry: 1,
+    refetchInterval: refetchMs,
+  })
+}
+
+export function useBids() {
+  const metaplex = metaplexStore((s) => s.metaplex)
+  const { data } = useAuctionHouse()
+  const criteria = metaplex && data?.address.toBase58()
+
+  return useQuery(
+    ['bids', criteria],
+    () => fetchFilteredBids(metaplex!, data!),
+    {
+      enabled: !!(metaplex && data),
+      staleTime: refetchMs,
+      retry: 1,
+      refetchInterval: refetchMs,
+    }
+  )
+}
+
+export function useLoadBids(lazyBids: LazyBid[]) {
+  const metaplex = metaplexStore((s) => s.metaplex)
+  const criteria = [...lazyBids.map((x) => x.createdAt.toNumber())]
+
+  const loadBids = async (lazyBids: LazyBid[]) => {
+    const bids: Bid[] = []
+    for (const lazyBid of lazyBids) {
+      const bid = await metaplex!.auctionHouse().loadBid({
+        lazyBid: {
+          ...lazyBid,
+        },
+        loadJsonMetadata: true,
+      })
+
+      bids.push({ ...bid })
+    }
+    return bids
+  }
+
+  return useQuery(['loadedBids', criteria], () => loadBids(lazyBids), {
+    enabled: !!(metaplex && lazyBids.length),
     staleTime: refetchMs,
     retry: 1,
     refetchInterval: refetchMs,

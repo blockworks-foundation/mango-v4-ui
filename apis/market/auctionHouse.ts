@@ -1,4 +1,9 @@
-import { AuctionHouse, Metaplex, LazyListing } from '@metaplex-foundation/js'
+import {
+  AuctionHouse,
+  Metaplex,
+  LazyListing,
+  LazyBid,
+} from '@metaplex-foundation/js'
 import { AUCTION_HOUSE_ID } from 'utils/constants'
 
 export const fetchAuctionHouse = async (metaplex: Metaplex) => {
@@ -18,4 +23,16 @@ export const fetchFilteredListing = async (
     })
   ).filter((x) => !x.canceledAt && !x.purchaseReceiptAddress) as LazyListing[]
   return listings
+}
+
+export const fetchFilteredBids = async (
+  metaplex: Metaplex,
+  auctionHouse: AuctionHouse
+) => {
+  const bids = await metaplex.auctionHouse().findBids({
+    auctionHouse,
+  })
+  return bids.filter(
+    (x) => !x.canceledAt && !x.purchaseReceiptAddress
+  ) as LazyBid[]
 }

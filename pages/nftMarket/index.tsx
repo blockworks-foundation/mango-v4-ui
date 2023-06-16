@@ -1,6 +1,7 @@
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import Select from '@components/forms/Select'
 import BidNftModal from '@components/nftMarket/BidNftModal'
+import MyBidsModal from '@components/nftMarket/MyBidsModal'
 import SellNftModal from '@components/nftMarket/SellNftModal'
 import Button from '@components/shared/Button'
 import { Listing } from '@metaplex-foundation/js'
@@ -94,10 +95,10 @@ const Market: NextPage = () => {
           ></SellNftModal>
         )}
         {myBidsModal && (
-          <SellNftModal
+          <MyBidsModal
             isOpen={myBidsModal}
             onClose={() => setMyBidsModal(false)}
-          ></SellNftModal>
+          ></MyBidsModal>
         )}
       </div>
       <div className="flex p-4">
