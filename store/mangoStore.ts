@@ -83,8 +83,9 @@ const ENDPOINTS = [
   },
   {
     name: 'devnet',
-    url: 'https://mango.devnet.rpcpool.com',
-    websocket: 'https://mango.devnet.rpcpool.com',
+    url: 'https://realms-develope-935c.devnet.rpcpool.com/67f608dc-a353-4191-9c34-293a5061b536',
+    websocket:
+      'https://realms-develope-935c.devnet.rpcpool.com/67f608dc-a353-4191-9c34-293a5061b536',
     custom: false,
   },
 ]

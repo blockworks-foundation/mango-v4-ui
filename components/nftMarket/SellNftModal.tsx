@@ -61,7 +61,7 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
       <div className="flex min-h-[264px] flex-col">
         {nfts.length > 0 ? (
           <div className="flex flex-col items-center">
-            <div className="mb-4 grid w-full grid-flow-row grid-cols-4 gap-4">
+            <div className="mb-4 grid max-h-[500px] w-full grid-flow-row grid-cols-4 gap-4 overflow-auto">
               {nfts.map((n) => (
                 <button
                   className={`col-span-1 flex items-center justify-center rounded-md border bg-th-bkg-2 py-3 sm:py-4 md:hover:bg-th-bkg-3 ${
