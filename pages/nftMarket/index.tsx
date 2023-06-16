@@ -11,6 +11,7 @@ import metaplexStore from '@store/metaplexStore'
 import {
   useAuctionHouse,
   useBids,
+  useLazyListings,
   useListings,
 } from 'hooks/market/useAuctionHouse'
 import useMetaplex from 'hooks/useMetaplex'
@@ -44,6 +45,7 @@ const Market: NextPage = () => {
   const wallet = useWallet()
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data: auctionHouse } = useAuctionHouse()
+  const { refetch } = useLazyListings()
   const { data: listings } = useListings()
   const { data: bids } = useBids()
 
@@ -60,6 +62,7 @@ const Market: NextPage = () => {
       auctionHouse: auctionHouse!,
       listing: listing,
     })
+    refetch()
   }
 
   const buyAsset = async (listing: Listing) => {
@@ -67,6 +70,7 @@ const Market: NextPage = () => {
       auctionHouse: auctionHouse!,
       listing,
     })
+    refetch()
   }
 
   const openBidModal = (listing: Listing) => {
