@@ -109,8 +109,8 @@ const TradeSummary = ({
       !quoteBank ||
       !tradeForm.price ||
       !tradeForm.baseSize ||
-      Number.isNaN(tradeForm.price) ||
-      Number.isNaN(tradeForm.baseSize)
+      isNaN(parseFloat(tradeForm.price)) ||
+      isNaN(parseFloat(tradeForm.baseSize))
     )
       return 0
     const basePriceDecimal = new Decimal(tradeForm.price)

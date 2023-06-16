@@ -8,7 +8,7 @@ import { PerpMarket, Bank } from '@blockworks-foundation/mango-v4'
 import { BorshAccountsCoder } from '@coral-xyz/anchor'
 import {
   floorToDecimal,
-  formatCurrencyValue,
+  formatNumericValue,
   getDecimalCount,
 } from 'utils/numbers'
 import dayjs from 'dayjs'
@@ -127,6 +127,8 @@ const OraclePrice = ({
     stalePrice,
   ])
 
+  const oracleDecimals = getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
+
   return (
     <>
       <div id="trade-step-two" className="flex-col whitespace-nowrap md:ml-6">
@@ -180,10 +182,15 @@ const OraclePrice = ({
         </Tooltip>
         <div className="font-mono text-xs text-th-fgd-2">
           {price ? (
-            `${formatCurrencyValue(
-              price,
-              getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
-            )}`
+            <>
+              {quoteBank?.name === 'USDC' ? '$' : ''}
+              {formatNumericValue(price, oracleDecimals)}{' '}
+              {quoteBank?.name !== 'USDC' ? (
+                <span className="font-body text-th-fgd-3">
+                  {quoteBank?.name}
+                </span>
+              ) : null}
+            </>
           ) : (
             <span className="text-th-fgd-4">–</span>
           )}
