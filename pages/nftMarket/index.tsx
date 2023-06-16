@@ -43,6 +43,7 @@ const Market: NextPage = () => {
   const [bidListing, setBidListing] = useState<null | Listing>(null)
   const [currentFilter, setCurrentFilter] = useState(ALL_FILTER)
   const [sellNftModal, setSellNftModal] = useState(false)
+  const [myBidsModal, setMyBidsModal] = useState(false)
   const [bidNftModal, setBidNftModal] = useState(false)
 
   const cancelListing = async (listing: Listing) => {
@@ -72,6 +73,7 @@ const Market: NextPage = () => {
     <div className="flex flex-col">
       <div className="mr-5 flex space-x-4 p-4">
         <Button onClick={() => setSellNftModal(true)}>Sell</Button>
+        <Button onClick={() => setMyBidsModal(true)}>My Bids</Button>
         <Select
           value={currentFilter}
           onChange={(filter) => setCurrentFilter(filter)}
@@ -89,6 +91,12 @@ const Market: NextPage = () => {
           <SellNftModal
             isOpen={sellNftModal}
             onClose={() => setSellNftModal(false)}
+          ></SellNftModal>
+        )}
+        {myBidsModal && (
+          <SellNftModal
+            isOpen={myBidsModal}
+            onClose={() => setMyBidsModal(false)}
           ></SellNftModal>
         )}
       </div>
@@ -119,7 +127,12 @@ const Market: NextPage = () => {
                 </>
               )}
               {wallet.publicKey && x.sellerAddress.equals(wallet.publicKey) && (
-                <Button onClick={() => cancelListing(x)}>Cancel Listing</Button>
+                <>
+                  <Button onClick={() => cancelListing(x)}>
+                    Cancel Listing
+                  </Button>
+                  <Button onClick={() => cancelListing(x)}>Bids</Button>
+                </>
               )}
             </div>
           </div>
