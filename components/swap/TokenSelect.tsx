@@ -31,7 +31,7 @@ const TokenSelect = ({ bank, showTokenList, type }: TokenSelectProps) => {
   return (
     <button
       onClick={() => showTokenList(type)}
-      className="flex h-[54px] w-full items-center rounded-lg rounded-r-none bg-th-input-bkg py-2 px-3 text-th-fgd-2 focus-visible:bg-th-bkg-3 md:hover:cursor-pointer md:hover:bg-th-bkg-1 md:hover:text-th-fgd-1"
+      className="flex h-[56px] w-full items-center rounded-lg rounded-r-none bg-th-input-bkg py-2 px-3 text-th-fgd-2 focus-visible:bg-th-bkg-3 md:hover:cursor-pointer md:hover:bg-th-bkg-1 md:hover:text-th-fgd-1"
     >
       <div className="mr-2.5 flex min-w-[24px] items-center">
         {logoURI ? (

@@ -17,9 +17,12 @@ const SwapSlider = ({
   const { mangoAccount } = useMangoAccount()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
 
-  const handleChange = useCallback((x: string) => {
-    onChange(x)
-  }, [])
+  const handleChange = useCallback(
+    (x: string) => {
+      onChange(x)
+    },
+    [onChange]
+  )
 
   return (
     <>

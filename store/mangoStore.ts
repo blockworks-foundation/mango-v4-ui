@@ -206,6 +206,7 @@ export type MangoStore = {
     swapMode: 'ExactIn' | 'ExactOut'
     amountIn: string
     amountOut: string
+    limitPrice?: string
   }
   set: (x: (x: MangoStore) => void) => void
   tokenStats: {
@@ -361,6 +362,7 @@ const mangoStore = create<MangoStore>()(
         swapMode: 'ExactIn',
         amountIn: '',
         amountOut: '',
+        limitPrice: '',
       },
       tokenStats: {
         initialLoad: false,
