@@ -45,14 +45,12 @@ const PercentageSelectButtons = ({
   }
 
   return (
-    <div className="col-span-2 mt-2">
-      <ButtonGroup
-        activeValue={sizePercentage}
-        onChange={(p) => handleSizePercentage(p)}
-        values={['10', '25', '50', '75', '100']}
-        unit="%"
-      />
-    </div>
+    <ButtonGroup
+      activeValue={sizePercentage}
+      onChange={(p) => handleSizePercentage(p)}
+      values={['10', '25', '50', '75', '100']}
+      unit="%"
+    />
   )
 }
 

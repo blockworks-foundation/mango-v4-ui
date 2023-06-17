@@ -111,7 +111,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountInFormValue(e.value)
-      if (limitPrice && outputBank) {
+      if (parseFloat(e.value) > 0 && limitPrice && outputBank) {
         const amount = floorToDecimal(
           parseFloat(e.value) / parseFloat(limitPrice),
           outputBank.mintDecimals
@@ -122,7 +122,22 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     [limitPrice, outputBank, setAmountInFormValue, setAmountOutFormValue]
   )
 
-  const handleAmountIn = useCallback(
+  const handleAmountOutChange = useCallback(
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
+      setAmountOutFormValue(e.value)
+      if (parseFloat(e.value) > 0 && limitPrice && inputBank) {
+        const amount = floorToDecimal(
+          parseFloat(e.value) * parseFloat(limitPrice),
+          inputBank.mintDecimals
+        )
+        setAmountInFormValue(amount.toString())
+      }
+    },
+    [inputBank, limitPrice, setAmountInFormValue, setAmountOutFormValue]
+  )
+
+  const handleAmountInUi = useCallback(
     (amountIn: string) => {
       setAmountInFormValue(amountIn)
       if (limitPrice && outputBank) {
@@ -140,8 +155,19 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setLimitPrice(e.value)
+      if (
+        parseFloat(e.value) > 0 &&
+        parseFloat(amountInFormValue) > 0 &&
+        outputBank
+      ) {
+        const amount = floorToDecimal(
+          parseFloat(amountInFormValue) / parseFloat(e.value),
+          outputBank.mintDecimals
+        )
+        setAmountOutFormValue(amount.toString())
+      }
     },
-    [setLimitPrice]
+    [amountInFormValue, outputBank, setLimitPrice]
   )
 
   const handleTriggerPrice = useCallback(
@@ -150,21 +176,6 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       setTriggerPrice(e.value)
     },
     [setTriggerPrice]
-  )
-
-  const handleAmountOutChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
-      if (info.source !== 'event') return
-      setAmountOutFormValue(e.value)
-      if (limitPrice && inputBank) {
-        const amount = floorToDecimal(
-          parseFloat(e.value) * parseFloat(limitPrice),
-          inputBank.mintDecimals
-        )
-        setAmountInFormValue(amount.toString())
-      }
-    },
-    [inputBank, limitPrice, setAmountInFormValue, setAmountOutFormValue]
   )
 
   const handleSwitchTokens = useCallback(() => {
@@ -193,7 +204,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
           {!isUnownedAccount ? (
             <MaxSwapAmount
               useMargin={useMargin}
-              setAmountIn={(v) => handleAmountIn(v)}
+              setAmountIn={(v) => handleAmountInUi(v)}
             />
           ) : null}
         </div>
@@ -222,11 +233,11 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
             isAllowed={withValueLimit}
           />
           <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
-            {inputBank
+            {parseFloat(amountInFormValue) && inputBank
               ? formatCurrencyValue(
                   inputBank.uiPrice * Number(amountInFormValue)
                 )
-              : '–'}
+              : '$0.00'}
           </span>
         </div>
       </div>
@@ -307,7 +318,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       </div>
       <div
         id="swap-step-three"
-        className="mb-3 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3"
+        className="mb-2 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3"
       >
         <p className="col-span-2 mb-2 text-th-fgd-2">{t('buy')}</p>
         <div className="col-span-1">
@@ -334,9 +345,11 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
             onValueChange={handleAmountOutChange}
           />
           <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
-            {formatCurrencyValue(
-              Number(limitPrice) * Number(amountOutFormValue)
-            )}
+            {parseFloat(limitPrice!) && parseFloat(amountOutFormValue)
+              ? formatCurrencyValue(
+                  Number(limitPrice) * Number(amountOutFormValue)
+                )
+              : '$0.00'}
           </span>
         </div>
       </div>
@@ -344,13 +357,13 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
         <SwapSlider
           useMargin={useMargin}
           amount={amountInAsDecimal.toNumber()}
-          onChange={(v) => handleAmountIn(v)}
+          onChange={(v) => handleAmountInUi(v)}
           step={1 / 10 ** (inputBank?.mintDecimals || 6)}
         />
       ) : (
         <PercentageSelectButtons
           amountIn={amountInAsDecimal.toString()}
-          setAmountIn={(v) => handleAmountIn(v)}
+          setAmountIn={(v) => handleAmountInUi(v)}
           useMargin={useMargin}
         />
       )}

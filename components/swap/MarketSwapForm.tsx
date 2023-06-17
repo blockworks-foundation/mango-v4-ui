@@ -261,7 +261,7 @@ const MarketSwapForm = ({
       </div>
       <div
         id="swap-step-three"
-        className="mb-3 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3"
+        className="mb-2 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3"
       >
         <p className="col-span-2 mb-2 text-th-fgd-2">{t('buy')}</p>
         <div className="col-span-1">
