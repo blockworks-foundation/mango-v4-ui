@@ -46,7 +46,7 @@ const MarketSelectDropdown = () => {
           '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
       )
       .sort((a, b) =>
-        a.oracleLastUpdatedSlot != 0 ? -1 : a.name.localeCompare(b.name)
+        a.oracleLastUpdatedSlot == 0 ? -1 : a.name.localeCompare(b.name)
       )
   }, [allPerpMarkets])
 
