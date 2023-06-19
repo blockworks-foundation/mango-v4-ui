@@ -221,8 +221,15 @@ const Dashboard: NextPage = () => {
                                 ]
                             )
                           : []
+                      const suggestedFields: Partial<
+                        typeof suggestedFormattedPreset
+                      > = invalidKeys.reduce((obj, key) => {
+                        return {
+                          ...obj,
+                          [key]: suggestedFormattedPreset[key],
+                        }
+                      }, {})
 
-                      console.log(invalidKeys)
                       return (
                         <Disclosure key={bank.publicKey.toString()}>
                           {({ open }) => (
@@ -328,10 +335,18 @@ const Dashboard: NextPage = () => {
                                 <KeyValuePair
                                   label="Loan Fee Rate"
                                   value={`${formattedBankValues.loanFeeRate} bps`}
+                                  proposedValue={
+                                    suggestedFields.loanFeeRate &&
+                                    `${suggestedFields.loanFeeRate} bps`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Loan origination fee rate"
                                   value={`${formattedBankValues.loanOriginationFeeRate} bps`}
+                                  proposedValue={
+                                    suggestedFields.loanOriginationFeeRate &&
+                                    `${suggestedFields.loanOriginationFeeRate} bps`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Collected fees native"
@@ -357,19 +372,51 @@ const Dashboard: NextPage = () => {
                                   label="Maint Asset/Liab Weight"
                                   value={`${formattedBankValues.maintAssetWeight}/
                               ${formattedBankValues.maintLiabWeight}`}
+                                  proposedValue={
+                                    (suggestedFields.maintAssetWeight ||
+                                      suggestedFields.maintLiabWeight) &&
+                                    `${
+                                      suggestedFields.maintAssetWeight ||
+                                      formattedBankValues.maintAssetWeight
+                                    }/
+                              ${
+                                suggestedFields.maintLiabWeight ||
+                                formattedBankValues.maintLiabWeight
+                              }`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Init Asset/Liab Weight"
                                   value={`${formattedBankValues.initAssetWeight}/
                               ${formattedBankValues.initLiabWeight}`}
+                                  proposedValue={
+                                    (suggestedFields.initAssetWeight ||
+                                      suggestedFields.initLiabWeight) &&
+                                    `${
+                                      suggestedFields.initAssetWeight ||
+                                      formattedBankValues.initAssetWeight
+                                    }/
+                              ${
+                                suggestedFields.initLiabWeight ||
+                                formattedBankValues.initLiabWeight
+                              }`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Deposit weight scale start quote"
                                   value={`$${formattedBankValues.depositWeightScale}`}
+                                  proposedValue={
+                                    suggestedFields.depositWeightScale &&
+                                    `$${suggestedFields.depositWeightScale}`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Borrow weight scale start quote"
                                   value={`$${formattedBankValues.borrowWeightScale}`}
+                                  proposedValue={
+                                    suggestedFields.borrowWeightScale &&
+                                    `$${suggestedFields.borrowWeightScale}`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Rate params"
@@ -380,10 +427,42 @@ const Dashboard: NextPage = () => {
                                       {`${formattedBankValues.maxRate}% @ 100% util`}
                                     </span>
                                   }
+                                  proposedValue={
+                                    (suggestedFields.rate0 ||
+                                      suggestedFields.rate1 ||
+                                      suggestedFields.util0 ||
+                                      suggestedFields.util1 ||
+                                      suggestedFields.maxRate) && (
+                                      <span className="text-right">
+                                        {`${
+                                          suggestedFields.rate0 ||
+                                          formattedBankValues.rate0
+                                        }% @ ${
+                                          suggestedFields.util0 ||
+                                          formattedBankValues.util0
+                                        }% util, `}
+                                        {`${
+                                          suggestedFields.rate1 ||
+                                          formattedBankValues.rate1
+                                        }% @ ${
+                                          suggestedFields.util1 ||
+                                          formattedBankValues.util1
+                                        }% util, `}
+                                        {`${
+                                          suggestedFields.maxRate ||
+                                          formattedBankValues.maxRate
+                                        }% @ 100% util`}
+                                      </span>
+                                    )
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Adjustment factor"
                                   value={`${formattedBankValues.adjustmentFactor}%`}
+                                  proposedValue={
+                                    suggestedFields.adjustmentFactor &&
+                                    `${suggestedFields.adjustmentFactor}%`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Deposit rate"
@@ -404,10 +483,18 @@ const Dashboard: NextPage = () => {
                                 <KeyValuePair
                                   label="Oracle: Conf Filter"
                                   value={`${formattedBankValues.oracleConfFilter}%`}
+                                  proposedValue={
+                                    suggestedFields.oracleConfFilter &&
+                                    `${suggestedFields.oracleConfFilter}%`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Oracle: Max Staleness"
                                   value={`${bank.oracleConfig.maxStalenessSlots} slots`}
+                                  proposedValue={
+                                    suggestedFields.maxStalenessSlots &&
+                                    `${suggestedFields.maxStalenessSlots} slots`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Group Insurance Fund"
@@ -416,21 +503,40 @@ const Dashboard: NextPage = () => {
                                 <KeyValuePair
                                   label="Min vault to deposits ratio"
                                   value={`${formattedBankValues.minVaultToDepositsRatio}%`}
+                                  proposedValue={
+                                    suggestedFields.minVaultToDepositsRatio &&
+                                    `${suggestedFields.minVaultToDepositsRatio}%`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Net borrows in window / Net borrow limit per window quote"
                                   value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
+                                  proposedValue={
+                                    (suggestedFields.minVaultToDepositsRatio ||
+                                      suggestedFields.netBorrowLimitPerWindowQuote) &&
+                                    `$${
+                                      suggestedFields.minVaultToDepositsRatio ||
+                                      formattedBankValues.minVaultToDepositsRatio
+                                    } / $${
+                                      suggestedFields.netBorrowLimitPerWindowQuote ||
+                                      formattedBankValues.netBorrowLimitPerWindowQuote
+                                    }`
+                                  }
                                 />
                                 <KeyValuePair
                                   label="Liquidation fee"
                                   value={`${formattedBankValues.liquidationFee}%`}
+                                  proposedValue={
+                                    suggestedFields.liquidationFee &&
+                                    `${suggestedFields.liquidationFee}%`
+                                  }
                                 />
                                 <div className="flex items-center p-4">
                                   <div className="mr-auto">
                                     Green values are params that needs to change
                                     suggested by current liquidity
                                   </div>
-                                  <Button>Propose new values</Button>
+                                  <Button>Propose suggested values</Button>
                                 </div>
                               </Disclosure.Panel>
                             </>
@@ -739,14 +845,33 @@ const Dashboard: NextPage = () => {
 const KeyValuePair = ({
   label,
   value,
+  proposedValue,
 }: {
   label: string
   value: number | ReactNode | string
+  proposedValue?: number | ReactNode | string
 }) => {
   return (
-    <div className="flex justify-between border-t border-th-bkg-2 px-6 py-3">
-      <span className="mr-4 whitespace-nowrap text-th-fgd-3">{label}</span>
-      <span className="font-mono text-th-fgd-2">{value}</span>
+    <div className="flex items-center justify-between border-t border-th-bkg-2 px-6 py-3">
+      <span className="mr-4 flex flex-col whitespace-nowrap text-th-fgd-3">
+        {label}
+      </span>
+      <span className="flex flex-col font-mono text-th-fgd-2">
+        <div>
+          {proposedValue && <span>Current: </span>}
+          <span className={`${proposedValue ? 'text-th-warning' : ''}`}>
+            {value}
+          </span>
+        </div>
+        <div>
+          {proposedValue && <span>Suggested: </span>}
+          <span>
+            {proposedValue && (
+              <span className="text-th-success">{proposedValue}</span>
+            )}
+          </span>
+        </div>
+      </span>
     </div>
   )
 }
