@@ -13,12 +13,49 @@ import {
 } from '@heroicons/react/20/solid'
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import Particles from 'react-tsparticles'
 import { ModalProps } from 'types/modal'
 import Leaderboards from './Leaderboards'
+import { useQuery } from '@tanstack/react-query'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { MANGO_DATA_API_URL } from 'utils/constants'
+import { formatNumericValue } from 'utils/numbers'
+import SheenLoader from '@components/shared/SheenLoader'
+import { abbreviateAddress } from 'utils/formatting'
+import { PublicKey } from '@solana/web3.js'
 
-export const tiers = ['Seed', 'Mango', 'Whale', 'Bot']
+export type RewardsLeaderboardItem = {
+  points: number
+  tier: string
+  wallet_pk: string
+}
+
+export const tiers = ['seed', 'mango', 'whale', 'bot']
+
+const fetchRewardsPoints = async (walletPk: string | undefined) => {
+  try {
+    const data = await fetch(
+      `${MANGO_DATA_API_URL}/user-data/campaign-total-points-wallet?wallet-pk=${walletPk}`
+    )
+    const res = await data.json()
+    return res
+  } catch (e) {
+    console.log('Failed to fetch points', e)
+  }
+}
+
+export const fetchLeaderboard = async (tier: string | undefined) => {
+  try {
+    const data = await fetch(
+      `${MANGO_DATA_API_URL}/user-data/campaign-leaderboard?tier=${tier}`
+    )
+    const res = await data.json()
+    return res
+  } catch (e) {
+    console.log('Failed to top accounts leaderboard', e)
+  }
+}
 
 const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
@@ -26,6 +63,7 @@ const RewardsPage = () => {
   const [showHowItWorks, setShowHowItWorks] = useState(false)
   const [isWhitelisted, setIsWhitelisted] = useState(false)
   const [showLeaderboards, setShowLeaderboards] = useState('')
+
   return !showLeaderboards ? (
     <>
       <div className="bg-[url('/images/rewards/madlad-tile.png')]">
@@ -105,7 +143,52 @@ const Season = ({
 }: {
   showLeaderboard: (x: string) => void
 }) => {
-  const [topAccountsTier, setTopAccountsTier] = useState('Seed')
+  const { wallet } = useWallet()
+  const [topAccountsTier, setTopAccountsTier] = useState('seed')
+
+  const {
+    data: walletRewardsData,
+    isFetching: fetchingWalletRewardsData,
+    isLoading: loadingWalletRewardsData,
+  } = useQuery(
+    ['rewards-points', wallet?.adapter.publicKey],
+    () => fetchRewardsPoints(wallet?.adapter.publicKey?.toString()),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!wallet?.adapter,
+    }
+  )
+
+  const {
+    data: topAccountsLeaderboardData,
+    isFetching: fetchingTopAccountsLeaderboardData,
+    isLoading: loadingTopAccountsLeaderboardData,
+  } = useQuery(
+    ['top-accounts-leaderboard-data', topAccountsTier],
+    () => fetchLeaderboard(topAccountsTier),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+    }
+  )
+
+  useEffect(() => {
+    if (walletRewardsData?.tier) {
+      setTopAccountsTier(walletRewardsData.tier)
+    }
+  }, [walletRewardsData])
+
+  const isLoadingWalletData =
+    fetchingWalletRewardsData || loadingWalletRewardsData
+
+  const isLoadingLeaderboardData =
+    fetchingTopAccountsLeaderboardData || loadingTopAccountsLeaderboardData
+
   return (
     <>
       <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
@@ -121,28 +204,31 @@ const Season = ({
           <div className="mb-6 space-y-2">
             <RewardsTierCard
               icon={<AcornIcon className="h-8 w-8 text-th-fgd-2" />}
-              name="Seed"
+              name="seed"
               desc="All new participants start here"
               showLeaderboard={showLeaderboard}
-              status="Qualified"
+              status={walletRewardsData?.tier === 'seed' ? 'Qualified' : ''}
             />
             <RewardsTierCard
               icon={<MangoIcon className="h-8 w-8 text-th-fgd-2" />}
-              name="Mango"
+              name="mango"
               desc="Average swap/trade value less than $1,000"
               showLeaderboard={showLeaderboard}
+              status={walletRewardsData?.tier === 'mango' ? 'Qualified' : ''}
             />
             <RewardsTierCard
               icon={<WhaleIcon className="h-8 w-8 text-th-fgd-2" />}
-              name="Whale"
+              name="whale"
               desc="Average swap/trade value greater than $1,000"
               showLeaderboard={showLeaderboard}
+              status={walletRewardsData?.tier === 'whale' ? 'Qualified' : ''}
             />
             <RewardsTierCard
               icon={<RobotIcon className="h-8 w-8 text-th-fgd-2" />}
-              name="Bot"
+              name="bot"
               desc="All bots"
               showLeaderboard={showLeaderboard}
+              status={walletRewardsData?.tier === 'bot' ? 'Qualified' : ''}
             />
           </div>
           <h2 className="mb-4">FAQs</h2>
@@ -173,13 +259,41 @@ const Season = ({
         <div className="col-span-12 lg:col-span-4">
           <div className="mb-2 rounded-lg border border-th-bkg-3 p-4">
             <h2 className="mb-4">Your Points</h2>
-            <div className="mb-4 rounded-md bg-th-bkg-2 p-3">
-              <span className="font-display text-3xl text-th-fgd-1">0</span>
+            <div className="mb-4 flex h-14 items-center rounded-md bg-th-bkg-2 px-3">
+              <span className="font-display text-3xl text-th-fgd-1">
+                {!isLoadingWalletData ? (
+                  walletRewardsData?.points ? (
+                    formatNumericValue(walletRewardsData.points)
+                  ) : wallet?.adapter.publicKey ? (
+                    0
+                  ) : (
+                    '–'
+                  )
+                ) : (
+                  <SheenLoader>
+                    <div className="h-8 w-32 rounded-md bg-th-bkg-3" />
+                  </SheenLoader>
+                )}
+              </span>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <p>Points Earned</p>
-                <p className="font-mono text-th-fgd-2">0</p>
+                <p className="font-mono text-th-fgd-2">
+                  {!isLoadingWalletData ? (
+                    walletRewardsData?.points ? (
+                      formatNumericValue(walletRewardsData.points)
+                    ) : wallet?.adapter.publicKey ? (
+                      0
+                    ) : (
+                      '–'
+                    )
+                  ) : (
+                    <SheenLoader>
+                      <div className="h-4 w-12 rounded-sm bg-th-bkg-3" />
+                    </SheenLoader>
+                  )}
+                </p>
               </div>
               <div className="flex justify-between">
                 <p>Streak Bonus</p>
@@ -187,7 +301,21 @@ const Season = ({
               </div>
               <div className="flex justify-between">
                 <p>Rewards Tier</p>
-                <p className="text-th-fgd-2">Seed</p>
+                <p className="text-th-fgd-2">
+                  {!isLoadingWalletData ? (
+                    walletRewardsData?.tier ? (
+                      <span className="capitalize">
+                        {walletRewardsData.tier}
+                      </span>
+                    ) : (
+                      '–'
+                    )
+                  ) : (
+                    <SheenLoader>
+                      <div className="h-4 w-12 rounded-sm bg-th-bkg-3" />
+                    </SheenLoader>
+                  )}
+                </p>
               </div>
               <div className="flex justify-between">
                 <p>Rank</p>
@@ -212,43 +340,45 @@ const Season = ({
               </Select>
             </div>
             <div className="border-b border-th-bkg-3">
-              <div className="flex items-center justify-between border-t border-th-bkg-3 p-3">
-                <div className="flex items-center space-x-2 font-mono">
-                  <span>1.</span>
-                  <span className="text-th-fgd-3">1a3F...eAu3</span>
+              {!isLoadingLeaderboardData ? (
+                topAccountsLeaderboardData &&
+                topAccountsLeaderboardData.length ? (
+                  topAccountsLeaderboardData
+                    .slice(0, 5)
+                    .map((wallet: RewardsLeaderboardItem, i: number) => (
+                      <div
+                        className="flex items-center justify-between border-t border-th-bkg-3 p-3"
+                        key={i + wallet.wallet_pk}
+                      >
+                        <div className="flex items-center space-x-2 font-mono">
+                          <span>{i + 1}.</span>
+                          <span className="text-th-fgd-3">
+                            {abbreviateAddress(new PublicKey(wallet.wallet_pk))}
+                          </span>
+                        </div>
+                        <span className="font-mono text-th-fgd-1">
+                          {formatNumericValue(wallet.points, 0)}
+                        </span>
+                      </div>
+                    ))
+                ) : (
+                  <span>Leaderboard not available</span>
+                )
+              ) : (
+                <div className="space-y-0.5">
+                  {[...Array(5)].map((x, i) => (
+                    <SheenLoader className="flex flex-1" key={i}>
+                      <div className="h-10 w-full bg-th-bkg-2" />
+                    </SheenLoader>
+                  ))}
                 </div>
-                <span className="font-mono text-th-fgd-1">0</span>
-              </div>
-              <div className="flex items-center justify-between border-t border-th-bkg-3 p-3">
-                <div className="flex items-center space-x-2 font-mono">
-                  <span>2.</span>
-                  <span className="text-th-fgd-3">1a3F...eAu3</span>
-                </div>
-                <span className="font-mono text-th-fgd-1">0</span>
-              </div>
-              <div className="flex items-center justify-between border-t border-th-bkg-3 p-3">
-                <div className="flex items-center space-x-2 font-mono">
-                  <span>3.</span>
-                  <span className="text-th-fgd-3">1a3F...eAu3</span>
-                </div>
-                <span className="font-mono text-th-fgd-1">0</span>
-              </div>
-              <div className="flex items-center justify-between border-t border-th-bkg-3 p-3">
-                <div className="flex items-center space-x-2 font-mono">
-                  <span>4.</span>
-                  <span className="text-th-fgd-3">1a3F...eAu3</span>
-                </div>
-                <span className="font-mono text-th-fgd-1">0</span>
-              </div>
-              <div className="flex items-center justify-between border-t border-th-bkg-3 p-3">
-                <div className="flex items-center space-x-2 font-mono">
-                  <span>5.</span>
-                  <span className="text-th-fgd-3">1a3F...eAu3</span>
-                </div>
-                <span className="font-mono text-th-fgd-1">0</span>
-              </div>
+              )}
             </div>
-            <Button className="mt-6 w-full" secondary>
+            <Button
+              className="mt-6 w-full"
+              onClick={() => showLeaderboard(topAccountsTier)}
+              secondary
+            >
               Full Leaderboard
             </Button>
           </div>

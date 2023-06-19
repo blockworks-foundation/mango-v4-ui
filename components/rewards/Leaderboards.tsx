@@ -3,7 +3,12 @@ import ProfileImage from '@components/profile/ProfileImage'
 import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
-import { Badge, tiers } from './RewardsPage'
+import {
+  Badge,
+  RewardsLeaderboardItem,
+  fetchLeaderboard,
+  tiers,
+} from './RewardsPage'
 import { useState } from 'react'
 import Select from '@components/forms/Select'
 import { IconButton } from '@components/shared/Button'
@@ -11,6 +16,11 @@ import AcornIcon from '@components/icons/AcornIcon'
 import WhaleIcon from '@components/icons/WhaleIcon'
 import RobotIcon from '@components/icons/RobotIcon'
 import MangoIcon from '@components/icons/MangoIcon'
+import { useQuery } from '@tanstack/react-query'
+import SheenLoader from '@components/shared/SheenLoader'
+import { abbreviateAddress } from 'utils/formatting'
+import { PublicKey } from '@solana/web3.js'
+import { formatNumericValue } from 'utils/numbers'
 
 const Leaderboards = ({
   goBack,
@@ -21,14 +31,33 @@ const Leaderboards = ({
 }) => {
   const [topAccountsTier, setTopAccountsTier] = useState<string>(leaderboard)
   const renderTierIcon = (tier: string) => {
-    if (tier === 'Bot') {
+    if (tier === 'bot') {
       return <RobotIcon className="mr-2 h-5 w-5" />
-    } else if (tier === 'Mango') {
+    } else if (tier === 'mango') {
       return <MangoIcon className="mr-2 h-5 w-5" />
-    } else if (tier === 'Whale') {
+    } else if (tier === 'whale') {
       return <WhaleIcon className="mr-2 h-5 w-5" />
     } else return <AcornIcon className="mr-2 h-5 w-5" />
   }
+
+  const {
+    data: rewardsLeaderboardData,
+    isFetching: fetchingRewardsLeaderboardData,
+    isLoading: loadingRewardsLeaderboardData,
+  } = useQuery(
+    ['rewards-leaderboard-data', topAccountsTier],
+    () => fetchLeaderboard(topAccountsTier),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+    }
+  )
+
+  const isLoading =
+    fetchingRewardsLeaderboardData || loadingRewardsLeaderboardData
+
   return (
     <div className="mx-auto max-w-[1140px] flex-col items-center p-8 lg:p-10">
       <div className="mb-4 flex items-center justify-between">
@@ -60,9 +89,25 @@ const Leaderboards = ({
         </Select>
       </div>
       <div className="space-y-2">
-        {[...Array(5)].map((x, i) => (
-          <LeaderboardCard rank={i + 1} key={i} />
-        ))}
+        {!isLoading ? (
+          rewardsLeaderboardData && rewardsLeaderboardData.length ? (
+            rewardsLeaderboardData.map(
+              (wallet: RewardsLeaderboardItem, i: number) => (
+                <LeaderboardCard rank={i + 1} key={i} wallet={wallet} />
+              )
+            )
+          ) : (
+            <span>Leaderboard not available</span>
+          )
+        ) : (
+          <div className="space-y-2">
+            {[...Array(20)].map((x, i) => (
+              <SheenLoader className="flex flex-1" key={i}>
+                <div className="h-16 w-full bg-th-bkg-2" />
+              </SheenLoader>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -70,7 +115,13 @@ const Leaderboards = ({
 
 export default Leaderboards
 
-const LeaderboardCard = ({ rank }: { rank: number }) => {
+const LeaderboardCard = ({
+  rank,
+  wallet,
+}: {
+  rank: number
+  wallet: RewardsLeaderboardItem
+}) => {
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
   return (
@@ -102,15 +153,17 @@ const LeaderboardCard = ({ rank }: { rank: number }) => {
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">
-            {'Bb5tu'.slice(0, 4) + '...' + 'Jkt8u'.slice(-4)}
+            {abbreviateAddress(new PublicKey(wallet.wallet_pk))}
           </p>
-          <p className="text-xs text-th-fgd-4">
+          {/* <p className="text-xs text-th-fgd-4">
             Acc: {'A1at5'.slice(0, 4) + '...' + 'tt45eU'.slice(-4)}
-          </p>
+          </p> */}
         </div>
       </div>
       <div className="flex items-center">
-        <span className="mr-3 text-right font-mono md:text-base">{'100'}</span>
+        <span className="mr-3 text-right font-mono md:text-base">
+          {formatNumericValue(wallet.points)}
+        </span>
         <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
       </div>
     </a>
