@@ -21,6 +21,7 @@ import SheenLoader from '@components/shared/SheenLoader'
 import { abbreviateAddress } from 'utils/formatting'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
+import { useTranslation } from 'next-i18next'
 
 const Leaderboards = ({
   goBack,
@@ -29,6 +30,7 @@ const Leaderboards = ({
   goBack: () => void
   leaderboard: string
 }) => {
+  const { t } = useTranslation('rewards')
   const [topAccountsTier, setTopAccountsTier] = useState<string>(leaderboard)
   const renderTierIcon = (tier: string) => {
     if (tier === 'bot') {
@@ -75,14 +77,14 @@ const Leaderboards = ({
         <Select
           className="w-32"
           icon={renderTierIcon(topAccountsTier)}
-          value={topAccountsTier}
+          value={t(topAccountsTier)}
           onChange={(tier) => setTopAccountsTier(tier)}
         >
           {tiers.map((tier) => (
             <Select.Option key={tier} value={tier}>
               <div className="flex w-full items-center">
                 {renderTierIcon(tier)}
-                {tier}
+                {t(tier)}
               </div>
             </Select.Option>
           ))}
@@ -97,7 +99,9 @@ const Leaderboards = ({
               )
             )
           ) : (
-            <span>Leaderboard not available</span>
+            <div className="flex justify-center rounded-lg border border-th-bkg-3 p-8">
+              <span className="text-th-fgd-3">Leaderboard not available</span>
+            </div>
           )
         ) : (
           <div className="space-y-2">

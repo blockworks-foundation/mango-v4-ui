@@ -24,6 +24,7 @@ import { formatNumericValue } from 'utils/numbers'
 import SheenLoader from '@components/shared/SheenLoader'
 import { abbreviateAddress } from 'utils/formatting'
 import { PublicKey } from '@solana/web3.js'
+import { useTranslation } from 'next-i18next'
 
 export type RewardsLeaderboardItem = {
   points: number
@@ -143,6 +144,7 @@ const Season = ({
 }: {
   showLeaderboard: (x: string) => void
 }) => {
+  const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
   const [topAccountsTier, setTopAccountsTier] = useState('seed')
 
@@ -259,15 +261,17 @@ const Season = ({
         <div className="col-span-12 lg:col-span-4">
           <div className="mb-2 rounded-lg border border-th-bkg-3 p-4">
             <h2 className="mb-4">Your Points</h2>
-            <div className="mb-4 flex h-14 items-center rounded-md bg-th-bkg-2 px-3">
-              <span className="font-display text-3xl text-th-fgd-1">
+            <div className="mb-4 flex h-14 w-full items-center rounded-md bg-th-bkg-2 px-3">
+              <span className="w-full font-display text-3xl text-th-fgd-1">
                 {!isLoadingWalletData ? (
                   walletRewardsData?.points ? (
                     formatNumericValue(walletRewardsData.points)
                   ) : wallet?.adapter.publicKey ? (
                     0
                   ) : (
-                    '–'
+                    <span className="flex items-center justify-center text-center font-body text-sm text-th-fgd-3">
+                      {t('connect-wallet')}
+                    </span>
                   )
                 ) : (
                   <SheenLoader>
@@ -327,13 +331,13 @@ const Season = ({
             <div className="mb-4 flex items-center justify-between">
               <h2 className="">Top Accounts</h2>
               <Select
-                value={topAccountsTier}
+                value={t(`rewards:${topAccountsTier}`)}
                 onChange={(tier) => setTopAccountsTier(tier)}
               >
                 {tiers.map((tier) => (
                   <Select.Option key={tier} value={tier}>
                     <div className="flex w-full items-center justify-between">
-                      {tier}
+                      {t(`rewards:${tier}`)}
                     </div>
                   </Select.Option>
                 ))}
@@ -362,7 +366,11 @@ const Season = ({
                       </div>
                     ))
                 ) : (
-                  <span>Leaderboard not available</span>
+                  <div className="flex justify-center border-t border-th-bkg-3 py-4">
+                    <span className="text-th-fgd-3">
+                      Leaderboard not available
+                    </span>
+                  </div>
                 )
               ) : (
                 <div className="space-y-0.5">
@@ -486,6 +494,7 @@ const RewardsTierCard = ({
   showLeaderboard: (x: string) => void
   status?: string
 }) => {
+  const { t } = useTranslation('rewards')
   return (
     <button
       className="w-full rounded-lg border border-th-bkg-3 p-4 text-left focus:outline-none md:hover:border-th-fgd-4"
@@ -497,7 +506,7 @@ const RewardsTierCard = ({
             {icon}
           </div>
           <div>
-            <h3>{name}</h3>
+            <h3>{t(name)}</h3>
             <p>{desc}</p>
           </div>
         </div>
