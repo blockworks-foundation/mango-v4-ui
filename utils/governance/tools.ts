@@ -139,3 +139,21 @@ export async function resolveProposalDescription(descriptionLink: string) {
     return descriptionLink
   }
 }
+
+export const compareObjectsAndGetDifferentKeys = <T extends object>(
+  object1: T,
+  object2: T
+): (keyof T)[] => {
+  const diffKeys: string[] = []
+
+  Object.keys(object1).forEach((key) => {
+    if (
+      object1[key as keyof typeof object1] !==
+      object2[key as keyof typeof object2]
+    ) {
+      diffKeys.push(key)
+    }
+  })
+
+  return diffKeys as (keyof T)[]
+}

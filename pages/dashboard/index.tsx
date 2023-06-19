@@ -26,9 +26,9 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import {
   LISTING_PRESETS,
-  compareObjectsAndGetDifferentKeys,
   formatSuggestedValues,
 } from 'utils/governance/listingTools'
+import { compareObjectsAndGetDifferentKeys } from 'utils/governance/tools'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {

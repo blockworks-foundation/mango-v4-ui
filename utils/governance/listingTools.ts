@@ -389,23 +389,6 @@ export const coinTiersToNames: {
   UNTRUSTED: 'Untrusted',
 }
 
-export const compareObjectsAndGetDifferentKeys = <T extends object>(
-  object1: T,
-  object2: T
-): (keyof T)[] => {
-  const diffKeys: string[] = []
-
-  Object.keys(object1).forEach((key) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    if (object1[key] !== object2[key]) {
-      diffKeys.push(key)
-    }
-  })
-
-  return diffKeys as (keyof T)[]
-}
-
 export const formatSuggestedValues = (
   suggestedParams:
     | Record<string, never>
