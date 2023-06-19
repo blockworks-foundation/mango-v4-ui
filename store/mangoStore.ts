@@ -518,7 +518,14 @@ const mangoStore = create<MangoStore>()(
               group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
             const serumMarkets = Array.from(
               group.serum3MarketsMapByExternal.values()
-            )
+            ).map((m) => {
+              // remove this when market name is updated
+              if (m.name === 'MSOL/SOL') {
+                m.name = 'mSOL/SOL'
+              }
+              return m
+            })
+
             const perpMarkets = Array.from(group.perpMarketsMapByName.values())
               .filter(
                 (p) =>
