@@ -311,7 +311,10 @@ const listingBase = {
   insuranceFound: true,
   borrowWeightScale: toNative(250000, 6).toNumber(),
   depositWeightScale: toNative(250000, 6).toNumber(),
+  name: 'PREMIUM',
 }
+
+export type ListingPreset = typeof listingBase
 
 export type LISTING_PRESETS_KEYS =
   | 'PREMIUM'
@@ -321,9 +324,7 @@ export type LISTING_PRESETS_KEYS =
   | 'UNTRUSTED'
 
 export const LISTING_PRESETS: {
-  [key in LISTING_PRESETS_KEYS]:
-    | (typeof listingBase & { name: string })
-    | Record<string, never>
+  [key in LISTING_PRESETS_KEYS]: ListingPreset | Record<string, never>
 } = {
   //Price impact $100,000 < 1%
   PREMIUM: {

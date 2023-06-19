@@ -27,6 +27,7 @@ import Link from 'next/link'
 import {
   LISTING_PRESETS,
   formatSuggestedValues,
+  LISTING_PRESETS_KEYS,
 } from 'utils/governance/listingTools'
 import { compareObjectsAndGetDifferentKeys } from 'utils/governance/tools'
 
@@ -51,6 +52,18 @@ const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
 
+  const proposeNewSuggestedValues = (
+    bank: Bank,
+    invalidFieldsKeys: string[],
+    tokenTier: LISTING_PRESETS_KEYS
+  ) => {
+    const preset = LISTING_PRESETS[tokenTier]
+    const fieldsToChange = invalidFieldsKeys.reduce(
+      (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
+      {}
+    )
+    console.log(fieldsToChange)
+  }
   const getFormattedBankValues = (group: Group, bank: Bank) => {
     return {
       ...bank,
@@ -203,32 +216,32 @@ const Dashboard: NextPage = () => {
                         bank
                       )
 
-                      const suggestedVaules = LISTING_PRESETS['PREMIUM']
+                      const suggestedTier = 'PREMIUM'
+                      const suggestedVaules = LISTING_PRESETS[suggestedTier]
                       const suggestedFormattedPreset =
                         formatSuggestedValues(suggestedVaules)
+                      type SuggestedFormattedPreset =
+                        typeof suggestedFormattedPreset
 
-                      const invalidKeys: (keyof typeof suggestedFormattedPreset)[] =
+                      const invalidKeys: (keyof SuggestedFormattedPreset)[] =
                         Object.keys(suggestedVaules).length
-                          ? compareObjectsAndGetDifferentKeys<
-                              typeof suggestedFormattedPreset
-                            >(
+                          ? compareObjectsAndGetDifferentKeys<SuggestedFormattedPreset>(
                               formattedBankValues,
                               suggestedFormattedPreset
                             ).filter(
                               (x: string) =>
                                 suggestedFormattedPreset[
-                                  x as keyof typeof suggestedFormattedPreset
+                                  x as keyof SuggestedFormattedPreset
                                 ]
                             )
                           : []
-                      const suggestedFields: Partial<
-                        typeof suggestedFormattedPreset
-                      > = invalidKeys.reduce((obj, key) => {
-                        return {
-                          ...obj,
-                          [key]: suggestedFormattedPreset[key],
-                        }
-                      }, {})
+                      const suggestedFields: Partial<SuggestedFormattedPreset> =
+                        invalidKeys.reduce((obj, key) => {
+                          return {
+                            ...obj,
+                            [key]: suggestedFormattedPreset[key],
+                          }
+                        }, {})
 
                       return (
                         <Disclosure key={bank.publicKey.toString()}>
@@ -536,7 +549,17 @@ const Dashboard: NextPage = () => {
                                     Green values are params that needs to change
                                     suggested by current liquidity
                                   </div>
-                                  <Button>Propose suggested values</Button>
+                                  <Button
+                                    onClick={() =>
+                                      proposeNewSuggestedValues(
+                                        bank,
+                                        invalidKeys,
+                                        suggestedTier
+                                      )
+                                    }
+                                  >
+                                    Propose new suggested values
+                                  </Button>
                                 </div>
                               </Disclosure.Panel>
                             </>
