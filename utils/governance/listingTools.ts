@@ -2,7 +2,11 @@ import { AnchorProvider, Program } from '@project-serum/anchor'
 import { PythHttpClient } from '@pythnetwork/client'
 import { notify } from 'utils/notifications'
 import { MAINNET_PYTH_PROGRAM } from './constants'
-import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
+import {
+  OPENBOOK_PROGRAM_ID,
+  toNative,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
 import { Market } from '@project-serum/serum'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import EmptyWallet from 'utils/wallet'
@@ -383,4 +387,57 @@ export const coinTiersToNames: {
   MEME: 'Meme',
   SHIT: 'Shit Coin',
   UNTRUSTED: 'Untrusted',
+}
+
+export const compareObjectsAndGetDifferentKeys = <T extends object>(
+  object1: T,
+  object2: T
+): (keyof T)[] => {
+  const diffKeys: string[] = []
+
+  Object.keys(object1).forEach((key) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    if (object1[key] !== object2[key]) {
+      diffKeys.push(key)
+    }
+  })
+
+  return diffKeys as (keyof T)[]
+}
+
+export const formatSuggestedValues = (
+  suggestedParams:
+    | Record<string, never>
+    | Omit<
+        typeof listingBase,
+        'name' | 'netBorrowLimitWindowSizeTs' | 'insuranceFound'
+      >
+) => {
+  return {
+    maxStalenessSlots: suggestedParams.maxStalenessSlots,
+    oracleConfFilter: (100 * suggestedParams.oracleConfFilter).toFixed(2),
+    adjustmentFactor: (suggestedParams.adjustmentFactor * 100).toFixed(2),
+    rate0: (100 * suggestedParams.rate0).toFixed(2),
+    util0: (100 * suggestedParams.util0).toFixed(),
+    rate1: (100 * suggestedParams.rate1).toFixed(2),
+    util1: (100 * suggestedParams.util1).toFixed(),
+    maxRate: (100 * suggestedParams.maxRate).toFixed(2),
+    loanFeeRate: (10000 * suggestedParams.loanFeeRate).toFixed(2),
+    loanOriginationFeeRate: (
+      10000 * suggestedParams.loanOriginationFeeRate
+    ).toFixed(2),
+    maintAssetWeight: suggestedParams.maintAssetWeight.toFixed(2),
+    initAssetWeight: suggestedParams.initAssetWeight.toFixed(2),
+    maintLiabWeight: suggestedParams.maintLiabWeight.toFixed(2),
+    initLiabWeight: suggestedParams.initLiabWeight.toFixed(2),
+    liquidationFee: (suggestedParams.liquidationFee * 100).toFixed(2),
+    minVaultToDepositsRatio: suggestedParams.minVaultToDepositsRatio * 100,
+    netBorrowLimitPerWindowQuote: toUiDecimals(
+      suggestedParams.netBorrowLimitPerWindowQuote,
+      6
+    ),
+    borrowWeightScale: toUiDecimals(suggestedParams.borrowWeightScale, 6),
+    depositWeightScale: toUiDecimals(suggestedParams.depositWeightScale, 6),
+  }
 }

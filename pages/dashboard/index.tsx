@@ -24,6 +24,11 @@ import Button from '@components/shared/Button'
 import BN from 'bn.js'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import {
+  LISTING_PRESETS,
+  compareObjectsAndGetDifferentKeys,
+  formatSuggestedValues,
+} from 'utils/governance/listingTools'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -56,6 +61,7 @@ const Dashboard: NextPage = () => {
         I80F48.fromNumber(bank.stablePriceModel.stablePrice),
         bank.mintDecimals
       ),
+      maxStalenessSlots: bank.oracleConfig.maxStalenessSlots.toNumber(),
       lastStablePriceUpdated: new Date(
         1000 * bank.stablePriceModel.lastUpdateTimestamp.toNumber()
       ).toUTCString(),
@@ -103,12 +109,10 @@ const Dashboard: NextPage = () => {
       maintLiabWeight: bank.maintLiabWeight.toFixed(2),
       initAssetWeight: bank.initAssetWeight.toFixed(2),
       initLiabWeight: bank.initLiabWeight.toFixed(2),
-      depositWeightScaleStartQuote: toUiDecimalsForQuote(
+      depositWeightScale: toUiDecimalsForQuote(
         bank.depositWeightScaleStartQuote
       ),
-      borrowWeightScaleStartQuote: toUiDecimalsForQuote(
-        bank.borrowWeightScaleStartQuote
-      ),
+      borrowWeightScale: toUiDecimalsForQuote(bank.borrowWeightScaleStartQuote),
       rate0: (100 * bank.rate0.toNumber()).toFixed(2),
       util0: (100 * bank.util0.toNumber()).toFixed(),
       rate1: (100 * bank.rate1.toNumber()).toFixed(2),
@@ -193,10 +197,32 @@ const Dashboard: NextPage = () => {
                         ? mangoTokens.find((t) => t.address === mintAddress)
                             ?.logoURI
                         : ''
+
                       const formattedBankValues = getFormattedBankValues(
                         group,
                         bank
                       )
+
+                      const suggestedVaules = LISTING_PRESETS['PREMIUM']
+                      const suggestedFormattedPreset =
+                        formatSuggestedValues(suggestedVaules)
+
+                      const invalidKeys: (keyof typeof suggestedFormattedPreset)[] =
+                        Object.keys(suggestedVaules).length
+                          ? compareObjectsAndGetDifferentKeys<
+                              typeof suggestedFormattedPreset
+                            >(
+                              formattedBankValues,
+                              suggestedFormattedPreset
+                            ).filter(
+                              (x: string) =>
+                                suggestedFormattedPreset[
+                                  x as keyof typeof suggestedFormattedPreset
+                                ]
+                            )
+                          : []
+
+                      console.log(invalidKeys)
                       return (
                         <Disclosure key={bank.publicKey.toString()}>
                           {({ open }) => (
@@ -339,11 +365,11 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Deposit weight scale start quote"
-                                  value={`$${formattedBankValues.depositWeightScaleStartQuote}`}
+                                  value={`$${formattedBankValues.depositWeightScale}`}
                                 />
                                 <KeyValuePair
                                   label="Borrow weight scale start quote"
-                                  value={`$${formattedBankValues.borrowWeightScaleStartQuote}`}
+                                  value={`$${formattedBankValues.borrowWeightScale}`}
                                 />
                                 <KeyValuePair
                                   label="Rate params"
@@ -389,9 +415,7 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Min vault to deposits ratio"
-                                  value={`${
-                                    bank.minVaultToDepositsRatio * 100
-                                  }%`}
+                                  value={`${formattedBankValues.minVaultToDepositsRatio}%`}
                                 />
                                 <KeyValuePair
                                   label="Net borrows in window / Net borrow limit per window quote"
@@ -401,6 +425,13 @@ const Dashboard: NextPage = () => {
                                   label="Liquidation fee"
                                   value={`${formattedBankValues.liquidationFee}%`}
                                 />
+                                <div className="flex items-center p-4">
+                                  <div className="mr-auto">
+                                    Green values are params that needs to change
+                                    suggested by current liquidity
+                                  </div>
+                                  <Button>Propose new values</Button>
+                                </div>
                               </Disclosure.Panel>
                             </>
                           )}
