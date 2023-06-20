@@ -68,7 +68,53 @@ const Dashboard: NextPage = () => {
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
+  const [suggestedTiers, setSuggestedTiers] = useState<
+    Partial<{ [key: string]: string }>
+  >({})
   const { t } = useTranslation(['dashboard'])
+
+  useEffect(() => {
+    getSuggestedTierForListedTokens()
+  }, [])
+
+  const getSuggestedTierForListedTokens = async () => {
+    type PriceImpactResp = {
+      avg_price_impact_percent: number
+      side: 'ask' | 'bid'
+      target_amount: number
+      symbol: string
+      //there is more fileds they are just not used on ui
+    }
+    const resp = await fetch(
+      'https://0.0.0.0:8000/v4/risk/listed_tokens_price_impacts'
+    )
+    const jsonReps = await resp.json()
+    const filteredResp = (jsonReps.results as PriceImpactResp[])
+      .filter((x) => x.avg_price_impact_percent < 1 && x.side === 'ask')
+      .reduce(
+        (acc: { [key: string]: PriceImpactResp }, val: PriceImpactResp) => {
+          if (
+            !acc[val.symbol] ||
+            val.target_amount > acc[val.symbol].target_amount
+          ) {
+            acc[val.symbol] = val
+          }
+          return acc
+        },
+        {}
+      )
+
+    const suggestedTiers = Object.keys(filteredResp).reduce(
+      (acc: { [key: string]: string | undefined }, key: string) => {
+        acc[key] = Object.values(LISTING_PRESETS).find(
+          (x) => x.target_amount === filteredResp[key].target_amount
+        )?.preset_key
+        return acc
+      },
+      {}
+    )
+    setSuggestedTiers(suggestedTiers)
+  }
 
   const proposeNewSuggestedValues = async (
     bank: Bank,
@@ -180,6 +226,7 @@ const Dashboard: NextPage = () => {
       })
     }
   }
+
   const getFormattedBankValues = (group: Group, bank: Bank) => {
     return {
       ...bank,
@@ -271,6 +318,18 @@ const Dashboard: NextPage = () => {
     }
   }
 
+  const extractTokenTierForName = (
+    suggestedTokenObj: Partial<{
+      [key: string]: string
+    }>,
+    tier: string
+  ) => {
+    if (tier === 'ETH (Portal)') {
+      return suggestedTokenObj['ETH']
+    }
+    return suggestedTokenObj[tier]
+  }
+
   return (
     <GovernancePageWrapper noStyles={true}>
       <div className="grid grid-cols-12">
@@ -333,10 +392,18 @@ const Dashboard: NextPage = () => {
                           bank
                         )
 
-                        const suggestedTier = 'PREMIUM'
-                        const suggestedVaules = LISTING_PRESETS[suggestedTier]
+                        const suggestedTier = extractTokenTierForName(
+                          suggestedTiers,
+                          bank.name
+                        )
+                          ? extractTokenTierForName(suggestedTiers, bank.name)!
+                          : 'SHIT'
+
+                        const suggestedVaules =
+                          LISTING_PRESETS[suggestedTier as LISTING_PRESETS_KEYS]
                         const suggestedFormattedPreset =
                           formatSuggestedValues(suggestedVaules)
+
                         type SuggestedFormattedPreset =
                           typeof suggestedFormattedPreset
 
@@ -352,6 +419,7 @@ const Dashboard: NextPage = () => {
                                   ]
                               )
                             : []
+
                         const suggestedFields: Partial<SuggestedFormattedPreset> =
                           invalidKeys.reduce((obj, key) => {
                             return {
@@ -674,7 +742,7 @@ const Dashboard: NextPage = () => {
                                           proposeNewSuggestedValues(
                                             bank,
                                             invalidKeys,
-                                            suggestedTier
+                                            suggestedTier as LISTING_PRESETS_KEYS
                                           )
                                         }
                                         disabled={!wallet.connected}

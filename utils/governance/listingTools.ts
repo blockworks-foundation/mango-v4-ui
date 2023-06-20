@@ -311,7 +311,9 @@ const listingBase = {
   insuranceFound: true,
   borrowWeightScale: toNative(250000, 6).toNumber(),
   depositWeightScale: toNative(250000, 6).toNumber(),
-  name: 'PREMIUM',
+  preset_key: 'PREMIUM',
+  preset_name: 'Blue chip',
+  target_amount: 100000,
 }
 
 export type ListingPreset = typeof listingBase
@@ -329,7 +331,6 @@ export const LISTING_PRESETS: {
   //Price impact $100,000 < 1%
   PREMIUM: {
     ...listingBase,
-    name: 'Premium',
   },
   //Price impact $20,000 < 1%
   MID: {
@@ -340,10 +341,12 @@ export const LISTING_PRESETS: {
     initLiabWeight: 1.4,
     liquidationFee: 0.1,
     netBorrowLimitPerWindowQuote: toNative(20000, 6).toNumber(),
-    name: 'Mid',
     borrowWeightScale: toNative(50000, 6).toNumber(),
     depositWeightScale: toNative(50000, 6).toNumber(),
     insuranceFound: false,
+    preset_key: 'MID',
+    preset_name: 'Midwit',
+    target_amount: 20000,
   },
   //Price impact $5,000 < 1%
   MEME: {
@@ -359,7 +362,9 @@ export const LISTING_PRESETS: {
     borrowWeightScale: toNative(20000, 6).toNumber(),
     depositWeightScale: toNative(20000, 6).toNumber(),
     insuranceFound: false,
-    name: 'Meme',
+    preset_key: 'MEME',
+    preset_name: 'Meme Coin',
+    target_amount: 5000,
   },
   //Price impact $1,000 < 1%
   SHIT: {
@@ -375,7 +380,9 @@ export const LISTING_PRESETS: {
     borrowWeightScale: toNative(5000, 6).toNumber(),
     depositWeightScale: toNative(5000, 6).toNumber(),
     insuranceFound: false,
-    name: 'Shit',
+    preset_key: 'SHIT',
+    preset_name: 'Shit Coin',
+    target_amount: 1000,
   },
   UNTRUSTED: {},
 }
