@@ -59,6 +59,8 @@ export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
 export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
 
+export const HOT_KEYS_KEY = 'hotKeys-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
