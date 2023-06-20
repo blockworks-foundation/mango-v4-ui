@@ -133,9 +133,6 @@ const MarketSelectDropdown = () => {
                       <div
                         className={MARKET_LINK_WRAPPER_CLASSES}
                         key={m.publicKey.toString()}
-                        onClick={() => {
-                          if (!isComingSoon) close()
-                        }}
                       >
                         {!isComingSoon ? (
                           <>
@@ -144,6 +141,9 @@ const MarketSelectDropdown = () => {
                               href={{
                                 pathname: '/trade',
                                 query: { name: m.name },
+                              }}
+                              onClick={() => {
+                                close()
                               }}
                               shallow={true}
                             >
@@ -239,15 +239,15 @@ const MarketSelectDropdown = () => {
                         <div
                           className={MARKET_LINK_WRAPPER_CLASSES}
                           key={m.publicKey.toString()}
-                          onClick={() => {
-                            close()
-                          }}
                         >
                           <Link
                             className={MARKET_LINK_CLASSES}
                             href={{
                               pathname: '/trade',
                               query: { name: m.name },
+                            }}
+                            onClick={() => {
+                              close()
                             }}
                             shallow={true}
                           >
