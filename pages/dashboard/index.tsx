@@ -1,10 +1,4 @@
-import {
-  Bank,
-  toUiDecimals,
-  I80F48,
-  toUiDecimalsForQuote,
-  Group,
-} from '@blockworks-foundation/mango-v4'
+import { Bank, toUiDecimals, I80F48 } from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
 import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
 import mangoStore from '@store/mangoStore'
@@ -28,6 +22,7 @@ import {
   LISTING_PRESETS,
   formatSuggestedValues,
   LISTING_PRESETS_KEYS,
+  getFormattedBankValues,
 } from 'utils/governance/listingTools'
 import { compareObjectsAndGetDifferentKeys } from 'utils/governance/tools'
 import {
@@ -39,7 +34,6 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import { notify } from 'utils/notifications'
-import { useTranslation } from 'next-i18next'
 import GovernancePageWrapper from '@components/governance/GovernancePageWrapper'
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -68,16 +62,12 @@ const Dashboard: NextPage = () => {
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
+
   const [suggestedTiers, setSuggestedTiers] = useState<
     Partial<{ [key: string]: string }>
   >({})
-  const { t } = useTranslation(['dashboard'])
 
-  useEffect(() => {
-    getSuggestedTierForListedTokens()
-  }, [])
-
-  const getSuggestedTierForListedTokens = async () => {
+  const getSuggestedTierForListedTokens = useCallback(async () => {
     type PriceImpactResp = {
       avg_price_impact_percent: number
       side: 'ask' | 'bid'
@@ -114,209 +104,130 @@ const Dashboard: NextPage = () => {
       {}
     )
     setSuggestedTiers(suggestedTiers)
-  }
+  }, [])
 
-  const proposeNewSuggestedValues = async (
-    bank: Bank,
-    invalidFieldsKeys: string[],
-    tokenTier: LISTING_PRESETS_KEYS
-  ) => {
-    const mintInfo = group!.mintInfosMapByTokenIndex.get(bank.tokenIndex)!
-    const preset = LISTING_PRESETS[tokenTier]
-    const fieldsToChange = invalidFieldsKeys.reduce(
-      (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
-      {}
-    ) as Partial<typeof preset>
-    const proposalTx = []
+  const proposeNewSuggestedValues = useCallback(
+    async (
+      bank: Bank,
+      invalidFieldsKeys: string[],
+      tokenTier: LISTING_PRESETS_KEYS
+    ) => {
+      const proposalTx = []
+      const mintInfo = group!.mintInfosMapByTokenIndex.get(bank.tokenIndex)!
+      const preset = LISTING_PRESETS[tokenTier]
+      const fieldsToChange = invalidFieldsKeys.reduce(
+        (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
+        {}
+      ) as Partial<typeof preset>
 
-    const isThereNeedOfSendingOracleConfig =
-      fieldsToChange.oracleConfFilter !== undefined ||
-      fieldsToChange.maxStalenessSlots !== undefined
-    const isThereNeedOfSendingRateConfigs =
-      fieldsToChange.adjustmentFactor !== undefined ||
-      fieldsToChange.util0 !== undefined ||
-      fieldsToChange.rate0 !== undefined ||
-      fieldsToChange.util1 !== undefined ||
-      fieldsToChange.rate1 !== undefined ||
-      fieldsToChange.maxRate !== undefined
-    const ix = await client!.program.methods
-      .tokenEdit(
-        null,
-        isThereNeedOfSendingOracleConfig
-          ? {
-              confFilter: fieldsToChange.oracleConfFilter!,
-              maxStalenessSlots: fieldsToChange.maxStalenessSlots!,
-            }
-          : null,
-        null,
-        isThereNeedOfSendingRateConfigs
-          ? {
-              adjustmentFactor: fieldsToChange.adjustmentFactor!,
-              util0: fieldsToChange.util0!,
-              rate0: fieldsToChange.rate0!,
-              util1: fieldsToChange.util1!,
-              rate1: fieldsToChange.rate1!,
-              maxRate: fieldsToChange.maxRate!,
-            }
-          : null,
-        getNullOrVal(fieldsToChange.loanFeeRate),
-        getNullOrVal(fieldsToChange.loanOriginationFeeRate),
-        getNullOrVal(fieldsToChange.maintAssetWeight),
-        getNullOrVal(fieldsToChange.initAssetWeight),
-        getNullOrVal(fieldsToChange.maintLiabWeight),
-        getNullOrVal(fieldsToChange.initLiabWeight),
-        getNullOrVal(fieldsToChange.liquidationFee),
-        null,
-        null,
-        null,
-        getNullOrVal(fieldsToChange.minVaultToDepositsRatio),
-        getNullOrVal(fieldsToChange.netBorrowLimitPerWindowQuote)
-          ? new BN(fieldsToChange.netBorrowLimitPerWindowQuote!)
-          : null,
-        getNullOrVal(fieldsToChange.netBorrowLimitWindowSizeTs)
-          ? new BN(fieldsToChange.netBorrowLimitWindowSizeTs!)
-          : null,
-        getNullOrVal(fieldsToChange.borrowWeightScale),
-        getNullOrVal(fieldsToChange.depositWeightScale),
-        false,
-        false,
-        null,
-        null,
-        null
-      )
-      .accounts({
-        group: group!.publicKey,
-        oracle: bank.oracle,
-        admin: MANGO_DAO_WALLET,
-        mintInfo: mintInfo.publicKey,
-      })
-      .remainingAccounts([
-        {
-          pubkey: bank.publicKey,
-          isWritable: true,
-          isSigner: false,
-        } as AccountMeta,
-      ])
-      .instruction()
-    proposalTx.push(ix)
+      const isThereNeedOfSendingOracleConfig =
+        fieldsToChange.oracleConfFilter !== undefined ||
+        fieldsToChange.maxStalenessSlots !== undefined
+      const isThereNeedOfSendingRateConfigs =
+        fieldsToChange.adjustmentFactor !== undefined ||
+        fieldsToChange.util0 !== undefined ||
+        fieldsToChange.rate0 !== undefined ||
+        fieldsToChange.util1 !== undefined ||
+        fieldsToChange.rate1 !== undefined ||
+        fieldsToChange.maxRate !== undefined
 
-    const walletSigner = wallet as never
-    try {
-      const index = proposals ? Object.values(proposals).length : 0
-      const proposalAddress = await createProposal(
-        connection,
-        walletSigner,
-        MANGO_DAO_WALLET_GOVERNANCE,
-        voter.tokenOwnerRecord!,
-        `Edit token ${bank.name}`,
-        '',
-        index,
-        proposalTx,
-        vsrClient!
-      )
-      window.open(
-        `https://dao.mango.markets/dao/MNGO/proposal/${proposalAddress.toBase58()}`,
-        '_blank'
-      )
-    } catch (e) {
-      notify({
-        title: t('error-proposal-creation'),
-        description: `${e}`,
-        type: 'error',
-      })
-    }
-  }
+      const ix = await client!.program.methods
+        .tokenEdit(
+          null,
+          isThereNeedOfSendingOracleConfig
+            ? {
+                confFilter: fieldsToChange.oracleConfFilter!,
+                maxStalenessSlots: fieldsToChange.maxStalenessSlots!,
+              }
+            : null,
+          null,
+          isThereNeedOfSendingRateConfigs
+            ? {
+                adjustmentFactor: fieldsToChange.adjustmentFactor!,
+                util0: fieldsToChange.util0!,
+                rate0: fieldsToChange.rate0!,
+                util1: fieldsToChange.util1!,
+                rate1: fieldsToChange.rate1!,
+                maxRate: fieldsToChange.maxRate!,
+              }
+            : null,
+          getNullOrVal(fieldsToChange.loanFeeRate),
+          getNullOrVal(fieldsToChange.loanOriginationFeeRate),
+          getNullOrVal(fieldsToChange.maintAssetWeight),
+          getNullOrVal(fieldsToChange.initAssetWeight),
+          getNullOrVal(fieldsToChange.maintLiabWeight),
+          getNullOrVal(fieldsToChange.initLiabWeight),
+          getNullOrVal(fieldsToChange.liquidationFee),
+          null,
+          null,
+          null,
+          getNullOrVal(fieldsToChange.minVaultToDepositsRatio),
+          getNullOrVal(fieldsToChange.netBorrowLimitPerWindowQuote)
+            ? new BN(fieldsToChange.netBorrowLimitPerWindowQuote!)
+            : null,
+          getNullOrVal(fieldsToChange.netBorrowLimitWindowSizeTs)
+            ? new BN(fieldsToChange.netBorrowLimitWindowSizeTs!)
+            : null,
+          getNullOrVal(fieldsToChange.borrowWeightScale),
+          getNullOrVal(fieldsToChange.depositWeightScale),
+          false,
+          false,
+          null,
+          null,
+          null
+        )
+        .accounts({
+          group: group!.publicKey,
+          oracle: bank.oracle,
+          admin: MANGO_DAO_WALLET,
+          mintInfo: mintInfo.publicKey,
+        })
+        .remainingAccounts([
+          {
+            pubkey: bank.publicKey,
+            isWritable: true,
+            isSigner: false,
+          } as AccountMeta,
+        ])
+        .instruction()
+      proposalTx.push(ix)
 
-  const getFormattedBankValues = (group: Group, bank: Bank) => {
-    return {
-      ...bank,
-      publicKey: bank.publicKey.toBase58(),
-      vault: bank.vault.toBase58(),
-      oracle: bank.oracle.toBase58(),
-      stablePrice: group.toUiPrice(
-        I80F48.fromNumber(bank.stablePriceModel.stablePrice),
-        bank.mintDecimals
-      ),
-      maxStalenessSlots: bank.oracleConfig.maxStalenessSlots.toNumber(),
-      lastStablePriceUpdated: new Date(
-        1000 * bank.stablePriceModel.lastUpdateTimestamp.toNumber()
-      ).toUTCString(),
-      stablePriceGrowthLimitsDelay: (
-        100 * bank.stablePriceModel.delayGrowthLimit
-      ).toFixed(2),
-      stablePriceGrowthLimitsStable: (
-        100 * bank.stablePriceModel.stableGrowthLimit
-      ).toFixed(2),
-      loanFeeRate: (10000 * bank.loanFeeRate.toNumber()).toFixed(2),
-      loanOriginationFeeRate: (
-        10000 * bank.loanOriginationFeeRate.toNumber()
-      ).toFixed(2),
-      collectedFeesNative: toUiDecimals(
-        bank.collectedFeesNative.toNumber(),
-        bank.mintDecimals
-      ).toFixed(2),
-      collectedFeesNativePrice: (
-        toUiDecimals(bank.collectedFeesNative.toNumber(), bank.mintDecimals) *
-        bank.uiPrice
-      ).toFixed(2),
-      dust: bank.dust.toNumber(),
-      deposits: toUiDecimals(
-        bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
-        bank.mintDecimals
-      ),
-      depositsPrice: (
-        toUiDecimals(
-          bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
-          bank.mintDecimals
-        ) * bank.uiPrice
-      ).toFixed(2),
-      borrows: toUiDecimals(
-        bank.indexedBorrows.mul(bank.borrowIndex).toNumber(),
-        bank.mintDecimals
-      ),
-      borrowsPrice: (
-        toUiDecimals(
-          bank.indexedBorrows.mul(bank.borrowIndex).toNumber(),
-          bank.mintDecimals
-        ) * bank.uiPrice
-      ).toFixed(2),
-      avgUtilization: bank.avgUtilization.toNumber() * 100,
-      maintAssetWeight: bank.maintAssetWeight.toFixed(2),
-      maintLiabWeight: bank.maintLiabWeight.toFixed(2),
-      initAssetWeight: bank.initAssetWeight.toFixed(2),
-      initLiabWeight: bank.initLiabWeight.toFixed(2),
-      depositWeightScale: toUiDecimalsForQuote(
-        bank.depositWeightScaleStartQuote
-      ),
-      borrowWeightScale: toUiDecimalsForQuote(bank.borrowWeightScaleStartQuote),
-      rate0: (100 * bank.rate0.toNumber()).toFixed(2),
-      util0: (100 * bank.util0.toNumber()).toFixed(),
-      rate1: (100 * bank.rate1.toNumber()).toFixed(2),
-      util1: (100 * bank.util1.toNumber()).toFixed(),
-      maxRate: (100 * bank.maxRate.toNumber()).toFixed(2),
-      adjustmentFactor: (bank.adjustmentFactor.toNumber() * 100).toFixed(2),
-      depositRate: bank.getDepositRateUi(),
-      borrowRate: bank.getBorrowRateUi(),
-      lastIndexUpdate: new Date(
-        1000 * bank.indexLastUpdated.toNumber()
-      ).toUTCString(),
-      lastRatesUpdate: new Date(
-        1000 * bank.bankRateLastUpdated.toNumber()
-      ).toUTCString(),
-      oracleConfFilter: (100 * bank.oracleConfig.confFilter.toNumber()).toFixed(
-        2
-      ),
-      minVaultToDepositsRatio: bank.minVaultToDepositsRatio * 100,
-      netBorrowsInWindow: toUiDecimalsForQuote(
-        I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price)
-      ).toFixed(2),
-      netBorrowLimitPerWindowQuote: toUiDecimals(
-        bank.netBorrowLimitPerWindowQuote,
-        6
-      ),
-      liquidationFee: (bank.liquidationFee.toNumber() * 100).toFixed(2),
-    }
-  }
+      const walletSigner = wallet as never
+      try {
+        const index = proposals ? Object.values(proposals).length : 0
+        const proposalAddress = await createProposal(
+          connection,
+          walletSigner,
+          MANGO_DAO_WALLET_GOVERNANCE,
+          voter.tokenOwnerRecord!,
+          `Edit token ${bank.name}`,
+          'Adjust settings to current liquidity',
+          index,
+          proposalTx,
+          vsrClient!
+        )
+        window.open(
+          `https://dao.mango.markets/dao/MNGO/proposal/${proposalAddress.toBase58()}`,
+          '_blank'
+        )
+      } catch (e) {
+        notify({
+          title: 'Error during proposal creation',
+          description: `${e}`,
+          type: 'error',
+        })
+      }
+    },
+    [
+      client,
+      connection,
+      group,
+      proposals,
+      voter.tokenOwnerRecord,
+      vsrClient,
+      wallet,
+    ]
+  )
 
   const extractTokenTierForName = (
     suggestedTokenObj: Partial<{
@@ -329,6 +240,10 @@ const Dashboard: NextPage = () => {
     }
     return suggestedTokenObj[tier]
   }
+
+  useEffect(() => {
+    getSuggestedTierForListedTokens()
+  }, [getSuggestedTierForListedTokens])
 
   return (
     <GovernancePageWrapper noStyles={true}>

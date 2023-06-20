@@ -3,9 +3,13 @@ import { PythHttpClient } from '@pythnetwork/client'
 import { notify } from 'utils/notifications'
 import { MAINNET_PYTH_PROGRAM } from './constants'
 import {
+  Bank,
+  Group,
+  I80F48,
   OPENBOOK_PROGRAM_ID,
   toNative,
   toUiDecimals,
+  toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import { Market } from '@project-serum/serum'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
@@ -430,5 +434,94 @@ export const formatSuggestedValues = (
     ),
     borrowWeightScale: toUiDecimals(suggestedParams.borrowWeightScale, 6),
     depositWeightScale: toUiDecimals(suggestedParams.depositWeightScale, 6),
+  }
+}
+
+export const getFormattedBankValues = (group: Group, bank: Bank) => {
+  return {
+    ...bank,
+    publicKey: bank.publicKey.toBase58(),
+    vault: bank.vault.toBase58(),
+    oracle: bank.oracle.toBase58(),
+    stablePrice: group.toUiPrice(
+      I80F48.fromNumber(bank.stablePriceModel.stablePrice),
+      bank.mintDecimals
+    ),
+    maxStalenessSlots: bank.oracleConfig.maxStalenessSlots.toNumber(),
+    lastStablePriceUpdated: new Date(
+      1000 * bank.stablePriceModel.lastUpdateTimestamp.toNumber()
+    ).toUTCString(),
+    stablePriceGrowthLimitsDelay: (
+      100 * bank.stablePriceModel.delayGrowthLimit
+    ).toFixed(2),
+    stablePriceGrowthLimitsStable: (
+      100 * bank.stablePriceModel.stableGrowthLimit
+    ).toFixed(2),
+    loanFeeRate: (10000 * bank.loanFeeRate.toNumber()).toFixed(2),
+    loanOriginationFeeRate: (
+      10000 * bank.loanOriginationFeeRate.toNumber()
+    ).toFixed(2),
+    collectedFeesNative: toUiDecimals(
+      bank.collectedFeesNative.toNumber(),
+      bank.mintDecimals
+    ).toFixed(2),
+    collectedFeesNativePrice: (
+      toUiDecimals(bank.collectedFeesNative.toNumber(), bank.mintDecimals) *
+      bank.uiPrice
+    ).toFixed(2),
+    dust: bank.dust.toNumber(),
+    deposits: toUiDecimals(
+      bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
+      bank.mintDecimals
+    ),
+    depositsPrice: (
+      toUiDecimals(
+        bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
+        bank.mintDecimals
+      ) * bank.uiPrice
+    ).toFixed(2),
+    borrows: toUiDecimals(
+      bank.indexedBorrows.mul(bank.borrowIndex).toNumber(),
+      bank.mintDecimals
+    ),
+    borrowsPrice: (
+      toUiDecimals(
+        bank.indexedBorrows.mul(bank.borrowIndex).toNumber(),
+        bank.mintDecimals
+      ) * bank.uiPrice
+    ).toFixed(2),
+    avgUtilization: bank.avgUtilization.toNumber() * 100,
+    maintAssetWeight: bank.maintAssetWeight.toFixed(2),
+    maintLiabWeight: bank.maintLiabWeight.toFixed(2),
+    initAssetWeight: bank.initAssetWeight.toFixed(2),
+    initLiabWeight: bank.initLiabWeight.toFixed(2),
+    depositWeightScale: toUiDecimalsForQuote(bank.depositWeightScaleStartQuote),
+    borrowWeightScale: toUiDecimalsForQuote(bank.borrowWeightScaleStartQuote),
+    rate0: (100 * bank.rate0.toNumber()).toFixed(2),
+    util0: (100 * bank.util0.toNumber()).toFixed(),
+    rate1: (100 * bank.rate1.toNumber()).toFixed(2),
+    util1: (100 * bank.util1.toNumber()).toFixed(),
+    maxRate: (100 * bank.maxRate.toNumber()).toFixed(2),
+    adjustmentFactor: (bank.adjustmentFactor.toNumber() * 100).toFixed(2),
+    depositRate: bank.getDepositRateUi(),
+    borrowRate: bank.getBorrowRateUi(),
+    lastIndexUpdate: new Date(
+      1000 * bank.indexLastUpdated.toNumber()
+    ).toUTCString(),
+    lastRatesUpdate: new Date(
+      1000 * bank.bankRateLastUpdated.toNumber()
+    ).toUTCString(),
+    oracleConfFilter: (100 * bank.oracleConfig.confFilter.toNumber()).toFixed(
+      2
+    ),
+    minVaultToDepositsRatio: bank.minVaultToDepositsRatio * 100,
+    netBorrowsInWindow: toUiDecimalsForQuote(
+      I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price)
+    ).toFixed(2),
+    netBorrowLimitPerWindowQuote: toUiDecimals(
+      bank.netBorrowLimitPerWindowQuote,
+      6
+    ),
+    liquidationFee: (bank.liquidationFee.toNumber() * 100).toFixed(2),
   }
 }
