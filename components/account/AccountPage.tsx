@@ -59,7 +59,11 @@ const fetchFundingTotals = async (mangoAccountPk: string) => {
 
       const stats: TotalAccountFundingItem[] = entries
         .map(([key, value]) => {
-          return { ...value, market: key }
+          return {
+            long_funding: value.long_funding * -1,
+            short_funding: value.short_funding * -1,
+            market: key,
+          }
         })
         .filter((x) => x)
 
