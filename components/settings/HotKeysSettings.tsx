@@ -1,17 +1,30 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
+import Checkbox from '@components/forms/Checkbox'
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
-import Select from '@components/forms/Select'
-import Button from '@components/shared/Button'
+import Button, { LinkButton } from '@components/shared/Button'
 import Modal from '@components/shared/Modal'
 import Tooltip from '@components/shared/Tooltip'
 import { KeyIcon } from '@heroicons/react/20/solid'
-import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { ModalProps } from 'types/modal'
 import { HOT_KEYS_KEY } from 'utils/constants'
+
+export type HotKey = {
+  ioc: boolean
+  keySequence: string
+  // market: string
+  margin: boolean
+  orderSide: 'buy' | 'sell'
+  orderSizeType: 'percentage' | 'notional'
+  orderSize: string
+  orderType: 'limit' | 'market'
+  orderPrice: string
+  postOnly: boolean
+  reduceOnly: boolean
+}
 
 const HotKeysSettings = () => {
   const { t } = useTranslation('settings')
@@ -19,10 +32,19 @@ const HotKeysSettings = () => {
   const [showHotKeyModal, setShowHotKeyModal] = useState(false)
   return (
     <>
-      <h2 className="mb-1 text-base">{t('hot-keys')}</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="mb-1 text-base">{t('hot-keys')}</h2>
+        <LinkButton onClick={() => setShowHotKeyModal(true)}>
+          Create New Hot Key
+        </LinkButton>
+      </div>
       <p className="mb-4">{t('hot-keys-desc')}</p>
       {hotKeys.length ? (
-        <div></div>
+        hotKeys.map((k: HotKey) => (
+          <div key={k.keySequence}>
+            <p>{k.keySequence}</p>
+          </div>
+        ))
       ) : (
         <div className="mb-8 rounded-lg border border-th-bkg-3 p-6">
           <div className="flex flex-col items-center">
@@ -46,35 +68,76 @@ const HotKeysSettings = () => {
 
 export default HotKeysSettings
 
-// type HotKey = {
-//   keySequence: string
-//   market: string
-//   orderSide: 'buy/long' | 'sell/short'
-//   orderSizeType: 'percentage' | 'notional'
-//   orderSize: string
-//   orderType: 'limit' | 'market'
-//   orderPrice: string
-// }
-
+// add ioc, postOnly and reduceOnly checkboxes
 const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
-  const { t } = useTranslation('settings')
-  const perpMarkets = mangoStore((s) => s.perpMarkets)
-  const serumMarkets = mangoStore((s) => s.serumMarkets)
-  const allMarkets =
-    perpMarkets.length && serumMarkets.length
-      ? [
-          'All',
-          ...perpMarkets.map((m) => m.name),
-          ...serumMarkets.map((m) => m.name),
-        ]
-      : ['All']
+  const { t } = useTranslation(['settings', 'trade'])
+  const [hotKeys, setHotKeys] = useLocalStorageState<HotKey[]>(HOT_KEYS_KEY, [])
+  // const perpMarkets = mangoStore((s) => s.perpMarkets)
+  // const serumMarkets = mangoStore((s) => s.serumMarkets)
+  // const allMarkets =
+  //   perpMarkets.length && serumMarkets.length
+  //     ? [
+  //         'All',
+  //         ...perpMarkets.map((m) => m.name),
+  //         ...serumMarkets.map((m) => m.name),
+  //       ]
+  //     : ['All']
   const [keySequence, setKeySequence] = useState('')
-  const [market, setMarket] = useState('All')
+  // const [market, setMarket] = useState('All')
   const [orderPrice, setOrderPrice] = useState('')
-  const [orderSide, setOrderSide] = useState('buy/long')
+  const [orderSide, setOrderSide] = useState('buy')
   const [orderSizeType, setOrderSizeType] = useState('percentage')
   const [orderSize, setOrderSize] = useState('')
   const [orderType, setOrderType] = useState('limit')
+  const [postOnly, setPostOnly] = useState(false)
+  const [ioc, setIoc] = useState(false)
+  const [margin, setMargin] = useState(false)
+  const [reduceOnly, setReduceOnly] = useState(false)
+
+  const handlePostOnlyChange = useCallback(
+    (postOnly: boolean) => {
+      let updatedIoc = ioc
+      if (postOnly) {
+        updatedIoc = !postOnly
+      }
+      setPostOnly(postOnly)
+      setIoc(updatedIoc)
+    },
+    [ioc]
+  )
+
+  const handleIocChange = useCallback(
+    (ioc: boolean) => {
+      let updatedPostOnly = postOnly
+      if (ioc) {
+        updatedPostOnly = !ioc
+      }
+      setPostOnly(updatedPostOnly)
+      setIoc(ioc)
+    },
+    [postOnly]
+  )
+
+  const handleSave = () => {
+    const newHotKey = {
+      keySequence: keySequence,
+      // market: market,
+      orderSide: orderSide,
+      orderSizeType: orderSizeType,
+      orderSize: orderSize,
+      orderType: orderType,
+      orderPrice: orderPrice,
+      ioc,
+      margin,
+      postOnly,
+      reduceOnly,
+    }
+    setHotKeys([...hotKeys, newHotKey])
+    onClose()
+  }
+
+  const disabled =
+    !keySequence || (orderType === 'limit' && !orderPrice) || !orderSize
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <>
@@ -87,7 +150,7 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
             onChange={(e) => setKeySequence(e.target.value)}
           />
         </div>
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <Label text={t('market')} />
           <Select
             value={market}
@@ -100,13 +163,13 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
               </Select.Option>
             ))}
           </Select>
-        </div>
+        </div> */}
         <div className="mb-4">
           <Label text={t('order-side')} />
           <ButtonGroup
             activeValue={orderSide}
             onChange={(side) => setOrderSide(side)}
-            values={['buy/long', 'sell/short']}
+            values={['buy', 'sell']}
           />
         </div>
         <div className="mb-4">
@@ -148,7 +211,81 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
             />
           </div>
         ) : null}
-        <Button className="mt-6 w-full">{t('save-hot-key')}</Button>
+        <div className="flex flex-wrap md:flex-nowrap">
+          {orderType === 'limit' ? (
+            <div className="flex">
+              <div className="mr-3 mt-4" id="trade-step-six">
+                <Tooltip
+                  className="hidden md:block"
+                  delay={100}
+                  content={t('trade:tooltip-post')}
+                >
+                  <Checkbox
+                    checked={postOnly}
+                    onChange={(e) => handlePostOnlyChange(e.target.checked)}
+                  >
+                    {t('trade:post')}
+                  </Checkbox>
+                </Tooltip>
+              </div>
+              <div className="mr-3 mt-4" id="trade-step-seven">
+                <Tooltip
+                  className="hidden md:block"
+                  delay={100}
+                  content={t('trade:tooltip-ioc')}
+                >
+                  <div className="flex items-center text-xs text-th-fgd-3">
+                    <Checkbox
+                      checked={ioc}
+                      onChange={(e) => handleIocChange(e.target.checked)}
+                    >
+                      IOC
+                    </Checkbox>
+                  </div>
+                </Tooltip>
+              </div>
+            </div>
+          ) : null}
+          <div className="mt-4 mr-3" id="trade-step-eight">
+            <Tooltip
+              className="hidden md:block"
+              delay={100}
+              content={t('trade:tooltip-enable-margin')}
+            >
+              <Checkbox
+                checked={margin}
+                onChange={(e) => setMargin(e.target.checked)}
+              >
+                {t('trade:margin')}
+              </Checkbox>
+            </Tooltip>
+          </div>
+          <div className="mr-3 mt-4">
+            <Tooltip
+              className="hidden md:block"
+              delay={100}
+              content={
+                'Reduce will only decrease the size of an open position. This is often used for closing a position.'
+              }
+            >
+              <div className="flex items-center text-xs text-th-fgd-3">
+                <Checkbox
+                  checked={reduceOnly}
+                  onChange={(e) => setReduceOnly(e.target.checked)}
+                >
+                  {t('trade:reduce-only')}
+                </Checkbox>
+              </div>
+            </Tooltip>
+          </div>
+        </div>
+        <Button
+          className="mt-6 w-full"
+          disabled={disabled}
+          onClick={handleSave}
+        >
+          {t('save-hot-key')}
+        </Button>
       </>
     </Modal>
   )
