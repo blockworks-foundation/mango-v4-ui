@@ -6,7 +6,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import Tooltip from '@components/shared/Tooltip'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import mangoStore from '@store/mangoStore'
 import { getOracleProvider } from 'hooks/useOracleProvider'
 import { useTranslation } from 'next-i18next'

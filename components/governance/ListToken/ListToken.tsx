@@ -49,7 +49,7 @@ import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketMo
 import { calculateTradingParameters } from 'utils/governance/listingTools'
 import useJupiterMints from 'hooks/useJupiterMints'
 import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOracleModal'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
