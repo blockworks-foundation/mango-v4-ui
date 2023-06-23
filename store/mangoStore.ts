@@ -481,7 +481,15 @@ const mangoStore = create<MangoStore>()(
 
               const latestFeed = entries
                 .map(([key, value]) => {
-                  return { ...value, symbol: key }
+                  // ETH should be renamed to ETH (Portal) in the database
+                  let symbol = value.activity_details.symbol
+                  if (symbol === 'ETH') {
+                    value.activity_details.symbol = 'ETH (Portal)'
+                  }
+                  return {
+                    ...value,
+                    symbol: key,
+                  }
                 })
                 .sort(
                   (a, b) =>
