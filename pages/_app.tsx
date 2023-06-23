@@ -73,15 +73,14 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>Mango Markets</title>
         <link rel="icon" href="/favicon.ico" />
-        <meta property="og:title" content="Mango Markets" />
+        <meta
+          property="og:title"
+          content="Mango Markets – Safer. Smarter. Faster."
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta
-          name="keywords"
-          content="Mango Markets, Serum, SRM, Serum DEX, DEFI, Decentralized Finance, Decentralised Finance, Crypto, ERC20, Ethereum, Decentralize, Solana, SOL, SPL, Cross-Chain, Trading, Fastest, Fast, SerumBTC, SerumUSD, SRM Tokens, SPL Tokens"
-        />
-        <meta
           name="description"
-          content="A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure."
+          content="A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure. The easiest way to margin trade any token pair. All powered by flashloans."
         />
         <link
           rel="apple-touch-icon"
