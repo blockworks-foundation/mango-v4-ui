@@ -25,6 +25,7 @@ import { useSpotMarketMax } from './SpotSlider'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { Market } from '@project-serum/serum'
 import { useRouter } from 'next/router'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 const set = mangoStore.getState().set
 
@@ -90,7 +91,8 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
     selectedMarket,
     serumOrPerpMarket,
   } = useSelectedMarket()
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { isUnownedAccount } = useUnownedAccount()
   const { asPath } = useRouter()
   const [hotKeys] = useLocalStorageState(HOT_KEYS_KEY, [])
   const [placingOrder, setPlacingOrder] = useState(false)
@@ -139,7 +141,6 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
-      // const tradeForm = mangoStore.getState().tradeForm
       const actions = mangoStore.getState().actions
       const selectedMarket = mangoStore.getState().selectedMarket.current
       const { ioc, orderPrice, orderSide, orderType, postOnly, reduceOnly } =
@@ -303,7 +304,13 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
     }
   }, [placingOrder])
 
-  return hotKeys.length && asPath.includes('/trade') ? (
+  const showHotKeys =
+    hotKeys.length &&
+    asPath.includes('/trade') &&
+    mangoAccountAddress &&
+    !isUnownedAccount
+
+  return showHotKeys ? (
     <Hotkeys
       keyName={hotKeys.map((k: HotKey) => k.keySequence).toString()}
       onKeyDown={onKeyDown}
