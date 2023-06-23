@@ -42,6 +42,10 @@ import { THEME_KEY } from 'utils/constants'
 // Create a client
 export const queryClient = new QueryClient()
 
+const metaTitle = 'Mango Markets – Safer. Smarter. Faster.'
+const metaDescription =
+  'A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure. The easiest way to margin trade any token pair. All powered by flashloans.'
+
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
@@ -73,15 +77,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>Mango Markets</title>
         <link rel="icon" href="/favicon.ico" />
-        <meta
-          property="og:title"
-          content="Mango Markets – Safer. Smarter. Faster."
-        />
+        <meta property="og:title" content={metaTitle} />
+        <meta name="description" content={metaDescription} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-          name="description"
-          content="A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure. The easiest way to margin trade any token pair. All powered by flashloans."
-        />
         <link
           rel="apple-touch-icon"
           sizes="192x192"
@@ -90,11 +88,8 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Mango Markets" />
-        <meta
-          name="twitter:description"
-          content="A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure."
-        />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription} />
         <meta
           name="twitter:image"
           content="https://app.mango.markets/images/1200x600-share.png?34567879"
