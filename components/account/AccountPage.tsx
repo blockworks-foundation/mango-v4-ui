@@ -420,7 +420,7 @@ const AccountPage = () => {
                     The lower your account health is the more likely you are to
                     get liquidated when prices fluctuate.
                   </p>
-                  {maintHealth < 100 ? (
+                  {maintHealth < 100 && mangoAccountAddress ? (
                     <>
                       <p className="text-xs font-bold text-th-fgd-1">
                         Your account health is {maintHealth}%
