@@ -30,7 +30,7 @@
     "english": "English",
     "high-contrast": "High Contrast",
     "hot-keys": "Hot Keys",
-    "hot-keys-desc": "Create hot keys to place trades",
+    "hot-keys-desc": "Use hot keys to place orders on the trade page. They execute on the market you're viewing and are not market specific.",
     "key-sequence": "Key Sequence",
     "language": "Language",
     "light": "Light",

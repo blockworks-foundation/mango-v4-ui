@@ -40,12 +40,16 @@ const HotKeysSettings = () => {
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <div>
+        <div className="pr-6">
           <h2 className="mb-1 text-base">{t('settings:hot-keys')}</h2>
           <p>{t('settings:hot-keys-desc')}</p>
         </div>
         {hotKeys.length ? (
-          <Button onClick={() => setShowHotKeyModal(true)} secondary>
+          <Button
+            className="whitespace-nowrap"
+            onClick={() => setShowHotKeyModal(true)}
+            secondary
+          >
             {t('settings:new-hot-key')}
           </Button>
         ) : null}
