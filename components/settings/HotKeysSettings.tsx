@@ -2,7 +2,7 @@ import ButtonGroup from '@components/forms/ButtonGroup'
 import Checkbox from '@components/forms/Checkbox'
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
-import Button, { IconButton, LinkButton } from '@components/shared/Button'
+import Button, { IconButton } from '@components/shared/Button'
 import InlineNotification from '@components/shared/InlineNotification'
 import Modal from '@components/shared/Modal'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
@@ -28,7 +28,7 @@ export type HotKey = {
 }
 
 const HotKeysSettings = () => {
-  const { t } = useTranslation('settings')
+  const { t } = useTranslation(['common', 'settings', 'trade'])
   const [hotKeys, setHotKeys] = useLocalStorageState(HOT_KEYS_KEY, [])
   const [showHotKeyModal, setShowHotKeyModal] = useState(false)
 
@@ -39,25 +39,27 @@ const HotKeysSettings = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h2 className="mb-1 text-base">{t('hot-keys')}</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="mb-1 text-base">{t('settings:hot-keys')}</h2>
+          <p>{t('settings:hot-keys-desc')}</p>
+        </div>
         {hotKeys.length ? (
-          <LinkButton onClick={() => setShowHotKeyModal(true)}>
-            {t('create-new-key')}
-          </LinkButton>
+          <Button onClick={() => setShowHotKeyModal(true)} secondary>
+            {t('settings:new-hot-key')}
+          </Button>
         ) : null}
       </div>
-      <p className="mb-4">{t('hot-keys-desc')}</p>
       {hotKeys.length ? (
         <Table>
           <thead>
             <TrHead>
-              <Th className="text-left">{t('key')}</Th>
-              <Th className="text-right">{t('order-type')}</Th>
-              <Th className="text-right">{t('side')}</Th>
-              <Th className="text-right">{t('size')}</Th>
+              <Th className="text-left">{t('settings:key-sequence')}</Th>
+              <Th className="text-right">{t('trade:order-type')}</Th>
+              <Th className="text-right">{t('trade:side')}</Th>
+              <Th className="text-right">{t('trade:size')}</Th>
               <Th className="text-right">{t('price')}</Th>
-              <Th className="text-right">{t('options')}</Th>
+              <Th className="text-right">{t('settings:options')}</Th>
               <Th />
             </TrHead>
           </thead>
@@ -77,9 +79,15 @@ const HotKeysSettings = () => {
               } = hk
               const size =
                 orderSizeType === 'percentage'
-                  ? `${orderSize}% of max`
+                  ? t('settings:percentage-of-max', { size: orderSize })
                   : `$${orderSize}`
-              const price = orderPrice ? `${orderPrice}% from oracle` : 'market'
+              const price = orderPrice
+                ? `${orderPrice}% ${
+                    orderSide === 'buy'
+                      ? t('settings:below')
+                      : t('settings:above')
+                  } oracle`
+                : t('trade:market')
 
               const options = {
                 margin: margin,
@@ -91,14 +99,16 @@ const HotKeysSettings = () => {
               return (
                 <TrBody key={keySequence} className="text-right">
                   <Td className="text-left">{keySequence}</Td>
-                  <Td className="text-right">{orderType}</Td>
-                  <Td className="text-right">{orderSide}</Td>
+                  <Td className="text-right">{t(`trade:${orderType}`)}</Td>
+                  <Td className="text-right">{t(orderSide)}</Td>
                   <Td className="text-right">{size}</Td>
                   <Td className="text-right">{price}</Td>
                   <Td className="text-right">
                     {Object.entries(options).map((e) => {
                       return e[1]
-                        ? `${e[0] !== 'margin' ? ', ' : ''}${e[0]}`
+                        ? `${e[0] !== 'margin' ? ', ' : ''}${t(
+                            `trade:${e[0]}`
+                          )}`
                         : ''
                     })}
                   </Td>
@@ -121,9 +131,11 @@ const HotKeysSettings = () => {
         <div className="rounded-lg border border-th-bkg-3 p-6">
           <div className="flex flex-col items-center">
             <KeyIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-            <p className="mb-4">{t('no-hot-keys')}</p>
+            <p className="mb-4">{t('settings:no-hot-keys')}</p>
             <Button onClick={() => setShowHotKeyModal(true)}>
-              <div className="flex items-center">{t('create-hot-key')}</div>
+              <div className="flex items-center">
+                {t('settings:new-hot-key')}
+              </div>
             </Button>
           </div>
         </div>
@@ -171,7 +183,7 @@ const DEFAULT_FORM_VALUES: HotKeyForm = {
 }
 
 const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
-  const { t } = useTranslation(['settings', 'trade'])
+  const { t } = useTranslation(['common', 'settings', 'trade'])
   const [hotKeys, setHotKeys] = useLocalStorageState<HotKey[]>(HOT_KEYS_KEY, [])
   const [hotKeyForm, setHotKeyForm] = useState<HotKeyForm>({
     ...DEFAULT_FORM_VALUES,
@@ -207,10 +219,10 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
     for (const key of triggerKey) {
       const value = form[key] as string
       if (value.length > 1) {
-        invalidFields[key] = t('error-too-many-characters')
+        invalidFields[key] = t('settings:error-too-many-characters')
       }
       if (!alphanumericRegex.test(value)) {
-        invalidFields[key] = t('error-alphanumeric-only')
+        invalidFields[key] = t('settings:error-alphanumeric-only')
       }
     }
     for (const key of requiredFields) {
@@ -219,10 +231,10 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
         if (hotKeyForm.orderType === 'market') {
           console.log(key, invalidFields[key])
           if (key !== 'price') {
-            invalidFields[key] = t('error-required-field')
+            invalidFields[key] = t('settings:error-required-field')
           }
         } else {
-          invalidFields[key] = t('error-required-field')
+          invalidFields[key] = t('settings:error-required-field')
         }
       }
     }
@@ -230,17 +242,17 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
       const value = form[key] as string
       if (value) {
         if (isNaN(parseFloat(value))) {
-          invalidFields[key] = t('error-must-be-number')
+          invalidFields[key] = t('settings:error-must-be-number')
         }
         if (parseFloat(value) < 0) {
-          invalidFields[key] = t('error-must-be-above-zero')
+          invalidFields[key] = t('settings:error-must-be-above-zero')
         }
         if (parseFloat(value) > 100) {
           if (key === 'price') {
-            invalidFields[key] = t('error-must-be-below-100')
+            invalidFields[key] = t('settings:error-must-be-below-100')
           } else {
             if (hotKeyForm.sizeType === 'percentage') {
-              invalidFields[key] = t('error-must-be-below-100')
+              invalidFields[key] = t('settings:error-must-be-below-100')
             }
           }
         }
@@ -276,9 +288,9 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <>
-        <h2 className="mb-4 text-center">{t('create-hot-key')}</h2>
+        <h2 className="mb-4 text-center">{t('settings:new-hot-key')}</h2>
         <div className="mb-4">
-          <Label text={t('base-key')} />
+          <Label text={t('settings:base-key')} />
           <ButtonGroup
             activeValue={hotKeyForm.baseKey}
             onChange={(key) => handleSetForm('baseKey', key)}
@@ -286,7 +298,7 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
           />
         </div>
         <div className="mb-4">
-          <Label text={t('trigger-key')} />
+          <Label text={t('settings:trigger-key')} />
           <Input
             hasError={formErrors.triggerKey !== undefined}
             type="text"
@@ -305,32 +317,43 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
           ) : null}
         </div>
         <div className="mb-4">
-          <Label text={t('order-side')} />
+          <Label text={t('settings:order-side')} />
           <ButtonGroup
             activeValue={hotKeyForm.side}
+            names={[t('buy'), t('sell')]}
             onChange={(side) => handleSetForm('side', side)}
             values={['buy', 'sell']}
           />
         </div>
         <div className="mb-4">
-          <Label text={t('order-type')} />
+          <Label text={t('trade:order-type')} />
           <ButtonGroup
             activeValue={hotKeyForm.orderType}
+            names={[t('trade:limit'), t('market')]}
             onChange={(type) => handleSetForm('orderType', type)}
             values={['limit', 'market']}
           />
         </div>
         <div className="mb-4">
-          <Label text={t('order-size-type')} />
+          <Label text={t('settings:order-size-type')} />
           <ButtonGroup
             activeValue={hotKeyForm.sizeType}
+            names={[t('settings:percentage'), t('settings:notional')]}
             onChange={(type) => handleSetForm('sizeType', type)}
             values={['percentage', 'notional']}
           />
         </div>
         <div className="flex items-start space-x-4">
           <div className="w-full">
-            <Label text={t('size')} />
+            <Tooltip
+              content={
+                hotKeyForm.sizeType === 'notional'
+                  ? t('settings:tooltip-hot-key-notional-size')
+                  : t('settings:tooltip-hot-key-percentage-size')
+              }
+            >
+              <Label className="tooltip-underline" text={t('trade:size')} />
+            </Tooltip>
             <Input
               hasError={formErrors.size !== undefined}
               type="text"
@@ -351,7 +374,7 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
           </div>
           {hotKeyForm.orderType === 'limit' ? (
             <div className="w-full">
-              <Tooltip content="Set a price as a percentage change from the oracle price">
+              <Tooltip content={t('settings:tooltip-hot-key-price')}>
                 <Label className="tooltip-underline" text={t('price')} />
               </Tooltip>
               <Input
@@ -444,7 +467,7 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
           </div>
         </div>
         <Button className="mt-6 w-full" onClick={handleSave}>
-          {t('save-hot-key')}
+          {t('settings:save-hot-key')}
         </Button>
       </>
     </Modal>
