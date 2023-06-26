@@ -141,9 +141,13 @@ const TokenDetailsTable = () => {
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5 text-right">
-                        <p>{bank.initAssetWeight.toFixed(2)}</p>
+                        <p>
+                          {bank.scaledInitAssetWeight(bank.price).toFixed(2)}
+                        </p>
                         <span className="text-th-fgd-4">|</span>
-                        <p>{bank.initLiabWeight.toFixed(2)}</p>
+                        <p>
+                          {bank.scaledInitLiabWeight(bank.price).toFixed(2)}
+                        </p>
                       </div>
                     </Td>
                     <Td>
@@ -254,11 +258,15 @@ const TokenDetailsTable = () => {
                             </Tooltip>
                             <div className="flex space-x-1.5 text-right font-mono">
                               <p className="text-th-fgd-1">
-                                {bank.initAssetWeight.toFixed(2)}
+                                {bank
+                                  .scaledInitAssetWeight(bank.price)
+                                  .toFixed(2)}
                               </p>
                               <span className="text-th-fgd-4">|</span>
                               <p className="text-th-fgd-1">
-                                {bank.initLiabWeight.toFixed(2)}
+                                {bank
+                                  .scaledInitLiabWeight(bank.price)
+                                  .toFixed(2)}
                               </p>
                             </div>
                           </div>

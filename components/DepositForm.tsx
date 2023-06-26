@@ -264,14 +264,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                   <p>{t('deposit-amount')}</p>
                   <BankAmountWithValue amount={inputAmount} bank={bank} />
                 </div>
-                {/* <div className="flex justify-between">
-              <div className="flex items-center">
-                <Tooltip content={t('asset-weight-desc')}>
-                  <p className="tooltip-underline">{t('asset-weight')}</p>
-                </Tooltip>
-              </div>
-              <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
-            </div> */}
                 <div className="flex justify-between">
                   <Tooltip content={t('tooltip-collateral-value')}>
                     <p className="tooltip-underline">{t('collateral-value')}</p>
@@ -281,7 +273,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                       value={
                         bank.uiPrice *
                         Number(inputAmount) *
-                        Number(bank.initAssetWeight)
+                        Number(bank.scaledInitAssetWeight(bank.price))
                       }
                       isUsd
                     />

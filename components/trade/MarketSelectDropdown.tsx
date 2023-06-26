@@ -11,17 +11,24 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { DEFAULT_MARKET_NAME } from 'utils/constants'
-import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatCurrencyValue,
+  formatNumericValue,
+  getDecimalCount,
+} from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 import SoonBadge from '@components/shared/SoonBadge'
+import TabButtons from '@components/shared/TabButtons'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 
 const MARKET_LINK_WRAPPER_CLASSES =
   'flex items-center justify-between px-4 md:pl-6 md:pr-4'
 
 const MARKET_LINK_CLASSES =
-  'mr-2 -ml-3 flex w-full items-center justify-between rounded-md py-2 px-3 focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
+  'mr-1 -ml-3 flex w-full items-center justify-between rounded-md py-2 px-3 focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
 
 const MARKET_LINK_DISABLED_CLASSES =
   'mr-2 -ml-3 flex w-full items-center justify-between rounded-md py-2 px-3 md:hover:cursor-not-allowed'
@@ -29,6 +36,9 @@ const MARKET_LINK_DISABLED_CLASSES =
 const MarketSelectDropdown = () => {
   const { t } = useTranslation('common')
   const { selectedMarket } = useSelectedMarket()
+  const [spotOrPerp, setSpotOrPerp] = useState(
+    selectedMarket instanceof PerpMarket ? 'perp' : 'spot'
+  )
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const allPerpMarkets = mangoStore((s) => s.perpMarkets)
   const perpStats = mangoStore((s) => s.perpStats.data)
@@ -36,7 +46,7 @@ const MarketSelectDropdown = () => {
   const { group } = useMangoGroup()
   const { data: birdeyePrices, isLoading: loadingPrices } =
     useBirdeyeMarketPrices()
-  // const [spotBaseFilter, setSpotBaseFilter] = useState('All')
+  const [spotBaseFilter, setSpotBaseFilter] = useState('All')
 
   const perpMarkets = useMemo(() => {
     return allPerpMarkets
@@ -50,19 +60,31 @@ const MarketSelectDropdown = () => {
       )
   }, [allPerpMarkets])
 
-  // const spotBaseTokens: string[] = useMemo(() => {
-  //   if (serumMarkets.length) {
-  //     const baseTokens: string[] = []
-  //     serumMarkets.map((m) => {
-  //       const base = m.name.split('/')[1]
-  //       if (!baseTokens.includes(base)) {
-  //         baseTokens.push(base)
-  //       }
-  //     })
-  //     return baseTokens
-  //   }
-  //   return []
-  // }, [serumMarkets])
+  const spotBaseTokens: string[] = useMemo(() => {
+    if (serumMarkets.length) {
+      const baseTokens: string[] = ['All']
+      serumMarkets.map((m) => {
+        const base = m.name.split('/')[1]
+        if (!baseTokens.includes(base)) {
+          baseTokens.push(base)
+        }
+      })
+      return baseTokens.sort((a, b) => a.localeCompare(b))
+    }
+    return ['All']
+  }, [serumMarkets])
+
+  const serumMarketsToShow = useMemo(() => {
+    if (!serumMarkets || !serumMarkets.length) return []
+    if (spotBaseFilter !== 'All') {
+      return serumMarkets.filter((m) => {
+        const base = m.name.split('/')[1]
+        return base === spotBaseFilter
+      })
+    } else {
+      return serumMarkets
+    }
+  }, [serumMarkets, spotBaseFilter])
 
   return (
     <Popover>
@@ -84,136 +106,196 @@ const MarketSelectDropdown = () => {
               } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute -left-4 top-12 z-40 mr-4 w-screen rounded-none bg-th-bkg-2 pb-4 pt-2 md:-left-6 md:w-96 md:rounded-br-md">
-            <p className="my-2 ml-4 text-xs md:ml-6">{t('perp')}</p>
-            {perpMarkets?.length
-              ? perpMarkets.map((m) => {
-                  const changeData = getOneDayPerpStats(perpStats, m.name)
-                  const isComingSoon = m.oracleLastUpdatedSlot == 0
+          <Popover.Panel className="absolute -left-4 top-12 z-40 mr-4 w-screen rounded-none border-y border-r border-th-bkg-3 bg-th-bkg-2 md:-left-6 md:w-[420px] md:rounded-br-md">
+            <div className="border-b border-th-bkg-3">
+              <TabButtons
+                activeValue={spotOrPerp}
+                onChange={(v) => setSpotOrPerp(v)}
+                values={[
+                  ['perp', 0],
+                  ['spot', 0],
+                ]}
+                fillWidth
+              />
+            </div>
+            <div className="py-3">
+              {spotOrPerp === 'perp' && perpMarkets?.length
+                ? perpMarkets.map((m) => {
+                    const changeData = getOneDayPerpStats(perpStats, m.name)
+                    const isComingSoon = m.oracleLastUpdatedSlot == 0
 
-                  const change = changeData.length
-                    ? ((m.uiPrice - changeData[0].price) /
-                        changeData[0].price) *
-                      100
-                    : 0
-                  return (
-                    <div
-                      className={MARKET_LINK_WRAPPER_CLASSES}
-                      key={m.publicKey.toString()}
-                      onClick={() => {
-                        if (!isComingSoon) close()
-                      }}
-                    >
-                      {!isComingSoon ? (
-                        <>
+                    const change = changeData.length
+                      ? ((m.uiPrice - changeData[0].price) /
+                          changeData[0].price) *
+                        100
+                      : 0
+                    return (
+                      <div
+                        className={MARKET_LINK_WRAPPER_CLASSES}
+                        key={m.publicKey.toString()}
+                      >
+                        {!isComingSoon ? (
+                          <>
+                            <Link
+                              className={MARKET_LINK_CLASSES}
+                              href={{
+                                pathname: '/trade',
+                                query: { name: m.name },
+                              }}
+                              onClick={() => {
+                                close()
+                              }}
+                              shallow={true}
+                            >
+                              <div className="flex items-center">
+                                <MarketLogos market={m} />
+                                <span className="text-th-fgd-2">{m.name}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="mr-3 font-mono text-xs text-th-fgd-2">
+                                  {formatCurrencyValue(
+                                    m.uiPrice,
+                                    getDecimalCount(m.tickSize)
+                                  )}
+                                </span>
+                                {!loadingPerpStats ? (
+                                  <Change
+                                    change={change}
+                                    suffix="%"
+                                    size="small"
+                                  />
+                                ) : (
+                                  <SheenLoader className="mt-0.5">
+                                    <div className="h-3.5 w-12 bg-th-bkg-2" />
+                                  </SheenLoader>
+                                )}
+                              </div>
+                            </Link>
+                            <FavoriteMarketButton market={m} />
+                          </>
+                        ) : (
+                          <span className={MARKET_LINK_DISABLED_CLASSES}>
+                            <div className="flex items-center">
+                              <MarketLogos market={m} />
+                              <span className="mr-2">{m.name}</span>
+                              <SoonBadge />
+                            </div>
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })
+                : null}
+              {spotOrPerp === 'spot' && serumMarkets?.length ? (
+                <>
+                  <div className="mb-3 px-4 md:px-6">
+                    {spotBaseTokens.map((tab) => (
+                      <button
+                        className={`rounded-md py-1.5 px-2.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
+                          spotBaseFilter === tab
+                            ? 'bg-th-bkg-3 text-th-active md:hover:text-th-active'
+                            : 'text-th-fgd-3 md:hover:text-th-fgd-2'
+                        }`}
+                        onClick={() => setSpotBaseFilter(tab)}
+                        key={tab}
+                      >
+                        {t(tab)}
+                      </button>
+                    ))}
+                  </div>
+                  {serumMarketsToShow
+                    .map((x) => x)
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((m) => {
+                      const birdeyeData = birdeyePrices?.length
+                        ? birdeyePrices.find(
+                            (market) =>
+                              market.mint === m.serumMarketExternal.toString()
+                          )
+                        : null
+                      const baseBank = group?.getFirstBankByTokenIndex(
+                        m.baseTokenIndex
+                      )
+                      const quoteBank = group?.getFirstBankByTokenIndex(
+                        m.quoteTokenIndex
+                      )
+                      const market = group?.getSerum3ExternalMarket(
+                        m.serumMarketExternal
+                      )
+                      let price
+                      if (baseBank && market && quoteBank) {
+                        price = floorToDecimal(
+                          baseBank.uiPrice / quoteBank.uiPrice,
+                          getDecimalCount(market.tickSize)
+                        ).toNumber()
+                      }
+                      const change =
+                        birdeyeData && price
+                          ? ((price - birdeyeData.data[0].value) /
+                              birdeyeData.data[0].value) *
+                            100
+                          : 0
+                      return (
+                        <div
+                          className={MARKET_LINK_WRAPPER_CLASSES}
+                          key={m.publicKey.toString()}
+                        >
                           <Link
                             className={MARKET_LINK_CLASSES}
                             href={{
                               pathname: '/trade',
                               query: { name: m.name },
                             }}
+                            onClick={() => {
+                              close()
+                            }}
                             shallow={true}
                           >
                             <div className="flex items-center">
                               <MarketLogos market={m} />
-                              <span>{m.name}</span>
+                              <span className="text-th-fgd-2">{m.name}</span>
                             </div>
-                            {!loadingPerpStats ? (
-                              <Change change={change} suffix="%" />
-                            ) : (
-                              <SheenLoader className="mt-0.5">
-                                <div className="h-3.5 w-12 bg-th-bkg-2" />
-                              </SheenLoader>
-                            )}
+                            <div className="flex items-center">
+                              {price && market?.tickSize ? (
+                                <span className="mr-3 font-mono text-xs text-th-fgd-2">
+                                  {quoteBank?.name === 'USDC' ? '$' : ''}
+                                  {getDecimalCount(market.tickSize) <= 6
+                                    ? formatNumericValue(
+                                        price,
+                                        getDecimalCount(market.tickSize)
+                                      )
+                                    : price.toExponential(3)}{' '}
+                                  {quoteBank?.name !== 'USDC' ? (
+                                    <span className="font-body text-th-fgd-3">
+                                      {quoteBank?.name}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              ) : null}
+                              {!loadingPrices ? (
+                                change ? (
+                                  <Change
+                                    change={change}
+                                    suffix="%"
+                                    size="small"
+                                  />
+                                ) : (
+                                  <span className="text-th-fgd-3">–</span>
+                                )
+                              ) : (
+                                <SheenLoader className="mt-0.5">
+                                  <div className="h-3.5 w-12 bg-th-bkg-2" />
+                                </SheenLoader>
+                              )}
+                            </div>
                           </Link>
                           <FavoriteMarketButton market={m} />
-                        </>
-                      ) : (
-                        <span className={MARKET_LINK_DISABLED_CLASSES}>
-                          <div className="flex items-center">
-                            <MarketLogos market={m} />
-                            <span className="mr-2">{m.name}</span>
-                            <SoonBadge />
-                          </div>
-                        </span>
-                      )}
-                    </div>
-                  )
-                })
-              : null}
-            <p className="my-2 ml-4 text-xs md:ml-6">{t('spot')}</p>
-            {serumMarkets?.length ? (
-              <>
-                {serumMarkets
-                  .map((x) => x)
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((m) => {
-                    const birdeyeData = birdeyePrices?.length
-                      ? birdeyePrices.find(
-                          (market) =>
-                            market.mint === m.serumMarketExternal.toString()
-                        )
-                      : null
-                    const baseBank = group?.getFirstBankByTokenIndex(
-                      m.baseTokenIndex
-                    )
-                    const quoteBank = group?.getFirstBankByTokenIndex(
-                      m.quoteTokenIndex
-                    )
-                    const market = group?.getSerum3ExternalMarket(
-                      m.serumMarketExternal
-                    )
-                    let price
-                    if (baseBank && market && quoteBank) {
-                      price = floorToDecimal(
-                        baseBank.uiPrice / quoteBank.uiPrice,
-                        getDecimalCount(market.tickSize)
-                      ).toNumber()
-                    }
-                    const change =
-                      birdeyeData && price
-                        ? ((price - birdeyeData.data[0].value) /
-                            birdeyeData.data[0].value) *
-                          100
-                        : 0
-                    return (
-                      <div
-                        className={MARKET_LINK_WRAPPER_CLASSES}
-                        key={m.publicKey.toString()}
-                        onClick={() => {
-                          close()
-                        }}
-                      >
-                        <Link
-                          className={MARKET_LINK_CLASSES}
-                          href={{
-                            pathname: '/trade',
-                            query: { name: m.name },
-                          }}
-                          shallow={true}
-                        >
-                          <div className="flex items-center">
-                            <MarketLogos market={m} />
-                            <span>{m.name}</span>
-                          </div>
-                          {!loadingPrices ? (
-                            change ? (
-                              <Change change={change} suffix="%" />
-                            ) : (
-                              <span className="text-th-fgd-3">–</span>
-                            )
-                          ) : (
-                            <SheenLoader className="mt-0.5">
-                              <div className="h-3.5 w-12 bg-th-bkg-2" />
-                            </SheenLoader>
-                          )}
-                        </Link>
-                        <FavoriteMarketButton market={m} />
-                      </div>
-                    )
-                  })}
-              </>
-            ) : null}
+                        </div>
+                      )
+                    })}
+                </>
+              ) : null}
+            </div>
           </Popover.Panel>
         </div>
       )}

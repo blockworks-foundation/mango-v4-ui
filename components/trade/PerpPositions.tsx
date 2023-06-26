@@ -17,13 +17,18 @@ import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useCallback, useState } from 'react'
-import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatCurrencyValue,
+  getDecimalCount,
+} from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import MarketCloseModal from './MarketCloseModal'
 import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
+import Tooltip from '@components/shared/Tooltip'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -119,7 +124,7 @@ const PerpPositions = () => {
                     <Th className="text-right">{`${t('trade:unsettled')} ${t(
                       'pnl'
                     )}`}</Th>
-                    <Th className="text-right">{t('pnl')}</Th>
+                    <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
                     {!isUnownedAccount ? <Th /> : null}
                   </TrHead>
                 </thead>
@@ -140,8 +145,10 @@ const PerpPositions = () => {
                     if (!basePosition) return null
 
                     const unsettledPnl = position.getUnsettledPnlUi(market)
-                    const cummulativePnl =
+                    const totalPnl =
                       position.cumulativePnlOverPositionLifetimeUi(market)
+                    const unrealizedPnl = position.getUnRealizedPnlUi(market)
+                    const realizedPnl = position.getRealizedPnlUi()
 
                     return (
                       <TrBody
@@ -207,16 +214,31 @@ const PerpPositions = () => {
                             decimals={2}
                           />
                         </Td>
-                        <Td
-                          className={`text-right font-mono ${
-                            cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
-                          }`}
-                        >
-                          <FormatNumericValue
-                            value={cummulativePnl}
-                            isUsd
-                            decimals={2}
-                          />
+                        <Td className="text-right font-mono">
+                          <Tooltip
+                            content={
+                              <PnlTooltipContent
+                                unrealizedPnl={unrealizedPnl}
+                                realizedPnl={realizedPnl}
+                                totalPnl={totalPnl}
+                              />
+                            }
+                            delay={100}
+                          >
+                            <span
+                              className={`tooltip-underline ${
+                                unrealizedPnl > 0
+                                  ? 'text-th-up'
+                                  : 'text-th-down'
+                              }`}
+                            >
+                              <FormatNumericValue
+                                value={unrealizedPnl}
+                                isUsd
+                                decimals={2}
+                              />
+                            </span>
+                          </Tooltip>
                         </Td>
                         {!isUnownedAccount ? (
                           <Td>
@@ -271,8 +293,10 @@ const PerpPositions = () => {
                 selectedMarket.perpMarketIndex === position.marketIndex
 
               if (!basePosition) return null
-              const cummulativePnl =
+              const totalPnl =
                 position.cumulativePnlOverPositionLifetimeUi(market)
+              const unrealizedPnl = position.getUnRealizedPnlUi(market)
+              const realizedPnl = position.getRealizedPnlUi()
               return (
                 <div
                   className="flex items-center justify-between border-b border-th-bkg-3 p-4"
@@ -338,11 +362,24 @@ const PerpPositions = () => {
                   <div className="flex items-center space-x-4">
                     <div
                       className={`text-right font-mono leading-none ${
-                        cummulativePnl > 0 ? 'text-th-up' : 'text-th-down'
+                        unrealizedPnl > 0 ? 'text-th-up' : 'text-th-down'
                       }`}
                     >
-                      <p className="mb-1 text-th-fgd-4">PnL</p>
-                      <FormatNumericValue value={cummulativePnl} isUsd />
+                      <Tooltip
+                        content={
+                          <PnlTooltipContent
+                            unrealizedPnl={unrealizedPnl}
+                            realizedPnl={realizedPnl}
+                            totalPnl={totalPnl}
+                          />
+                        }
+                        delay={100}
+                      >
+                        <p className="tooltip-underline mb-1 font-body text-th-fgd-4">
+                          {t('trade:unrealized-pnl')}
+                        </p>
+                      </Tooltip>
+                      <FormatNumericValue value={unrealizedPnl} isUsd />
                     </div>
                     {!isUnownedAccount ? (
                       <Button
@@ -383,3 +420,46 @@ const PerpPositions = () => {
 }
 
 export default PerpPositions
+
+const PnlTooltipContent = ({
+  unrealizedPnl,
+  realizedPnl,
+  totalPnl,
+}: {
+  unrealizedPnl: number
+  realizedPnl: number
+  totalPnl: number
+}) => {
+  const { t } = useTranslation(['common', 'trade'])
+  return (
+    <>
+      <div className="mb-3 space-y-1">
+        <div className="flex justify-between">
+          <p className="mr-3">{t('trade:unrealized-pnl')}</p>
+          <span className="font-mono text-th-fgd-2">
+            {formatCurrencyValue(unrealizedPnl, 2)}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <p className="mr-3">{t('trade:realized-pnl')}</p>
+          <span className="font-mono text-th-fgd-2">
+            {formatCurrencyValue(realizedPnl, 2)}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <p className="mr-3">{t('trade:total-pnl')}</p>
+          <span className="font-mono text-th-fgd-2">
+            {formatCurrencyValue(totalPnl, 2)}
+          </span>
+        </div>
+      </div>
+      <a
+        href="https://docs.mango.markets/mango-markets/settle-pnl"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t('learn-more')}
+      </a>
+    </>
+  )
+}

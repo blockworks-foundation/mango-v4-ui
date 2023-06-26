@@ -1,4 +1,4 @@
-import { AnchorProvider, Program } from '@project-serum/anchor'
+import { AnchorProvider, Program } from '@coral-xyz/anchor'
 import { PythHttpClient } from '@pythnetwork/client'
 import { notify } from 'utils/notifications'
 import { MAINNET_PYTH_PROGRAM } from './constants'
