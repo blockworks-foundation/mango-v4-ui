@@ -17,7 +17,9 @@ import Tooltip from '@components/shared/Tooltip'
 const RPC_URLS = [
   {
     label: 'Triton',
-    value: 'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+    value:
+      process.env.NEXT_PUBLIC_ENDPOINT ||
+      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
   },
   // {
   //   label: 'Genesys Go',

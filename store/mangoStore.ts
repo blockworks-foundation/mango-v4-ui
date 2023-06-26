@@ -75,10 +75,10 @@ const ENDPOINTS = [
     name: 'mainnet-beta',
     url:
       process.env.NEXT_PUBLIC_ENDPOINT ||
-      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
     websocket:
       process.env.NEXT_PUBLIC_ENDPOINT ||
-      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
     custom: false,
   },
   {
