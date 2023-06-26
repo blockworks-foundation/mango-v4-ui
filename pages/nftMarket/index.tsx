@@ -21,6 +21,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useState } from 'react'
 import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 import { useTranslation } from 'next-i18next'
+import ResponsivePagination from 'react-responsive-pagination'
 
 const filter = [ALL_FILTER, 'My Listings']
 
@@ -47,19 +48,20 @@ const Market: NextPage = () => {
   const wallet = useWallet()
   const metaplex = metaplexStore((s) => s.metaplex)
   const { t } = useTranslation(['nftMarket'])
-  const { data: auctionHouse } = useAuctionHouse()
   const [currentFilter, setCurrentFilter] = useState(ALL_FILTER)
-  const { refetch } = useLazyListings()
-  const { data: listings } = useListings(currentFilter)
   const { data: bids } = useBids()
 
+  const [page, setPage] = useState(1)
   const [bidListing, setBidListing] = useState<null | Listing>(null)
   const [assetBidsListing, setAssetBidsListing] = useState<null | Listing>(null)
-
+  const { data: auctionHouse } = useAuctionHouse()
   const [sellNftModal, setSellNftModal] = useState(false)
   const [myBidsModal, setMyBidsModal] = useState(false)
   const [asssetBidsModal, setAssetBidsModal] = useState(false)
   const [bidNftModal, setBidNftModal] = useState(false)
+
+  const { refetch } = useLazyListings()
+  const { data: listings } = useListings(currentFilter, page)
 
   const cancelListing = async (listing: Listing) => {
     await metaplex!.auctionHouse().cancelListing({
@@ -92,6 +94,9 @@ const Market: NextPage = () => {
   const closeBidsModal = () => {
     setAssetBidsModal(false)
     setAssetBidsListing(null)
+  }
+  const handlePageClick = (page: number) => {
+    setPage(page)
   }
 
   return (
@@ -133,7 +138,7 @@ const Market: NextPage = () => {
         )}
       </div>
       <div className="flex p-4">
-        {listings?.map((x, idx) => (
+        {listings?.results?.map((x, idx) => (
           <div className="p-4" key={idx}>
             <img src={x.asset.json?.image}></img>
             <div>
@@ -177,6 +182,13 @@ const Market: NextPage = () => {
             </div>
           </div>
         ))}
+      </div>
+      <div>
+        <ResponsivePagination
+          current={page}
+          total={listings?.totalPages || 0}
+          onPageChange={handlePageClick}
+        />
       </div>
     </div>
   )

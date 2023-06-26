@@ -27,18 +27,19 @@ export function useAuctionHouse() {
   )
 }
 
-export function useLazyListings(filter = ALL_FILTER) {
+export function useLazyListings(filter = ALL_FILTER, page = 1, perPage = 9) {
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data } = useAuctionHouse()
   const criteria = metaplex && [
     data?.address.toBase58(),
     filter,
     metaplex.identity().publicKey.toBase58(),
+    page,
   ]
 
   return useQuery(
     ['lazyListings', criteria],
-    () => fetchFilteredListing(metaplex!, data!, filter),
+    () => fetchFilteredListing(metaplex!, data!, filter, page, perPage),
     {
       enabled: !!(metaplex && data),
       staleTime: refetchMs,
@@ -48,14 +49,17 @@ export function useLazyListings(filter = ALL_FILTER) {
   )
 }
 
-export function useListings(filter = ALL_FILTER) {
-  const { data: lazyListings } = useLazyListings(filter)
+export function useListings(filter = ALL_FILTER, page = 1) {
+  const { data: lazyListings } = useLazyListings(filter, page)
   const metaplex = metaplexStore((s) => s.metaplex)
-  const criteria = lazyListings
-    ? [...lazyListings!.map((x) => x.tradeStateAddress.toBase58())]
+  const criteria = lazyListings?.results
+    ? [...lazyListings.results!.map((x) => x.tradeStateAddress.toBase58())]
     : []
 
-  const loadMetadatas = async (lazyListings: LazyListing[]) => {
+  const loadMetadatas = async (
+    lazyListings: LazyListing[],
+    totalPages: number
+  ) => {
     const listingsWithMeta = []
     for (const listing of lazyListings) {
       const listingWithMeta = await metaplex!.auctionHouse().loadListing({
@@ -67,15 +71,19 @@ export function useListings(filter = ALL_FILTER) {
 
       listingsWithMeta.push({ ...listingWithMeta })
     }
-    return listingsWithMeta
+    return { results: listingsWithMeta, totalPages: totalPages }
   }
 
-  return useQuery(['listings', criteria], () => loadMetadatas(lazyListings!), {
-    enabled: !!(metaplex && lazyListings),
-    staleTime: refetchMs,
-    retry: 1,
-    refetchInterval: refetchMs,
-  })
+  return useQuery(
+    ['listings', criteria],
+    () => loadMetadatas(lazyListings!.results!, lazyListings!.totalPages),
+    {
+      enabled: !!(metaplex && lazyListings?.results),
+      staleTime: refetchMs,
+      retry: 1,
+      refetchInterval: refetchMs,
+    }
+  )
 }
 
 export function useBids() {
