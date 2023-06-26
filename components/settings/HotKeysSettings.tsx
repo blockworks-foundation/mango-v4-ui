@@ -320,7 +320,9 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
             hasError={formErrors.triggerKey !== undefined}
             type="text"
             value={hotKeyForm.triggerKey}
-            onChange={(e) => handleSetForm('triggerKey', e.target.value)}
+            onChange={(e) =>
+              handleSetForm('triggerKey', e.target.value.toLowerCase())
+            }
           />
           {formErrors.triggerKey ? (
             <div className="mt-1">
