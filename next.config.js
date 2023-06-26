@@ -5,7 +5,12 @@ const webpack = require('webpack')
 const nextConfig = {
   i18n,
   images: {
-    domains: ['raw.githubusercontent.com', 'arweave.net', 'www.dual.finance'],
+    domains: [
+      'raw.githubusercontent.com',
+      'arweave.net',
+      'www.dual.finance',
+      'storage.googleapis.com',
+    ],
   },
   reactStrictMode: true,
   //proxy for openserum api cors
