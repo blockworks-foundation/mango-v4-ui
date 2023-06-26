@@ -75,38 +75,52 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     return logoURI
   }, [bank?.mint, mangoTokens])
 
-  const tokenMax = useMemo(() => {
-    if (!bank || !mangoAccount || !group) return new Decimal(0)
-    const amount = getMaxWithdrawForBank(group, bank, mangoAccount)
-
-    return amount
+  const [adjustedTokenMax, tokenMax] = useMemo(() => {
+    if (!bank || !mangoAccount || !group)
+      return [new Decimal(0), new Decimal(0)]
+    const tokenMax = getMaxWithdrawForBank(group, bank, mangoAccount).toNumber()
+    let adjustedTokenMax = tokenMax
+    const balance = mangoAccount.getTokenBalanceUi(bank)
+    if (tokenMax < balance) {
+      adjustedTokenMax = tokenMax * 0.998
+    }
+    return [new Decimal(adjustedTokenMax), new Decimal(tokenMax)]
   }, [mangoAccount, bank, group])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       if (!bank) return
       setSizePercentage(percentage)
-      const amount = floorToDecimal(
-        new Decimal(tokenMax).mul(percentage).div(100),
-        bank.mintDecimals
-      )
-      setInputAmount(amount.toFixed())
+      let amount: Decimal
+      if (percentage !== '100') {
+        amount = floorToDecimal(
+          new Decimal(adjustedTokenMax).mul(percentage).div(100),
+          bank.mintDecimals
+        )
+      } else {
+        amount = floorToDecimal(
+          new Decimal(adjustedTokenMax),
+          bank.mintDecimals
+        )
+      }
+      setInputAmount(amount.toString())
     },
-    [bank, tokenMax]
+    [bank, adjustedTokenMax]
   )
 
   const setMax = useCallback(() => {
     if (!bank) return
-    const max = floorToDecimal(tokenMax, bank.mintDecimals)
-    setInputAmount(max.toFixed())
+    const max = floorToDecimal(adjustedTokenMax, bank.mintDecimals)
+    setInputAmount(max.toString())
     setSizePercentage('100')
-  }, [bank, tokenMax])
+  }, [bank, adjustedTokenMax])
 
   const handleWithdraw = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
+    const withdrawAmount = parseFloat(inputAmount)
     if (!mangoAccount || !group || !bank) return
     setSubmitting(true)
     try {
@@ -114,7 +128,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         group,
         mangoAccount,
         bank.mint,
-        parseFloat(inputAmount),
+        withdrawAmount,
         false
       )
       notify({
@@ -201,7 +215,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                     decimals={bank.mintDecimals}
                     label={t('max')}
                     onClick={setMax}
-                    value={tokenMax}
+                    value={adjustedTokenMax}
                   />
                 ) : null}
               </div>

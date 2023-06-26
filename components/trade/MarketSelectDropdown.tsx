@@ -22,6 +22,7 @@ import {
 import MarketLogos from './MarketLogos'
 import SoonBadge from '@components/shared/SoonBadge'
 import TabButtons from '@components/shared/TabButtons'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 
 const MARKET_LINK_WRAPPER_CLASSES =
   'flex items-center justify-between px-4 md:pl-6 md:pr-4'
@@ -35,7 +36,9 @@ const MARKET_LINK_DISABLED_CLASSES =
 const MarketSelectDropdown = () => {
   const { t } = useTranslation('common')
   const { selectedMarket } = useSelectedMarket()
-  const [spotOrPerp, setSpotOrPerp] = useState('perp')
+  const [spotOrPerp, setSpotOrPerp] = useState(
+    selectedMarket instanceof PerpMarket ? 'perp' : 'spot'
+  )
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const allPerpMarkets = mangoStore((s) => s.perpMarkets)
   const perpStats = mangoStore((s) => s.perpStats.data)
@@ -130,9 +133,6 @@ const MarketSelectDropdown = () => {
                       <div
                         className={MARKET_LINK_WRAPPER_CLASSES}
                         key={m.publicKey.toString()}
-                        onClick={() => {
-                          if (!isComingSoon) close()
-                        }}
                       >
                         {!isComingSoon ? (
                           <>
@@ -141,6 +141,9 @@ const MarketSelectDropdown = () => {
                               href={{
                                 pathname: '/trade',
                                 query: { name: m.name },
+                              }}
+                              onClick={() => {
+                                close()
                               }}
                               shallow={true}
                             >
@@ -236,15 +239,15 @@ const MarketSelectDropdown = () => {
                         <div
                           className={MARKET_LINK_WRAPPER_CLASSES}
                           key={m.publicKey.toString()}
-                          onClick={() => {
-                            close()
-                          }}
                         >
                           <Link
                             className={MARKET_LINK_CLASSES}
                             href={{
                               pathname: '/trade',
                               query: { name: m.name },
+                            }}
+                            onClick={() => {
+                              close()
                             }}
                             shallow={true}
                           >
