@@ -76,10 +76,11 @@ const Dashboard: NextPage = () => {
       //there is more fileds they are just not used on ui
     }
     const resp = await fetch(
-      'https://0.0.0.0:8000/v4/risk/listed_tokens_price_impacts'
+      'https://api.mngo.cloud/data/v4/risk/listed-tokens-one-week-price-impacts'
     )
     const jsonReps = await resp.json()
-    const filteredResp = (jsonReps.results as PriceImpactResp[])
+
+    const filteredResp = (jsonReps as PriceImpactResp[])
       .filter((x) => x.avg_price_impact_percent < 1 && x.side === 'ask')
       .reduce(
         (acc: { [key: string]: PriceImpactResp }, val: PriceImpactResp) => {
