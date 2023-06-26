@@ -10,12 +10,14 @@ import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 import Button from '@components/shared/Button'
 import metaplexStore from '@store/metaplexStore'
 import { LazyBid, Listing, PublicBid } from '@metaplex-foundation/js'
+import { useTranslation } from 'next-i18next'
 
 const AssetBidsModal = ({
   isOpen,
   onClose,
   listing,
 }: ModalProps & { listing: Listing }) => {
+  const { t } = useTranslation(['nftMarket'])
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data: auctionHouse } = useAuctionHouse()
   const { data: lazyBids, refetch: reftechBids } = useBids()
@@ -23,7 +25,7 @@ const AssetBidsModal = ({
   const assetBids = lazyBids?.filter((x) =>
     x.metadataAddress.equals(listing.asset.metadataAddress)
   )
-  console.log(listing)
+
   const acceptBid = async (lazyBid: LazyBid) => {
     const bid = await metaplex!.auctionHouse().loadBid({
       lazyBid,
@@ -47,7 +49,7 @@ const AssetBidsModal = ({
             <div>{x.createdAt.toNumber()}</div>
             <div>{toUiDecimals(x.price.basisPoints, MANGO_MINT_DECIMALS)}</div>
             <div>
-              <Button onClick={() => acceptBid(x)}>Accept bid</Button>
+              <Button onClick={() => acceptBid(x)}>{t('accept-bid')}</Button>
             </div>
           </p>
         ))}

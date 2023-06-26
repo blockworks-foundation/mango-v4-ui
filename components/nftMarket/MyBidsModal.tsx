@@ -12,10 +12,12 @@ import { ImgWithLoader } from '@components/ImgWithLoader'
 import Button from '@components/shared/Button'
 import metaplexStore from '@store/metaplexStore'
 import { Bid } from '@metaplex-foundation/js'
+import { useTranslation } from 'next-i18next'
 
 const MyBidsModal = ({ isOpen, onClose }: ModalProps) => {
   const { publicKey } = useWallet()
   const metaplex = metaplexStore((s) => s.metaplex)
+  const { t } = useTranslation(['nftMarket'])
   const { data: auctionHouse } = useAuctionHouse()
   const { data: lazyBids, refetch } = useBids()
   const myBids =
@@ -46,7 +48,7 @@ const MyBidsModal = ({ isOpen, onClose }: ModalProps) => {
             <div>{x.createdAt.toNumber()}</div>
             <div>{toUiDecimals(x.price.basisPoints, MANGO_MINT_DECIMALS)}</div>
             <div>
-              <Button onClick={() => cancelBid(x)}>Cancel</Button>
+              <Button onClick={() => cancelBid(x)}>{t('cancel')}</Button>
             </div>
           </p>
         ))}

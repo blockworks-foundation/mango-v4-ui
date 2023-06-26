@@ -9,6 +9,7 @@ import { Listing } from '@metaplex-foundation/js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import metaplexStore from '@store/metaplexStore'
 import {
+  ALL_FILTER,
   useAuctionHouse,
   useBids,
   useLazyListings,
@@ -19,9 +20,9 @@ import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useState } from 'react'
 import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
+import { useTranslation } from 'next-i18next'
 
-const ALL_FILTER = 'All'
-const filter = ['All', 'My Listings']
+const filter = [ALL_FILTER, 'My Listings']
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -44,14 +45,16 @@ const Market: NextPage = () => {
   useMetaplex()
   const wallet = useWallet()
   const metaplex = metaplexStore((s) => s.metaplex)
+  const { t } = useTranslation(['nftMarket'])
   const { data: auctionHouse } = useAuctionHouse()
+  const [currentFilter, setCurrentFilter] = useState(ALL_FILTER)
   const { refetch } = useLazyListings()
-  const { data: listings } = useListings()
+  const { data: listings } = useListings(currentFilter)
   const { data: bids } = useBids()
 
   const [bidListing, setBidListing] = useState<null | Listing>(null)
   const [assetBidsListing, setAssetBidsListing] = useState<null | Listing>(null)
-  const [currentFilter, setCurrentFilter] = useState(ALL_FILTER)
+
   const [sellNftModal, setSellNftModal] = useState(false)
   const [myBidsModal, setMyBidsModal] = useState(false)
   const [asssetBidsModal, setAssetBidsModal] = useState(false)
@@ -93,8 +96,8 @@ const Market: NextPage = () => {
   return (
     <div className="flex flex-col">
       <div className="mr-5 flex space-x-4 p-4">
-        <Button onClick={() => setSellNftModal(true)}>Sell</Button>
-        <Button onClick={() => setMyBidsModal(true)}>My Bids</Button>
+        <Button onClick={() => setSellNftModal(true)}>{t('sell')}</Button>
+        <Button onClick={() => setMyBidsModal(true)}>{t('my-bids')}</Button>
         <Select
           value={currentFilter}
           onChange={(filter) => setCurrentFilter(filter)}
@@ -133,7 +136,7 @@ const Market: NextPage = () => {
           <div className="p-4" key={idx}>
             <img src={x.asset.json?.image}></img>
             <div>
-              Price:
+              {t('price')}:
               {toUiDecimals(
                 x.price.basisPoints.toNumber(),
                 MANGO_MINT_DECIMALS
@@ -143,8 +146,8 @@ const Market: NextPage = () => {
             <div className="space-x-4">
               {wallet.publicKey && !x.sellerAddress.equals(wallet.publicKey) && (
                 <>
-                  <Button onClick={() => buyAsset(x)}>Buy</Button>
-                  <Button onClick={() => openBidModal(x)}>Bid</Button>
+                  <Button onClick={() => buyAsset(x)}>{t('buy')}</Button>
+                  <Button onClick={() => openBidModal(x)}>{t('bid')}</Button>
                   {bidNftModal && bidListing && (
                     <BidNftModal
                       listing={bidListing}
@@ -157,10 +160,10 @@ const Market: NextPage = () => {
               {wallet.publicKey && x.sellerAddress.equals(wallet.publicKey) && (
                 <>
                   <Button onClick={() => cancelListing(x)}>
-                    Cancel Listing
+                    {t('cancel-listing')}
                   </Button>
                   <Button onClick={() => openBidsModal(x)}>
-                    Bids (
+                    {t('bids')} (
                     {
                       bids?.filter((bid) =>
                         bid.metadataAddress.equals(x.asset.metadataAddress)

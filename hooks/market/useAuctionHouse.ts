@@ -7,6 +7,7 @@ import {
 import metaplexStore from '@store/metaplexStore'
 import { Bid, LazyBid, LazyListing } from '@metaplex-foundation/js'
 
+export const ALL_FILTER = 'All'
 //10min
 const refetchMs = 600000
 
@@ -26,14 +27,18 @@ export function useAuctionHouse() {
   )
 }
 
-export function useLazyListings() {
+export function useLazyListings(filter = ALL_FILTER) {
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data } = useAuctionHouse()
-  const criteria = metaplex && data?.address.toBase58()
+  const criteria = metaplex && [
+    data?.address.toBase58(),
+    filter,
+    metaplex.identity().publicKey.toBase58(),
+  ]
 
   return useQuery(
     ['lazyListings', criteria],
-    () => fetchFilteredListing(metaplex!, data!),
+    () => fetchFilteredListing(metaplex!, data!, filter),
     {
       enabled: !!(metaplex && data),
       staleTime: refetchMs,
@@ -43,8 +48,8 @@ export function useLazyListings() {
   )
 }
 
-export function useListings() {
-  const { data: lazyListings } = useLazyListings()
+export function useListings(filter = ALL_FILTER) {
+  const { data: lazyListings } = useLazyListings(filter)
   const metaplex = metaplexStore((s) => s.metaplex)
   const criteria = lazyListings
     ? [...lazyListings!.map((x) => x.tradeStateAddress.toBase58())]

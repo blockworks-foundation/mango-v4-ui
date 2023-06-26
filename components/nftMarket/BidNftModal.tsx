@@ -9,6 +9,7 @@ import { Listing, token } from '@metaplex-foundation/js'
 import metaplexStore from '@store/metaplexStore'
 import { useAuctionHouse, useBids } from 'hooks/market/useAuctionHouse'
 import { ImgWithLoader } from '@components/ImgWithLoader'
+import { useTranslation } from 'next-i18next'
 
 type ListingModalProps = {
   listing: Listing
@@ -18,6 +19,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data: auctionHouse } = useAuctionHouse()
   const { refetch } = useBids()
+  const { t } = useTranslation(['nftMarket'])
 
   const [bidPrice, setBidPrice] = useState('')
 
@@ -49,7 +51,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
           }}
         ></Input>
         <Button onClick={bid} disabled={!bidPrice}>
-          Bid
+          {t('bid')}
         </Button>
       </div>
     </Modal>

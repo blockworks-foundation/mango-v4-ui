@@ -109,7 +109,7 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
             disabled={!selectedNft || !minPrice}
             onClick={() => listAsset(selectedNft!.mint, Number(minPrice))}
           >
-            List
+            {t('nftMarket:list')}
           </Button>
         </div>
       </div>
