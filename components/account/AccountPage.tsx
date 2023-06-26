@@ -59,7 +59,11 @@ const fetchFundingTotals = async (mangoAccountPk: string) => {
 
       const stats: TotalAccountFundingItem[] = entries
         .map(([key, value]) => {
-          return { ...value, market: key }
+          return {
+            long_funding: value.long_funding * -1,
+            short_funding: value.short_funding * -1,
+            market: key,
+          }
         })
         .filter((x) => x)
 
@@ -208,7 +212,7 @@ const AccountPage = () => {
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
       return totalInterestData.reduce(
-        (a, c) => a + c.borrow_interest_usd + c.deposit_interest_usd,
+        (a, c) => a + (c.borrow_interest_usd * -1 + c.deposit_interest_usd),
         0
       )
     }
@@ -416,7 +420,7 @@ const AccountPage = () => {
                     The lower your account health is the more likely you are to
                     get liquidated when prices fluctuate.
                   </p>
-                  {maintHealth < 100 ? (
+                  {maintHealth < 100 && mangoAccountAddress ? (
                     <>
                       <p className="text-xs font-bold text-th-fgd-1">
                         Your account health is {maintHealth}%

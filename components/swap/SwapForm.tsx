@@ -48,6 +48,7 @@ import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import Tooltip from '@components/shared/Tooltip'
+import { formatCurrencyValue } from 'utils/numbers'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -57,7 +58,7 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
 }
 
 const NUMBER_FORMAT_CLASSNAMES =
-  'w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:border-th-fgd-4'
+  'w-full rounded-r-lg border h-[56px] border-th-input-border bg-th-input-bkg px-3 pb-4 border-box text-right font-mono text-xl text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:border-th-fgd-4'
 
 const set = mangoStore.getState().set
 
@@ -350,7 +351,7 @@ const SwapForm = () => {
                 type="input"
               />
             </div>
-            <div className="col-span-1 flex h-[54px]">
+            <div className="relative col-span-1">
               <NumberFormat
                 inputMode="decimal"
                 thousandSeparator=","
@@ -365,6 +366,13 @@ const SwapForm = () => {
                 onValueChange={handleAmountInChange}
                 isAllowed={withValueLimit}
               />
+              <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
+                {inputBank
+                  ? formatCurrencyValue(
+                      inputBank.uiPrice * Number(amountInFormValue)
+                    )
+                  : '–'}
+              </span>
             </div>
           </div>
           <div className="-mb-2 flex justify-center">
@@ -394,25 +402,34 @@ const SwapForm = () => {
                 type="output"
               />
             </div>
-            <div className="col-span-1 flex h-[54px]">
+            <div className="relative col-span-1">
               {loadingSwapDetails ? (
-                <div className="flex w-full items-center justify-center rounded-l-none rounded-r-lg border border-th-input-border bg-th-bkg-2">
+                <div className="flex h-[56px] w-full items-center justify-center rounded-l-none rounded-r-lg border border-th-input-border bg-th-bkg-2">
                   <Loading />
                 </div>
               ) : (
-                <NumberFormat
-                  inputMode="decimal"
-                  thousandSeparator=","
-                  allowNegative={false}
-                  isNumericString={true}
-                  decimalScale={outputBank?.mintDecimals || 6}
-                  name="amountOut"
-                  id="amountOut"
-                  className={NUMBER_FORMAT_CLASSNAMES}
-                  placeholder="0.00"
-                  value={amountOutFormValue}
-                  onValueChange={handleAmountOutChange}
-                />
+                <>
+                  <NumberFormat
+                    inputMode="decimal"
+                    thousandSeparator=","
+                    allowNegative={false}
+                    isNumericString={true}
+                    decimalScale={outputBank?.mintDecimals || 6}
+                    name="amountOut"
+                    id="amountOut"
+                    className={NUMBER_FORMAT_CLASSNAMES}
+                    placeholder="0.00"
+                    value={amountOutFormValue}
+                    onValueChange={handleAmountOutChange}
+                  />
+                  <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
+                    {outputBank
+                      ? formatCurrencyValue(
+                          outputBank.uiPrice * Number(amountOutFormValue)
+                        )
+                      : '–'}
+                  </span>
+                </>
               )}
             </div>
           </div>

@@ -108,7 +108,17 @@ const SpotMarketsTable = () => {
                       <div className="flex flex-col text-right">
                         <p>
                           {price ? (
-                            <FormatNumericValue value={price} isUsd />
+                            <>
+                              <FormatNumericValue
+                                value={price}
+                                isUsd={quoteBank?.name === 'USDC'}
+                              />{' '}
+                              {quoteBank?.name !== 'USDC' ? (
+                                <span className="font-body text-th-fgd-4">
+                                  {quoteBank?.name}
+                                </span>
+                              ) : null}
+                            </>
                           ) : (
                             '–'
                           )}
@@ -300,7 +310,21 @@ const MobileSpotMarketItem = ({
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('price')}</p>
                   <p className="font-mono text-th-fgd-2">
-                    {price ? <FormatNumericValue value={price} isUsd /> : '-'}
+                    {price ? (
+                      <>
+                        <FormatNumericValue
+                          value={price}
+                          isUsd={quoteBank?.name === 'USDC'}
+                        />{' '}
+                        {quoteBank?.name !== 'USDC' ? (
+                          <span className="font-body text-th-fgd-4">
+                            {quoteBank?.name}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : (
+                      '-'
+                    )}
                   </p>
                 </div>
                 <div className="col-span-1">

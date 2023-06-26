@@ -12,7 +12,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
-import { AnchorProvider, web3 } from '@project-serum/anchor'
+import { AnchorProvider, web3 } from '@coral-xyz/anchor'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {

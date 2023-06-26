@@ -301,6 +301,27 @@ const AdvancedTradeForm = () => {
     return [minOrderDecimals, minOrderSize]
   }, [serumOrPerpMarket])
 
+  const isMarketEnabled = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!selectedMarket || !group) return false
+    if (selectedMarket instanceof PerpMarket) {
+      return selectedMarket.oracleLastUpdatedSlot !== 0
+    } else if (selectedMarket instanceof Serum3Market) {
+      const baseBank = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex
+      )
+      const quoteBank = group.getFirstBankByTokenIndex(
+        selectedMarket.quoteTokenIndex
+      )
+      return (
+        baseBank.oracleLastUpdatedSlot !== 0 &&
+        (quoteBank.name == 'USDC'
+          ? true
+          : quoteBank.oracleLastUpdatedSlot !== 0)
+      )
+    }
+  }, [selectedMarket])
+
   /*
    * Updates the limit price on page load
    */
@@ -459,7 +480,8 @@ const AdvancedTradeForm = () => {
   const disabled =
     (connected && (!tradeForm.baseSize || !tradeForm.price)) ||
     !serumOrPerpMarket ||
-    parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize
+    parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize ||
+    !isMarketEnabled
 
   return (
     <div>

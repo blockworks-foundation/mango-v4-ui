@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { AnchorProvider, BN, Wallet, web3 } from '@project-serum/anchor'
+import { AnchorProvider, BN, Wallet, web3 } from '@coral-xyz/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
@@ -482,7 +482,15 @@ const mangoStore = create<MangoStore>()(
 
               const latestFeed = entries
                 .map(([key, value]) => {
-                  return { ...value, symbol: key }
+                  // ETH should be renamed to ETH (Portal) in the database
+                  let symbol = value.activity_details.symbol
+                  if (symbol === 'ETH') {
+                    value.activity_details.symbol = 'ETH (Portal)'
+                  }
+                  return {
+                    ...value,
+                    symbol: key,
+                  }
                 })
                 .sort(
                   (a, b) =>
@@ -519,7 +527,14 @@ const mangoStore = create<MangoStore>()(
               group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
             const serumMarkets = Array.from(
               group.serum3MarketsMapByExternal.values()
-            )
+            ).map((m) => {
+              // remove this when market name is updated
+              if (m.name === 'MSOL/SOL') {
+                m.name = 'mSOL/SOL'
+              }
+              return m
+            })
+
             const perpMarkets = Array.from(group.perpMarketsMapByName.values())
               .filter(
                 (p) =>
