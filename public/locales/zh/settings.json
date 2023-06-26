@@ -21,6 +21,7 @@
     "dark": "暗",
     "display": "显示",
     "error-alphanumeric-only": "Alphanumeric characters only",
+    "error-key-in-use": "Hot key already in use. Choose a unique key",
     "error-must-be-above-zero": "Must be greater than zero",
     "error-must-be-below-100": "Must be below 100",
     "error-must-be-number": "Must be a number",

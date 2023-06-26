@@ -233,7 +233,6 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
       const value = form[key] as string
       if (!value) {
         if (hotKeyForm.orderType === 'market') {
-          console.log(key, invalidFields[key])
           if (key !== 'price') {
             invalidFields[key] = t('settings:error-required-field')
           }
@@ -261,6 +260,11 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
           }
         }
       }
+    }
+    const newKeySequence = `${form.baseKey}+${form.triggerKey}`
+    const keyExists = hotKeys.find((k) => k.keySequence === newKeySequence)
+    if (keyExists) {
+      invalidFields.triggerKey = t('settings:error-key-in-use')
     }
     if (Object.keys(invalidFields).length) {
       setFormErrors(invalidFields)
