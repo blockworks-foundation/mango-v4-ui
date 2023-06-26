@@ -47,6 +47,7 @@ const HotKeysSettings = () => {
         {hotKeys.length ? (
           <Button
             className="whitespace-nowrap"
+            disabled={hotKeys.length >= 20}
             onClick={() => setShowHotKeyModal(true)}
             secondary
           >
@@ -54,6 +55,14 @@ const HotKeysSettings = () => {
           </Button>
         ) : null}
       </div>
+      {hotKeys.length === 20 ? (
+        <div className="mb-4">
+          <InlineNotification
+            type="warning"
+            desc={t('settings:error-key-limit-reached')}
+          />
+        </div>
+      ) : null}
       {hotKeys.length ? (
         <Table>
           <thead>
