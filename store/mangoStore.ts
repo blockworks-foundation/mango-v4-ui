@@ -3,7 +3,7 @@ import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { AnchorProvider, BN, Wallet, web3 } from '@coral-xyz/anchor'
-import { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import { ConfirmOptions, Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
@@ -89,7 +89,10 @@ const ENDPOINTS = [
   },
 ]
 
-const options = AnchorProvider.defaultOptions()
+const options = {
+  ...AnchorProvider.defaultOptions(),
+  preflightCommitment: 'confirmed',
+} as ConfirmOptions
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
 export const emptyWallet = new EmptyWallet(Keypair.generate())
@@ -482,7 +485,7 @@ const mangoStore = create<MangoStore>()(
               const latestFeed = entries
                 .map(([key, value]) => {
                   // ETH should be renamed to ETH (Portal) in the database
-                  let symbol = value.activity_details.symbol
+                  const symbol = value.activity_details.symbol
                   if (symbol === 'ETH') {
                     value.activity_details.symbol = 'ETH (Portal)'
                   }
