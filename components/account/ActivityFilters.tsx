@@ -62,7 +62,12 @@ const ActivityFilters = () => {
     let advancedParams = ''
     Object.entries(advancedFilters).map((entry) => {
       if (entry[1].length) {
-        advancedParams = advancedParams + `&${entry[0]}=${entry[1]}`
+        // ETH should be renamed to ETH (Portal) in the database
+        const alignSymbolsToBackend = entry[1].map((e: string) =>
+          e === 'ETH (Portal)' ? 'ETH' : e
+        )
+        advancedParams =
+          advancedParams + `&${entry[0]}=${alignSymbolsToBackend}`
       }
     })
     return advancedParams

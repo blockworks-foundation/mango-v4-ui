@@ -30,14 +30,14 @@ const FavoriteMarketButton = ({
       className="flex items-center justify-center text-th-active focus-visible:text-th-fgd-4 md:hover:text-th-fgd-3"
       onClick={() => removeFromFavorites(market.name)}
     >
-      <FilledStarIcon className="h-5 w-5" />
+      <FilledStarIcon className="h-4 w-4" />
     </button>
   ) : (
     <button
       className="flex items-center justify-center text-th-fgd-4 focus-visible:text-th-active md:hover:text-th-active"
       onClick={() => addToFavorites(market.name)}
     >
-      <StarIcon className="h-5 w-5" />
+      <StarIcon className="h-4 w-4" />
     </button>
   )
 }

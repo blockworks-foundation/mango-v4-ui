@@ -28,7 +28,7 @@ const fetchBirdeyePrices = async (
   if (responses?.length) {
     return responses.map((res) => ({
       data: res.data.items,
-      mint: res.data.items[0].address,
+      mint: res.data.items[0]?.address,
     }))
   }
 

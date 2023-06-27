@@ -12,7 +12,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
-import { AnchorProvider, web3 } from '@project-serum/anchor'
+import { AnchorProvider, web3 } from '@coral-xyz/anchor'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -51,7 +51,8 @@ const RiskDashboard: NextPage = () => {
     () => {
       const provider = new AnchorProvider(
         new web3.Connection(
-          'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+          process.env.NEXT_PUBLIC_ENDPOINT ||
+            'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
           'processed'
         ),
         emptyWallet,
