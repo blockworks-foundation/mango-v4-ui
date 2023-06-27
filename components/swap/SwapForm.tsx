@@ -73,7 +73,7 @@ const SwapForm = () => {
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
-  const { isUnownedAccount } = useUnownedAccount()
+  const { isUnownedAccount, isDelegatedAccount } = useUnownedAccount()
 
   const {
     margin: useMargin,
@@ -108,6 +108,7 @@ const SwapForm = () => {
     slippage,
     swapMode,
     wallet: publicKey?.toBase58(),
+    mode: isDelegatedAccount ? 'JUPITER' : 'ALL',
   })
 
   const setAmountInFormValue = useCallback(
