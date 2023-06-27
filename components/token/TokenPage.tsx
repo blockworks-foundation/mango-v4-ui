@@ -76,7 +76,7 @@ const TokenPage = () => {
 
   const bankName = useMemo(() => {
     if (!token) return
-    return token === 'WBTC'
+    return token === 'wBTC'
       ? 'wBTC (Portal)'
       : token === 'ETH'
       ? 'ETH (Portal)'

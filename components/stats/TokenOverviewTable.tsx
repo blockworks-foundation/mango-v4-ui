@@ -109,10 +109,7 @@ const TokenOverviewTable = () => {
                     className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
                     key={bank.name}
                     onClick={() =>
-                      goToTokenPage(
-                        bank.name.split(' ')[0].toUpperCase(),
-                        router
-                      )
+                      goToTokenPage(bank.name.split(' ')[0], router)
                     }
                   >
                     <Td>
@@ -359,10 +356,7 @@ const TokenOverviewTable = () => {
                             <LinkButton
                               className="flex items-center"
                               onClick={() =>
-                                goToTokenPage(
-                                  bank.name.split(' ')[0].toUpperCase(),
-                                  router
-                                )
+                                goToTokenPage(bank.name.split(' ')[0], router)
                               }
                             >
                               {t('token:token-stats', { token: bank.name })}
