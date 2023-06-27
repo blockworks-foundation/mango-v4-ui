@@ -23,8 +23,8 @@ const RPC_URLS = [
   },
   {
     label: 'Triton Dedicated',
-    value: process.env.NEXT_PUBLIC_TRITON_TOKEN
-      ? `https://mango.rpcpool.com/${process.env.NEXT_PUBLIC_TRITON_TOKEN}`
+    value: process.env.TRITON_TOKEN
+      ? `https://mango.rpcpool.com/${process.env.TRITON_TOKEN}`
       : 'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
   },
   // {
