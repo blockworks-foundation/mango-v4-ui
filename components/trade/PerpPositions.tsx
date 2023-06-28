@@ -23,7 +23,6 @@ import { useCallback, useState } from 'react'
 import {
   floorToDecimal,
   formatCurrencyValue,
-  formatNumericValue,
   getDecimalCount,
 } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
@@ -33,6 +32,8 @@ import MarketLogos from './MarketLogos'
 import TableMarketName from './TableMarketName'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
+import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
+import useEstLiqPrice from 'hooks/useEstLiqPrice'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -45,10 +46,11 @@ const PerpPositions = () => {
   const [positionToShare, setPositionToShare] = useState<PerpPosition | null>(
     null
   )
-  const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
+  const openPerpPositions = useOpenPerpPositions()
+  const liqPrices = useEstLiqPrice()
   const { selectedMarket } = useSelectedMarket()
   const { connected } = useWallet()
-  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const { isUnownedAccount } = useUnownedAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -95,19 +97,7 @@ const PerpPositions = () => {
     setShowShareModal(true)
   }
 
-  if (!group || !mangoAccount) return null
-
-  const openPerpPositions = Object.values(perpPositions)
-    .filter((p) => p.basePositionLots.toNumber())
-    .sort((a, b) => {
-      const aMarket = group.getPerpMarketByMarketIndex(a.marketIndex)
-      const bMarket = group.getPerpMarketByMarketIndex(b.marketIndex)
-      const aBasePosition = a.getBasePositionUi(aMarket)
-      const bBasePosition = b.getBasePositionUi(bMarket)
-      const aNotional = aBasePosition * aMarket._uiPrice
-      const bNotional = bBasePosition * bMarket._uiPrice
-      return Math.abs(bNotional) - Math.abs(aNotional)
-    })
+  if (!group) return null
 
   return (
     <>
@@ -121,10 +111,15 @@ const PerpPositions = () => {
                     <Th className="text-left">{t('market')}</Th>
                     <Th className="text-right">{t('trade:size')}</Th>
                     <Th className="text-right">{t('trade:entry-price')}</Th>
-                    <Th className="text-right">{t('trade:est-liq-price')}</Th>
-                    <Th className="text-right">{`${t('trade:unsettled')} ${t(
-                      'pnl'
-                    )}`}</Th>
+                    <Th>
+                      <div className="flex justify-end">
+                        <Tooltip content={t('trade:tooltip-est-liq-price')}>
+                          <span className="tooltip-underline">
+                            {t('trade:est-liq-price')}
+                          </span>
+                        </Tooltip>
+                      </div>
+                    </Th>
                     <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
                     {!isUnownedAccount ? <Th /> : null}
                   </TrHead>
@@ -152,10 +147,9 @@ const PerpPositions = () => {
                     const unrealizedPnl = position.getUnRealizedPnlUi(market)
                     const realizedPnl = position.getRealizedPnlUi()
                     const roe = unrealizedPnl / basePosition
-                    const estLiqPrice = position.getLiquidationPriceUi(
-                      group,
-                      mangoAccount
-                    )
+                    const estLiqPrice = liqPrices.find(
+                      (p) => p.marketIndex === position.marketIndex
+                    )?.liqPrice
 
                     return (
                       <TrBody
@@ -234,39 +228,49 @@ const PerpPositions = () => {
                             '–'
                           )}
                         </Td>
-                        <Td className={`text-right font-mono`}>
-                          <FormatNumericValue
-                            value={unsettledPnl}
-                            isUsd
-                            decimals={2}
-                          />
-                        </Td>
                         <Td className="text-right font-mono">
-                          <Tooltip
-                            content={
-                              <PnlTooltipContent
-                                unrealizedPnl={unrealizedPnl}
-                                realizedPnl={realizedPnl}
-                                totalPnl={totalPnl}
-                                roe={roe}
-                              />
-                            }
-                            delay={100}
-                          >
+                          <div className="flex flex-col items-end space-y-0.5">
+                            <Tooltip
+                              content={
+                                <PnlTooltipContent
+                                  unrealizedPnl={unrealizedPnl}
+                                  realizedPnl={realizedPnl}
+                                  totalPnl={totalPnl}
+                                  unsettledPnl={unsettledPnl}
+                                />
+                              }
+                              delay={100}
+                            >
+                              <span
+                                className={`tooltip-underline ${
+                                  unrealizedPnl >= 0
+                                    ? 'text-th-up'
+                                    : 'text-th-down'
+                                }`}
+                              >
+                                <FormatNumericValue
+                                  value={unrealizedPnl}
+                                  isUsd
+                                  decimals={2}
+                                />
+                              </span>
+                            </Tooltip>
                             <span
-                              className={`tooltip-underline mb-1 ${
-                                unrealizedPnl > 0
-                                  ? 'text-th-up'
-                                  : 'text-th-down'
-                              }`}
+                              className={
+                                roe >= 0 ? 'text-th-up' : 'text-th-down'
+                              }
                             >
                               <FormatNumericValue
-                                value={unrealizedPnl}
-                                isUsd
-                                decimals={2}
+                                classNames="text-xs"
+                                value={roe}
+                                decimals={1}
                               />
+                              %{' '}
+                              <span className="font-body text-xs text-th-fgd-3">
+                                (ROE)
+                              </span>
                             </span>
-                          </Tooltip>
+                          </div>
                         </Td>
                         {!isUnownedAccount ? (
                           <Td>
@@ -328,10 +332,9 @@ const PerpPositions = () => {
               const unrealizedPnl = position.getUnRealizedPnlUi(market)
               const realizedPnl = position.getRealizedPnlUi()
               const roe = unrealizedPnl / basePosition
-              const estLiqPrice = position.getLiquidationPriceUi(
-                group,
-                mangoAccount
-              )
+              const estLiqPrice = liqPrices.find(
+                (p) => p.marketIndex === position.marketIndex
+              )?.liqPrice
               const unsettledPnl = position.getUnsettledPnlUi(market)
               return (
                 <Disclosure key={position.marketIndex}>
@@ -475,9 +478,13 @@ const PerpPositions = () => {
                               </div>
                             </div>
                             <div className="col-span-1">
-                              <p className="text-xs text-th-fgd-3">
-                                {t('trade:est-liq-price')}
-                              </p>
+                              <Tooltip
+                                content={t('trade:tooltip-est-liq-price')}
+                              >
+                                <p className="tooltip-underline text-xs text-th-fgd-3">
+                                  {t('trade:est-liq-price')}
+                                </p>
+                              </Tooltip>
                               <p className="font-mono text-th-fgd-2">
                                 {estLiqPrice ? (
                                   <FormatNumericValue
@@ -492,7 +499,7 @@ const PerpPositions = () => {
                             </div>
                             <div className="col-span-1">
                               <p className="text-xs text-th-fgd-3">
-                                {t('trade:unsettled')}
+                                {t('trade:unsettled')} {t('pnl')}
                               </p>
                               <p className="font-mono text-th-fgd-2">
                                 <FormatNumericValue
@@ -513,14 +520,14 @@ const PerpPositions = () => {
                                       unrealizedPnl={unrealizedPnl}
                                       realizedPnl={realizedPnl}
                                       totalPnl={totalPnl}
-                                      roe={roe}
+                                      unsettledPnl={unsettledPnl}
                                     />
                                   }
                                   delay={100}
                                 >
                                   <span
                                     className={`tooltip-underline mb-1 ${
-                                      unrealizedPnl > 0
+                                      unrealizedPnl >= 0
                                         ? 'text-th-up'
                                         : 'text-th-down'
                                     }`}
@@ -532,6 +539,16 @@ const PerpPositions = () => {
                                     />
                                   </span>
                                 </Tooltip>
+                              </p>
+                            </div>
+                            <div className="col-span-1">
+                              <p className="text-xs text-th-fgd-3">ROE</p>
+                              <p
+                                className={`font-mono ${
+                                  roe >= 0 ? 'text-th-up' : 'text-th-down'
+                                }`}
+                              >
+                                <FormatNumericValue value={roe} decimals={1} />%
                               </p>
                             </div>
                             <div className="col-span-2 mt-3 flex space-x-3">
@@ -594,17 +611,25 @@ const PnlTooltipContent = ({
   unrealizedPnl,
   realizedPnl,
   totalPnl,
-  roe,
+  unsettledPnl,
 }: {
   unrealizedPnl: number
   realizedPnl: number
   totalPnl: number
-  roe: number
+  unsettledPnl: number
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   return (
     <>
-      <div className="mb-3 space-y-1">
+      <div className="flex justify-between border-b border-th-bkg-3 pb-2">
+        <p className="mr-3">
+          {t('trade:unsettled')} {t('pnl')}
+        </p>
+        <span className="font-mono text-th-fgd-2">
+          {formatCurrencyValue(unsettledPnl, 2)}
+        </span>
+      </div>
+      <div className="mb-3 space-y-1 pt-2">
         <div className="flex justify-between">
           <p className="mr-3">{t('trade:unrealized-pnl')}</p>
           <span className="font-mono text-th-fgd-2">
@@ -621,12 +646,6 @@ const PnlTooltipContent = ({
           <p className="mr-3">{t('trade:total-pnl')}</p>
           <span className="font-mono text-th-fgd-2">
             {formatCurrencyValue(totalPnl, 2)}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <p className="mr-3">ROE</p>
-          <span className="font-mono text-th-fgd-2">
-            {formatNumericValue(roe, 2)}%
           </span>
         </div>
       </div>
