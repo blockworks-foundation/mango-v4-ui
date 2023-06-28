@@ -17,6 +17,9 @@
     "lint-all": "yarn typecheck && yarn lint && yarn format",
     "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz"
   },
+  "engines": {
+    "node": ">=18.x"
+  },
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.6",
     "@blockworks-foundation/mango-v4": "^0.16.9",

@@ -65,7 +65,7 @@ const MangoAccountDashboard: NextPage = () => {
           <h1>Dashboard</h1>
           <DashboardNavbar />
           <div className="">
-            <div className="flex space-x-2">
+            <div className="mt-4 flex space-x-2">
               <Input
                 type="text"
                 name="search"
