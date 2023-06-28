@@ -967,6 +967,116 @@ const Dashboard: NextPage = () => {
                       )
                     })}
                 </div>
+                <h3 className="mt-6 mb-3 text-base text-th-fgd-3">
+                  Spot Markets
+                </h3>
+                <div className="border-b border-th-bkg-3">
+                  {Array.from(group.serum3MarketsMapByExternal.values()).map(
+                    (market) => {
+                      const externalMarket = group.getSerum3ExternalMarket(
+                        market.serumMarketExternal
+                      )
+                      return (
+                        <Disclosure key={market.marketIndex}>
+                          {({ open }) => (
+                            <>
+                              <Disclosure.Button
+                                aria-label="panel"
+                                className={`flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
+                                  open ? 'bg-th-bkg-2' : ''
+                                }`}
+                              >
+                                <div className="flex items-center">
+                                  <MarketLogos market={market} />
+                                  <p className="text-th-fgd-2">{market.name}</p>
+                                </div>
+                                <ChevronDownIcon
+                                  className={`${
+                                    open ? 'rotate-180' : 'rotate-360'
+                                  } h-5 w-5 text-th-fgd-3`}
+                                />
+                              </Disclosure.Button>
+                              <Disclosure.Panel>
+                                <KeyValuePair
+                                  label="Public Key"
+                                  value={
+                                    <ExplorerLink
+                                      address={market.publicKey.toString()}
+                                      anchorData
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Serum Market External Public Key"
+                                  value={
+                                    <ExplorerLink
+                                      address={market.serumMarketExternal.toString()}
+                                      anchorData
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Base Mint"
+                                  value={
+                                    <ExplorerLink
+                                      address={externalMarket.baseMintAddress.toString()}
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Quote Mint"
+                                  value={
+                                    <ExplorerLink
+                                      address={externalMarket.quoteMintAddress.toString()}
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Base Token Index"
+                                  value={market.baseTokenIndex}
+                                />
+                                <KeyValuePair
+                                  label="Quote Token Index"
+                                  value={market.quoteTokenIndex}
+                                />
+                                <KeyValuePair
+                                  label="Min Order Size"
+                                  value={externalMarket.minOrderSize}
+                                />
+                                <KeyValuePair
+                                  label="Tick Size"
+                                  value={externalMarket.tickSize}
+                                />
+                                <KeyValuePair
+                                  label="Max Bid Leverage"
+                                  value={`${market.maxBidLeverage(group)}x`}
+                                />
+                                <KeyValuePair
+                                  label="Max Ask Leverage"
+                                  value={`${market.maxAskLeverage(group)}x`}
+                                />
+                                <KeyValuePair
+                                  label="Reduce Only"
+                                  value={market.reduceOnly ? 'True' : 'False'}
+                                />
+                                <KeyValuePair
+                                  label="Force Close"
+                                  value={market.forceClose ? 'True' : 'False'}
+                                />
+                                <KeyValuePair
+                                  label="Maker/Taker Fees"
+                                  value={`${market.getFeeRates(
+                                    false
+                                  )}/${market.getFeeRates(true)}`}
+                                />
+                              </Disclosure.Panel>
+                            </>
+                          )}
+                        </Disclosure>
+                      )
+                    }
+                  )}
+                </div>
               </div>
             ) : (
               'Loading'
