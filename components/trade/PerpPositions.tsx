@@ -108,7 +108,7 @@ const PerpPositions = () => {
                   <TrHead>
                     <Th className="text-left">{t('market')}</Th>
                     <Th className="text-right">{t('trade:size')}</Th>
-                    <Th className="text-right">{t('trade:entry-price')}</Th>
+                    <Th className="text-right">{t('trade:avg-entry-price')}</Th>
                     <Th>
                       <div className="flex justify-end">
                         <Tooltip content={t('trade:tooltip-est-liq-price')}>
@@ -265,7 +265,7 @@ const PerpPositions = () => {
                               <FormatNumericValue
                                 classNames="text-xs"
                                 value={roe}
-                                decimals={1}
+                                decimals={2}
                               />
                               %{' '}
                               <span className="font-body text-xs text-th-fgd-3">
@@ -463,7 +463,7 @@ const PerpPositions = () => {
                             </div>
                             <div className="col-span-1">
                               <p className="text-xs text-th-fgd-3">
-                                {t('trade:entry-price')}
+                                {t('trade:avg-entry-price')}
                               </p>
                               <div className="flex flex-col font-mono">
                                 <FormatNumericValue
@@ -551,7 +551,7 @@ const PerpPositions = () => {
                                   roe >= 0 ? 'text-th-up' : 'text-th-down'
                                 }`}
                               >
-                                <FormatNumericValue value={roe} decimals={1} />%
+                                <FormatNumericValue value={roe} decimals={2} />%
                               </p>
                             </div>
                             <div className="col-span-2 mt-3 flex space-x-3">
