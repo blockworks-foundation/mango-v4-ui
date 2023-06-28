@@ -33,7 +33,6 @@ import TableMarketName from './TableMarketName'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
-import useEstLiqPrice from 'hooks/useEstLiqPrice'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -47,10 +46,9 @@ const PerpPositions = () => {
     null
   )
   const openPerpPositions = useOpenPerpPositions()
-  const liqPrices = useEstLiqPrice()
   const { selectedMarket } = useSelectedMarket()
   const { connected } = useWallet()
-  const { mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount } = useMangoAccount()
   const { isUnownedAccount } = useUnownedAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -101,7 +99,7 @@ const PerpPositions = () => {
 
   return (
     <>
-      {mangoAccountAddress && openPerpPositions.length ? (
+      {mangoAccount && openPerpPositions.length ? (
         showTableView ? (
           <>
             <div className="thin-scroll overflow-x-auto">
@@ -141,15 +139,19 @@ const PerpPositions = () => {
                     if (!basePosition) return null
 
                     const isLong = basePosition > 0
+                    const avgEntryPrice =
+                      position.getAverageEntryPriceUi(market)
                     const unsettledPnl = position.getUnsettledPnlUi(market)
                     const totalPnl =
                       position.cumulativePnlOverPositionLifetimeUi(market)
                     const unrealizedPnl = position.getUnRealizedPnlUi(market)
                     const realizedPnl = position.getRealizedPnlUi()
-                    const roe = unrealizedPnl / basePosition
-                    const estLiqPrice = liqPrices.find(
-                      (p) => p.marketIndex === position.marketIndex
-                    )?.liqPrice
+                    const roe =
+                      unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)
+                    const estLiqPrice = position.getLiquidationPriceUi(
+                      group,
+                      mangoAccount
+                    )
 
                     return (
                       <TrBody
@@ -205,7 +207,7 @@ const PerpPositions = () => {
                         <Td className="font-mono">
                           <div className="flex flex-col items-end space-y-0.5">
                             <FormatNumericValue
-                              value={position.getAverageEntryPriceUi(market)}
+                              value={avgEntryPrice}
                               decimals={getDecimalCount(market.tickSize)}
                               isUsd
                             />
@@ -327,14 +329,17 @@ const PerpPositions = () => {
               if (!basePosition) return null
               const side =
                 basePosition > 0 ? 'buy' : basePosition < 0 ? 'sell' : ''
+              const avgEntryPrice = position.getAverageEntryPriceUi(market)
               const totalPnl =
                 position.cumulativePnlOverPositionLifetimeUi(market)
               const unrealizedPnl = position.getUnRealizedPnlUi(market)
               const realizedPnl = position.getRealizedPnlUi()
-              const roe = unrealizedPnl / basePosition
-              const estLiqPrice = liqPrices.find(
-                (p) => p.marketIndex === position.marketIndex
-              )?.liqPrice
+              const roe =
+                unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)
+              const estLiqPrice = position.getLiquidationPriceUi(
+                group,
+                mangoAccount
+              )
               const unsettledPnl = position.getUnsettledPnlUi(market)
               return (
                 <Disclosure key={position.marketIndex}>
@@ -463,9 +468,7 @@ const PerpPositions = () => {
                               <div className="flex flex-col font-mono">
                                 <FormatNumericValue
                                   classNames="text-th-fgd-2"
-                                  value={position.getAverageEntryPriceUi(
-                                    market
-                                  )}
+                                  value={avgEntryPrice}
                                   decimals={getDecimalCount(market.tickSize)}
                                   isUsd
                                 />
@@ -583,7 +586,7 @@ const PerpPositions = () => {
             })}
           </div>
         )
-      ) : mangoAccountAddress || connected ? (
+      ) : mangoAccount || connected ? (
         <div className="flex flex-col items-center p-8">
           <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
           <p>{t('trade:no-positions')}</p>
