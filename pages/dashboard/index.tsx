@@ -1011,7 +1011,6 @@ const Dashboard: NextPage = () => {
                                   value={
                                     <ExplorerLink
                                       address={market.serumMarketExternal.toString()}
-                                      anchorData
                                     />
                                   }
                                 />
@@ -1049,11 +1048,15 @@ const Dashboard: NextPage = () => {
                                 />
                                 <KeyValuePair
                                   label="Max Bid Leverage"
-                                  value={`${market.maxBidLeverage(group)}x`}
+                                  value={`${market
+                                    .maxBidLeverage(group)
+                                    .toFixed(1)}x`}
                                 />
                                 <KeyValuePair
                                   label="Max Ask Leverage"
-                                  value={`${market.maxAskLeverage(group)}x`}
+                                  value={`${market
+                                    .maxAskLeverage(group)
+                                    .toFixed(1)}x`}
                                 />
                                 <KeyValuePair
                                   label="Reduce Only"
