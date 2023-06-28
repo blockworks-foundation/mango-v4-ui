@@ -147,7 +147,9 @@ const PerpPositions = () => {
                     const unrealizedPnl = position.getUnRealizedPnlUi(market)
                     const realizedPnl = position.getRealizedPnlUi()
                     const roe =
-                      unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)
+                      (unrealizedPnl /
+                        (Math.abs(basePosition) * avgEntryPrice)) *
+                      100
                     const estLiqPrice = position.getLiquidationPriceUi(
                       group,
                       mangoAccount
@@ -335,7 +337,7 @@ const PerpPositions = () => {
               const unrealizedPnl = position.getUnRealizedPnlUi(market)
               const realizedPnl = position.getRealizedPnlUi()
               const roe =
-                unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)
+                (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) * 100
               const estLiqPrice = position.getLiquidationPriceUi(
                 group,
                 mangoAccount
