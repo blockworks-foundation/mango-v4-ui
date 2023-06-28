@@ -21,7 +21,7 @@ import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'
 import { formatCurrencyValue } from 'utils/numbers'
 import { cloneDeep } from 'lodash'
-import { TransactionInstruction } from '@solana/web3.js'
+import { Account, Transaction, TransactionInstruction } from '@solana/web3.js'
 import { MarketIndex } from '@blockworks-foundation/mango-v4/dist/types/src/accounts/serum3'
 import { AnchorProvider } from '@project-serum/anchor'
 
@@ -56,11 +56,8 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     setLoading(true)
     try {
       const clonedMangoAccount = cloneDeep(mangoAccount)
-      const closeOosInstructions: TransactionInstruction[] = []
-      const closePpsInstructions: TransactionInstruction[] = []
-      const closeTpsInstructions: TransactionInstruction[] = []
-      const closeActInstructions: TransactionInstruction[] = []
-
+      const instructions: TransactionInstruction[] = []
+      const latestBlockhash = await connection.getLatestBlockhash('finalized')
       for (const serum3Account of clonedMangoAccount.serum3Active()) {
         const serum3Market = group.serum3MarketsMapByMarketIndex.get(
           serum3Account.marketIndex
@@ -71,12 +68,10 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           clonedMangoAccount,
           serum3Market.serumMarketExternal
         )
-        closeOosInstructions.push(closeOOIx)
+        instructions.push(closeOOIx)
         serum3Account.marketIndex =
           Serum3Orders.Serum3MarketIndexUnset as MarketIndex
       }
-
-      await client.sendAndConfirmTransaction(closeOosInstructions)
 
       for (const pp of clonedMangoAccount.perpActive()) {
         const perpMarketIndex = pp.marketIndex
@@ -85,11 +80,9 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           clonedMangoAccount,
           perpMarketIndex
         )
-        closePpsInstructions.push(deactivatingPositionIx)
+        instructions.push(deactivatingPositionIx)
         pp.marketIndex = PerpPosition.PerpMarketIndexUnset as PerpMarketIndex
       }
-
-      await client.sendAndConfirmTransaction(closePpsInstructions)
 
       for (const tp of clonedMangoAccount.tokensActive()) {
         const bank = group.getFirstBankByTokenIndex(tp.tokenIndex)
@@ -100,11 +93,9 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           U64_MAX_BN,
           false
         )
-        closeTpsInstructions.push(...withdrawIx)
+        instructions.push(...withdrawIx)
         tp.tokenIndex = TokenPosition.TokenIndexUnset as TokenIndex
       }
-
-      await client.sendAndConfirmTransaction(closeTpsInstructions)
 
       const closeIx = await client.program.methods
         .accountClose(false)
@@ -115,11 +106,47 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           solDestination: clonedMangoAccount.owner,
         })
         .instruction()
-      closeActInstructions.push(closeIx)
+      instructions.push(closeIx)
 
-      const tx = await client.sendAndConfirmTransaction(closeActInstructions)
+      let tmpInstructions: TransactionInstruction[] = []
+      while (instructions.length) {
+        try {
+          console.log('starting instructions length', instructions.length)
+          const ix = instructions[0]
+          // try to serialize, if we fail it's prolly cos the tx was too big
+          tmpInstructions.push(ix)
+          const tmpTransaction = new Transaction()
+          tmpTransaction.instructions = tmpInstructions
+          tmpTransaction.recentBlockhash = latestBlockhash.blockhash
+          //tmpTransaction.feePayer = walletPk!
+          tmpTransaction.sign(new Account())
+          tmpTransaction.serialize({
+            requireAllSignatures: true,
+            verifySignatures: false,
+          })
+          console.log('tx size valid, removing instruction')
+          instructions.shift()
+          console.log(
+            'ending instructions length',
+            instructions.length,
+            tmpInstructions.length
+          )
+        } catch (e) {
+          if (!(e instanceof Error)) {
+            throw e
+          }
+          console.log(e.message)
+          if (!e.message.includes('large')) break
+          // probably check e here
+          // remove the last ix that made it too big
+          tmpInstructions.pop()
+          const tx = await client.sendAndConfirmTransaction(tmpInstructions)
+          tmpInstructions = []
+          console.log(tx)
+        }
+      }
 
-      if (tx) {
+      if (!instructions.length && !tmpInstructions.length) {
         const newMangoAccounts = mangoAccounts.filter(
           (ma) => !ma.publicKey.equals(mangoAccount.publicKey)
         )
@@ -133,12 +160,13 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
         notify({
           title: t('account-closed'),
           type: 'success',
-          txid: tx,
         })
         set((state) => {
           state.mangoAccounts = newMangoAccounts
           state.mangoAccount.current = newCurrentAccount
         })
+      } else {
+        throw new Error('couldnt pack all instructions')
       }
     } catch (e) {
       setLoading(false)
