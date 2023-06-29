@@ -41,7 +41,12 @@ import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthBar from './HealthBar'
 import AssetsLiabilities from './AssetsLiabilities'
-import { PerformanceDataItem, TotalAccountFundingItem } from 'types'
+import {
+  PerformanceDataItem,
+  PerpVolumeData,
+  SpotVolumeData,
+  TotalAccountFundingItem,
+} from 'types'
 import { useQuery } from '@tanstack/react-query'
 import FundingDetails from './FundingDetails'
 
@@ -71,6 +76,30 @@ const fetchFundingTotals = async (mangoAccountPk: string) => {
     }
   } catch (e) {
     console.log('Failed to fetch account funding', e)
+  }
+}
+
+const fetchPerpVolume = async (mangoAccountPk: string) => {
+  try {
+    const data = await fetch(
+      `${MANGO_DATA_API_URL}/stats/daily-perp-volume?mango-account=${mangoAccountPk}&start-date=2022-06-30`
+    )
+    const res = await data.json()
+    return res
+  } catch (e) {
+    console.log('Failed to fetch perp volume', e)
+  }
+}
+
+const fetchSpotVolume = async (mangoAccountPk: string) => {
+  try {
+    const data = await fetch(
+      `${MANGO_DATA_API_URL}/stats/daily-spot-volume?mango-account=${mangoAccountPk}&start-date=2022-06-30`
+    )
+    const res = await data.json()
+    return res
+  } catch (e) {
+    console.log('Failed to fetch spot volume', e)
   }
 }
 
@@ -134,6 +163,74 @@ const AccountPage = () => {
       enabled: !!mangoAccountAddress,
     }
   )
+
+  console.log(fundingData)
+
+  const {
+    data: perpVolumeData,
+    isLoading: loadingPerpVolumeData,
+    isFetching: fetchingPerpVolumeData,
+  } = useQuery(
+    ['perp-volume', mangoAccountAddress],
+    () => fetchPerpVolume(mangoAccountAddress),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!mangoAccountAddress,
+    }
+  )
+
+  const perpVolumeTotal = useMemo(() => {
+    if (!perpVolumeData) return 0
+    const entries: PerpVolumeData[] = Object.entries(perpVolumeData)
+    console.log(entries)
+    return entries
+      .map(([, value]) => {
+        const volume = Object.values(value).reduce((a, c) => {
+          return a + c.volume_usd
+        }, 0)
+        return volume
+      })
+      .reduce((a, c) => a + c)
+  }, [perpVolumeData])
+
+  const {
+    data: spotVolumeData,
+    isLoading: loadingSpotVolumeData,
+    isFetching: fetchingSpotVolumeData,
+  } = useQuery(
+    ['spot-volume', mangoAccountAddress],
+    () => fetchSpotVolume(mangoAccountAddress),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!mangoAccountAddress,
+    }
+  )
+
+  const spotVolumeTotal = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!spotVolumeData || !group) return 0
+    const entries: SpotVolumeData[] = Object.entries(spotVolumeData)
+    return entries
+      .map(([key, value]) => {
+        const quoteSymbol = key.split('/')[1]
+        const quoteBank = group.banksMapByName.get(quoteSymbol)?.[0]
+        let quotePrice = 1
+        if (quoteBank && quoteBank.name !== 'USDC') {
+          quotePrice = quoteBank.uiPrice
+        }
+        const volume = Object.values(value).reduce((a, c) => {
+          return a + c.volume_quote * quotePrice
+        }, 0)
+        return volume
+      })
+      .reduce((a, c) => a + c)
+  }, [spotVolumeData])
 
   const oneDayPerformanceData: PerformanceDataItem[] | [] = useMemo(() => {
     if (!performanceData || !performanceData.length) return []
@@ -287,6 +384,12 @@ const AccountPage = () => {
       },
     ]
   }, [accountPnl, accountValue, performanceData])
+
+  const loadingVolume =
+    fetchingPerpVolumeData ||
+    fetchingSpotVolumeData ||
+    loadingPerpVolumeData ||
+    loadingSpotVolumeData
 
   return !chartToShow ? (
     <>
@@ -457,10 +560,25 @@ const AccountPage = () => {
                 {t('health')}
               </p>
             </Tooltip>
-            <p className="mt-1 mb-2 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              {maintHealth}%
-            </p>
-            <HealthBar health={maintHealth} />
+            <div className="mt-1 mb-0.5 flex items-center space-x-3">
+              <p className="text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+                {maintHealth}%
+              </p>
+              <HealthBar health={maintHealth} />
+            </div>
+            <span className="flex text-xs font-normal text-th-fgd-4">
+              <Tooltip
+                content={t('account:tooltip-leverage')}
+                maxWidth="20rem"
+                placement="top-start"
+                delay={100}
+              >
+                <span className="tooltip-underline">{t('leverage')}</span>:
+              </Tooltip>
+              <span className="ml-1 font-mono text-th-fgd-2">
+                <FormatNumericValue value={leverage} decimals={2} roundUp />x
+              </span>
+            </span>
           </div>
         </div>
         <div className="col-span-6 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-3 md:border-l lg:col-span-2 lg:border-t-0 xl:col-span-1">
@@ -513,25 +631,11 @@ const AccountPage = () => {
             </span>
           </div>
         </div>
-        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-3 lg:col-span-2 lg:border-l lg:border-t-0 xl:col-span-1">
-          <div id="account-step-six">
-            <Tooltip
-              content={t('account:tooltip-leverage')}
-              maxWidth="20rem"
-              placement="top-start"
-              delay={100}
-            >
-              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
-                {t('leverage')}
-              </p>
-            </Tooltip>
-            <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-              <FormatNumericValue value={leverage} decimals={2} roundUp />x
-            </p>
-          </div>
-        </div>
-        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 xl:col-span-1 xl:border-l xl:border-t-0">
-          <div id="account-step-seven" className="flex flex-col items-start">
+        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 px-6 md:col-span-3 lg:col-span-2 lg:border-l lg:border-t-0 xl:col-span-1">
+          <div
+            id="account-step-seven"
+            className="flex w-full flex-col items-start"
+          >
             <div className="flex w-full items-center justify-between">
               <Tooltip
                 content={t('account:tooltip-pnl')}
@@ -586,6 +690,25 @@ const AccountPage = () => {
               <Change change={oneDayPnlChange} prefix="$" size="small" />
               <p className="text-xs text-th-fgd-4">{t('rolling-change')}</p>
             </div>
+          </div>
+        </div>
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 xl:col-span-1 xl:border-l xl:border-t-0">
+          <div id="account-step-six">
+            <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+              {t('trade:trade-volume')}
+            </p>
+            {loadingVolume && mangoAccountAddress ? (
+              <SheenLoader className="mt-2">
+                <div className="h-7 w-16 bg-th-bkg-2" />
+              </SheenLoader>
+            ) : (
+              <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+                <FormatNumericValue
+                  value={spotVolumeTotal + perpVolumeTotal}
+                  isUsd
+                />
+              </p>
+            )}
           </div>
         </div>
         <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left md:col-span-3 lg:col-span-2 lg:border-l xl:col-span-1 xl:border-t-0">
