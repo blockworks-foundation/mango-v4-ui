@@ -45,6 +45,7 @@ import RoutesModal from './RoutesModal'
 import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -188,6 +189,7 @@ const SwapReviewRouteInfo = ({
 }: JupiterRouteInfoProps) => {
   const { t } = useTranslation(['common', 'trade'])
   const slippage = mangoStore((s) => s.swap.slippage)
+  const wallet = useWallet()
   const [showRoutesModal, setShowRoutesModal] = useState<boolean>(false)
   const [swapRate, setSwapRate] = useState<boolean>(false)
   const [feeValue] = useState<number | null>(null)
@@ -260,7 +262,14 @@ const SwapReviewRouteInfo = ({
       const set = mangoStore.getState().set
       const connection = mangoStore.getState().connection
 
-      if (!mangoAccount || !group || !inputBank || !outputBank) return
+      if (
+        !mangoAccount ||
+        !group ||
+        !inputBank ||
+        !outputBank ||
+        !wallet.publicKey
+      )
+        return
       setSubmitting(true)
       const [ixs, alts] =
         selectedRoute.routerName === 'Mango'
@@ -273,7 +282,7 @@ const SwapReviewRouteInfo = ({
           : await fetchJupiterTransaction(
               connection,
               selectedRoute,
-              mangoAccount.owner,
+              wallet.publicKey,
               slippage,
               inputBank.mint,
               outputBank.mint
@@ -323,7 +332,14 @@ const SwapReviewRouteInfo = ({
     } finally {
       onClose()
     }
-  }, [amountIn, onClose, selectedRoute, soundSettings])
+  }, [
+    amountIn,
+    onClose,
+    selectedRoute,
+    slippage,
+    soundSettings,
+    wallet.publicKey,
+  ])
 
   const [balance, borrowAmount] = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
