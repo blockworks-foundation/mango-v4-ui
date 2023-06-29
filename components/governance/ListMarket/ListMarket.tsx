@@ -68,6 +68,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
 
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
+  const proposalsLoading = GovernanceStore((s) => s.loadingProposals)
 
   const [advForm, setAdvForm] = useState<ListMarketForm>({
     ...defaultFormValues,
@@ -332,10 +333,15 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
             <Button
               className="mt-6"
               onClick={goToPropsPage}
-              disabled={loadingMarketProps || !quoteToken || !baseToken}
+              disabled={
+                loadingMarketProps ||
+                !quoteToken ||
+                !baseToken ||
+                proposalsLoading
+              }
               size="large"
             >
-              {loadingMarketProps ? (
+              {loadingMarketProps || proposalsLoading ? (
                 <Loading className="w-4"></Loading>
               ) : (
                 t('next')
