@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
-import PerpMarketsOverviewTable from './PerpMarketsOverviewTable'
 import PerpMarketsDetailsTable from './PerpMarketDetailsTable'
+import PerpMarketsOverview from './PerpMarketsOverview'
 
 export const TABS = ['overview', 'details']
 
@@ -33,11 +33,11 @@ const PerpStats = () => {
 const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case TABS[0]:
-      return <PerpMarketsOverviewTable />
+      return <PerpMarketsOverview />
     case TABS[1]:
       return <PerpMarketsDetailsTable />
     default:
-      return <PerpMarketsOverviewTable />
+      return <PerpMarketsOverview />
   }
 }
 
