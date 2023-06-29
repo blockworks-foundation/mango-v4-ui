@@ -13,7 +13,7 @@ const TableMarketName = ({
   side,
 }: {
   market: PerpMarket | Serum3Market
-  side?: 'buy' | 'sell'
+  side?: string
 }) => {
   const { selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
@@ -33,12 +33,12 @@ const TableMarketName = ({
   ) : (
     <Link href={`/trade?name=${market.name}`}>
       <div
-        className={`flex items-center underline underline-offset-2 md:underline-offset-4 md:hover:text-th-fgd-3 md:hover:no-underline ${
+        className={`flex items-center underline underline-offset-2 md:underline-offset-4 md:hover:no-underline ${
           side === 'buy'
             ? 'text-th-up'
             : side === 'sell'
             ? 'text-th-down'
-            : 'text-th-fgd-2'
+            : 'text-th-fgd-2 md:hover:text-th-fgd-3'
         }`}
       >
         <NameAndSide market={market} side={side} />
@@ -54,7 +54,7 @@ const NameAndSide = ({
   side,
 }: {
   market: PerpMarket | Serum3Market
-  side?: 'buy' | 'sell'
+  side?: string
 }) => {
   return (
     <>

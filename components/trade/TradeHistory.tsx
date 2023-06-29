@@ -55,7 +55,6 @@ const TradeHistory = () => {
             <thead>
               <TrHead>
                 <Th className="text-left">{t('market')}</Th>
-                <Th className="text-right">{t('trade:side')}</Th>
                 <Th className="text-right">{t('trade:size')}</Th>
                 <Th className="text-right">{t('price')}</Th>
                 <Th className="text-right">{t('value')}</Th>
@@ -72,15 +71,8 @@ const TradeHistory = () => {
                     key={`${side}${size}${price}${index}`}
                     className="my-1 p-2"
                   >
-                    <Td className="">
-                      <TableMarketName market={market} />
-                    </Td>
-                    <Td className="text-right">
-                      {market instanceof PerpMarket ? (
-                        <PerpSideBadge basePosition={side === 'buy' ? 1 : -1} />
-                      ) : (
-                        <SideBadge side={side} />
-                      )}
+                    <Td>
+                      <TableMarketName market={market} side={side} />
                     </Td>
                     <Td className="text-right font-mono">{size}</Td>
                     <Td className="text-right font-mono">
