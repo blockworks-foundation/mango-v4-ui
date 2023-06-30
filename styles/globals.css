@@ -625,3 +625,24 @@ input[type='range']::-webkit-slider-runnable-track {
 #tsparticles {
   @apply absolute h-screen w-full;
 }
+
+/* depth chart */
+
+/* .depth-chart-container {
+  transform: rotate(-90deg);
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+} */
+
+/* .depth-chart-container .recharts-wrapper {
+  transform: rotate(270deg);
+}
+
+.depth-chart-container .recharts-layer.recharts-yAxis {
+  transform: rotate(270deg);
+}
+
+.depth-chart-container .recharts-layer.recharts-xAxis {
+  transform: rotate(270deg);
+} */

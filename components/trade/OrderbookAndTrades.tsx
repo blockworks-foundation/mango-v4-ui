@@ -2,9 +2,11 @@ import TabButtons from '@components/shared/TabButtons'
 import { useState } from 'react'
 import Orderbook from './Orderbook'
 import RecentTrades from './RecentTrades'
+import DepthChart from './DepthChart'
 
 export const TABS: [string, number][] = [
   ['trade:book', 0],
+  ['trade:depth', 0],
   ['trade:trades', 0],
 ]
 
@@ -26,6 +28,13 @@ const OrderbookAndTrades = () => {
         }`}
       >
         <Orderbook />
+      </div>
+      <div
+        className={`h-full ${
+          activeTab === 'trade:depth' ? 'visible' : 'hidden'
+        }`}
+      >
+        <DepthChart />
       </div>
       <div
         className={`h-full ${
