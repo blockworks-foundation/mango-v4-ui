@@ -12,7 +12,6 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { DEFAULT_MARKET_NAME } from 'utils/constants'
 import {
   floorToDecimal,
   formatCurrencyValue,
@@ -23,6 +22,7 @@ import MarketLogos from './MarketLogos'
 import SoonBadge from '@components/shared/SoonBadge'
 import TabButtons from '@components/shared/TabButtons'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import Loading from '@components/shared/Loading'
 
 const MARKET_LINK_WRAPPER_CLASSES =
   'flex items-center justify-between px-4 md:pl-6 md:pr-4'
@@ -93,11 +93,20 @@ const MarketSelectDropdown = () => {
           className="relative flex flex-col overflow-visible md:-ml-2"
           id="trade-step-one"
         >
-          <Popover.Button className="-ml-4 flex h-12 items-center justify-between px-4 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2">
+          <Popover.Button
+            className="-ml-4 flex h-12 items-center justify-between px-4 focus-visible:bg-th-bkg-3 disabled:cursor-not-allowed disabled:opacity-60 md:hover:bg-th-bkg-2 disabled:md:hover:bg-th-bkg-1"
+            disabled={!group}
+          >
             <div className="flex items-center">
-              {selectedMarket ? <MarketLogos market={selectedMarket} /> : null}
+              {selectedMarket ? (
+                <MarketLogos market={selectedMarket} />
+              ) : (
+                <Loading className="mr-2 h-5 w-5 flex-shrink-0" />
+              )}
               <div className="whitespace-nowrap text-xl font-bold text-th-fgd-1 md:text-base">
-                {selectedMarket?.name || DEFAULT_MARKET_NAME}
+                {selectedMarket?.name || (
+                  <span className="text-th-fgd-3">{t('loading')}</span>
+                )}
               </div>
             </div>
             <ChevronDownIcon
