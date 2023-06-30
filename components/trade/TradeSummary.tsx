@@ -17,10 +17,10 @@ import Slippage from './Slippage'
 import {
   floorToDecimal,
   formatNumericValue,
-  getDecimalCount,
+  // getDecimalCount,
 } from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
-import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
+// import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 
 const TradeSummary = ({
   mangoAccount,
@@ -33,26 +33,28 @@ const TradeSummary = ({
   const { group } = useMangoGroup()
   const tradeForm = mangoStore((s) => s.tradeForm)
   const { selectedMarket, quoteBank } = useSelectedMarket()
-  const openPerpPositions = useOpenPerpPositions()
+  // const openPerpPositions = useOpenPerpPositions()
 
-  const avgEntryPrice = useMemo(() => {
-    if (
-      !openPerpPositions.length ||
-      !selectedMarket ||
-      selectedMarket instanceof Serum3Market
-    )
-      return
-    const openPosition = openPerpPositions.find(
-      (pos) => pos.marketIndex === selectedMarket.perpMarketIndex
-    )
-    if (openPosition && tradeForm.price) {
-      const currentAvgPrice =
-        openPosition.getAverageEntryPriceUi(selectedMarket)
-      const newAvgPrice = (currentAvgPrice + Number(tradeForm.price)) / 2
-      return newAvgPrice
-    }
-    return
-  }, [openPerpPositions, selectedMarket, tradeForm])
+  // this isn't correct yet
+
+  // const avgEntryPrice = useMemo(() => {
+  //   if (
+  //     !openPerpPositions.length ||
+  //     !selectedMarket ||
+  //     selectedMarket instanceof Serum3Market
+  //   )
+  //     return
+  //   const openPosition = openPerpPositions.find(
+  //     (pos) => pos.marketIndex === selectedMarket.perpMarketIndex
+  //   )
+  //   if (openPosition && tradeForm.price) {
+  //     const currentAvgPrice =
+  //       openPosition.getAverageEntryPriceUi(selectedMarket)
+  //     const newAvgPrice = (currentAvgPrice + Number(tradeForm.price)) / 2
+  //     return newAvgPrice
+  //   }
+  //   return
+  // }, [openPerpPositions, selectedMarket, tradeForm])
 
   const maintProjectedHealth = useMemo(() => {
     if (!mangoAccount || !group) return 100
@@ -238,7 +240,7 @@ const TradeSummary = ({
         </p>
       </div> */}
       <Slippage />
-      {avgEntryPrice && selectedMarket instanceof PerpMarket ? (
+      {/* {avgEntryPrice && selectedMarket instanceof PerpMarket ? (
         <div className="flex justify-between text-xs">
           <p>{t('trade:avg-entry-price')}</p>
           <p className="text-th-fgd-2">
@@ -250,7 +252,7 @@ const TradeSummary = ({
             />
           </p>
         </div>
-      ) : null}
+      ) : null} */}
     </div>
   )
 }
