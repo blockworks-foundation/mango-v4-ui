@@ -19,7 +19,6 @@ import NotificationCookieStore from '@store/notificationCookieStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
-import { chunk } from 'lodash'
 
 export const createSolanaMessage = (
   wallet: WalletContextState,
@@ -95,26 +94,23 @@ const NotificationsDrawer = ({
   const markAsSeen = useCallback(
     async (ids: number[]) => {
       try {
-        const idsChunk = chunk(ids, 200)
-        for (const c of idsChunk) {
-          const resp = await fetch(`${NOTIFICATION_API}notifications/seen`, {
-            method: 'POST',
-            headers: headers.headers,
-            body: JSON.stringify({
-              ids: c,
-              seen: true,
-            }),
+        const resp = await fetch(`${NOTIFICATION_API}notifications/seen`, {
+          method: 'POST',
+          headers: headers.headers,
+          body: JSON.stringify({
+            ids: ids,
+            seen: true,
+          }),
+        })
+        const body = await resp.json()
+        const error = body.error
+        if (error) {
+          notify({
+            type: 'error',
+            title: 'Error',
+            description: error,
           })
-          const body = await resp.json()
-          const error = body.error
-          if (error) {
-            notify({
-              type: 'error',
-              title: 'Error',
-              description: error,
-            })
-            return
-          }
+          return
         }
         refetch()
       } catch (e) {
