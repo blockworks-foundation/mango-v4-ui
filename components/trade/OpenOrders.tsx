@@ -295,8 +295,8 @@ const OpenOrders = () => {
                 const side =
                   o instanceof PerpOrder
                     ? 'bid' in o.side
-                      ? 'buy'
-                      : 'sell'
+                      ? 'long'
+                      : 'short'
                     : o.side
                 return (
                   <TrBody

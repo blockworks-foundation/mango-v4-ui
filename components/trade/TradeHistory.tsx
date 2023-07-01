@@ -72,7 +72,16 @@ const TradeHistory = () => {
                     className="my-1 p-2"
                   >
                     <Td>
-                      <TableMarketName market={market} side={side} />
+                      <TableMarketName
+                        market={market}
+                        side={
+                          market instanceof PerpMarket
+                            ? side === 'buy'
+                              ? 'long'
+                              : 'short'
+                            : side
+                        }
+                      />
                     </Td>
                     <Td className="text-right font-mono">{size}</Td>
                     <Td className="text-right font-mono">

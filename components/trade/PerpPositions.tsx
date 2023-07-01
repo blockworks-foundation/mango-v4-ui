@@ -163,7 +163,7 @@ const PerpPositions = () => {
                         <Td>
                           <TableMarketName
                             market={market}
-                            side={isLong ? 'buy' : 'sell'}
+                            side={isLong ? 'long' : 'short'}
                           />
                         </Td>
                         <Td className="text-right font-mono">
@@ -233,7 +233,7 @@ const PerpPositions = () => {
                           )}
                         </Td>
                         <Td className="text-right font-mono">
-                          <div className="flex flex-col items-end space-y-0.5">
+                          <div className="flex flex-col items-end ">
                             <Tooltip
                               content={
                                 <PnlTooltipContent
