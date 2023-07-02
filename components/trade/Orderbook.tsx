@@ -854,7 +854,8 @@ const OrderbookRow = ({
     const set = mangoStore.getState().set
     set((state) => {
       state.tradeForm.price = formattedPrice.toFixed()
-      if (state.tradeForm.baseSize && state.tradeForm.tradeType === 'Limit') {
+      state.tradeForm.tradeType = 'Limit'
+      if (state.tradeForm.baseSize) {
         const quoteSize = floorToDecimal(
           formattedPrice.mul(new Decimal(state.tradeForm.baseSize)),
           getDecimalCount(tickSize)
