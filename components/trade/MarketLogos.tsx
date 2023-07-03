@@ -50,9 +50,6 @@ const MarketLogos = ({
 
   const pxSize = size === 'small' ? '16' : size === 'large' ? '24' : '20'
 
-  console.log(logos?.name === 'SOL' ? logos : null)
-  console.log(mangoTokens)
-
   return (
     <div
       className={`relative ${

@@ -15,6 +15,8 @@ const HydrateStore = () => {
   const { mangoAccountPk, mangoAccountAddress } = useMangoAccount()
   const connection = mangoStore((s) => s.connection)
 
+  console.log(connection)
+
   useEffect(() => {
     if (marketName && typeof marketName === 'string') {
       set((s) => {
