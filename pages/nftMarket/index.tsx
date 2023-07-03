@@ -4,10 +4,10 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useState } from 'react'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
 import ListingsView from '@components/nftMarket/ListingsView'
-import BidsWithoutListings from '@components/nftMarket/BidsWithoutListings'
+import AllBidsView from '@components/nftMarket/AllBidsView'
 
 const LISTINGS = 'Listings'
-const BIDS_WITHOUT_LISTINGS = 'Bids without listings'
+const BIDS_WITHOUT_LISTINGS = 'Bids'
 const TABS = [LISTINGS, BIDS_WITHOUT_LISTINGS]
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -44,7 +44,7 @@ const Market: NextPage = () => {
       {activeTab === LISTINGS ? (
         <ListingsView></ListingsView>
       ) : (
-        <BidsWithoutListings></BidsWithoutListings>
+        <AllBidsView></AllBidsView>
       )}
     </div>
   )
