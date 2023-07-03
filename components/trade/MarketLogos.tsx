@@ -50,6 +50,9 @@ const MarketLogos = ({
 
   const pxSize = size === 'small' ? '16' : size === 'large' ? '24' : '20'
 
+  console.log(logos?.name === 'SOL' ? logos : null)
+  console.log(mangoTokens)
+
   return (
     <div
       className={`relative ${
@@ -75,7 +78,7 @@ const MarketLogos = ({
       <div className="absolute left-0 top-0 z-10">
         <LogoWithFallback
           alt=""
-          className="flex-shrink-0 drop-shadow-md"
+          className="flex-shrink-0"
           width={pxSize}
           height={pxSize}
           src={logos.baseLogoURI || `/icons/${logos?.name?.toLowerCase()}.svg`}
