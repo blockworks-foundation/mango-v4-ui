@@ -12,6 +12,7 @@ export const TABS: [string, number][] = [
 
 const OrderbookAndTrades = () => {
   const [activeTab, setActiveTab] = useState('trade:book')
+  const [grouping, setGrouping] = useState(0.01)
   return (
     <div className="hide-scroll h-full">
       <div className="border-b border-th-bkg-3">
@@ -27,14 +28,14 @@ const OrderbookAndTrades = () => {
           activeTab === 'trade:book' ? 'visible' : 'hidden'
         }`}
       >
-        <Orderbook />
+        <Orderbook grouping={grouping} setGrouping={setGrouping} />
       </div>
       <div
         className={`h-full ${
           activeTab === 'trade:depth' ? 'visible' : 'hidden'
         }`}
       >
-        <DepthChart />
+        <DepthChart grouping={grouping} />
       </div>
       <div
         className={`h-full ${

@@ -1,79 +1,154 @@
-import mangoStore from '@store/mangoStore'
-import React, { useEffect, useState } from 'react'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts'
+import useOrderbookSubscription, {
+  cumOrderbookSide,
+} from 'hooks/useOrderbookSubscription'
+import useSelectedMarket from 'hooks/useSelectedMarket'
+import { useTheme } from 'next-themes'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from 'recharts'
+import { COLORS } from 'styles/colors'
+import { getDecimalCount } from 'utils/numbers'
 
-type DepthData = {
-  price: number
-  [key: string]: number
-  cumulative: number
-}
+const DepthChart = ({ grouping }: { grouping: number }) => {
+  const { theme } = useTheme()
+  const { serumOrPerpMarket } = useSelectedMarket()
+  const [isScrolled, setIsScrolled] = useState(false)
+  const depthChartElRef = useRef<HTMLDivElement>(null)
 
-function DepthChart() {
-  const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
-  const [chartData, setChartData] = useState<DepthData[]>([])
-  console.log(orderbook)
-  useEffect(() => {
-    const bidsCumulative = calculateCumulative(orderbook.bids, 'bids')
-    const asksCumulative = calculateCumulative(orderbook.asks, 'asks')
+  const handleScroll = useCallback(() => {
+    setIsScrolled(true)
+  }, [])
 
-    const mergedData = mergeCumulativeData(bidsCumulative, asksCumulative)
-    setChartData(mergedData)
+  const verticallyCenterChart = useCallback(() => {
+    const element = depthChartElRef.current
+    if (element) {
+      if (element.scrollHeight > window.innerHeight) {
+        element.scrollTop =
+          (element.scrollHeight - element.scrollHeight) / 2 +
+          (element.scrollHeight - window.innerHeight) / 2 +
+          94
+      } else {
+        element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
+      }
+    }
+  }, [])
+
+  const orderbook = useOrderbookSubscription(
+    40,
+    grouping,
+    isScrolled,
+    verticallyCenterChart
+  )
+
+  const mergeCumulativeData = (
+    bids: cumOrderbookSide[],
+    asks: cumOrderbookSide[]
+  ) => {
+    const bidsWithSide = bids.map((b) => ({ ...b, bids: b.cumulativeSize }))
+    const asksWithSide = asks.map((a) => ({ ...a, asks: a.cumulativeSize }))
+    return [...bidsWithSide, ...asksWithSide].sort((a, b) => a.price - b.price)
+  }
+
+  const chartData = useMemo(() => {
+    if (!orderbook) return []
+    return mergeCumulativeData(orderbook.bids, orderbook.asks)
   }, [orderbook])
 
-  const calculateCumulative = (levels: number[][], type: 'bids' | 'asks') => {
-    let cumulative = 0
-    return levels.map((level) => {
-      cumulative += level[1]
-      return { price: level[0], [type]: cumulative, cumulative: cumulative }
-    })
-  }
+  // useEffect(() => {
+  //   verticallyCenterChart()
+  // }, [])
 
-  const mergeCumulativeData = (bids: DepthData[], asks: DepthData[]) => {
-    return [...bids, ...asks].sort((a, b) => a.price - b.price)
-  }
+  useEffect(() => {
+    window.addEventListener('resize', verticallyCenterChart)
+  }, [verticallyCenterChart])
+
+  // useEffect(() => {
+  //   const bidsCumulative = calculateCumulative(orderbook.bids, 'bids')
+  //   const asksCumulative = calculateCumulative(orderbook.asks, 'asks')
+
+  //   const mergedData = mergeCumulativeData(bidsCumulative, asksCumulative)
+  //   setChartData(mergedData.slice(40, -40))
+  // }, [orderbook])
+
+  // const calculateCumulative = (levels: number[][], type: 'bids' | 'asks') => {
+  //   let cumulative = 0
+  //   return levels.map((level) => {
+  //     cumulative += level[1]
+  //     return { price: level[0], [type]: cumulative, cumulative: cumulative }
+  //   })
+  // }
+
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={chartData.slice(40, -40)} layout="vertical">
-        <XAxis type="number" />
-        <YAxis
-          dataKey="price"
-          reversed={true}
-          domain={['dataMin', 'dataMax']}
-        />
-        <Tooltip />
-        <Legend />
-        <Line
-          type="monotone"
-          dataKey="bids"
-          stroke="#008000" // Green stroke for bids
-          fill="url(#bidsGradient)"
-        />
-        <Line
-          type="monotone"
-          dataKey="asks"
-          stroke="#FF0000" // Red stroke for asks
-          fill="url(#asksGradient)"
-        />
-        <defs>
-          <linearGradient id="bidsGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#008000" stopOpacity={0.8} />
-            <stop offset="95%" stopColor="#008000" stopOpacity={0} />
-          </linearGradient>
-          <linearGradient id="asksGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#FF0000" stopOpacity={0.8} />
-            <stop offset="95%" stopColor="#FF0000" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-      </LineChart>
-    </ResponsiveContainer>
+    <div
+      className="hide-scroll relative h-full overflow-y-scroll"
+      ref={depthChartElRef}
+      onScroll={handleScroll}
+    >
+      <ResponsiveContainer width="100%" height={2000}>
+        <AreaChart data={chartData} layout="vertical">
+          <XAxis
+            axisLine={false}
+            type="number"
+            tick={{
+              fill: 'var(--fgd-4)',
+              fontSize: 10,
+            }}
+            tickLine={false}
+          />
+          <YAxis
+            dataKey="price"
+            reversed={true}
+            domain={['dataMin', 'dataMax']}
+            tick={{
+              fill: 'var(--fgd-4)',
+              fontSize: 10,
+            }}
+            ticks={chartData.map((d) => d.price)}
+            tickLine={false}
+            tickFormatter={(d) =>
+              serumOrPerpMarket
+                ? d.toFixed(getDecimalCount(serumOrPerpMarket.tickSize))
+                : d
+            }
+          />
+          <Area
+            type="step"
+            dataKey="bids"
+            stroke={COLORS.UP[theme]}
+            fill="url(#bidsGradient)"
+            isAnimationActive={false}
+          />
+          <Area
+            type="step"
+            dataKey="asks"
+            stroke={COLORS.DOWN[theme]}
+            fill="url(#asksGradient)"
+            isAnimationActive={false}
+          />
+          <defs>
+            <linearGradient id="bidsGradient" x1="1" y1="0" x2="0" y2="0">
+              <stop
+                offset="0%"
+                stopColor={COLORS.UP[theme]}
+                stopOpacity={0.15}
+              />
+              <stop offset="99%" stopColor={COLORS.UP[theme]} stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="asksGradient" x1="1" y1="0" x2="0" y2="0">
+              <stop
+                offset="0%"
+                stopColor={COLORS.DOWN[theme]}
+                stopOpacity={0.15}
+              />
+              <stop
+                offset="99%"
+                stopColor={COLORS.DOWN[theme]}
+                stopOpacity={0}
+              />
+            </linearGradient>
+          </defs>
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 

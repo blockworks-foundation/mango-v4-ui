@@ -1,9 +1,7 @@
 import { AccountInfo, PublicKey } from '@solana/web3.js'
-import Big from 'big.js'
 import mangoStore from '@store/mangoStore'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
-import isEqual from 'lodash/isEqual'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
   floorToDecimal,
@@ -13,7 +11,6 @@ import {
 import { ANIMATION_SETTINGS_KEY, USE_ORDERBOOK_FEED_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
-import { OrderbookL2 } from 'types'
 import OrderbookIcon from '@components/icons/OrderbookIcon'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
@@ -31,6 +28,7 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { sleep } from 'utils'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
+import useOrderbookSubscription from 'hooks/useOrderbookSubscription'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -82,111 +80,6 @@ export function decodeBook(
   }
 }
 
-type cumOrderbookSide = {
-  price: number
-  size: number
-  cumulativeSize: number
-  sizePercent: number
-  maxSizePercent: number
-  cumulativeSizePercent: number
-  isUsersOrder: boolean
-}
-
-const getCumulativeOrderbookSide = (
-  orders: number[][],
-  totalSize: number,
-  maxSize: number,
-  depth: number,
-  usersOpenOrderPrices: number[],
-  grouping: number,
-  isGrouped: boolean
-): cumOrderbookSide[] => {
-  let cumulativeSize = 0
-  return orders.slice(0, depth).map(([price, size]) => {
-    cumulativeSize += size
-    return {
-      price: Number(price),
-      size,
-      cumulativeSize,
-      sizePercent: Math.round((cumulativeSize / (totalSize || 1)) * 100),
-      cumulativeSizePercent: Math.round((size / (cumulativeSize || 1)) * 100),
-      maxSizePercent: Math.round((size / (maxSize || 1)) * 100),
-      isUsersOrder: hasOpenOrderForPriceGroup(
-        usersOpenOrderPrices,
-        price,
-        grouping,
-        isGrouped
-      ),
-    }
-  })
-}
-
-const groupBy = (
-  ordersArray: number[][],
-  market: PerpMarket | Market,
-  grouping: number,
-  isBids: boolean
-) => {
-  if (!ordersArray || !market || !grouping || grouping == market?.tickSize) {
-    return ordersArray || []
-  }
-  const groupFloors: Record<number, number> = {}
-  for (let i = 0; i < ordersArray.length; i++) {
-    if (typeof ordersArray[i] == 'undefined') {
-      break
-    }
-    const bigGrouping = Big(grouping)
-    const bigOrder = Big(ordersArray[i][0])
-
-    const floor = isBids
-      ? bigOrder
-          .div(bigGrouping)
-          .round(0, Big.roundDown)
-          .times(bigGrouping)
-          .toNumber()
-      : bigOrder
-          .div(bigGrouping)
-          .round(0, Big.roundUp)
-          .times(bigGrouping)
-          .toNumber()
-    if (typeof groupFloors[floor] == 'undefined') {
-      groupFloors[floor] = ordersArray[i][1]
-    } else {
-      groupFloors[floor] = ordersArray[i][1] + groupFloors[floor]
-    }
-  }
-  const sortedGroups = Object.entries(groupFloors)
-    .map((entry) => {
-      return [
-        +parseFloat(entry[0]).toFixed(getDecimalCount(grouping)),
-        entry[1],
-      ]
-    })
-    .sort((a: number[], b: number[]) => {
-      if (!a || !b) {
-        return -1
-      }
-      return isBids ? b[0] - a[0] : a[0] - b[0]
-    })
-  return sortedGroups
-}
-
-const hasOpenOrderForPriceGroup = (
-  openOrderPrices: number[],
-  price: number,
-  grouping: number,
-  isGrouped: boolean
-) => {
-  if (!isGrouped) {
-    return !!openOrderPrices.find((ooPrice) => {
-      return ooPrice === price
-    })
-  }
-  return !!openOrderPrices.find((ooPrice) => {
-    return ooPrice >= price - grouping && ooPrice <= price + grouping
-  })
-}
-
 const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
   const group = mangoStore.getState().group
   const perpMarket = group?.getPerpMarketByMarketIndex(
@@ -198,14 +91,13 @@ const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
   }
 }
 
-type OrderbookData = {
-  bids: cumOrderbookSide[]
-  asks: cumOrderbookSide[]
-  spread: number
-  spreadPercentage: number
-}
-
-const Orderbook = () => {
+const Orderbook = ({
+  grouping,
+  setGrouping,
+}: {
+  grouping: number
+  setGrouping: (g: number) => void
+}) => {
   const { t } = useTranslation(['common', 'trade'])
   const {
     serumOrPerpMarket: market,
@@ -215,8 +107,6 @@ const Orderbook = () => {
   const connection = mangoStore((s) => s.connection)
 
   const [isScrolled, setIsScrolled] = useState(false)
-  const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
-  const [grouping, setGrouping] = useState(0.01)
   const [tickSize, setTickSize] = useState(0)
   const [showBids, setShowBids] = useState(true)
   const [showAsks, setShowAsks] = useState(true)
@@ -226,7 +116,6 @@ const Orderbook = () => {
       : true
   )
 
-  const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
@@ -234,19 +123,6 @@ const Orderbook = () => {
   const depth = useMemo(() => {
     return isMobile ? 9 : 40
   }, [isMobile])
-
-  const depthArray: number[] = useMemo(() => {
-    return Array(depth).fill(0)
-  }, [depth])
-
-  const orderbookFeed = useRef<OrderbookFeed | null>(null)
-
-  useEffect(() => {
-    if (market && market.tickSize !== tickSize) {
-      setTickSize(market.tickSize)
-      setGrouping(market.tickSize)
-    }
-  }, [market, tickSize])
 
   const verticallyCenterOrderbook = useCallback(() => {
     const element = orderbookElRef.current
@@ -262,111 +138,25 @@ const Orderbook = () => {
     }
   }, [])
 
-  useEffect(
-    () =>
-      mangoStore.subscribe(
-        (state) => state.selectedMarket.orderbook,
-        (newOrderbook) => {
-          if (
-            newOrderbook &&
-            market &&
-            !isEqual(currentOrderbookData.current, newOrderbook)
-          ) {
-            // check if user has open orders so we can highlight them on orderbook
-            const openOrders = mangoStore.getState().mangoAccount.openOrders
-            const marketPk = market.publicKey.toString()
-            const bids2 = mangoStore.getState().selectedMarket.bidsAccount
-            const asks2 = mangoStore.getState().selectedMarket.asksAccount
-            const mangoAccount = mangoStore.getState().mangoAccount.current
-            let usersOpenOrderPrices: number[] = []
-            if (
-              mangoAccount &&
-              bids2 &&
-              asks2 &&
-              bids2 instanceof BookSide &&
-              asks2 instanceof BookSide
-            ) {
-              usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
-                .filter((order) => order.owner.equals(mangoAccount.publicKey))
-                .map((order) => order.price)
-            } else {
-              usersOpenOrderPrices =
-                marketPk && openOrders[marketPk]?.length
-                  ? openOrders[marketPk]?.map((order) => order.price)
-                  : []
-            }
-
-            // updated orderbook data
-            const bids =
-              groupBy(newOrderbook?.bids, market, grouping, true) || []
-            const asks =
-              groupBy(newOrderbook?.asks, market, grouping, false) || []
-
-            const sum = (total: number, [, size]: number[], index: number) =>
-              index < depth ? total + size : total
-            const totalSize = bids.reduce(sum, 0) + asks.reduce(sum, 0)
-
-            const maxSize =
-              Math.max(
-                ...bids.map((b: number[]) => {
-                  return b[1]
-                })
-              ) +
-              Math.max(
-                ...asks.map((a: number[]) => {
-                  return a[1]
-                })
-              )
-            const isGrouped = grouping !== market.tickSize
-            const bidsToDisplay = getCumulativeOrderbookSide(
-              bids,
-              totalSize,
-              maxSize,
-              depth,
-              usersOpenOrderPrices,
-              grouping,
-              isGrouped
-            )
-            const asksToDisplay = getCumulativeOrderbookSide(
-              asks,
-              totalSize,
-              maxSize,
-              depth,
-              usersOpenOrderPrices,
-              grouping,
-              isGrouped
-            )
-
-            currentOrderbookData.current = newOrderbook
-            if (bidsToDisplay[0] || asksToDisplay[0]) {
-              const bid = bidsToDisplay[0]?.price
-              const ask = asksToDisplay[0]?.price
-              let spread = 0,
-                spreadPercentage = 0
-              if (bid && ask) {
-                spread = parseFloat(
-                  (ask - bid).toFixed(getDecimalCount(market.tickSize))
-                )
-                spreadPercentage = (spread / ask) * 100
-              }
-
-              setOrderbookData({
-                bids: bidsToDisplay,
-                asks: asksToDisplay.reverse(),
-                spread,
-                spreadPercentage,
-              })
-              if (!isScrolled) {
-                verticallyCenterOrderbook()
-              }
-            } else {
-              setOrderbookData(null)
-            }
-          }
-        }
-      ),
-    [grouping, market, isScrolled, verticallyCenterOrderbook]
+  const orderbookData = useOrderbookSubscription(
+    depth,
+    grouping,
+    isScrolled,
+    verticallyCenterOrderbook
   )
+
+  const depthArray: number[] = useMemo(() => {
+    return Array(depth).fill(0)
+  }, [depth])
+
+  const orderbookFeed = useRef<OrderbookFeed | null>(null)
+
+  useEffect(() => {
+    if (market && market.tickSize !== tickSize) {
+      setTickSize(market.tickSize)
+      setGrouping(market.tickSize)
+    }
+  }, [market, tickSize])
 
   const bidAccountAddress = useMemo(() => {
     if (!market) return ''
