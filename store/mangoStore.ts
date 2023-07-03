@@ -3,7 +3,7 @@ import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { AnchorProvider, BN, Wallet, web3 } from '@coral-xyz/anchor'
-import { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import { ConfirmOptions, Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
@@ -75,10 +75,10 @@ const ENDPOINTS = [
     name: 'mainnet-beta',
     url:
       process.env.NEXT_PUBLIC_ENDPOINT ||
-      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
     websocket:
       process.env.NEXT_PUBLIC_ENDPOINT ||
-      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
     custom: false,
   },
   {
@@ -90,7 +90,10 @@ const ENDPOINTS = [
   },
 ]
 
-const options = AnchorProvider.defaultOptions()
+const options = {
+  ...AnchorProvider.defaultOptions(),
+  preflightCommitment: 'confirmed',
+} as ConfirmOptions
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'devnet'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
 export const emptyWallet = new EmptyWallet(Keypair.generate())
@@ -267,7 +270,7 @@ const mangoStore = create<MangoStore>()(
     if (typeof window !== 'undefined' && CLUSTER === 'devnet') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
       rpcUrl = urlFromLocalStorage
-        ? JSON.parse(urlFromLocalStorage).value
+        ? JSON.parse(urlFromLocalStorage)
         : ENDPOINT.url
     }
 
@@ -483,7 +486,7 @@ const mangoStore = create<MangoStore>()(
               const latestFeed = entries
                 .map(([key, value]) => {
                   // ETH should be renamed to ETH (Portal) in the database
-                  let symbol = value.activity_details.symbol
+                  const symbol = value.activity_details.symbol
                   if (symbol === 'ETH') {
                     value.activity_details.symbol = 'ETH (Portal)'
                   }

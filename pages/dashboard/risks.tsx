@@ -51,7 +51,8 @@ const RiskDashboard: NextPage = () => {
     () => {
       const provider = new AnchorProvider(
         new web3.Connection(
-          'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+          process.env.NEXT_PUBLIC_ENDPOINT ||
+            'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
           'processed'
         ),
         emptyWallet,
@@ -79,8 +80,8 @@ const RiskDashboard: NextPage = () => {
 
   return (
     <div className="grid grid-cols-12">
-      <div className="col-span-12 xl:col-span-8 xl:col-start-3">
-        <div className="p-8 pb-20 text-th-fgd-1 md:pb-16 xl:p-10">
+      <div className="col-span-12 lg:col-span-8 lg:col-start-3">
+        <div className="p-8 pb-20 md:pb-16 lg:p-10">
           <h1>Dashboard</h1>
           <DashboardNavbar />
           {group && data ? (

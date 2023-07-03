@@ -121,7 +121,7 @@ const SharePositionModal = ({
                 </div>
                 <div className="flex justify-between">
                   <p className="mb-2 text-base text-gray-500">
-                    {t('entry-price')}
+                    {t('avg-entry-price')}
                   </p>
                   <p className="ml-2 font-mono text-base text-white">
                     {formatNumericValue(

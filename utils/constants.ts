@@ -45,7 +45,7 @@ export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
 export const THEME_KEY = 'theme-0.1'
 
-export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
+export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.5'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 

@@ -250,7 +250,6 @@ const OpenOrders = () => {
         <thead>
           <TrHead>
             <Th className="w-[16.67%] text-left">{t('market')}</Th>
-            <Th className="w-[16.67%] text-right">{t('trade:side')}</Th>
             <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
             <Th className="w-[16.67%] text-right">{t('price')}</Th>
             <Th className="w-[16.67%] text-right">{t('value')}</Th>
@@ -293,22 +292,19 @@ const OpenOrders = () => {
                   minOrderSize = serumMarket.minOrderSize
                   value = o.size * o.price * quoteBank.uiPrice
                 }
+                const side =
+                  o instanceof PerpOrder
+                    ? 'bid' in o.side
+                      ? 'long'
+                      : 'short'
+                    : o.side
                 return (
                   <TrBody
                     key={`${o.side}${o.size}${o.price}${o.orderId.toString()}`}
                     className="my-1 p-2"
                   >
                     <Td className="w-[16.67%]">
-                      <TableMarketName market={market} />
-                    </Td>
-                    <Td className="w-[16.67%] text-right">
-                      {o instanceof PerpOrder ? (
-                        <PerpSideBadge
-                          basePosition={'bid' in o.side ? 1 : -1}
-                        />
-                      ) : (
-                        <SideBadge side={o.side} />
-                      )}
+                      <TableMarketName market={market} side={side} />
                     </Td>
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>

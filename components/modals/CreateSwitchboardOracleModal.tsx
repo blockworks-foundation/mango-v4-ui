@@ -214,7 +214,7 @@ const CreateSwitchboardOracleModal = ({
 
       const txChunks = chunk([...txArray1, lockTx, transferAuthIx], 1)
       const transactions: Transaction[] = []
-      const latestBlockhash = await connection.getLatestBlockhash('finalized')
+      const latestBlockhash = await connection.getLatestBlockhash('confirmed')
       for (const chunk of txChunks) {
         const tx = new Transaction()
         const singers = [...chunk.flatMap((x) => x.signers)]
