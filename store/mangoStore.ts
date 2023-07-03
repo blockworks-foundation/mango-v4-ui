@@ -18,6 +18,8 @@ import {
   PerpPosition,
   BookSide,
   ParsedFillEvent,
+  getLargestPerpPositions,
+  getClosestToLiquidationPerpPositions,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -67,6 +69,7 @@ import {
   IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
+import { PositionStat } from '@components/stats/PerpMarketsPositions'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -169,6 +172,12 @@ export type MangoStore = {
   perpStats: {
     loading: boolean
     data: PerpStatsItem[] | null
+    positions: {
+      initialLoad: boolean
+      loading: boolean
+      largest: PositionStat[]
+      closestToLiq: PositionStat[]
+    }
   }
   profile: {
     details: ProfileDetails | null
@@ -246,6 +255,7 @@ export type MangoStore = {
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrders: (refetchMangoAccount?: boolean) => Promise<void>
     fetchPerpStats: () => void
+    fetchPositionsStats: () => void
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
       mangoAccountPk: string,
@@ -315,6 +325,12 @@ const mangoStore = create<MangoStore>()(
       perpStats: {
         loading: false,
         data: [],
+        positions: {
+          initialLoad: true,
+          loading: true,
+          largest: [],
+          closestToLiq: [],
+        },
       },
       profile: {
         loadDetails: false,
@@ -794,6 +810,40 @@ const mangoStore = create<MangoStore>()(
             notify({
               title: 'Failed to fetch token stats data',
               type: 'error',
+            })
+          }
+        },
+        fetchPositionsStats: async () => {
+          const set = get().set
+          const group = get().group
+          const client = get().client
+          if (!group) return
+          try {
+            const [largestPositions, closestToLiq] = await Promise.all([
+              getLargestPerpPositions(client, group),
+              getClosestToLiquidationPerpPositions(client, group),
+            ])
+            set((state) => {
+              if (largestPositions && largestPositions.length) {
+                state.perpStats.positions.largest = largestPositions.slice(0, 5)
+              }
+              if (closestToLiq && closestToLiq.length) {
+                state.perpStats.positions.closestToLiq = closestToLiq.slice(
+                  0,
+                  5
+                )
+              }
+            })
+          } catch (e) {
+            console.log('failed to fetch perp positions stats', e)
+          } finally {
+            const notLoaded =
+              mangoStore.getState().perpStats.positions.initialLoad
+            set((state) => {
+              state.perpStats.positions.loading = false
+              if (notLoaded) {
+                state.perpStats.positions.initialLoad = false
+              }
             })
           }
         },
