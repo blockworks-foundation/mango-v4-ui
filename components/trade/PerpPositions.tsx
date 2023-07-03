@@ -5,12 +5,7 @@ import Button, { IconButton, LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
-import {
-  ArrowTrendingDownIcon,
-  ArrowTrendingUpIcon,
-  ChevronDownIcon,
-  NoSymbolIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -33,6 +28,7 @@ import TableMarketName from './TableMarketName'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
+import PerpSideBadge from './PerpSideBadge'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -101,218 +97,203 @@ const PerpPositions = () => {
     <>
       {mangoAccount && openPerpPositions.length ? (
         showTableView ? (
-          <>
-            <div className="thin-scroll overflow-x-auto">
-              <Table>
-                <thead>
-                  <TrHead>
-                    <Th className="text-left">{t('market')}</Th>
-                    <Th className="text-right">{t('trade:size')}</Th>
-                    <Th className="text-right">{t('trade:avg-entry-price')}</Th>
-                    <Th>
-                      <div className="flex justify-end">
-                        <Tooltip content={t('trade:tooltip-est-liq-price')}>
-                          <span className="tooltip-underline">
-                            {t('trade:est-liq-price')}
-                          </span>
-                        </Tooltip>
-                      </div>
-                    </Th>
-                    <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
-                    {!isUnownedAccount ? <Th /> : null}
-                  </TrHead>
-                </thead>
-                <tbody>
-                  {openPerpPositions.map((position, index) => {
-                    const market = group.getPerpMarketByMarketIndex(
-                      position.marketIndex
-                    )
-                    const basePosition = position.getBasePositionUi(market)
-                    const floorBasePosition = floorToDecimal(
-                      basePosition,
-                      getDecimalCount(market.minOrderSize)
-                    ).toNumber()
-                    const isSelectedMarket =
-                      selectedMarket instanceof PerpMarket &&
-                      selectedMarket.perpMarketIndex === position.marketIndex
+          <div className="thin-scroll overflow-x-auto">
+            <Table>
+              <thead>
+                <TrHead>
+                  <Th className="text-left">{t('market')}</Th>
+                  <Th className="text-right">{t('trade:size')}</Th>
+                  <Th className="text-right">{t('trade:avg-entry-price')}</Th>
+                  <Th>
+                    <div className="flex justify-end">
+                      <Tooltip content={t('trade:tooltip-est-liq-price')}>
+                        <span className="tooltip-underline">
+                          {t('trade:est-liq-price')}
+                        </span>
+                      </Tooltip>
+                    </div>
+                  </Th>
+                  <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
+                  {!isUnownedAccount ? <Th /> : null}
+                </TrHead>
+              </thead>
+              <tbody>
+                {openPerpPositions.map((position, index) => {
+                  const market = group.getPerpMarketByMarketIndex(
+                    position.marketIndex
+                  )
+                  const basePosition = position.getBasePositionUi(market)
+                  const floorBasePosition = floorToDecimal(
+                    basePosition,
+                    getDecimalCount(market.minOrderSize)
+                  ).toNumber()
+                  const isSelectedMarket =
+                    selectedMarket instanceof PerpMarket &&
+                    selectedMarket.perpMarketIndex === position.marketIndex
 
-                    if (!basePosition) return null
+                  if (!basePosition) return null
 
-                    const isLong = basePosition > 0
-                    const avgEntryPrice =
-                      position.getAverageEntryPriceUi(market)
-                    const unsettledPnl = position.getUnsettledPnlUi(market)
-                    const totalPnl =
-                      position.cumulativePnlOverPositionLifetimeUi(market)
-                    const unrealizedPnl = position.getUnRealizedPnlUi(market)
-                    const realizedPnl = position.getRealizedPnlUi()
-                    const roe =
-                      (unrealizedPnl /
-                        (Math.abs(basePosition) * avgEntryPrice)) *
-                      100
-                    const estLiqPrice = position.getLiquidationPriceUi(
-                      group,
-                      mangoAccount
-                    )
+                  const isLong = basePosition > 0
+                  const avgEntryPrice = position.getAverageEntryPriceUi(market)
+                  const unsettledPnl = position.getUnsettledPnlUi(market)
+                  const totalPnl =
+                    position.cumulativePnlOverPositionLifetimeUi(market)
+                  const unrealizedPnl = position.getUnRealizedPnlUi(market)
+                  const realizedPnl = position.getRealizedPnlUi()
+                  const roe =
+                    (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) *
+                    100
+                  const estLiqPrice = position.getLiquidationPriceUi(
+                    group,
+                    mangoAccount
+                  )
 
-                    return (
-                      <TrBody
-                        key={`${position.marketIndex}`}
-                        className="my-1 p-2"
-                      >
-                        <Td>
-                          <TableMarketName
-                            market={market}
-                            side={isLong ? 'long' : 'short'}
-                          />
-                        </Td>
-                        <Td className="text-right font-mono">
-                          {isSelectedMarket ? (
-                            <div className="flex flex-col items-end space-y-0.5">
-                              <LinkButton
-                                className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
-                                onClick={() =>
-                                  handlePositionClick(floorBasePosition, market)
-                                }
-                              >
-                                <FormatNumericValue
-                                  value={Math.abs(basePosition)}
-                                  decimals={getDecimalCount(
-                                    market.minOrderSize
-                                  )}
-                                />
-                              </LinkButton>
-                              <FormatNumericValue
-                                classNames="text-xs text-th-fgd-3"
-                                value={
-                                  Math.abs(floorBasePosition) * market._uiPrice
-                                }
-                                isUsd
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-end space-y-0.5">
+                  return (
+                    <TrBody
+                      key={`${position.marketIndex}`}
+                      className="my-1 p-2"
+                    >
+                      <Td>
+                        <TableMarketName
+                          market={market}
+                          side={isLong ? 'long' : 'short'}
+                        />
+                      </Td>
+                      <Td className="text-right font-mono">
+                        {isSelectedMarket ? (
+                          <div className="flex flex-col items-end space-y-0.5">
+                            <LinkButton
+                              className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
+                              onClick={() =>
+                                handlePositionClick(floorBasePosition, market)
+                              }
+                            >
                               <FormatNumericValue
                                 value={Math.abs(basePosition)}
                                 decimals={getDecimalCount(market.minOrderSize)}
                               />
-                              <FormatNumericValue
-                                classNames="text-xs text-th-fgd-3"
-                                value={
-                                  Math.abs(floorBasePosition) * market._uiPrice
-                                }
-                                isUsd
-                              />
-                            </div>
-                          )}
-                        </Td>
-                        <Td className="font-mono">
+                            </LinkButton>
+                            <FormatNumericValue
+                              classNames="text-xs text-th-fgd-3"
+                              value={
+                                Math.abs(floorBasePosition) * market._uiPrice
+                              }
+                              isUsd
+                            />
+                          </div>
+                        ) : (
                           <div className="flex flex-col items-end space-y-0.5">
                             <FormatNumericValue
-                              value={avgEntryPrice}
-                              decimals={getDecimalCount(market.tickSize)}
-                              isUsd
+                              value={Math.abs(basePosition)}
+                              decimals={getDecimalCount(market.minOrderSize)}
                             />
                             <FormatNumericValue
                               classNames="text-xs text-th-fgd-3"
-                              value={market.uiPrice}
-                              decimals={getDecimalCount(market.tickSize)}
+                              value={
+                                Math.abs(floorBasePosition) * market._uiPrice
+                              }
                               isUsd
                             />
                           </div>
-                        </Td>
-                        <Td className="text-right font-mono">
-                          {estLiqPrice ? (
-                            <FormatNumericValue
-                              value={estLiqPrice}
-                              decimals={getDecimalCount(market.tickSize)}
-                              isUsd
-                            />
-                          ) : (
-                            '–'
-                          )}
-                        </Td>
-                        <Td className="text-right font-mono">
-                          <div className="flex flex-col items-end ">
-                            <Tooltip
-                              content={
-                                <PnlTooltipContent
-                                  unrealizedPnl={unrealizedPnl}
-                                  realizedPnl={realizedPnl}
-                                  totalPnl={totalPnl}
-                                  unsettledPnl={unsettledPnl}
-                                />
-                              }
-                              delay={100}
-                            >
-                              <span
-                                className={`tooltip-underline ${
-                                  unrealizedPnl >= 0
-                                    ? 'text-th-up'
-                                    : 'text-th-down'
-                                }`}
-                              >
-                                <FormatNumericValue
-                                  value={unrealizedPnl}
-                                  isUsd
-                                  decimals={2}
-                                />
-                              </span>
-                            </Tooltip>
+                        )}
+                      </Td>
+                      <Td className="font-mono">
+                        <div className="flex flex-col items-end space-y-0.5">
+                          <FormatNumericValue
+                            value={avgEntryPrice}
+                            decimals={getDecimalCount(market.tickSize)}
+                            isUsd
+                          />
+                          <FormatNumericValue
+                            classNames="text-xs text-th-fgd-3"
+                            value={market.uiPrice}
+                            decimals={getDecimalCount(market.tickSize)}
+                            isUsd
+                          />
+                        </div>
+                      </Td>
+                      <Td className="text-right font-mono">
+                        {estLiqPrice ? (
+                          <FormatNumericValue
+                            value={estLiqPrice}
+                            decimals={getDecimalCount(market.tickSize)}
+                            isUsd
+                          />
+                        ) : (
+                          '–'
+                        )}
+                      </Td>
+                      <Td className="text-right font-mono">
+                        <div className="flex flex-col items-end ">
+                          <Tooltip
+                            content={
+                              <PnlTooltipContent
+                                unrealizedPnl={unrealizedPnl}
+                                realizedPnl={realizedPnl}
+                                totalPnl={totalPnl}
+                                unsettledPnl={unsettledPnl}
+                              />
+                            }
+                            delay={100}
+                          >
                             <span
-                              className={
-                                roe >= 0 ? 'text-th-up' : 'text-th-down'
-                              }
+                              className={`tooltip-underline ${
+                                unrealizedPnl >= 0
+                                  ? 'text-th-up'
+                                  : 'text-th-down'
+                              }`}
                             >
                               <FormatNumericValue
-                                classNames="text-xs"
-                                value={roe}
+                                value={unrealizedPnl}
+                                isUsd
                                 decimals={2}
                               />
-                              %{' '}
-                              <span className="font-body text-xs text-th-fgd-3">
-                                (ROE)
-                              </span>
                             </span>
+                          </Tooltip>
+                          <span
+                            className={roe >= 0 ? 'text-th-up' : 'text-th-down'}
+                          >
+                            <FormatNumericValue
+                              classNames="text-xs"
+                              value={roe}
+                              decimals={2}
+                            />
+                            %{' '}
+                            <span className="font-body text-xs text-th-fgd-3">
+                              (ROE)
+                            </span>
+                          </span>
+                        </div>
+                      </Td>
+                      {!isUnownedAccount ? (
+                        <Td>
+                          <div className="flex items-center justify-end space-x-4">
+                            <Button
+                              className="text-xs"
+                              secondary
+                              size="small"
+                              onClick={() => showClosePositionModal(position)}
+                            >
+                              Close
+                            </Button>
+                            <IconButton
+                              hideBg
+                              onClick={() =>
+                                handleShowShare(openPerpPositions[index])
+                              }
+                              disabled={!group || !basePosition}
+                            >
+                              <TwitterIcon className="h-4 w-4" />
+                            </IconButton>
                           </div>
                         </Td>
-                        {!isUnownedAccount ? (
-                          <Td>
-                            <div className="flex items-center justify-end space-x-4">
-                              <Button
-                                className="text-xs"
-                                secondary
-                                size="small"
-                                onClick={() => showClosePositionModal(position)}
-                              >
-                                Close
-                              </Button>
-                              <IconButton
-                                hideBg
-                                onClick={() =>
-                                  handleShowShare(openPerpPositions[index])
-                                }
-                                disabled={!group || !basePosition}
-                              >
-                                <TwitterIcon className="h-4 w-4" />
-                              </IconButton>
-                            </div>
-                          </Td>
-                        ) : null}
-                      </TrBody>
-                    )
-                  })}
-                </tbody>
-              </Table>
-            </div>
-            {showMarketCloseModal && positionToClose ? (
-              <MarketCloseModal
-                isOpen={showMarketCloseModal}
-                onClose={hideClosePositionModal}
-                position={positionToClose}
-              />
-            ) : null}
-          </>
+                      ) : null}
+                    </TrBody>
+                  )
+                })}
+              </tbody>
+            </Table>
+          </div>
         ) : (
           <div className="border-b border-th-bkg-3">
             {openPerpPositions.map((position, i) => {
@@ -352,50 +333,44 @@ const PerpPositions = () => {
                           i === 0 ? 'border-t-0' : ''
                         }`}
                       >
-                        <div className="flex w-full flex-col sm:flex-row sm:items-center sm:justify-between">
-                          <div
-                            className={`flex items-center ${
-                              side === 'buy'
-                                ? 'text-th-up'
-                                : side === 'sell'
-                                ? 'text-th-down'
-                                : 'text-th-fgd-2'
-                            }`}
-                          >
-                            <MarketLogos market={market} size="large" />
-                            <span className="mr-1 whitespace-nowrap">
-                              {market.name}
-                            </span>
-                            {side === 'buy' ? (
-                              <ArrowTrendingUpIcon className="h-5 w-5" />
-                            ) : side === 'sell' ? (
-                              <ArrowTrendingDownIcon className="h-5 w-5" />
-                            ) : null}
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-mono">
-                              <FormatNumericValue
-                                value={Math.abs(basePosition)}
-                                decimals={getDecimalCount(market.minOrderSize)}
-                              />{' '}
-                              <span className="font-body text-th-fgd-3">
-                                {market.name.split('-')[0]}
+                        <div className="flex items-center">
+                          <MarketLogos market={market} size="large" />
+                          <div>
+                            <div className="flex space-x-1 text-th-fgd-2">
+                              <span className="whitespace-nowrap">
+                                {market.name}
                               </span>
-                            </span>
-                            <span className="text-th-fgd-4">|</span>
-                            <span
-                              className={`font-mono ${
-                                unrealizedPnl > 0
-                                  ? 'text-th-up'
-                                  : 'text-th-down'
-                              }`}
-                            >
-                              <FormatNumericValue
-                                value={unrealizedPnl}
-                                isUsd
-                                decimals={2}
+                              <PerpSideBadge
+                                basePosition={side === 'buy' ? 1 : -1}
                               />
-                            </span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className="font-mono">
+                                <FormatNumericValue
+                                  value={Math.abs(basePosition)}
+                                  decimals={getDecimalCount(
+                                    market.minOrderSize
+                                  )}
+                                />{' '}
+                                <span className="font-body text-th-fgd-3">
+                                  {market.name.split('-')[0]}
+                                </span>
+                              </span>
+                              <span className="text-th-fgd-4">|</span>
+                              <span
+                                className={`font-mono ${
+                                  unrealizedPnl > 0
+                                    ? 'text-th-up'
+                                    : 'text-th-down'
+                                }`}
+                              >
+                                <FormatNumericValue
+                                  value={unrealizedPnl}
+                                  isUsd
+                                  decimals={2}
+                                />
+                              </span>
+                            </div>
                           </div>
                         </div>
                         <ChevronDownIcon
@@ -573,7 +548,7 @@ const PerpPositions = () => {
                                 disabled={!group || !basePosition}
                               >
                                 <div className="flex items-center justify-center">
-                                  <TwitterIcon className="mr-2 h-4 w-4" />
+                                  <TwitterIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                                   {t('trade:tweet-position')}
                                 </div>
                               </Button>
@@ -604,6 +579,13 @@ const PerpPositions = () => {
           isOpen={showShareModal}
           onClose={() => setShowShareModal(false)}
           position={positionToShare!}
+        />
+      ) : null}
+      {showMarketCloseModal && positionToClose ? (
+        <MarketCloseModal
+          isOpen={showMarketCloseModal}
+          onClose={hideClosePositionModal}
+          position={positionToClose}
         />
       ) : null}
     </>
